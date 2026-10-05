@@ -66,8 +66,16 @@ export const SUIDO_LEVEL_SEED_BLOCK = { from: 1_800_000_000, size: 1_000 } as co
  */
 export const JIRAI_SEED_BLOCK = { from: 1_900_000_000, size: 12_000_000 } as const satisfies SeedBlock;
 
+/**
+ * Suido's NETWORK BOARDS WITH BIG PIECES (`suido/seed.ts`), from nineteen hundred and twenty million, just past Jirai's: a network
+ * in which some pieces fill four squares and turn as one (the package's `bigs`). A board is a network all the same, so the
+ * seed says that too (`suidoKindOfSeed`). A kept run, an address and a race carry nothing but the seed, so the seed is where "with big
+ * pieces" lives; `freshSeed` never lands in the block, so an ordinary board is never one by accident.
+ */
+export const SUIDO_BIG_SEED_BLOCK = { from: 1_920_000_000, size: 100_000_000 } as const satisfies SeedBlock;
+
 /** Every block `freshSeed` keeps out of, lowest first. */
-const KEPT_SEED_BLOCKS: readonly SeedBlock[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK, NETWORK_SEED_BLOCK, SUIDO_LEVEL_SEED_BLOCK, JIRAI_SEED_BLOCK];
+const KEPT_SEED_BLOCKS: readonly SeedBlock[] = [DAILY_SEED_BLOCK, DODGE_SEED_BLOCK, BACKWARDS_SEED_BLOCK, NETWORK_SEED_BLOCK, SUIDO_LEVEL_SEED_BLOCK, JIRAI_SEED_BLOCK, SUIDO_BIG_SEED_BLOCK];
 
 /** A new seed for a puzzle nobody asked for by number: anywhere in the range but the kept blocks. */
 export function freshSeed(): number {

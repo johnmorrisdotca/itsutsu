@@ -32,5 +32,20 @@ one of the two puzzles of fixed levels the later ones (Meikyuu, Tobiishi) mirror
 | Zoom and pan | A huge board is looked at through the package's own view (`attachSuidoView`): a pinch, a drag once zoomed in, the wheel with control held, and three buttons under it (− + Whole board), a press that moved never a tap. The 10 to 14 wide boards keep Tsunagi's box (`TsunagiViewport`) and its pad | `SuidoBoard.tsx`, `SuidoZoomBar.tsx`, `SuidoSolve.tsx` |
 | A tap to the screen on a big board | `paintSuido` writes only what changed, and dry arms and drips are hidden a moment after the water leaves them: about 56 ms on a 28×28 and 70 ms on a 20×50 with Chromium's CPU slowed four times, from about 90 and 125 | the package's `paint.ts`, `style.ts` |
 
-Not done: levels with big pieces or blocks (a fixed level keeps its board for good, and the three huge sizes were made before
-those existed).
+## Big pieces (2026-10-05, package 1.4.0)
+
+A piece that fills four squares (a 2×2) and has up to eight openings, two on each side; one tap on any part of it turns the whole piece a quarter,
+where it stands. The package has five kinds (`BIG_KINDS`: an end, a hairpin, two pipes side by side, two bending one inside the other, a straight
+pipe with a branch) and solves a network of them as one thing with four facings per piece, checks an answer in O(cells) as the board's piece turned
+a whole number of quarters, and draws a plate under each and a ring at its middle.
+
+| Decision | What | Where |
+| --- | --- | --- |
+| Made boards only | A level keeps its board for good, so the 3,520 levels have none. Make a board offers them; the three huge sizes were made before they existed | `SuidoSetUpOptions.tsx` |
+| One choice, "Pieces" | Single pieces or Big pieces, under the kind. Big pieces are a network's, so choosing them chooses Network and choosing Drains takes them off: the last choice wins, nothing is ever disabled | `SuidoSetUpOptions.tsx` (`useSuidoChoice`) |
+| The seed says it | `SUIDO_BIG_SEED_BLOCK` (1,920,000,000, a hundred million seeds): a kept run, an address and a race carry only the seed. The address says `squares=big` until a seed is drawn, and then not; a board with squares is a network, so the address never also says `pipes=network` | `random.ts`, `suido/seed.ts` (`suidoSquaresOfSeed`), `puzzleAddress.ts` |
+| How many | One for about every 32 cells, never fewer than one: 2 on a 7×7, 5 on a 12×12, 25 on a 28×28, 31 on a 20×50 (`suidoBigCount`). A 20×50's code stays under `SUIDO_CODE_MOST` | `suido/generate.ts` |
+| The preview is a board of that kind | The set-up's preview is made from a fixed seed in the block that says the kind and the squares (`suidoPreviewSeed`), so choosing Big pieces draws plates on it, and choosing Network draws a network (it drew drains whatever was chosen) | `SuidoPreview.tsx`, `PuzzleBoardAndSizes.tsx` |
+| The server | `boardOf` accepts what the package decodes of a network; the check, the points (a board's pieces), the kept run (`gameFromCode`: a big piece turned alone is another board's) and the answer found again (`solve`) all read the package | `suido/check.ts`, `suido/play.ts` |
+| A Hint | Lights the whole big piece (its four squares and its plate) and turns it to face the answer (`turnedToFaceAt`) | `SuidoBoard.tsx`, `SuidoSolve.tsx` |
+| A row under the board | "Big pieces 大駒", like a level's twist chips, with the line that says what it is on a hover or a tap | `SuidoSquaresChips.tsx` |

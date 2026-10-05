@@ -144,6 +144,7 @@ export function PuzzleSetUp({
   const bonus = kind === "mahjong" ? mahjong.bonus : undefined;
   // Suido's kind of board is in the address until a seed says it; every other puzzle has none to say.
   const pipes = kind === "suido" ? suido.pipes : undefined;
+  const squares = kind === "suido" ? suido.squares : undefined;
   // Jirai's way to play is in the address until a seed says it, as Suido's kind of board is.
   const jiraiWay = kind === "jirai" ? jirai.variant : undefined;
   /*
@@ -157,7 +158,7 @@ export function PuzzleSetUp({
    * as it was typed.
    */
   const shownSize = sized === undefined ? size : null;
-  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, pipes, jirai: jiraiWay, anyDeal: kind === "solitaire" && anyDeal });
+  const query = puzzleQuery({ size: shownSize ?? spec.defaultSize, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, pipes, squares, jirai: jiraiWay, anyDeal: kind === "solitaire" && anyDeal });
   const opened = useRef(query);
   useEffect(() => {
     if (query === opened.current && window.location.search === "") return;
@@ -187,7 +188,7 @@ export function PuzzleSetUp({
     try {
       await preparePuzzle(kind, size, language);
       // A race is on a deal both seats can win: a Solitaire's is always a winnable one, whatever is chosen for playing alone.
-      const made = generatePuzzle(kind, size, level, kind === "solitaire" ? freshSolitaireSeed(false) : kind === "mahjong" ? freshMahjongSeed(mahjong.bonus) : kind === "suido" ? freshSuidoSeed(suido.pipes) : kind === "jirai" ? freshJiraiSeed(jirai.variant) : dodging ? freshDodgeSeed() : turned ? freshBackwardsSeed() : freshSeedOf(count), { gameLength, language, doubleSet, diagonals });
+      const made = generatePuzzle(kind, size, level, kind === "solitaire" ? freshSolitaireSeed(false) : kind === "mahjong" ? freshMahjongSeed(mahjong.bonus) : kind === "suido" ? freshSuidoSeed(suido.pipes, suido.squares) : kind === "jirai" ? freshJiraiSeed(jirai.variant) : dodging ? freshDodgeSeed() : turned ? freshBackwardsSeed() : freshSeedOf(count), { gameLength, language, doubleSet, diagonals });
       const answered = await fetch("/api/puzzles/races", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -215,7 +216,7 @@ export function PuzzleSetUp({
         Preview Board too. And the Board colour options."
       */}
       {sized === undefined ? (
-        <PuzzleBoardAndSizes kind={kind} size={size} onSize={setOwnSize} level={level} appearance={{ ...appearance, felt }} onFelt={chooseFelt} words={count} jirai={jiraiWay} />
+        <PuzzleBoardAndSizes kind={kind} size={size} onSize={setOwnSize} level={level} appearance={{ ...appearance, felt }} onFelt={chooseFelt} words={count} jirai={jiraiWay} suido={kind === "suido" ? { pipes: suido.pipes, squares: suido.squares } : undefined} />
       ) : null}
 
       {/*
@@ -426,7 +427,7 @@ export function PuzzleSetUp({
         {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
         {kind === "mahjong" ? <MahjongTableResume /> : null}
         <Link
-          href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, pipes, jirai: jiraiWay, anyDeal: kind === "solitaire" && anyDeal }))}
+          href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, pipes, squares, jirai: jiraiWay, anyDeal: kind === "solitaire" && anyDeal }))}
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >

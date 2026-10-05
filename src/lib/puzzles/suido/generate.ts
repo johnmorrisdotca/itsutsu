@@ -1,7 +1,7 @@
 import { encodeLayout, flowOf, makeSuido, withMasks } from "@johnmorrisdotca/suido";
 
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
-import { suidoKindOfSeed } from "./seed";
+import { suidoKindOfSeed, suidoSquaresOfSeed } from "./seed";
 import { suidoShapeOf } from "./sizes";
 
 /**
@@ -19,6 +19,15 @@ import { suidoShapeOf } from "./sizes";
  */
 export const SUIDO_DIFFICULTY: Record<PuzzleLevel, number> = { easy: 20, medium: 50, hard: 80, "extra-hard": 80 };
 
+/**
+ * HOW MANY BIG PIECES a board of this many cells has: one for about every thirty-two, never fewer than one. Big pieces are four cells each, so a
+ * board a quarter of whose cells are in one is mostly squares; an eighth of them is one of every few (a 7×7 has two, a 12×12 has five, a
+ * 28×28 has twenty-five), and a 20×50's code stays well under the longest the routes accept (`SUIDO_CODE_MOST`).
+ */
+export function suidoBigCount(cells: number): number {
+  return Math.max(1, Math.round(cells / 32));
+}
+
 /** A board of Suido, as one of the site's puzzles: Suido's board of this size and level from this seed. */
 export function generateSuido(size: number, level: PuzzleLevel, seed: number): Puzzle {
   const shape = suidoShapeOf(size);
@@ -32,7 +41,9 @@ export function generateSuido(size: number, level: PuzzleLevel, seed: number): P
    * size, so it is aimed less exactly, and is made in under a second on a laptop and a few on a phone (`suido.test.ts` holds the time).
    */
   const attempts = shape.width * shape.height > 400 ? 2 : undefined;
-  const made = makeSuido({ ...where, kind: suidoKindOfSeed(seed), difficulty: SUIDO_DIFFICULTY[level], seed, ...(attempts === undefined ? {} : { attempts, tolerance: 12 }) });
+  // A board with big pieces (the seed says so, `suidoSquaresOfSeed`) has a few squares of four cells that turn as one, scaled to the board.
+  const bigs = suidoSquaresOfSeed(seed) === "big" ? suidoBigCount(shape.width * shape.height) : 0;
+  const made = makeSuido({ ...where, kind: suidoKindOfSeed(seed), difficulty: SUIDO_DIFFICULTY[level], seed, ...(bigs > 0 ? { bigs } : {}), ...(attempts === undefined ? {} : { attempts, tolerance: 12 }) });
   /*
    * THE ANSWER, WITH ITS SPARES AS DEALT. A drains board's spare pieces, which
    * the water never reaches, may face any way, and the package's answer has

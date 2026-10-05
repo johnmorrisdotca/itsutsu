@@ -16,6 +16,7 @@ import { cageOutline } from "@/lib/puzzles/killer/outline";
 import { boxedLayout, KAZU_BOXES } from "@johnmorrisdotca/kazu";
 import { PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
+import type { SuidoWay } from "@/lib/puzzles/suido/seed";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { WORDS_A_BOARD, gomojiBoard, guessesFor } from "@/lib/puzzles/gomoji/layout";
 import { emptyRow } from "@/lib/puzzles/gomoji/typingRow";
@@ -103,6 +104,7 @@ export function PuzzleBoardPreview({
   onFelt,
   wordCount = 1,
   jirai = CLASSIC_JIRAI,
+  suido,
 }: {
   kind: PuzzleKind;
   size: number;
@@ -120,6 +122,8 @@ export function PuzzleBoardPreview({
   onFelt?: (felt: Felt) => void;
   /** Jirai's way to play, as chosen on the set-up: the preview is a board of that kind. */
   jirai?: JiraiVariant;
+  /** Suido's kind of board and squares, as chosen on the set-up: the preview is a board of that kind. */
+  suido?: SuidoWay;
 }) {
   const spec = PUZZLE_SPECS[kind];
   const words = spec.wordGrid;
@@ -140,7 +144,7 @@ export function PuzzleBoardPreview({
         ) : kind === "bridges" ? (
           <BridgesPreview size={size} />
         ) : kind === "suido" ? (
-          <SuidoPreview size={size} level={level ?? spec.defaultLevel} />
+          <SuidoPreview size={size} level={level ?? spec.defaultLevel} way={suido} />
         ) : kind === "meikyuu" ? (
           <MeikyuuPreview size={size} />
         ) : kind === "tobiishi" ? (

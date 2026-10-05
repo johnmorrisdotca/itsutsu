@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { newGame } from "@johnmorrisdotca/suido";
 
 import { generateSuido } from "@/lib/puzzles/suido/generate";
+import { suidoPreviewSeed, type SuidoWay } from "@/lib/puzzles/suido/seed";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
 import { SuidoBoard } from "./SuidoBoard";
@@ -18,8 +19,10 @@ import { SuidoBoard } from "./SuidoBoard";
  * browser only (`PuzzleBoardPreview`): the set-up page is drawn on a server,
  * and a picture is not worth making a board there.
  */
-export function SuidoPreview({ size, level }: { size: number; level: PuzzleLevel }) {
-  const game = useMemo(() => newGame(generateSuido(size, level, 7).givens), [size, level]);
+export function SuidoPreview({ size, level, way }: { size: number; level: PuzzleLevel; way?: SuidoWay }) {
+  const pipes = way?.pipes ?? "drains";
+  const squares = way?.squares ?? "none";
+  const game = useMemo(() => newGame(generateSuido(size, level, suidoPreviewSeed({ pipes, squares })).givens), [size, level, pipes, squares]);
   if (game === null) return null;
-  return <SuidoBoard key={`${size}-${level}`} layout={game.start} masks={game.masks} quarters={game.quarters} readOnly done />;
+  return <SuidoBoard key={`${size}-${level}-${pipes}-${squares}`} layout={game.start} masks={game.masks} quarters={game.quarters} readOnly done />;
 }

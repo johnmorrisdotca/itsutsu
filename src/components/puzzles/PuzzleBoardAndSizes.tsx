@@ -10,6 +10,7 @@ import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { listedGameOf, settingsOf } from "@/lib/catalogue/gameSettings";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import type { JiraiVariant } from "@/lib/puzzles/jirai/variants";
+import type { SuidoWay } from "@/lib/puzzles/suido/seed";
 import { CARD_SIZE_WORDS, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, sizesOffered } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
@@ -43,6 +44,7 @@ export function PuzzleBoardAndSizes({
   underFamilies = false,
   words = 1,
   jirai,
+  suido,
 }: {
   kind: PuzzleKind;
   size: number;
@@ -56,11 +58,13 @@ export function PuzzleBoardAndSizes({
   underFamilies?: boolean;
   /** Jirai's way to play, as chosen: its preview is a board of that kind. */
   jirai?: JiraiVariant;
+  /** Suido's kind of board and squares, as chosen: its preview is a board of that kind. */
+  suido?: SuidoWay;
 }) {
   return (
     <div className={`${PICK_BOARD_ROW} py-2 ${underFamilies ? PICK_BOARD_ROW_UNDER_FAMILIES : ""}`}>
       <div className={PICK_BOARD_PREVIEW}>
-        <PuzzleBoardPreview kind={kind} size={size} level={level} appearance={appearance} onFelt={onFelt} wordCount={words} jirai={jirai} />
+        <PuzzleBoardPreview kind={kind} size={size} level={level} appearance={appearance} onFelt={onFelt} wordCount={words} jirai={jirai} suido={suido} />
       </div>
       {/* A puzzle's own page turns its shelves; under the families the row keeps one height, so it shows the first shelf only. */}
       <PuzzleSizes kind={kind} size={size} onSize={onSize} beside shelves={!underFamilies} />

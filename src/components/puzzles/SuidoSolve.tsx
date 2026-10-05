@@ -21,7 +21,7 @@ import {
   suidoLevelsAt,
   suidoLevelsLoaded,
 } from "@/lib/puzzles/suido/levels";
-import { suidoLevelOfSeed } from "@/lib/puzzles/suido/seed";
+import { suidoLevelOfSeed, suidoSquaresOfSeed } from "@/lib/puzzles/suido/seed";
 import { isSuidoHugeSize, suidoShapeOf, suidoSizeInAddress, suidoSizeWord } from "@/lib/puzzles/suido/sizes";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -29,6 +29,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { SUIDO_COPY, SUIDO_WAYS } from "./suido.constants";
 import { SuidoBoard } from "./SuidoBoard";
 import { SuidoLevelChips } from "./SuidoLevelChips";
+import { SuidoSquaresChips } from "./SuidoSquaresChips";
 import { SuidoZoomBar } from "./SuidoZoomBar";
 import { suidoLevelPath } from "./SuidoLevelPicker";
 import { keepSolveHere, keptSolves } from "./suidoKept";
@@ -196,7 +197,9 @@ export function SuidoSolve({
       </>
     );
   const twists = level === null || !suidoLevelsLoaded(size) ? [] : declaredTwists(suidoLevelsAt(size)[level - 1]!);
-  const chips = level === null ? null : <SuidoLevelChips size={size} level={level} twists={twists} />;
+  // A board made with squares says so in a row of its own, as a level's row says its twists.
+  const squares = suidoSquaresOfSeed(seed);
+  const chips = level === null ? (squares === "none" ? null : <SuidoSquaresChips twists={squares === "big" ? ["big-pieces"] : []} />) : <SuidoLevelChips size={size} level={level} twists={twists} />;
 
   if (shut && level !== null) {
     const block = blockOf(level);

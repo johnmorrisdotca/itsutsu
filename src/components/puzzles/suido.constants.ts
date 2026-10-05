@@ -1,6 +1,7 @@
 import type { Kind, Twist } from "@johnmorrisdotca/suido";
 
 import type { SuidoReading } from "@/lib/puzzles/suido/play";
+import type { SuidoSquares } from "@/lib/puzzles/suido/seed";
 
 /**
  * Suido's screen: the words it says, and the two choices it offers. One
@@ -24,6 +25,19 @@ export const SUIDO_KINDS: Record<Kind, { label: string; kanji: string; blurb: st
     label: "Inlet to outlet",
     kanji: "入口出口",
     blurb: "The water comes in at the top left and must leave at the bottom right, in one path with no branches. The other pieces are decoys and stay dry.",
+  },
+};
+
+/** The squares a board made on request may have, in the order the chips list them. */
+export const SUIDO_SQUARES_LIST = ["none", "big"] as const satisfies readonly SuidoSquares[];
+
+/** What each choice of squares is called on the set-up, with the line under the chips. */
+export const SUIDO_SQUARES: Record<SuidoSquares, { label: string; kanji: string; blurb: string }> = {
+  none: { label: "Single pieces", kanji: "単駒", blurb: "Every piece is one square, and a tap turns that piece." },
+  big: {
+    label: "Big pieces",
+    kanji: "大駒",
+    blurb: "Some pieces are big: four squares that are one piece, with up to eight openings. A tap turns the whole piece a quarter, where it stands. A network, so every piece must carry water.",
   },
 };
 

@@ -17,7 +17,7 @@ import { isMeikyuuLevelAt, meikyuuLevelBand } from "./meikyuu/levelCounts";
 import { meikyuuSizeFromAddress } from "./meikyuu/sizes";
 import { isTobiishiLevelAt } from "./tobiishi/levelCounts";
 import { tobiishiBand } from "./tobiishi/sizes";
-import { suidoKindOfSeed, suidoLevelOfSeed, suidoLevelSeed } from "./suido/seed";
+import { suidoKindOfSeed, suidoLevelOfSeed, suidoLevelSeed, suidoSquaresOfSeed, type SuidoSquares } from "./suido/seed";
 import { isSuidoLevelSize, suidoSizeFromAddress, suidoSizeInAddress } from "./suido/sizes";
 import { CLASSIC_JIRAI, isJiraiVariant, jiraiSideFor, jiraiVariantOfSeed, type JiraiGrid, type JiraiShape, type JiraiVariant } from "./jirai/variants";
 import type { Kind as SuidoKind } from "@johnmorrisdotca/suido";
@@ -105,6 +105,11 @@ export type PuzzleAsked = {
    */
   pipes?: SuidoKind;
   /**
+   * Suido's squares: big pieces, four cells that are one piece and turn as one, or none. Asked for by the address (`squares=big`) until a seed
+   * is drawn, and from then said by the seed itself (`suidoSquaresOfSeed`), as the pipes are; a board with squares is always a network.
+   */
+  squares?: SuidoSquares;
+  /**
    * A Gomoji's Nige 逃げ: the word that dodges (`gomoji/dodge.ts`). Asked for
    * by the address until a seed is drawn, and from then said by the seed
    * itself (`isDodgeSeed`), whatever the address says; false, and left out of
@@ -128,7 +133,7 @@ export type PuzzleAsked = {
   jirai?: JiraiVariant;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige", backwards: "sakasa", pipes: "pipes", number: "number", grid: "grid", shape: "shape" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige", backwards: "sakasa", pipes: "pipes", squares: "squares", number: "number", grid: "grid", shape: "shape" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -195,8 +200,10 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
     return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, bonus, ...(tablePlayers > 1 ? { players: tablePlayers } : {}) };
   }
   if (kind === "suido") {
-    const pipes: SuidoKind = seed === null ? (one(PUZZLE_PARAMS.pipes) === "network" ? "network" : "drains") : suidoKindOfSeed(seed);
-    return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, pipes };
+    const squares: SuidoSquares = seed === null ? (one(PUZZLE_PARAMS.squares) === "big" ? "big" : "none") : suidoSquaresOfSeed(seed);
+    // Squares make a network whatever else is asked for.
+    const pipes: SuidoKind = squares !== "none" ? "network" : seed === null ? (one(PUZZLE_PARAMS.pipes) === "network" ? "network" : "drains") : suidoKindOfSeed(seed);
+    return { size, level, seed, checks: null, hints, strict: false, headStart: false, words: 1, clock, pipes, ...(squares === "none" ? {} : { squares }) };
   }
   if (kind === "jirai") {
     const gridAsked = one(PUZZLE_PARAMS.grid) ?? "";
@@ -234,7 +241,9 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   if (asked.anyDeal === true && asked.seed === null) params.set(PUZZLE_PARAMS.deal, "any");
   // Only until a seed is drawn: from then the seed says it.
   if (asked.bonus === "same" && asked.seed === null) params.set(PUZZLE_PARAMS.bonus, asked.bonus);
-  if (asked.pipes === "network" && asked.seed === null) params.set(PUZZLE_PARAMS.pipes, asked.pipes);
+  // The squares make the network, so a board that has them says only them.
+  if (asked.pipes === "network" && asked.seed === null && (asked.squares ?? "none") === "none") params.set(PUZZLE_PARAMS.pipes, asked.pipes);
+  if (asked.squares !== undefined && asked.squares !== "none" && asked.seed === null) params.set(PUZZLE_PARAMS.squares, asked.squares);
   // Only until a seed is drawn: from then the seed says it. The classic board is left out.
   if (asked.jirai !== undefined && asked.seed === null) {
     if (asked.jirai.grid !== CLASSIC_JIRAI.grid) params.set(PUZZLE_PARAMS.grid, asked.jirai.grid);
@@ -260,7 +269,7 @@ export function keptRunAsked(
     words: wordCountOfSeed(run.seed),
     clock: clockFor(kind, run.clock),
     ...(kind === "kumimoji" ? { gameLength: run.gameLength === "medium" || run.gameLength === "full" ? run.gameLength : "short", language: run.language === "japanese" ? "japanese" : "english", doubleSet: run.language !== "japanese" && (run.doubleSet ?? false), diagonals: run.diagonals === true } : {}),
-    ...(kind === "suido" ? { pipes: suidoKindOfSeed(run.seed) } : {}),
+    ...(kind === "suido" ? { pipes: suidoKindOfSeed(run.seed), ...(suidoSquaresOfSeed(run.seed) === "none" ? {} : { squares: suidoSquaresOfSeed(run.seed) }) } : {}),
     ...(kind === "jirai" ? { jirai: jiraiVariantOfSeed(run.seed) } : {}),
     ...(offersDodge(kind) && isDodgeSeed(run.seed) ? { dodge: true } : {}),
     ...(offersDodge(kind) && isBackwardsSeed(run.seed) ? { backwards: true } : {}),

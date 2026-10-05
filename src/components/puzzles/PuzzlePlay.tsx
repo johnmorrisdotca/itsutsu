@@ -18,7 +18,7 @@ import { freshDodgeSeed } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { freshBackwardsSeed } from "@/lib/puzzles/gomoji/backwardsSeed";
 import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
-import { freshSuidoSeed } from "@/lib/puzzles/suido/seed";
+import { freshSuidoSeed, type SuidoSquares } from "@/lib/puzzles/suido/seed";
 import { freshJiraiSeed, CLASSIC_JIRAI, type JiraiVariant } from "@/lib/puzzles/jirai/variants";
 import type { Kind as SuidoKind } from "@johnmorrisdotca/suido";
 import type { MahjongBonusRule } from "@johnmorrisdotca/jarajara";
@@ -93,6 +93,7 @@ export function PuzzlePlay({ drawnFor, ...drawn }: PuzzlePlayProps) {
       clock={here.clock ?? "none"}
       bonus={here.bonus ?? "group"}
       pipes={here.pipes ?? "drains"}
+      squares={here.squares ?? "none"}
       jirai={here.jirai ?? CLASSIC_JIRAI}
       anyDeal={here.anyDeal === true}
       resumed={null}
@@ -139,6 +140,7 @@ function PuzzlePlayDrawn({
   online,
   bonus = "group",
   pipes = "drains",
+  squares = "none",
   jirai = CLASSIC_JIRAI,
   clock = "none",
   anyDeal = false,
@@ -159,6 +161,8 @@ function PuzzlePlayDrawn({
   bonus?: MahjongBonusRule;
   /** Suido's kind of board, from the address: read only to draw a seed, which says it from then on (`suidoKindOfSeed`). */
   pipes?: SuidoKind;
+  /** Suido's squares (big pieces), from the address: read only to draw a seed, which says it from then on (`suidoSquaresOfSeed`). */
+  squares?: SuidoSquares;
   /** Jirai's way to play, from the address: read only to draw a seed, which says it from then on (`jiraiVariantOfSeed`). */
   jirai?: JiraiVariant;
   /** The countdown chosen on the set-up (`puzzleClock.ts`), from the address; never a race's. */
@@ -228,9 +232,9 @@ function PuzzlePlayDrawn({
       return;
     }
     // A Solitaire's seed is drawn in the block its kind of deal is dealt from (`freshSolitaireSeed`), a Mahjong's by its flowers' rule.
-    const drawn = kind === "solitaire" ? freshSolitaireSeed(anyDeal) : kind === "mahjong" ? freshMahjongSeed(bonus) : kind === "suido" ? freshSuidoSeed(pipes) : kind === "jirai" ? freshJiraiSeed(jirai) : dodge ? freshDodgeSeed() : backwards ? freshBackwardsSeed() : freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words);
-    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: drawn, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, bonus, pipes, jirai })));
-  }, [seed, kind, size, level, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, anyDeal, bonus, pipes, jirai, router]);
+    const drawn = kind === "solitaire" ? freshSolitaireSeed(anyDeal) : kind === "mahjong" ? freshMahjongSeed(bonus) : kind === "suido" ? freshSuidoSeed(pipes, squares) : kind === "jirai" ? freshJiraiSeed(jirai) : dodge ? freshDodgeSeed() : backwards ? freshBackwardsSeed() : freshSeedOf(PUZZLE_SPECS[kind].wordGrid === undefined ? 1 : words);
+    router.replace(joinQuery(playPath(kind), puzzleQuery({ size, level, seed: drawn, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, bonus, pipes, squares, jirai })));
+  }, [seed, kind, size, level, checks, hints, strict, headStart, words, dodge, backwards, gameLength, language, doubleSet, diagonals, players, clock, anyDeal, bonus, pipes, squares, jirai, router]);
 
   /* A kind whose words or levels load (every word puzzle, Tsunagi: `puzzleLoads`) waits for them, Kumimoji for its language's list; every other kind is ready at once. */
   const waits = puzzleLoads(kind, seed);
