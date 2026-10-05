@@ -399,7 +399,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   },
   /*
    * MEIKYUU, the maze (`meikyuu/`, the package `@johnmorrisdotca/meikyuu`):
-   * 1,000 fixed levels, the same for everybody, in four sizes that are the
+   * 1,024 fixed levels (256 to a size), the same for everybody, in four sizes that are the
    * package's own words for how many cells a maze has (small, medium, large,
    * huge: `meikyuu/sizes.ts`), numbered 1 to 4 here. A maze has no side, so the
    * number is only the size's place; the level's number in its size is the
@@ -678,7 +678,7 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
   },
   // A Meikyuu level's band is the third of its size's list it sits in: the package orders every list so that no level is easier than the one before.
   meikyuu: {
-    easy: "The first third of a size's levels: short ways through, and wrong turns that end quickly.",
+    easy: "The first third of a size's levels: short ways through, but every one has wrong turns to avoid, and they end quickly.",
     medium: "The middle third: longer ways, and branches that lead a long way before they stop.",
     hard: "The last third: the longest ways and the most forks, and in the biggest mazes much more to look at.",
   },

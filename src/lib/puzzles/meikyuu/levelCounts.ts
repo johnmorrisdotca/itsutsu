@@ -8,13 +8,17 @@ import { isMeikyuuSize } from "./sizes";
  * the data a size's levels are read from. `levels.test.ts` holds these numbers
  * to the package's, for every size.
  *
- * The package has 1,000 maze levels, ordered so that none is easier than the
- * one before, and says how big each is. A size is the levels of that bigness,
- * in the package's order: 217 small, 231 medium, 285 large and 267 huge. A
- * level published keeps its place in the package's list, and a list is only
- * ever added to at the end, so a size's numbers never move.
+ * The package (2.0.0 on) has 1,024 maze levels, 256 to a size (`MEIKYUU_LEVELS_PER_SIZE`):
+ * a size is sixteen pages of sixteen, and its levels run from easy to hard in the order the
+ * package gives, by the score it puts on how hard a maze is to play. John, 2026-10-02: "make
+ * the numbers of puzzles more normal numbers... things like 132 or 256". The first release
+ * had 217, 231, 285 and 267 by `sizeOf`; where each of those went is the package's
+ * `levels/legacy` list, which no page here reads (see `meikyuuRecords.ts` for what a solve of
+ * a maze that is no longer a level is).
  */
-export const MEIKYUU_LEVEL_COUNTS: Readonly<Record<number, number>> = { 1: 217, 2: 231, 3: 285, 4: 267 };
+export const MEIKYUU_LEVELS_A_SIZE = 256;
+
+export const MEIKYUU_LEVEL_COUNTS: Readonly<Record<number, number>> = { 1: MEIKYUU_LEVELS_A_SIZE, 2: MEIKYUU_LEVELS_A_SIZE, 3: MEIKYUU_LEVELS_A_SIZE, 4: MEIKYUU_LEVELS_A_SIZE };
 
 /** How many levels a size has; nought for a size the levels do not come in. */
 export function meikyuuLevelCount(size: number): number {

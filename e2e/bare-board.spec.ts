@@ -454,7 +454,7 @@ const SURVEY: Survey[] = [
     await ready(page, "puzzle-play");
   } },
   { name: "/games/meikyuu/play at huge", open: async (page) => {
-    await page.goto("/games/meikyuu/play?size=4&level=hard&seed=267");
+    await page.goto("/games/meikyuu/play?size=4&level=hard&seed=256");
     await ready(page, "puzzle-play");
   } },
   table("dots-and-boxes", "dots-start"),

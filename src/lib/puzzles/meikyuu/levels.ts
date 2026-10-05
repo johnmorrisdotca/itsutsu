@@ -18,12 +18,13 @@ export { nextLevelLabel } from "../fixedLevel";
  * kept run and race carry which puzzle it is; for Meikyuu the seed IS the
  * level's number in its size, 1 up to the size's count.
  *
- * ONE LIST, FOUR SIZES. The package's list is one module (about 54 KB, the
- * recipes of all 1,000 mazes), fetched only when a puzzle is made, in a browser
+ * ONE LIST, FOUR SIZES. The package's list is one module (about 60 KB, the
+ * recipes of all 1,024 mazes), fetched only when a puzzle is made, in a browser
  * as a script of its own (`typeof window`, as `wordData.ts` says why); a server
- * reads it through `levelsModule.ts`. A level's size is the package's own word
- * for its cells (`sizeOf`), and a size keeps the package's order, so the
- * numbers are the same on every machine.
+ * reads it through `levelsModule.ts`. A level says its own size (the package's
+ * word for its cells) and its place in it (`inSize`, 1 to 256), and that order
+ * is the package's, by the score of how hard a maze is to play, so the numbers
+ * are the same on every machine.
  */
 export type MeikyuuLevelRow = {
   /** Its place in the package's whole list of maze levels, from 1. */
@@ -35,6 +36,8 @@ export type MeikyuuLevelRow = {
   readonly effort: number;
   /** The effort on a scale of 1 to 100. */
   readonly rating: number;
+  /** How hard it is to play, 0 to 100 (`difficultyOf`): what its size's levels are put in order by. */
+  readonly score: number;
 };
 
 type Package = typeof import("@johnmorrisdotca/meikyuu/levels");
@@ -54,15 +57,15 @@ async function importList(): Promise<Package> {
   return fromModule();
 }
 
-/** The package's list split into the four sizes, each in the package's order. */
+/** The package's list split into the four sizes, each level at the place it says it has in its size. */
 function split(list: Package): void {
   const rows = new Map<number, MeikyuuLevelRow[]>();
   for (const level of list.MEIKYUU_MAZE_LEVELS as readonly MeikyuuMazeLevel[]) {
-    const size = meikyuuSizeOfWord(list.sizeOf(level.cells));
-    const row: MeikyuuLevelRow = { number: level.number, code: level.code, cells: level.cells, effort: level.effort, rating: level.rating };
-    const own = rows.get(size);
-    if (own === undefined) rows.set(size, [row]);
-    else own.push(row);
+    const size = meikyuuSizeOfWord(level.size);
+    const row: MeikyuuLevelRow = { number: level.number, code: level.code, cells: level.cells, effort: level.effort, rating: level.rating, score: level.score };
+    const own = rows.get(size) ?? [];
+    own[level.inSize - 1] = row;
+    rows.set(size, own);
   }
   for (const [size, own] of rows) bySize.set(size, own);
 }

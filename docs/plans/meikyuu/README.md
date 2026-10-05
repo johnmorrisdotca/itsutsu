@@ -2,8 +2,10 @@
 
 **Status: added 2026-10-02** (board row
 `meikyuu-a-maze-game-of-a-thousand-levels-in-many-shapes-drawn-through-by-finger-or-mouse`).
-Source package: `@johnmorrisdotca/meikyuu` 1.0.0, pinned exactly in `package.json`
-(github.com/johnmorrisdotca/meikyuu, MIT, no dependencies).
+Source package: `@johnmorrisdotca/meikyuu` 2.0.1, pinned exactly in `package.json`
+(github.com/johnmorrisdotca/meikyuu, MIT, no dependencies). The site started on 1.0.0 (1,000
+maze levels in sizes of 217, 231, 285 and 267) and moved to 2.0.x on 2026-10-02, which renumbered
+the list: see "Old solves" below.
 
 A maze is a puzzle (a `PuzzleKind`, `src/lib/puzzles/meikyuu/`), never a row in
 `VARIANT_SPECS`: one line, no turns, no colours, nothing the engine, the
@@ -20,7 +22,7 @@ the browser only); the site adds the wood round it, the clock, Pause, Undo,
 Restart, Fit, the kept run and the check. A level has no hint and no clock, as a
 Suido level has none, so a time on it is one anybody can be raced on.
 
-The levels are the package's 1,000 mazes: squares, hexagons, triangles, circles
+The levels are the package's 1,024 mazes, 256 to each of four sizes: squares, hexagons, triangles, circles
 and shapes cut out of them (a heart, a leaf, a star, a ring, a diamond, a cross,
 a moon, a big hexagon, a pyramid), in four ways to play (in and out through the
 wall, find the goal, out from the middle, collect the keys). The arrow and mixed
@@ -30,21 +32,45 @@ puzzles the package also has are not on the site yet (see "Not done").
 
 | Decision | What | Where |
 | --- | --- | --- |
-| A size is the package's word for how big a maze is | `size` 1 to 4 is small, medium, large, huge (`sizeOf`: under 150, 800 and 4,000 cells, then more). A maze has no side, so the number is only the size's place; the set-up draws it as the big number on the tile like every size. 217, 231, 285 and 267 levels | `meikyuu/sizes.ts`, `meikyuu/levelCounts.ts` |
-| A level is its place in its size | The seed IS the level's number in its size, as Tsunagi's is (`fixedLevels`), in the package's order, so no level is easier than the one before. The level's third of its size is its easy, medium or hard | `meikyuu/levels.ts`, `puzzleAddress.ts` |
+| A size is the package's word for how big a maze is | `size` 1 to 4 is small, medium, large, huge (`sizeOf`: under 150, 800 and 4,000 cells, then more). A maze has no side, so the number is only the size's place; the set-up draws it as the big number on the tile like every size. 256 levels each, 1,024 in all (John, 2026-10-02: "make the numbers of puzzles more normal numbers... things like 132 or 256") | `meikyuu/sizes.ts`, `meikyuu/levelCounts.ts` |
+| A level is its place in its size | The seed IS the level's number in its size (`inSize`), as Tsunagi's is (`fixedLevels`), in the package's order: by a score of how hard a maze is to play (`level.score`, 0 to 100), and none has a lower effort than the one before. The level's third of its size is its easy, medium or hard (86, 85 and 85 levels), and the difficulty marks under a level are its score in fifths. The easy third is no longer trivial: every level has traps, forks and dead ends to get wrong (the package's `isTooEasy`, `easyFloorAt`) | `meikyuu/levels.ts`, `puzzleAddress.ts` |
 | The recipe is the puzzle | `givens` is the level's recipe (`square:12x9:wilson:to-goal:48213`, 45 characters at most): a maze is rebuilt from it in every browser and on the server, never stored as a drawing | `meikyuu/way.ts` |
 | The answer is the line | One character a step: the place of the next cell among the neighbours of the one before (base 36), from the start; 2,434 characters at the longest. A kept run is the same code, half written. `mostCells` is 2,600 | `meikyuu/steps.ts`, `puzzles.constants.ts` |
 | The server walks the line | `checkMeikyuu` holds the givens to a level of that size, then walks the answer from the maze's start through open passages to the goal. A maze has exactly one way through, so the line that is left is it. Keys picked up on a detour are not in it, and are not asked about | `meikyuu/check.ts` |
-| Points | Five a cell of the way through, weight 0.3 (a medium level's middle way is 64 cells: 320 points, about 100 IP) | `puzzlePoints.ts`, `points.constants.ts` |
+| Points | Five a cell of the way through, weight 0.3 (a medium level's middle way is 142 cells: 710 points, about 213 IP; the first small level's is 8, and the last huge one's 2,069) | `puzzlePoints.ts`, `points.constants.ts` |
 | A kept run is drawn again | The package's board starts empty and cannot be handed a line, so a kept line is drawn on it as a finger draws it (pointer events through the middle of each cell). The board follows its own rules, so a line that is no way through is not drawn, and a line the board did not take whole is cleared. The keys a run had picked up and then drawn back from are not kept, only the line | `components/puzzles/meikyuuReplay.ts`, `MeikyuuBoard.tsx` |
 | Solves are found by the maze | No table of its own: a level is known by its recipe, which a solve keeps as its givens, so a level renumbered later keeps its solves | `server/meikyuuRecords.ts` |
 | Solved levels in a browser | `localStorage` `itsutsu.meikyuu.solved`, by recipe, for somebody with no account | `meikyuuKept.ts` |
-| Browser only | The drawing and the board are three entries of the package fetched in the browser alone (`typeof window`, `meikyuu/browser.ts`), the list of 1,000 recipes is one chunk (`meikyuu/levels.ts`; a server reads it through `levelsModule.ts`), and the play screen is loaded `ssr: false` like every puzzle's. What a page's server build reaches is written down in `pageFunction.coverage.test.ts` | `meikyuu/browser.ts` |
+| Browser only | The drawing and the board are three entries of the package fetched in the browser alone (`typeof window`, `meikyuu/browser.ts`), the list of 1,024 recipes is one chunk (`meikyuu/levels.ts`; a server reads it through `levelsModule.ts`), and the play screen is loaded `ssr: false` like every puzzle's. What a page's server build reaches is written down in `pageFunction.coverage.test.ts` | `meikyuu/browser.ts` |
 | Every level is open | Tsunagi and Suido open a block of sixteen when the one before is solved. A maze is not a lesson, so nothing is locked; Start plays the first level not yet solved | `MeikyuuSetUp.tsx` |
 | The set-up | The same screen as Suido's levels (`LevelPicker`, `LevelChips`, `LevelFastestTable`): the chosen level's own maze live in the preview box, four size tiles, a block of sixteen, Start. Chips under it name the level's shape, its way to play, its cells and its difficulty | `MeikyuuSetUp.tsx` |
 | The wallpaper | A solved level offers "Game wallpaper" like every finished puzzle (`PuzzleWallpaper`): the board as the page draws it, taken in the browser (`boardSnapshot.ts`) and laid centred under the title bar in the portrait and landscape canvases. The picture opens full screen from the window (`MosaicFullScreen`: the picture at the size it is saved in, both shapes, Download, Close, Esc). A page offers the one game's picture only; the one combined wallpaper that exists is a member's Kumimoji crosswords. Safari's engine scaled the copy's HTML wrongly (the board drawn at one third in the corner), so the copy is zoomed by CSS `zoom` and not by the SVG's viewBox; `E2E_WEBKIT=1 pnpm exec playwright test e2e/meikyuu-wallpaper.spec.ts` runs it there | `record/boardSnapshot.ts`, `history/MosaicPanel.tsx`, `history/MosaicFullScreen.tsx`, `e2e/meikyuu-wallpaper.spec.ts` |
 | Colours | "Colours 色" beside every Meikyuu board (the set-up's Options, the play screen's presses, a solved or finished level, a finished solve's page) opens a window of eight ready-made sets and three rows of swatches: the border (the frame's wood), the background (the paper) and the maze (an ink: walls, line, start, goal). No free picker. Whatever is chosen is drawn readable (`resolveLook`): walls 4.5:1 on the paper, the line 3:1 on the paper and on the walls, the start 3:1, the goal 1.8:1 (it is outlined and the solved line wears it) and apart from the line. A colour that would break it is tuned (lighter or darker, same hue), then replaced by a fallback, and the window says so; `look.test.ts` proves all 132 paper and ink pairs. The frame stays `BoardFrame` (`PuzzleBoard` is given the tokens: `MeikyuuFrame`); the maze is the package's, recoloured through its own custom properties by `--mkl-*` rules in `globals.css`, so the game's picture (default look, byte-identical) is unchanged. Three preferences in the registry (`meikyuuFrame`, `meikyuuPaper`, `meikyuuInk`), also kept on the device (`itsutsu.meikyuu.look`); the account's wins field by field, a silence never overrules the device. A page that reads the account seeds the store with `MeikyuuAccountLook` | `meikyuu/look.ts`, `look.constants.ts`, `components/puzzles/MeikyuuColours.tsx`, `MeikyuuFrame.tsx`, `meikyuuLookStore.ts`, `e2e/meikyuu-colours.spec.ts` |
 | The family | Numbers (seven of eight). Logic puzzles, where it belongs by temper (it sits beside Tsunagi, whose lines it draws), is full at eight, and moving a game out of a shelf is John's to decide. The note is on the Numbers row in `families.data.ts` | `families.data.ts` |
+
+## Old solves: the first list's numbers
+
+Package 2.0.0 renumbered the maze list. Of the 1,000 levels of 1.0.0, 843 are at the same
+place of the same size with the same maze; 157 are not levels any more (117 places hold a
+different maze, the last 29 Large and 11 Huge places are gone). The package says where each
+went (`@johnmorrisdotca/meikyuu/levels/legacy`). The rule the site follows, decided 2026-10-02
+and held by `levels.test.ts`:
+
+- **A solve is a result and is never taken away.** It stays in History, My games and XP, as
+  paid. A solve keeps its maze's recipe as its givens, so every page finds a level **by the
+  recipe**, never by the number it once had.
+- **A maze that is still a level is marked solved at the place it has now** (nothing moved in
+  fact: all 843 stayed where they were), by the account's solves (`meikyuuSolvedBy`) and this
+  browser's (`keptSolves`) alike.
+- **A maze that left the list is a solved record and marks no level**: the picker counts only
+  current levels, its solve page names the third it was filed under and not a level number
+  (`meikyuuLevelOfSolve` finds none), and no fastest table lists it (a table is per current
+  level's maze).
+- **A new solve must be of a current level.** `checkMeikyuu` still holds the givens to a
+  level of the size, so a retired recipe cannot be handed in again.
+- The legacy list (58 KB of data) is read by no page: the recipe lookup answers everything the
+  table would, and the test proves they agree on all 1,000. A run kept half way on a place whose maze changed
+  is drawn against the new maze and cleared if the line is not a way through it (`MeikyuuBoard`).
 
 ## The gates it meets
 

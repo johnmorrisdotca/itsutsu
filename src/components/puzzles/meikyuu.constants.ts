@@ -1,6 +1,6 @@
 import type { MeikyuuMode, MeikyuuShape } from "@johnmorrisdotca/meikyuu";
 
-import { MEIKYUU_LEVEL_COUNTS } from "@/lib/puzzles/meikyuu/levelCounts";
+import { MEIKYUU_LEVELS_A_SIZE } from "@/lib/puzzles/meikyuu/levelCounts";
 import { MEIKYUU_SIZE_WORDS } from "@/lib/puzzles/meikyuu/sizes";
 
 import type { LevelChipsCopy } from "./LevelChips";
@@ -37,11 +37,11 @@ export const MEIKYUU_WAY_COPY: Record<MeikyuuMode, { label: string; kanji: strin
   keys: { label: "Keys", kanji: "鍵", says: "From inside, picking up every key on the way to a door in the outer wall. A key is at the end of a branch, so each costs a detour. It is picked up by passing over it, and stays picked up when you draw back." },
 };
 
-/** The row of chips under a level (`LevelChips`): what its difficulty mark measures. The package's lists have no lessons, so a level is never a block's 15th or 16th. */
+/** The row of chips under a level (`LevelChips`): what its difficulty mark measures. The package's lists have no lessons, so a level is never a block's 15th or 16th. The marks are the score in fifths. */
 export const MEIKYUU_CHIPS: LevelChipsCopy = {
   difficulty: {
     label: "Difficulty",
-    says: "How hard this level measured on the package's scale of 1 to 100, from the passages alone: the way through, the forks on it, and how far the wrong turns go. Doubling the effort adds the same each time.",
+    says: "How hard this level is to play, on a scale of 0 to 100: how long the way through is, how many forks it has, how often heading straight for the goal goes wrong, and how far the wrong turns go.",
   },
   teaches: { says: "" },
   tests: { label: "", kanji: "", says: "" },
@@ -50,9 +50,9 @@ export const MEIKYUU_CHIPS: LevelChipsCopy = {
 export const MEIKYUU_COPY = {
   /** The set-up's note under the levels' options: what a level is. */
   levelsNote:
-    "A level is a maze, the same for everybody, and each size has its levels in order from easy to hard. Pick any of them: Start plays the first one you have not solved. A level has no hint and no clock, so a time on it is one anybody can be compared with.",
+    `A level is a maze, the same for everybody, and each size has ${MEIKYUU_LEVELS_A_SIZE} levels in order from easy to hard. Pick any of them: Start plays the first one you have not solved. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
   /** The front door's line for the levels: how many there are of each size, read from the sizes and never typed. */
-  levelsLine: `${MEIKYUU_SIZE_WORDS.map((word, at) => `${MEIKYUU_LEVEL_COUNTS[at + 1]} ${word}`).join(", ")} levels, each size easy to hard.`,
+  levelsLine: `${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (${MEIKYUU_SIZE_WORDS.join(", ")}), each size easy to hard.`,
   /** The line under the board before the first stroke. */
   howTo: "Press the start dot and drag. The line follows the corridors, and drawing back shortens it.",
   /** The line under the board once there is a line: how far it has got. */

@@ -1,9 +1,9 @@
 import { expect, test, type Browser, type BrowserContext, type Page } from "@playwright/test";
 
-import { MEIKYUU_MAZE_LEVELS, sizeOf } from "@johnmorrisdotca/meikyuu/levels";
+import { MEIKYUU_MAZE_LEVELS } from "@johnmorrisdotca/meikyuu/levels";
 
 import { mySolvePath, PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
-import { MEIKYUU_LEVEL_COUNTS } from "../src/lib/puzzles/meikyuu/levelCounts";
+import { MEIKYUU_LEVEL_COUNTS, MEIKYUU_LEVELS_A_SIZE } from "../src/lib/puzzles/meikyuu/levelCounts";
 import { encodeCells } from "../src/lib/puzzles/meikyuu/steps";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import { drawThrough, placedMaze, wayThrough } from "./meikyuu";
@@ -12,7 +12,7 @@ import { ready } from "./support";
 
 /**
  * MEIKYUU 迷宮: a maze to draw a line through, from the start to the goal, in
- * 1,000 fixed levels of four sizes.
+ * 1,024 fixed levels, 256 to each of four sizes.
  *
  * Every line here is drawn as a player draws one, with the mouse pressed on the
  * start and taken through the middle of each cell of the way (`e2e/meikyuu.ts`),
@@ -33,7 +33,7 @@ const levelUrl = (size: number, level: number, band = "easy") => `${AT}/play?siz
 
 /** The package's levels of one size, in its order: what the page calls level 1, 2, 3 of that size. */
 const WORDS = ["small", "medium", "large", "huge"] as const;
-const levelsOf = (size: number) => MEIKYUU_MAZE_LEVELS.filter((level) => sizeOf(level.cells) === WORDS[size - 1]);
+const levelsOf = (size: number) => MEIKYUU_MAZE_LEVELS.filter((level) => level.size === WORDS[size - 1]);
 
 /** A fresh member's context, and the member's address for taking them away. */
 async function aMember(browser: Browser, baseURL: string | undefined, tag: string): Promise<{ context: BrowserContext; page: Page; email: string }> {
@@ -60,7 +60,7 @@ test.describe("Meikyuu, for a reader with no account", () => {
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
     await expect(page.getByTestId("also-known-as")).toContainText("Maze");
     await expect(page.getByTestId("game-family")).toContainText("Numbers");
-    await expect(page.getByTestId("meikyuu-levels-line")).toContainText(`${MEIKYUU_LEVEL_COUNTS[1]} small, ${MEIKYUU_LEVEL_COUNTS[2]} medium, ${MEIKYUU_LEVEL_COUNTS[3]} large, ${MEIKYUU_LEVEL_COUNTS[4]} huge levels`);
+    await expect(page.getByTestId("meikyuu-levels-line")).toContainText(`${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (small, medium, large, huge)`);
     await page.getByTestId("game-rules-link").click();
     await expect(page).toHaveURL(new RegExp(`${AT}/rules$`));
     await expect(page.getByRole("heading", { level: 1 })).toContainText(NAME);
@@ -94,9 +94,9 @@ test.describe("the Meikyuu levels", () => {
       await expect(page.getByTestId("meikyuu-preview-caption")).toContainText(`Level 1 of ${MEIKYUU_LEVEL_COUNTS[3]} at large size`);
 
       // Every level is open: any can be chosen, the preview shows it, and Start plays it. A block of sixteen at a time.
-      await expect(page.getByTestId("meikyuu-block")).toContainText(`Block 1 of 18 · levels 1–16`);
+      await expect(page.getByTestId("meikyuu-block")).toContainText(`Block 1 of 16 · levels 1–16`);
       await page.getByTestId("meikyuu-block-on").click();
-      await expect(page.getByTestId("meikyuu-block")).toContainText("Block 2 of 18 · levels 17–32");
+      await expect(page.getByTestId("meikyuu-block")).toContainText("Block 2 of 16 · levels 17–32");
       const twenty = page.locator('[data-testid="meikyuu-level"][data-level="20"]');
       await expect(twenty).toHaveAttribute("data-state", "open");
       await twenty.click();

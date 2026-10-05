@@ -137,7 +137,7 @@ export function MeikyuuSetUp({
             <PressLabel words={`${START_PRESS.start.words} level ${chosen}`} kanji={START_PRESS.start.kanji} />
           </Link>
           {/* What the level Start plays is, before it is started. */}
-          {row === undefined ? null : <MeikyuuLevelChips code={row.code} cells={row.cells} rating={row.rating} level={chosen} />}
+          {row === undefined ? null : <MeikyuuLevelChips code={row.code} cells={row.cells} score={row.score} level={chosen} />}
           <p className="text-xs text-muted" data-testid="meikyuu-kept-where">
             {hasAccount ? "Your solved levels are kept on your account." : "Your solved levels are kept in this browser. Join, and they are kept on an account."}
           </p>

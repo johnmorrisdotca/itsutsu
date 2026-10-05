@@ -1,4 +1,5 @@
-import { MEIKYUU_MAZE_LEVELS, sizeOf } from "@johnmorrisdotca/meikyuu/levels";
+import { bandOf, MEIKYUU_LEVELS_PER_SIZE, MEIKYUU_MAZE_LEVELS, sizeOf } from "@johnmorrisdotca/meikyuu/levels";
+import { MEIKYUU_LEGACY_MAZE_LEVELS, legacyLevelOfCode } from "@johnmorrisdotca/meikyuu/levels/legacy";
 import { solutionOf } from "@johnmorrisdotca/meikyuu";
 import { beforeAll, describe, expect, it } from "vitest";
 
@@ -6,7 +7,7 @@ import { fixedLevelOf, nextLevelLabel } from "../fixedLevel";
 import { puzzleAsked, puzzleQuery } from "../puzzleAddress";
 import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_SPECS } from "../puzzles.constants";
-import { MEIKYUU_LEVEL_COUNTS, isMeikyuuLevelAt, meikyuuBlockOf, meikyuuBlockRange, meikyuuBlocksIn, meikyuuLevelBand, meikyuuLevelCount } from "./levelCounts";
+import { MEIKYUU_LEVEL_COUNTS, MEIKYUU_LEVELS_A_SIZE, isMeikyuuLevelAt, meikyuuBlockOf, meikyuuBlockRange, meikyuuBlocksIn, meikyuuLevelBand, meikyuuLevelCount } from "./levelCounts";
 import { loadMeikyuuLevels, meikyuuLevelOfBoard, meikyuuLevelPuzzle, meikyuuLevelsAt } from "./levels";
 import "./levelsModule";
 import { meikyuuCodeFits, MEIKYUU_MOST_STEPS } from "./progress";
@@ -35,16 +36,29 @@ describe("meikyuu's sizes are the package's words for how big a maze is", () => 
     expect(meikyuuSizeWord(9)).toBeNull();
   });
 
-  it("have the levels the package's list has of each, which the address reads without the list", () => {
+  it("have the levels the package's list has of each, 256 to a size, which the address reads without the list", () => {
     const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };
-    for (const level of MEIKYUU_MAZE_LEVELS) counts[meikyuuSizeOfWord(sizeOf(level.cells))]! += 1;
+    for (const level of MEIKYUU_MAZE_LEVELS) counts[meikyuuSizeOfWord(level.size)]! += 1;
+    expect(MEIKYUU_LEVELS_A_SIZE).toBe(MEIKYUU_LEVELS_PER_SIZE);
     expect(MEIKYUU_LEVEL_COUNTS).toEqual(counts);
     for (const size of MEIKYUU_SIZES) {
-      expect(meikyuuLevelCount(size)).toBe(counts[size]);
-      expect(meikyuuLevelsAt(size)).toHaveLength(counts[size]!);
+      expect(meikyuuLevelCount(size)).toBe(256);
+      expect(meikyuuLevelsAt(size)).toHaveLength(256);
     }
     expect(Object.values(counts).reduce((total, count) => total + count, 0)).toBe(MEIKYUU_MAZE_LEVELS.length);
+    expect(MEIKYUU_MAZE_LEVELS).toHaveLength(1024);
     expect(meikyuuLevelCount(5)).toBe(0);
+  });
+
+  it("put every level at the place in its size that the package gives it, with its score", () => {
+    for (const level of MEIKYUU_MAZE_LEVELS) {
+      const row = meikyuuLevelsAt(meikyuuSizeOfWord(level.size))[level.inSize - 1]!;
+      expect(row.code).toBe(level.code);
+      expect(row.number).toBe(level.number);
+      expect(row.score).toBe(level.score);
+      expect(row.score).toBeGreaterThanOrEqual(0);
+      expect(row.score).toBeLessThanOrEqual(100);
+    }
   });
 
   it("keep the package's order inside a size, so no level is easier than the one before", () => {
@@ -64,8 +78,8 @@ describe("meikyuu's sizes are the package's words for how big a maze is", () => 
 describe("meikyuu's levels as numbers and thirds", () => {
   it("know which levels a size has, and which third a level sits in", () => {
     expect(isMeikyuuLevelAt(1, 1)).toBe(true);
-    expect(isMeikyuuLevelAt(1, 217)).toBe(true);
-    expect(isMeikyuuLevelAt(1, 218)).toBe(false);
+    expect(isMeikyuuLevelAt(1, 256)).toBe(true);
+    expect(isMeikyuuLevelAt(1, 257)).toBe(false);
     expect(isMeikyuuLevelAt(1, 0)).toBe(false);
     expect(isMeikyuuLevelAt(5, 1)).toBe(false);
     for (const size of MEIKYUU_SIZES) {
@@ -76,12 +90,23 @@ describe("meikyuu's levels as numbers and thirds", () => {
     }
   });
 
+  it("make the package's thirds of a size, 86 easy, 85 medium and 85 hard", () => {
+    const thirds = { easy: 0, medium: 0, hard: 0 };
+    for (let level = 1; level <= MEIKYUU_LEVELS_A_SIZE; level += 1) {
+      expect(meikyuuLevelBand(1, level)).toBe(bandOf(level));
+      thirds[meikyuuLevelBand(1, level)] += 1;
+    }
+    expect(thirds).toEqual({ easy: 86, medium: 85, hard: 85 });
+  });
+
   it("make blocks of sixteen, the last ending at the count", () => {
-    expect(meikyuuBlocksIn(217)).toBe(14);
+    expect(meikyuuBlocksIn(256)).toBe(16);
     expect(meikyuuBlockOf(1)).toBe(1);
     expect(meikyuuBlockOf(16)).toBe(1);
     expect(meikyuuBlockOf(17)).toBe(2);
-    expect(meikyuuBlockRange(1, 217)).toEqual({ first: 1, last: 16 });
+    expect(meikyuuBlockRange(1, 256)).toEqual({ first: 1, last: 16 });
+    expect(meikyuuBlockRange(16, 256)).toEqual({ first: 241, last: 256 });
+    // A size that is not a whole number of pages still ends at its count.
     expect(meikyuuBlockRange(14, 217)).toEqual({ first: 209, last: 217 });
   });
 
@@ -92,7 +117,7 @@ describe("meikyuu's levels as numbers and thirds", () => {
     expect(asked).toMatchObject({ size: 3, seed: 200, level: meikyuuLevelBand(3, 200), clock: "none" });
     expect(puzzleQuery(asked)).toBe(`?size=3&level=${meikyuuLevelBand(3, 200)}&seed=200`);
     // A number past the size's levels asks for nothing, and an unknown size is the first.
-    expect(puzzleAsked("meikyuu", { size: "1", seed: "218" }).seed).toBeNull();
+    expect(puzzleAsked("meikyuu", { size: "1", seed: "257" }).seed).toBeNull();
     expect(puzzleAsked("meikyuu", { size: "7", seed: "3" })).toMatchObject({ size: 1, seed: 3 });
     expect(nextLevelLabel(3, 4)).toBe("Level 4 →");
   });
@@ -164,5 +189,44 @@ describe("meikyuu's levels are puzzles, each answered by its one way through", (
 
   it("is read as the first level when an address names none", () => {
     expect(meikyuuLevelPuzzle(2, 99999).seed).toBe(1);
+  });
+});
+
+describe("a maze solved under the first list's numbers is still a solve of that maze", () => {
+  /*
+   * THE RULE FOR OLD SOLVES (2026-10-02, the package's 2.0.0 renumbered its list). A solve keeps its maze's recipe as
+   * its givens, and every page finds a level by that recipe (`meikyuuLevelOfBoard`, `meikyuuSolvedBy`, `keptSolves`),
+   * never by the number it had. So: a maze that is still a level is marked solved at the place it has NOW, whether
+   * that is the place it had or another; a maze that left the list is a solved record in History, My games and XP
+   * (nothing already shown or paid is taken away) and is marked on no level, because it is no level. A NEW solve
+   * must still be of a current level (`checkMeikyuu`), so a retired recipe cannot be handed in again.
+   */
+  it("is marked at the place the maze has now, and on no level when the maze is not one any longer", () => {
+    let same = 0;
+    let moved = 0;
+    let gone = 0;
+    for (const old of MEIKYUU_LEGACY_MAZE_LEVELS) {
+      const size = meikyuuSizeOfWord(old.size);
+      const now = meikyuuLevelOfBoard(size, old.code);
+      // What the package says became of it is what the site finds, level for level.
+      expect(now, old.code).toBe(old.nowInSize);
+      expect(legacyLevelOfCode(old.code)?.number).toBe(old.number);
+      if (now === null) gone += 1;
+      else if (now === old.place) same += 1;
+      else moved += 1;
+    }
+    expect(same + moved + gone).toBe(1000);
+    expect(same).toBe(843);
+    expect(moved).toBe(0);
+    expect(gone).toBe(157);
+  });
+
+  it("is refused as a new solve once the maze is no level, whoever solved it before", () => {
+    const gone = MEIKYUU_LEGACY_MAZE_LEVELS.find((old) => old.now === null)!;
+    const size = meikyuuSizeOfWord(gone.size);
+    const solution = encodeWay(gone.code)!;
+    expect(checkSolution("meikyuu", size, gone.code, solution, "easy").ok).toBe(false);
+    // The maze itself is as good a maze as ever: only the list has moved on.
+    expect(mazeOf(gone.code)).not.toBeNull();
   });
 });

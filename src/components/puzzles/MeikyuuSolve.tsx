@@ -126,7 +126,7 @@ export function MeikyuuSolve({
       {meikyuuSizeLabel(size)} · Level {level} <span className="text-xs">of {count}</span>
     </>
   );
-  const chips = row === undefined ? null : <MeikyuuLevelChips code={row.code} cells={row.cells} rating={row.rating} level={level} />;
+  const chips = row === undefined ? null : <MeikyuuLevelChips code={row.code} cells={row.cells} score={row.score} level={level} />;
 
   if (reviewing && onward !== undefined) {
     // The level as it was solved: the way through it, drawn as a won line, and the ways on.
