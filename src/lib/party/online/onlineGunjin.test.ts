@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { GUNJIN_BOARDS, GUNJIN_SIZES } from "../gunjin/gunjin.constants";
 import { gunjinMoves, matchSeenBy, seededRandom } from "../gunjin/gunjin";
+import { flagWithinReach } from "../gunjin/gunjinFlag";
 import { decodeGunjinSeen, encodeGunjin } from "../gunjin/gunjinCodec";
 import { gunjinSeatView } from "../gunjin/gunjinView";
 import type { GunjinGame, GunjinMove } from "../gunjin/gunjin.types";
@@ -132,7 +133,8 @@ describe("what the table sends a reader of Gunjin", () => {
   const seat = (at: number, member: string) => ({ tableId: "abcd-efgh", seat: at, kind: "member", memberId: member, name: at === 0 ? "Aiko" : "Ben Hayashi", token: null, joinedAt: AT, colour: null });
 
   it("is the text made for the reader's own seat, never the stored game", () => {
-    const game = playedOut(81, 11, 120);
+    const game = playedOut(81, 11, 12);
+    expect(rules.toPlay(game), "a table still going: nothing is shown whole until it is over").not.toBeNull();
     const state = rules.encode(game);
     const row = {
       id: "abcd-efgh",
@@ -159,6 +161,22 @@ describe("what the table sends a reader of Gunjin", () => {
       expect(view.state).toBe(rules.seatState!(state, mine));
       expect(view.state).not.toBe(state);
       for (const piece of game.match.pieces.filter((one) => one.owner !== mine)) expect(JSON.stringify(view)).not.toContain(piece.id);
+    }
+  });
+});
+
+describe("the flag taken at a table on two devices", () => {
+  it("ends the table with the capturer the winner, and both seats are sent the finished game whole", () => {
+    const { game, move } = flagWithinReach();
+    const ended = rules.play(game, rules.readMove(JSON.parse(JSON.stringify(move)))!)!;
+    expect(rules.toPlay(ended)).toBeNull();
+    expect(rules.winners(ended)).toEqual([0]);
+    expect(standingOf(rules, ended)).toMatchObject({ status: "finished", toPlay: null, winners: [0] });
+    for (const seat of [0, 1]) {
+      const read = rules.decode(rules.seatState!(rules.encode(ended), seat))!;
+      expect(read.match.result).toMatchObject({ winner: 0, reason: "flag-won" });
+      expect(read.match.phase).toBe("finished");
+      expect(read.match.pieces.every((piece) => piece.kind !== "hidden")).toBe(true);
     }
   });
 });

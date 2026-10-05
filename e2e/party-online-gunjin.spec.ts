@@ -1,5 +1,9 @@
 import { expect, test, type BrowserContext, type Page, type Response } from "@playwright/test";
 
+import { PrismaClient } from "@prisma/client";
+
+import { flagWithinReach } from "../src/lib/party/gunjin/gunjinFlag";
+import { encodeGunjin } from "../src/lib/party/gunjin/gunjinCodec";
 import { memberContext, memberIdFor, removeMember } from "./members";
 import { ready } from "./support";
 import { removeTables } from "./tables";
@@ -103,6 +107,8 @@ test.describe("Gunjin on several devices", () => {
     // A move on the host's phone, and the guest sees where it went.
     let moved = false;
     for (let x = 0; x < 9 && !moved; x += 1) {
+      // Not an aircraft: it may attack any square, and its first square could hold the flag, which ends the game.
+      if (((await a.page.getByTestId("gunjin-board").locator(`[data-square="${x},5"]`).getAttribute("aria-label")) ?? "").endsWith(", Aircraft")) continue;
       await a.page.getByTestId("gunjin-board").locator(`[data-square="${x},5"]`).click();
       const lit = (await a.page.getByTestId("gunjin-board").getAttribute("data-targets")) ?? "";
       if (lit !== "") {
@@ -151,12 +157,63 @@ test.describe("Gunjin on several devices", () => {
     const post = (move: unknown, seat = 1, moves?: number) => b.context.request.post(`/api/tables/${id}/moves`, { data: { moves: moves ?? 0, seat, move } });
     const table = (await (await b.context.request.get(`/api/tables/${id}`)).json()) as { moveCount: number };
     expect((await post({ kind: "hand" }, 1, table.moveCount)).status(), "a hand-over is not a move a browser sends").toBe(400);
-    expect((await post({ kind: "move", from: { x: 0, y: 0 }, to: { x: 0, y: 1 } }, 1, table.moveCount)).status(), "a square with none of their pieces").toBe(422);
+    expect((await post({ kind: "move", from: { x: 4, y: 8 }, to: { x: 4, y: 7 } }, 1, table.moveCount)).status(), "a square holding the other side's piece, not theirs").toBe(422);
     expect((await post({ kind: "move", from: { x: 0, y: 5 }, to: { x: 0, y: 4 } }, 0, table.moveCount)).status(), "another seat's move").toBe(403);
 
     const wide = await a.page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(wide, "the page scrolls sideways at 390px").toBeLessThanOrEqual(0);
     await a.context.close();
     await b.context.close();
+  });
+
+  test("taking the flag ends the table with the capturer the winner, on both phones", async ({ browser, baseURL }) => {
+    test.setTimeout(120_000);
+    process.loadEnvFile(".env");
+    const prisma = new PrismaClient();
+    const a = await phone(browser, baseURL!, host);
+    const b = await phone(browser, baseURL!, guest);
+    const [hostId, guestId] = [await memberIdFor(host.email), await memberIdFor(guest.email)];
+    const { game, from, flag } = flagWithinReach();
+    const id = `flg-${stamp.slice(-4).padStart(4, "0")}`;
+    made.push(id);
+    try {
+      // A table written straight to the database at the move before the flag is taken (nothing in the site can arrange where a flag stands).
+      await prisma.partyTable.create({
+        data: {
+          id,
+          game: "gunjin",
+          size: 81,
+          state: encodeGunjin(game),
+          status: "playing",
+          toPlay: 0,
+          moveCount: game.moves.length,
+          hostMemberId: hostId,
+          seats: {
+            create: [
+              { seat: 0, kind: "member", memberId: hostId, name: host.name },
+              { seat: 1, kind: "member", memberId: guestId, name: guest.name },
+            ],
+          },
+        },
+      });
+      await a.page.goto(`${AT}/tables/${id}`);
+      await b.page.goto(`${AT}/tables/${id}`);
+      await ready(a.page, "online-table");
+      await ready(b.page, "online-table");
+      await expect(a.page.getByTestId("gunjin-moving")).toHaveAttribute("data-active", "true");
+      await a.page.getByTestId("gunjin-board").locator(`[data-square="${from.x},${from.y}"]`).click();
+      await a.page.getByTestId("gunjin-board").locator(`[data-square="${flag.x},${flag.y}"]`).click();
+      for (const page of [a.page, b.page]) {
+        await expect(page.getByTestId("online-table")).toHaveAttribute("data-state", "finished", { timeout: 30_000 });
+        await expect(page.getByTestId("win-cover")).toContainText(page === a.page ? "You" : host.name.split("-")[0]!);
+        await page.getByTestId("win-cover-see-board").click();
+        // Nothing is hidden once it is over: both sides' ranks are on both phones.
+        await expect(page.getByTestId("gunjin-board-drawing").locator("[data-hidden='true']")).toHaveCount(0);
+      }
+    } finally {
+      await prisma.$disconnect();
+      await a.context.close();
+      await b.context.close();
+    }
   });
 });

@@ -534,8 +534,8 @@ Checkers as a guest make eight.
   Hasami, is not offered: it is a stone-capturing game with one secret leader, not a military one, and a
   set-up holds four boards. `gunjin.constants.ts` is the site's own table of them, free of the package.
 - **A game is its board, its two names and its moves** (`gunjinCodec.ts`), the engine's match read again
-  from them (`replayGunjin`) rather than kept: the package's trusted decoder refuses two of the four boards
-  in 0.1.0, and a replay is the way every party game here is kept. Three moves: `setup` (a side's whole
+  from them (`replayGunjin`) rather than kept: the package's trusted decoder refused two of the four boards
+  in 0.1.0 (it reads all four from 0.1.2), and a replay is the way every party game here is kept. Three moves: `setup` (a side's whole
   arrangement, the first move of its game), `hand` (the engine's pass of the device, confirmed) and `move`.
   An arrangement is put in one order (`canonicalPlacements`) because the engine names a piece by its place in
   the list. The gate plays it with three random arrangements each side is offered; a person's own is the
@@ -573,9 +573,9 @@ Checkers as a guest make eight.
 - **No draw offer, no repetition rule.** The engine has both; neither is offered, since none of the four
   boards can end level, and a game ends by a flag, by a side with no move, or by Resign (`resignGunjin`, an
   ending in the engine's own terms from any phase).
-- **The flag rule awaits the package.** In 0.1.0 Gunjin Shogi takes a flag as a fight that removes both
-  pieces and wins nothing; it is to be fixed in 0.1.2. Nothing here pins that behaviour, and the browser
-  specs finish a game by Resign.
+- **Taking the flag** wins for the capturer from 0.1.2 (0.1.0 removed both pieces and went on). Pinned at
+  0.1.2; `flagWithinReach` (`gunjinFlag.ts`) sets up an aircraft and a flag for the unit tests and for the
+  specs that take it on one device and at a table on two, where both phones are sent the finished game whole.
 - **Several devices** (`onlineGunjin.ts`, `GunjinOnline.tsx`, `e2e/party-online-gunjin.spec.ts`), with no
   migration: a table's state is text. The server holds both arrangements and a seat is never sent that text.
   `OnlineRules.seatState` (new, optional, used by this game alone) makes the text a seat is sent in its place

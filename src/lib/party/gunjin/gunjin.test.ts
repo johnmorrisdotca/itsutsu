@@ -6,6 +6,7 @@ import { decodeGunjin, decodeGunjinSeen, encodeGunjin, encodeGunjinSeen } from "
 import { gunjinNews, gunjinNewsLines, squareName } from "./gunjinNews";
 import { gunjinFinalView, gunjinSeatView } from "./gunjinView";
 import type { GunjinGame, GunjinMove } from "./gunjin.types";
+import { flagWithinReach } from "./gunjinFlag";
 import { GUNJIN_RULES } from "./gunjinRules";
 import { PARTY_SPECS } from "../party.constants";
 import { resignedBy } from "../resign";
@@ -331,5 +332,19 @@ describe("a game as one seat may see it, for a table on two devices", () => {
     const read = decodeGunjinSeen(text)!;
     expect(gunjinFinalView(read)).toEqual(gunjinFinalView(ended));
     expect((gunjinFinalView(read)!.pieces ?? []).every((piece) => piece.kind !== null && piece.kind !== "hidden")).toBe(true);
+  });
+});
+
+describe("taking the flag in Gunjin Shogi", () => {
+  it("ends the game with the capturer the winner, and says why", () => {
+    const { game, move } = flagWithinReach();
+    expect(gunjinOver(game)).toBe(false);
+    const ended = playGunjin(game, move)!;
+    expect(gunjinOver(ended)).toBe(true);
+    expect(gunjinWinners(ended)).toEqual([0]);
+    expect(ended.match.result).toMatchObject({ winner: 0, reason: "flag-won" });
+    expect(GUNJIN_RULES.winners(ended)).toEqual([0]);
+    // And a kept game of it reads back as it ended.
+    expect(decodeGunjin(encodeGunjin(ended))).toEqual(ended);
   });
 });

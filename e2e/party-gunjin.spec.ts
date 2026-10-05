@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { GUNJIN_BOARDS, GUNJIN_SIZES } from "../src/lib/party/gunjin/gunjin.constants";
 import { gunjinMoves, gunjinOver, playGunjin, seededRandom, startGunjin } from "../src/lib/party/gunjin/gunjin";
+import { flagWithinReach } from "../src/lib/party/gunjin/gunjinFlag";
 import { encodeGunjin } from "../src/lib/party/gunjin/gunjinCodec";
 import type { GunjinGame } from "../src/lib/party/gunjin/gunjin.types";
 import { ready } from "./support";
@@ -18,9 +19,8 @@ import { ready } from "./support";
  * `data-kind` only on a piece the viewer owns — and what the hand-over covers.
  * Nothing here writes to the database.
  *
- * It finishes a game by Resign. The package's Gunjin Shogi takes a flag as a
- * fight that removes both pieces and wins nothing (awaiting its 0.1.2), so no
- * case here depends on how a flag is taken.
+ * It finishes a game by Resign, and by taking the flag where the rules for that are the
+ * point (`flagWithinReach`).
  */
 const KEPT = "itsutsu.gunjin";
 const AT = "/games/gunjin";
@@ -146,22 +146,27 @@ test.describe("Gunjin, pass and play", () => {
     await expect.poll(async () => (await labels(page, "gunjin-arrange-board")).join("|")).not.toBe(first);
 
     // Tapping a piece and then another swaps them; tapping a piece and then an empty square of her side moves it.
-    const [a, b] = [(await square(page, 0, 8, "gunjin-arrange-board").getAttribute("aria-label"))!, (await square(page, 1, 8, "gunjin-arrange-board").getAttribute("aria-label"))!];
+    // Three of her pieces to work with (five of her thirty-six squares are empty, so no fixed square is sure to hold one).
+    const held = await board(page, "gunjin-arrange-board")
+      .locator("[data-square]")
+      .evaluateAll((all) => all.filter((one) => !one.getAttribute("aria-label")!.endsWith(", empty") && Number(one.getAttribute("data-square")!.split(",")[1]) >= 5).map((one) => one.getAttribute("data-square")!.split(",").map(Number) as [number, number]));
+    const [[ax, ay], [bx, by], [cx, cy]] = held as [[number, number], [number, number], [number, number]];
+    const [a, b] = [(await square(page, ax, ay, "gunjin-arrange-board").getAttribute("aria-label"))!, (await square(page, bx, by, "gunjin-arrange-board").getAttribute("aria-label"))!];
     const kinds = (name: string) => name.split(", ")[1]!;
-    await square(page, 0, 8, "gunjin-arrange-board").click();
-    await expect(page.getByTestId("gunjin-arrange-board")).toHaveAttribute("data-selected", "0,8");
-    await square(page, 1, 8, "gunjin-arrange-board").click();
-    await expect(square(page, 0, 8, "gunjin-arrange-board")).toHaveAttribute("aria-label", new RegExp(`, ${kinds(b)}$`));
-    await expect(square(page, 1, 8, "gunjin-arrange-board")).toHaveAttribute("aria-label", new RegExp(`, ${kinds(a)}$`));
+    await square(page, ax, ay, "gunjin-arrange-board").click();
+    await expect(page.getByTestId("gunjin-arrange-board")).toHaveAttribute("data-selected", `${ax},${ay}`);
+    await square(page, bx, by, "gunjin-arrange-board").click();
+    await expect(square(page, ax, ay, "gunjin-arrange-board")).toHaveAttribute("aria-label", new RegExp(`, ${kinds(b)}$`));
+    await expect(square(page, bx, by, "gunjin-arrange-board")).toHaveAttribute("aria-label", new RegExp(`, ${kinds(a)}$`));
     // An empty square on her own four rows (the board's other rows are empty too).
     const empty = await board(page, "gunjin-arrange-board")
       .locator('[data-square][aria-label$=", empty"]')
       .evaluateAll((all) => all.map((one) => one.getAttribute("data-square")!).find((at) => Number(at.split(",")[1]) >= 5)!);
-    const movedKind = kinds((await square(page, 2, 8, "gunjin-arrange-board").getAttribute("aria-label"))!);
-    await square(page, 2, 8, "gunjin-arrange-board").click();
+    const movedKind = kinds((await square(page, cx, cy, "gunjin-arrange-board").getAttribute("aria-label"))!);
+    await square(page, cx, cy, "gunjin-arrange-board").click();
     await board(page, "gunjin-arrange-board").locator(`[data-square="${empty}"]`).click();
     await expect(board(page, "gunjin-arrange-board").locator(`[data-square="${empty}"]`)).toHaveAttribute("aria-label", new RegExp(`, ${movedKind}$`));
-    await expect(square(page, 2, 8, "gunjin-arrange-board")).toHaveAttribute("aria-label", /, empty$/);
+    await expect(square(page, cx, cy, "gunjin-arrange-board")).toHaveAttribute("aria-label", /, empty$/);
 
     // A mine on D or F of the front row is refused with the board's own rule said, and the hand-over does not come.
     const mines = await board(page, "gunjin-arrange-board").locator('[data-square][aria-label$=", Mine"]').evaluateAll((all) => all.map((one) => one.getAttribute("data-square")!));
@@ -208,6 +213,8 @@ test.describe("Gunjin, pass and play", () => {
     // A move: the first of her pieces on the front row that can go anywhere, to its first lit square.
     let moved = false;
     for (let x = 0; x < 9 && !moved; x += 1) {
+      // Not an aircraft: it may attack any square, and its first square could hold the flag, which ends the game.
+      if (((await square(page, x, 5).getAttribute("aria-label")) ?? "").endsWith(", Aircraft")) continue;
       await square(page, x, 5).click();
       const lit = (await board(page).getAttribute("data-targets")) ?? "";
       if (lit !== "") {
@@ -297,6 +304,21 @@ test.describe("Gunjin, pass and play", () => {
     await page.getByTestId("gunjin-pass-ready").click();
     await expect(board(page).locator('[data-lake="true"]')).toHaveCount(8);
     await expect(square(page, 2, 4)).toHaveAttribute("aria-label", /lake/);
+  });
+
+  test("taking the flag in Gunjin Shogi ends the game with the capturer the winner", async ({ page }) => {
+    const { game, from, flag } = flagWithinReach();
+    await keepGame(page, game);
+    await page.goto(`${AT}/pass-and-play`);
+    await ready(page, "gunjin-game");
+    await page.getByTestId("gunjin-pass-ready").click();
+    await square(page, from.x, from.y).click();
+    await square(page, flag.x, flag.y).click();
+    await expect(page.getByTestId("gunjin-game")).toHaveAttribute("data-state", "finished");
+    await expect(page.getByTestId("gunjin-status")).toContainText("Ann wins: the flag was taken");
+    await expect(page.getByTestId("win-cover")).toContainText("Ann");
+    await page.getByTestId("win-cover-see-board").click();
+    await expect(drawing(page).locator("[data-hidden='true']")).toHaveCount(0);
   });
 
   test("New game asks before it ends a game in progress", async ({ page }) => {
