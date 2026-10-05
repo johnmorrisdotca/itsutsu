@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.504.0 — 2026-10-05 16:12 UTC
+- Meikyuu has 256 levels in every size, ordered by a real difficulty score, and its easy levels are no longer too easy.
+
 ## 0.503.1 — 2026-10-02 21:38 UTC
 - The agent documents now say every task starts with a ticket and how to write one, and AGENTS.md and the README open with the same list of procedures.
 
