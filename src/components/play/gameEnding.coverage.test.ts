@@ -56,6 +56,7 @@ const NOT_YET: Record<string, string> = {
   "src/components/party/online/BlocksOnline.tsx": "a table on several devices ends through the table's own Leave and End (`OnlineTable`), whose words and effect differ; see docs/plans/game-controls/README.md",
   "src/components/party/online/DotsOnline.tsx": "as BlocksOnline",
   "src/components/party/online/GhostOnline.tsx": "as BlocksOnline",
+  "src/components/party/online/GunjinOnline.tsx": "as BlocksOnline",
   "src/components/party/online/HitotsuOnline.tsx": "as BlocksOnline",
   "src/components/party/online/MancalaOnline.tsx": "as BlocksOnline",
   "src/components/party/online/RaceOnline.tsx": "as BlocksOnline",

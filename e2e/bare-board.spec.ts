@@ -287,6 +287,21 @@ const PLAYS = [
     stays: ["tenka-turn", "tenka-map", "tenka-regions", "tenka-bar"],
   },
   {
+    name: "a Gunjin table",
+    open: async (page: import("@playwright/test").Page) => {
+      await page.goto("/games/gunjin");
+      await page.evaluate(() => window.localStorage.removeItem("itsutsu.gunjin"));
+      await page.goto("/games/gunjin/pass-and-play");
+      await ready(page, "gunjin-set-up");
+      await page.getByTestId("gunjin-start").click();
+      await ready(page, "gunjin-game");
+      // The cover first; the player it names says it is them, and arranges.
+      await page.getByTestId("gunjin-pass-ready").click();
+    },
+    // Whose turn it is and the board; the pieces to place and the buttons beside it are side matter.
+    stays: ["gunjin-status", "gunjin-arrange-board"],
+  },
+  {
     name: "Superghost",
     open: async (page: import("@playwright/test").Page) => {
       await page.goto("/games/superghost/pass-and-play");
@@ -369,6 +384,19 @@ function table(slug: string, start: string): Survey {
       await ready(page, "board-scaling");
       await page.getByTestId(start).click();
       await expect(page.locator("[data-bare-board]").first()).toBeVisible();
+    },
+  };
+}
+
+/** Gunjin's table started from its set-up, then taken through the hand-overs to the screen named: arranging a side, or moving. */
+function gunjinThen(name: string, steps: (page: Page) => Promise<void>): Survey {
+  return {
+    name: `/games/gunjin/pass-and-play, ${name}`,
+    open: async (page) => {
+      await page.goto("/games/gunjin/pass-and-play");
+      await ready(page, "board-scaling");
+      await page.getByTestId("gunjin-start").click();
+      await steps(page);
     },
   };
 }
@@ -495,6 +523,20 @@ const SURVEY: Survey[] = [
   table("go-fish", "cards-start"),
   table("crazy-eights", "cards-start"),
   table("hitotsu", "hitotsu-start"),
+  // The cover first (a hand-over is a play too), then each side arranging, then the game moving.
+  table("gunjin", "gunjin-start"),
+  gunjinThen("arranging", async (page) => {
+    await page.getByTestId("gunjin-pass-ready").click();
+    await expect(page.getByTestId("gunjin-arrange")).toBeVisible();
+  }),
+  gunjinThen("moving", async (page) => {
+    await page.getByTestId("gunjin-pass-ready").click();
+    await page.getByTestId("gunjin-finish").click();
+    await page.getByTestId("gunjin-pass-ready").click();
+    await page.getByTestId("gunjin-finish").click();
+    await page.getByTestId("gunjin-pass-ready").click();
+    await expect(page.getByTestId("gunjin-moving")).toBeVisible();
+  }),
   table("backgammon", "sugoroku-start"),
   table("nackgammon", "sugoroku-start"),
   table("long-gammon", "sugoroku-start"),

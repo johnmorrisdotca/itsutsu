@@ -11,7 +11,7 @@ import { isRuleVariant, type GameKey } from "./gameKeys";
  * build carries, read from the site's own package.json, which pins each one
  * exactly; a version is never typed twice.
  */
-export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu" | "tobiishi";
+export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu" | "tobiishi" | "gunjin";
 
 /** Each package's name as it is written, and its repository. */
 export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: string; repo: string }>> = {
@@ -31,6 +31,7 @@ export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: st
   tobiishi: { name: "Tobiishi", repo: "https://github.com/johnmorrisdotca/tobiishi" },
   sugoroku: { name: "Sugoroku", repo: "https://github.com/johnmorrisdotca/sugoroku" },
   kazu: { name: "Kazu", repo: "https://github.com/johnmorrisdotca/kazu" },
+  gunjin: { name: "Gunjin", repo: "https://github.com/johnmorrisdotca/gunjin" },
 };
 
 const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
@@ -59,6 +60,7 @@ const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
   hitotsu: "hitotsu",
   tenka: "tenka",
   diceWar: "korokoro",
+  gunjin: "gunjin",
   ...Object.fromEntries(SUGOROKU_KIND_LIST.map((kind) => [kind, "sugoroku"])),
   ...Object.fromEntries(CARD_GAME_LIST.map((kind) => [kind, "toranpu"])),
 };

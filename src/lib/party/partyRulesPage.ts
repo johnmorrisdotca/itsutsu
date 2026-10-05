@@ -9,6 +9,7 @@ import type { PartyKind, PartyLanguage, PartySpec } from "./party.types";
 import { TENKA_WORLD_ROUNDS } from "./tenka/tenka.constants";
 import { DICE_WAR_DICE, DICE_WAR_ROUND_GOALS, DICE_WAR_SIDES } from "./diceWar/diceWar.constants";
 import { HITOTSU_ONE_HAND } from "@johnmorrisdotca/hitotsu";
+import { gunjinBoardOf } from "./gunjin/gunjin.constants";
 import { SUGOROKU_OFFERED, SUGOROKU_TABLE_WORDS } from "./sugoroku/sugorokuRulesPage";
 
 /** "2–6 players", from the game's own spec rather than a second sentence that could drift. */
@@ -56,6 +57,7 @@ const OFFERED_WORDS: Record<PartyKind, (spec: PartySpec) => string> = {
   yacht: () => "with five dice and a sheet of thirteen boxes, alone or at a table",
   pachisi: () => "with two dice and four pawns each, round a cross of sixty-eight squares",
   hitotsu: (spec) => defaulted(spec, (size) => (size === HITOTSU_ONE_HAND ? "for one hand" : `to ${size} points`), "or"),
+  gunjin: (spec) => `as ${listed(spec.sizes.map((size) => `${gunjinBoardOf(size)?.name ?? size}${size === spec.defaultSize ? " (the default)" : ""}`), "or")}, with every piece hidden from the other side`,
   ...SUGOROKU_OFFERED,
   // The family card games: how long a game lasts, in each one's own terms.
   hearts: (spec) => `to ${defaulted(spec, (size) => String(size), "or")} points`,
@@ -152,6 +154,15 @@ const TABLE_WORDS: Record<PartyKind, { turn: string; house: string; more?: reado
       "No bluffing: a Wild Draw Four may go down only when you hold nothing of the colour on top, and it cannot be challenged.",
       "Party mode: five cards each, one hand, and stacking, jumping in and sevens and zeros on.",
       "The first card turned up is always a number; an action card or a wild turned up goes back under the stock. A draw card played as your last card is still taken by the next player, and counts against them.",
+    ],
+  },
+  gunjin: {
+    turn: "The line at the top says whose turn it is. Before a game the screen names who to pass the phone to and shows nothing until they press that it is them. To arrange your pieces, press Shuffle for a layout, tap one of your pieces and then another piece or an empty square on your side to swap or move it, and press Finish setup. To move, tap one of your pieces and then a lit square; moving onto an enemy piece fights it.",
+    house:
+      "Your ranks are on the screen only on your own turn, and the other side's never: after a move the phone is covered again and names who to pass it to. A fight tells both players only what was taken (on Capture Flag, both ranks, as its rules say), and at the end of a game every piece is shown. Every piece carries its rank in letters as well as its colour. The game is kept in this browser as the two arrangements and the moves, so closing the tab does not lose it, and the board is covered again whenever the page is opened. Choose Several devices at the set-up and each player plays on their own phone or computer: the server keeps both arrangements and sends each player only their own ranks, never the other side's.",
+    more: [
+      "Gunjin Shogi and Luzhanqi Mini mark their headquarters and camps on the board, and Capture Flag shades its lakes. There is no draw offer: a game ends by a flag, by a side with no move, or by resigning.",
+      "There is no computer player: the package has none, so both seats are people. Hidden Hasami, the package's fifth game, is not offered here.",
     ],
   },
   ...SUGOROKU_TABLE_WORDS,

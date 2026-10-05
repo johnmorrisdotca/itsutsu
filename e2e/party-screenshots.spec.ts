@@ -20,6 +20,8 @@ import type { CardGameKind } from "../src/lib/cardGames/cardGames.constants";
 import { playPachisi, startPachisi } from "../src/lib/party/pachisi/pachisi";
 import { encodePachisi } from "../src/lib/party/pachisi/pachisiCodec";
 import { pachisiComputerMove } from "../src/lib/party/pachisi/pachisiComputer";
+import { gunjinMoves, playGunjin, seededRandom as gunjinRandom, startGunjin } from "../src/lib/party/gunjin/gunjin";
+import { encodeGunjin } from "../src/lib/party/gunjin/gunjinCodec";
 import { playYacht, startYacht } from "../src/lib/party/yacht/yacht";
 import { encodeYacht } from "../src/lib/party/yacht/yachtCodec";
 import { encodeHitotsu, hitotsuComputer, playHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
@@ -106,6 +108,23 @@ function pachisiScene(): string {
 }
 
 /**
+ * Gunjin Shogi between Ann and Ben, both sides arranged and played for a few
+ * dozen moves by a seeded random player until fights have thinned both armies
+ * and it is Ann's move: the picture is the board as Ann sees it, her ranks
+ * showing and Ben's pieces as backs, which is how the game is always shown.
+ */
+function gunjinScene(): string {
+  const random = gunjinRandom(20261005);
+  let game = startGunjin(81, ["Ann", "Ben"])!;
+  const fights = () => game.match.log.filter((event) => event.capturedCount > 0).length;
+  for (let at = 0; at < 400 && !(at > 4 && fights() >= 5 && game.match.currentPlayer === 0 && game.match.phase === "pass"); at += 1) {
+    const offered = gunjinMoves(game);
+    game = playGunjin(game, offered[Math.floor(random() * offered.length)]!)!;
+  }
+  return encodeGunjin(game);
+}
+
+/**
  * Four players, five rounds into a game of the whole world, played by the
  * gate's sensible player from a fixed seed and a fixed random: every colour on
  * the map, armies piled on the fronts, stopped at the start of a turn.
@@ -168,7 +187,7 @@ function sugorokuScene(kind: SugorokuKind, points: number, seed: number, turns: 
 }
 
 /** A scene: the game kept, the table's test id, and what is photographed — the board in its wood, or the letters the table watches. */
-const SCENES: { kind: PartyKind; stored: string; key: string; table: string; shot: string; surface?: string; width?: number; scale?: number }[] = [
+const SCENES: { kind: PartyKind; stored: string; key: string; table: string; shot: string; surface?: string; width?: number; scale?: number; press?: string }[] = [
   {
     // Three players on 4×4, twenty-seven of forty lines in: seven boxes closed, in all three colours, and the last line in its drawer's.
     kind: "dotsAndBoxes",
@@ -229,6 +248,15 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     table: "pachisi-game",
     shot: "board-surface",
     stored: pachisiScene(),
+  },
+  {
+    // Gunjin Shogi, five fights in: Ann to move, her ranks showing and Ben's army as backs. A reloaded table is covered, so Ann presses that it is her.
+    kind: "gunjin",
+    key: "itsutsu.gunjin",
+    table: "gunjin-game",
+    shot: "board-surface",
+    press: "gunjin-pass-ready",
+    stored: gunjinScene(),
   },
   {
     // Four at the table, two dice each: Ann and Cy have tied for the highest, so it is war, and the table waits on Roll. At a phone's width, so the four rows come out nearly square, as a thumbnail wants.
@@ -364,6 +392,8 @@ test.describe("party game screenshots", () => {
         await page.goto(`/games/${PARTY_SLUGS[scene.kind]}/pass-and-play`);
         await ready(page, scene.table);
         await expect(page.getByTestId(scene.table)).not.toHaveAttribute("data-state", "finished");
+        // A table that covers itself on opening (Gunjin's hand-over) is uncovered by the player it names.
+        if (scene.press !== undefined) await page.getByTestId(scene.press).click();
         const surface = page.getByTestId(scene.shot).first();
         // The board a member who never chose one sees: the picture is of the site's own wood (or, for a felt table, its default cloth), never an evening's choice.
         if (scene.shot === "board-surface") await expect(surface).toHaveAttribute("data-surface", scene.surface ?? "Kaya");

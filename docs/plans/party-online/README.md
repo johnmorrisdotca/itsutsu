@@ -5,7 +5,7 @@ and Block Five (branch `party-online`), and Pair Go with the site's Go
 programs in computer seats (branch `party-online-2`) are built and
 browser-tested, and so are Kumimoji's pass and play with its own computer
 player (John decided its two questions, below), Superghost, Mancala, Tenka
-and Mexican Train (2026-09-30), and Hitotsu (2026-09-30).**
+and Mexican Train (2026-09-30), Hitotsu (2026-09-30) and Gunjin (2026-10-05, with each seat sent only its own view of the game).**
 
 John, 2026-09-28: "all our Pass and Play games should ultimately get an agent
 to make the Multi-device (invite a buddy / bot). so that they can be played on
@@ -340,6 +340,11 @@ it.
    devices case in `e2e/party-hitotsu.spec.ts`), with its own computer player
    in any seat and no jumping in. The details are in
    `docs/plans/hitotsu/README.md`.
+9. **Done: Gunjin** (`onlineGunjin.ts`, `GunjinOnline.tsx`,
+   `e2e/party-online-gunjin.spec.ts`), the first game here whose server keeps a
+   secret from a seat: `OnlineRules.seatState` makes the text each seat is sent
+   in place of the stored game. The details are in
+   `docs/plans/party-games/README.md`, "Gunjin".
 
 ## Decisions to review
 

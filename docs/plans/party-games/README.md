@@ -518,3 +518,82 @@ not a second mechanism:
 - War (card game): in Tricks (now Table cards), since Cards is full; four lengths (50, 100, 200,
   1000 turns), not Toranpu's five; the kanji 戦争; a "Keep turning" toggle that the
   package does not have.
+
+## Gunjin 軍人: hidden-rank games for two (2026-10-05)
+
+John, 2026-10-05: "The Stratego games should be pass and play, right? unless with a computer." Ticket
+`gunjin-hidden-piece-military-chess-on-the-site-pass-and-play-against-the-compute`. The games are the
+open-source Gunjin package's (`@johnmorrisdotca/gunjin`, MIT; github.com/johnmorrisdotca/gunjin), a
+party game (`PartyKind` `gunjin`) at home in Party games, which it fills: six home games and Chinese
+Checkers as a guest make eight.
+
+- **Four boards, each its own game**, chosen at the set-up as Mancala chooses Kalah or Oware. A board's
+  "size" is its squares (56, 72, 81, 100), which no two share: Luzhanqi Mini (7×8), Salpakan (9×8), Gunjin
+  Shogi (9×9, the default, the game the site is named for) and Capture Flag (10×10, the package's name
+  for the best-known boxed game's shape; the boxed name appears nowhere). The package's fifth, Hidden
+  Hasami, is not offered: it is a stone-capturing game with one secret leader, not a military one, and a
+  set-up holds four boards. `gunjin.constants.ts` is the site's own table of them, free of the package.
+- **A game is its board, its two names and its moves** (`gunjinCodec.ts`), the engine's match read again
+  from them (`replayGunjin`) rather than kept: the package's trusted decoder refuses two of the four boards
+  in 0.1.0, and a replay is the way every party game here is kept. Three moves: `setup` (a side's whole
+  arrangement, the first move of its game), `hand` (the engine's pass of the device, confirmed) and `move`.
+  An arrangement is put in one order (`canonicalPlacements`) because the engine names a piece by its place in
+  the list. The gate plays it with three random arrangements each side is offered; a person's own is the
+  same move.
+- **The engine's imports are one file** (`gunjinEngine.ts`): 0.1.0 re-exports its generic functions from each
+  mode's entry point and its API notes say `/trusted` does, which it does not yet.
+- **WHO MAY SEE WHAT, and where it is enforced.** The package's own redaction (`viewForPlayer`) is the
+  only way from a game to a screen: `gunjinSeatView` (`gunjinView.ts`) is what the board is drawn from, and
+  the package's renderer takes only a `PlayerView`, so the other side's ranks never reach it. On one device
+  the full match is in the page's memory and in this browser's storage (both arrangements are in the kept
+  text), which is the package's stated limit for a hotseat game ("access to the same browser process can
+  expose its memory") and is why the table asks for the phone to be handed over by name. A game filed in
+  the History carries that text, but is only ever offered to the member who played it
+  (`/games/gunjin/kept/<id>`); another member reads who sat where and who won.
+- **The hand-over** is `PartyHandOver` (`components/party/PartyHandOver.tsx`), written with Tenka's words
+  ("Pass to Ann", "I'm Ann: start my turn") for the next table that needs one; Tenka, Hitotsu, the card
+  games and Mexican Train each have a copy of their own still. It covers the board after every move, before
+  each side arranges, and whenever the page is opened again, whatever it was showing: a reload cannot be
+  used to look. What both sides may know is said on the cover and under the board (`gunjinNews`): where a
+  piece went and what a fight took off. A fight shows no rank, except on Capture Flag where the rules show
+  both; at the end of a game every piece is shown.
+- **Arranging** (`GunjinArrange`) starts from a shuffle (`randomArrangement`, a layout the engine takes)
+  and changes by taps: a piece and another piece swap, a piece and an empty square of the side's own rows
+  moves it. Finish setup hands the engine the whole of it; the board's own placing rules (Gunjin Shogi's
+  mines, Luzhanqi's flag, mines and bombs) are said aloud when it refuses.
+- **The board** is the package's drawing (`drawGunjinBoard`, SVG text) inside `BoardFrame`, in the reader's
+  own board theme, with one real button over each square (`GunjinBoard`) so a finger, a pointer and the
+  keyboard (arrow keys, one tab stop) choose the same square. Red sits at the foot and Blue at the head
+  whoever holds the phone: the drawing cannot be turned. Capture Flag's lakes are shaded by the site
+  (`GUNJIN_LAKES`) because 0.1.0 draws none; the unit test fails if the engine ever offers a move onto one.
+  Ranks are the package's letters (Maj, LGen, 2L); the arranging screen lists them in full, and a square's
+  name is read aloud in full.
+- **No computer player.** The package has none, so both seats are people; the ticket asked for one only
+  if the package had it.
+- **No draw offer, no repetition rule.** The engine has both; neither is offered, since none of the four
+  boards can end level, and a game ends by a flag, by a side with no move, or by Resign (`resignGunjin`, an
+  ending in the engine's own terms from any phase).
+- **The flag rule awaits the package.** In 0.1.0 Gunjin Shogi takes a flag as a fight that removes both
+  pieces and wins nothing; it is to be fixed in 0.1.2. Nothing here pins that behaviour, and the browser
+  specs finish a game by Resign.
+- **Several devices** (`onlineGunjin.ts`, `GunjinOnline.tsx`, `e2e/party-online-gunjin.spec.ts`), with no
+  migration: a table's state is text. The server holds both arrangements and a seat is never sent that text.
+  `OnlineRules.seatState` (new, optional, used by this game alone) makes the text a seat is sent in its place
+  (`encodeGunjinSeen`): the match with the other side's pieces' ranks and ids taken out
+  (`matchSeenBy`), and its arrangement forgotten, which the engine's own redacted view and legal-move
+  functions read the same as the whole (a test holds that for every board). It is applied in `viewOf`, the
+  one place a table's state leaves the server, so the page, the poll and the answer to a move all send it.
+  Once the game is over nothing is hidden and the match is sent whole. The stored moves
+  (`PartyAction.move`, which holds each arrangement) are written and never read back to a browser. The
+  device pass is taken at once by the table (`handedOn`) since nobody shares a phone, a move a browser sends
+  is only an arrangement or a piece moved, and the other side's arranging is waited on (their own
+  arrangement shown to the waiting seat as the draft). Reading a table's state for a seat replays the
+  game (`decodeGunjin`) once per change a reader fetches, where the other games hand the stored text over; a
+  304 still answers a poll that has nothing new.
+
+Decisions to review: four boards rather than five (no Hidden Hasami); the names Luzhanqi Mini, Salpakan,
+Gunjin Shogi and Capture Flag, and the kanji 軍人 for the game, 陸戦棋, 星, 軍人将棋 and 旗取り for the boards;
+Gunjin Shogi as the default; the board's size as its squares; no computer, no draw offer; the red side at
+the foot for both players; a cover on every reload; a new shared `PartyHandOver` rather than a fifth copy
+of the hand-over, left to the others to adopt; `seatState` as a general hook; the game kept as moves and not
+as the package's trusted text.

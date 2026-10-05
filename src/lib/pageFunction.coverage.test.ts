@@ -84,6 +84,14 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
    */
   /* Sugoroku (backgammon), the main entry only, about 100 KB: a table on two devices is read and checked on the server like the older tables. Its drawing (/draw) and its play screens are loaded in the browser only. */
   ["@johnmorrisdotca/sugoroku", "The several-devices table read and its moves checked on the server."],
+  /*
+   * Gunjin (hidden-rank games), the engine's modes and its redacted views, about 40 KB unminified: a table on two
+   * devices keeps both sides' arrangements on the server, checks every move there and sends each seat only the game
+   * as it may see it (`onlineGunjin.ts`), so the engine runs in the page's function. Its drawing (/draw), its
+   * words (the main entry) and every play screen are loaded in the browser only.
+   */
+  ["@johnmorrisdotca/gunjin/gunjin-shogi", "The several-devices table read and its moves checked on the server, the engine's functions for every mode."],
+  ["@johnmorrisdotca/gunjin/views", "The several-devices table's legal moves, and what each seat is sent of the game."],
   ["@johnmorrisdotca/kyuubu", "The server's check of a finished cube, the Learn guide's stages, and a finished solve's replay."],
   ["@johnmorrisdotca/kyuubu/react", "The cube drawn in the Learn guide."],
   /*

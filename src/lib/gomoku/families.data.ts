@@ -391,10 +391,15 @@ export const GAME_FAMILIES: GameFamily[] = [
      * round one device and never recorded. John: fold Dice into Party games.
      * They are at home here now, seven games under the cap of eight; the
      * `dice` key is `FAMILY_ABSORBED` into this one and /games/dice is gone.
+     *
+     * GUNJIN 軍人 (2026-10-05) is the seventh at home, so the shelf is full:
+     * six home games and Chinese Checkers as a guest make eight with it. A
+     * hidden-rank game for two, passed round one device with the phone covered
+     * between turns, so it is a party game and not a rule variant.
      */
     title: "Party games",
     kanji: "団欒",
-    blurb: "Games for a group round one phone or tablet. Take your turn, then pass it on: fill in boxes, sow seeds, conquer the world, roll dice for the highest score, or race your pawns home by what they show.",
+    blurb: "Games for a group round one phone or tablet. Take your turn, then pass it on: fill in boxes, sow seeds, conquer the world, roll dice for the highest score, race your pawns home by what they show, or hide your army from the player beside you.",
     /*
      * And Superghost (2026-09-28), the word game for two to eight, in English
      * or Japanese: the second at home here. And Mancala the same day, Kalah or
@@ -404,7 +409,7 @@ export const GAME_FAMILIES: GameFamily[] = [
      * 2026-10-01 (John): Dots and Boxes went to Small boards, Superghost to
      * Word games, and Mexican Train came in from the dissolved Tiles family.
      */
-    games: ["mancala", "tenka", "yacht", "pachisi", "diceWar", "mexicanTrain"],
+    games: ["mancala", "tenka", "yacht", "pachisi", "diceWar", "mexicanTrain", "gunjin"],
     notOnSetUp:
       "A party game, dice game included, is played alone or by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },

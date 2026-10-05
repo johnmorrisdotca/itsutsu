@@ -59,6 +59,11 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/components/party/pachisi/PachisiBoard.tsx",
   "src/components/party/pachisi/pachisiLayout.ts",
   "src/lib/party/pachisi/pachisi.ts",
+  "src/components/party/gunjin/GunjinBoard.tsx",
+  "src/lib/party/gunjin/gunjin.ts",
+  "src/lib/party/gunjin/gunjin.constants.ts",
+  // The pieces are the package's drawing: a new version of it is a picture to re-take.
+  "node_modules/@johnmorrisdotca/gunjin/package.json",
   "src/components/party/diceWar/DiceWarBoard.tsx",
   "src/components/party/diceWar/DiceWarDie.tsx",
   "src/components/party/diceWar/diceWar.constants.ts",

@@ -49,6 +49,7 @@ const TABLES: Table[] = [
   ruled("pachisi", "itsutsu.pachisi", "pachisi-game", "pachisi", 2),
   ruled("hitotsu", "itsutsu.hitotsu", "hitotsu-game", "hitotsu", 2),
   ruled("diceWar", "itsutsu.diceWar", "dicewar-game", "dicewar", 2),
+  ruled("gunjin", "itsutsu.gunjin", "gunjin-game", "gunjin", 2),
   carded("war", 2),
   carded("hearts", 4),
   carded("crazyEights", 3),

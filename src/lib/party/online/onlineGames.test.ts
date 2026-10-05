@@ -36,7 +36,7 @@ function seeded(seed: number): () => number {
 
 describe("every game on several devices", () => {
   it("is listed, and nothing else is", () => {
-    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala", "tenka", "mexicanTrain", "hitotsu", "backgammon", "nackgammon", "longGammon", "hypergammon", "backgammonRace", "antiBackgammon", "tabula"]);
+    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala", "tenka", "mexicanTrain", "hitotsu", "gunjin", "backgammon", "nackgammon", "longGammon", "hypergammon", "backgammonRace", "antiBackgammon", "tabula"]);
     expect(isOnlineGame("dotsAndBoxes")).toBe(true);
     expect(isOnlineGame("freestyle")).toBe(false);
     expect(isOnlineGame("toString")).toBe(false);

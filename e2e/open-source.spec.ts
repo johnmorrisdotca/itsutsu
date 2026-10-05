@@ -16,6 +16,7 @@ const credit = (page: import("@playwright/test").Page) => page.getByTestId("open
 for (const [where, path, pkg, name] of [
   ["a puzzle's play page", `/games/${PUZZLE_SLUGS.cube}/play?size=3&level=easy&seed=7`, "kyuubu", "Kyuubu"],
   ["a party table", `/games/${PARTY_SLUGS.mexicanTrain}/pass-and-play`, "domino", "Domino"],
+  ["Gunjin's table", `/games/${PARTY_SLUGS.gunjin}/pass-and-play`, "gunjin", "Gunjin"],
   ["a board game's play page", `/games/${GAME_SLUGS.freestyle}/play`, "narabe", "Narabe"],
   ["a rules page", `/games/${PARTY_SLUGS.hearts}/rules`, "toranpu", "Toranpu"],
   ["a Numbers puzzle's rules page", `/games/${PUZZLE_SLUGS.numberPlace}/rules`, "kazu", "Kazu"],

@@ -117,6 +117,7 @@ export const PARTY_SLUGS: Record<PartyKind, string> = {
   pachisi: "pachisi",
   hitotsu: "hitotsu",
   diceWar: "dice-war",
+  gunjin: "gunjin",
   backgammon: "backgammon",
   backgammonRace: "backgammon-race",
   antiBackgammon: "anti-backgammon",

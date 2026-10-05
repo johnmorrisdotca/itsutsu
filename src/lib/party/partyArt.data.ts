@@ -7,4 +7,4 @@
  *
  *   pnpm screenshots:party
  */
-export const PARTY_ART_FINGERPRINT = "d13d25f0c26727fd";
+export const PARTY_ART_FINGERPRINT = "38c3bb12fff05e50";

@@ -1,0 +1,66 @@
+import type { GunjinMode } from "@/lib/party/gunjin/gunjin.constants";
+
+/** The two sides' colours as the package draws them, so a name's chip is the colour of its pieces. Red sits at the foot of the board and moves first. */
+export const GUNJIN_SIDES = [
+  { label: "Red", letter: "R", fill: "#9b3932" },
+  { label: "Blue", letter: "B", fill: "#315d83" },
+] as const;
+
+/** What a board's own placing rules say, for the arrangement that fails them: the engine refuses it, this says why. Null where a board has none beyond "your own rows". */
+export const GUNJIN_PLACING_RULES: Record<GunjinMode, string | null> = {
+  "luzhanqi-mini": "The flag goes on a headquarters (a marked square on your back row), mines on your back row, and bombs not on your front row.",
+  salpakan: null,
+  "gunjin-shogi": "A mine may not stand on D or F of your front row.",
+  "stratego-lite": null,
+};
+
+/** What Gunjin's table says, beyond what every table says (`PARTY_COPY`). */
+export const GUNJIN_COPY = {
+  lead: "Gunjin for two, round one phone or tablet: armies of hidden pieces, where you know your own ranks and never theirs. The phone is covered between turns, so nobody sees what they should not. Nothing here is rated.",
+  which: "Which game?",
+  seats: "Who plays",
+  red: "Red, at the near side, arranges and moves first",
+  blue: "Blue, at the far side",
+  nameOf: (seat: number) => `Player ${seat + 1}`,
+  start: "Start",
+  play: "Play →",
+  kept: "Kept in this browser: leave and come back, and it is here.",
+  card: "Gunjin on this device",
+  about: "About Gunjin, its boards and its rules",
+  arrange: (name: string) => `${name}: arrange your pieces`,
+  arrangeNote: "Only you should be looking. Everyone else look away.",
+  arrangeHelp: "Press Shuffle for a layout. Tap one of your pieces, then another piece or an empty square on your side to swap or move it. Press Finish setup when you are happy.",
+  shuffle: "Shuffle",
+  finish: "Finish setup",
+  invalid: "That arrangement does not meet this game's rules.",
+  yourPieces: "Your pieces",
+  turn: (name: string) => `${name} to move`,
+  passSetUp: (name: string) => `${name} is next to arrange their pieces.`,
+  passPlay: (name: string) => `${name} is next to move.`,
+  passStart: "Nothing of the board is shown until they press that it is them.",
+  passFirst: (name: string) => `${name}: start arranging my pieces`,
+  passFirstNote: "Pieces are arranged in secret, one player at a time.",
+  newsFirst: "Both sides have arranged their pieces. Red moves first.",
+  pickPiece: "Choose one of your pieces.",
+  pickTarget: (name: string) => `${name}: choose a lit square, or another piece.`,
+  noMoves: "That piece cannot move.",
+  arranging: "arranging",
+  piecesLeft: (count: number) => `${count} ${count === 1 ? "piece" : "pieces"} left`,
+  waitingToArrange: (name: string) => `${name} is arranging their pieces. Yours are placed and hidden; the board opens when they have finished.`,
+  watching: "Waiting for the other player. The board is only to look at until it is your turn.",
+  lastMove: "Recent moves",
+  noMovesYet: "No moves yet.",
+  gameOver: "Game over",
+  wins: (name: string, reason: string | null) => (reason === null ? `${name} wins.` : `${name} wins: ${reason}.`),
+  finalNote: "Every piece is shown now the game is over.",
+  again: "Play again, same table",
+  boardLabel: (name: string) => `The ${name} board`,
+  hiddenBoard: "The board is covered while the phone is passed.",
+  chosen: (name: string) => `${name} chosen`,
+  opponent: "Opponent piece",
+  empty: "empty",
+  lake: "lake, nothing can enter",
+  cell: (square: string, what: string) => `${square}, ${what}`,
+  idleDetail: "Nothing has moved at this table for a couple of minutes. There is no clock here; the game simply waits.",
+  idleKept: "This game is kept in this browser. It will be here when you come back.",
+} as const;

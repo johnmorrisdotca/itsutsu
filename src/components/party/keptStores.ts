@@ -19,6 +19,13 @@ const STORES: Record<string, () => Promise<Adopt>> = {
   mexicanTrain: async () => (await import("./trainStore")).adoptKeptTrainGame,
   yacht: async () => (await import("./yacht/yachtStore")).adoptKeptYachtGame,
   pachisi: async () => (await import("./pachisi/pachisiStore")).adoptKeptPachisiGame,
+  // The package's engine is fetched by a browser only (`typeof window`), as Korokoro's is: a kept game is opened in the browser, and the pages' server function does not carry it.
+  gunjin: async () => {
+    if (typeof window !== "undefined") {
+      return (await import("./gunjin/gunjinStore")).adoptKeptGunjinGame;
+    }
+    throw new Error("A kept game is opened in the browser");
+  },
   // Korokoro's rules are fetched by a browser only (`typeof window`), the way a word list is: a kept game is opened in the browser, and the pages' server function does not carry the dice package for it.
   diceWar: async () => {
     if (typeof window !== "undefined") {

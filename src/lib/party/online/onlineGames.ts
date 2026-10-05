@@ -28,6 +28,8 @@ import { MANCALA_ONLINE, SUPERGHOST_ONLINE, type GhostTableMove } from "./online
 import { TENKA_ONLINE, type TenkaTableMove } from "./onlineTenka";
 import { TRAIN_ONLINE } from "./onlineTrain";
 import { HITOTSU_ONLINE } from "./onlineHitotsu";
+import { GUNJIN_ONLINE } from "./onlineGunjin";
+import type { GunjinGame, GunjinMove } from "../gunjin/gunjin.types";
 import { SUGOROKU_ONLINE } from "./onlineSugoroku";
 import type { SugorokuMove, SugorokuTable } from "../sugoroku/sugoroku.types";
 
@@ -134,6 +136,7 @@ type OnlinePlays = {
   tenka: { game: TenkaGame; move: TenkaTableMove };
   mexicanTrain: { game: TrainGame; move: TrainMove };
   hitotsu: { game: HitotsuGame; move: HitotsuMove };
+  gunjin: { game: GunjinGame; move: GunjinMove };
 } & { [K in SugorokuKind]: { game: SugorokuTable; move: SugorokuMove } };
 
 /** A table's rules, by game: a mapped type over `OnlineGameKey`, so a game added there does not compile without its row. */
@@ -149,6 +152,7 @@ export const ONLINE_GAMES: { [K in OnlineGameKey]: OnlineRules<OnlinePlays[K]["g
   tenka: TENKA_ONLINE,
   mexicanTrain: TRAIN_ONLINE,
   hitotsu: HITOTSU_ONLINE,
+  gunjin: GUNJIN_ONLINE,
   ...SUGOROKU_ONLINE,
 };
 

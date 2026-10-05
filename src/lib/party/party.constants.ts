@@ -12,6 +12,8 @@ import { TENKA_MEDIUM_ROUNDS, TENKA_SHORT_ROUNDS, TENKA_WORLD_ROUNDS } from "./t
 import { CARD_GAME_KINDS, CARD_GAME_LIST, CARD_GAME_SPECS } from "../cardGames/cardGames.constants";
 import { CARD_GAME_DISPLAY } from "../cardGames/cardGames.copy";
 import { HITOTSU_DISPLAY } from "./hitotsu/hitotsu.copy";
+import { GUNJIN_DEFAULT_SIZE, GUNJIN_SIZES } from "./gunjin/gunjin.constants";
+import { GUNJIN_DISPLAY } from "./gunjin/gunjin.copy";
 import { SUGOROKU_DEFAULT_LENGTH, SUGOROKU_KIND_LIST, SUGOROKU_KINDS, SUGOROKU_LENGTHS } from "./sugoroku/sugoroku.constants";
 import { SUGOROKU_DISPLAY } from "./sugoroku/sugoroku.copy";
 
@@ -35,12 +37,13 @@ export const PARTY_KINDS = {
   pachisi: "pachisi",
   hitotsu: "hitotsu",
   diceWar: "diceWar",
+  gunjin: "gunjin",
   ...SUGOROKU_KINDS,
   ...CARD_GAME_KINDS,
 } as const satisfies Record<PartyKind, PartyKind>;
 
 /** Every party game, in the order its family shows them, the card games after the rest. Read by the gate, the catalogue and the shelf. */
-export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.hitotsu, PARTY_KINDS.yacht, PARTY_KINDS.pachisi, PARTY_KINDS.diceWar, ...SUGOROKU_KIND_LIST, ...CARD_GAME_LIST];
+export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.hitotsu, PARTY_KINDS.yacht, PARTY_KINDS.pachisi, PARTY_KINDS.diceWar, PARTY_KINDS.gunjin, ...SUGOROKU_KIND_LIST, ...CARD_GAME_LIST];
 
 export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   dotsAndBoxes: {
@@ -197,6 +200,7 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
       "A cross of sixty-eight squares round a middle, with a home path of seven for each colour. Two sit opposite each other; three or four take an arm each. Pass one phone round, or put the computer in any seat.",
   },
   hitotsu: HITOTSU_DISPLAY,
+  gunjin: GUNJIN_DISPLAY,
   /*
    * DICE WAR, 2026-10-01. John: "Dice game: war? Or higher number? Something
    * super simple with just rolling dice and keeping score." The dice game with
@@ -305,6 +309,8 @@ export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
    * table it opens on, a person and the computer, and first to 10 the game.
    */
   diceWar: { fewestPlayers: 2, mostPlayers: 8, defaultPlayers: 2, sizes: DICE_WAR_POINT_GOALS, defaultSize: DICE_WAR_DEFAULT_POINTS },
+  // Two sides, one of four boards (the squares of each: 7×8, 9×8, 9×9, 10×10), each a hidden-rank game of its own (`gunjin.constants.ts`).
+  gunjin: { fewestPlayers: 2, mostPlayers: 2, defaultPlayers: 2, sizes: GUNJIN_SIZES, defaultSize: GUNJIN_DEFAULT_SIZE },
   /*
    * The seven backgammon games, each for two, by the length of match they are
    * played to (`SUGOROKU_LENGTHS`): a single game opens it. The gate plays every

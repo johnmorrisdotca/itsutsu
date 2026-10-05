@@ -47,6 +47,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   gomojiPop: "2026-09-26",
   gomojiWort: "2026-09-25",
   grandReversi: "2026-09-08",
+  gunjin: "2026-10-05",
   halma: "2026-09-08",
   hearts: "2026-09-29",
   hex: "2026-09-08",

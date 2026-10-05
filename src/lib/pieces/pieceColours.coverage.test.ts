@@ -44,6 +44,8 @@ function read(path: string): string {
 const NO_OWNED_PIECES: Record<string, string> = {
   [join(PARTY, "sugoroku", "SugorokuSetUp.tsx")]:
     "the backgammon games' checkers are the two sides' own, white and black, as the package draws them; the seats are the sides, not marbles a place chooses",
+  [join(PARTY, "gunjin", "GunjinSetUp.tsx")]:
+    "Gunjin's pieces are the two sides' own, red and blue, as the package draws them (its drawing takes no colours); the seats are the sides, not marbles a place chooses",
   [join(PARTY, "PairGoGame.tsx")]: "Pair Go's pieces are its two teams' stones: chosen per team with the stone games' own panel (`SeatColoursPanel`), not per place",
 };
 
@@ -83,7 +85,7 @@ describe("every game with pieces a player owns offers them a colour", () => {
 
   it("names only real exceptions", () => {
     for (const [path, reason] of Object.entries(NO_OWNED_PIECES)) {
-      if (!path.includes("sugoroku")) expect(read(path), path).toContain("SeatColoursPanel");
+      if (!path.includes("sugoroku") && !path.includes("gunjin")) expect(read(path), path).toContain("SeatColoursPanel");
       expect(reason.length).toBeGreaterThan(20);
     }
   });

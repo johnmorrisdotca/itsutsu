@@ -12,6 +12,7 @@ import { isKeptStatus } from "../../kept/kept.constants";
 import { retiredSave } from "../../retiredSaves";
 import { PARTY_TURN_WAIT_MS } from "../online.constants";
 import type { OnlineGameKey, OnlineSeatKind, OnlineStatus, OnlineTableView } from "../online.types";
+import { onlineRulesOf } from "../onlineGames";
 import { tableSeatPath } from "../onlinePaths";
 import { mayEnd, seatOfMember } from "../onlineSeats";
 
@@ -89,6 +90,17 @@ export function tableOf(row: TableRow) {
 }
 
 /**
+ * THE GAME AS TEXT FOR ONE SEAT: the stored text itself for a game whose every
+ * seat may see all of it, and for one with hidden information (`seatState`,
+ * Gunjin's ranks) the text made for that seat, so the secrets never leave the
+ * server. A stored game the rules cannot read is sent as nothing, never whole.
+ */
+function stateFor(game: OnlineGameKey, state: string, seat: number): string {
+  const seatState = onlineRulesOf(game).seatState;
+  return seatState === undefined ? state : seatState(state, seat);
+}
+
+/**
  * THE TABLE AS THIS READER IS SHOWN IT, or null when they do not sit at it.
  * An open seat's link is shown to everybody at the table: any of them may
  * hand it to somebody.
@@ -101,7 +113,7 @@ export function viewOf(row: TableRow & { lastMoverId: string | null }, readerId:
     id: row.id,
     game: row.game as OnlineGameKey,
     size: row.size,
-    state: row.state,
+    state: stateFor(row.game as OnlineGameKey, row.state, mySeat),
     version: row.version,
     status: table.status,
     toPlay: row.toPlay,

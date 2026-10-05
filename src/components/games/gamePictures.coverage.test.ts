@@ -335,6 +335,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/party/yacht/YachtCard.tsx": { GameThumb: "small" },
   "src/components/party/diceWar/DiceWarCard.tsx": { GameThumb: "small" },
   "src/components/party/pachisi/PachisiCard.tsx": { GameThumb: "small" },
+  "src/components/party/gunjin/GunjinCard.tsx": { GameThumb: "small" },
   "src/components/party/hitotsu/HitotsuCard.tsx": { GameThumb: "small" },
   "src/components/party/sugoroku/SugorokuCard.tsx": { GameThumb: "small" },
   // The party tables on several devices, rows of a list on My games.

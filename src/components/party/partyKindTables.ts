@@ -30,6 +30,8 @@ import { YACHT_COPY } from "./yacht/yacht.constants";
 import { YachtCardClient, YachtTableClient } from "./yacht/yachtClient";
 import { YachtOffer } from "./yacht/YachtOffer";
 import { HITOTSU_COPY } from "./hitotsu/hitotsu.constants";
+import { GUNJIN_COPY } from "./gunjin/gunjin.constants";
+import { GunjinCardClient, GunjinOfferClient, GunjinTableClient } from "./gunjin/gunjinClient";
 import { DICE_WAR_COPY } from "./diceWar/diceWar.constants";
 import { DiceWarCardClient, DiceWarOfferClient, DiceWarTableClient } from "./diceWar/diceWarClient";
 import { HitotsuCardClient, HitotsuOfferClient, HitotsuTableClient } from "./hitotsu/hitotsuClient";
@@ -114,6 +116,15 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
     Game: DiceWarTableClient,
     Offer: DiceWarOfferClient,
     Card: DiceWarCardClient,
+  },
+  // Hidden-rank games for two (`gunjin/`), loaded in the browser only, as the card games' are: the package's engine stays out of the server's function.
+  gunjin: {
+    title: PARTY_COPY.title,
+    kanji: PARTY_COPY.kanji,
+    lead: GUNJIN_COPY.lead,
+    Game: GunjinTableClient,
+    Offer: GunjinOfferClient,
+    Card: GunjinCardClient,
   },
   // The family card games, one table for all five (`cards/CardGameTable.tsx`), loaded in the browser only.
   hearts: cardTable("hearts", HeartsTable, HeartsOffer, HeartsCard),

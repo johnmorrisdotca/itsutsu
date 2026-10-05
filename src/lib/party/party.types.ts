@@ -28,6 +28,7 @@ import type { HitotsuGame, HitotsuMove } from "@johnmorrisdotca/hitotsu";
 import type { DiceWarGame, DiceWarMove } from "@johnmorrisdotca/korokoro";
 import type { CardGameKind } from "../cardGames/cardGames.constants";
 import type { SugorokuKind } from "./sugoroku/sugoroku.constants";
+import type { GunjinGame, GunjinMove } from "./gunjin/gunjin.types";
 import type { SugorokuMove, SugorokuTable } from "./sugoroku/sugoroku.types";
 import type { CardGamePlays } from "../cardGames/cardGameRules";
 
@@ -36,7 +37,7 @@ import type { CardGamePlays } from "../cardGames/cardGameRules";
  * Hearts, Big Two, President, Go Fish, Crazy Eights), which are party games
  * too — a table round one device — with a computer in any empty seat.
  */
-export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "yacht" | "pachisi" | "hitotsu" | "diceWar" | SugorokuKind | CardGameKind;
+export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "yacht" | "pachisi" | "hitotsu" | "diceWar" | "gunjin" | SugorokuKind | CardGameKind;
 
 /**
  * The languages a word game at the table is played in: the two Kumimoji's
@@ -132,4 +133,5 @@ export type PartyPlays = {
   pachisi: { game: PachisiGame; move: PachisiMove };
   hitotsu: { game: HitotsuGame; move: HitotsuMove };
   diceWar: { game: DiceWarGame; move: DiceWarMove };
+  gunjin: { game: GunjinGame; move: GunjinMove };
 } & { [K in SugorokuKind]: { game: SugorokuTable; move: SugorokuMove } } & CardGamePlays;

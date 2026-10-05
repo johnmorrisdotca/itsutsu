@@ -10,11 +10,11 @@ import type { SugorokuKind } from "../sugoroku/sugoroku.constants";
  * THE GAMES THAT CAN BE PLAYED ON SEVERAL DEVICES, by their catalogue key
  * (`GameKey`): Dots and Boxes, the three tables of the rule variants that the
  * race and the tray share, Go as Pair Go, Kumimoji's pass and play,
- * Superghost, Mancala, Tenka, Mexican Train, Hitotsu and the seven backgammon games. A game joins by a row in `ONLINE_GAMES` and a
+ * Superghost, Mancala, Tenka, Mexican Train, Hitotsu, Gunjin and the seven backgammon games. A game joins by a row in `ONLINE_GAMES` and a
  * board in the client's `ONLINE_VIEWS`, both `Record`s over this, so a key
  * added here without either does not compile.
  */
-export type OnlineGameKey = "dotsAndBoxes" | "chineseCheckers" | "halma" | "blockFive" | "go" | "kumimoji" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "hitotsu" | SugorokuKind;
+export type OnlineGameKey = "dotsAndBoxes" | "chineseCheckers" | "halma" | "blockFive" | "go" | "kumimoji" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "hitotsu" | "gunjin" | SugorokuKind;
 
 /** Who sits in a seat: a member, nobody yet (its link is out), or a computer. */
 export type OnlineSeatKind = "member" | "open" | "computer";
@@ -66,6 +66,17 @@ export type OnlineRules<S, M> = {
    * needs no rewrite of the game.
    */
   named: (game: S, names: readonly string[]) => S;
+  /**
+   * FOR A GAME WITH HIDDEN INFORMATION (Gunjin's ranks): the stored text as one
+   * seat may see it, which is what the server sends that seat in place of the
+   * stored text itself. The stored game holds every side's secrets and is never
+   * sent to a browser; a seat is sent a text that `decode` reads back into a game
+   * with the other sides' secrets already gone, so hiding is done where the secret
+   * is kept and not in what a page chooses to draw. Absent for every other game,
+   * which send the stored text whole and hide a hand, where they hide one, only
+   * in what a page draws (docs/plans/party-online/README.md).
+   */
+  seatState?: (state: string, seat: number) => string;
   /**
    * The game's computer players, where it has any; absent, the game offers no
    * computer seat. Their moves are worked out in a browser at the table
