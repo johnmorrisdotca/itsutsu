@@ -101,6 +101,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       // The jumps, replayed from the level's own starting position: every one legal, one peg left, in the goal.
       return checkTobiishi(size, givens, answer);
     case "shikaku":
+    case "akari":
+    case "loop":
+    case "hitori":
     case "crossSums":
     case "regions":
       // The pencil puzzles, read by Kazu in one pass over the answer: its rules restated by the package, never the solver that made the board.

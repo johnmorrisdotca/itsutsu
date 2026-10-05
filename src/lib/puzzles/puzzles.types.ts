@@ -36,6 +36,9 @@ export type PuzzleKind =
   | "meikyuu"
   | "tobiishi"
   | "shikaku"
+  | "akari"
+  | "loop"
+  | "hitori"
   | "crossSums"
   | "regions"
   | "jirai";

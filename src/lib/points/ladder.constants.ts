@@ -123,6 +123,9 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
    * rung, which the ceiling holds (`PUZZLE_PRICE_MOST`).
    */
   shikaku: { how: "size", rungs: { 5: 50, 7: 70, 10: 95, 14: 125 } },
+  akari: { how: "size", rungs: { 5: 50, 7: 70, 10: 95, 14: 125 } },
+  loop: { how: "size", rungs: { 5: 50, 7: 85, 10: 125 } },
+  hitori: { how: "size", rungs: { 5: 50, 7: 70, 9: 90, 12: 125 } },
   crossSums: { how: "size", rungs: { 6: 50, 8: 75, 10: 100, 12: 125 } },
   regions: { how: "size", rungs: { 6: 50, 8: 75, 10: 100, 12: 125 } },
   jirai: { how: "size", rungs: { 7: 50, 9: 65, 12: 95, 16: 125 } },

@@ -366,6 +366,9 @@ function PuzzlePlayDrawn({
       case "cube":
         return <CubeSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       case "shikaku":
+      case "akari":
+      case "loop":
+      case "hitori":
       case "crossSums":
       case "regions":
         return <PencilSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;

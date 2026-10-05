@@ -102,6 +102,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       // A fixed level, its number the seed, read from its size's list (`preparePuzzle` loads it); any other seed a board of pipes made by the package, aimed at the level's rank among boards of its size (`suido/generate.ts`).
       return suidoLevelOfSeed(seed) === null ? generateSuido(size, level, seed) : suidoLevelPuzzle(size, suidoLevelOfSeed(seed)!);
     case "shikaku":
+    case "akari":
+    case "loop":
+    case "hitori":
     case "crossSums":
     case "regions":
       // The pencil puzzles, made by Kazu: a board with exactly one answer, from the seed alone (`pencil/`).

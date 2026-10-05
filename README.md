@@ -276,12 +276,12 @@ are the same components (`LevelPicker`, `LevelChips`, `LevelFastestTable`,
 its words.
 
 **Pencil puzzles** 鉛筆 (2026-10-05, `src/lib/puzzles/pencil/`, plan in
-`docs/plans/pencil/README.md`): Shikaku, Cross Sums and Regions (Kazu's Kakuro and Fillomino, under plain names), from Kazu 1.3.0 (`@johnmorrisdotca/kazu`, pinned in `package.json`), on a shelf
+`docs/plans/pencil/README.md`): Shikaku, Akari, Loop, Hitori, Cross Sums and Regions (Kazu's Slitherlink, Kakuro and Fillomino under plain names), from Kazu 1.3.0 (`@johnmorrisdotca/kazu`, pinned in `package.json`), on a shelf
 of their own, each at four levels, easy to extra hard (the site's first extra hard) and at four sizes. Kazu makes each board with exactly one answer, checks a finished one and
 draws it as SVG; what is the site's own is here: a board is a string of marks, a
 character a cell, so a kept run, the scrubber and the
 finished page work as they do for a Number Place, and a press on the drawing is read
-from where it lands (`pencil/geometry.ts`). Akari, Loop (Kazu's Slitherlink) and Hitori are built and held back (`pencil/held.constants.ts`). The server's one job is the O(cells) check
+from where it lands (`pencil/geometry.ts`). Seven games in all with Jirai: Shikaku, Akari, Loop (Kazu's Slitherlink), Hitori, Cross Sums and Regions. The server's one job is the O(cells) check
 (`pencil/*.ts`, `puzzleCheck.ts`). **Jirai** 地雷 (`@johnmorrisdotca/jirai`, `src/lib/puzzles/jirai/`) is
 its fourth card: Minesweeper that needs no guess, its neighbours and shape settings of the one card.
 

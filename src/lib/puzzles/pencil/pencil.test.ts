@@ -1,35 +1,32 @@
+import { AKARI_SIZES, generateAkari, type AkariLevel } from "@johnmorrisdotca/kazu/akari";
+import { FILLOMINO_SIZES, generateFillomino, type FillominoLevel } from "@johnmorrisdotca/kazu/fillomino";
+import { generateHitori, HITORI_SIZES, type HitoriLevel } from "@johnmorrisdotca/kazu/hitori";
+import { generateKakuro, KAKURO_SIZES, type KakuroLevel } from "@johnmorrisdotca/kazu/kakuro";
+import { generateShikaku, SHIKAKU_SIZES, type ShikakuLevel } from "@johnmorrisdotca/kazu/shikaku";
+import { generateSlitherlink, SLITHERLINK_SIZES, type SlitherlinkLevel } from "@johnmorrisdotca/kazu/slitherlink";
 import { describe, expect, it, vi } from "vitest";
 
 import type { PuzzleLevel } from "../puzzles.types";
 import { pencilEngine } from "./engines";
-import { HELD_ENGINES } from "./held";
-import { HELD_PENCIL_KIND_LIST } from "./held.constants";
 import { generatePencil } from "./generate";
 import { entered, FRESH_UI, moved, pressed, type PencilPress, type PencilUi } from "./input";
 import { isPencilKind, PENCIL_KIND_LIST, PENCIL_SPECS } from "./pencil.constants";
 import { shikakuCodeOf, shikakuPlace, shikakuRectsOf, shikakuRemove } from "./shikaku";
 import { slitherlinkEdgesOf } from "./slitherlink";
-import type { AnyPencilKind, PencilKind } from "./pencil.types";
+import type { PencilKind } from "./pencil.types";
 
-/** The engine of any pencil puzzle, offered or held: the held ones are tested as the offered are, so they stay sound until they come back (`held.constants.ts`). */
-const engineOf = (kind: AnyPencilKind) => (isPencilKind(kind) ? pencilEngine(kind) : HELD_ENGINES[kind as Exclude<AnyPencilKind, PencilKind>]);
-const EVERY_KIND: readonly AnyPencilKind[] = [...PENCIL_KIND_LIST, ...HELD_PENCIL_KIND_LIST];
+const engineOf = (kind: PencilKind) => pencilEngine(kind);
 
-/** The sizes and levels each kind is tested at: the ones the site offers, a size and a level at a time. */
-const CASES: Record<AnyPencilKind, { sizes: readonly number[]; levels: readonly PuzzleLevel[] }> = {
-  shikaku: { sizes: PENCIL_SPECS.shikaku.sizes, levels: PENCIL_SPECS.shikaku.levels },
-  akari: { sizes: [5, 7, 9, 12], levels: ["medium"] },
-  slitherlink: { sizes: [4, 5, 7, 10], levels: ["medium"] },
-  hitori: { sizes: [5, 7], levels: ["medium"] },
-  regions: { sizes: PENCIL_SPECS.regions.sizes, levels: PENCIL_SPECS.regions.levels },
-  crossSums: { sizes: PENCIL_SPECS.crossSums.sizes, levels: PENCIL_SPECS.crossSums.levels },
-};
+/** The sizes and levels each kind is tested at: every one the site offers, a size and a level at a time. */
+const CASES: Record<PencilKind, { sizes: readonly number[]; levels: readonly PuzzleLevel[] }> = Object.fromEntries(
+  PENCIL_KIND_LIST.map((kind) => [kind, { sizes: PENCIL_SPECS[kind].sizes, levels: PENCIL_SPECS[kind].levels }]),
+) as Record<PencilKind, { sizes: readonly number[]; levels: readonly PuzzleLevel[] }>;
 
-describe.each(EVERY_KIND)("%s is made, read, checked and solved", (kind) => {
+describe.each(PENCIL_KIND_LIST)("%s is made, read, checked and solved", (kind) => {
   const engine = engineOf(kind);
 
-  it("is a pencil kind the site offers, or one it holds", () => {
-    expect(isPencilKind(kind)).toBe(!HELD_PENCIL_KIND_LIST.includes(kind as never));
+  it("is a pencil kind, and a number puzzle is not", () => {
+    expect(isPencilKind(kind)).toBe(true);
     expect(isPencilKind("numberPlace")).toBe(false);
   });
 
@@ -148,8 +145,8 @@ describe("Shikaku's code", () => {
 
 describe("Slitherlink's code", () => {
   it("has a mark place for every edge of the board", () => {
-    for (const size of [4, 5, 7, 10]) {
-      const made = engineOf("slitherlink").make(size, "medium", 1);
+    for (const size of PENCIL_SPECS.loop.sizes) {
+      const made = engineOf("loop").make(size, "medium", 1);
       expect(made.solution).toHaveLength(2 * size * (size + 1));
       expect(slitherlinkEdgesOf(size, made.solution)!.length).toBeGreaterThan(4);
     }
@@ -182,7 +179,7 @@ describe("a seed with no puzzle names the next that has one", () => {
 
   it("refuses a size it does not make rather than looking for another seed", () => {
     expect(() => generatePencil("crossSums", 13, "medium", 5)).toThrow(/no Cross Sums at 13/);
-    expect(() => HELD_ENGINES.hitori.make(3, "medium", 5)).toThrow(/no Hitori at 3/);
+    expect(() => pencilEngine("hitori").make(3, "medium", 5)).toThrow(/no Hitori at 3/);
   });
 });
 
@@ -216,9 +213,9 @@ describe("what a press does", () => {
     expect(pressed("akari", 1, akariGivens, ".....", FRESH_UI, { cell: 2 }).code).toBe(".....");
     expect(pressed("akari", 1, akariGivens, ".....", FRESH_UI, { cell: 3 }).code).toBe(".....");
     expect(pressed("hitori", 2, "1122", "....", FRESH_UI, { cell: 1 }).code).toBe(".#..");
-    expect(pressed("slitherlink", 2, "....", ".".repeat(12), FRESH_UI, { edge: 7 }).code).toBe(".......#....");
+    expect(pressed("loop", 2, "....", ".".repeat(12), FRESH_UI, { edge: 7 }).code).toBe(".......#....");
     // A press of the wrong sort does nothing.
-    expect(pressed("slitherlink", 2, "....", ".".repeat(12), FRESH_UI, { cell: 7 }).code).toBe(".".repeat(12));
+    expect(pressed("loop", 2, "....", ".".repeat(12), FRESH_UI, { cell: 7 }).code).toBe(".".repeat(12));
   });
 
   it("chooses a cell and puts a number in it, never over a printed one or a black cell", () => {
@@ -245,9 +242,63 @@ describe("what a press does", () => {
     expect(moved("akari", 5, 24, "ArrowDown")).toBe(24);
     expect(moved("akari", 5, 12, "ArrowUp")).toBe(7);
     expect(moved("akari", 5, null, "ArrowRight")).toBe(1);
-    expect(moved("slitherlink", 4, 0, "ArrowLeft")).toBe(0);
-    expect(moved("slitherlink", 4, 39, "ArrowRight")).toBe(39);
-    expect(moved("slitherlink", 4, 3, "ArrowDown")).toBe(7);
+    expect(moved("loop", 4, 0, "ArrowLeft")).toBe(0);
+    expect(moved("loop", 4, 39, "ArrowRight")).toBe(39);
+    expect(moved("loop", 4, 3, "ArrowDown")).toBe(7);
     expect(moved("akari", 5, 3, "a")).toBe(3);
+  });
+});
+
+describe("the sizes and levels are Kazu's", () => {
+  const OFFERED_BY_KAZU: Record<PencilKind, readonly number[]> = {
+    shikaku: SHIKAKU_SIZES,
+    akari: AKARI_SIZES,
+    loop: SLITHERLINK_SIZES,
+    hitori: HITORI_SIZES,
+    crossSums: KAKURO_SIZES,
+    regions: FILLOMINO_SIZES,
+  };
+
+  it("offers only sizes Kazu says it offers, four boards a puzzle at the most, and every level it makes", () => {
+    for (const kind of PENCIL_KIND_LIST) {
+      const spec = PENCIL_SPECS[kind];
+      expect(spec.offered.length, kind).toBeLessThanOrEqual(4);
+      for (const size of spec.offered) expect(OFFERED_BY_KAZU[kind], `${kind} ${size}`).toContain(size);
+      expect(spec.levels, kind).toEqual(["easy", "medium", "hard", "extra-hard"]);
+      expect(spec.sizes, kind).toContain(spec.defaultSize);
+    }
+  });
+
+  it("makes the level that was asked for, not the next one down, at every size offered", () => {
+    const MADE: Record<PencilKind, (size: number, level: PuzzleLevel, seed: number) => { level: string }> = {
+      shikaku: (size, level, seed) => generateShikaku(size, size, level as ShikakuLevel, seed),
+      akari: (size, level, seed) => generateAkari(size, size, seed, level as AkariLevel),
+      loop: (size, level, seed) => generateSlitherlink(size, size, seed, level as SlitherlinkLevel),
+      hitori: (size, level, seed) => generateHitori(size, seed, level as HitoriLevel),
+      crossSums: (size, level, seed) => generateKakuro(seed, level as KakuroLevel, size),
+      regions: (size, level, seed) => generateFillomino(size, size, level as FillominoLevel, seed),
+    };
+    for (const kind of PENCIL_KIND_LIST) {
+      for (const size of PENCIL_SPECS[kind].offered) {
+        for (const level of PENCIL_SPECS[kind].levels) {
+          for (const seed of [20261005, 12]) expect(MADE[kind](size, level, seed).level, `${kind} ${size} ${level} ${seed}`).toBe(level);
+        }
+      }
+    }
+  });
+
+  it("holds every number of a Regions board to the keypad's nine, even on the biggest board at every level", () => {
+    for (const level of PENCIL_SPECS.regions.levels) {
+      for (const seed of [1, 2, 3, 4, 5]) {
+        const made = pencilEngine("regions").make(12, level, seed);
+        for (const character of made.solution) expect("123456789".includes(character), `${level} ${seed}`).toBe(true);
+      }
+    }
+  });
+
+  it("writes a Hitori's numbers past nine as letters the engine reads back", () => {
+    const made = pencilEngine("hitori").make(12, "extra-hard", 3);
+    expect(pencilEngine("hitori").reads(12, made.givens)).toBe(true);
+    expect(/[a-c]/.test(made.givens)).toBe(true);
   });
 });

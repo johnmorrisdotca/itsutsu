@@ -1,4 +1,4 @@
-import type { AnyPencilKind } from "./pencil.types";
+import type { PencilKind } from "./pencil.types";
 
 /**
  * WHERE THINGS ARE IN KAZU'S DRAWINGS, so a press on one can be read as a cell
@@ -7,10 +7,10 @@ import type { AnyPencilKind } from "./pencil.types";
  * the rest); `geometry.test.ts` holds each against the drawing itself, so a new
  * version of Kazu that moves its grid fails there and not in a reader's thumb.
  */
-export const PENCIL_GEOMETRY: Record<AnyPencilKind, { unit: number; pad: number }> = {
+export const PENCIL_GEOMETRY: Record<PencilKind, { unit: number; pad: number }> = {
   shikaku: { unit: 48, pad: 2 },
   akari: { unit: 48, pad: 2 },
-  slitherlink: { unit: 48, pad: 4 },
+  loop: { unit: 48, pad: 4 },
   hitori: { unit: 52, pad: 2 },
   regions: { unit: 48, pad: 2 },
   crossSums: { unit: 56, pad: 0 },
@@ -20,7 +20,7 @@ export const PENCIL_GEOMETRY: Record<AnyPencilKind, { unit: number; pad: number 
 export type Fraction = { x: number; y: number };
 
 /** The cell under a point, or null for one outside the board. */
-export function cellAt(kind: AnyPencilKind, size: number, point: Fraction): number | null {
+export function cellAt(kind: PencilKind, size: number, point: Fraction): number | null {
   const { unit, pad } = PENCIL_GEOMETRY[kind];
   const whole = size * unit + 2 * pad;
   const u = point.x * whole - pad;
@@ -38,7 +38,7 @@ export function cellAt(kind: AnyPencilKind, size: number, point: Fraction): numb
  * reading order, as Kazu numbers them (`slitherlinkCellEdges`).
  */
 export function edgeAt(size: number, point: Fraction): number | null {
-  const { unit, pad } = PENCIL_GEOMETRY.slitherlink;
+  const { unit, pad } = PENCIL_GEOMETRY.loop;
   const whole = size * unit + 2 * pad;
   const u = point.x * whole - pad;
   const v = point.y * whole - pad;

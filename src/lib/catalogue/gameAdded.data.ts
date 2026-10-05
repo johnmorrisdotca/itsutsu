@@ -9,6 +9,7 @@ import type { GameKey } from "./gameKeys";
  * A new game fails `gameAdded.coverage.test.ts` until it is dated here.
  */
 export const GAME_ADDED: Record<GameKey, string> = {
+  akari: "2026-10-05",
   antiBackgammon: "2026-10-01",
   antiReversi: "2026-09-07",
   backgammon: "2026-10-01",
@@ -54,6 +55,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   hex: "2026-09-08",
   hexFive: "2026-09-25",
   hiddenStones: "2026-09-24",
+  hitori: "2026-10-05",
   hitotsu: "2026-09-30",
   holeDrop: "2026-09-07",
   honeycomb: "2026-09-21",
@@ -65,6 +67,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   koushi: "2026-09-26",
   kumimoji: "2026-09-26",
   longGammon: "2026-10-01",
+  loop: "2026-10-05",
   mahjong: "2026-09-29",
   makerBreaker: "2026-09-07",
   mancala: "2026-09-28",

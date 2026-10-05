@@ -18,13 +18,13 @@ import { SolveHint } from "./SolveHint";
 import { SolveShow } from "./SolveShow";
 import { useStepHistory } from "./useStepHistory";
 import { PencilBoard } from "./pencil/PencilBoard";
-import { PENCIL_COPY, pencilChecked, pencilStepWord } from "./pencil/pencil.constants";
+import { edgeWords, PENCIL_COPY, pencilChecked, pencilStepWord } from "./pencil/pencil.constants";
 
 /** The puzzles whose marks are numbers, which a keypad under the board enters. */
 const NUMBER_KINDS: readonly PencilKind[] = ["regions", "crossSums"];
 
 /**
- * Solving a pencil puzzle: Shikaku, Cross Sums or Regions,
+ * Solving a pencil puzzle: Shikaku, Akari, Loop, Hitori, Cross Sums or Regions,
  * all of them Kazu's (`@johnmorrisdotca/kazu`).
  *
  * What is written on the board is one string, a character a mark place
@@ -120,7 +120,7 @@ export function PencilSolve({
       if (NUMBER_KINDS.includes(kind) || ui.selected === null) return;
       event.preventDefault();
       setKeyed(true);
-      press({ cell: ui.selected });
+      press(kind === "loop" ? { edge: ui.selected } : { cell: ui.selected });
     } else if (NUMBER_KINDS.includes(kind) && /^[0-9]$/.test(event.key)) {
       event.preventDefault();
       enter(Number(event.key));
@@ -189,6 +189,7 @@ export function PencilSolve({
         go={history.go}
         size={size}
         say={(value) => pencilStepWord(kind, value)}
+        where={kind === "loop" ? (index) => edgeWords(size, index) : undefined}
       />
       {done === null ? (
         <>

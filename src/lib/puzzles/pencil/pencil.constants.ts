@@ -7,8 +7,8 @@ import type { PencilKind } from "./pencil.types";
  * is told, in the shapes `puzzles.constants.ts` spreads into its own tables.
  * Their own module since 2026-10-05, when Kazu 1.2.0 brought a dozen grid puzzles:
  * `puzzles.constants.ts` is a table of every puzzle, and this is the one family's
- * share of it. The ones Kazu makes that the site does not offer yet are in
- * `held.constants.ts`.
+ * share of it. Akari, Loop and Hitori were held back until Kazu 1.3.0 made them as
+ * hard as they should be, and came back with extra hard (2026-10-05).
  *
  * NAMES. John, 2026-10-05: ordinary Japanese words stay ("it's weird that we can't
  * have a game called Shikaku? that is a basic Japanese word"), and a coined name
@@ -23,7 +23,7 @@ import type { PencilKind } from "./pencil.types";
 const FOUR_LEVELS: readonly PuzzleLevel[] = ["easy", "medium", "hard", "extra-hard"];
 
 /** Every pencil puzzle the site offers, in the order its family shows them: the one list the dispatch, the gates and the tests read. */
-export const PENCIL_KIND_LIST: readonly PencilKind[] = ["shikaku", "crossSums", "regions"];
+export const PENCIL_KIND_LIST: readonly PencilKind[] = ["shikaku", "akari", "loop", "hitori", "crossSums", "regions"];
 
 /** Whether a puzzle kind is one of the pencil puzzles. */
 export function isPencilKind(kind: string): kind is PencilKind {
@@ -40,6 +40,12 @@ export function isPencilKind(kind: string): kind is PencilKind {
 export const PENCIL_SPECS: Record<PencilKind, PuzzleSpec> = {
   // 196: a 14×14's cells, one character each, a letter a rectangle in the answer.
   shikaku: { sizes: [5, 7, 10, 14], offered: [5, 7, 10, 14], defaultSize: 7, levels: FOUR_LEVELS, defaultLevel: "medium", mostCells: 196 },
+  // 196: the cells of a 14×14; a bulb is an `o`.
+  akari: { sizes: [5, 7, 10, 14], offered: [5, 7, 10, 14], defaultSize: 7, levels: FOUR_LEVELS, defaultLevel: "medium", mostCells: 196 },
+  // 220: the edges of a 10×10, 2 × 10 × 11, which its answer writes a character each.
+  loop: { sizes: [5, 7, 10], offered: [5, 7, 10], defaultSize: 7, levels: FOUR_LEVELS, defaultLevel: "medium", mostCells: 220 },
+  // 144: a 12×12's cells, a character each (a number past nine is a letter, and none passes twelve).
+  hitori: { sizes: [5, 7, 9, 12], offered: [5, 7, 9, 12], defaultSize: 7, levels: FOUR_LEVELS, defaultLevel: "medium", mostCells: 144 },
   // 720: a 12×12 of cells written as `.` for white and five characters for black (`#` and the two sums), at the very most; its answer is 144.
   crossSums: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: FOUR_LEVELS, defaultLevel: "medium", mostCells: 720 },
   // 144: a 12×12's cells, a character each (a number is one character, to nine and then a letter, and `pencil.test.ts` makes the biggest boards at every level to see none outgrows it).
@@ -53,6 +59,23 @@ export const PENCIL_SIZE_NAMES: Record<PencilKind, Record<number, { label: strin
     7: { label: "Standard", kanji: "定番" },
     10: { label: "Long", kanji: "長" },
     14: { label: "Longest", kanji: "最長" },
+  },
+  akari: {
+    5: { label: "Quick", kanji: "速" },
+    7: { label: "Standard", kanji: "定番" },
+    10: { label: "Long", kanji: "長" },
+    14: { label: "Longest", kanji: "最長" },
+  },
+  loop: {
+    5: { label: "Quick", kanji: "速" },
+    7: { label: "Standard", kanji: "定番" },
+    10: { label: "Long", kanji: "長" },
+  },
+  hitori: {
+    5: { label: "Quick", kanji: "速" },
+    7: { label: "Standard", kanji: "定番" },
+    9: { label: "Long", kanji: "長" },
+    12: { label: "Longest", kanji: "最長" },
   },
   crossSums: {
     6: { label: "Quick", kanji: "速" },
@@ -87,6 +110,62 @@ export const PENCIL_DISPLAY: Record<PencilKind, VariantCopy> = {
       "Every puzzle has exactly one answer. The clock starts on your first rectangle and stops when the last cell is covered rightly. Check tells you how many rectangles are wrong, never which.",
     ],
     board: "7×7 is the usual size. 5×5 is quick; 10×10 and 14×14 are longer. At every size there are four levels, from easy, where every rectangle can be found by looking, to extra hard.",
+  },
+  akari: {
+    label: "Akari",
+    kanji: "明かり",
+    tagline: "Place bulbs so that every white square is lit, no two bulbs light each other, and every number has its bulbs beside it.",
+    inspiredBy: "the lamps-in-a-gallery pencil puzzle",
+    origin:
+      "A pencil puzzle published in Japan by Nikoli as Light Up, 美術館 (bijutsukan, 'art gallery'), and also called Akari, 明かり, 'light'. Bulbs shine along their row and column until a black square stops them. The puzzles here are made by Kazu, our open-source package, each with exactly one answer.",
+    alsoKnownAs: ["Light Up", "Bijutsukan"],
+    country: "JP",
+    wikipedia: "Light Up (puzzle)",
+    rules: [
+      "Put a bulb in some of the white squares. A bulb lights its own square and every white square in line with it, across and down, until a black square or the edge of the board.",
+      "Every white square must be lit.",
+      "No bulb may be lit by another: two bulbs never see each other along a row or column.",
+      "A number in a black square says how many bulbs touch it, above, below and to each side. A black square with no number can have any.",
+      "Tap a white square to put a bulb in it, and again to take it out. Every puzzle has exactly one answer. The clock starts on your first bulb and stops when the board is right. Check tells you how many bulbs are wrong, never which.",
+    ],
+    board: "7×7 is the usual size. 5×5 is quick; 10×10 and 14×14 are longer. At every size there are four levels, from easy, with most numbers printed, to extra hard, with as few as the one answer allows.",
+  },
+  loop: {
+    label: "Loop",
+    kanji: "輪",
+    tagline: "Draw one loop along the grid's lines so that every number has exactly that many of its four sides on the loop.",
+    inspiredBy: "the loop-drawing pencil puzzle",
+    origin:
+      "A loop puzzle developed by the Japanese publisher Nikoli and found under many other names. 輪 (wa) is Japanese for a ring or loop. The puzzles here are made by Kazu, our open-source package, each with exactly one answer.",
+    country: "JP",
+    wikipedia: "Slitherlink",
+    rules: [
+      "Draw a single closed loop along the lines of the grid, joining the dots. It never crosses itself or branches.",
+      "A number in a cell says how many of that cell's four sides the loop runs along. A cell with no number can have any.",
+      "Tap a line between two dots to draw it, and again to take it out.",
+      "Every puzzle has exactly one answer. The clock starts on your first line and stops when the loop is right. Check tells you how many lines are wrong, never which.",
+      "Loop is known elsewhere as Slitherlink, Fences, Takegaki and Loopy.",
+    ],
+    board: "7×7 is the usual size. 5×5 is quick and 10×10 is longer. At every size there are four levels, from easy, with most numbers printed, to extra hard, with as few as the one answer allows.",
+  },
+  hitori: {
+    label: "Hitori",
+    kanji: "一人",
+    tagline: "Shade squares so no number repeats in any row or column, no two shaded squares touch, and the squares left stay joined up.",
+    inspiredBy: "the shade-the-repeats pencil puzzle",
+    origin:
+      "A pencil puzzle published in Japan by Nikoli as ひとりにしてくれ (hitori ni shite kure, 'leave me alone'). 一人 (hitori) means one person, or alone: each number left unshaded stands alone in its row and column. The puzzles here are made by Kazu, our open-source package, each with exactly one answer.",
+    alsoKnownAs: ["Hitori ni shite kure"],
+    country: "JP",
+    wikipedia: "Hitori",
+    rules: [
+      "Shade some of the squares so that no number appears twice among the unshaded squares in any row or column.",
+      "Two shaded squares may not touch along a side.",
+      "All the unshaded squares must be joined up, one group, side to side: shading may not cut the board in two.",
+      "Tap a square to shade it, and again to clear it.",
+      "Every puzzle has exactly one answer. The clock starts on your first square and stops when the board is right. Check tells you how many squares are wrong, never which.",
+    ],
+    board: "7×7 is the usual size. 5×5 is quick; 9×9 and 12×12 are longer. At every size there are four levels, from easy, where the rules alone settle it, to extra hard.",
   },
   crossSums: {
     label: "Cross Sums",

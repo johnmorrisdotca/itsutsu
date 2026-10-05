@@ -249,10 +249,12 @@ export const GAME_FAMILIES: GameFamily[] = [
     key: "pencil",
     /*
      * PENCIL PUZZLES 鉛筆. John, 2026-10-05: "Pencil puzzles", the name of a new
-     * shelf for the grid puzzles of Kazu 1.2.0 (`@johnmorrisdotca/kazu`): draw the
-     * rectangles, add up the runs, number the regions, and clear the mines of Jirai
-     * (`@johnmorrisdotca/jirai`). Four ship (John: "ship four now"); Akari, Loop and
-     * Hitori are held until their generators are harder (`pencil/held.constants.ts`).
+     * shelf for the grid puzzles of Kazu (`@johnmorrisdotca/kazu`): draw the
+     * rectangles, place the bulbs, draw one loop, shade the repeats, add up the runs,
+     * number the regions, and clear the mines of Jirai (`@johnmorrisdotca/jirai`).
+     * Four shipped first ("ship four now"); Akari, Loop and Hitori followed once Kazu
+     * 1.3.0 made them as hard as a pencil puzzle should be, which makes seven games and
+     * no guests, on a shelf that shows at most eight.
      * Nothing here is a game between two colours, and each
      * is a `PuzzleKind` (`src/lib/puzzles/pencil/`), with one answer a pencil finds.
      *
@@ -267,8 +269,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Pencil puzzles",
     kanji: "鉛筆",
-    blurb: "Puzzles for one to work out with a pencil: cut a grid into rectangles, add up the runs, number the regions and clear the mines.",
-    games: ["shikaku", "crossSums", "regions", "jirai"],
+    blurb: "Puzzles for one to work out with a pencil: cut a grid into rectangles, light every square, draw one loop, shade the repeats, add up the runs, number the regions and clear the mines.",
+    games: ["shikaku", "akari", "loop", "hitori", "crossSums", "regions", "jirai"],
   },
   {
     key: "cards",

@@ -349,7 +349,8 @@ them (`points/ladder.ts`, `points/gamePoints.ts`).
 | Cross Sums · Regions | the games' names | plain English for what Kazu calls Kakuro and Fillomino; each says "known elsewhere as ..." on its rules page and nowhere else. Shikaku stays: an ordinary Japanese word (John, 2026-10-05) |
 | rectangle · cell | what Check counts ("2 rectangles are wrong, 1 still to draw") | each puzzle's own noun, so a Shikaku never counts "cells" |
 | draw · fill | "still to ..." | the verb of the thing: a rectangle is drawn, a cell filled |
-| Akari · Loop · Hitori | held (`pencil/held.constants.ts`) | the names they will go by when they come: Loop is Kazu's Slitherlink |
+| Akari · Loop · Hitori | the games' names | Akari and Hitori are the puzzles' own names; Loop is plain English for Kazu's Slitherlink and says "known elsewhere as ..." on its rules page and nowhere else (`loop` is its address) |
+| bulb · line · square | what Check counts on Akari, Loop and Hitori | each puzzle's own noun: "2 bulbs are wrong, 1 still to place", "3 lines ...  still to draw", "1 square ... still to shade" |
 | Flag | under a Jirai board | the usual word; pressed, a tap flags. Not "Mark" (the package's word), which a Check also uses |
 | mines left · mistake | the line under a Jirai board | "13 mines left · 1 mistake": the mines not yet flagged, and the mines uncovered by slip |
 | Eight neighbours · Four neighbours · Hexagons · Wraparound | Jirai's set-up | what a number counts, in the words that say it; not "Square", "Orthogonal" (the package's) |

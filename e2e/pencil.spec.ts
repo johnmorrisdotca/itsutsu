@@ -7,11 +7,11 @@ import type { PencilKind } from "../src/lib/puzzles/pencil/pencil.types";
 import { shikakuRectsOf } from "../src/lib/puzzles/pencil/shikaku";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
 import type { PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
-import { codeOnPage, makeNextMark, makeWrongMark, pressCell } from "./pencil";
+import { codeOnPage, makeNextMark, makeWrongMark, pressCell, pressEdge } from "./pencil";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
- * THE PENCIL PUZZLES: Shikaku, Cross Sums (Kakuro) and Regions (Fillomino), Kazu's,
+ * THE PENCIL PUZZLES: Shikaku, Akari, Loop (Slitherlink), Hitori, Cross Sums (Kakuro) and Regions (Fillomino), Kazu's,
  * beside Jirai (`jirai.spec.ts`). Each is set up on its own screen, solved by pressing the
  * drawn board as a reader does (the answer made out of the same seed the page
  * uses), checked, shown, hinted, kept half done in My games, and found in its
@@ -19,6 +19,9 @@ import { freshPuzzleSeed, ready } from "./support";
  */
 const CASES = [
   { kind: "shikaku", size: 5, level: "easy", rule: "its area", name: "Shikaku", elsewhere: null },
+  { kind: "akari", size: 5, level: "medium", rule: "No bulb may be lit by another", name: "Akari", elsewhere: null },
+  { kind: "loop", size: 5, level: "easy", rule: "single closed loop", name: "Loop", elsewhere: "Slitherlink" },
+  { kind: "hitori", size: 5, level: "hard", rule: "Shade some of the squares", name: "Hitori", elsewhere: null },
   { kind: "crossSums", size: 6, level: "hard", rule: "no digit may appear twice", name: "Cross Sums", elsewhere: "Kakuro" },
   // The site's first extra hard level, solved the way a reader solves it: set up from its chip, then pressed to the end.
   { kind: "regions", size: 6, level: "extra-hard", rule: "Two regions of the same size", name: "Regions", elsewhere: "Fillomino" },
@@ -156,6 +159,46 @@ test.describe("what is each puzzle's own", () => {
     await expect.poll(() => codeOnPage(page)).toBe(".".repeat(25));
   });
 
+  test("Akari: a bulb goes on a white square and comes off when it is pressed again, and a black square takes none", async ({ page }) => {
+    const puzzle = await openPlay(page, "akari", 7, "medium");
+    const blank = pencilEngine("akari").blank(7, puzzle.givens);
+    const black = [...puzzle.givens].findIndex((character) => character !== ".");
+    const white = [...puzzle.givens].findIndex((character) => character === ".");
+    await pressCell(page, "akari", 7, black);
+    expect(await codeOnPage(page)).toBe(blank);
+    await pressCell(page, "akari", 7, white);
+    await expect.poll(async () => (await codeOnPage(page))[white]).toBe("o");
+    await pressCell(page, "akari", 7, white);
+    await expect.poll(() => codeOnPage(page)).toBe(blank);
+  });
+
+  test("Loop: a press on a line draws it, again takes it away, and the keyboard draws one too", async ({ page }) => {
+    const puzzle = await openPlay(page, "loop", 5, "easy");
+    const blank = pencilEngine("loop").blank(5, puzzle.givens);
+    // A line along the top of the first square, and one down the right edge of the first row.
+    for (const edge of [0, 35]) {
+      await pressEdge(page, 5, edge);
+      await expect.poll(async () => (await codeOnPage(page))[edge]).toBe("#");
+      await pressEdge(page, 5, edge);
+      await expect.poll(() => codeOnPage(page)).toBe(blank);
+    }
+    await pressEdge(page, 5, 3);
+    await page.getByTestId("puzzle-grid").locator("[tabindex='0']").focus();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Enter");
+    await expect.poll(async () => (await codeOnPage(page))[4]).toBe("#");
+    expect((await codeOnPage(page))[3]).toBe("#");
+  });
+
+  test("Hitori: a press shades a square and again clears it", async ({ page }) => {
+    const puzzle = await openPlay(page, "hitori", 5, "easy");
+    const blank = pencilEngine("hitori").blank(5, puzzle.givens);
+    await pressCell(page, "hitori", 5, 6);
+    await expect.poll(async () => (await codeOnPage(page))[6]).toBe("#");
+    await pressCell(page, "hitori", 5, 6);
+    await expect.poll(() => codeOnPage(page)).toBe(blank);
+  });
+
   test("Regions: a printed number cannot be written over, and the keyboard enters a number", async ({ page }) => {
     const puzzle = await openPlay(page, "regions", 6, "easy");
     const printed = [...puzzle.givens].findIndex((character) => character !== ".");
@@ -188,7 +231,7 @@ test.describe("what is each puzzle's own", () => {
 });
 
 test.describe("the Pencil puzzles family", () => {
-  test("has a page, a tile on the set-up screen, a place on the list of every game, and all four on its shelf", async ({ page }) => {
+  test("has a page, a tile on the set-up screen, a place on the list of every game, and all seven on its shelf", async ({ page }) => {
     await page.goto(`/games/${PUZZLE_SLUGS.shikaku}/family`);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Pencil puzzles");
     await expect(page.locator('[data-testid="family-mark"][data-family="Pencil puzzles"]').first()).toBeVisible();
@@ -207,9 +250,12 @@ test.describe("the Pencil puzzles family", () => {
     await expect(page.locator("main")).toContainText("Pencil puzzles");
   });
 
-  test("offers four games, and none of the three it holds back has a page", async ({ page }) => {
-    // Akari, Loop and Hitori are held (`pencil/held.constants.ts`): no address answers for them.
-    for (const slug of ["akari", "loop", "hitori", "slitherlink", "kakuro", "fillomino"]) {
+  test("answers at the plain names, and at none of the coined ones", async ({ page }) => {
+    for (const slug of ["akari", "loop", "hitori"]) {
+      const answered = await page.goto(`/games/${slug}`);
+      expect(answered?.status(), slug).toBe(200);
+    }
+    for (const slug of ["slitherlink", "kakuro", "fillomino"]) {
       const answered = await page.goto(`/games/${slug}`);
       expect(answered?.status(), slug).toBe(404);
     }

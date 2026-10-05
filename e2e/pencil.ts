@@ -33,6 +33,24 @@ export async function pressCell(page: Page, kind: PencilKind, size: number, cell
   await clickAt(page, kind, size, (cell % size) + 0.5, Math.floor(cell / size) + 0.5);
 }
 
+/**
+ * A press on an edge of a Loop board, a little inside the cell it borders (on the side the board has), where the
+ * press means exactly that edge: the nearest side of the cell under it (`edgeAt`). Horizontal edges are numbered
+ * first, `size + 1` rows of `size`, and then the vertical ones, `size` rows of `size + 1`.
+ */
+export async function pressEdge(page: Page, size: number, edge: number) {
+  const horizontal = size * (size + 1);
+  const inset = 0.15;
+  if (edge < horizontal) {
+    const row = Math.floor(edge / size);
+    await clickAt(page, "loop", size, (edge % size) + 0.5, row < size ? row + inset : row - inset);
+  } else {
+    const at = edge - horizontal;
+    const column = at % (size + 1);
+    await clickAt(page, "loop", size, column < size ? column + inset : column - inset, Math.floor(at / (size + 1)) + 0.5);
+  }
+}
+
 /** The code the board holds, as the page says it. */
 export async function codeOnPage(page: Page): Promise<string> {
   return (await page.getByTestId("puzzle-play").getAttribute("data-code")) ?? "";
@@ -55,14 +73,17 @@ export async function makeNextMark(page: Page, kind: PencilKind, size: number, s
     await pressCell(page, kind, size, next.at);
     const digit = solution[next.at]!;
     await page.getByTestId(digit === "." ? "puzzle-key-clear" : `puzzle-key-${Number.parseInt(digit, 36)}`).click();
+  } else if (kind === "loop") {
+    await pressEdge(page, size, next.at);
   } else {
+    // A bulb or a shade: one press on the square.
     await pressCell(page, kind, size, next.at);
   }
   await expect.poll(() => codeOnPage(page)).toBe(next.code);
   return next.code;
 }
 
-/** Makes a mark the answer does not have, by pressing the board: a rectangle or a wrong number. */
+/** Makes a mark the answer does not have, by pressing the board: a rectangle, a bulb, a shade, a line or a wrong number. */
 export async function makeWrongMark(page: Page, kind: PencilKind, size: number, givens: string, solution: string): Promise<void> {
   const before = await codeOnPage(page);
   const first = (test: (place: number) => boolean): number => [...before].findIndex((_, place) => test(place));
@@ -71,6 +92,11 @@ export async function makeWrongMark(page: Page, kind: PencilKind, size: number, 
     const cell = first((place) => givens[place] === "." && before[place] === ".");
     await pressCell(page, kind, size, cell);
     await pressCell(page, kind, size, cell);
+  } else if (kind === "akari" || kind === "hitori" || kind === "loop") {
+    // A bulb, a shade or a line where the answer has none: the first place the answer leaves blank that a press can mark.
+    const place = first((at) => solution[at] === "." && before[at] === "." && (kind !== "akari" || givens[at] === "."));
+    if (kind === "loop") await pressEdge(page, size, place);
+    else await pressCell(page, kind, size, place);
   } else {
     // The code, not the givens, says which cell is empty: a Cross Sums board's givens are longer than its cells.
     const cell = first((place) => before[place] === ".");

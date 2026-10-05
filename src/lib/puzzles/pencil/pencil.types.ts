@@ -3,19 +3,10 @@ import type { PuzzleCheck, PuzzleLevel } from "../puzzles.types";
 /**
  * THE PENCIL PUZZLES: grid puzzles drawn and written on in pencil, made,
  * solved and checked by Kazu (`@johnmorrisdotca/kazu`, github.com/johnmorrisdotca/kazu).
- * Each is a `PuzzleKind` of its own; this is the one shape they all share, so
+ * Kazu's Slitherlink is the site's Loop (`loop`); each is a `PuzzleKind` of its own; this is the one shape they all share, so
  * the solve screen, the server's check and the finished page are written once.
  */
-export type PencilKind = "shikaku" | "crossSums" | "regions";
-
-/**
- * The pencil puzzles Kazu makes that the site holds back (`held.constants.ts`): engines that work, and are no
- * kind of puzzle on the site, so nothing reaches them. Their names: Akari, Loop (Slitherlink) and Hitori.
- */
-export type HeldPencilKind = "akari" | "slitherlink" | "hitori";
-
-/** Any pencil puzzle with an engine here, offered or held. */
-export type AnyPencilKind = PencilKind | HeldPencilKind;
+export type PencilKind = "shikaku" | "akari" | "loop" | "hitori" | "crossSums" | "regions";
 
 /** A puzzle as the site keeps it: the board a reader sees, and the answer it has. */
 export type PencilMade = { givens: string; solution: string };

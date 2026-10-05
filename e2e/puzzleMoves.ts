@@ -6,7 +6,7 @@ import { pencilEngine } from "../src/lib/puzzles/pencil/engines";
 import { isPencilKind } from "../src/lib/puzzles/pencil/pencil.constants";
 import type { PencilKind } from "../src/lib/puzzles/pencil/pencil.types";
 import type { PuzzleKind } from "../src/lib/puzzles/puzzles.types";
-import { codeOnPage, makeNextMark, makeWrongMark, pressCell } from "./pencil";
+import { codeOnPage, makeNextMark, makeWrongMark, pressCell, pressEdge } from "./pencil";
 
 /**
  * THE PUZZLES THAT ARE DRAWN, MOVED BY THE SPECS THAT LOOP OVER EVERY PUZZLE.
@@ -99,6 +99,12 @@ export async function changeEntry(page: Page, kind: DrawnKind, size: number, pla
   else if (kind === "shikaku") {
     await page.getByTestId("shikaku-remove").click();
     await pressCell(page, kind, size, place);
+  } else if (kind === "loop") {
+    // A line drawn is a line pressed again.
+    await pressEdge(page, size, place);
+  } else if (kind === "akari" || kind === "hitori") {
+    // A bulb or a shade is put out by pressing the square again.
+    await pressCell(page, kind, size, place);
   } else {
     await pressCell(page, kind, size, place);
     await page.getByTestId("puzzle-key-clear").click();
@@ -121,4 +127,4 @@ export async function distance(page: Page, kind: DrawnKind, size: number, seed: 
 }
 
 /** Whether a hint on the kind moves the board exactly one mark nearer, or at least one (see `distance`). */
-export const HINT_STEP: Record<DrawnKind, "one" | "some"> = { regions: "one", crossSums: "one", shikaku: "some", jirai: "some" };
+export const HINT_STEP: Record<DrawnKind, "one" | "some"> = { regions: "one", crossSums: "one", akari: "one", loop: "one", hitori: "one", shikaku: "some", jirai: "some" };

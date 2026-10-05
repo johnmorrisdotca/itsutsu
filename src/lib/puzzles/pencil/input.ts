@@ -1,7 +1,7 @@
 import { BLANK, BULB, EDGE, SHADE, symbolFor } from "./codes";
 import { BLACK } from "./kakuro";
 import { shikakuPlace, shikakuRemove } from "./shikaku";
-import type { AnyPencilKind } from "./pencil.types";
+import type { PencilKind } from "./pencil.types";
 
 /**
  * WHAT A PRESS DOES to a pencil puzzle's board, kept out of the components so
@@ -29,7 +29,7 @@ const set = (code: string, at: number, character: string): string => `${code.sli
 const flip = (code: string, at: number, mark: string): string => set(code, at, code[at] === mark ? BLANK : mark);
 
 /** Whether a cell is one a number or a bulb or a shade can go on: not a black square, not a printed number. */
-function openCell(kind: AnyPencilKind, givens: string, code: string, cell: number): boolean {
+function openCell(kind: PencilKind, givens: string, code: string, cell: number): boolean {
   // A Cross Sums board's givens are longer than its cells (a black cell is five characters), so its black cells are read off the code, which marks each.
   if (kind === "crossSums") return code[cell] !== undefined && code[cell] !== BLACK;
   const printed = givens[cell];
@@ -39,8 +39,8 @@ function openCell(kind: AnyPencilKind, givens: string, code: string, cell: numbe
 }
 
 /** A press on a board, as the code and the highlight it leaves. */
-export function pressed(kind: AnyPencilKind, size: number, givens: string, code: string, ui: PencilUi, press: PencilPress): Pressed {
-  if (kind === "slitherlink") {
+export function pressed(kind: PencilKind, size: number, givens: string, code: string, ui: PencilUi, press: PencilPress): Pressed {
+  if (kind === "loop") {
     if (!("edge" in press)) return { code, ui };
     return { code: flip(code, press.edge, EDGE), ui: { ...ui, selected: press.edge } };
   }
@@ -68,7 +68,7 @@ function shikakuPressed(size: number, code: string, ui: PencilUi, press: PencilP
 }
 
 /** A number into the chosen cell (0 clears it), for the two puzzles that take numbers. */
-export function entered(kind: AnyPencilKind, givens: string, code: string, ui: PencilUi, value: number): Pressed {
+export function entered(kind: PencilKind, givens: string, code: string, ui: PencilUi, value: number): Pressed {
   const cell = ui.selected;
   if ((kind !== "regions" && kind !== "crossSums") || cell === null || !openCell(kind, givens, code, cell)) return { code, ui };
   const most = kind === "crossSums" ? 9 : 35;
@@ -78,11 +78,11 @@ export function entered(kind: AnyPencilKind, givens: string, code: string, ui: P
 }
 
 /** The cell or edge an arrow key moves to from `from`, staying on the board. A Slitherlink's edges are walked in their order, left and right by one, up and down by a row of them. */
-export function moved(kind: AnyPencilKind, size: number, from: number | null, key: string): number | null {
+export function moved(kind: PencilKind, size: number, from: number | null, key: string): number | null {
   if (!key.startsWith("Arrow")) return from;
-  const total = kind === "slitherlink" ? 2 * size * (size + 1) : size * size;
+  const total = kind === "loop" ? 2 * size * (size + 1) : size * size;
   const start = from ?? 0;
-  if (kind === "slitherlink") {
+  if (kind === "loop") {
     const next = start + ({ ArrowLeft: -1, ArrowRight: 1, ArrowUp: -size, ArrowDown: size }[key] ?? 0);
     return next >= 0 && next < total ? next : start;
   }

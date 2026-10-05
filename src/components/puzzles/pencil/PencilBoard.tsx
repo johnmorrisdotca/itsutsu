@@ -2,15 +2,19 @@
 
 import { useMemo, useRef, type KeyboardEvent, type PointerEvent } from "react";
 
-import { cellAt, type Fraction } from "@/lib/puzzles/pencil/geometry";
+import { cellAt, edgeAt, type Fraction } from "@/lib/puzzles/pencil/geometry";
 import type { PencilPress } from "@/lib/puzzles/pencil/input";
 import type { PencilKind } from "@/lib/puzzles/pencil/pencil.types";
 
 import { PuzzleBoard } from "../PuzzleBoard";
 import { pencilSvg, type PencilView } from "./pencilDraw";
 
-/** What a press at a point means on a board: the cell under it; null off the board. (A held puzzle drawn on edges, Loop, adds `edgeAt` here: `held.constants.ts`.) */
-function pressAt(kind: PencilKind, size: number, point: Fraction): { cell: number } | null {
+/** What a press at a point means on a board: a cell, or for Loop, drawn on its edges, the edge nearest; null off the board. */
+function pressAt(kind: PencilKind, size: number, point: Fraction): { cell: number } | { edge: number } | null {
+  if (kind === "loop") {
+    const edge = edgeAt(size, point);
+    return edge === null ? null : { edge };
+  }
   const cell = cellAt(kind, size, point);
   return cell === null ? null : { cell };
 }
@@ -19,7 +23,7 @@ function pressAt(kind: PencilKind, size: number, point: Fraction): { cell: numbe
  * A PENCIL PUZZLE'S BOARD: Kazu's own drawing (`pencilSvg`) in the wood every
  * board has (`PuzzleBoard`), and a press on it read as a cell or an edge.
  *
- * Kazu draws; this reports. A press is a tap or a click on a cell and for Shikaku also a drag from one cell to another, which is
+ * Kazu draws; this reports. A press is a tap or a click on a cell (an edge, for Loop) and for Shikaku also a drag from one cell to another, which is
  * the rectangle between them. What a press means is `pressed` in
  * `lib/puzzles/pencil/input.ts`, and `PencilSolve` decides what to do with the
  * code it makes. The keyboard works on the board when it has the focus: the
