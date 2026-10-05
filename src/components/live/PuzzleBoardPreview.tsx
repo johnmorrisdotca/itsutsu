@@ -134,9 +134,9 @@ export function PuzzleBoardPreview({
         ) : spec.lattice === true ? (
           <LatticePreview appearance={appearance} />
         ) : isPencilKind(kind) ? (
-          <PencilPreview kind={kind} size={size} />
+          <PencilPreview kind={kind} size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "jirai" ? (
-          <JiraiPreview size={size} variant={jirai} />
+          <JiraiPreview size={size} level={level ?? spec.defaultLevel} variant={jirai} />
         ) : kind === "bridges" ? (
           <BridgesPreview size={size} />
         ) : kind === "suido" ? (

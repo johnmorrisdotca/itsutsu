@@ -28,9 +28,12 @@ removed) that scaled each puzzle's own points and left a Number Place 16x16 at
    of what its solves were worth under the old weights, over every level),
    rounded to the nearest 5. The tables are in `ladder.constants.ts`. A size a
    kind makes but does not offer sits between its neighbours.
-2. **Level.** Easy adds 0, Medium 10, Hard 25. A kind made at one level only
-   (FreeCell, Spider) adds nothing, and Hidden Stones, which has no medium,
-   adds 0 or 25. So an ordinary puzzle never pays more than 150.
+2. **Level.** Easy adds 0, Medium 10, Hard 25 and, for the puzzles that have an
+   Extra hard (the Pencil puzzles and Jirai, 2026-10-05), Extra hard 40. A kind
+   made at one level only (FreeCell, Spider) adds nothing, and Hidden Stones,
+   which has no medium, adds 0 or 25. So a puzzle never pays more than 150: a
+   rung that would pass it stops there, and the biggest size's Hard and Extra
+   hard are both 150.
 3. **Fixed-level families (Meikyuu, Suido, Tsunagi).** The rung runs 50 to 150
    by size and the level's place among its size's 256 adds 0 to 50 (to the
    nearest 5), so the top is 200. Their rungs round to 5 up to 100 and to 10
@@ -63,9 +66,10 @@ Measured table (rung at the smallest to largest offered size, Easy):
 | Picture logic 5, 10, 15, 20 | 50, 90, 110, 125 |
 | Mahjong 8, 9, 10, 15 | 50, 90, 110, 125 |
 | Cube 2 to 5 | 50, 85, 105, 125 |
-| Shikaku 5, 7, 9, 12 | 50, 70, 90, 125 |
-| Regions 4, 5, 6 | 50, 80, 125 |
-| Cross Sums 10 (one size, one level) | 100 |
+| Shikaku, Akari 5, 7, 10, 14 | 50, 70, 95, 125 |
+| Loop 5, 7, 10 | 50, 85, 125 |
+| Hitori 5, 7, 9, 12 | 50, 70, 90, 125 |
+| Cross Sums, Regions 6, 8, 10, 12 | 50, 75, 100, 125 |
 | Jirai 7, 9, 12, 16 | 50, 65, 95, 125 |
 | Meikyuu small, medium, large, huge | 55, 95, 120, 150 (to 105, 145, 170, 200) |
 | Meikyuu tall 6x9 to 20x30 | 50, 60, 70, 80, 90, 100 (to 100 ... 150) |

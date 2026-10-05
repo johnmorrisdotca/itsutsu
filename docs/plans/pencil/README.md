@@ -78,6 +78,21 @@ names: **Akari** 明かり (slug `akari`), **Loop** 輪 (Kazu's Slitherlink, kin
 Hitori 5, 7, 9, 12 (Kazu makes any side from 4 to 12, and offers 5 to 10 and 12). Hitori's numbers past nine are letters.
 Pictures: Akari 7×7 seed 20261005 (6 marks), Loop 7×7 seed 20261005 (16 edges), Hitori 7×7 seed 20261005 (5 shades).
 
+## Kazu 1.3.0's last resort, and what the site does about it
+
+When Kazu cannot find a random board of a level within its attempts it falls back, without saying so (a board's `level`
+stays the one asked), to the level below and in the end to the fixed layouts of 1.2.0. Looking at every size and level
+found one place it matters here: **Akari at 12×12 and bigger, easy and sometimes medium**, comes back as the old fixed lattice
+of black rooms (74% black) for about half the seeds at 14×14 easy (27 of 60), 3 of 60 medium, 10 of 60 at 12×12 easy, and none at 10×10
+or smaller or at hard and extra hard. `akari.ts` refuses such a board, so that seed has no puzzle and the page uses the next
+(`generatePencil`, as for any seed with none): no Akari is a pattern. Every other kind, size and level offered was checked over
+25 to 60 seeds for the same (shares of numbers, shaded squares, black squares, clues and zeros) and none looked like a
+template. Kazu should be told: its rating of the lattice is a valid easy board, so its own count of fallbacks (none in 20,800 boards) cannot see it.
+
+The levels are what Kazu says they are, measured by solving: easy and medium need only the rules (easy keeps more numbers),
+hard needs supposing something (depth 1), extra hard the most of that. On the boards looked at, hard and extra hard both have
+depth 1 (a rare 2 on Regions), so extra hard differs from hard by how much supposing, not by a deeper kind.
+
 ## Not done, and why
 
 Heyawake, Nurikabe, Masyu, Yajilin, Juosan and Ripple Effect are in Kazu 1.2.0 and not here: the

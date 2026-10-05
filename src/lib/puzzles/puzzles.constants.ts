@@ -138,7 +138,7 @@ export const PUZZLE_LEVEL_DISPLAY: Record<PuzzleLevel, { label: string; kanji: s
   easy: { label: "Easy", kanji: "初級", blurb: "Every step can be found by looking; nothing has to be tried." },
   medium: { label: "Medium", kanji: "中級", blurb: "Looking gets you most of the way; somewhere you have to try one thing and see." },
   hard: { label: "Hard", kanji: "上級", blurb: "More than one place where you have to try something and see." },
-  "extra-hard": { label: "Extra hard", kanji: "超級", blurb: "Many places where you have to try something and see, and the tries lead to more tries." },
+  "extra-hard": { label: "Extra hard", kanji: "超級", blurb: "The most places where you have to try something and see." },
 };
 
 /**

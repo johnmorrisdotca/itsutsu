@@ -34,9 +34,9 @@ describe.each(PENCIL_KIND_LIST)("%s is made, read, checked and solved", (kind) =
     for (const level of CASES[kind].levels) {
       it(`makes a puzzle at ${size}×${size} ${level} that reads, checks and has one answer`, () => {
         for (let seed = 1; seed <= 6; seed += 1) {
-          const made = engine.make(size, level, seed);
-          // The same seed is the same puzzle, and another seed is another.
-          expect(engine.make(size, level, seed)).toEqual(made);
+          // A seed with no puzzle (`akari.ts`) is the next seed's: what the site makes from it, then, and the same puzzle every time.
+          const made = generatePencil(kind, size, level, seed);
+          expect(generatePencil(kind, size, level, seed)).toEqual(made);
           expect(engine.reads(size, made.givens)).toBe(true);
           expect(made.solution).toHaveLength(engine.codeLength(size));
           expect(engine.fits(size, made.solution)).toBe(true);
@@ -56,7 +56,7 @@ describe.each(PENCIL_KIND_LIST)("%s is made, read, checked and solved", (kind) =
 
   it("refuses givens that are not a board, and an answer that is not a grid", () => {
     const size = CASES[kind].sizes[0]!;
-    const made = engine.make(size, CASES[kind].levels[0]!, 3);
+    const made = generatePencil(kind, size, CASES[kind].levels[0]!, 3);
     expect(engine.reads(size, "")).toBe(false);
     expect(engine.reads(size, made.givens.slice(1))).toBe(false);
     expect(engine.check(size, "", made.solution).ok).toBe(false);
@@ -68,7 +68,7 @@ describe.each(PENCIL_KIND_LIST)("%s is made, read, checked and solved", (kind) =
 
   it("walks to the answer one right mark at a time, and calls nothing wrong on the way", () => {
     const size = CASES[kind].sizes[0]!;
-    const made = engine.make(size, CASES[kind].levels[0]!, 11);
+    const made = generatePencil(kind, size, CASES[kind].levels[0]!, 11);
     let code = engine.blank(size, made.givens);
     for (let step = 0; step < engine.codeLength(size) * 2; step += 1) {
       expect(engine.wrong(size, code, made.solution)).toEqual([]);
@@ -160,6 +160,18 @@ describe("a seed with no puzzle names the next that has one", () => {
       expect(made.seed).toBe(97);
       expect(pencilEngine("crossSums").check(10, made.givens, made.solution)).toEqual({ ok: true });
     }
+  });
+
+  it("passes over the seeds for which Kazu returns its fixed Akari lattice, so no Akari is a pattern", () => {
+    // 14×14 easy is that lattice for about half of its seeds (see `akari.ts`): the seed asked for is one of them, and its board is another.
+    let moved = 0;
+    for (let seed = 1; seed <= 12; seed += 1) {
+      const made = generatePencil("akari", 14, "easy", seed);
+      if (made.seed !== seed) moved += 1;
+      const blacks = [...made.givens].filter((character) => character !== ".").length;
+      expect(blacks / 196, `seed ${seed} made ${made.seed}`).toBeLessThan(0.5);
+    }
+    expect(moved).toBeGreaterThan(0);
   });
 
   it("names the next seed that has a puzzle where an engine cannot make one", () => {
