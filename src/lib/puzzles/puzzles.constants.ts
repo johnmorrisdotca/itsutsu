@@ -11,7 +11,7 @@ import { SPIDER_MOVES_MOST } from "./spider/check";
 import { layoutFor } from "@johnmorrisdotca/jarajara";
 import { SUIDO_LEVEL_SIZES } from "./suido/sizes";
 import { thousands } from "../ui/thousands";
-import { MEIKYUU_LEVELS_A_SIZE, MEIKYUU_SQUARE_LEVELS_TOTAL, MEIKYUU_TALL_LEVELS_TOTAL } from "./meikyuu/levelCounts";
+import { MEIKYUU_COLOSSAL_LEVELS_A_SIZE, MEIKYUU_COLOSSAL_LEVELS_TOTAL, MEIKYUU_LEVELS_A_SIZE, MEIKYUU_SQUARE_LEVELS_TOTAL, MEIKYUU_TALL_LEVELS_TOTAL } from "./meikyuu/levelCounts";
 import { MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SHAPES, meikyuuSizeLabel } from "./meikyuu/sizes";
 import { TOBIISHI_LEVELS_A_SIZE } from "./tobiishi/levelCounts";
 import { TOBIISHI_SIZES, tobiishiSizeLabel } from "./tobiishi/sizes";
@@ -82,7 +82,7 @@ function mahjongTiles(size: number): number {
 }
 
 /** How many levels Meikyuu has in all, read from its sizes rather than typed into its copy: the four sizes, and the tall ones beside them. */
-const MEIKYUU_LEVELS_TOTAL = MEIKYUU_SQUARE_LEVELS_TOTAL + MEIKYUU_TALL_LEVELS_TOTAL;
+const MEIKYUU_LEVELS_TOTAL = MEIKYUU_SQUARE_LEVELS_TOTAL + MEIKYUU_TALL_LEVELS_TOTAL + MEIKYUU_COLOSSAL_LEVELS_TOTAL;
 /** The tall sizes as a person reads them, "6×9, 8×12 and so on to 20×30". */
 const MEIKYUU_TALL_RANGE = `${MEIKYUU_TALL_SHAPES[0]![0]}×${MEIKYUU_TALL_SHAPES[0]![1]} to ${MEIKYUU_TALL_SHAPES.at(-1)![0]}×${MEIKYUU_TALL_SHAPES.at(-1)![1]}`;
 
@@ -462,8 +462,8 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * seed, as Tsunagi's is (`fixedLevels`). The givens are the level's recipe,
    * a short word such as `square:12x9:wilson:to-goal:48213` (45 characters at
    * the longest); the answer is the line drawn from the start to the goal, one
-   * character a step (`meikyuu/way.ts`), 2,434 at the longest, so 2,600 is
-   * room. No Check or Hint (the line is in plain sight, and a level's time is
+   * character a step (`meikyuu/way.ts`), 5,009 at the longest (a colossal maze), so
+   * 6,000 is room for it (`meikyuu/progress.ts`). No Check or Hint (the line is in plain sight, and a level's time is
    * one anybody can be raced on) and no countdown, as a Suido level has none.
    */
   meikyuu: {
@@ -473,7 +473,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     defaultSize: 1,
     levels: PUZZLE_LEVEL_LIST,
     defaultLevel: "easy",
-    mostCells: 2600,
+    mostCells: 6000,
     helps: false,
     fixedLevels: true,
     clock: false,
@@ -544,6 +544,13 @@ export const PUZZLE_CODE_LONGEST = Math.max(...Object.values(PUZZLE_SPECS).map((
 export function levelAskable(kind: PuzzleKind, level: PuzzleLevel): boolean {
   return level !== "extra-hard" || PUZZLE_SPECS[kind].levels.includes("extra-hard");
 }
+
+/**
+ * THE LONGEST CODE OF A PUZZLE THAT KEEPS A STEP LOG (`stepLog.ts`): every kind but Meikyuu. A maze's line is kept whole
+ * and carries no log (it has no scrubber), and its codes are the longest there are (a colossal maze's way is 5,009 steps),
+ * so the step log's ceiling is read from the others and does not grow with the maze.
+ */
+export const PUZZLE_LOGGED_CODE_LONGEST = Math.max(...Object.entries(PUZZLE_SPECS).filter(([kind]) => kind !== "meikyuu").map(([, spec]) => spec.mostCells));
 
 /** The levels a puzzle can be made at, at this size: the kind's levels, less any this size cannot have (`levelsAt`). */
 export function levelsFor(kind: PuzzleKind, size: number): readonly PuzzleLevel[] {
@@ -721,6 +728,9 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     2: { label: "Medium", kanji: "中" },
     3: { label: "Large", kanji: "大" },
     4: { label: "Huge", kanji: "巨大" },
+    // The two colossal mazes (`meikyuu/sizes.ts`): the square one is size 5, the big number on its tile, and the tall one is 64×96, which its picture says.
+    5: { label: "Colossal", kanji: "超巨大" },
+    6496: { label: "Colossal tall", kanji: "超巨大縦" },
     // The tall mazes, by width and height (`meikyuu/sizes.ts`): the tile's picture says "6×9", so its name is a word for how much maze there is.
     609: { label: "Tiny", kanji: "極小" },
     812: { label: "Little", kanji: "小型" },
@@ -1395,7 +1405,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
   meikyuu: {
     label: "Meikyuu",
     kanji: "迷宮",
-    tagline: `Draw a line through a maze from the start to the goal, with your finger or the mouse. ${thousands(MEIKYUU_LEVELS_TOTAL)} levels, in squares, hexagons, triangles, circles and shapes cut out of them, and tall ones for a phone held upright.`,
+    tagline: `Draw a line through a maze from the start to the goal, with your finger or the mouse. ${thousands(MEIKYUU_LEVELS_TOTAL)} levels, in squares, hexagons, triangles, circles and shapes cut out of them, tall ones for a phone held upright, and colossal ones of about ten thousand cells.`,
     inspiredBy: "the maze drawn through with a pencil, from its start to its goal",
     alsoKnownAs: ["Maze", "Labyrinth", "迷路"],
     origin:
@@ -1406,11 +1416,11 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A level is played one of four ways: in at one door in the outer wall and out at another; from a cell inside to a dot hidden deep in the maze; from the middle of the shape out through a door; or from inside, picking up every key on the way to a door. A key is at the end of a branch, off the way, so each one costs a detour, and stays picked up when you draw back.",
       "A big maze is looked at through the board. Zoom with the wheel, a pinch, or the + and − buttons, and move the view with two fingers or by dragging anywhere but the line. Fit brings the whole maze back, and near the edge a line you are drawing moves the view with it.",
       "Undo takes back your last stroke and Restart clears the line. The keyboard works too: the arrow keys step the line, and Backspace undoes.",
-      `Fixed levels: ${thousands(MEIKYUU_LEVELS_TOTAL)} of them, the same for everybody: ${MEIKYUU_LEVELS_A_SIZE} in each of four sizes, and ${MEIKYUU_LEVELS_A_SIZE} in each of six tall ones, each size ordered from easy to hard so that no level is easier than the one before. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
+      `Fixed levels: ${thousands(MEIKYUU_LEVELS_TOTAL)} of them, the same for everybody: ${MEIKYUU_LEVELS_A_SIZE} in each of four sizes, ${MEIKYUU_LEVELS_A_SIZE} in each of six tall ones, and ${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} in each of two colossal ones, each size ordered from easy to hard so that no level is easier than the one before. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
       "The clock starts with your first stroke, and the level is solved the moment the line reaches the goal, with every key picked up.",
     ],
     board:
-      `Small mazes have under 150 cells and are the quick ones; medium ones under 800; large under 4,000; and huge ones run to thousands of cells and are meant to be zoomed. Within a size the levels run from easy to hard, and every shape turns up: squares, hexagons, triangles and circles, and a heart, a leaf, a star, a ring, a diamond, a cross and a moon. The tall ones are for a phone held upright, two columns to three rows, in six sizes from ${MEIKYUU_TALL_RANGE} cells, and turn on their side by themselves on a wide screen.`,
+      `Small mazes have under 150 cells and are the quick ones; medium ones under 800; large under 4,000; and huge ones run to thousands of cells and are meant to be zoomed. Within a size the levels run from easy to hard, and every shape turns up: squares, hexagons, triangles and circles, and a heart, a leaf, a star, a ring, a diamond, a cross and a moon. The tall ones are for a phone held upright, two columns to three rows, in six sizes from ${MEIKYUU_TALL_RANGE} cells, and turn on their side by themselves on a wide screen. The colossal ones are the biggest there are, about ten thousand cells, in a square box and a tall one: they take a while, and want zooming and a few stones.`,
   },
   /*
    * OUR OWN NAME FOR IT, and a plain one. Peg solitaire is a traditional game that belongs to nobody (the

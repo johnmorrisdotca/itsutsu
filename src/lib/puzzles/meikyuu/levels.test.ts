@@ -1,5 +1,6 @@
 import { bandOf, MEIKYUU_LEVELS_PER_SIZE, MEIKYUU_MAZE_LEVELS, sizeOf } from "@johnmorrisdotca/meikyuu/levels";
 import { MEIKYUU_LEGACY_MAZE_LEVELS, legacyLevelOfCode } from "@johnmorrisdotca/meikyuu/levels/legacy";
+import { COLOSSAL_TALL_HEIGHT, COLOSSAL_TALL_WIDTH, MEIKYUU_COLOSSAL_LEVELS, MEIKYUU_COLOSSAL_PER_LIST, MEIKYUU_COLOSSAL_TALL_LEVELS } from "@johnmorrisdotca/meikyuu/levels/colossal";
 import { MEIKYUU_TALL_LEVELS, MEIKYUU_TALL_PER_SIZE, MEIKYUU_TALL_SIZES as PACKAGE_TALL_SIZES, TALL_RATIO } from "@johnmorrisdotca/meikyuu/levels/tall";
 import { solutionOf } from "@johnmorrisdotca/meikyuu";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -8,11 +9,11 @@ import { fixedLevelOf, nextLevelLabel } from "../fixedLevel";
 import { puzzleAsked, puzzleQuery } from "../puzzleAddress";
 import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_SPECS } from "../puzzles.constants";
-import { MEIKYUU_LEVEL_COUNTS, MEIKYUU_LEVELS_A_SIZE, isMeikyuuLevelAt, meikyuuBlockOf, meikyuuBlockRange, meikyuuBlocksIn, meikyuuLevelBand, meikyuuLevelCount } from "./levelCounts";
+import { MEIKYUU_COLOSSAL_LEVELS_A_SIZE, MEIKYUU_LEVEL_COUNTS, MEIKYUU_LEVELS_A_SIZE, isMeikyuuLevelAt, meikyuuBlockOf, meikyuuBlockRange, meikyuuBlocksIn, meikyuuLevelBand, meikyuuLevelCount } from "./levelCounts";
 import { loadEveryMeikyuuLevels, meikyuuLevelOfBoard, meikyuuLevelPuzzle, meikyuuLevelsAt } from "./levels";
 import "./levelsModule";
 import { meikyuuCodeFits, MEIKYUU_MOST_STEPS } from "./progress";
-import { MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_SIZE_WORDS, MEIKYUU_TALL_RATIO, MEIKYUU_TALL_SIZES, isMeikyuuSize, isMeikyuuTall, meikyuuSizeFromAddress, meikyuuSizeInAddress, meikyuuSizeInWords, meikyuuSizeLabel, meikyuuSizeOfWord, meikyuuSizeWord, meikyuuTallShape } from "./sizes";
+import { isMeikyuuColossal, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_COLOSSAL_TALL_SIZE, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_SIZE_WORDS, MEIKYUU_TALL_RATIO, MEIKYUU_TALL_SIZES, isMeikyuuSize, isMeikyuuTall, meikyuuSizeFromAddress, meikyuuSizeInAddress, meikyuuSizeInWords, meikyuuSizeLabel, meikyuuSizeOfWord, meikyuuSizeWord, meikyuuTallShape } from "./sizes";
 import { decodeWay, encodeCells } from "./steps";
 import { encodeWay, mazeOf } from "./way";
 
@@ -32,7 +33,10 @@ describe("meikyuu's sizes are the package's words for how big a maze is", () => 
     expect(MEIKYUU_SIZES.map(meikyuuSizeWord)).toEqual([...MEIKYUU_SIZE_WORDS]);
     expect(meikyuuSizeLabel(3)).toBe("Large");
     expect(isMeikyuuSize(0)).toBe(false);
-    expect(isMeikyuuSize(5)).toBe(false);
+    // Five is the colossal square size, which is not one of the package's four words.
+    expect(isMeikyuuSize(5)).toBe(true);
+    expect(meikyuuSizeWord(5)).toBeNull();
+    expect(isMeikyuuSize(6)).toBe(false);
     expect(isMeikyuuSize(2.5)).toBe(false);
     expect(meikyuuSizeWord(9)).toBeNull();
   });
@@ -49,7 +53,7 @@ describe("meikyuu's sizes are the package's words for how big a maze is", () => 
     }
     expect(Object.values(counts).reduce((total, count) => total + count, 0)).toBe(MEIKYUU_MAZE_LEVELS.length);
     expect(MEIKYUU_MAZE_LEVELS).toHaveLength(1024);
-    expect(meikyuuLevelCount(5)).toBe(0);
+    expect(meikyuuLevelCount(6)).toBe(0);
   });
 
   it("put every level at the place in its size that the package gives it, with its score", () => {
@@ -83,7 +87,9 @@ describe("meikyuu's levels as numbers and thirds", () => {
     expect(isMeikyuuLevelAt(1, 256)).toBe(true);
     expect(isMeikyuuLevelAt(1, 257)).toBe(false);
     expect(isMeikyuuLevelAt(1, 0)).toBe(false);
-    expect(isMeikyuuLevelAt(5, 1)).toBe(false);
+    expect(isMeikyuuLevelAt(6, 1)).toBe(false);
+    expect(isMeikyuuLevelAt(5, 128)).toBe(true);
+    expect(isMeikyuuLevelAt(5, 129)).toBe(false);
     for (const size of MEIKYUU_SIZES) {
       const count = meikyuuLevelCount(size);
       expect(meikyuuLevelBand(size, 1)).toBe("easy");
@@ -149,12 +155,12 @@ describe("meikyuu's line", () => {
     expect(meikyuuCodeFits("0".repeat(MEIKYUU_MOST_STEPS + 1))).toBe(false);
   });
 
-  it("fits in a character a step at every cell of every level, tall ones too", () => {
-    for (const level of [...MEIKYUU_MAZE_LEVELS, ...MEIKYUU_TALL_LEVELS]) {
+  it("fits in a character a step at every cell of every level, tall and colossal ones too", () => {
+    for (const level of [...MEIKYUU_MAZE_LEVELS, ...MEIKYUU_TALL_LEVELS, ...MEIKYUU_COLOSSAL_LEVELS, ...MEIKYUU_COLOSSAL_TALL_LEVELS]) {
       const maze = mazeOf(level.code)!;
       for (const neighbours of maze.grid.neighbours) expect(neighbours.length, level.code).toBeLessThanOrEqual(36);
     }
-  });
+  }, 300_000);
 });
 
 describe("meikyuu's levels are puzzles, each answered by its one way through", () => {
@@ -245,7 +251,7 @@ describe("meikyuu's tall levels are the package's second list, kept under their 
       expect(meikyuuLevelCount(size)).toBe(256);
       expect(meikyuuLevelsAt(size)).toHaveLength(256);
     }
-    expect(MEIKYUU_EVERY_SIZE).toHaveLength(10);
+    expect(MEIKYUU_EVERY_SIZE).toHaveLength(12);
     // No size is two things: the four are under a hundred and the tall ones are not.
     expect(MEIKYUU_SIZES.some(isMeikyuuTall)).toBe(false);
     expect(isMeikyuuSize(610)).toBe(false);
@@ -302,5 +308,79 @@ describe("meikyuu's tall levels are the package's second list, kept under their 
     expect(checkSolution("meikyuu", 609, square.givens, square.solution, square.level).ok).toBe(false);
     expect(checkSolution("meikyuu", 812, tall.givens, tall.solution, tall.level).ok).toBe(false);
     expect(checkSolution("meikyuu", 609, tall.givens, tall.solution, tall.level).ok).toBe(true);
+  });
+});
+
+describe("meikyuu's colossal levels are the package's third list, two sizes of 128", () => {
+  it("are size 5 for the square list and 6496 (64×96) for the tall one, with 128 levels each", () => {
+    expect(MEIKYUU_COLOSSAL_SIZES).toEqual([5, 6496]);
+    expect(MEIKYUU_COLOSSAL_SIZE).toBe(5);
+    expect(MEIKYUU_COLOSSAL_TALL_SIZE).toBe(COLOSSAL_TALL_WIDTH * 100 + COLOSSAL_TALL_HEIGHT);
+    expect(MEIKYUU_COLOSSAL_LEVELS_A_SIZE).toBe(MEIKYUU_COLOSSAL_PER_LIST);
+    for (const size of MEIKYUU_COLOSSAL_SIZES) {
+      expect(isMeikyuuColossal(size)).toBe(true);
+      expect(isMeikyuuSize(size)).toBe(true);
+      expect(meikyuuLevelCount(size)).toBe(128);
+      expect(meikyuuLevelsAt(size)).toHaveLength(128);
+    }
+    // The tall colossal one is played in a tall box, like the tall sizes, and is not one of their six.
+    expect(isMeikyuuTall(6496)).toBe(true);
+    expect(isMeikyuuTall(5)).toBe(false);
+    expect(MEIKYUU_TALL_SIZES).not.toContain(6496);
+    expect(meikyuuTallShape(6496)).toEqual({ width: 64, height: 96 });
+    expect(meikyuuSizeLabel(5)).toBe("Colossal");
+    expect(meikyuuSizeLabel(6496)).toBe("Colossal tall 64×96");
+    expect(meikyuuSizeInWords(5)).toBe("colossal size");
+    expect(meikyuuLevelBand(5, 1)).toBe("easy");
+    expect(meikyuuLevelBand(5, 64)).toBe("medium");
+    expect(meikyuuLevelBand(5, 128)).toBe("hard");
+  });
+
+  it("put every level at the place in its list that the package gives it", () => {
+    MEIKYUU_COLOSSAL_LEVELS.forEach((level, at) => {
+      const row = meikyuuLevelsAt(5)[at]!;
+      expect(row).toMatchObject({ code: level.code, number: level.number, score: level.score, cells: level.cells });
+    });
+    MEIKYUU_COLOSSAL_TALL_LEVELS.forEach((level, at) => {
+      const row = meikyuuLevelsAt(6496)[at]!;
+      expect(row).toMatchObject({ code: level.code, number: level.number, score: level.score, cells: level.cells });
+    });
+  });
+
+  it("are asked for in an address as 5 and as 64x96", () => {
+    expect(meikyuuSizeInAddress(6496)).toBe("64x96");
+    expect(meikyuuSizeFromAddress("64x96")).toBe(6496);
+    const asked = puzzleAsked("meikyuu", { size: "64x96", seed: "100" });
+    expect(asked).toMatchObject({ size: 6496, seed: 100, level: meikyuuLevelBand(6496, 100), clock: "none" });
+    expect(puzzleQuery(asked)).toBe(`?size=64x96&level=${meikyuuLevelBand(6496, 100)}&seed=100`);
+    expect(puzzleAsked("meikyuu", { size: "5", seed: "128" })).toMatchObject({ size: 5, seed: 128 });
+    expect(puzzleAsked("meikyuu", { size: "5", seed: "129" }).seed).toBeNull();
+  });
+
+  it("make a puzzle of every level whose answer the server's check passes (the longest, 5,009 steps, among them) and no other line", () => {
+    let longest = 0;
+    for (const size of MEIKYUU_COLOSSAL_SIZES) {
+      meikyuuLevelsAt(size).forEach((row, at) => {
+        const puzzle = meikyuuLevelPuzzle(size, at + 1);
+        expect(puzzle).toMatchObject({ kind: "meikyuu", size, seed: at + 1, givens: row.code });
+        expect(puzzle.givens.length).toBeLessThanOrEqual(PUZZLE_SPECS.meikyuu.mostCells);
+        expect(checkSolution("meikyuu", size, puzzle.givens, puzzle.solution, puzzle.level), row.code).toEqual({ ok: true });
+        expect(checkSolution("meikyuu", size, puzzle.givens, puzzle.solution.slice(0, -1), puzzle.level).ok, row.code).toBe(false);
+        longest = Math.max(longest, puzzle.solution.length);
+        expect(meikyuuLevelOfBoard(size, row.code)).toBe(at + 1);
+      });
+    }
+    expect(longest).toBeGreaterThan(MEIKYUU_TALL_LEVELS.length > 0 ? 2434 : 0);
+    expect(longest).toBeLessThanOrEqual(MEIKYUU_MOST_STEPS);
+    expect(PUZZLE_SPECS.meikyuu.mostCells).toBeGreaterThanOrEqual(longest + 800);
+  });
+
+  it("is held to its own size, and the stones a run keeps are never an answer", () => {
+    const colossal = meikyuuLevelPuzzle(5, 1);
+    const tall = meikyuuLevelPuzzle(6496, 1);
+    expect(checkSolution("meikyuu", 1, colossal.givens, colossal.solution, colossal.level).ok).toBe(false);
+    expect(checkSolution("meikyuu", 6496, colossal.givens, colossal.solution, colossal.level).ok).toBe(false);
+    expect(checkSolution("meikyuu", 5, tall.givens, tall.solution, tall.level).ok).toBe(false);
+    expect(checkSolution("meikyuu", 5, colossal.givens, `${colossal.solution}~1a.2f`, colossal.level).ok).toBe(false);
   });
 });

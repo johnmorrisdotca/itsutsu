@@ -135,8 +135,9 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   tsunagi: { how: "ranked", rungs: { 4: 50, 5: 70, 6: 85, 7: 95, 8: 110, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 15: 150 } },
   // The squares 5 to 14 and the long boards 5×7, 6×10 and 8×14 (kept as 507, 610 and 814).
   suido: { how: "ranked", rungs: { 5: 50, 6: 70, 7: 85, 8: 95, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 507: 65, 610: 90, 814: 120 } },
-  // The four square sizes (small to huge, 1 to 4) and the six tall ones (609 is 6×9).
-  meikyuu: { how: "ranked", rungs: { 1: 55, 2: 95, 3: 120, 4: 150, 609: 50, 812: 60, 1015: 70, 1218: 80, 1624: 90, 2030: 100 } },
+  // The four square sizes (small to huge, 1 to 4) and the six tall ones (609 is 6×9), and the two colossal ones (2026-10-05, package 2.1): the square list is size 5, the top rung of the squares
+  // (160, so its hardest levels reach the 200 ceiling a family of levels has), and the tall list is 6496 (64×96), the top rung of the tall ones (110). A solve is priced at the middle of the third of its list it was in, as every family's is, however many levels the list has (the colossal lists have 128).
+  meikyuu: { how: "ranked", rungs: { 1: 55, 2: 95, 3: 120, 4: 150, 5: 160, 609: 50, 812: 60, 1015: 70, 1218: 80, 1624: 90, 2030: 100, 6496: 110 } },
 };
 
 /**
@@ -155,7 +156,7 @@ export const SIZE_SERIES: Partial<Record<PuzzleKind, readonly (readonly number[]
     [507, 610, 814],
   ],
   meikyuu: [
-    [1, 2, 3, 4],
-    [609, 812, 1015, 1218, 1624, 2030],
+    [1, 2, 3, 4, 5],
+    [609, 812, 1015, 1218, 1624, 2030, 6496],
   ],
 };

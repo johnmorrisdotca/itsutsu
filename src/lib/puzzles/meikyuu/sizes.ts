@@ -12,6 +12,18 @@
  */
 export const MEIKYUU_SIZE_WORDS = ["small", "medium", "large", "huge"] as const;
 
+/**
+ * COLOSSAL: the two lists of 128 that go beyond the four sizes (`@johnmorrisdotca/meikyuu/levels/colossal`, package 2.1), about ten thousand cells.
+ * The square list is size 5, the next place after huge; the tall one is kept as the tall sizes are, its width and then its height in two digits
+ * each, 64×96 being 6496. Neither is one of the four the set-up offers as tiles: the set-up has a shape of its own for them (`MeikyuuSetUp`), so no
+ * shape has more than four boards, and nothing that is there already moves.
+ */
+export const MEIKYUU_COLOSSAL_SIZE = 5;
+export const MEIKYUU_COLOSSAL_TALL_SHAPE: readonly [number, number] = [64, 96];
+export const MEIKYUU_COLOSSAL_TALL_SIZE = MEIKYUU_COLOSSAL_TALL_SHAPE[0] * 100 + MEIKYUU_COLOSSAL_TALL_SHAPE[1];
+/** The two colossal sizes, the square one first. */
+export const MEIKYUU_COLOSSAL_SIZES: readonly number[] = [MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_TALL_SIZE];
+
 export type MeikyuuSizeWord = (typeof MEIKYUU_SIZE_WORDS)[number];
 
 /** The four sizes of the SQUARE-ish levels, as the site keeps them: 1 is small, 2 medium, 3 large and 4 huge. */
@@ -43,19 +55,25 @@ export function meikyuuTallSize(width: number, height: number): number {
 /** The tall sizes as the site keeps them, smallest first. */
 export const MEIKYUU_TALL_SIZES: readonly number[] = MEIKYUU_TALL_SHAPES.map(([width, height]) => meikyuuTallSize(width, height));
 
-/** Every size a Meikyuu level comes in: the four, then the six tall ones. */
-export const MEIKYUU_EVERY_SIZE: readonly number[] = [...MEIKYUU_SIZES, ...MEIKYUU_TALL_SIZES];
+/** Every size a Meikyuu level comes in: the four, the six tall ones, then the two colossal ones. */
+export const MEIKYUU_EVERY_SIZE: readonly number[] = [...MEIKYUU_SIZES, ...MEIKYUU_TALL_SIZES, ...MEIKYUU_COLOSSAL_SIZES];
 
 /** The shape of the box a tall maze is played in, width over height as it is made: two columns to three rows. */
 export const MEIKYUU_TALL_RATIO = 2 / 3;
 
-/** Whether a size is one of the tall ones. */
+/** Whether a size is played in a tall box (two columns to three rows): the six tall sizes and the tall colossal one. */
 export function isMeikyuuTall(size: number): boolean {
-  return MEIKYUU_TALL_SIZES.includes(size);
+  return MEIKYUU_TALL_SIZES.includes(size) || size === MEIKYUU_COLOSSAL_TALL_SIZE;
 }
 
-/** A tall size's columns and rows, or null for any other number. */
+/** Whether a size is one of the two colossal ones. */
+export function isMeikyuuColossal(size: number): boolean {
+  return MEIKYUU_COLOSSAL_SIZES.includes(size);
+}
+
+/** A tall size's columns and rows (the tall colossal one's too), or null for any other number. */
 export function meikyuuTallShape(size: number): { width: number; height: number } | null {
+  if (size === MEIKYUU_COLOSSAL_TALL_SIZE) return { width: MEIKYUU_COLOSSAL_TALL_SHAPE[0], height: MEIKYUU_COLOSSAL_TALL_SHAPE[1] };
   const at = MEIKYUU_TALL_SIZES.indexOf(size);
   return at < 0 ? null : { width: MEIKYUU_TALL_SHAPES[at]![0], height: MEIKYUU_TALL_SHAPES[at]![1] };
 }
@@ -88,8 +106,10 @@ export function meikyuuSizeOfWord(word: MeikyuuSizeWord): number {
   return MEIKYUU_SIZE_WORDS.indexOf(word) + 1;
 }
 
-/** What a page says of a size: "Small", and "Tall 6×9" for a tall one. */
+/** What a page says of a size: "Small", "Tall 6×9" for a tall one, "Colossal" and "Colossal tall 64×96" for the two colossal ones. */
 export function meikyuuSizeLabel(size: number): string {
+  if (size === MEIKYUU_COLOSSAL_SIZE) return "Colossal";
+  if (size === MEIKYUU_COLOSSAL_TALL_SIZE) return `Colossal tall ${MEIKYUU_COLOSSAL_TALL_SHAPE[0]}×${MEIKYUU_COLOSSAL_TALL_SHAPE[1]}`;
   const tall = meikyuuTallShape(size);
   if (tall !== null) return `Tall ${tall.width}×${tall.height}`;
   const word = meikyuuSizeWord(size);

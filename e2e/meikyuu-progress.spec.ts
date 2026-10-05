@@ -78,7 +78,11 @@ test.describe("how many of each size are solved", () => {
       const door = page.getByTestId("meikyuu-front-progress");
       await expect(door).toBeVisible();
       await expect.poll(async () => (await rows(page, door.getByTestId("meikyuu-progress").first())).map((row) => row.text)[0]).toBe(`1 of ${MEIKYUU_LEVELS_A_SIZE}`);
-      expect((await rows(page, door.getByTestId("meikyuu-progress").last())).map((row) => row.size)).toEqual(["609", "812", "1015", "1218", "1624", "2030"]);
+      expect((await rows(page, door.getByTestId("meikyuu-progress").nth(1))).map((row) => row.size)).toEqual(["609", "812", "1015", "1218", "1624", "2030"]);
+      // And the two colossal ones, a square box and a tall one (package 2.1), of 128 levels each.
+      const colossal = await rows(page, door.getByTestId("meikyuu-progress").last());
+      expect(colossal.map((row) => row.size)).toEqual(["5", "6496"]);
+      expect(colossal.map((row) => row.text)).toEqual(["0 of 128", "0 of 128"]);
     } finally {
       await context.close();
       await away(email, id);

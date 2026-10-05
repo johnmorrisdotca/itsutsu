@@ -1,4 +1,4 @@
-import { PUZZLE_CODE_LONGEST } from "./puzzles.constants";
+import { PUZZLE_LOGGED_CODE_LONGEST } from "./puzzles.constants";
 
 /**
  * THE STEPS OF A KEPT PUZZLE, written down so the scrubber has them when the
@@ -20,7 +20,7 @@ export const STEPS_KEPT = 400;
 const PARTED = "~";
 
 /** The longest a step log can be: the first grid whole and every kept step changing every cell. What a route refuses past. */
-export const STEP_LOG_LONGEST = PUZZLE_CODE_LONGEST * 4 * STEPS_KEPT;
+export const STEP_LOG_LONGEST = PUZZLE_LOGGED_CODE_LONGEST * 4 * STEPS_KEPT;
 
 export function encodeStepLog(codes: readonly string[]): string {
   const kept = codes.slice(-STEPS_KEPT);

@@ -1,6 +1,6 @@
 import type { MeikyuuMode, MeikyuuShape } from "@johnmorrisdotca/meikyuu";
 
-import { MEIKYUU_LEVELS_A_SIZE } from "@/lib/puzzles/meikyuu/levelCounts";
+import { MEIKYUU_COLOSSAL_LEVELS_A_SIZE, MEIKYUU_LEVELS_A_SIZE } from "@/lib/puzzles/meikyuu/levelCounts";
 import { MEIKYUU_SIZE_WORDS } from "@/lib/puzzles/meikyuu/sizes";
 
 import type { LevelChipsCopy } from "./LevelChips";
@@ -85,11 +85,12 @@ export const MOVE_COPY = {
   },
 } as const;
 
-/** The set-up's choice of the way a maze is shaped: the four sizes of squares and shapes, or the tall mazes for a phone held upright. */
+/** The set-up's choice of the way a maze is shaped: the four sizes of squares and shapes, the tall mazes for a phone held upright, or the colossal ones, the biggest there are. */
 export const SHAPE_COPY = {
   legend: "Shape",
   square: { label: "Square", kanji: "四角", says: "Mazes in a square box: four sizes, from small to huge." },
   tall: { label: "Tall", kanji: "縦", says: "Mazes in a tall box, two columns to three rows, made to be played on a phone held upright. They lie on their side on a wide screen." },
+  colossal: { label: "Colossal", kanji: "巨", says: "The biggest mazes there are, about ten thousand cells: one in a square box and one in a tall one. Zoom in, and move about it." },
   moreTall: (to: string) => `Bigger, to ${to} →`,
   lessTall: (from: string) => `← Smaller, from ${from}`,
 } as const;
@@ -97,9 +98,9 @@ export const SHAPE_COPY = {
 export const MEIKYUU_COPY = {
   /** The set-up's note under the levels' options: what a level is. */
   levelsNote:
-    `A level is a maze, the same for everybody, and each size has ${MEIKYUU_LEVELS_A_SIZE} levels in order from easy to hard. Pick any of them: Start plays the first one you have not solved. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
+    `A level is a maze, the same for everybody, and each size has ${MEIKYUU_LEVELS_A_SIZE} levels in order from easy to hard (${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} for each colossal one). Pick any of them: Start plays the first one you have not solved. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
   /** The front door's line for the levels: how many there are of each size, read from the sizes and never typed. */
-  levelsLine: `${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (${MEIKYUU_SIZE_WORDS.join(", ")}) and in each of six tall ones for a phone held upright, each size easy to hard.`,
+  levelsLine: `${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (${MEIKYUU_SIZE_WORDS.join(", ")}) and in each of six tall ones for a phone held upright, each size easy to hard, and ${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} in each of two colossal ones of about ten thousand cells.`,
   /** The line under the board before the first stroke. */
   howTo: "Press the start dot and drag. The line follows the corridors, and drawing back shortens it.",
   /** The line under the board once there is a line: how far it has got. */

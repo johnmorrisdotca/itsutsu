@@ -62,3 +62,37 @@ export async function drawThrough(page: Page, placed: PlacedMaze, cells: readonl
   }
   await page.mouse.up();
 }
+
+/**
+ * THE SAME LINE, SENT AS A FAST FINGER SENDS IT: pointer events straight to the board's box, a few cells a frame, each cell's place read from the
+ * drawing as it is then (so a view that slides under a line at the edge is followed, as a finger would follow it). For a line of thousands of cells,
+ * which a mouse driven through the protocol takes minutes over: a colossal maze's way is up to 5,009. The events are the ones a touch makes (`pointerType:
+ * touch`), the same the package's own browser tests send; nothing is handed to the board but pointer events.
+ */
+export async function drawQuickly(page: Page, placed: PlacedMaze, cells: readonly number[], { perFrame = 12, lift = true }: { perFrame?: number; lift?: boolean } = {}): Promise<void> {
+  const turned = (await page.getByTestId("meikyuu-board").getAttribute("data-turned")) === "true";
+  await page.locator('[data-testid="meikyuu-board"] .mk-box').evaluate(
+    async (box, { cells, centres, turned, perFrame, lift }) => {
+      const svg = box.querySelector("svg")!;
+      const place = (cell: number) => {
+        const rect = svg.getBoundingClientRect();
+        const [vx, vy, vw, vh] = svg.getAttribute("viewBox")!.split(" ").map(Number) as [number, number, number, number];
+        const [x, y] = centres[cell]!;
+        const [px, py] = turned ? [y, -x] : [x, y];
+        const scale = Math.min(rect.width / vw, rect.height / vh);
+        return { x: rect.x + (rect.width - vw * scale) / 2 + (px - vx) * scale, y: rect.y + (rect.height - vh * scale) / 2 + (py - vy) * scale };
+      };
+      const send = (type: string, cell: number) => {
+        const at = place(cell);
+        box.dispatchEvent(new PointerEvent(type, { pointerId: 7, pointerType: "touch", isPrimary: true, button: 0, buttons: type === "pointerup" ? 0 : 1, clientX: at.x, clientY: at.y, bubbles: true, cancelable: true }));
+      };
+      send("pointerdown", cells[0]!);
+      for (let from = 1; from < cells.length; from += perFrame) {
+        for (let at = from; at < Math.min(cells.length, from + perFrame); at += 1) send("pointermove", cells[at]!);
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+      if (lift) send("pointerup", cells[cells.length - 1]!);
+    },
+    { cells: [...cells], centres: placed.maze.grid.centres.map(([x, y]) => [x, y] as [number, number]), turned, perFrame, lift },
+  );
+}

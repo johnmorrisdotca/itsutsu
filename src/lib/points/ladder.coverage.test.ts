@@ -163,12 +163,12 @@ describe("the words, the tile game and Koushi", () => {
 });
 
 describe("the families of 256 fixed levels", () => {
-  it("add 0 to 50 by the level's place, so the first is the rung and the last is 50 above it", () => {
+  it("add 0 to 50 by the level's place, so the first is the rung and the last is 50 above it, or the ceiling where that would pass it (Meikyuu's colossal square rung, 160)", () => {
     for (const kind of RANKED) {
       for (const size of PUZZLE_SPECS[kind].sizes) {
         const first = price(kind, size, "easy", 1);
         const last = price(kind, size, "hard", 256);
-        expect(last - first, `${kind} ${size}`).toBe(50);
+        expect(last - first, `${kind} ${size}`).toBe(Math.min(50, LEVEL_FAMILY_PRICE_MOST - first));
         let before = 0;
         for (let rank = 1; rank <= 256; rank += 1) {
           const each = price(kind, size, "easy", rank);
@@ -188,6 +188,9 @@ describe("the families of 256 fixed levels", () => {
     expect(price("meikyuu", 1, "easy")).toBe(65);
     expect(price("meikyuu", 1, "medium")).toBe(80);
     expect(price("meikyuu", 1, "hard")).toBe(95);
+    expect(price("meikyuu", 5, "easy")).toBe(170);
+    expect(price("meikyuu", 5, "hard")).toBe(200);
+    expect(price("meikyuu", 6496, "medium")).toBe(135);
   });
 
   it("match the measured ranges at the first and last level", () => {
@@ -195,6 +198,9 @@ describe("the families of 256 fixed levels", () => {
     expect([1, 2, 3, 4].map((size) => range("meikyuu", size))).toEqual([[55, 105], [95, 145], [120, 170], [150, 200]]);
     expect(range("meikyuu", 609)).toEqual([50, 100]);
     expect(range("meikyuu", 2030)).toEqual([100, 150]);
+    // The colossal sizes (package 2.1): the top rung of each series, the square one up to the family's 200 and the tall one to 160, and 128 levels priced as 256 (the third a solve names is what is kept).
+    expect(range("meikyuu", 5)).toEqual([160, 200]);
+    expect(range("meikyuu", 6496)).toEqual([110, 160]);
     expect(range("suido", 5)).toEqual([50, 100]);
     expect(range("suido", 14)).toEqual([150, 200]);
     expect(range("tsunagi", 4)).toEqual([50, 100]);

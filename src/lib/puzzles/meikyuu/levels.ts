@@ -1,9 +1,10 @@
 import type { MeikyuuMazeLevel } from "@johnmorrisdotca/meikyuu/levels";
+import type { MeikyuuColossalLevel } from "@johnmorrisdotca/meikyuu/levels/colossal";
 import type { MeikyuuTallLevel } from "@johnmorrisdotca/meikyuu/levels/tall";
 
 import type { Puzzle } from "../puzzles.types";
 import { isMeikyuuLevelAt, meikyuuLevelBand } from "./levelCounts";
-import { isMeikyuuTall, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SIZES, meikyuuSizeOfWord, meikyuuTallSize } from "./sizes";
+import { isMeikyuuColossal, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_COLOSSAL_TALL_SIZE, isMeikyuuTall, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SIZES, meikyuuSizeOfWord, meikyuuTallSize } from "./sizes";
 import { encodeWay } from "./way";
 
 export { nextLevelLabel } from "../fixedLevel";
@@ -43,16 +44,19 @@ export type MeikyuuLevelRow = {
 
 type Package = typeof import("@johnmorrisdotca/meikyuu/levels");
 type TallPackage = typeof import("@johnmorrisdotca/meikyuu/levels/tall");
+type ColossalPackage = typeof import("@johnmorrisdotca/meikyuu/levels/colossal");
 
 const bySize = new Map<number, readonly MeikyuuLevelRow[]>();
 
 let fromModule: (() => Promise<Package>) | null = null;
 let tallFromModule: (() => Promise<TallPackage>) | null = null;
+let colossalFromModule: (() => Promise<ColossalPackage>) | null = null;
 
 /** Used by `levelsModule.ts` only: how to read the lists where there is no browser. */
-export function readMeikyuuLevelsWith(source: () => Promise<Package>, tallSource: () => Promise<TallPackage>): void {
+export function readMeikyuuLevelsWith(source: () => Promise<Package>, tallSource: () => Promise<TallPackage>, colossalSource: () => Promise<ColossalPackage>): void {
   fromModule = source;
   tallFromModule = tallSource;
+  colossalFromModule = colossalSource;
 }
 
 async function importList(): Promise<Package> {
@@ -66,6 +70,13 @@ async function importTallList(): Promise<TallPackage> {
   if (typeof window !== "undefined") return import("@johnmorrisdotca/meikyuu/levels/tall");
   if (tallFromModule === null) throw new Error("Meikyuu's tall levels are read on the server through levelsModule.ts, which was not imported.");
   return tallFromModule();
+}
+
+/** The colossal list is one script of its own (17 KB), fetched only when a colossal size is asked for. */
+async function importColossalList(): Promise<ColossalPackage> {
+  if (typeof window !== "undefined") return import("@johnmorrisdotca/meikyuu/levels/colossal");
+  if (colossalFromModule === null) throw new Error("Meikyuu's colossal levels are read on the server through levelsModule.ts, which was not imported.");
+  return colossalFromModule();
 }
 
 /** The package's list split into the four sizes, each level at the place it says it has in its size. */
@@ -96,6 +107,13 @@ function splitTall(list: TallPackage): void {
   for (const [size, own] of rows) bySize.set(size, own);
 }
 
+/** The two colossal lists, each kept under its own size (5 and 6496) with the place it has in its list. */
+function splitColossal(list: ColossalPackage): void {
+  const rowOf = (level: MeikyuuColossalLevel): MeikyuuLevelRow => ({ number: level.number, code: level.code, cells: level.cells, effort: level.effort, rating: level.rating, score: level.score });
+  bySize.set(MEIKYUU_COLOSSAL_SIZE, list.MEIKYUU_COLOSSAL_LEVELS.map(rowOf));
+  bySize.set(MEIKYUU_COLOSSAL_TALL_SIZE, list.MEIKYUU_COLOSSAL_TALL_LEVELS.map(rowOf));
+}
+
 /** The levels of the four sizes, fetched once. The four arrive together: they are one list. */
 export async function loadMeikyuuLevels(): Promise<void> {
   if (MEIKYUU_SIZES.every((size) => bySize.has(size))) return;
@@ -108,14 +126,21 @@ export async function loadMeikyuuTallLevels(): Promise<void> {
   splitTall(await importTallList());
 }
 
-/** The list a size is in, fetched once: the four sizes' or the tall one. */
-export async function loadMeikyuuLevelsFor(size: number): Promise<void> {
-  await (isMeikyuuTall(size) ? loadMeikyuuTallLevels() : loadMeikyuuLevels());
+/** The two colossal lists, fetched once. */
+export async function loadMeikyuuColossalLevels(): Promise<void> {
+  if (MEIKYUU_COLOSSAL_SIZES.every((size) => bySize.has(size))) return;
+  splitColossal(await importColossalList());
 }
 
-/** Every size's levels, both lists: for the server, which checks and counts a solve of any of them. */
+/** The list a size is in, fetched once: the four sizes', the tall one or the colossal one. */
+export async function loadMeikyuuLevelsFor(size: number): Promise<void> {
+  if (isMeikyuuColossal(size)) await loadMeikyuuColossalLevels();
+  else await (isMeikyuuTall(size) ? loadMeikyuuTallLevels() : loadMeikyuuLevels());
+}
+
+/** Every size's levels, all three lists: for the server, which checks and counts a solve of any of them. */
 export async function loadEveryMeikyuuLevels(): Promise<void> {
-  await Promise.all([loadMeikyuuLevels(), loadMeikyuuTallLevels()]);
+  await Promise.all([loadMeikyuuLevels(), loadMeikyuuTallLevels(), loadMeikyuuColossalLevels()]);
 }
 
 /** A size's levels, fetched once and kept. */

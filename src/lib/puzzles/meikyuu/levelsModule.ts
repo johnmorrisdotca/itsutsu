@@ -9,11 +9,12 @@ import { loadMeikyuuLevelsFor, readMeikyuuLevelsWith } from "./levels";
 readMeikyuuLevelsWith(
   () => import("@johnmorrisdotca/meikyuu/levels"),
   () => import("@johnmorrisdotca/meikyuu/levels/tall"),
+  () => import("@johnmorrisdotca/meikyuu/levels/colossal"),
 );
 
 /**
  * The lists the given sizes are in, read from their modules: for a caller with no browser, which names the level a solve
- * was and who is fastest. A size of the four reads the first list (60 KB) and a tall size the second (96 KB); a page asks
+ * was and who is fastest. A size of the four reads the first list (60 KB), a tall size the second (96 KB) and a colossal one the third (17 KB); a page asks
  * only for the sizes it has to say something of, so a square level's page never reads the tall list.
  */
 export async function loadMeikyuuLevelsFromModule(sizes: readonly number[]): Promise<void> {

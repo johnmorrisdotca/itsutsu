@@ -178,7 +178,7 @@ export default function PointsPage() {
         <p className="text-sm text-muted">
           Every puzzle is priced on one scale: {PUZZLE_PRICE_LEAST} for the smallest and easiest, up to {PUZZLE_PRICE_MOST} for
           the biggest and hardest. A bigger board or a harder level pays more, and the price is the same for every
-          player. Meikyuu, Suido and Tsunagi have 256 levels in each size, from easiest to hardest, and the later a level
+          player. Meikyuu, Suido and Tsunagi have 256 levels in each size (128 in each of Meikyuu&apos;s two colossal ones), from easiest to hardest, and the later a level
           comes the more it pays, up to {LEVEL_FAMILY_PRICE_MOST}.
         </p>
         <ul className="list-disc pl-5 text-sm text-muted">

@@ -44,8 +44,8 @@ importers:
         specifier: 1.7.0
         version: 1.7.0(react@19.2.8)
       '@johnmorrisdotca/meikyuu':
-        specifier: 2.0.1
-        version: 2.0.1
+        specifier: 2.1.0
+        version: 2.1.0
       '@johnmorrisdotca/narabe':
         specifier: 1.2.0
         version: 1.2.0(react@19.2.8)
@@ -508,8 +508,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/meikyuu@2.0.1':
-    resolution: {integrity: sha512-ftnCCC4HqkD7/WfXSZxQvXBx56xAf8L8d78a+huMUjTHSTv872TLJYfKDd14iI8y7fw6a40tip0k+inji2wIIA==}
+  '@johnmorrisdotca/meikyuu@2.1.0':
+    resolution: {integrity: sha512-mb4eclKLFqK8AuGkW4ZRDw/y6w6arJrj+7E15UUi+iwb4YNGHCylPRGINDFQY68U/vWlUKjZcAU6Ta/LtVnlwA==}
     engines: {node: '>=22'}
 
   '@johnmorrisdotca/narabe@1.2.0':
@@ -3190,7 +3190,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/meikyuu@2.0.1': {}
+  '@johnmorrisdotca/meikyuu@2.1.0': {}
 
   '@johnmorrisdotca/narabe@1.2.0(react@19.2.8)':
     optionalDependencies:
