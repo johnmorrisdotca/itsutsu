@@ -114,6 +114,11 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   spider: { how: "size", rungs: { 1: 50, 2: 100, 4: 150 } },
   // A size is how many jumps its shortest way has; its levels within a length are boards and goals, not difficulty, so no level adds.
   tobiishi: { how: "size", rungs: { 3: 50, 6: 85, 9: 125 } },
+  // The pencil puzzles (`pencil/`, 2026-10-05), rungs spaced by the work in a size (cells to mark: 25, 49, 81, 144 for Shikaku; 6, 9, 12 unprinted cells for Regions at its default level; 29.9 safe squares uncovered at a Jirai 9, 14.5, 71 and 150 at 7, 12 and 16). Cross Sums comes in one size and one level, so it is the usual 100.
+  shikaku: { how: "size", rungs: { 5: 50, 7: 70, 9: 90, 12: 125 } },
+  crossSums: { how: "size", rungs: { 10: 100 } },
+  regions: { how: "size", rungs: { 4: 50, 5: 80, 6: 125 } },
+  jirai: { how: "size", rungs: { 7: 50, 9: 65, 12: 95, 16: 125 } },
   kumimoji: { how: "tiles", full: TILES },
   tsunagi: { how: "ranked", rungs: { 4: 50, 5: 70, 6: 85, 7: 95, 8: 110, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 15: 150 } },
   // The squares 5 to 14 and the long boards 5×7, 6×10 and 8×14 (kept as 507, 610 and 814).

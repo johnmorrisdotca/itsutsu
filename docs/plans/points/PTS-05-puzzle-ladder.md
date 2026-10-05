@@ -63,6 +63,10 @@ Measured table (rung at the smallest to largest offered size, Easy):
 | Picture logic 5, 10, 15, 20 | 50, 90, 110, 125 |
 | Mahjong 8, 9, 10, 15 | 50, 90, 110, 125 |
 | Cube 2 to 5 | 50, 85, 105, 125 |
+| Shikaku 5, 7, 9, 12 | 50, 70, 90, 125 |
+| Regions 4, 5, 6 | 50, 80, 125 |
+| Cross Sums 10 (one size, one level) | 100 |
+| Jirai 7, 9, 12, 16 | 50, 65, 95, 125 |
 | Meikyuu small, medium, large, huge | 55, 95, 120, 150 (to 105, 145, 170, 200) |
 | Meikyuu tall 6x9 to 20x30 | 50, 60, 70, 80, 90, 100 (to 100 ... 150) |
 | Suido 5x5 to 14x14 | 50 to 150 (to 100 ... 200); long boards 65, 90, 120 |

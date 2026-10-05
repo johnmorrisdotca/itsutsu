@@ -75,7 +75,7 @@ describe("the puzzle ladder prices every puzzle", () => {
 
   it("starts every kind's offered sizes at 50 and tops an ordinary one at 150", () => {
     for (const kind of PUZZLE_KIND_LIST) {
-      if (RANKED.includes(kind) || kind === "kumimoji" || kind === "koushi" || kind === "solitaire") continue;
+      if (RANKED.includes(kind) || kind === "kumimoji" || kind === "koushi" || kind === "solitaire" || kind === "crossSums") continue;
       const offered = [...sizesOffered(kind)];
       const lowest = Math.min(...offered.map((size) => price(kind, size, "easy")));
       expect(lowest, kind).toBe(50);
@@ -94,6 +94,22 @@ describe("Tobiishi", () => {
   it("pays 50, 85 and 125 for 3, 6 and 9 jumps, with no level add", () => {
     expect([3, 6, 9].map((size) => price("tobiishi", size, tobiishiBand(size)))).toEqual([50, 85, 125]);
     expect(price("tobiishi", 9, "hard")).toBe(125);
+  });
+});
+
+describe("the Pencil puzzles", () => {
+  it("prices Shikaku, Regions and Jirai by size from 50 to 125, and a level adds 0, 10 or 25", () => {
+    expect([5, 7, 9, 12].map((size) => price("shikaku", size, "easy"))).toEqual([50, 70, 90, 125]);
+    expect(price("shikaku", 12, "hard")).toBe(150);
+    expect([4, 5, 6].map((size) => price("regions", size, "easy"))).toEqual([50, 80, 125]);
+    expect(price("regions", 5, "medium")).toBe(90);
+    expect([7, 9, 12, 16].map((size) => price("jirai", size, "easy"))).toEqual([50, 65, 95, 125]);
+    expect(price("jirai", 9, "medium")).toBe(75);
+    expect(price("jirai", 16, "hard")).toBe(150);
+  });
+
+  it("prices Cross Sums, which comes in one size and one level, at the usual 100", () => {
+    expect(price("crossSums", 10, "medium")).toBe(100);
   });
 });
 

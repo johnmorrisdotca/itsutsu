@@ -43,7 +43,7 @@ log and a replay need the board as a string. The site draws Kazu's SVG in its bo
 | The answer is the code | Handed in as it stands; the check restates the rules through Kazu (`checkShikaku`, `checkKakuro`, `checkFillomino`), never the solver that made the board | `puzzleCheck.ts` |
 | A seed with no puzzle | Kazu throws when it cannot prove a board (Cross Sums seed 97: one in a hundred). The seed names the next that has one, as a winnable Solitaire's does; the page puts the address right | `generate.ts` |
 | Sizes and levels | Shikaku 5, 7, 9, 12 at easy, medium, hard; Regions 4, 5, 6 at easy and medium (6×6 easy only: its medium took up to 1.7 seconds to make); Cross Sums 10 | `pencil.constants.ts` |
-| Points | Five a cell the answer decides (`work`), weight set so a medium solve at the default size is about 100 IP | `points.constants.ts` |
+| Points | A puzzle's own score is five a cell the answer decides (`work`), less fifty a help; its IP is its price on the ladder (`ladder.constants.ts`, PTS-05): Shikaku 50, 70, 90, 125 at 5, 7, 9, 12; Regions 50, 80, 125 at 4, 5, 6; Cross Sums 100 (one size, one level); Jirai 50, 65, 95, 125 at 7, 9, 12, 16; a level adds 0, 10 or 25. Rungs are spaced by the work in a size | `ladder.constants.ts`, `puzzlePoints.ts` |
 | Hints, Check and Show | As a Number Place's: against the answer this tab holds; Show is paid for from the Check allowance; Hint is chosen on the set-up | `PencilSolve.tsx` |
 
 ## Jirai 地雷 (board row `jirai-minesweeper-on-the-site-in-pencil-puzzles`)
@@ -62,7 +62,7 @@ one character a square, kept runs, steps, Check, Show, Hint, the clock.
 | A mine uncovered does not end it | It is flagged where it lies and counted as a mistake, charged as a Hint is. A slip of a thumb is not a bad guess, and a puzzle's ending unsolved would need the give-up path, the lost board's page and a record of it | `jiraiPress`, `useHints.charge` |
 | Touch | A tap uncovers (or chords on a number), Flag turns taps into flags, a finger held 450 ms flags, a right click flags; the keyboard has Enter, Space or F, and the arrows. Nothing needs hover | `JiraiBoard.tsx` |
 | Hint | Jirai's own, which reads no flags and no answer (`hintFor`); a wrong flag over the square is lifted first | `jiraiFix` |
-| Points | Five a safe square the opening leaves covered, weight 0.68 (a medium 9×9 has about 29: about 100 IP) | `points.constants.ts` |
+| Points | Five a safe square the opening leaves covered is its own score (a medium 9×9 has about 30); its IP is its ladder price, 50, 65, 95, 125 by size | `ladder.constants.ts` |
 
 ## Held, and why
 
