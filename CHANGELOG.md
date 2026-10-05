@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.507.0 — 2026-10-05 16:12 UTC
+- Every Meikyuu size shows how many of its 256 levels you have solved, and marks a size you have finished; every level stays open.
+
 ## 0.506.0 — 2026-10-05 16:12 UTC
 - Big Meikyuu mazes are easy to get about with a finger: zoom out to leave page beside the board for scrolling, Move to pan, and two fingers to pan and pinch.
 
