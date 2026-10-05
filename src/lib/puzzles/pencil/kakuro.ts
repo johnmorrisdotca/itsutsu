@@ -74,7 +74,7 @@ export function kakuroCodeOf(board: KakuroBoard, values: readonly number[]): str
 export const kakuro: PencilEngine = {
   codeLength: (size) => size * size,
   make(size, _level, seed) {
-    if (size !== KAKURO_SIZE) throw new RangeError(`no Kakuro at ${size}`);
+    if (size !== KAKURO_SIZE) throw new RangeError(`no Cross Sums at ${size}`);
     const made = generateKakuro(seed);
     return { givens: givensOf(made), solution: kakuroCodeOf(made, made.solution) };
   },

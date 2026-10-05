@@ -13,9 +13,11 @@ import { fillominoBoardOf } from "./fillomino";
 import { hitoriBoardOf } from "./hitori";
 import { kakuroBoardOf } from "./kakuro";
 import { pencilEngine } from "./engines";
+import { HELD_ENGINES } from "./held";
 import { shikakuBoardOf } from "./shikaku";
 import { slitherlinkBoardOf } from "./slitherlink";
-import type { PencilKind } from "./pencil.types";
+import { isPencilKind } from "./pencil.constants";
+import type { AnyPencilKind, PencilKind } from "./pencil.types";
 
 /** The viewBox a drawing says it has, and the side of a cell as the package draws it. */
 function viewBoxOf(svg: string): number[] {
@@ -23,21 +25,21 @@ function viewBoxOf(svg: string): number[] {
 }
 
 describe("the geometry is the package's drawing's", () => {
-  const SIZES: Record<PencilKind, number> = { shikaku: 7, akari: 7, slitherlink: 5, hitori: 5, fillomino: 5, kakuro: 10 };
-  const drawn = (kind: PencilKind): string => {
+  const SIZES: Record<AnyPencilKind, number> = { shikaku: 7, akari: 7, slitherlink: 5, hitori: 5, regions: 5, crossSums: 10 };
+  const drawn = (kind: AnyPencilKind): string => {
     const size = SIZES[kind];
-    const { givens } = pencilEngine(kind).make(size, "easy", 3);
+    const { givens } = (isPencilKind(kind) ? pencilEngine(kind) : HELD_ENGINES[kind as Exclude<AnyPencilKind, PencilKind>]).make(size, "easy", 3);
     switch (kind) {
       case "shikaku": return drawShikaku(shikakuBoardOf(size, givens)!);
       case "akari": return drawAkari(akariBoardOf(size, givens)!);
       case "slitherlink": return drawSlitherlink(slitherlinkBoardOf(size, givens)!);
       case "hitori": return drawHitori(hitoriBoardOf(size, givens)!);
-      case "fillomino": return drawFillomino(fillominoBoardOf(size, givens)!);
-      case "kakuro": return drawKakuro(kakuroBoardOf(size, givens)!);
+      case "regions": return drawFillomino(fillominoBoardOf(size, givens)!);
+      case "crossSums": return drawKakuro(kakuroBoardOf(size, givens)!);
     }
   };
 
-  it.each(Object.keys(SIZES) as PencilKind[])("%s: a viewBox that starts `pad` before the board and is a board and two pads across", (kind) => {
+  it.each(Object.keys(SIZES) as AnyPencilKind[])("%s: a viewBox that starts `pad` before the board and is a board and two pads across", (kind) => {
     const size = SIZES[kind];
     const { unit, pad } = PENCIL_GEOMETRY[kind];
     const [x, y, width, height] = viewBoxOf(drawn(kind));

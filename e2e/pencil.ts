@@ -33,21 +33,6 @@ export async function pressCell(page: Page, kind: PencilKind, size: number, cell
   await clickAt(page, kind, size, (cell % size) + 0.5, Math.floor(cell / size) + 0.5);
 }
 
-/** A press on a Slitherlink edge, a little inside the cell on one side of it. */
-export async function pressEdge(page: Page, size: number, edge: number) {
-  const horizontal = size * (size + 1);
-  if (edge < horizontal) {
-    const row = Math.floor(edge / size);
-    const column = edge % size;
-    await clickAt(page, "slitherlink", size, column + 0.5, row < size ? row + 0.12 : row - 0.12);
-  } else {
-    const at = edge - horizontal;
-    const row = Math.floor(at / (size + 1));
-    const line = at % (size + 1);
-    await clickAt(page, "slitherlink", size, line < size ? line + 0.12 : line - 0.12, row + 0.5);
-  }
-}
-
 /** The code the board holds, as the page says it. */
 export async function codeOnPage(page: Page): Promise<string> {
   return (await page.getByTestId("puzzle-play").getAttribute("data-code")) ?? "";
@@ -66,9 +51,7 @@ export async function makeNextMark(page: Page, kind: PencilKind, size: number, s
     const rect = shikakuRectsOf(size, solution)!.find((each) => each.y * size + each.x === next.at)!;
     await pressCell(page, kind, size, next.at);
     await pressCell(page, kind, size, (rect.y + rect.height - 1) * size + rect.x + rect.width - 1);
-  } else if (kind === "slitherlink") {
-    await pressEdge(page, size, next.at);
-  } else if (kind === "fillomino" || kind === "kakuro") {
+  } else if (kind === "regions" || kind === "crossSums") {
     await pressCell(page, kind, size, next.at);
     const digit = solution[next.at]!;
     await page.getByTestId(digit === "." ? "puzzle-key-clear" : `puzzle-key-${Number.parseInt(digit, 36)}`).click();
@@ -79,7 +62,7 @@ export async function makeNextMark(page: Page, kind: PencilKind, size: number, s
   return next.code;
 }
 
-/** Makes a mark the answer does not have, by pressing the board: a rectangle, a bulb, a shade, a line or a wrong number. */
+/** Makes a mark the answer does not have, by pressing the board: a rectangle or a wrong number. */
 export async function makeWrongMark(page: Page, kind: PencilKind, size: number, givens: string, solution: string): Promise<void> {
   const before = await codeOnPage(page);
   const first = (test: (place: number) => boolean): number => [...before].findIndex((_, place) => test(place));
@@ -88,14 +71,8 @@ export async function makeWrongMark(page: Page, kind: PencilKind, size: number, 
     const cell = first((place) => givens[place] === "." && before[place] === ".");
     await pressCell(page, kind, size, cell);
     await pressCell(page, kind, size, cell);
-  } else if (kind === "akari") {
-    await pressCell(page, kind, size, first((place) => givens[place] === "." && solution[place] === "."));
-  } else if (kind === "hitori") {
-    await pressCell(page, kind, size, first((place) => solution[place] === "."));
-  } else if (kind === "slitherlink") {
-    await pressEdge(page, size, first((place) => solution[place] === "."));
   } else {
-    // The code, not the givens, says which cell is empty: a Kakuro's givens are longer than its cells.
+    // The code, not the givens, says which cell is empty: a Cross Sums board's givens are longer than its cells.
     const cell = first((place) => before[place] === ".");
     await pressCell(page, kind, size, cell);
     const right = Number.parseInt(solution[cell]!, 36);

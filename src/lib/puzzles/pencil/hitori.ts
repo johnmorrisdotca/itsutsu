@@ -1,7 +1,7 @@
 import { checkHitori, generateHitori, isHitoriBoard, solveHitori, type HitoriBoard } from "@johnmorrisdotca/kazu/hitori";
 
 import type { PuzzleCheck } from "../puzzles.types";
-import { BLANK, charFix, charMissing, charWrong, isCodeOf } from "./codes";
+import { BLANK, SHADE, charFix, charMissing, charWrong, isCodeOf } from "./codes";
 import type { PencilEngine } from "./pencil.types";
 
 /**
@@ -10,7 +10,7 @@ import type { PencilEngine } from "./pencil.types";
  * The givens are the numbers, a digit a cell. What a reader writes is a
  * character a cell: `.` for a number left alone, `#` for one shaded.
  */
-export const SHADE = "#";
+export { SHADE };
 
 /** The board the givens are, or null for givens that are not one. */
 export function hitoriBoardOf(size: number, givens: string): HitoriBoard | null {

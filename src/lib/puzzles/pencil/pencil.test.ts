@@ -2,28 +2,34 @@ import { describe, expect, it } from "vitest";
 
 import type { PuzzleLevel } from "../puzzles.types";
 import { pencilEngine } from "./engines";
+import { HELD_ENGINES } from "./held";
+import { HELD_PENCIL_KIND_LIST } from "./held.constants";
 import { generatePencil } from "./generate";
 import { entered, FRESH_UI, moved, pressed, type PencilPress, type PencilUi } from "./input";
 import { isPencilKind, PENCIL_KIND_LIST } from "./pencil.constants";
 import { shikakuCodeOf, shikakuPlace, shikakuRectsOf, shikakuRemove } from "./shikaku";
 import { slitherlinkEdgesOf } from "./slitherlink";
-import type { PencilKind } from "./pencil.types";
+import type { AnyPencilKind, PencilKind } from "./pencil.types";
+
+/** The engine of any pencil puzzle, offered or held: the held ones are tested as the offered are, so they stay sound until they come back (`held.constants.ts`). */
+const engineOf = (kind: AnyPencilKind) => (isPencilKind(kind) ? pencilEngine(kind) : HELD_ENGINES[kind as Exclude<AnyPencilKind, PencilKind>]);
+const EVERY_KIND: readonly AnyPencilKind[] = [...PENCIL_KIND_LIST, ...HELD_PENCIL_KIND_LIST];
 
 /** The sizes and levels each kind is tested at: the ones the site offers, a size and a level at a time. */
-const CASES: Record<PencilKind, { sizes: readonly number[]; levels: readonly PuzzleLevel[] }> = {
+const CASES: Record<AnyPencilKind, { sizes: readonly number[]; levels: readonly PuzzleLevel[] }> = {
   shikaku: { sizes: [5, 7, 9, 12], levels: ["easy", "medium", "hard"] },
   akari: { sizes: [5, 7, 9, 12], levels: ["medium"] },
   slitherlink: { sizes: [4, 5, 7, 10], levels: ["medium"] },
   hitori: { sizes: [5, 7], levels: ["medium"] },
-  fillomino: { sizes: [4, 5, 6], levels: ["easy"] },
-  kakuro: { sizes: [10], levels: ["medium"] },
+  regions: { sizes: [4, 5, 6], levels: ["easy"] },
+  crossSums: { sizes: [10], levels: ["medium"] },
 };
 
-describe.each(PENCIL_KIND_LIST)("%s is made, read, checked and solved", (kind) => {
-  const engine = pencilEngine(kind);
+describe.each(EVERY_KIND)("%s is made, read, checked and solved", (kind) => {
+  const engine = engineOf(kind);
 
-  it("is a pencil kind", () => {
-    expect(isPencilKind(kind)).toBe(true);
+  it("is a pencil kind the site offers, or one it holds", () => {
+    expect(isPencilKind(kind)).toBe(!HELD_PENCIL_KIND_LIST.includes(kind as never));
     expect(isPencilKind("numberPlace")).toBe(false);
   });
 
@@ -83,11 +89,11 @@ describe.each(PENCIL_KIND_LIST)("%s is made, read, checked and solved", (kind) =
 
 describe("what is wrong and what is missing", () => {
   it("counts a mark the answer does not have as wrong, and takes it off with the next hint", () => {
-    const made = pencilEngine("akari").make(7, "medium", 4);
+    const made = engineOf("akari").make(7, "medium", 4);
     const at = [...made.solution].findIndex((character, place) => character === "." && made.givens[place] === ".");
     const marked = `${made.solution.slice(0, at)}o${made.solution.slice(at + 1)}`;
-    expect(pencilEngine("akari").wrong(7, marked, made.solution)).toEqual([at]);
-    expect(pencilEngine("akari").fix(7, marked, made.solution)).toEqual({ code: made.solution, at });
+    expect(engineOf("akari").wrong(7, marked, made.solution)).toEqual([at]);
+    expect(engineOf("akari").fix(7, marked, made.solution)).toEqual({ code: made.solution, at });
   });
 
   it("counts a Shikaku rectangle the answer does not have as wrong, every cell of it", () => {
@@ -143,7 +149,7 @@ describe("Shikaku's code", () => {
 describe("Slitherlink's code", () => {
   it("has a mark place for every edge of the board", () => {
     for (const size of [4, 5, 7, 10]) {
-      const made = pencilEngine("slitherlink").make(size, "medium", 1);
+      const made = engineOf("slitherlink").make(size, "medium", 1);
       expect(made.solution).toHaveLength(2 * size * (size + 1));
       expect(slitherlinkEdgesOf(size, made.solution)!.length).toBeGreaterThan(4);
     }
@@ -151,13 +157,13 @@ describe("Slitherlink's code", () => {
 });
 
 describe("a seed with no puzzle names the next that has one", () => {
-  it("makes a Kakuro from seed 97, which Kazu cannot prove a board for, as the seed after it", () => {
-    expect(() => pencilEngine("kakuro").make(10, "medium", 97)).toThrow();
-    const made = generatePencil("kakuro", 10, "medium", 97);
+  it("makes a Cross Sums from seed 97, which Kazu cannot prove a board for, as the seed after it", () => {
+    expect(() => pencilEngine("crossSums").make(10, "medium", 97)).toThrow();
+    const made = generatePencil("crossSums", 10, "medium", 97);
     expect(made.seed).toBeGreaterThan(97);
     expect(made.seed).toBeLessThan(97 + 40);
-    expect(made).toEqual(generatePencil("kakuro", 10, "medium", made.seed));
-    expect(pencilEngine("kakuro").check(10, made.givens, made.solution)).toEqual({ ok: true });
+    expect(made).toEqual(generatePencil("crossSums", 10, "medium", made.seed));
+    expect(pencilEngine("crossSums").check(10, made.givens, made.solution)).toEqual({ ok: true });
   });
 
   it("keeps the seed it was asked for wherever that seed has a puzzle", () => {
@@ -165,8 +171,8 @@ describe("a seed with no puzzle names the next that has one", () => {
   });
 
   it("refuses a size it does not make rather than looking for another seed", () => {
-    expect(() => generatePencil("kakuro", 8, "medium", 5)).toThrow(/no Kakuro at 8/);
-    expect(() => generatePencil("hitori", 6, "medium", 5)).toThrow(/no Hitori at 6/);
+    expect(() => generatePencil("crossSums", 8, "medium", 5)).toThrow(/no Cross Sums at 8/);
+    expect(() => HELD_ENGINES.hitori.make(6, "medium", 5)).toThrow(/no Hitori at 6/);
   });
 });
 
@@ -206,20 +212,20 @@ describe("what a press does", () => {
   });
 
   it("chooses a cell and puts a number in it, never over a printed one or a black cell", () => {
-    const chosen = pressed("fillomino", 2, "1...", "1...", FRESH_UI, { cell: 1 });
+    const chosen = pressed("regions", 2, "1...", "1...", FRESH_UI, { cell: 1 });
     expect(chosen.ui.selected).toBe(1);
-    expect(entered("fillomino", "1...", "1...", chosen.ui, 2).code).toBe("12..");
-    expect(entered("fillomino", "1...", "12..", chosen.ui, 0).code).toBe("1...");
-    expect(pressed("fillomino", 2, "1...", "1...", FRESH_UI, { cell: 0 }).ui.selected).toBeNull();
-    expect(entered("fillomino", "1...", "1...", { ...FRESH_UI, selected: 0 }, 3).code).toBe("1...");
-    // A Kakuro's givens are longer than its cells; its black cells are read off the code.
+    expect(entered("regions", "1...", "1...", chosen.ui, 2).code).toBe("12..");
+    expect(entered("regions", "1...", "12..", chosen.ui, 0).code).toBe("1...");
+    expect(pressed("regions", 2, "1...", "1...", FRESH_UI, { cell: 0 }).ui.selected).toBeNull();
+    expect(entered("regions", "1...", "1...", { ...FRESH_UI, selected: 0 }, 3).code).toBe("1...");
+    // A Cross Sums's givens are longer than its cells; its black cells are read off the code.
     const longGivens = "#0405#0506...";
-    const kakuro = pressed("kakuro", 2, longGivens, "#...", FRESH_UI, { cell: 0 });
+    const kakuro = pressed("crossSums", 2, longGivens, "#...", FRESH_UI, { cell: 0 });
     expect(kakuro.ui.selected).toBeNull();
-    expect(pressed("kakuro", 2, longGivens, "#...", FRESH_UI, { cell: 1 }).ui.selected).toBe(1);
-    expect(entered("kakuro", longGivens, "#...", { ...FRESH_UI, selected: 2 }, 9).code).toBe("#.9.");
-    expect(entered("kakuro", longGivens, "#...", { ...FRESH_UI, selected: 0 }, 9).code).toBe("#...");
-    expect(entered("kakuro", longGivens, "#...", { ...FRESH_UI, selected: 2 }, 10).code).toBe("#...");
+    expect(pressed("crossSums", 2, longGivens, "#...", FRESH_UI, { cell: 1 }).ui.selected).toBe(1);
+    expect(entered("crossSums", longGivens, "#...", { ...FRESH_UI, selected: 2 }, 9).code).toBe("#.9.");
+    expect(entered("crossSums", longGivens, "#...", { ...FRESH_UI, selected: 0 }, 9).code).toBe("#...");
+    expect(entered("crossSums", longGivens, "#...", { ...FRESH_UI, selected: 2 }, 10).code).toBe("#...");
   });
 
   it("moves with the arrow keys and stays on the board", () => {

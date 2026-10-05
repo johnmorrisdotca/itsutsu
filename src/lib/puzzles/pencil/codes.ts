@@ -5,6 +5,11 @@
  */
 export const BLANK = ".";
 
+/** The characters a mark is written with: an Akari bulb, a Slitherlink loop edge and a Hitori shade, which are held (`held.constants.ts`) and written here so the presses on them need no engine. */
+export const BULB = "o";
+export const EDGE = "#";
+export const SHADE = "#";
+
 /** The digits and letters a value of up to 35 is written with, one character. */
 export const SYMBOLS = "0123456789abcdefghijklmnopqrstuvwxyz";
 

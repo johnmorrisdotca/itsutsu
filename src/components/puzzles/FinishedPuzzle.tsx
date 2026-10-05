@@ -35,7 +35,7 @@ import { PuzzleGrid } from "./PuzzleGrid";
 import { JiraiBoard } from "./JiraiBoard";
 import { jiraiStepWord } from "./jirai.constants";
 import { PencilBoard } from "./pencil/PencilBoard";
-import { edgeWords, pencilStepWord } from "./pencil/pencil.constants";
+import { pencilStepWord } from "./pencil/pencil.constants";
 import { isPencilKind } from "@/lib/puzzles/pencil/pencil.constants";
 import { PuzzleSteps } from "./PuzzleSteps";
 import { PatienceReplay } from "./PatienceReplay";
@@ -333,7 +333,6 @@ function GridReplay({
           go={(index) => setAt(Math.max(0, Math.min(index, last)))}
           size={size}
           say={(value) => sayCell(kind, value)}
-          where={kind === "slitherlink" ? (index) => edgeWords(size, index) : undefined}
         />
       ) : null}
       <p className="text-sm text-muted" data-testid={`solve-note-${state}`}>

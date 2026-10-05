@@ -433,11 +433,8 @@ const SURVEYED_PUZZLES = [
   "cube",
   "suido",
   "shikaku",
-  "akari",
-  "slitherlink",
-  "hitori",
-  "fillomino",
-  "kakuro",
+  "cross-sums",
+  "regions",
   "jirai",
 ] as const;
 

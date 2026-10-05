@@ -36,11 +36,8 @@ export type PuzzleKind =
   | "meikyuu"
   | "tobiishi"
   | "shikaku"
-  | "akari"
-  | "slitherlink"
-  | "hitori"
-  | "fillomino"
-  | "kakuro"
+  | "crossSums"
+  | "regions"
   | "jirai";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */

@@ -25,7 +25,7 @@ export function generatePencil(kind: PencilKind, size: number, level: PuzzleLeve
       return { kind, size, level, seed: tried, givens: made.givens, solution: made.solution };
     } catch (error) {
       // A size the kind does not make is not a seed with no puzzle; it is a mistake, and says so at once.
-      if (error instanceof RangeError && /no (Hitori|Kakuro) at/.test(error.message)) throw error;
+      if (error instanceof RangeError && /no (Cross Sums|Hitori) at/.test(error.message)) throw error;
       tried = tried >= SEED_MOST ? 1 : tried + 1;
     }
   }

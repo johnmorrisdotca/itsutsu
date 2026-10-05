@@ -1,7 +1,7 @@
 import { checkSlitherlink, generateSlitherlink, isSlitherlinkBoard, solveSlitherlink, type SlitherlinkBoard } from "@johnmorrisdotca/kazu/slitherlink";
 
 import type { PuzzleCheck } from "../puzzles.types";
-import { BLANK, charFix, charMissing, charWrong, isCodeOf } from "./codes";
+import { BLANK, EDGE, charFix, charMissing, charWrong, isCodeOf } from "./codes";
 import type { PencilEngine } from "./pencil.types";
 
 /**
@@ -13,7 +13,7 @@ import type { PencilEngine } from "./pencil.types";
  * each in reading order as Kazu numbers them: `.` for an edge left alone, `#`
  * for one the loop runs along. So a code is longer than the board has cells.
  */
-export const EDGE = "#";
+export { EDGE };
 
 const edgesOf = (size: number): number => 2 * size * (size + 1);
 

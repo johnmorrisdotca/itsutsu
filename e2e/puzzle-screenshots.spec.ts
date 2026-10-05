@@ -98,13 +98,10 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "meikyuu", size: 2, level: "medium", seed: 102, fill: 42 },
   // The heart-shaped board at its longest, the first three of its nine jumps made, as a person makes them: pegs on the heart, the dashed goal hole, and gaps where pegs were taken.
   { kind: "tobiishi", size: 9, level: "hard", seed: 13, fill: 3 },
-  // The pencil puzzles (Kazu): each part way, its first marks made by pressing the board as a reader does.
+  // The pencil puzzles (Kazu; the held ones, Akari, Loop and Hitori, have none: `pencil/held.constants.ts`): each part way, its first marks made by pressing the board as a reader does.
   { kind: "shikaku", size: 7, level: "medium", seed: 20261005, fill: 4 },
-  { kind: "akari", size: 9, level: "medium", seed: 20261005, fill: 5 },
-  { kind: "slitherlink", size: 7, level: "medium", seed: 20261065, fill: 14 },
-  { kind: "hitori", size: 5, level: "medium", seed: 20261005, fill: 3 },
-  { kind: "fillomino", size: 5, level: "easy", seed: 20261005, fill: 5 },
-  { kind: "kakuro", size: 10, level: "medium", seed: 20261005, fill: 10 },
+  { kind: "regions", size: 5, level: "easy", seed: 20261005, fill: 5 },
+  { kind: "crossSums", size: 10, level: "medium", seed: 20261005, fill: 10 },
   // A 9×9 Jirai a good way in: the opening, six more safe squares uncovered, and two mines flagged, as a reader plays it.
   { kind: "jirai", size: 9, level: "medium", seed: 20261005, fill: 6 },
   // A FreeCell with four cells, the first twenty moves of its winning line played: cards in the cells, runs built, a foundation begun.

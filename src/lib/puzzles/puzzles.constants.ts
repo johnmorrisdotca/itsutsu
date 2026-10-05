@@ -68,11 +68,8 @@ export const PUZZLE_KINDS = {
   meikyuu: "meikyuu",
   tobiishi: "tobiishi",
   shikaku: "shikaku",
-  akari: "akari",
-  slitherlink: "slitherlink",
-  hitori: "hitori",
-  fillomino: "fillomino",
-  kakuro: "kakuro",
+  crossSums: "crossSums",
+  regions: "regions",
   jirai: "jirai",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 

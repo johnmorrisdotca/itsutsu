@@ -99,11 +99,8 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   meikyuu: "meikyuu",
   tobiishi: "tobiishi",
   shikaku: "shikaku",
-  akari: "akari",
-  slitherlink: "slitherlink",
-  hitori: "hitori",
-  fillomino: "fillomino",
-  kakuro: "kakuro",
+  crossSums: "cross-sums",
+  regions: "regions",
   jirai: "jirai",
 };
 

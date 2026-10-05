@@ -1,7 +1,7 @@
 import { checkAkari, generateAkari, isAkariBoard, solveAkari, type AkariBoard } from "@johnmorrisdotca/kazu/akari";
 
 import type { PuzzleCheck } from "../puzzles.types";
-import { BLANK, charFix, charMissing, charWrong, isCodeOf } from "./codes";
+import { BLANK, BULB, charFix, charMissing, charWrong, isCodeOf } from "./codes";
 import type { PencilEngine } from "./pencil.types";
 
 /**
@@ -12,7 +12,7 @@ import type { PencilEngine } from "./pencil.types";
  * bulbs. What a reader writes is a character a cell too: `.` for nothing, `o`
  * for a bulb, which only a white square can hold.
  */
-export const BULB = "o";
+export { BULB };
 const BLACK = "#";
 
 /** The board the givens are, or null for givens that are not one. */

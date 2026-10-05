@@ -1,8 +1,11 @@
 # Pencil puzzles 鉛筆: Kazu's grid puzzles
 
-**Status: added 2026-10-05** (board rows
-`pencil-puzzles-a-new-family-with-kazu-1-2-0-s-new-grid-puzzles-and-jirai` and
-`jirai-minesweeper-on-the-site-in-pencil-puzzles`).
+**Status: added 2026-10-05, four games** (board rows
+`pencil-puzzles-a-new-family-with-kazu-1-2-0-s-new-grid-puzzles-and-jirai`,
+`jirai-minesweeper-on-the-site-in-pencil-puzzles` and
+`pencil-puzzles-ships-four-rectangles-cross-sums-regions-and-jirai`; the rest are waiting on
+`kazu-harder-akari-slitherlink-and-hitori-and-easy-medium-hard-and-extra-hard-for` and
+`pencil-puzzles-an-extra-hard-level-on-the-site-and-akari-slitherlink-and-hitori`).
 Source package: `@johnmorrisdotca/kazu` 1.2.0, pinned exactly in `package.json`
 (github.com/johnmorrisdotca/kazu, MIT, no dependencies).
 
@@ -10,9 +13,12 @@ Kazu 1.2.0 added twelve grid-puzzle engines beside the six number puzzles the si
 already played from 1.0.0. The six are unchanged: 8,280 puzzles (every kind, size and
 level, sixty-nine seeds, today's daily seed and the largest a seed can be) were made,
 checked, solved, hinted and drawn on 1.0.0 and 1.2.0 and compared, and none differed;
-`kazu.test.ts` still pins them. Six of the twelve are on the site, in a family of their
-own, **Pencil puzzles** (key `pencil`): Shikaku, Akari, Slitherlink, Hitori, Fillomino and
-Kakuro. A puzzle here is a `PuzzleKind` (`src/lib/puzzles/pencil/`), never a row in
+`kazu.test.ts` still pins them. Three of the twelve are on the site, with Jirai, in a family
+of their own, **Pencil puzzles** (key `pencil`): **Shikaku**, **Cross Sums** (Kazu's Kakuro) and
+**Regions** (Kazu's Fillomino). Plain names for coined ones, and ordinary Japanese words stay
+(John, 2026-10-05: "it's weird that we can't have a game called Shikaku? that is a basic Japanese
+word"); each of the two says what it is known as elsewhere on its rules page, and nowhere else.
+A puzzle here is a `PuzzleKind` (`src/lib/puzzles/pencil/`), never a row in
 `VARIANT_SPECS`, and follows `docs/plans/numbers/README.md`.
 
 ## What is the site's and what is Kazu's
@@ -31,19 +37,19 @@ log and a replay need the board as a string. The site draws Kazu's SVG in its bo
 | Decision | What | Where |
 | --- | --- | --- |
 | One engine interface | `PencilEngine`: make, read, blank, fits, check, solve, wrong, missing, fix, work. The server's check and the browser's play are the same functions | `lib/puzzles/pencil/pencil.types.ts`, one file a kind |
-| A board is a string of marks | A code is one character a mark place: a cell for most, an edge for Slitherlink (`2 × n × (n + 1)`), `progressLength`. So a kept run, a step log, the scrubber and a finished page's replay work unchanged | `codes.ts`, `puzzleProgress.ts` (`progressLength`, `progressFits`) |
+| A board is a string of marks | A code is one character a mark place: a cell for most, an edge for Loop (`2 × n × (n + 1)`), held, `progressLength`. So a kept run, a step log, the scrubber and a finished page's replay work unchanged | `codes.ts`, `puzzleProgress.ts` (`progressLength`, `progressFits`) |
 | Shikaku's rectangles | A letter a rectangle, touching rectangles never alike, so a run of one letter is one rectangle | `shikaku.ts` |
-| Givens | A character a cell: Shikaku's areas (base 36), Akari's `.` `#` `0`-`4`, Slitherlink's `.` `0`-`3`, Hitori's digits, Fillomino's numbers; Kakuro's are longer than its cells (`#` and two two-digit sums for a black one), so its black cells are read off the code | each kind's file |
-| The answer is the code | Handed in as it stands; the check restates the rules through Kazu (`checkShikaku`, `checkAkari`, ...), never the solver that made the board | `puzzleCheck.ts` |
-| A seed with no puzzle | Kazu throws when it cannot prove a board (Kakuro seed 97: one in a hundred). The seed names the next that has one, as a winnable Solitaire's does; the page puts the address right | `generate.ts` |
-| Sizes and levels | Shikaku 5, 7, 9, 12 at easy, medium, hard; Akari 5, 7, 9, 12; Slitherlink 4, 5, 7, 10; Hitori 5, 7; Fillomino 4, 5, 6 at easy and medium (6×6 easy only: its medium took up to 1.7 seconds to make); Kakuro 10 | `pencil.constants.ts` |
+| Givens | A character a cell: Shikaku's areas (base 36), Regions' numbers; Cross Sums' are longer than its cells (`#` and two two-digit sums for a black one), so its black cells are read off the code | each kind's file |
+| The answer is the code | Handed in as it stands; the check restates the rules through Kazu (`checkShikaku`, `checkKakuro`, `checkFillomino`), never the solver that made the board | `puzzleCheck.ts` |
+| A seed with no puzzle | Kazu throws when it cannot prove a board (Cross Sums seed 97: one in a hundred). The seed names the next that has one, as a winnable Solitaire's does; the page puts the address right | `generate.ts` |
+| Sizes and levels | Shikaku 5, 7, 9, 12 at easy, medium, hard; Regions 4, 5, 6 at easy and medium (6×6 easy only: its medium took up to 1.7 seconds to make); Cross Sums 10 | `pencil.constants.ts` |
 | Points | Five a cell the answer decides (`work`), weight set so a medium solve at the default size is about 100 IP | `points.constants.ts` |
 | Hints, Check and Show | As a Number Place's: against the answer this tab holds; Show is paid for from the Check allowance; Hint is chosen on the set-up | `PencilSolve.tsx` |
 
 ## Jirai 地雷 (board row `jirai-minesweeper-on-the-site-in-pencil-puzzles`)
 
 Minesweeper that never needs a guess, from `@johnmorrisdotca/jirai` 0.2.1 (pinned exactly), the family's
-seventh card. It is not a Kazu board and has its own module (`src/lib/puzzles/jirai/`), board
+fourth card. It is not a Kazu board and has its own module (`src/lib/puzzles/jirai/`), board
 (`JiraiBoard.tsx`) and solve (`JiraiSolve.tsx`), on the same footing otherwise: a puzzle of one answer, a code of
 one character a square, kept runs, steps, Check, Show, Hint, the clock.
 
@@ -58,11 +64,25 @@ one character a square, kept runs, steps, Check, Show, Hint, the clock.
 | Hint | Jirai's own, which reads no flags and no answer (`hintFor`); a wrong flag over the square is lifted first | `jiraiFix` |
 | Points | Five a safe square the opening leaves covered, weight 0.68 (a medium 9×9 has about 29: about 100 IP) | `points.constants.ts` |
 
+## Held, and why
+
+Akari, Slitherlink and Hitori work end to end here, and are not offered (John, 2026-10-05: "ship
+four now"). Kazu 1.2.0's generators for them are small families of layouts: Akari 7×7 always has ten
+white squares, Slitherlink clues every cell (mostly with 0), Hitori shades three or four squares.
+They wait for a harder Kazu and an extra-hard level (rows
+`kazu-harder-akari-slitherlink-and-hitori-and-easy-medium-hard-and-extra-hard-for` and
+`pencil-puzzles-an-extra-hard-level-on-the-site-and-akari-slitherlink-and-hitori`).
+
+Their names for when they come: **Akari** 明かり (slug `akari`), **Loop** 輪 (Kazu's Slitherlink; slug `loop`)
+and **Hitori** 一人 (slug `hitori`). Their engines, tables, drawing, presses and geometry are kept
+tested (`src/lib/puzzles/pencil/held.ts`, `held.constants.ts`, `held.test.ts`,
+`src/components/puzzles/pencil/heldDraw.ts`), and nothing the site runs imports them. No kind of
+theirs is a `PuzzleKind`, so no page, card, link, picture, date or XP award reaches one. The list of what
+to move to bring one back is the header of `held.constants.ts`. Their pictures were taken
+and removed; the scenes were Akari 9×9 seed 20261005 (5 marks), Slitherlink 7×7 seed 20261065 (14 edges)
+and Hitori 5×5 seed 20261005 (3 shades).
+
 ## Not done, and why
 
-Heyawake, Nurikabe, Masyu, Yajilin, Juosan and Ripple Effect are in Kazu 1.2.0 and not
-here: the family shows at most eight games, and with Jirai it holds seven. Of the six on the
-site, Akari, Slitherlink and Hitori come from small families of layouts rather than a
-general generator (Akari 7×7 always has ten white squares; Slitherlink clues every cell,
-mostly 0; Hitori shades three or four squares), which are honest puzzles with one answer
-and easy ones. A better generator in Kazu is a new version of the package and a bump here.
+Heyawake, Nurikabe, Masyu, Yajilin, Juosan and Ripple Effect are in Kazu 1.2.0 and not here: the
+first five make few distinct puzzles or tiny boards. Ripple Effect looked better than the held three.

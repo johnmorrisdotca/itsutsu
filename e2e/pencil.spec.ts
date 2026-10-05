@@ -10,20 +10,17 @@ import { codeOnPage, makeNextMark, makeWrongMark, pressCell } from "./pencil";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
- * THE PENCIL PUZZLES: Shikaku, Akari, Slitherlink, Hitori, Fillomino and
- * Kakuro, all Kazu's. Each is set up on its own screen, solved by pressing the
+ * THE PENCIL PUZZLES: Shikaku, Cross Sums (Kakuro) and Regions (Fillomino), Kazu's,
+ * beside Jirai (`jirai.spec.ts`). Each is set up on its own screen, solved by pressing the
  * drawn board as a reader does (the answer made out of the same seed the page
  * uses), checked, shown, hinted, kept half done in My games, and found in its
  * family. One case a puzzle, with what is its own in `then`.
  */
 const CASES = [
-  { kind: "shikaku", size: 5, level: "easy", rule: "its area" },
-  { kind: "akari", size: 5, level: "medium", rule: "No bulb may be lit by another" },
-  { kind: "slitherlink", size: 4, level: "medium", rule: "single closed loop" },
-  { kind: "hitori", size: 5, level: "medium", rule: "no number appears twice" },
-  { kind: "fillomino", size: 4, level: "easy", rule: "Two regions of the same size" },
-  { kind: "kakuro", size: 10, level: "medium", rule: "no digit may appear twice" },
-] as const satisfies readonly { kind: PencilKind; size: number; level: "easy" | "medium" | "hard"; rule: string }[];
+  { kind: "shikaku", size: 5, level: "easy", rule: "its area", name: "Shikaku", elsewhere: null },
+  { kind: "crossSums", size: 10, level: "medium", rule: "no digit may appear twice", name: "Cross Sums", elsewhere: "Kakuro" },
+  { kind: "regions", size: 4, level: "easy", rule: "Two regions of the same size", name: "Regions", elsewhere: "Fillomino" },
+] as const satisfies readonly { kind: PencilKind; size: number; level: "easy" | "medium" | "hard"; rule: string; name: string; elsewhere: string | null }[];
 
 async function openPlay(page: Page, kind: PencilKind, size: number, level: string, extra = "") {
   await page.goto(`/games/${PUZZLE_SLUGS[kind]}/play?size=${size}&level=${level}&seed=${freshPuzzleSeed()}${extra}`);
@@ -32,7 +29,7 @@ async function openPlay(page: Page, kind: PencilKind, size: number, level: strin
   return generatePuzzle(kind, size, level as "easy", seed);
 }
 
-for (const { kind, size, level, rule } of CASES) {
+for (const { kind, size, level, rule, name, elsewhere } of CASES) {
   const AT = `/games/${PUZZLE_SLUGS[kind]}`;
   const NAME = PUZZLE_DISPLAY[kind].label;
 
@@ -40,6 +37,7 @@ for (const { kind, size, level, rule } of CASES) {
     test.use({ storageState: { cookies: [], origins: [] } });
 
     test(`${kind}: its front door and rules are open, with the package it runs on named`, async ({ page }) => {
+      expect(NAME).toBe(name);
       await page.goto(AT);
       await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
       await expect(page.getByTestId("game-family")).toContainText("Pencil puzzles");
@@ -47,6 +45,14 @@ for (const { kind, size, level, rule } of CASES) {
       await expect(page).toHaveURL(new RegExp(`${AT}/rules$`));
       await expect(page.locator("main")).toContainText(rule);
       await expect(page.getByTestId("open-source")).toContainText("Kazu");
+      // A plain name everywhere a reader meets one, and what it is called elsewhere on its rules page alone.
+      if (elsewhere !== null) {
+        await expect(page.locator("main")).toContainText(`known elsewhere as ${elsewhere}`);
+        await page.goto(AT);
+        await expect(page.getByTestId("game-front-door")).not.toContainText(elsewhere);
+        await page.goto(`${AT}/family`);
+        await expect(page.locator("main")).not.toContainText(elsewhere);
+      }
     });
   });
 
@@ -146,28 +152,14 @@ test.describe("what is each puzzle's own", () => {
     await expect.poll(() => codeOnPage(page)).toBe(".".repeat(25));
   });
 
-  test("Akari: a second press takes a bulb out, and a black square takes none", async ({ page }) => {
-    const puzzle = await openPlay(page, "akari", 5, "medium");
-    const white = [...puzzle.givens].findIndex((character) => character === ".");
-    const black = [...puzzle.givens].findIndex((character) => character !== ".");
-    await pressCell(page, "akari", 5, white);
-    await expect.poll(async () => (await codeOnPage(page))[white]).toBe("o");
-    await pressCell(page, "akari", 5, white);
-    await expect.poll(async () => (await codeOnPage(page))[white]).toBe(".");
-    if (black !== -1) {
-      await pressCell(page, "akari", 5, black);
-      expect(await codeOnPage(page)).toBe(".".repeat(25));
-    }
-  });
-
-  test("Fillomino: a printed number cannot be written over, and the keyboard enters a number", async ({ page }) => {
-    const puzzle = await openPlay(page, "fillomino", 4, "easy");
+  test("Regions: a printed number cannot be written over, and the keyboard enters a number", async ({ page }) => {
+    const puzzle = await openPlay(page, "regions", 4, "easy");
     const printed = [...puzzle.givens].findIndex((character) => character !== ".");
     const empty = [...puzzle.givens].findIndex((character) => character === ".");
-    await pressCell(page, "fillomino", 4, printed);
+    await pressCell(page, "regions", 4, printed);
     await page.getByTestId("puzzle-key-2").click();
     expect(await codeOnPage(page)).toBe(puzzle.givens);
-    await pressCell(page, "fillomino", 4, empty);
+    await pressCell(page, "regions", 4, empty);
     await page.getByTestId("puzzle-grid").locator("[tabindex='0']").focus();
     await page.keyboard.press("3");
     await expect.poll(async () => (await codeOnPage(page))[empty]).toBe("3");
@@ -175,40 +167,24 @@ test.describe("what is each puzzle's own", () => {
     await expect.poll(async () => (await codeOnPage(page))[empty]).toBe(".");
   });
 
-  test("Kakuro: a black cell cannot be chosen, and a digit goes in a white one", async ({ page }) => {
-    const puzzle = await openPlay(page, "kakuro", 10, "medium");
+  test("Cross Sums: a black cell cannot be chosen, and a digit goes in a white one", async ({ page }) => {
+    const puzzle = await openPlay(page, "crossSums", 10, "medium");
     const black = [...puzzle.givens.matchAll(/#/g)].length > 0 ? 0 : -1;
-    const white = pencilEngine("kakuro").blank(10, puzzle.givens).indexOf(".");
+    const white = pencilEngine("crossSums").blank(10, puzzle.givens).indexOf(".");
     if (black !== -1) {
-      await pressCell(page, "kakuro", 10, black);
+      await pressCell(page, "crossSums", 10, black);
       await page.getByTestId("puzzle-key-5").click();
-      expect(await codeOnPage(page)).toBe(pencilEngine("kakuro").blank(10, puzzle.givens));
+      expect(await codeOnPage(page)).toBe(pencilEngine("crossSums").blank(10, puzzle.givens));
     }
-    await pressCell(page, "kakuro", 10, white);
+    await pressCell(page, "crossSums", 10, white);
     await page.getByTestId("puzzle-key-5").click();
     await expect.poll(async () => (await codeOnPage(page))[white]).toBe("5");
   });
 
-  test("Slitherlink: a press on either side of a line is that line, and a second press takes it out", async ({ page }) => {
-    await openPlay(page, "slitherlink", 4, "medium");
-    const { pressEdge } = await import("./pencil");
-    await pressEdge(page, 4, 5);
-    await expect.poll(async () => (await codeOnPage(page))[5]).toBe("#");
-    await pressEdge(page, 4, 5);
-    await expect.poll(async () => (await codeOnPage(page))[5]).toBe(".");
-  });
-
-  test("Hitori: a press shades a square and a second clears it", async ({ page }) => {
-    await openPlay(page, "hitori", 5, "medium");
-    await pressCell(page, "hitori", 5, 6);
-    await expect.poll(async () => (await codeOnPage(page))[6]).toBe("#");
-    await pressCell(page, "hitori", 5, 6);
-    await expect.poll(async () => (await codeOnPage(page))[6]).toBe(".");
-  });
 });
 
 test.describe("the Pencil puzzles family", () => {
-  test("has a page, a tile on the set-up screen, a place on the list of every game, and all seven on its shelf", async ({ page }) => {
+  test("has a page, a tile on the set-up screen, a place on the list of every game, and all four on its shelf", async ({ page }) => {
     await page.goto(`/games/${PUZZLE_SLUGS.shikaku}/family`);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Pencil puzzles");
     await expect(page.locator('[data-testid="family-mark"][data-family="Pencil puzzles"]').first()).toBeVisible();
@@ -225,6 +201,14 @@ test.describe("the Pencil puzzles family", () => {
 
     await page.goto("/games");
     await expect(page.locator("main")).toContainText("Pencil puzzles");
+  });
+
+  test("offers four games, and none of the three it holds back has a page", async ({ page }) => {
+    // Akari, Loop and Hitori are held (`pencil/held.constants.ts`): no address answers for them.
+    for (const slug of ["akari", "loop", "hitori", "slitherlink", "kakuro", "fillomino"]) {
+      const answered = await page.goto(`/games/${slug}`);
+      expect(answered?.status(), slug).toBe(404);
+    }
   });
 
   test("leaves Numbers with its six puzzles and Meikyuu", async ({ page }) => {

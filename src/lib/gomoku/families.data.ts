@@ -250,8 +250,10 @@ export const GAME_FAMILIES: GameFamily[] = [
     /*
      * PENCIL PUZZLES 鉛筆. John, 2026-10-05: "Pencil puzzles", the name of a new
      * shelf for the grid puzzles of Kazu 1.2.0 (`@johnmorrisdotca/kazu`): draw the
-     * rectangles, place the bulbs, shade the repeats, loop the numbers, number the
-     * regions, add up the runs. Nothing here is a game between two colours, and each
+     * rectangles, add up the runs, number the regions, and clear the mines of Jirai
+     * (`@johnmorrisdotca/jirai`). Four ship (John: "ship four now"); Akari, Loop and
+     * Hitori are held until their generators are harder (`pencil/held.constants.ts`).
+     * Nothing here is a game between two colours, and each
      * is a `PuzzleKind` (`src/lib/puzzles/pencil/`), with one answer a pencil finds.
      *
      * 鉛筆 (enpitsu) is the plain word for a pencil, which is the word the whole
@@ -265,8 +267,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Pencil puzzles",
     kanji: "鉛筆",
-    blurb: "Puzzles for one to work out with a pencil: cut a grid into rectangles, light every square, draw one loop, shade the repeats, number the regions, add up the runs and clear the mines.",
-    games: ["shikaku", "akari", "slitherlink", "hitori", "fillomino", "kakuro", "jirai"],
+    blurb: "Puzzles for one to work out with a pencil: cut a grid into rectangles, add up the runs, number the regions and clear the mines.",
+    games: ["shikaku", "crossSums", "regions", "jirai"],
   },
   {
     key: "cards",
