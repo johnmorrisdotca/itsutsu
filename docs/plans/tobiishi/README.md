@@ -2,7 +2,7 @@
 
 **Status: added 2026-10-05** (board row
 `tobiishi-peg-solitaire-on-the-site-in-small-boards`).
-Source package: `@johnmorrisdotca/tobiishi` 0.2.0, pinned exactly in `package.json`
+Source package: `@johnmorrisdotca/tobiishi` 0.2.1, pinned exactly in `package.json`
 (github.com/johnmorrisdotca/tobiishi, MIT, no dependencies).
 
 Peg solitaire is a puzzle (a `PuzzleKind`, `src/lib/puzzles/tobiishi/`), never a row in

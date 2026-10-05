@@ -152,16 +152,18 @@ test.describe("the Tobiishi levels", () => {
         await expect(page.getByTestId("tobiishi-chips")).toBeVisible();
         const first = await reading();
         expect(first.across, "the page runs wider than the screen").toBe(true);
+        // Every level of every length, a wide board and a tall one and the longest names among them: the chips under Start wrap to more rows for some than others, and the screen keeps the room the most takes.
         for (const size of ["6", "9", "3"]) {
           await page.locator(`[data-testid="set-up-size"][data-size="${size}"]`).click();
           await expect(preview).toHaveAttribute("data-size", size);
           expect(await reading(), `after choosing length ${size}`).toEqual(first);
-        }
-        // A wide board and a tall one in the same box: the boxes do not change with the shape.
-        for (const level of ["22", "25", "27", "1"]) {
-          await page.locator(`[data-testid="tobiishi-level"][data-level="${level}"]`).click();
-          await expect(preview).toHaveAttribute("data-level", level);
-          expect(await reading(), `after choosing level ${level}`).toEqual(first);
+          for (let level = 1; level <= TOBIISHI_LEVELS_A_SIZE; level += 1) {
+            await page.locator(`[data-testid="tobiishi-level"][data-level="${level}"]`).click();
+            await expect(preview).toHaveAttribute("data-level", String(level));
+            expect(await reading(), `after choosing level ${level} of length ${size}`).toEqual(first);
+          }
+          // Back on level 1 for the next length to start from the same place.
+          await page.locator('[data-testid="tobiishi-level"][data-level="1"]').click();
         }
       } finally {
         await context.close();

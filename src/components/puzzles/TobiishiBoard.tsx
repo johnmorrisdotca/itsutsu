@@ -87,7 +87,6 @@ export function TobiishiBoard({
   const field = useRef<HTMLDivElement>(null);
   const holes = useRef<(HTMLButtonElement | null)[]>([]);
   const pointer = useRef<{ from: number; id: number; x: number; y: number; moved: boolean } | null>(null);
-  const ignoreClick = useRef(false);
   const told = useRef(onChange);
   useEffect(() => {
     told.current = onChange;
@@ -152,7 +151,7 @@ export function TobiishiBoard({
   };
 
   const down = (event: PointerEvent<HTMLButtonElement>, cell: number) => {
-    if (locked || !game.pegs[cell] || (event.pointerType === "mouse" && event.button !== 0)) return;
+    if (locked || (event.pointerType === "mouse" && event.button !== 0)) return;
     pointer.current = { from: cell, id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
   };
 
@@ -160,7 +159,8 @@ export function TobiishiBoard({
     const held = pointer.current;
     if (held === null || held.id !== event.pointerId) return;
     if (!held.moved) {
-      if (Math.hypot(event.clientX - held.x, event.clientY - held.y) < DRAG_SLOP) return;
+      // Only a peg is dragged; a press that wanders off an empty hole is still a tap on it.
+      if (!game.pegs[held.from] || Math.hypot(event.clientX - held.x, event.clientY - held.y) < DRAG_SLOP) return;
       held.moved = true;
       // The pointer stays with the peg, wherever it goes, until it is let go.
       event.currentTarget.setPointerCapture(event.pointerId);
@@ -176,12 +176,12 @@ export function TobiishiBoard({
     const held = pointer.current;
     if (held === null || held.id !== event.pointerId) return;
     pointer.current = null;
-    if (!held.moved) return;
-    // What follows a drag is not also a tap on the peg it started from.
-    ignoreClick.current = true;
-    window.setTimeout(() => {
-      ignoreClick.current = false;
-    }, 0);
+    if (!held.moved) {
+      // A tap is made here, on the pointer's own release, and not on the click that follows it: a browser may not send one (Chromium sends none for a tap that comes soon after a drag), and the board must not depend on it.
+      setFocus(held.from);
+      choose(held.from);
+      return;
+    }
     const over = holeNear(event.clientX, event.clientY);
     setDrag(null);
     if (over === null || !jump(held.from, over)) setSelected(held.from);
@@ -284,8 +284,9 @@ export function TobiishiBoard({
                   data-peg={peg ? "true" : "false"}
                   data-goal={goal ? "true" : "false"}
                   data-legal={legal ? "true" : "false"}
-                  onClick={() => {
-                    if (ignoreClick.current) return;
+                  onClick={(event) => {
+                    // A press with a pointer was made on its release (`up`), whether or not a click follows; a click with no press before it (detail 0) is the keyboard's Enter or Space, or an assistive technology's.
+                    if (event.detail > 0) return;
                     setFocus(index);
                     choose(index);
                   }}
