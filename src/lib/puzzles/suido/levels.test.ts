@@ -10,7 +10,7 @@ import {
   SUIDO_LEVEL_COUNTS,
   SUIDO_SIZES,
   suidoBand,
-} from "@johnmorrisdotca/suido/levels";
+} from "@johnmorrisdotca/suido/levels-info";
 
 import { fixedLevelOf, nextLevelLabel } from "../fixedLevel";
 import { puzzleAsked, puzzleQuery } from "../puzzleAddress";
@@ -21,7 +21,7 @@ import { freshSeed, SUIDO_LEVEL_SEED_BLOCK } from "../random";
 import { generatePuzzle, preparePuzzle, puzzleLoads } from "../generate";
 import { resumedGame } from "./play";
 import { checkSuido, suidoCodeFits } from "./check";
-import { isSuidoLevelAt, suidoLevelBand, suidoLevelCount, SUIDO_LEVELS_PER_SIZE } from "./levelCounts";
+import { isSuidoLevelAt, suidoLevelBand, suidoLevelCount, SUIDO_HUGE_LEVELS_PER_SIZE, SUIDO_LEVELS_PER_SIZE } from "./levelCounts";
 import {
   firstUnsolvedSuidoLevelAt,
   loadSuidoLevelsAt,
@@ -34,7 +34,7 @@ import {
 } from "./levels";
 import { suidoModeOf } from "./mode";
 import { suidoLevelOfSeed, suidoLevelSeed } from "./seed";
-import { SUIDO_LEVEL_SIZES, isSuidoLevelSize, pipeSize, suidoShapeOf, suidoSizeFromAddress, suidoSizeInAddress, suidoSizeKey, suidoSizeOfKey, suidoSizeWord } from "./sizes";
+import { SUIDO_LEVEL_SIZES, isSuidoHugeSize, isSuidoLevelSize, pipeSize, suidoShapeOf, suidoSizeFromAddress, suidoSizeInAddress, suidoSizeKey, suidoSizeOfKey, suidoSizeWord } from "./sizes";
 
 /**
  * SUIDO'S LEVELS AS THE SITE TAKES THEM. Every level itself — proved to have one
@@ -59,9 +59,11 @@ describe("a level the site has not loaded", () => {
 });
 
 describe("a size, kept as one number", () => {
-  it("is a square's side, and for the three long boards its width and then its height in two digits each", () => {
+  it("is a square's side, and for the four long boards its width and then its height in two digits each", () => {
     expect(pipeSize(5, 7)).toBe(507);
-    expect(SUIDO_LEVEL_SIZES).toEqual([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 507, 610, 814]);
+    expect(pipeSize(20, 50)).toBe(2050);
+    expect(SUIDO_LEVEL_SIZES).toEqual([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 20, 28, 507, 610, 814, 2050]);
+    expect(suidoShapeOf(2050)).toEqual({ width: 20, height: 50 });
     expect(suidoShapeOf(7)).toEqual({ width: 7, height: 7 });
     expect(suidoShapeOf(814)).toEqual({ width: 8, height: 14 });
     expect(suidoShapeOf(100)).toBeNull();
@@ -76,7 +78,8 @@ describe("a size, kept as one number", () => {
       expect(isSuidoLevelSize(size!), key).toBe(true);
     }
     // Every size the package has, and no other: the site's list is the package's.
-    expect(SUIDO_SIZES.map((key) => suidoSizeOfKey(key))).toEqual([...SUIDO_LEVEL_SIZES]);
+    // The package lists the huge squares after the long boards; the site's tiles keep every square together, so the same sizes in another order.
+    expect(SUIDO_SIZES.map((key) => suidoSizeOfKey(key)).sort((a, b) => a! - b!)).toEqual([...SUIDO_LEVEL_SIZES].sort((a, b) => a - b));
     expect(suidoSizeOfKey("nonsense")).toBeNull();
   });
 
@@ -92,8 +95,11 @@ describe("a size, kept as one number", () => {
     expect(suidoSizeFromAddress("x")).toBeNull();
   });
 
-  it("is what the puzzle's spec lists, with the boards made from a seed kept to four of them", () => {
+  it("is what the puzzle's spec lists, which a set-up shows four tiles at a time and turns through", () => {
     expect(PUZZLE_SPECS.suido.sizes).toEqual([...SUIDO_LEVEL_SIZES]);
+    // Sixteen sizes make four shelves of four: 5 to 8, 9 to 12, 13 to 28, and the long boards.
+    expect(SUIDO_LEVEL_SIZES).toHaveLength(16);
+    expect(PUZZLE_SPECS.suido.shelves).toBe(true);
     expect(PUZZLE_SPECS.suido.offered).toEqual([5, 7, 9, 12]);
     for (const size of PUZZLE_SPECS.suido.offered) expect(PUZZLE_SPECS.suido.sizes).toContain(size);
   });
@@ -103,12 +109,13 @@ describe("what the site reads without the package's loader, held to the package'
   it("has the package's number of levels in every size, and its thirds", () => {
     for (const key of SUIDO_SIZES) {
       const size = suidoSizeOfKey(key)!;
-      expect(suidoLevelCount(size), key).toBe(SUIDO_LEVEL_COUNTS[key]);
-      expect(SUIDO_LEVELS_PER_SIZE, key).toBe(SUIDO_LEVEL_COUNTS[key]);
-      for (const level of [1, 85, 86, 171, 172, 256]) expect(suidoLevelBand(size, level), `${key} ${level}`).toBe(suidoBand(key, level));
+      const count = SUIDO_LEVEL_COUNTS[key]!;
+      expect(suidoLevelCount(size), key).toBe(count);
+      expect(isSuidoHugeSize(size) ? SUIDO_HUGE_LEVELS_PER_SIZE : SUIDO_LEVELS_PER_SIZE, key).toBe(count);
+      for (const level of [1, 2, Math.floor(count / 3), Math.floor(count / 3) + 1, Math.floor((2 * count) / 3), Math.floor((2 * count) / 3) + 1, count]) expect(suidoLevelBand(size, level), `${key} ${level}`).toBe(suidoBand(key, level));
       expect(isSuidoLevelAt(size, 0)).toBe(false);
-      expect(isSuidoLevelAt(size, 256)).toBe(true);
-      expect(isSuidoLevelAt(size, 257)).toBe(false);
+      expect(isSuidoLevelAt(size, count)).toBe(true);
+      expect(isSuidoLevelAt(size, count + 1)).toBe(false);
     }
     expect(suidoLevelCount(8)).toBe(256);
     expect(suidoLevelCount(15)).toBe(0);
@@ -201,7 +208,7 @@ describe("every level, as a puzzle of the site", () => {
     expect(suidoLevelPuzzle(7, 9999).seed).toBe(suidoLevelSeed(1));
   }, 60_000);
 
-  it.each(SUIDO_LEVEL_SIZES.map((size) => [size]))("pays each size %i level's one answer, which fits what the routes accept, in the shape the size says", async (size) => {
+  it.each(SUIDO_LEVEL_SIZES.filter((size) => !isSuidoHugeSize(size)).map((size) => [size]))("pays each size %i level's one answer, which fits what the routes accept, in the shape the size says", async (size) => {
     const rows = await loadSuidoLevelsAt(size);
     const shape = suidoShapeOf(size)!;
     expect(rows).toHaveLength(256);

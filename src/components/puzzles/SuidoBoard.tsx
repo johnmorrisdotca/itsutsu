@@ -2,24 +2,31 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 
-import { isLocked, shapeOf, SIDES, type Layout } from "@johnmorrisdotca/suido";
-import { drawSuido, paintSuido, SUIDO_STYLE } from "@johnmorrisdotca/suido/draw";
+import { blockAt, isLocked, placeAfter, shapeOf, SIDES, type Layout } from "@johnmorrisdotca/suido";
+import { attachSuidoView, drawSuido, paintSuido, SUIDO_STYLE, type SuidoView, type SuidoViewer } from "@johnmorrisdotca/suido/draw";
 
 import { PuzzleBoard } from "./PuzzleBoard";
 
 const SIDE_WORDS = ["north", "east", "south", "west"] as const;
 
-/** What a screen reader hears for one cell: where it is, what piece it holds, which sides it opens on, and whether it is a pump or a drain. */
-function cellLabel(layout: Layout, masks: readonly number[], cell: number): string {
-  const mask = masks[cell] ?? 0;
+/**
+ * What a screen reader hears for one cell: where it is, what piece it holds, which sides it opens on, and whether it is a pump or a
+ * drain. A piece of a block that turns as one is named by the cell it was given in and has been carried round by its block, so
+ * it is said where it is now and as part of the block it moves with (`quarters` is how far its block has been turned).
+ */
+function cellLabel(layout: Layout, masks: readonly number[], quarters: readonly number[], cell: number): string {
+  const block = blockAt(layout, cell);
+  const place = block === null ? cell : placeAfter(block, cell, quarters[cell] ?? 0);
+  const mask = masks[place] ?? 0;
   const shape = shapeOf(mask);
-  const where = `row ${Math.floor(cell / layout.width) + 1}, column ${(cell % layout.width) + 1}`;
+  const where = `row ${Math.floor(place / layout.width) + 1}, column ${(place % layout.width) + 1}`;
   if (shape === "blank") return `${where}: bare ground`;
   const opens = SIDES.map((bit, side) => ((mask & bit) !== 0 ? SIDE_WORDS[side] : null)).filter((word) => word !== null);
   const role = layout.sources.includes(cell) ? ", pump" : layout.drains.includes(cell) ? ", drain" : "";
   // A level's locked piece cannot be turned: said, so a reader's tools do not offer a press that does nothing.
   const lock = isLocked(layout, cell) ? ", locked" : "";
-  return `${where}: ${shape === "tee" ? "T" : shape} piece${role}${lock}, open ${opens.join(" and ")}`;
+  const part = block === null ? "" : block.big ? ", part of a big piece, turns with it" : ", turns with its block";
+  return `${where}: ${shape === "tee" ? "T" : shape} piece${role}${lock}${part}, open ${opens.join(" and ")}`;
 }
 
 /** The cell an arrow key moves to from `cell`, staying on the board. */
@@ -61,6 +68,9 @@ export function SuidoBoard({
   done = false,
   anticlockwise = false,
   onTurn,
+  zoomable = false,
+  onViewer,
+  onView,
 }: {
   /** The board as it was dealt: every piece, pump and drain where they are. */
   layout: Layout;
@@ -75,12 +85,38 @@ export function SuidoBoard({
   /** Which way a plain tap turns a piece. */
   anticlockwise?: boolean;
   onTurn?: (cell: number, by: 1 | -1) => void;
+  /**
+   * A board too big for a thumb (the huge sizes) is looked at through its own box: zoomed and moved about by a pinch, a drag and
+   * the wheel (`attachSuidoView`), a press that did not move still a tap. `onViewer` is handed the controller, for the buttons;
+   * `onView` is told each change of view.
+   */
+  zoomable?: boolean;
+  onViewer?: (viewer: SuidoViewer | null) => void;
+  onView?: (view: SuidoView) => void;
 }) {
   const live = !readOnly && !done;
   const box = useRef<HTMLDivElement>(null);
   const cursor = useRef(0);
   // Made once, from where the board stood when it was first drawn, so the picture is never replaced under the water.
   const [drawn] = useState(() => drawSuido(layout, { masks, quarters, label: `Suido board, ${layout.width} by ${layout.height}` }));
+
+  /* The box that moves and zooms the board, where it is one. */
+  const viewer = useRef<SuidoViewer | null>(null);
+  useEffect(() => {
+    const element = box.current;
+    const svg = element?.querySelector("svg");
+    if (!zoomable || element === null || element === undefined || svg === null || svg === undefined) return;
+    const attached = attachSuidoView(element, svg, layout, { onChange: (view) => onView?.(view) });
+    viewer.current = attached;
+    onViewer?.(attached);
+    return () => {
+      attached.destroy();
+      viewer.current = null;
+      onViewer?.(null);
+    };
+    // The board is drawn once and never replaced (`drawn`), so one controller serves it; the callbacks are read as they were.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoomable, layout.width, layout.height]);
 
   /* What changed: the water and the turns painted on, and what a reader's tools are told about each piece. */
   useEffect(() => {
@@ -90,13 +126,24 @@ export function SuidoBoard({
     svg.querySelectorAll<SVGGElement>(".sd-cell").forEach((cell, at) => {
       cell.setAttribute("data-testid", "suido-cell");
       cell.setAttribute("data-mask", String(masks[at] ?? 0));
-      cell.setAttribute("aria-label", cellLabel(layout, masks, at));
+      cell.setAttribute("aria-label", cellLabel(layout, masks, quarters, at));
       if (live) cell.setAttribute("role", "button");
       else cell.removeAttribute("role");
       cell.setAttribute("tabindex", live && at === cursor.current ? "0" : "-1");
       if (hint === at) cell.setAttribute("data-hint", "true");
       else cell.removeAttribute("data-hint");
     });
+    // A hint in a block lights the whole block, which is what turns: its pieces and its plate.
+    const block = hint === null ? null : blockAt(layout, hint);
+    svg.querySelectorAll<SVGElement>(".sd-plate").forEach((plate) => {
+      if (block !== null && Number(plate.getAttribute("data-block")) === block.index) plate.setAttribute("data-hint", "true");
+      else plate.removeAttribute("data-hint");
+    });
+    if (block !== null) {
+      const cells = svg.querySelectorAll<SVGGElement>(".sd-cell");
+      for (const lit of block.cells) cells[lit]?.setAttribute("data-hint", "true");
+    }
+    if (hint !== null) viewer.current?.show(hint);
   }, [layout, masks, quarters, hint, live]);
 
   const cellOf = (target: EventTarget | null): number | null => {
@@ -133,13 +180,14 @@ export function SuidoBoard({
     cursor.current = next;
     const cells = box.current?.querySelectorAll<SVGGElement>(".sd-cell");
     cells?.forEach((each, at) => each.setAttribute("tabindex", at === next ? "0" : "-1"));
-    cells?.[next]?.focus();
+    cells?.[next]?.focus({ preventScroll: zoomable });
+    viewer.current?.show(next);
   };
 
   return (
     <div className="w-full select-none" data-testid="puzzle-grid" data-size={layout.width} data-rows={layout.height} data-done={done ? "true" : "false"}>
       {/* A long board (a level's 5×7, 6×10 or 8×14) is the wood it is: squares still square, taller than it is wide (`PuzzleBoard`'s rows). */}
-      <PuzzleBoard size={layout.width} rows={layout.height === layout.width ? undefined : layout.height}>
+      <PuzzleBoard size={layout.width} rows={layout.height === layout.width ? undefined : layout.height} coordinates={!zoomable}>
         {/* The package's style, once for the board it draws: its colours follow the device's light or dark. */}
         <style>{SUIDO_STYLE}</style>
         <div

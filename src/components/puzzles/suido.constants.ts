@@ -38,6 +38,9 @@ export const SUIDO_TWISTS: Record<Twist, { label: string; kanji: string; says: s
   walls: { label: "Walls", kanji: "壁", says: "Water cannot cross a wall: a pipe open towards one runs out." },
   wrap: { label: "Edges join", kanji: "巡", says: "The edges of the board join: water leaving the right side comes in at the left, and out of the bottom at the top. A dashed rim shows it." },
   "inlet-outlet": { label: "Inlet to outlet", kanji: "入出", says: "The water comes in at the top left and must leave at the bottom right, in one path with no branches. The other pieces are decoys and stay dry." },
+  // Only a board made on request has these two (Make a board): the fixed levels do not.
+  "big-pieces": { label: "Big pieces", kanji: "大駒", says: "A big piece fills four squares and has up to eight openings. One tap turns the whole piece a quarter, where it stands." },
+  "block-turns": { label: "Block turns", kanji: "回転", says: "Where four pieces are ringed by a dashed line, a tap turns all four together: each moves round to the next place as it turns. They cannot be turned on their own." },
 };
 
 /** The row under a level (`LevelChips`): what its difficulty marks measure, and what a block's 15th and 16th levels are for. */
@@ -52,7 +55,7 @@ export const SUIDO_CHIPS = {
 
 /** Where the two ways of playing are told apart: Levels, the fixed boards, and Make a board, a new one from a seed. */
 export const SUIDO_MODES = {
-  levels: { label: "Levels", kanji: "級", says: "256 fixed boards at every size, easy to hard, the same for everybody." },
+  levels: { label: "Levels", kanji: "級", says: "Fixed boards at every size, easy to hard, the same for everybody: 256 at each size to 14×14, and 64 on the huge ones." },
   make: { label: "Make a board", kanji: "作る", says: "A new board each time, at a size and a level you choose." },
 } as const;
 
@@ -65,9 +68,9 @@ export const SUIDO_WAYS = {
 export const SUIDO_COPY = {
   /** The set-up's note under the levels' options: what a level is and what a twist is, in the words the glossary keeps. */
   levelsNote:
-    "Every size has 256 levels, easy to hard, and each has exactly one answer. A level can come with a twist: several pumps, locked pieces, walls, edges that join, or a single path from an inlet to an outlet. A block of 16 levels opens when the one before it is solved.",
+    "Every size has fixed levels, 256 of them up to 14×14 and 64 on the huge boards, easy to hard, and each has exactly one answer. A level can come with a twist: several pumps, locked pieces, walls, edges that join, or a single path from an inlet to an outlet. A block of 16 levels opens when the one before it is solved.",
   /** The front door's line for the levels, beside the line that says which boards it makes. */
-  levelsLine: "Also 256 fixed levels at each of 13 sizes, easy to hard: 5×5 to 14×14, and three long boards, 5×7, 6×10 and 8×14.",
+  levelsLine: "Also fixed levels at each of 16 sizes, easy to hard: 256 at each from 5×5 to 14×14 and the long boards 5×7, 6×10 and 8×14, and 64 at each of the huge 20×20, 28×28 and 20×50.",
   /** Said on the disabled Hint press of a level, which has none to choose. */
   levelsNoHint: "A level has no hint, so a time on it is one anybody can be compared with",
   levelsNoHelp: "A level has no hint and no clock, so a time on it is one anybody can be compared with.",

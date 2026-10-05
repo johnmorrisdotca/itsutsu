@@ -25,7 +25,14 @@ export function generateSuido(size: number, level: PuzzleLevel, seed: number): P
   if (shape === null) throw new Error(`No Suido board is made at size ${size}.`);
   // A square is asked for by its side, a long board (507 is 5×7, `sizes.ts`) by its width and height.
   const where = shape.width === shape.height ? { size: shape.width } : { width: shape.width, height: shape.height };
-  const made = makeSuido({ ...where, kind: suidoKindOfSeed(seed), difficulty: SUIDO_DIFFICULTY[level], seed });
+  /*
+   * A BIG BOARD IS MADE FROM FEWER TRIES. The package makes boards until one is near the level asked for, up to sixty; a board
+   * of a thousand cells takes a quarter of a second to a second to make and measure, so sixty would be a minute in a phone. From
+   * four hundred cells (20×20 up) it makes two and keeps the nearer, within 12 of the level's aim and not within 4: a huge board is a place among a hundred boards of its
+   * size, so it is aimed less exactly, and is made in under a second on a laptop and a few on a phone (`suido.test.ts` holds the time).
+   */
+  const attempts = shape.width * shape.height > 400 ? 2 : undefined;
+  const made = makeSuido({ ...where, kind: suidoKindOfSeed(seed), difficulty: SUIDO_DIFFICULTY[level], seed, ...(attempts === undefined ? {} : { attempts, tolerance: 12 }) });
   /*
    * THE ANSWER, WITH ITS SPARES AS DEALT. A drains board's spare pieces, which
    * the water never reaches, may face any way, and the package's answer has

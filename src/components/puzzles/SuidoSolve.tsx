@@ -3,14 +3,15 @@
 import Link from "@/components/ui/Link";
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 
-import { decodeLayout, flowOfGame, gameCode, hintFor, isGameSolved, newGame, turnAt, type Game } from "@johnmorrisdotca/suido";
-import { declaredTwists } from "@johnmorrisdotca/suido/levels";
+import { decodeLayout, flowOfGame, gameCode, hintFor, isGameSolved, newGame, turnAt, turnedToFaceAt, type Game } from "@johnmorrisdotca/suido";
+import { SUIDO_FIT, type SuidoView, type SuidoViewer } from "@johnmorrisdotca/suido/draw";
+import { declaredTwists } from "@johnmorrisdotca/suido/levels-info";
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { nextLevelLabel } from "@/lib/puzzles/fixedLevel";
-import { resumedGame, suidoReading, turnedToFace } from "@/lib/puzzles/suido/play";
+import { resumedGame, suidoReading } from "@/lib/puzzles/suido/play";
 import {
   blockOf,
   blockRange,
@@ -21,13 +22,14 @@ import {
   suidoLevelsLoaded,
 } from "@/lib/puzzles/suido/levels";
 import { suidoLevelOfSeed } from "@/lib/puzzles/suido/seed";
-import { suidoShapeOf, suidoSizeInAddress, suidoSizeWord } from "@/lib/puzzles/suido/sizes";
+import { isSuidoHugeSize, suidoShapeOf, suidoSizeInAddress, suidoSizeWord } from "@/lib/puzzles/suido/sizes";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { SUIDO_COPY, SUIDO_WAYS } from "./suido.constants";
 import { SuidoBoard } from "./SuidoBoard";
 import { SuidoLevelChips } from "./SuidoLevelChips";
+import { SuidoZoomBar } from "./SuidoZoomBar";
 import { suidoLevelPath } from "./SuidoLevelPicker";
 import { keepSolveHere, keptSolves } from "./suidoKept";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
@@ -40,13 +42,40 @@ import { TsunagiViewport } from "./TsunagiViewport";
  * every board's, so on a desk the 8×14 stood a thousand pixels tall with its foot below the fold. From a tablet's width
  * up (`md:`) its width is held to what the window's height can show of it — the height less the page's furniture over
  * and under, times its width over its height — so the whole board is in view; on a phone it is the screen's width, as
- * every board is, and the page scrolls. A square or a wider board has no such limit.
+ * every board is, and the page scrolls. A square or a wider board has no such limit. In Just the board a tall board is
+ * as wide as its height allows and the modal as wide as it and the column beside it, so the play stands in the middle
+ * of the modal and nothing in it is empty (`globals.css`, `data-suido-tall`).
  */
 function TallFit({ width, height, children }: { width: number; height: number; children: ReactNode }) {
   if (height <= width) return <>{children}</>;
   return (
-    <div className="mx-auto w-full md:max-w-(--suido-tall-fit)" style={{ "--suido-tall-fit": `calc((100dvh - 18rem) * ${width} / ${height})` } as CSSProperties} data-testid="suido-tall-fit">
+    <div className="mx-auto w-full md:max-w-(--suido-tall-fit)" style={{ "--suido-tall-fit": `calc((100dvh - 18rem) * ${width} / ${height})`, "--suido-ratio": width / height } as CSSProperties} data-testid="suido-tall-fit" data-suido-tall>
       {children}
+    </div>
+  );
+}
+
+/**
+ * THE BOARD, LOOKED AT AS ITS SIZE ASKS. A huge board (20×20 and up) is zoomed and moved about by the package's own view (`SuidoBoard`'s
+ * `zoomable`: a pinch, a drag once zoomed in, the wheel with control held) with its three buttons under it; a board from 10 wide to 14 is
+ * looked at through Tsunagi's box (`TsunagiViewport`), as it always was; a smaller one is the board alone.
+ */
+function SuidoLooked({ size, board }: { size: number; board: (more: { zoomable: boolean; onViewer?: (viewer: SuidoViewer | null) => void; onView?: (view: SuidoView) => void }) => ReactNode }) {
+  const huge = isSuidoHugeSize(size);
+  const [viewer, setViewer] = useState<SuidoViewer | null>(null);
+  const [view, setView] = useState<SuidoView>(SUIDO_FIT);
+  if (!huge) {
+    const shape = suidoShapeOf(size) ?? { width: size, height: size };
+    return (
+      <TsunagiViewport size={shape.width} name="suido">
+        {board({ zoomable: false })}
+      </TsunagiViewport>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2" data-testid="suido-huge">
+      {board({ zoomable: true, onViewer: setViewer, onView: setView })}
+      <SuidoZoomBar viewer={viewer} view={view} />
     </div>
   );
 }
@@ -140,7 +169,7 @@ export function SuidoSolve({
   const hint = () => {
     const cell = hintFor(game, answer);
     if (cell === null || !live || !hinting.spend()) return;
-    change(turnedToFace(game, cell, answer), cell);
+    change(turnedToFaceAt(game, cell, answer), cell);
   };
   // Kept in this browser as soon as a level is solved, so the board of levels opens the next block with or without an account.
   useEffect(() => {
@@ -199,9 +228,7 @@ export function SuidoSolve({
           {asked}
         </p>
         <TallFit width={shape.width} height={shape.height}>
-          <TsunagiViewport size={shape.width} name="suido">
-            <SuidoBoard layout={finished.start} masks={finished.masks} quarters={finished.quarters} readOnly done />
-          </TsunagiViewport>
+          <SuidoLooked size={size} board={(more) => <SuidoBoard layout={finished.start} masks={finished.masks} quarters={finished.quarters} readOnly done {...more} />} />
         </TallFit>
         {chips}
         <div className="flex flex-col gap-2" data-testid="suido-solved-view">
@@ -237,9 +264,7 @@ export function SuidoSolve({
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
       <SolvePaused pausing={pausing}>
         <TallFit width={shape.width} height={shape.height}>
-          <TsunagiViewport size={shape.width} name="suido">
-            <SuidoBoard layout={game.start} masks={game.masks} quarters={game.quarters} hint={hinted} done={done !== null} anticlockwise={anticlockwise} onTurn={turn} />
-          </TsunagiViewport>
+          <SuidoLooked size={size} board={(more) => <SuidoBoard layout={game.start} masks={game.masks} quarters={game.quarters} hint={hinted} done={done !== null} anticlockwise={anticlockwise} onTurn={turn} {...more} />} />
         </TallFit>
       </SolvePaused>
       {chips}

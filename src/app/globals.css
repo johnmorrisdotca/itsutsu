@@ -1135,6 +1135,29 @@ tr:has(> [data-row-actions]):focus {
 }
 
 /*
+ * A TALL SUIDO BOARD IN THE MODAL (`TallFit`, `data-suido-tall`: the 6×10, 8×14 and 20×50, taller than they are wide). The board
+ * column of a puzzle is the whole of what the window's height allows beside its 24rem of controls, and a board a third as
+ * wide as it is tall left that column mostly bare, the play standing off to one side of the modal. From a desk's width the
+ * board is as wide as the height allows (`--suido-ratio` is its width over its height), the column is as wide as the board,
+ * and the modal as wide as the board and the controls: the play in the middle, nothing empty, nothing to scroll. The room
+ * kept is the one a puzzle's board keeps in the modal, 10rem.
+ */
+@media (min-width: 64rem) {
+  html[data-bare="true"] [data-suido-tall] {
+    width: calc((100dvh - 10rem) * var(--suido-ratio));
+    max-width: 100%;
+  }
+  html[data-bare="true"] [data-strippable] :has(> [data-scale-board][data-scale-stack]):has([data-suido-tall]) {
+    grid-template-columns: max-content 24rem;
+    justify-content: center;
+  }
+  html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-suido-tall][data-suido-tall][data-suido-tall]) {
+    width: fit-content;
+    max-width: 100%;
+  }
+}
+
+/*
  * A TALL MEIKYUU MAZE'S WOOD (`MeikyuuSlot`, `data-mk-slot`): as wide as its column and no taller than the window leaves room for,
  * so a maze two columns to three rows stands whole on a desk and a phone alike. `--mk-fw` is the wood's width over its height
  * (0.6795 upright, 1.4586 lying down: `frameAspect`, held to these numbers by `meikyuuStand.test.ts`), so the cap on the width is

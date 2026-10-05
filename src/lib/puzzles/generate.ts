@@ -14,6 +14,7 @@ import { loadSuidoLevelsAt, suidoLevelPuzzle } from "./suido/levels";
 import { loadMeikyuuLevelsFor, meikyuuLevelPuzzle } from "./meikyuu/levels";
 import { tobiishiLevelPuzzle } from "./tobiishi/levels";
 import { suidoLevelOfSeed } from "./suido/seed";
+import { isSuidoHugeSize } from "./suido/sizes";
 import { loadWordData } from "./gomoji/wordData";
 import { generateBlackAndWhite } from "./blackAndWhite/generate";
 import { generateGomoji } from "./gomoji/generate";
@@ -143,7 +144,8 @@ export async function preparePuzzle(kind: PuzzleKind, size: number, language: Ku
   if (kind === "gomojiKana") await Promise.all([loadKanaWords(size), loadDailyPools(kind, [size])]);
   if (kind === "tsunagi") await loadTsunagiLevels(size);
   if (kind === "meikyuu") await loadMeikyuuLevelsFor(size);
-  if (kind === "suido" && puzzleLoads(kind, seed)) await loadSuidoLevelsAt(size);
+  // A huge size's boards are the browser's to load: a server (no window) knows them by a hash (`suido/levels.ts`).
+  if (kind === "suido" && puzzleLoads(kind, seed) && (typeof window !== "undefined" || !isSuidoHugeSize(size))) await loadSuidoLevelsAt(size);
   if (kind === "kumimoji") await loadTileWords(language);
   // Pop Gomoji's dictionary guesses at three and seven letters (`popWords.ts`).
   if (kind === "gomojiPop") await loadPopGuesses(size);

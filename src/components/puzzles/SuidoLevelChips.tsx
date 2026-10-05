@@ -1,7 +1,7 @@
 "use client";
 
 import type { Twist } from "@johnmorrisdotca/suido";
-import { suidoMarks, suidoRole } from "@johnmorrisdotca/suido/levels";
+import { suidoMarks, suidoRole } from "@johnmorrisdotca/suido/levels-info";
 
 import { suidoSizeKey } from "@/lib/puzzles/suido/sizes";
 

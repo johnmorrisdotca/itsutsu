@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 
 import { decodeLayout, encodeLayout, type Layout } from "@johnmorrisdotca/suido";
-import { levelAnswer } from "@johnmorrisdotca/suido/levels";
+import { levelAnswer } from "@johnmorrisdotca/suido/levels-info";
 
 import { playingAreaInset } from "@/components/board/margin";
 import { SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "@/components/live/live.constants";

@@ -1,5 +1,5 @@
 import type { PuzzleLevel } from "../puzzles.types";
-import { isSuidoLevelSize } from "./sizes";
+import { isSuidoHugeSize, isSuidoLevelSize } from "./sizes";
 
 /**
  * HOW MANY LEVELS A SUIDO SIZE HAS, AND WHICH THIRD A LEVEL SITS IN, with
@@ -10,9 +10,13 @@ import { isSuidoLevelSize } from "./sizes";
  */
 export const SUIDO_LEVELS_PER_SIZE = 256;
 
-/** How many levels a size has; nought for a size the levels do not come in. */
+/** How many levels each of the huge sizes has: four blocks of sixteen. */
+export const SUIDO_HUGE_LEVELS_PER_SIZE = 64;
+
+/** How many levels a size has: 256, and sixty-four for a huge size; nought for a size the levels do not come in. */
 export function suidoLevelCount(size: number): number {
-  return isSuidoLevelSize(size) ? SUIDO_LEVELS_PER_SIZE : 0;
+  if (!isSuidoLevelSize(size)) return 0;
+  return isSuidoHugeSize(size) ? SUIDO_HUGE_LEVELS_PER_SIZE : SUIDO_LEVELS_PER_SIZE;
 }
 
 /** Whether `level` is a level this size has. */

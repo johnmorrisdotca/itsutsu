@@ -1,6 +1,6 @@
 import { expect, test, type Browser, type BrowserContext, type Page } from "@playwright/test";
 import { decodeLayout, flowOf, hintFor, isLocked, makeSuido, newGame, quartersBetween, shapeOf, turn, turnAt, type Game } from "@johnmorrisdotca/suido";
-import { levelAnswer, levelSolution, type LevelRow } from "@johnmorrisdotca/suido/levels";
+import { levelAnswer, levelSolution, type LevelRow } from "@johnmorrisdotca/suido/levels-info";
 import { SUIDO_5X5 } from "@johnmorrisdotca/suido/levels-5x5";
 import { SUIDO_8X14 } from "@johnmorrisdotca/suido/levels-8x14";
 
@@ -811,6 +811,8 @@ test.describe("Suido's two ways to play", () => {
       // The set-up it always was: four boards, a level, a kind, hints and a clock.
       await expect(page.getByTestId("set-up-size")).toHaveCount(4);
       await expect(page.getByTestId("suido-kind-drains")).toHaveAttribute("aria-checked", "true");
+      // Sixteen sizes are four shelves of four: 9 is on the second.
+      await page.getByTestId("puzzle-more-sizes").click();
       await page.locator('[data-testid="set-up-size"][data-size="9"]').click();
       await page.getByTestId("puzzle-level-hard").click();
       // Its choices are in the address beside the mode, so a reload opens on them and not on the levels.

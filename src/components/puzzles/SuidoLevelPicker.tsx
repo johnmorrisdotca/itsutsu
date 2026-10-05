@@ -1,6 +1,6 @@
 "use client";
 
-import { suidoRole } from "@johnmorrisdotca/suido/levels";
+import { suidoRole } from "@johnmorrisdotca/suido/levels-info";
 
 import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";

@@ -53,8 +53,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0
       '@johnmorrisdotca/suido':
-        specifier: 1.3.0
-        version: 1.3.0
+        specifier: 1.4.0
+        version: 1.4.0
       '@johnmorrisdotca/tane':
         specifier: 1.2.0
         version: 1.2.0(react@19.2.8)
@@ -526,8 +526,8 @@ packages:
     resolution: {integrity: sha512-2Qsb1aJMEl1Q1cEfr16E/cE6uaBqzA2MaUYSlJGGu6duHIEN2vyUTOe6UwvJq3vjxe9pUdmCIXyurbI8Kvt1ww==}
     engines: {node: '>=22'}
 
-  '@johnmorrisdotca/suido@1.3.0':
-    resolution: {integrity: sha512-KIbT0UFaoqJVvK/mYCRRmRabbMCoPrsG0nGEFeXo7C7JxRbL0DWhqseBCEeIcw0P2VfJ4VaGTJwboZ37oBMdTQ==}
+  '@johnmorrisdotca/suido@1.4.0':
+    resolution: {integrity: sha512-2B1G4oTE59nrL5Tkfvyh/o3Js9jkXBTHujUh2YhhOQxvw94wJ7m82mFph0mY+MZwDoCwFcpjMyaxwRFWv8TGeQ==}
     engines: {node: '>=22'}
 
   '@johnmorrisdotca/tane@1.2.0':
@@ -3198,7 +3198,7 @@ snapshots:
 
   '@johnmorrisdotca/sugoroku@1.0.0': {}
 
-  '@johnmorrisdotca/suido@1.3.0': {}
+  '@johnmorrisdotca/suido@1.4.0': {}
 
   '@johnmorrisdotca/tane@1.2.0(react@19.2.8)':
     optionalDependencies:

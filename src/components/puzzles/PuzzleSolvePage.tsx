@@ -36,7 +36,7 @@ import { LocalTime } from "@/components/ui/LocalTime";
 import { puzzleOutcome, puzzleSizeLabel, type PuzzleOutcome } from "@/lib/puzzles/puzzleOutcome";
 
 import { suidoLevelOfBoard, loadSuidoLevelsAt } from "@/lib/puzzles/suido/levels";
-import { isSuidoLevelSize } from "@/lib/puzzles/suido/sizes";
+import { isSuidoHugeSize, isSuidoLevelSize } from "@/lib/puzzles/suido/sizes";
 import { meikyuuLevelOfSolve } from "@/lib/puzzles/server/meikyuuRecords";
 import { tobiishiLevelOfSolve } from "@/lib/puzzles/server/tobiishiRecords";
 import { FinishedPuzzle } from "./FinishedPuzzle";
@@ -283,6 +283,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
 
 /** The level a Suido solve's board is, at its size, or null for a board made from a seed: the size's levels are read once, here, and nowhere a page does not ask. */
 async function suidoLevelOfSolve(size: number, givens: string): Promise<number | null> {
-  await loadSuidoLevelsAt(size);
+  // A huge size is known by a hash of its board, and its levels are never loaded on a server.
+  if (!isSuidoHugeSize(size)) await loadSuidoLevelsAt(size);
   return suidoLevelOfBoard(size, givens);
 }

@@ -2,8 +2,8 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { loadSuidoLevelsAt, suidoLevelBand, suidoLevelOfBoard, suidoLevelsAt } from "../suido/levels";
-import { SUIDO_LEVEL_SIZES } from "../suido/sizes";
+import { loadSuidoLevelsAt, suidoHugeBoardOf, suidoLevelBand, suidoLevelOfBoard, suidoLevelsAt } from "../suido/levels";
+import { isSuidoHugeSize, SUIDO_LEVEL_SIZES } from "../suido/sizes";
 import type { LevelFastest } from "./tsunagiRecords";
 
 /**
@@ -30,14 +30,15 @@ export async function suidoSolvedBy(memberId: string): Promise<SuidoSolved> {
     orderBy: { elapsedMs: "asc" },
     select: { id: true, size: true, givens: true, elapsedMs: true },
   });
-  const sizes = [...new Set(rows.map((row) => row.size))];
+  // The huge sizes are known by a hash of the board (`suidoLevelOfBoard`) and never loaded here; the others by their level data.
+  const sizes = [...new Set(rows.map((row) => row.size))].filter((size) => !isSuidoHugeSize(size));
   await Promise.all(sizes.map((size) => loadSuidoLevelsAt(size)));
   // A board's level, found once for every board a size has rather than once for every solve.
   const numbers = new Map<number, Map<string, number>>(sizes.map((size) => [size, new Map(suidoLevelsAt(size).map(([code], at) => [code, at + 1]))]));
   const out: SuidoSolved = {};
   for (const row of rows) {
-    const level = numbers.get(row.size)?.get(row.givens);
-    if (level === undefined) continue;
+    const level = isSuidoHugeSize(row.size) ? suidoLevelOfBoard(row.size, row.givens) : numbers.get(row.size)?.get(row.givens);
+    if (level === undefined || level === null) continue;
     // Fastest first, so the first seen is the best.
     (out[row.size] ??= {})[level] ??= { elapsedMs: row.elapsedMs, solveId: row.id };
   }
@@ -53,16 +54,26 @@ export const SUIDO_FASTEST_SHOWN = 5;
  * being its band, then narrowed to its board.
  */
 export async function suidoLevelFastest(size: number, level: number): Promise<LevelFastest[]> {
-  await loadSuidoLevelsAt(size);
-  const givens = suidoLevelsAt(size)[level - 1]?.[0];
-  if (givens === undefined || suidoLevelOfBoard(size, givens) === null) return [];
+  const huge = isSuidoHugeSize(size);
+  // A huge level's board is not here, only its hash and its first characters: the solves that start so are found, and kept if the board is the level's.
+  const known = huge ? suidoHugeBoardOf(size, level) : undefined;
+  let givens: string | undefined;
+  if (!huge) {
+    await loadSuidoLevelsAt(size);
+    givens = suidoLevelsAt(size)[level - 1]?.[0];
+    if (givens === undefined || suidoLevelOfBoard(size, givens) === null) return [];
+  } else if (known === undefined) return [];
   const rows = await prisma.puzzleSolve.findMany({
     // On no clock, with no Hint: a level offers neither, so a solve that says otherwise is no time to race.
-    where: { kind: "suido", size, level: suidoLevelBand(size, level), givens, solved: true, helped: null, hintsUsed: 0, clock: "none" },
+    where: { kind: "suido", size, level: suidoLevelBand(size, level), givens: givens ?? { startsWith: known!.prefix }, solved: true, helped: null, hintsUsed: 0, clock: "none" },
     orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
     take: SUIDO_FASTEST_SHOWN * 4,
-    select: { id: true, memberId: true, elapsedMs: true, finishedAt: true },
+    select: { id: true, memberId: true, elapsedMs: true, finishedAt: true, givens: true },
   });
   const seen = new Set<string>();
-  return rows.filter((row) => (seen.has(row.memberId) ? false : (seen.add(row.memberId), true))).slice(0, SUIDO_FASTEST_SHOWN);
+  return rows
+    .filter((row) => givens !== undefined || suidoLevelOfBoard(size, row.givens) === level)
+    .filter((row) => (seen.has(row.memberId) ? false : (seen.add(row.memberId), true)))
+    .slice(0, SUIDO_FASTEST_SHOWN)
+    .map(({ givens: _board, ...rest }) => rest);
 }

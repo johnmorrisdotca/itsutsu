@@ -20,7 +20,9 @@ import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
  *
  * THE FAMILIES OF 256 LEVELS (Meikyuu, Suido, Tsunagi) are the same for every
  * player, ordered easiest to hardest, so a level's own place in the order
- * adds 0 to 50 on its size's rung, up to 200 at the top.
+ * adds 0 to 50 on its size's rung, up to 200 at the top. (Suido's three huge
+ * sizes have 64 levels; their place is the same share of the way, and they sit
+ * on the top rung, 150, so their hardest pays the 200 the family's ceiling allows.)
  *
  * All of it is read at the moment IP is counted (`ipBoards.ts`), never stored,
  * so a change here reprices every solve ever kept.
@@ -133,8 +135,8 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   jirai: { how: "size", rungs: { 7: 50, 9: 65, 12: 95, 16: 125 } },
   kumimoji: { how: "tiles", full: TILES },
   tsunagi: { how: "ranked", rungs: { 4: 50, 5: 70, 6: 85, 7: 95, 8: 110, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 15: 150 } },
-  // The squares 5 to 14 and the long boards 5×7, 6×10 and 8×14 (kept as 507, 610 and 814).
-  suido: { how: "ranked", rungs: { 5: 50, 6: 70, 7: 85, 8: 95, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 507: 65, 610: 90, 814: 120 } },
+  // The squares 5 to 14 and the long boards 5×7, 6×10 and 8×14 (kept as 507, 610 and 814), and the huge 20×20, 28×28 and 20×50 (2050), which have sixty-four levels and not 256. A level family's ceiling is 200, which is a rung of 150 and the 50 a level's place adds (`rankAdd`), so the three huge ones take the top rung: they pay what the 14×14 pays at its hardest, and a huge level's third pays by the same thirds as every size's (`RANK_OF_THIRD`).
+  suido: { how: "ranked", rungs: { 5: 50, 6: 70, 7: 85, 8: 95, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 20: 150, 28: 150, 507: 65, 610: 90, 814: 120, 2050: 150 } },
   // The four square sizes (small to huge, 1 to 4) and the six tall ones (609 is 6×9), and the two colossal ones (2026-10-05, package 2.1): the square list is size 5, the top rung of the squares
   // (160, so its hardest levels reach the 200 ceiling a family of levels has), and the tall list is 6496 (64×96), the top rung of the tall ones (110). A solve is priced at the middle of the third of its list it was in, as every family's is, however many levels the list has (the colossal lists have 128).
   meikyuu: { how: "ranked", rungs: { 1: 55, 2: 95, 3: 120, 4: 150, 5: 160, 609: 50, 812: 60, 1015: 70, 1218: 80, 1624: 90, 2030: 100, 6496: 110 } },
@@ -152,8 +154,8 @@ export const KUMIMOJI_TILES_MOST = 288;
 export const SIZE_SERIES: Partial<Record<PuzzleKind, readonly (readonly number[])[]>> = {
   freecell: [[4, 3, 2]],
   suido: [
-    [5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-    [507, 610, 814],
+    [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 20, 28],
+    [507, 610, 814, 2050],
   ],
   meikyuu: [
     [1, 2, 3, 4, 5],

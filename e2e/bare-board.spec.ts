@@ -536,6 +536,15 @@ const SURVEY: Survey[] = [
     await page.goto("/games/tobiishi/play?size=9&level=hard&seed=25");
     await ready(page, "puzzle-play");
   } },
+  // Suido's huge levels (the 28×28 and the long 20×50) are zoomed and moved about: the modal holds the board and its three buttons with nothing to scroll.
+  { name: "/games/suido/play at 28×28", open: async (page) => {
+    await page.goto("/games/suido/play?size=28&number=1");
+    await ready(page, "puzzle-play");
+  } },
+  { name: "/games/suido/play at 20×50", open: async (page) => {
+    await page.goto("/games/suido/play?size=20x50&number=1");
+    await ready(page, "puzzle-play");
+  } },
   table("dots-and-boxes", "dots-start"),
   table("superghost", "ghost-start"),
   table("mancala", "mancala-start"),

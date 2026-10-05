@@ -14,6 +14,7 @@ import { CARD_SIZE_WORDS, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, sizesOffered } from "
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
 import { sizeWord } from "./puzzles.constants";
+import { SIZE_TILES, shelvesOf } from "./sizeShelves";
 
 /**
  * A puzzle's sizes, as the tiles every board size on this site is chosen
@@ -70,8 +71,8 @@ export function PuzzleBoardAndSizes({
 /**
  * A PUZZLE'S SIZES, four tiles at a time. A puzzle with more sizes than the
  * four the set-up keeps room for (`shelves`: Pop Gomoji's three to seven
- * letters) shows them a shelf at a time, first to fourth and then last four,
- * with a press to turn between them, as Tsunagi's board of levels does
+ * letters, Suido's sixteen sizes) shows them a shelf at a time, four to a shelf
+ * and the last moved back so it is full, with a press to turn between them, as Tsunagi's board of levels does
  * (`TsunagiSetUp`). Where `shelves` is off, the first shelf alone.
  */
 export function PuzzleSizes({
@@ -90,13 +91,19 @@ export function PuzzleSizes({
   const spec = PUZZLE_SPECS[kind];
   const every = sizesOffered(kind);
   const shelved = shelves && every.length > spec.offered.length;
-  const [second, setSecond] = useState(shelved && !spec.offered.includes(size));
-  const shown = !shelved ? spec.offered : second ? every.slice(every.length - spec.offered.length) : every.slice(0, spec.offered.length);
+  /*
+   * THE SHELVES: where each starts (`shelvesOf`: every four, the last moved back so it too is full), the one the size asked for is on, and a press that turns to
+   * the next and from the last back to the first. Pop Gomoji's five sizes are two shelves, Suido's sixteen four.
+   */
+  const starts = shelvesOf(every.length);
+  const [shelf, setShelf] = useState(() => (shelved ? (starts.findLast((start) => every[start]! <= size) ?? 0) : 0));
+  const shown = !shelved ? spec.offered : every.slice(shelf, shelf + SIZE_TILES);
+  const onLast = shelf === starts[starts.length - 1];
+  const nextShelf = onLast ? 0 : starts[starts.indexOf(shelf) + 1]!;
   const turn = () => {
-    const next = !second;
-    setSecond(next);
-    const sizes = next ? every.slice(every.length - spec.offered.length) : every.slice(0, spec.offered.length);
-    if (!sizes.includes(size)) onSize(next ? sizes[sizes.length - 1]! : sizes[0]!);
+    setShelf(nextShelf);
+    const sizes = every.slice(nextShelf, nextShelf + SIZE_TILES);
+    if (!sizes.includes(size)) onSize(nextShelf === 0 ? sizes[sizes.length - 1]! : (sizes.find((each) => each > size) ?? sizes[0]!));
   };
   const picker = <BoardPicker value={size} sizes={shown} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} legend={CARD_SIZE_WORDS[kind]?.legend} />;
   /*
@@ -120,7 +127,7 @@ export function PuzzleSizes({
     <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="puzzle-sizes-shelved">
       {picker}
       <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm`} onClick={turn} data-testid="puzzle-more-sizes">
-        {second ? `← Shorter, from ${sizeWord(every[0]!, kind)}` : `Longer, to ${sizeWord(every[every.length - 1]!, kind)} →`}
+        {onLast ? `← Shorter, from ${sizeWord(every[0]!, kind)}` : `Longer, to ${sizeWord(every[Math.min(every.length, nextShelf + SIZE_TILES) - 1]!, kind)} →`}
       </button>
     </div>
   );

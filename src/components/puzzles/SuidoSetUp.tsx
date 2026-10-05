@@ -3,7 +3,7 @@
 import Link from "@/components/ui/Link";
 import { useEffect, useMemo, useState } from "react";
 
-import { declaredTwists } from "@johnmorrisdotca/suido/levels";
+import { declaredTwists } from "@johnmorrisdotca/suido/levels-info";
 
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { START_PRESS } from "@/components/live/live.constants";
@@ -41,11 +41,12 @@ import { keptSolves } from "./suidoKept";
  * size tiles beside it; a block of sixteen levels is the picker under it, and
  * Start plays the one chosen — the next one not yet solved until another is.
  *
- * THIRTEEN SIZES, FOUR TILES. The set-up keeps room for four boards and no more
- * (`picker.test.ts`), so the tiles show four at a time — 5 to 8, 9 to 12, 13 to
- * 5×7, and the last four, 14 to 8×14, so every shelf is full — and one press beside
- * them turns to the next shelf, as Tsunagi's nine do (`useSizeShelves`). The three
- * long boards are drawn at their own shape on their tiles and in the preview.
+ * SIXTEEN SIZES, FOUR TILES. The set-up keeps room for four boards and no more
+ * (`picker.test.ts`), so the tiles show four at a time — 5 to 8, 9 to 12, the 13 and
+ * 14 with the huge 20 and 28, and the four long boards, 5×7 to the huge 20×50, so every
+ * shelf is full — and one press beside them turns to the next shelf, as Tsunagi's nine
+ * do (`useSizeShelves`). The long boards are drawn at their own shape on their tiles
+ * and in the preview. The huge three have sixty-four levels, four blocks, and not 256.
  *
  * A level is open once the block before it is solved; the next, ringed, is where
  * Start goes. A locked level can be looked at: the preview draws it under a lock,

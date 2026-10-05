@@ -7,4 +7,4 @@
  *
  *   pnpm screenshots:puzzles
  */
-export const PUZZLE_ART_FINGERPRINT = "15ba11690cf8249e";
+export const PUZZLE_ART_FINGERPRINT = "1da62312011770ea";

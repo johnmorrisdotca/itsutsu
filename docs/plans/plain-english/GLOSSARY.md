@@ -336,6 +336,18 @@ ones above (Meikyuu's, for the next level game to use).
 | Difficulty | a level's chips | one word for how many jumps the shortest way has, as on Tsunagi's and Suido's levels |
 | New game | beside Pause | the shared control (`PuzzleNewGameBeside`), as on every puzzle |
 
+## Suido 水道: the huge boards (2026-10-05)
+
+No label is retired: the huge boards took the words Meikyuu and Tsunagi chose for a board too big for a thumb.
+
+| Label | Where | Word used, and why |
+|---|---|---|
+| − · + · Whole board 全体 | under a huge board | zoom out, zoom in, and back to all of it; a screen reader says "Zoom out" and "Zoom in". "Fit" is Tsunagi's and Meikyuu's word for the same press, and a phone's reader knows "Whole board" better; the board's own buttons in the package say the same |
+| Vast · Vaster · Longest pipe | the 20×20, 28×28 and 20×50 tiles | the tile's big number is the side, as every size's is; the words are only the line under it |
+| Bigger boards, to 28×28 → · Bigger boards, to 20×50 → · ← Smaller boards, from 5×5 | the press under the size tiles | sixteen sizes, four tiles a shelf: the next shelf a press away, and the last goes back to the first |
+| Level 12 of 64 | the line over the board, the set-up | a huge size has sixty-four levels in four blocks of sixteen; the others have 256 |
+| 12 of 64 solved | the progress line on the set-up | what there is to finish, said as a count, as every size says it |
+
 ## Itsutsu Points: what a puzzle and a game pay
 
 Said once, in the words below, on `/points` and beside the IP boards: a puzzle

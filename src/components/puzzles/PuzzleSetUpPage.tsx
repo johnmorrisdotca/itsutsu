@@ -183,7 +183,7 @@ function tobiishiSizeAsked(query: Record<string, string | string[] | undefined>)
   return isTobiishiSize(asked) ? asked : PUZZLE_SPECS.tobiishi.defaultSize;
 }
 
-/** The size a Suido levels' set-up opens on: any of the thirteen the levels come in, as `7` or `5x7`; the puzzle's usual otherwise. */
+/** The size a Suido levels' set-up opens on: any of the sixteen the levels come in, as `7` or `5x7`; the puzzle's usual otherwise. */
 function suidoSizeAsked(query: Record<string, string | string[] | undefined>): number {
   const text = Array.isArray(query.size) ? query.size[0] : query.size;
   const asked = text === undefined ? null : suidoSizeFromAddress(text);
