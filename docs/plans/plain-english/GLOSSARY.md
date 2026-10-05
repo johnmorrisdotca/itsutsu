@@ -303,6 +303,8 @@ package's own (`sizeOf`), not ours.
 | Tiny · Little · Middle · Big · Bigger · Biggest | the tall size tiles | a word for how much maze there is; not Small to Huge, which are the squares' own |
 | Bigger, to 20×30 → · ← Smaller, from 6×9 | the press under the tall tiles | six tall sizes, four tiles a shelf, the other shelf a press away |
 | Auto · Upright · Lying down | the way-up choice, "Tall mazes, which way up" | Auto is upright on a phone held upright and on its side where that makes the maze bigger; "Lying down", not "Landscape" or "Rotated" |
+| 12 of 256 · All solved ✓ · Your progress | the progress rows on the set-up and the front door | what there is to finish, said as a count; "Completed" and "Cleared" are not our words for a solved level |
+| Every small level is solved: all 256. Well done! | the caption and the last solve's line | a size finished, said once in a line and never in a window |
 | Move | under the board, beside Fit | while it is on, a finger drags the view of a zoomed maze and draws nothing; "Pan" is a map word and "Drag" says the gesture, not the mode |
 | Slide the view when the line reaches the edge | the Colours window | the package's edge panning, a switch; not "Auto-scroll", which a reader takes for the page |
 | New game | beside Pause | the shared control (`PuzzleNewGameBeside`), as on every puzzle |

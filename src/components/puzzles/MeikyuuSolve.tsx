@@ -6,13 +6,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { nextLevelLabel } from "@/lib/puzzles/fixedLevel";
+import { completesSize } from "@/lib/puzzles/meikyuu/completion";
 import { meikyuuLevelCount } from "@/lib/puzzles/meikyuu/levelCounts";
 import { meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
 import { isMeikyuuTall, meikyuuSizeInAddress, meikyuuSizeLabel } from "@/lib/puzzles/meikyuu/sizes";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MEIKYUU_COPY, MOVE_COPY } from "./meikyuu.constants";
+import { MEIKYUU_COPY, MOVE_COPY, PROGRESS_COPY } from "./meikyuu.constants";
 import { MeikyuuBoard, type MeikyuuHandle, type MeikyuuReading } from "./MeikyuuBoard";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
@@ -90,6 +91,8 @@ export function MeikyuuSolve({
    */
   const [solvedHere] = useState<Record<number, number>>(() => (meikyuuLevelsLoaded(size) ? { ...keptSolves(size), ...known } : { ...known }));
   const solvedSet = useMemo(() => new Set(Object.keys(solvedHere).map(Number)), [solvedHere]);
+  // Solving this level would finish its size: every other level is already solved, here or on the account, and this one is not (`completion.ts`).
+  const lastOfSize = useMemo(() => completesSize(size, level, { [size]: [...solvedSet] }), [size, level, solvedSet]);
   // A level already solved opens on its finished maze; only "Play it again" starts it over.
   const [reviewing, setReviewing] = useState(race === null && resumed === null && solvedSet.has(level));
 
@@ -227,6 +230,12 @@ export function MeikyuuSolve({
         <>
           <MeikyuuColours className="self-start" />
           {tall ? <MeikyuuWayUp className="self-start" /> : null}
+          {/* A size finished is cheered in a line, never a window (John, 2026-10-02: "encouraging people to finish them all"). */}
+          {lastOfSize && race === null && !done.outOfTime ? (
+            <p className="text-sm font-semibold text-moss" data-testid="meikyuu-size-done" role="status">
+              ★ {PROGRESS_COPY.last(meikyuuSizeLabel(size).toLowerCase(), count)}
+            </p>
+          ) : null}
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} onward={race === null ? onward : undefined} />
         </>
       )}

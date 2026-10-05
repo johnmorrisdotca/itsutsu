@@ -30,6 +30,8 @@ import { KumimojiShots } from "./KumimojiShots";
 import { KumimojiTryIt } from "./KumimojiTryIt";
 import { offeredLine } from "./offeredLine";
 import { MEIKYUU_COPY } from "./meikyuu.constants";
+import { MeikyuuFrontProgress } from "./MeikyuuFrontProgress";
+import { MeikyuuProgressLine } from "./MeikyuuProgressLine";
 import { SUIDO_COPY } from "./suido.constants";
 
 /**
@@ -128,9 +130,15 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 </span>
               ) : null}
               {kind === PUZZLE_KINDS.meikyuu ? (
-                <span className="text-xs text-muted" data-testid="meikyuu-levels-line">
-                  {MEIKYUU_COPY.levelsLine}
-                </span>
+                <>
+                  <span className="text-xs text-muted" data-testid="meikyuu-levels-line">
+                    {MEIKYUU_COPY.levelsLine}
+                  </span>
+                  {/* How many of each size are solved: every level is open, and this is what there is to finish. At request time, in a Suspense of its own, so the page stays prerendered. */}
+                  <Suspense fallback={<MeikyuuProgressLine />}>
+                    <MeikyuuFrontProgress />
+                  </Suspense>
+                </>
               ) : null}
             </div>
           </div>

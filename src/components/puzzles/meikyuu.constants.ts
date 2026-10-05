@@ -48,7 +48,7 @@ export const MEIKYUU_CHIPS: LevelChipsCopy = {
 };
 
 /** A choice of words in a row of a few: a pill a thumb can hit, in the set-up's ink when chosen (`PICK_CHIP_OPEN`). */
-export const MEIKYUU_CHOICE = "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm leading-tight transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss cursor-pointer";
+export const MEIKYUU_CHOICE = "inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm leading-tight transition-colors outline-none focus-visible:ring-2 focus-visible:ring-moss cursor-pointer";
 
 /** Which way up a tall maze is shown (`meikyuu/turn.ts`): the chooser's words. Auto decides from the room there is, which on a phone held upright is upright. */
 export const WAY_UP_COPY = {
@@ -56,6 +56,23 @@ export const WAY_UP_COPY = {
   auto: { label: "Auto", says: "Upright on a phone held upright, and lying on its side where the screen is wide enough for it to be bigger that way." },
   portrait: { label: "Upright", says: "Always stood up, two columns to three rows, as the maze was made." },
   landscape: { label: "Lying down", says: "Always on its side, a quarter turn, which fits a wide screen. The line you draw is the same line either way up." },
+} as const;
+
+/**
+ * Finishing a size, in place of locks (John, 2026-10-02: "I like the small levels being all playable I think but encouraging
+ * people to finish them all"): every level is open, a size shows how many of its levels are solved, and a size that is whole
+ * is marked and cheered, in a line and never a window.
+ */
+export const PROGRESS_COPY = {
+  legend: "Solved",
+  of: (solved: number, count: number): string => `${solved} of ${count}`,
+  whole: "All solved",
+  /** The line over the preview's caption when the chosen size is whole. */
+  cheer: (size: string, count: number): string => `Every ${size} level is solved: all ${count}. Well done!`,
+  /** The line under a solved level that was the last of its size. */
+  last: (size: string, count: number): string => `That was the last one: all ${count} ${size} levels are solved. Well done!`,
+  /** The front door's line over a member's progress. */
+  yours: "Your progress",
 } as const;
 
 /** The press that makes every one-finger drag move the view, for a hand that cannot find the line's end, and the switch for the view sliding when the line reaches the edge. */

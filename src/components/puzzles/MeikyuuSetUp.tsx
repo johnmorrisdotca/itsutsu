@@ -12,15 +12,17 @@ import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.const
 import { meikyuuBlockOf, meikyuuBlockRange, meikyuuBlocksIn, meikyuuLevelCount } from "@/lib/puzzles/meikyuu/levelCounts";
 import { loadMeikyuuLevelsFor, meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
 import { isMeikyuuTall, MEIKYUU_SIZES, MEIKYUU_TALL_SIZES, meikyuuSizeLabel, meikyuuTallShape } from "@/lib/puzzles/meikyuu/sizes";
+import { progressOf, type SolvedLevels } from "@/lib/puzzles/meikyuu/completion";
 import { PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MEIKYUU_CHOICE, MEIKYUU_COPY, SHAPE_COPY } from "./meikyuu.constants";
+import { MEIKYUU_CHOICE, MEIKYUU_COPY, PROGRESS_COPY, SHAPE_COPY } from "./meikyuu.constants";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
 import { meikyuuLevelPath, MeikyuuLevelPicker } from "./MeikyuuLevelPicker";
 import { MeikyuuLevelPreview } from "./MeikyuuLevelPreview";
-import { keptSolves } from "./meikyuuKept";
+import { keptSolvedLevels, keptSolves } from "./meikyuuKept";
+import { MeikyuuProgress } from "./MeikyuuProgress";
 import { MeikyuuWayUp } from "./MeikyuuStand";
 import { SetUpResume } from "./SetUpResume";
 
@@ -79,7 +81,7 @@ export function MeikyuuSetUp({
   };
   /* The tall sizes are six and a shelf holds four: the first four, then the last four, turned between with a press. */
   const [moreTall, setMoreTall] = useState(tall && MEIKYUU_TALL_SIZES.indexOf(initialSize) >= TALL_SHELF);
-  const tallShown = moreTall ? MEIKYUU_TALL_SIZES.slice(-TALL_SHELF) : MEIKYUU_TALL_SIZES.slice(0, TALL_SHELF);
+  const tallShown = useMemo(() => (moreTall ? MEIKYUU_TALL_SIZES.slice(-TALL_SHELF) : MEIKYUU_TALL_SIZES.slice(0, TALL_SHELF)), [moreTall]);
   const turnTall = () => {
     const next = !moreTall;
     setMoreTall(next);
@@ -106,6 +108,13 @@ export function MeikyuuSetUp({
   }, [hydrated, ready, solved, size]);
   const done = useMemo(() => new Set(Object.keys(best).map(Number)), [best]);
   const count = meikyuuLevelCount(size);
+  /* HOW FAR THROUGH EACH SIZE ON SHOW: the account's solves, which the page read once for every size, and this browser's, joined (`completion.ts`). */
+  const shownSizes = useMemo(() => (tall ? tallShown : MEIKYUU_SIZES), [tall, tallShown]);
+  const progress = useMemo(() => {
+    const account: SolvedLevels = Object.fromEntries(Object.entries(solved).map(([each, levels]) => [Number(each), Object.keys(levels).map(Number)]));
+    return progressOf(shownSizes, account, hydrated && ready ? keptSolvedLevels(shownSizes) : null);
+  }, [shownSizes, solved, hydrated, ready]);
+  const whole = progress.find((row) => row.size === size)?.complete === true;
   const next = nextLevelOf(count, done);
 
   /*
@@ -141,8 +150,8 @@ export function MeikyuuSetUp({
               ›
             </button>
           </div>
-          <p className="text-xs text-muted" data-testid="meikyuu-levels-caption">
-            {meikyuuSizeLabel(size)}: {done.size} of {count} solved.
+          <p className="text-xs text-muted" data-testid="meikyuu-levels-caption" data-complete={whole ? "true" : "false"}>
+            {whole ? `★ ${PROGRESS_COPY.cheer(meikyuuSizeLabel(size).toLowerCase(), count)}` : `${meikyuuSizeLabel(size)}: ${done.size} of ${count} solved.`}
           </p>
         </div>
         <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="meikyuu-sizes">
@@ -161,7 +170,7 @@ export function MeikyuuSetUp({
                   data-testid={`meikyuu-shape-${each}`}
                   data-chosen={(each === "tall") === tall ? "true" : "false"}
                 >
-                  {SHAPE_COPY[each].label} <span className="font-mincho opacity-70">{SHAPE_COPY[each].kanji}</span>
+                  {SHAPE_COPY[each].label} <span className="font-mincho text-xs whitespace-nowrap opacity-70">{SHAPE_COPY[each].kanji}</span>
                 </button>
               ))}
             </div>
@@ -171,6 +180,8 @@ export function MeikyuuSetUp({
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm ${tall ? "" : "invisible"}`} onClick={turnTall} disabled={!tall} aria-hidden={tall ? undefined : true} tabIndex={tall ? undefined : -1} data-testid="meikyuu-more-sizes">
             {moreTall ? SHAPE_COPY.lessTall(sizeFrom(MEIKYUU_TALL_SIZES[0]!)) : SHAPE_COPY.moreTall(sizeFrom(MEIKYUU_TALL_SIZES[MEIKYUU_TALL_SIZES.length - 1]!))}
           </button>
+          {/* How many of each size on show are solved: every level is open, and this is what there is to finish. Four rows whichever shape is chosen, so nothing moves. */}
+          <MeikyuuProgress rows={progress} label={meikyuuSizeLabel} className="max-w-[14.5rem]" />
         </div>
       </div>
 

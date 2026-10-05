@@ -56,3 +56,15 @@ export function keepSolveHere(code: string, elapsedMs: number): void {
     // Nowhere to keep it: the solve still stands on the page.
   }
 }
+
+/** Whether this browser has kept any solve at all: a cheap look that decides whether the levels have to be fetched to say which they were. */
+export function hasKeptSolves(): boolean {
+  return Object.keys(keptMazes()).length > 0;
+}
+
+/** The numbers of the levels this browser has solved at each of the sizes given, as far as their lists are here: nothing for a size whose list has not arrived. */
+export function keptSolvedLevels(sizes: readonly number[]): Record<number, number[]> {
+  const out: Record<number, number[]> = {};
+  for (const size of sizes) out[size] = Object.keys(keptSolves(size)).map(Number);
+  return out;
+}
