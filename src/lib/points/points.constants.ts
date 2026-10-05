@@ -1,56 +1,8 @@
-import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-
 /**
- * WHAT A PUZZLE'S OWN POINTS ARE WORTH IN IP. Each puzzle keeps its own board
- * as PuzzleMadness scores it (`pointsFor`: five a cell, less fifty a help), and
- * those numbers are not on one scale: a 9×9 Number Place is about 250, a Gomoji
- * word about 800. On the way into IP each is multiplied by its weight here, set
- * so a medium solve at the puzzle's default size is about 100 — a Gomoku win on
- * 15×15 (docs/plans/points/PTS-01-site-points-page.md has the measurements).
- *
- * A Record, so a new puzzle cannot ship without deciding what it is worth.
+ * What a puzzle solve is worth in IP is the ladder (`ladder.ts`), set by the
+ * puzzle's kind, size and level; what a game pays is `gamePoints.ts`. Only the
+ * sizes of the boards are shared here.
  */
-export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
-  numberPlace: 0.4,
-  diagonal: 0.37,
-  sumCages: 0.26,
-  jigsaw: 0.7,
-  blackAndWhite: 0.42,
-  hiddenStones: 0.41,
-  moreOrLess: 0.9,
-  towers: 0.83,
-  gomoji: 0.12,
-  gomojiKana: 0.12,
-  gomojiMot: 0.12,
-  gomojiWort: 0.12,
-  gomojiPop: 0.12,
-  // Five a cell drawn through: a middling 7×7 level fills about 35, so about 175 points.
-  tsunagi: 0.57,
-  // A Classic game of fifty tiles in about ten minutes scores about 800 (`KUMIMOJI_SCORE`).
-  kumimoji: 0.13,
-  // A medium solve is about 880 (`koushiPoints`: 500, three swaps spare, a quick time).
-  koushi: 0.11,
-  // Five an end of a bridge (`cellsFilled`): a medium 9×9 has about 43 (measured over a hundred seeds), so about 215 points.
-  bridges: 0.46,
-  // Five a cell, every cell decided (`cellsFilled`): a 10×10 is always 100 cells, so 500 points before any help.
-  pictureLogic: 0.2,
-  // Five a card brought home (`cellsFilled`): every won deal is 260 points, so about 100 IP, as a medium solve is.
-  solitaire: 0.38,
-  // The same for FreeCell: 260 points a won deal, about 100 IP.
-  freecell: 0.38,
-  // Five a card of both decks (`cellsFilled`): every won deal is 520 points, so about 100 IP.
-  spider: 0.19,
-  // Five a tile taken (`cellsFilled`): Fuji, the default layout, is 100 tiles, so about 500 points.
-  mahjong: 0.2,
-  // Five a sticker (`cellsFilled`): a 3×3 is 270 points, so about 100 IP, as a medium solve is.
-  cube: 0.37,
-  // Five a piece (`cellsFilled`): a medium 7×7 has about 44 (measured over a hundred seeds, drains and network), so about 220 points.
-  suido: 0.45,
-  // Five a cell of the way through (`cellsFilled`): the middle level's way is 17 cells at small, 64 at medium, 180 at large and 518 at huge (measured over all 1,000 levels), so about 85, 320, 900 and 2,600 points; a medium level is about 100 IP, as a medium solve is.
-  meikyuu: 0.3,
-  // Five a jump (`cellsFilled`: the level's length, 3, 6 or 9), so 15, 30 or 45 points; a level takes a minute, not an evening, so it is weighed at 2 and a medium one is about 60 IP, under the 100 of a medium solve of the puzzles that take longer.
-  tobiishi: 2,
-};
 
 /** How many rows a board shows beside a game or family, and on its own page. */
 export const IP_SHOWN = 10;

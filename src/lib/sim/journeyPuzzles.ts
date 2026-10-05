@@ -1,38 +1,18 @@
+import { price } from "@/lib/points/ladder";
+import { PUZZLE_SPECS, levelsFor } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
 /**
- * APPROXIMATE PUZZLE POINTS FOR THE PROJECTION.
- *
- * The real score comes from `pointsFor` (`src/lib/puzzles/puzzlePoints.ts`),
- * which needs an actual generated grid — its givens, a solver's guesses, the
- * checks and hints spent. Generating a real grid for every one of a
- * simulated player's several thousand solves across a year is not a
- * reasonable thing to do inside a page render, so this table stands in for
- * it: the measured points at each puzzle's default size and level, from
- * `docs/plans/points/README.md`'s own table (read 2026-09-25). That is an
- * APPROXIMATION, not the real function, and this comment is the flag for it.
- *
- * `SIM_SITE_POINTS_WEIGHT` then does what PTS-01 proposes for the real site:
- * scale each puzzle's own points so a medium solve at its default size is
- * worth about 100 site points (IP), the same way `gameMax` puts a Gomoku win
- * at 100. PTS-01 has not shipped in code yet (only its plan), so this weight
- * lives here rather than being imported from `puzzles.constants.ts`.
+ * WHAT A SIMULATED SOLVE EARNS: its price on the puzzle ladder
+ * (`src/lib/points/ladder.ts`) at the puzzle's usual size, with no help taken.
+ * The real figure also takes off for help, and for a word or a tile game for
+ * how well it was played, which a projection of thousands of solves does not
+ * play out; the price is what a clean solve pays, so this is the top of what
+ * the real site would give.
  */
-const MEASURED_POINTS: Partial<Record<PuzzleKind, Record<PuzzleLevel, number>>> = {
-  numberPlace: { easy: 205, medium: 250, hard: 285 },
-  gomoji: { easy: 1000, medium: 800, hard: 650 },
-};
-
-/** Weight so a medium solve is ~100: 100 / the measured medium score. */
-function weightFor(kind: PuzzleKind): number {
-  const medium = MEASURED_POINTS[kind]?.medium;
-  return medium && medium > 0 ? 100 / medium : 1;
-}
-
-/** IP a single solve of this puzzle, at this level, is worth in the projection. */
 export function approxPuzzleIp(kind: PuzzleKind, level: PuzzleLevel): number {
-  const points = MEASURED_POINTS[kind]?.[level] ?? MEASURED_POINTS[kind]?.medium ?? 100;
-  return Math.round(points * weightFor(kind));
+  const size = PUZZLE_SPECS[kind].defaultSize;
+  return price(kind, size, levelsFor(kind, size).includes(level) ? level : PUZZLE_SPECS[kind].defaultLevel);
 }
 
 /** Whether this puzzle kind can be "played out" without being solved (only the word puzzles can). */

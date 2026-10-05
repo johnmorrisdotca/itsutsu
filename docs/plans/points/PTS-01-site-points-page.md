@@ -9,7 +9,9 @@ time and this month, highest first. Each puzzle's own points board gets a line
 under it leading here: "All puzzles and games: the site board →". Games join
 the total in PTS-02; until then the page says it counts puzzles.
 
-## The weights (proposed)
+## The weights (proposed; superseded by PTS-05)
+
+*PTS-05 prices a puzzle by its kind, size and level instead, so these weights are no longer used; they are kept for what they measured.*
 
 A puzzle's board total is multiplied by its weight on the way into the site
 total, so that one medium solve at the default size is worth about 100 (see the

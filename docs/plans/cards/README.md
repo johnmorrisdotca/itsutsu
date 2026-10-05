@@ -63,7 +63,7 @@ bends it, each written in the code where it bends:
 - **The check replays the moves from the deal** under the game's rules (`checkSolitaire`), in O(moves) with no search. The solved route also checks that the deal is the shuffle of the posted seed.
 - **Given up is the "ended, not solved" path** that a word whose guesses ran out already takes (`outOfGuesses`, `checkSolitaireGivenUp`). The game is kept in My games' finished list, and playing it out is paid, once per deal.
 - **No Check, Hint or countdown** (`helps: false`, `clock: false`). A card game answers every move as it is made, and its measure is the clock counting up and the count of moves.
-- **Points on the boards are the 52 cards brought home,** five each (`cellsFilled`), so every won deal scores 260. The IP weight makes that about 100.
+- **Points on the boards are the 52 cards brought home,** five each (`cellsFilled`), so every won deal scores 260. In IP a deal is priced on the ladder by its setting (`points/ladder.ts`): Solitaire 100 to 125, FreeCell 50 to 150 by free cells, Spider 50 to 150 by suits.
 
 ## Winnable deals, and the solver
 

@@ -83,11 +83,11 @@ who plays a few words a day.
 
 ## Recommendation (for John to approve or change)
 
-1. **One site score = the sum of each puzzle's board total × that puzzle's
-   weight, plus game points.** The weights live in one table,
-   `SITE_POINTS_WEIGHT` in `puzzles.constants.ts`. Each is chosen so that one
-   medium solve at the puzzle's default size is worth about 100 site points.
-   The puzzle's own board keeps its own points, unchanged.
+1. **One site score = the sum of each puzzle's solves, priced on the puzzle
+   ladder, plus game points.** *Superseded by PTS-05: a solve is priced by its
+   kind, size and level, from 50 to 150 (200 for the families of 256 levels),
+   rather than by a weight on its own points.* The puzzle's own board keeps its
+   own points, unchanged.
 2. **Games: a maximum per game, and each result a share of it** (John: "a
    table of maximum weights per game… and then we work back what someone
    scores"). The maximum is 100 for Gomoku on 15×15, from 10 for tic-tac-toe
@@ -111,6 +111,7 @@ who plays a few words a day.
 | PTS-02 Points for games | `PTS-02-game-points.md` | John's yes on the prices; **a migration**, a Neon branch and a dump first |
 | PTS-03 A player's points on their page | `PTS-03-points-on-the-player-page.md` | PTS-01 |
 | PTS-04 An IP board on every game's page, and every family's | this README, "Every game has an IP leaderboard" | PTS-02 |
+| PTS-05 The puzzle ladder, every puzzle priced on one scale | `PTS-05-puzzle-ladder.md` | PTS-01 |
 
 ## What not to do
 

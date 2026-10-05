@@ -9,8 +9,11 @@ import { IpBoard } from "@/components/points/IpBoard";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
 import { boardSizesFor } from "@/lib/gomoku/gomoku.constants";
+import { isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { gameMax, RESULT_SHARES } from "@/lib/points/gamePoints";
 import { SITE_SCOPE } from "@/lib/points/ipBoards";
+import { puzzlePriceRange } from "@/lib/points/ladderRange";
+import { LEVEL_FAMILY_PRICE_MOST, PUZZLE_PRICE_LEAST, PUZZLE_PRICE_MOST } from "@/lib/points/ladder.constants";
 
 export const metadata = { title: "IP 点数" };
 
@@ -162,10 +165,61 @@ export default function PointsPage() {
             ))}
           </table>
         </div>
-        <p className="text-xs text-muted">
-          Puzzles pay their own points, weighted so a medium solve at a puzzle&apos;s usual size is worth about as much as a
-          Gomoku win.
+      </section>
+
+      <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="ip-puzzles">
+        <h2 className={SECTION_TITLE}>
+          What a puzzle pays <span className="font-mincho normal-case tracking-normal">配点</span>
+        </h2>
+        <p className="text-sm text-muted">
+          Every puzzle is priced on one scale: {PUZZLE_PRICE_LEAST} for the smallest and easiest, up to {PUZZLE_PRICE_MOST} for
+          the biggest and hardest. A bigger board or a harder level pays more, and the price is the same for every
+          player. Meikyuu, Suido and Tsunagi have 256 levels in each size, from easiest to hardest, and the later a level
+          comes the more it pays, up to {LEVEL_FAMILY_PRICE_MOST}.
         </p>
+        <ul className="list-disc pl-5 text-sm text-muted">
+          <li>Each Check or Hint takes some of the price off, in proportion to the points it cost the puzzle&apos;s own score.</li>
+          <li>
+            A word puzzle, Kumimoji and Koushi pay half the price for finishing and half for how well it went. A word that
+            ran out of guesses pays only for what it found.
+          </li>
+          <li>Your best solve of each puzzle counts once.</li>
+        </ul>
+        <div className={TABLE_SCROLL}>
+          <table className="w-full text-sm">
+            <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
+              <tr>
+                <th className="py-1 pr-3 text-left">Puzzle</th>
+                <th className="py-1 text-right">Pays, smallest to biggest</th>
+              </tr>
+            </thead>
+            {GAME_FAMILIES.filter((family) => family.games.some(isPuzzleKind)).map((family) => (
+              <tbody key={family.key}>
+                <tr>
+                  <th colSpan={2} className="pt-3 pb-1 text-left text-xs font-semibold text-muted">
+                    {family.title} <span className="font-mincho font-normal">{family.kanji}</span>
+                  </th>
+                </tr>
+                {family.games.filter(isPuzzleKind).map((kind) => {
+                  const { least, most } = puzzlePriceRange(kind);
+                  return (
+                    <tr key={kind} className="border-t border-rule" data-testid="ip-puzzle-price" data-variant={kind}>
+                      <td className="py-1 pr-3">
+                        <span className="flex items-center gap-2">
+                          <GameThumb variant={kind} size="small" />
+                          <GameName variant={kind} />
+                        </span>
+                      </td>
+                      <td className="py-1 text-right font-mono tabular-nums">
+                        {least} to {most}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            ))}
+          </table>
+        </div>
       </section>
     </Page>
   );

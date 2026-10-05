@@ -327,6 +327,18 @@ ones above (Meikyuu's, for the next level game to use).
 | Difficulty | a level's chips | one word for how many jumps the shortest way has, as on Tsunagi's and Suido's levels |
 | New game | beside Pause | the shared control (`PuzzleNewGameBeside`), as on every puzzle |
 
+## Itsutsu Points: what a puzzle and a game pay
+
+Said once, in the words below, on `/points` and beside the IP boards: a puzzle
+has a price, a game has a most, and the page reads both from the code that pays
+them (`points/ladder.ts`, `points/gamePoints.ts`).
+
+| Now | Was | Kanji | Where | Why |
+|---|---|---|---|---|
+| What a puzzle pays · Pays, smallest to biggest | Puzzles pay their own points | 配点 (new) | `/points` | a puzzle is priced by its kind, size and level; its own points are its leaderboard's |
+| Priced on one scale: 50 for the smallest and easiest, up to 150 for the biggest and hardest | weighted so a medium solve at a puzzle's usual size is worth about as much as a Gomoku win | — | `/points` | one scale for every puzzle, said as numbers |
+| Rounded to the nearest 5 | — | — | `/points`, a game's result | every result and every price is a multiple of five |
+
 ## Prose worth a second look (not changed)
 
 - Home, "Always somebody to play", "Your pace", "Learn the shapes": feature

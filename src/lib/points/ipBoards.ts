@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { HIDES_TEST_MEMBERS, type TestModeReader } from "@/lib/testMode/testMode";
 import { SITE_SCOPE, type IpScope } from "./ipScope";
-import { PUZZLE_IP_WEIGHT } from "./points.constants";
+import { bestSolvesSql } from "./ladderSql";
 
 /**
  * THE IP LEADERBOARDS: who has won the most Itsutsu Points, all time or since a
@@ -16,8 +16,9 @@ import { PUZZLE_IP_WEIGHT } from "./points.constants";
  *
  * ONE QUERY A BOARD, over prices already stored: a game's IP on its row
  * (`Game.blackPoints`, `payGameIp`), and a puzzle's best solve of each grid
- * times its weight (`PUZZLE_IP_WEIGHT`), as the puzzle's own board counts it.
- * Nothing is replayed or recomputed when a board is drawn.
+ * priced on the ladder (`ladder.ts`: what its kind, size and level are worth,
+ * less what help took off). The puzzle's own score stays on `PuzzleSolve.points`
+ * for its own board. Nothing is replayed or recomputed when a board is drawn.
  */
 export type IpRow = { memberId: string; ip: number };
 
@@ -31,7 +32,7 @@ export { SITE_SCOPE, scopeOfFamily, scopeOfGame, type IpScope } from "./ipScope"
 /**
  * Every IP earning in a scope since a moment, as one SQL fragment of
  * (memberId, ip, at, game) rows, game being the variant or the puzzle's kind: a game's price on each seat that won some, and a
- * puzzle's best solve of each grid times its weight. The one definition every
+ * puzzle's best solve of each grid priced on the ladder. The one definition every
  * board, every total and the feed reads, so none of them can count
  * differently. Only members who still exist, and no Test member unless this
  * reader asked to see them. Null when the scope holds nothing to count.
@@ -61,19 +62,9 @@ function earnedOf(
       WHERE "variant" IN (${variants}) AND "whiteMemberId" IS NOT NULL AND "whitePoints" > 0${when}${white}`);
   }
   if (scope.puzzles.length > 0) {
-    const kinds = Prisma.join(scope.puzzles.map((kind) => Prisma.sql`${kind}`));
-    const weight = Prisma.join(
-      scope.puzzles.map((kind) => Prisma.sql`WHEN ${kind} THEN ${PUZZLE_IP_WEIGHT[kind]}::float`),
-      " ",
-    );
     const when = since === null ? Prisma.empty : Prisma.sql` AND "finishedAt" >= ${since}`;
-    // A grid counts once, at the member's best solve of it, as the puzzle's own board counts it.
-    parts.push(Prisma.sql`
-      SELECT "memberId", best * (CASE "kind" ${weight} ELSE 0 END) AS ip, at, "kind" AS game FROM (
-        SELECT "memberId", "kind", "givens", MAX("points") AS best, MAX("finishedAt") AS at FROM "PuzzleSolve"
-        WHERE "kind" IN (${kinds})${when}${solver}
-        GROUP BY "memberId", "kind", "givens"
-      ) AS best_of_each`);
+    // A grid counts once, at the member's best solve of it: the most it was worth on the ladder (`ladder.ts`).
+    parts.push(bestSolvesSql(scope.puzzles, when, solver));
   }
   if (parts.length === 0) return null;
   const tests = reader.showsTestMembers ? Prisma.empty : Prisma.sql`WHERE "Member"."unclaimableBecause" IS DISTINCT FROM ${UNCLAIMABLE_REASONS.test}`;
