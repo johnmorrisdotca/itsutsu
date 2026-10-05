@@ -15,7 +15,7 @@ import { CARD_SIZE_WORDS, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, sizesOffered } from "
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
 import { sizeWord } from "./puzzles.constants";
-import { SIZE_TILES, shelvesOf } from "./sizeShelves";
+import { SIZE_TILES, shelfFor, shelvesOf } from "./sizeShelves";
 
 /**
  * A puzzle's sizes, as the tiles every board size on this site is chosen
@@ -100,7 +100,7 @@ export function PuzzleSizes({
    * the next and from the last back to the first. Pop Gomoji's five sizes are two shelves, Suido's sixteen four.
    */
   const starts = shelvesOf(every.length);
-  const [shelf, setShelf] = useState(() => (shelved ? (starts.findLast((start) => every[start]! <= size) ?? 0) : 0));
+  const [shelf, setShelf] = useState(() => (shelved ? shelfFor(every, size) : 0));
   const shown = !shelved ? spec.offered : every.slice(shelf, shelf + SIZE_TILES);
   const onLast = shelf === starts[starts.length - 1];
   const nextShelf = onLast ? 0 : starts[starts.indexOf(shelf) + 1]!;
