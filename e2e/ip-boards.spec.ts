@@ -79,7 +79,7 @@ test("a game won puts the winner on the IP boards, and a stranger sees them shut
 
     await page.goto("/points");
     // And how a game is priced, read from the same table that pays it.
-    await expect(page.locator('[data-testid="ip-maximum"][data-variant="go"]')).toContainText("19: 200");
+    await expect(page.locator('[data-testid="ip-maximum"][data-variant="go"]')).toContainText(`19: ${gameMax("go", 19)}`);
 
     // The game's own board and the family's: drawn, and not empty now that a game of it has paid.
     await page.goto("/games/gomoku");

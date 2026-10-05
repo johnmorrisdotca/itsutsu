@@ -10,7 +10,7 @@ import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.con
 import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
 import { boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { isPuzzleKind } from "@/lib/catalogue/gameKeys";
-import { gameMax, RESULT_SHARES } from "@/lib/points/gamePoints";
+import { GAME_MAX_BASE, gameMax, RESULT_MOST, RESULT_SHARES, RESULT_STEP } from "@/lib/points/gamePoints";
 import { SITE_SCOPE } from "@/lib/points/ipBoards";
 import { puzzlePriceRange } from "@/lib/points/ladderRange";
 import { LEVEL_FAMILY_PRICE_MOST, PUZZLE_PRICE_LEAST, PUZZLE_PRICE_MOST } from "@/lib/points/ladder.constants";
@@ -91,7 +91,7 @@ export default function PointsPage() {
           What a game pays <span className="font-mincho normal-case tracking-normal">配点</span>
         </h2>
         <p className="text-sm text-muted">
-          Every game has a most it can pay, below. A result earns a share of it.
+          Every game has a most it can pay, below, and none is more than {GAME_MAX_BASE}. A result earns a share of it.
         </p>
         <div className={TABLE_SCROLL}>
           <table className="w-full text-sm">
@@ -120,6 +120,10 @@ export default function PointsPage() {
           <li>
             The same two players again the same day: the second game pays {percent(RESULT_SHARES.again[1])}, and every one
             after that {percent(RESULT_SHARES.again[2])}.
+          </li>
+          <li>
+            Every result is rounded to the nearest {RESULT_STEP}, and no result pays more than {RESULT_MOST}, however big the
+            upset.
           </li>
           <li>A game on one screen, or on the practice board, pays nothing: nobody can say who played it.</li>
         </ul>

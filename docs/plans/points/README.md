@@ -91,7 +91,7 @@ who plays a few words a day.
 2. **Games: a maximum per game, and each result a share of it** (John: "a
    table of maximum weights per game… and then we work back what someone
    scores"). The maximum is 100 for Gomoku on 15×15, from 10 for tic-tac-toe
-   to 200 for Go on 19×19. A win pays 100% of it, a draw 50% each, a loss
+   to 150 for the biggest boards (it was 200 for Go on 19×19, until 150 became the ceiling, PTS-05). A win pays 100% of it, a draw 50% each, a loss
    nothing but up to 20% for a close score, and time, resigning and head starts
    have shares of their own. Both tables are in PTS-02.
 3. **Programs are players**, as they are for XP (AGENTS.md). The site board

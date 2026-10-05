@@ -8,9 +8,12 @@ import type { RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
  * for a victory or a loss or a complex result" — and, of games having scored
  * nothing until now, "it's something we should've done from the beginning".
  *
- * THE MAXIMUM is 100 times the game's weight: Gomoku on 15×15 is 1.0, and the
- * weight says how much a game asks, how long it runs and how deep it goes,
- * from tic-tac-toe's 0.1 to Go on 19×19's 2.0. A game with several boards is
+ * THE MAXIMUM is 100 times the game's weight, to no more than 150: Gomoku on
+ * 15×15 is 1.0, and the weight says how much a game asks, how long it runs and
+ * how deep it goes, from tic-tac-toe's 0.1 to the 1.5 that Go on 19×19 and a
+ * few other big boards are held to. The quick games (tic-tac-toe, Notakto, Trap
+ * Three, Square Four, Twist Four, Maker and Breaker) stay at 10 to 40 so they
+ * cannot be farmed. A game with several boards is
  * weighed by the board it was played on. `docs/plans/points/PTS-02-game-points.md`
  * has the reasoning; this table is the one place the numbers live, a Record so
  * a new game cannot ship without one.
@@ -87,10 +90,28 @@ export const GAME_POINTS_WEIGHT: Record<RuleVariant, Weight> = {
   makerBreaker: { weight: 0.4 },
 };
 
-/** The most one game of this can pay: 100 times its weight on the board it was played on. */
+/**
+ * THE MOST ANY GAME'S BASE CAN BE, and the most any one result can pay. John,
+ * 2026-10-05: puzzles and games are priced on one scale, so a Go win on 19×19
+ * (200), Canadian checkers (160), Halma on 16×16 (160) and Hex on 19×19 (160)
+ * come down to 150, the ceiling of an ordinary puzzle, and an upset over a much
+ * stronger player on a big board stops at 200 whatever the multipliers make it.
+ */
+export const GAME_MAX_BASE = 150;
+export const RESULT_MOST = 200;
+
+/** Every paid result is a multiple of this: a figure to the nearest five reads as a price, not as a calculation. */
+export const RESULT_STEP = 5;
+
+/** The most one game of this can pay: 100 times its weight on the board it was played on, no more than 150. */
 export function gameMax(variant: RuleVariant, size: number): number {
   const row = GAME_POINTS_WEIGHT[variant];
-  return Math.round(100 * (row.bySize?.[size] ?? row.weight));
+  return Math.min(GAME_MAX_BASE, Math.round(100 * (row.bySize?.[size] ?? row.weight)));
+}
+
+/** A result's pay: to the nearest five, and never more than the most one result can pay. */
+function paid(value: number): number {
+  return Math.min(RESULT_MOST, Math.round(value / RESULT_STEP) * RESULT_STEP);
 }
 
 /**
@@ -178,7 +199,7 @@ export function gamePoints(result: PricedResult): { black: number; white: number
   const max = gameMax(result.variant, result.size);
   if (result.drawn) {
     const again = RESULT_SHARES.again[Math.min(result.earlierToday, RESULT_SHARES.again.length - 1)] ?? 0;
-    const each = Math.round(max * RESULT_SHARES.drawn * again);
+    const each = paid(max * RESULT_SHARES.drawn * again);
     return { black: each, white: each };
   }
   if (result.winner === null) return { black: 0, white: 0 };
@@ -203,6 +224,6 @@ export function gamePoints(result: PricedResult): { black: number; white: number
   const upset = result.winnerExpected === null ? 1 : 1 + RESULT_SHARES.upset * (1 - 2 * Math.min(1, Math.max(0, result.winnerExpected)));
   const winnerShare = shares.winner * (favoured ? RESULT_SHARES.favoured : 1) * upset;
   const again = RESULT_SHARES.again[Math.min(result.earlierToday, RESULT_SHARES.again.length - 1)] ?? 0;
-  const paid = { winner: Math.round(max * winnerShare * again), loser: Math.round(max * (shares.loser + close) * again) };
-  return result.winner === STONES.black ? { black: paid.winner, white: paid.loser } : { black: paid.loser, white: paid.winner };
+  const pay = { winner: paid(max * winnerShare * again), loser: paid(max * (shares.loser + close) * again) };
+  return result.winner === STONES.black ? { black: pay.winner, white: pay.loser } : { black: pay.loser, white: pay.winner };
 }

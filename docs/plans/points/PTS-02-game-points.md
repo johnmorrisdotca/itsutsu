@@ -15,8 +15,10 @@ John, 2026-09-25: "a table of maximum weights per game… and then we work back
 what someone scores for a victory or a loss or a complex result".
 
 **Every game has a maximum**, the most one game of it can pay: 100 times its
-weight in the table below, so Gomoku on 15×15 is 100, Go on 19×19 is 200 and
-tic-tac-toe is 10. **Every result is a share of that maximum**, worked out from
+weight in the table below, so Gomoku on 15×15 is 100, Go on 19×19 is 150 and
+tic-tac-toe is 10. No maximum is over 150 (`GAME_MAX_BASE`): Go on 19×19, Canadian
+Checkers, Halma on 16×16 and Hex on 19×19 were 200 and 160 and are held there, so
+a game's base sits on the same scale as a puzzle's (PTS-05). **Every result is a share of that maximum**, worked out from
 what the site already records about how a game ended (`GameResultFacts`: the
 outcome, the reason and, where the rules keep one, the score).
 
@@ -54,8 +56,8 @@ grid.
 
 A loss pays no IP for having taken part: that is XP's (README, "XP and IP are
 two different things"). So a Gomoku win is 100 and its loss 0; a Reversi loss
-by 30 discs to 34 is 20 × 30⁄34, about 18; a Go win on time is 80% of 200,
-160; a tic-tac-toe draw is 5 each.
+by 30 discs to 34 is 20 × 30⁄34, about 18, which rounds to 20; a Go win on time is 80% of 150,
+120; a tic-tac-toe draw is 5 each.
 
 Rated or not, against a person or a program, the prices are the same. A program
 earns points too (AGENTS.md: programs are players), and the board's People /
@@ -103,12 +105,20 @@ new game cannot ship without one.
 | | Trap Three, Square Four | 0.3 | |
 | | Maker and Breaker | 0.4 | |
 
-So the maximums run from 200 for Go on 19×19, through 100 for Gomoku and 60 for
-Drop Four, to 10 for tic-tac-toe. Nothing is worth farming: the quickest games pay the least
+So the maximums run from 150 for the biggest boards (Go on 19×19 and the others that
+would be over), through 100 for Gomoku and 60 for
+Drop Four, to 10 for tic-tac-toe, the quick games staying at 10 to 40. Nothing is worth farming: the quickest games pay the least
 per game, and about the same per minute as the long ones.
 
-The puzzles' weights are in PTS-01. They are set so a medium solve at a
-puzzle's default size is about 100, the same as a Gomoku win.
+A puzzle is priced on a ladder of its own (PTS-05), from 50 to 150, on the same
+scale.
+
+**Rounding and the ceiling on a result.** Every paid result is rounded to the
+nearest 5 and no result pays more than 200: a 150 game won as an upset (×1.5) would
+be 225, and pays 200. The opponent's-strength and again-the-same-day factors are
+unchanged. A game already paid keeps what it was paid (`Game.blackPoints` and
+`whitePoints` are not rewritten); the new bases and rounding apply from the next game
+that ends.
 
 ## Read first
 
