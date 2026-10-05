@@ -8,6 +8,7 @@ import { currentSession } from "@/lib/auth/currentSession";
 import { ALL_TIME, monthOf, weekOf, type RecordPeriod } from "@/lib/history/recordMonth";
 import { setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { POINTS_A_CELL, POINTS_A_HELP } from "@/lib/puzzles/puzzlePoints";
+import { TOBIISHI_SIZES } from "@/lib/puzzles/tobiishi/sizes";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { POINTS_SHOWN, POINTS_WHOLE, type PointsRow, pointsBoardOf, startOfMonth, startOfWeek } from "@/lib/puzzles/server/puzzleBoards";
 import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
@@ -82,6 +83,8 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
             ? `${POINTS_A_CELL} for every card of both decks put into a run, so every deal won scores ${POINTS_A_CELL * 104}. Your best of each deal counts.`
           : kind === "mahjong"
             ? `${POINTS_A_CELL} a tile you take, −${POINTS_A_HELP} a Hint. Your best of each deal counts.`
+          : kind === "tobiishi"
+            ? `${POINTS_A_CELL} for every jump of a level's shortest way, so ${TOBIISHI_SIZES.map((size) => POINTS_A_CELL * size).join(", ")} points for a short, a medium or a long level. A level has no Check or Hint. Your best of each level counts.`
           : kind === "suido"
             ? `${POINTS_A_CELL} for every piece of pipe on the board, −${POINTS_A_HELP} a Hint. Your best of each board counts.`
             : kind === "bridges"

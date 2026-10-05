@@ -41,7 +41,8 @@ export const POINTS_A_HELP = 50;
  * Stones: its whole grid. A Solitaire or a FreeCell counts the fifty-two cards
  * it brought home, a Spider the hundred and four of its eight runs, a cube
  * every sticker it put back on its face, and a Suido board every piece of pipe
- * it has (`suidoPieces`), a maze the cells of its way (`meikyuuWay`).
+ * it has (`suidoPieces`), a maze the cells of its way (`meikyuuWay`), a peg
+ * puzzle the jumps it takes (`size`).
  */
 export function cellsFilled(kind: PuzzleKind, size: number, givens: string): number {
   const area = size * size;
@@ -56,6 +57,8 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
   if (kind === "suido") return suidoPieces(givens);
   // A Meikyuu maze's work is the way through it: every cell of it drawn.
   if (kind === "meikyuu") return meikyuuWay(givens);
+  // A Tobiishi level's work is its jumps: every one is made, and its length is the size (`tobiishi/sizes.ts`).
+  if (kind === "tobiishi") return size;
   if (kind === "bridges") return [...givens.slice(0, area)].reduce((total, cell) => total + (cell === "." ? 0 : Number(cell) || 0), 0);
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") return size;
   // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.

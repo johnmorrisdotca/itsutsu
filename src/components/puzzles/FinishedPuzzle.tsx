@@ -40,6 +40,7 @@ import { SuidoBoard } from "./SuidoBoard";
 import { isMeikyuuTall } from "@/lib/puzzles/meikyuu/sizes";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuStill } from "./MeikyuuStill";
+import { TobiishiStill } from "./TobiishiStill";
 import { decodeStepLog } from "@/lib/puzzles/stepLog";
 import { resumedGame } from "@/lib/puzzles/suido/play";
 import { checkSuidoAnswer, newGame } from "@johnmorrisdotca/suido";
@@ -150,6 +151,22 @@ export function FinishedPuzzle({
     );
   }
 
+  // A Tobiishi board as it ended: the run of jumps played on it, one peg left in the goal.
+  if (kind === "tobiishi") {
+    // A solve kept before its run was, or one whose run is kept back, shows the package's own answer when the page may show it, and the board as dealt when it may not.
+    const state = answer !== null ? "finished" : derive ? "worked-out" : "dealt";
+    return (
+      <Focused story={story} hydrated={hydrated} testId="solve-board" state={state}>
+        <div className="mx-auto w-full" data-focus-board>
+          <TobiishiStill code={givens} way={answer} solved={answer !== null || derive} />
+        </div>
+        <p className="text-sm text-muted" data-testid={`solve-note-${state}`}>
+          {TOBIISHI_NOTES[state]}
+        </p>
+      </Focused>
+    );
+  }
+
   // A FreeCell or a Spider is its moves too, played back the same way (`PatienceReplay`).
   if (kind === "freecell" || kind === "spider") {
     return (
@@ -214,6 +231,12 @@ export function FinishedPuzzle({
 
   return <GridReplay kind={kind} size={size} level={level} givens={givens} answer={answer} steps={steps} derive={derive} story={story} hydrated={hydrated} />;
 }
+
+const TOBIISHI_NOTES: Record<string, string> = {
+  finished: "How it ended: one peg left, in the goal, by the jumps that were made.",
+  "worked-out": "Solved before its jumps were kept. Every level has an answer, so this is the one it was made from.",
+  dealt: "Its jumps are kept back, so this is the board as it was dealt.",
+};
 
 const MEIKYUU_NOTES: Record<string, string> = {
   finished: "How it ended: the line drawn from the start to the goal.",

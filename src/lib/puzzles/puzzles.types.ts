@@ -33,7 +33,8 @@ export type PuzzleKind =
   | "mahjong"
   | "cube"
   | "suido"
-  | "meikyuu";
+  | "meikyuu"
+  | "tobiishi";
 
 /** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
 export type PuzzleLevel = "easy" | "medium" | "hard";

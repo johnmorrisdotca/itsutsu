@@ -467,6 +467,15 @@ const SURVEY: Survey[] = [
     await page.goto("/games/meikyuu/play?size=6x9&level=easy&seed=3");
     await ready(page, "puzzle-play");
   } },
+  // Tobiishi's levels are fixed boards: its first, as a new player meets it, and the tall board at its longest, which is the one that has to be laid out by its height (a wide one is laid out by its width).
+  { name: "/games/tobiishi/play", open: async (page) => {
+    await page.goto("/games/tobiishi/play?size=3&level=easy&seed=1");
+    await ready(page, "puzzle-play");
+  } },
+  { name: "/games/tobiishi/play at the tall board", open: async (page) => {
+    await page.goto("/games/tobiishi/play?size=9&level=hard&seed=25");
+    await ready(page, "puzzle-play");
+  } },
   table("dots-and-boxes", "dots-start"),
   table("superghost", "ghost-start"),
   table("mancala", "mancala-start"),

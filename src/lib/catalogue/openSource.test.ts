@@ -29,6 +29,7 @@ describe("the open-source credit under a game", () => {
     expect(openSourceOf("numberPlace")).toBe("kazu");
     expect(openSourceOf("towers")).toBe("kazu");
     expect(openSourceOf("meikyuu")).toBe("meikyuu");
+    expect(openSourceOf("tobiishi")).toBe("tobiishi");
     expect(openSourceOf("mexicanTrain")).toBe("domino");
     expect(openSourceOf("gomojiKana")).toBe("kotoba");
     expect(openSourceOf("hearts" as never)).toBe("toranpu");

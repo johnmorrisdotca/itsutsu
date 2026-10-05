@@ -97,6 +97,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   cube: "cube",
   suido: "suido",
   meikyuu: "meikyuu",
+  tobiishi: "tobiishi",
 };
 
 /**

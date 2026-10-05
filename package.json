@@ -81,6 +81,7 @@
     "@johnmorrisdotca/suido": "1.3.0",
     "@johnmorrisdotca/tane": "1.2.0",
     "@johnmorrisdotca/tenka": "2.1.0",
+    "@johnmorrisdotca/tobiishi": "0.2.0",
     "@johnmorrisdotca/toranpu": "2.14.0",
     "@johnmorrisdotca/tsunagi": "1.4.0",
     "@prisma/client": "^6.19.3",

@@ -48,6 +48,8 @@ export const PUZZLE_IP_WEIGHT: Record<PuzzleKind, number> = {
   suido: 0.45,
   // Five a cell of the way through (`cellsFilled`): the middle level's way is 17 cells at small, 64 at medium, 180 at large and 518 at huge (measured over all 1,000 levels), so about 85, 320, 900 and 2,600 points; a medium level is about 100 IP, as a medium solve is.
   meikyuu: 0.3,
+  // Five a jump (`cellsFilled`: the level's length, 3, 6 or 9), so 15, 30 or 45 points; a level takes a minute, not an evening, so it is weighed at 2 and a medium one is about 60 IP, under the 100 of a medium solve of the puzzles that take longer.
+  tobiishi: 2,
 };
 
 /** How many rows a board shows beside a game or family, and on its own page. */

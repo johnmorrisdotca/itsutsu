@@ -32,6 +32,7 @@ import { offeredLine } from "./offeredLine";
 import { MEIKYUU_COPY } from "./meikyuu.constants";
 import { MeikyuuFrontProgress } from "./MeikyuuFrontProgress";
 import { MeikyuuProgressLine } from "./MeikyuuProgressLine";
+import { TOBIISHI_COPY } from "./tobiishi.constants";
 import { SUIDO_COPY } from "./suido.constants";
 
 /**
@@ -85,8 +86,8 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 <Suspense fallback={<DailyWordButtonsShell kind={kind} framed={false} />}>
                   <DailyWordButtonsLive kind={kind} framed={false} />
                 </Suspense>
-              ) : (
-                /* The same puzzle for everybody today (`daily.ts`), at the usual size and level. */
+              ) : spec.fixedLevels === true ? null : (
+                /* The same puzzle for everybody today (`daily.ts`), at the usual size and level. A game of fixed levels has none: every level is the same for everybody every day, and the link only led to its set-up. */
                 <Link
                   href={joinQuery(playPath(kind), `?size=${spec.defaultSize}&level=${spec.defaultLevel}&${DAILY_PARAM}=1`)}
                   className="text-center text-sm font-medium underline underline-offset-4"
@@ -139,6 +140,11 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                     <MeikyuuFrontProgress />
                   </Suspense>
                 </>
+              ) : null}
+              {kind === PUZZLE_KINDS.tobiishi ? (
+                <span className="text-xs text-muted" data-testid="tobiishi-levels-line">
+                  {TOBIISHI_COPY.levelsLine}
+                </span>
               ) : null}
             </div>
           </div>

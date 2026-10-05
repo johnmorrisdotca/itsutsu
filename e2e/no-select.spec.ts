@@ -217,6 +217,16 @@ for (const { name, viewport } of WIDTHS) {
       expect(await selection(page)).toBe("");
     });
 
+    test("Tobiishi: dragging a peg across the board selects nothing, and the buttons under it are not text", async ({ page }) => {
+      await page.goto(`/games/${PUZZLE_SLUGS.tobiishi}/play?size=6&level=medium&seed=5`);
+      await ready(page, "puzzle-play");
+      const board = page.getByTestId("tobiishi-board");
+      await expect(board.locator("svg")).toBeVisible();
+      await expectNothingPlayableSelectable(page, 2);
+      await dragAcross(page, board);
+      expect(await selection(page)).toBe("");
+    });
+
     test("a party table: the names are typed into boxes, and the table they sit at is not text", async ({ page }) => {
       await page.goto("/games/dots-and-boxes");
       await page.evaluate(() => window.localStorage.removeItem("itsutsu.dotsAndBoxes"));

@@ -57,6 +57,9 @@ const SuidoPreview = dynamic(() => import("@/components/puzzles/SuidoPreview").t
 /* Meikyuu's preview is made in the browser only too: the package that draws a maze is fetched there. */
 const MeikyuuPreview = dynamic(() => import("@/components/puzzles/MeikyuuPreview").then((module) => module.MeikyuuPreview), { ssr: false });
 
+/* Tobiishi's preview is made in the browser only too: the package that draws its board is fetched there. */
+const TobiishiPreview = dynamic(() => import("@/components/puzzles/TobiishiPreview").then((module) => module.TobiishiPreview), { ssr: false });
+
 /** The paper a puzzle is written on, inside the wood. */
 const PAPER = "#ffffff";
 
@@ -130,6 +133,8 @@ export function PuzzleBoardPreview({
           <SuidoPreview size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "meikyuu" ? (
           <MeikyuuPreview size={size} />
+        ) : kind === "tobiishi" ? (
+          <TobiishiPreview size={size} />
         ) : kind === "pictureLogic" ? (
           <PictureLogicPreview size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "freecell" || kind === "spider" ? (

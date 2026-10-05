@@ -80,6 +80,10 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/MeikyuuBoard.tsx",
   // Meikyuu's mazes, walls and line are the package's: a new version of it is a picture to re-take.
   "node_modules/@johnmorrisdotca/meikyuu/package.json",
+  "src/lib/puzzles/tobiishi/way.ts",
+  "src/components/puzzles/TobiishiBoard.tsx",
+  // Tobiishi's boards and pegs are drawn by the package: a new version of it is a picture to re-take.
+  "node_modules/@johnmorrisdotca/tobiishi/package.json",
   "e2e/puzzle-screenshots.spec.ts",
 ];
 

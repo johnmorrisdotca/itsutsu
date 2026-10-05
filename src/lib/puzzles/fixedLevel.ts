@@ -4,13 +4,13 @@ import { suidoLevelOfSeed } from "./suido/seed";
 /**
  * WHICH LEVEL A RUN IS OF, for a puzzle that has fixed levels beside, or in
  * place of, the boards it makes: Tsunagi's seed IS its level's number (every
- * Tsunagi is a level, and so is every Meikyuu), and Suido's seed names a level only in the block kept
+ * Tsunagi is a level, and so is every Meikyuu and every Tobiishi), and Suido's seed names a level only in the block kept
  * for them (`suido/seed.ts`), every other seed being a board made at random.
  * Null for a seed that names no level, and for every kind without any.
  * Read where a page says "Level 12" in place of a seed's number.
  */
 export function fixedLevelOf(kind: PuzzleKind, seed: number): number | null {
-  if (kind === "tsunagi" || kind === "meikyuu") return Number.isInteger(seed) && seed >= 1 ? seed : null;
+  if (kind === "tsunagi" || kind === "meikyuu" || kind === "tobiishi") return Number.isInteger(seed) && seed >= 1 ? seed : null;
   if (kind === "suido") return suidoLevelOfSeed(seed);
   return null;
 }

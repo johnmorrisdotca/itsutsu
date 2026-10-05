@@ -181,8 +181,15 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Numbers",
     kanji: "数",
-    blurb: "Puzzles for one: a grid, a few givens, and exactly one answer. Solve it on your own, against the clock.",
-    games: ["numberPlace", "jigsaw", "diagonal", "sumCages", "moreOrLess", "towers", "meikyuu"],
+    blurb: "Puzzles for one: a grid or a board, a few givens, and an answer to work out. Solve it on your own, against the clock.",
+    /*
+     * TOBIISHI 飛び石 (2026-10-05) is the eighth, and the shelf is full. Peg solitaire is a puzzle for one with a
+     * board you take pegs from, which is what John asked for on Small boards (shown there as a guest,
+     * `ALSO_LISTED_IN`): a puzzle's home must be a family of puzzles (`puzzles.coverage.test.ts`: a puzzle's
+     * ladder and record would show a blank on a board game's shelf), and this one and Logic puzzles are the two
+     * with room or near it. Logic puzzles is full at eight, so it is here, and the next puzzle needs a shelf.
+     */
+    games: ["numberPlace", "jigsaw", "diagonal", "sumCages", "moreOrLess", "towers", "meikyuu", "tobiishi"],
   },
   {
     key: "logic",

@@ -7,6 +7,8 @@ import { solutionOf as pictureSolution } from "./pictureLogic/solve";
 import { checkSuidoAnswer } from "@johnmorrisdotca/suido";
 import { suidoAnswerOf } from "./suido/solve";
 import { encodeWay } from "./meikyuu/way";
+import { tobiishiChallengeOf, tobiishiRefOfCode } from "./tobiishi/levels";
+import { encodeAnswer } from "./tobiishi/way";
 import { decodeRegions, encodeStones } from "./hiddenStones/code";
 import { solutionOf as hiddenStonesSolution } from "./hiddenStones/solve";
 import { isNumberKind, numbersAnswerOf } from "./kazu";
@@ -70,6 +72,13 @@ function searchAnswer(kind: PuzzleKind, size: number, givens: string): string | 
     case "meikyuu":
       // A maze has exactly one way through, found again from its recipe.
       return encodeWay(givens);
+    case "tobiishi": {
+      // A level always has the answer it was made from, found again from its name; any other run to the goal is as good, and this is the one that can be shown.
+      const ref = tobiishiRefOfCode(givens);
+      if (ref === null) return null;
+      const challenge = tobiishiChallengeOf(ref);
+      return encodeAnswer(challenge.game, challenge.answer);
+    }
     default:
       return null;
   }

@@ -8,10 +8,12 @@ import { openSetUpPage } from "./support";
  *
  * John, 2026-09-15: Small boards held Tic-tac-toe and no small Reversi, though
  * one would belong there just as much — "a family is a way of finding a game,
- * not a filing cabinet". So Mini Reversi lives under Turn and take — the family
- * that was Flips until it took Captures in on 2026-09-22 — and is listed under
- * Small boards too (`ALSO_LISTED_IN`). Picked from either shelf it has to be the
- * same game: the same address on the page before it.
+ * not a filing cabinet". So Mini Reversi lived under Turn and take and was listed
+ * under Small boards too (`ALSO_LISTED_IN`); on 2026-10-05 that listing made way
+ * for Tobiishi, the shelf being full at eight. The case is Chinese Checkers now:
+ * at home under Territory and races (it was Races until 2026-09-24) and listed
+ * under Checkers for its name. Picked from either shelf it has to be the same
+ * game: the same address on the page before it.
  *
  * Driven by clicking, the way a reader browses the set-up page — a family, then
  * the game. Nothing reloads and nobody presses Begin, so no game is written —
@@ -20,9 +22,9 @@ import { openSetUpPage } from "./support";
  * page's own Change button; the game is stated on this screen now.
  */
 
-const GAME = "miniReversi";
+const GAME = "chineseCheckers";
 /** What the screen calls it, for the summary line that says which game it is about. */
-const NAME = "Mini Reversi";
+const NAME = "Chinese Checkers";
 /**
  * Its home shelf, read from the catalogue rather than written here. It was the
  * literal "Flips", and the family was retitled Turn and take with every unit
@@ -30,7 +32,7 @@ const NAME = "Mini Reversi";
  */
 const HOME = GAME_FAMILIES.find((family) => family.games.includes(GAME))!.title;
 
-/** Opens a family, picks Mini Reversi from its shelf, and says which game the screen is then about. */
+/** Opens a family, picks Chinese Checkers from its shelf, and says which game the screen is then about. */
 async function pickFrom(page: Page, family: string, note: string | null): Promise<string | null> {
   const tile = page.locator(`[data-testid="set-up-family"][data-family="${family}"]`);
   await tile.click();
@@ -67,14 +69,14 @@ async function pickFrom(page: Page, family: string, note: string | null): Promis
 }
 
 test.describe("a game listed on two shelves", () => {
-  test("Mini Reversi picked from Small boards is the same game as Mini Reversi picked from its home", async ({ page }) => {
+  test("Chinese Checkers picked from Checkers is the same game as Chinese Checkers picked from its home", async ({ page }) => {
     await openSetUpPage(page);
 
-    const fromSmallBoards = await pickFrom(page, "Small boards", `also under ${HOME}`);
-    expect(fromSmallBoards).toBe("mini-reversi");
+    const fromCheckers = await pickFrom(page, "Checkers", `also under ${HOME}`);
+    expect(fromCheckers).toBe("chinese-checkers");
 
     // And the same game from its home shelf, on the same screen: one address, one game.
     const fromHome = await pickFrom(page, HOME, null);
-    expect(fromHome).toBe(fromSmallBoards);
+    expect(fromHome).toBe(fromCheckers);
   });
 });

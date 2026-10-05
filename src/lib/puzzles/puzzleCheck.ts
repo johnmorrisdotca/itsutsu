@@ -7,6 +7,7 @@ import { checkAwase } from "@johnmorrisdotca/jarajara/awase";
 import { checkCube, checkCubeGivenUp } from "./cube/check";
 import { checkSuido } from "./suido/check";
 import { checkMeikyuu } from "./meikyuu/check";
+import { checkTobiishi } from "./tobiishi/check";
 import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "./blackAndWhite/code";
 import { isWord, languageOf, type GomojiLanguage } from "./gomoji/code";
@@ -93,6 +94,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "meikyuu":
       // The line, walked from the maze's start: every step through an open passage, ending on its goal.
       return checkMeikyuu(size, givens, answer);
+    case "tobiishi":
+      // The jumps, replayed from the level's own starting position: every one legal, one peg left, in the goal.
+      return checkTobiishi(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }

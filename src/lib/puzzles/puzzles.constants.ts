@@ -13,6 +13,8 @@ import { SUIDO_LEVEL_SIZES } from "./suido/sizes";
 import { thousands } from "../ui/thousands";
 import { MEIKYUU_LEVELS_A_SIZE, MEIKYUU_SQUARE_LEVELS_TOTAL, MEIKYUU_TALL_LEVELS_TOTAL } from "./meikyuu/levelCounts";
 import { MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SHAPES, meikyuuSizeLabel } from "./meikyuu/sizes";
+import { TOBIISHI_LEVELS_A_SIZE } from "./tobiishi/levelCounts";
+import { TOBIISHI_SIZES, tobiishiSizeLabel } from "./tobiishi/sizes";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
@@ -62,6 +64,7 @@ export const PUZZLE_KINDS = {
   cube: "cube",
   suido: "suido",
   meikyuu: "meikyuu",
+  tobiishi: "tobiishi",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** How many tiles a Mahjong layout holds, read from the layout rather than typed into its copy. */
@@ -73,6 +76,9 @@ function mahjongTiles(size: number): number {
 const MEIKYUU_LEVELS_TOTAL = MEIKYUU_SQUARE_LEVELS_TOTAL + MEIKYUU_TALL_LEVELS_TOTAL;
 /** The tall sizes as a person reads them, "6×9, 8×12 and so on to 20×30". */
 const MEIKYUU_TALL_RANGE = `${MEIKYUU_TALL_SHAPES[0]![0]}×${MEIKYUU_TALL_SHAPES[0]![1]} to ${MEIKYUU_TALL_SHAPES.at(-1)![0]}×${MEIKYUU_TALL_SHAPES.at(-1)![1]}`;
+
+/** How many levels Tobiishi has in all, read from its lengths rather than typed into its copy. */
+const TOBIISHI_LEVELS_TOTAL = TOBIISHI_LEVELS_A_SIZE * TOBIISHI_SIZES.length;
 
 /** Every puzzle, in the order the family shows them. Read by the coverage gate, the tour and the catalogue. */
 export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
@@ -101,6 +107,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.cube,
   PUZZLE_KINDS.suido,
   PUZZLE_KINDS.meikyuu,
+  PUZZLE_KINDS.tobiishi,
 ];
 
 export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
@@ -426,6 +433,33 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     fixedLevels: true,
     clock: false,
   },
+  /*
+   * TOBIISHI 飛び石, peg solitaire (`tobiishi/`, the package `@johnmorrisdotca/tobiishi`):
+   * 81 named challenges, the same for everybody: nine boards (the English cross, a
+   * triangle, the European board, a diamond, a heart, a star, a hexagon and a wide and a
+   * tall rectangle), three goal holes on each, at three lengths. A size is the length of
+   * the shortest way in jumps, 3, 6 or 9, so the big number on a tile is the number of
+   * jumps and a size has exactly one band (`levelsAt`); the level's number in its size
+   * (1 to 27: a board's three goals in turn, the boards in the package's order) is the
+   * seed, as Meikyuu's is. The givens are the level's code, `english:centre:3` (25
+   * characters at the longest); the position is made again from it by the package. The
+   * answer is the run of jumps, four characters a jump (`tobiishi/way.ts`), 36 at the
+   * longest, so 40 is room. Any legal run that leaves one peg in the goal solves it, not
+   * only the package's own. No Check or Hint (the board is in plain sight, and a level's
+   * time is one anybody can be raced on) and no countdown.
+   */
+  tobiishi: {
+    sizes: TOBIISHI_SIZES,
+    offered: TOBIISHI_SIZES,
+    defaultSize: 3,
+    levels: PUZZLE_LEVEL_LIST,
+    levelsAt: { 3: ["easy"], 6: ["medium"], 9: ["hard"] },
+    defaultLevel: "easy",
+    mostCells: 40,
+    helps: false,
+    fixedLevels: true,
+    clock: false,
+  },
 };
 
 /** Whether a puzzle is drawn on the board itself in the player's board colour, rather than on white paper. */
@@ -634,6 +668,12 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     1624: { label: "Bigger", kanji: "特大" },
     2030: { label: "Biggest", kanji: "超大" },
   },
+  // A Tobiishi level by the length of its shortest way, the number of jumps being the big number on the tile (`tobiishi/sizes.ts`).
+  tobiishi: {
+    3: { label: "Short", kanji: "短" },
+    6: { label: "Medium", kanji: "中" },
+    9: { label: "Long", kanji: "長" },
+  },
   // A cube by its side, the big number on the tile; the names are ours, never a maker's.
   cube: {
     2: { label: "Mini", kanji: "小" },
@@ -694,6 +734,12 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     medium: "The middle third: longer ways, and branches that lead a long way before they stop.",
     hard: "The last third: the longest ways and the most forks, and in the biggest mazes much more to look at.",
   },
+  // A Tobiishi level's band is its length: the jumps in its shortest way (`tobiishi/sizes.ts`), which is what the package's three difficulties are.
+  tobiishi: {
+    easy: "Three jumps to the goal: four pegs, and one way in the right order, among a few wrong ones.",
+    medium: "Six jumps to the goal: seven pegs, with more ways to get stuck before the last one.",
+    hard: "Nine jumps to the goal: ten pegs, and the right order has to be found before you start taking pegs.",
+  },
   // A Suido level is a target for the package's own rank among boards of the same size (`SUIDO_DIFFICULTY`).
   suido: {
     easy: "Among the plainer boards of its size: most pieces can be settled by looking at what is beside them.",
@@ -744,6 +790,8 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
  * heading for the list of them.
  */
 export const CARD_SIZE_WORDS: Partial<Record<PuzzleKind, { legend: string; heading: string; word: (size: number) => string }>> = {
+  // A peg puzzle's size is how long its shortest way is, Short, Medium or Long, the jumps in it being the big number on the tile (`tobiishi/sizes.ts`).
+  tobiishi: { legend: "Length", heading: "Lengths", word: (size) => tobiishiSizeLabel(size) },
   // A maze's size is how many cells it has, in the package's four words (`meikyuu/sizes.ts`).
   meikyuu: { legend: "Size", heading: "Sizes", word: (size) => meikyuuSizeLabel(size) },
   solitaire: { legend: "Draw", heading: "Draws", word: (size) => `draw ${size}` },
@@ -1297,5 +1345,33 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     ],
     board:
       `Small mazes have under 150 cells and are the quick ones; medium ones under 800; large under 4,000; and huge ones run to thousands of cells and are meant to be zoomed. Within a size the levels run from easy to hard, and every shape turns up: squares, hexagons, triangles and circles, and a heart, a leaf, a star, a ring, a diamond, a cross and a moon. The tall ones are for a phone held upright, two columns to three rows, in six sizes from ${MEIKYUU_TALL_RANGE} cells, and turn on their side by themselves on a wide screen.`,
+  },
+  /*
+   * OUR OWN NAME FOR IT, and a plain one. Peg solitaire is a traditional game that belongs to nobody (the
+   * package, `@johnmorrisdotca/tobiishi`, names no maker and copies no level collection), so there is no maker
+   * to credit or to avoid. 飛び石 (tobiishi), "stepping stones", is the package's own project name for it and not
+   * a claim about what the game was ever called in Japan; it is the word for the stones laid across a garden
+   * stream, which is how a peg moves: over one to the next. Read 2026-10-05 against the package's README.
+   */
+  tobiishi: {
+    label: "Tobiishi",
+    kanji: "飛び石",
+    tagline: `Jump pegs over each other into empty holes, taking each one you jump, until one peg is left in the goal. ${TOBIISHI_LEVELS_TOTAL} named levels on nine boards.`,
+    inspiredBy: "peg solitaire",
+    alsoKnownAs: ["Peg solitaire", "Solitaire"],
+    origin:
+      "Peg solitaire is a puzzle for one that has been played for centuries: a portrait of a French princess from the late 1600s shows the board beside her, and the English cross of 33 holes and the French board of 37 are still the ones most often sold. 飛び石 (tobiishi) is Japanese for stepping stones, the stones laid across a garden stream, and a name of our own for it: a peg crosses the board the same way, over one to the next. The levels here are short ones from a package of ours, each made backward from its goal so that it always has a way through.",
+    wikipedia: "Peg solitaire",
+    rules: [
+      "Jump a peg over the peg next to it, into the empty hole straight beyond, and take the peg you jumped off the board. Every jump takes exactly one peg.",
+      "Leave one peg, in the goal: the hole drawn with a dashed ring. One peg anywhere else is not it.",
+      "Tap a peg, then the hole it should jump to; the holes it can reach are ringed. Or drag the peg across, and let go over the hole. With the keyboard, Tab to the board, move with the arrow keys, press Enter or Space on a peg and then on the hole, and Escape to change your mind.",
+      "Pegs jump along the rows and columns of a square board. On the triangle and the hexagon a peg also jumps along the slanted lines, six ways in all. A peg never jumps over an empty hole, and never over two pegs at once.",
+      `Levels: ${TOBIISHI_LEVELS_TOTAL} of them, the same for everybody. Each of the nine boards has three goal holes to finish in, at three lengths: the shortest way to the goal is 3 jumps, 6 or 9. Any run of legal jumps that leaves one peg in the goal solves it, not only the way the level was made.`,
+      "Undo takes back your last jump, as many as you like, and Restart sets the pegs out again. There is no hint and no clock to run out, so a time on a level is one anybody can be compared with. The clock starts with your first jump.",
+      "If no jump is left and there is more than one peg, you are stuck: Undo and try another order.",
+    ],
+    board:
+      "The boards are the English cross, a triangle, the European board, a diamond, a heart, a star, a hexagon, and a wide and a tall rectangle. A short level (3 jumps) has four pegs on a board of up to 49 holes, and is quick; a long one (9 jumps) has ten, and the right order has to be found. Every level has at least one answer, because it was made by working backward from the goal.",
   },
 };

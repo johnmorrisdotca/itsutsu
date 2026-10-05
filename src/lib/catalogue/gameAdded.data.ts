@@ -99,6 +99,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   tabula: "2026-10-01",
   tenka: "2026-09-29",
   tictactoe: "2026-09-07",
+  tobiishi: "2026-10-05",
   toroidalFive: "2026-09-07",
   towers: "2026-09-24",
   trapThree: "2026-09-07",

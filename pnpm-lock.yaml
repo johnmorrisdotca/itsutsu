@@ -55,6 +55,9 @@ importers:
       '@johnmorrisdotca/tenka':
         specifier: 2.1.0
         version: 2.1.0(@johnmorrisdotca/korokoro@1.15.0(react@19.2.8))(@johnmorrisdotca/toranpu@2.14.0(react@19.2.8))(react@19.2.8)
+      '@johnmorrisdotca/tobiishi':
+        specifier: 0.2.0
+        version: 0.2.0
       '@johnmorrisdotca/toranpu':
         specifier: 2.14.0
         version: 2.14.0(react@19.2.8)
@@ -532,6 +535,10 @@ packages:
         optional: true
       react:
         optional: true
+
+  '@johnmorrisdotca/tobiishi@0.2.0':
+    resolution: {integrity: sha512-+u+8hY5G0sZRt1YfG8flcK5IZVmNtva3NRo2GtEUUuBqr4Dfd4QiAZu7j+VPqI+ZEPzYPEIZofLt2Yi1hv5kZg==}
+    engines: {node: '>=22'}
 
   '@johnmorrisdotca/toranpu@2.14.0':
     resolution: {integrity: sha512-AT4YVYIM3lcaA63/gz7BR/h+EanIXSmR+ztFc/XTREQ8TijqaZ6SXTWWe1vWSEfFEDvgDNhW6k+G6MZxG67KLQ==}
@@ -3177,6 +3184,8 @@ snapshots:
       '@johnmorrisdotca/korokoro': 1.15.0(react@19.2.8)
       '@johnmorrisdotca/toranpu': 2.14.0(react@19.2.8)
       react: 19.2.8
+
+  '@johnmorrisdotca/tobiishi@0.2.0': {}
 
   '@johnmorrisdotca/toranpu@2.14.0(react@19.2.8)':
     optionalDependencies:

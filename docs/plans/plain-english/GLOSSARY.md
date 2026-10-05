@@ -311,6 +311,22 @@ package's own (`sizeOf`), not ours.
 | In and out · Find the goal · Out from the middle · Keys | a level's chips | the four ways to play a maze, named by where the line starts and where it has to get to |
 | Difficulty | a level's chips | one word for how hard it measured, as on Tsunagi's and Suido's levels |
 
+## Tobiishi 飛び石 (2026-10-05)
+
+A new game, so no label of it is retired: these are the words it chose, from the
+ones above (Meikyuu's, for the next level game to use).
+
+| Label | Where | Word used, and why |
+|---|---|---|
+| Short · Medium · Long | the length tiles, the line over the board, My games | how long the shortest way is; the big number on the tile is the jumps (3, 6, 9). "Length", not "Size": a peg board has no side |
+| Peg · Hole · Jump | the board, the line under it, the rules | the package's words for a piece, a place for one and a move; "Tap a peg, then the empty hole it should jump to" |
+| Goal | the board, the chips, the rules | the dashed hole the last peg must be in; not "target" |
+| Start level 12 | the set-up | Start begins, as everywhere |
+| Undo · Restart | under the board | the usual words; Restart sets the pegs out again |
+| Level 12 of 27 | the line over the board | a length's own levels, as Meikyuu's are numbered in a size |
+| Difficulty | a level's chips | one word for how many jumps the shortest way has, as on Tsunagi's and Suido's levels |
+| New game | beside Pause | the shared control (`PuzzleNewGameBeside`), as on every puzzle |
+
 ## Prose worth a second look (not changed)
 
 - Home, "Always somebody to play", "Your pace", "Learn the shapes": feature

@@ -35,10 +35,18 @@ import type { AlsoListing } from "./families.types";
  *    not exist, and a game shown twice on one shelf.
  */
 export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = {
-  miniReversi: [
+  /*
+   * TOBIISHI came to Small boards on 2026-10-05 (the board's request), and Mini Reversi's listing left it: the
+   * shelf holds seven games at home and a shelf shows at most eight, guests included, so one guest had to go,
+   * and a puzzle that can be played in a minute on a small board is the one asked for. Mini Reversi is found at
+   * home in Turn and take. Putting it back needs a game to leave:
+   * miniReversi: family "small-boards", "Reversi on a 4×4 or 6×6 board is over in minutes: the quick small game
+   * somebody opening this shelf is after."
+   */
+  tobiishi: [
     {
       family: "small-boards",
-      why: "Reversi on a 4×4 or 6×6 board is over in minutes: the quick small game somebody opening this shelf is after.",
+      why: "Peg solitaire on a small board: a puzzle for one, a few jumps from the first peg to the last, over in a minute or two.",
     },
   ],
   /*

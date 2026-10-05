@@ -288,6 +288,21 @@ drawn again on the board as a finger draws it. It sits in Numbers, the shelf wit
 room (Logic puzzles is full). Its level screens are Suido's and Tsunagi's
 (`LevelPicker`, `LevelChips`, `LevelFastestTable`), with no locks and no hint.
 
+**Tobiishi** 飛び石 (2026-10-05, `src/lib/puzzles/tobiishi/`, plan in
+`docs/plans/tobiishi/README.md`): peg solitaire, in 81 named levels: nine boards (the
+English cross, a triangle, the European board, a diamond, a heart, a star, a hexagon,
+a wide and a tall rectangle), three goal holes on each, at three lengths (the jumps in
+the shortest way: 3, 6 or 9). The engine, the boards and the named challenges are
+**Tobiishi**, an open-source package (`@johnmorrisdotca/tobiishi`, pinned in
+`package.json`); what is the site's own is here: a length is the puzzle's size, a level
+is its place in the length, the seed is that number, the givens are the level's name
+(`english:centre:3`), the answer is the run of jumps at four characters a jump
+(`tobiishi/way.ts`), and the server replays it on the level's own board and accepts any
+legal run that leaves one peg in the goal (`tobiishi/check.ts`). The board is drawn by
+the package and played by a tap, a drag or the keyboard (`TobiishiBoard`). It is at home
+in Numbers and is shown on the Small boards shelf as a guest (`ALSO_LISTED_IN`); its
+level screens are Meikyuu's, with no locks and no hint.
+
 Tsunagi 繋ぎ, our Numberlink (`src/lib/puzzles/tsunagi/`, the levels and rules
 **Tsunagi**, an open-source package, `@johnmorrisdotca/tsunagi` 1.2.0), has
 twelve sizes, 4×4 to 15×15, shown four tiles at a time. 256 levels at each of

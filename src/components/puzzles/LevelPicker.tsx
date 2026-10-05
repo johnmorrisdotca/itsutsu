@@ -47,6 +47,8 @@ export function LevelPicker({
   onChoose,
   roleOf,
   solvedMark,
+  across = LEVEL_PICKER_ACROSS,
+  describe,
 }: {
   prefix: string;
   /** The size's own number, for a test to read. */
@@ -70,11 +72,15 @@ export function LevelPicker({
   roleOf: (level: number) => LevelPickerRole | null;
   /** A solved level's mark: what stands over its time. */
   solvedMark: (level: number) => ReactNode;
+  /** How many tiles stand in a row, where the game's levels do not make two rows of eight (Tobiishi's twenty-seven make three of nine). */
+  across?: number;
+  /** What a level is, in words a hover and a screen reader read after its number: the board it is on, where a number says too little. */
+  describe?: (level: number) => string;
 }) {
   return (
     <div
       className="grid w-full gap-1"
-      style={{ gridTemplateColumns: `repeat(${LEVEL_PICKER_ACROSS}, minmax(0, 1fr))` }}
+      style={{ gridTemplateColumns: `repeat(${across}, minmax(0, 1fr))` }}
       role="radiogroup"
       aria-label={`Levels ${first} to ${last}`}
       data-testid={`${prefix}-levels`}
@@ -88,6 +94,7 @@ export function LevelPicker({
         const role = roleOf(level);
         const roleWords = role === null ? "" : role.role === "teaches" ? `, teaches ${role.words}` : ", the block's test";
         const triesWords = tries === 0 ? "" : `, ${tries} ${tries === 1 ? "attempt" : "attempts"}`;
+        const aboutWords = describe === undefined ? "" : `, ${describe(level)}`;
         const solved = time !== undefined;
         // A level solved is never locked: a board solved before the levels were renumbered may sit in a block not yet open, and it is still yours.
         const locked = level > open && !solved;
@@ -100,8 +107,8 @@ export function LevelPicker({
             aria-checked={level === chosen}
             onClick={() => onChoose(level)}
             className={`relative flex min-h-12 flex-col items-center justify-center rounded-sm border border-rule-strong/60 bg-ivory px-0.5 py-1 text-sm font-semibold tabular-nums leading-none ${locked ? "text-muted" : "text-ink"} ${ring} hover:bg-paper focus-visible:outline-2 focus-visible:outline-moss`}
-            aria-label={`Level ${level}${solved ? `, solved in ${clockText(time)}` : locked ? ", locked" : level === next ? ", next" : ""}${roleWords}${triesWords}`}
-            title={`Level ${level}${solved ? `: best ${clockText(time)}` : locked ? ": locked" : ""}${roleWords}${triesWords}`}
+            aria-label={`Level ${level}${solved ? `, solved in ${clockText(time)}` : locked ? ", locked" : level === next ? ", next" : ""}${roleWords}${triesWords}${aboutWords}`}
+            title={`Level ${level}${solved ? `: best ${clockText(time)}` : locked ? ": locked" : ""}${roleWords}${triesWords}${aboutWords}`}
             data-testid={`${prefix}-level`}
             data-level={level}
             data-state={solved ? "solved" : locked ? "locked" : "open"}

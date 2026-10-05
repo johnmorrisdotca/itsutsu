@@ -29,6 +29,7 @@ import { answersFor } from "../src/lib/puzzles/gomoji/code";
 import type { PuzzleKind, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { tapKana } from "./kanaTyping";
 import { drawThrough, placedMaze, wayThrough } from "./meikyuu";
+import { levelOf, playByTapping } from "./tobiishi";
 import { ready } from "./support";
 import { loadEveryWordList } from "./wordLists";
 
@@ -93,6 +94,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "suido", size: 9, level: "medium", seed: 20261001, fill: 12 },
   // A medium heart-shaped maze, in at one door and out at the other, the first forty-two cells of its sixty-three drawn through: the walls, the doors, and a green line most of the way.
   { kind: "meikyuu", size: 2, level: "medium", seed: 102, fill: 42 },
+  // The heart-shaped board at its longest, the first three of its nine jumps made, as a person makes them: pegs on the heart, the dashed goal hole, and gaps where pegs were taken.
+  { kind: "tobiishi", size: 9, level: "hard", seed: 13, fill: 3 },
   // A FreeCell with four cells, the first twenty moves of its winning line played: cards in the cells, runs built, a foundation begun.
   { kind: "freecell", size: 4, level: "medium", seed: 20260930, fill: 20 },
   // A two-suit Spider, the first thirty moves of its winning line played: runs of one suit down the columns, the stock dealt into.
@@ -406,6 +409,10 @@ test.describe("puzzle screenshots", () => {
         // The line drawn as a player draws it: pressed on the start, taken through the cells of the way, let go part way.
         const placed = await placedMaze(page);
         await drawThrough(page, placed, wayThrough(placed).slice(0, scene.fill));
+        filled += scene.fill;
+      } else if (scene.kind === "tobiishi") {
+        // The first jumps of the level's own answer, each made as a person makes one: a tap on the peg, a tap on the hole.
+        await playByTapping(page, levelOf(scene.size, scene.seed).answer, scene.fill);
         filled += scene.fill;
       } else if (scene.kind === "bridges") {
         // Every other bridge of the answer, each tapped as a person lays one: an island, then its partner, once a bridge.

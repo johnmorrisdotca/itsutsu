@@ -10,6 +10,7 @@ import { generateDiagonal, generateJigsaw, generateMoreOrLess, generateNumberPla
 import { generateSuido } from "./suido/generate";
 import { loadSuidoLevelsAt, suidoLevelPuzzle } from "./suido/levels";
 import { loadMeikyuuLevelsFor, meikyuuLevelPuzzle } from "./meikyuu/levels";
+import { tobiishiLevelPuzzle } from "./tobiishi/levels";
 import { suidoLevelOfSeed } from "./suido/seed";
 import { loadWordData } from "./gomoji/wordData";
 import { generateBlackAndWhite } from "./blackAndWhite/generate";
@@ -91,6 +92,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "meikyuu":
       // Not made at all: a fixed level, its number in its size the seed, read from the package's list (`preparePuzzle` loads it).
       return meikyuuLevelPuzzle(size, seed);
+    case "tobiishi":
+      // Not made at all: a fixed level, its number in its length the seed, made again by the package from the level's name, nothing to load.
+      return tobiishiLevelPuzzle(size, seed);
     case "suido":
       // A fixed level, its number the seed, read from its size's list (`preparePuzzle` loads it); any other seed a board of pipes made by the package, aimed at the level's rank among boards of its size (`suido/generate.ts`).
       return suidoLevelOfSeed(seed) === null ? generateSuido(size, level, seed) : suidoLevelPuzzle(size, suidoLevelOfSeed(seed)!);

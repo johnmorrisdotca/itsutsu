@@ -15,6 +15,8 @@ import { bonusRuleOfSeed } from "./mahjong/generate";
 import { isSuidoLevelAt, suidoLevelBand } from "./suido/levelCounts";
 import { isMeikyuuLevelAt, meikyuuLevelBand } from "./meikyuu/levelCounts";
 import { meikyuuSizeFromAddress } from "./meikyuu/sizes";
+import { isTobiishiLevelAt } from "./tobiishi/levelCounts";
+import { tobiishiBand } from "./tobiishi/sizes";
 import { suidoKindOfSeed, suidoLevelOfSeed, suidoLevelSeed } from "./suido/seed";
 import { isSuidoLevelSize, suidoSizeFromAddress, suidoSizeInAddress } from "./suido/sizes";
 import type { Kind as SuidoKind } from "@johnmorrisdotca/suido";
@@ -139,9 +141,12 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   /* A fixed level's seed is its number, and its band follows from it, whatever the address said (`tsunagi/levels.ts`). */
   if (spec.fixedLevels === true) {
     // A Meikyuu's is its number in its size (`meikyuu/levelCounts.ts`); a Tsunagi's, in its own (`tsunagi/levels.ts`).
-    const [isLevel, bandOf] = kind === "meikyuu" ? [isMeikyuuLevelAt, meikyuuLevelBand] : [isTsunagiLevel, tsunagiBand];
+    // A Tobiishi's is its number in its length, whose band is the length's own (`tobiishi/sizes.ts`).
+    const [isLevel, bandOf] =
+      kind === "meikyuu" ? [isMeikyuuLevelAt, meikyuuLevelBand] : kind === "tobiishi" ? [isTobiishiLevelAt, tobiishiBand] : [isTsunagiLevel, tsunagiBand];
     const number = isLevel(size, seedAsked) ? seedAsked : null;
-    return { size, level: number === null ? spec.defaultLevel : bandOf(size, number), seed: number, checks: null, hints: false, strict: false, clock: "none" };
+    // A length is always one band, whether or not the address names a level in it (`levelsAt`).
+    return { size, level: number === null ? (kind === "tobiishi" ? tobiishiBand(size) : spec.defaultLevel) : bandOf(size, number), seed: number, checks: null, hints: false, strict: false, clock: "none" };
   }
   /*
    * A SUIDO LEVEL, asked for by `number=12` or by the seed that names it (`suido/seed.ts`): the same board for
