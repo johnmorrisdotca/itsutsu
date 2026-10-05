@@ -12,6 +12,7 @@ import {
   type KazuPuzzle,
 } from "@johnmorrisdotca/kazu";
 
+import { ordinaryLevel } from "./ordinaryLevel";
 import type { Puzzle, PuzzleCheck, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -49,12 +50,12 @@ function asPuzzle(kind: NumberKind, made: KazuPuzzle): Puzzle {
  * door refuses a seed or a size outside what it makes, where these have always
  * taken any number a caller passed, and the site keeps that.
  */
-export const generateNumberPlace = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("numberPlace", kazuNumberPlace(size, level, seed));
-export const generateDiagonal = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("diagonal", kazuDiagonal(size, level, seed));
-export const generateJigsaw = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("jigsaw", kazuJigsaw(size, level, seed));
-export const generateSumCages = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("sumCages", kazuSumCages(size, level, seed));
-export const generateMoreOrLess = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("moreOrLess", kazuMoreOrLess(size, level, seed));
-export const generateTowers = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("towers", kazuTowers(size, level, seed));
+export const generateNumberPlace = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("numberPlace", kazuNumberPlace(size, ordinaryLevel(level), seed));
+export const generateDiagonal = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("diagonal", kazuDiagonal(size, ordinaryLevel(level), seed));
+export const generateJigsaw = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("jigsaw", kazuJigsaw(size, ordinaryLevel(level), seed));
+export const generateSumCages = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("sumCages", kazuSumCages(size, ordinaryLevel(level), seed));
+export const generateMoreOrLess = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("moreOrLess", kazuMoreOrLess(size, ordinaryLevel(level), seed));
+export const generateTowers = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("towers", kazuTowers(size, ordinaryLevel(level), seed));
 
 /** Whether an answer solves one of the six: Kazu's check, O(cells), the one the server also runs. The reasons are Kazu's words, which are the ones the site has always said. */
 export function checkNumbers(kind: NumberKind, size: number, givens: string, answer: string): PuzzleCheck {

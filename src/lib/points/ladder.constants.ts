@@ -13,8 +13,10 @@ import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
  * measured to take (the mean points its solves were worth, over every level):
  * a size that takes twice the work of its neighbour sits further up, but never
  * a hundred times further. The measurements are in docs/plans/points/PTS-04.
- * The level then adds to the rung: Easy nothing, Medium 10, Hard 25, so a
- * kind's top price is 150. A kind that is only made at one level adds nothing.
+ * The level then adds to the rung: Easy nothing, Medium 10, Hard 25 and, for the
+ * puzzles that have one (the Pencil puzzles and Jirai, 2026-10-05), Extra hard 40,
+ * so a kind's top price is 150: a rung that would go past it stops there, which is
+ * the biggest size's Hard and Extra hard being the same 150. A kind that is only made at one level adds nothing.
  *
  * THE FAMILIES OF 256 LEVELS (Meikyuu, Suido, Tsunagi) are the same for every
  * player, ordered easiest to hardest, so a level's own place in the order
@@ -25,7 +27,7 @@ import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
  */
 
 /** What a level adds to a size's rung, by the level's own name. */
-export const LEVEL_ADD: Readonly<Record<PuzzleLevel, number>> = { easy: 0, medium: 10, hard: 25 };
+export const LEVEL_ADD: Readonly<Record<PuzzleLevel, number>> = { easy: 0, medium: 10, hard: 25, "extra-hard": 40 };
 
 /** The most any puzzle can be worth, and the most a family of fixed levels can. */
 export const PUZZLE_PRICE_MOST = 150;
@@ -51,7 +53,7 @@ export const LEVELS_A_SIZE = 256;
  * hard), not the level's own number, so a solve read back is priced at the
  * middle of its third: levels 43, 128 and 213 of 256.
  */
-export const RANK_OF_THIRD: Readonly<Record<PuzzleLevel, number>> = { easy: 43, medium: 128, hard: 213 };
+export const RANK_OF_THIRD: Readonly<Record<PuzzleLevel, number>> = { easy: 43, medium: 128, hard: 213, "extra-hard": 213 };
 
 /** Rungs by size: what the easiest level of that size is worth. */
 export type Rungs = Readonly<Record<number, number>>;
@@ -114,10 +116,15 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   spider: { how: "size", rungs: { 1: 50, 2: 100, 4: 150 } },
   // A size is how many jumps its shortest way has; its levels within a length are boards and goals, not difficulty, so no level adds.
   tobiishi: { how: "size", rungs: { 3: 50, 6: 85, 9: 125 } },
-  // The pencil puzzles (`pencil/`, 2026-10-05), rungs spaced by the work in a size (cells to mark: 25, 49, 81, 144 for Shikaku; 6, 9, 12 unprinted cells for Regions at its default level; 29.9 safe squares uncovered at a Jirai 9, 14.5, 71 and 150 at 7, 12 and 16). Cross Sums comes in one size and one level, so it is the usual 100.
-  shikaku: { how: "size", rungs: { 5: 50, 7: 70, 9: 90, 12: 125 } },
-  crossSums: { how: "size", rungs: { 10: 100 } },
-  regions: { how: "size", rungs: { 4: 50, 5: 80, 6: 125 } },
+  /*
+   * The pencil puzzles (`pencil/`, 2026-10-05), four levels each (Kazu 1.3.0), rungs spaced by the work in a size: the cells to mark
+   * (Shikaku and Akari 25, 49, 100, 196; Hitori 25, 49, 81, 144; Loop's edges 60, 112, 220; the white cells of Cross Sums about 17 to 85, and
+   * the squares of a Regions board 36 to 144), 50 for the smallest to 125 for the biggest. A size's Hard and Extra hard are both 150 at the top
+   * rung, which the ceiling holds (`PUZZLE_PRICE_MOST`).
+   */
+  shikaku: { how: "size", rungs: { 5: 50, 7: 70, 10: 95, 14: 125 } },
+  crossSums: { how: "size", rungs: { 6: 50, 8: 75, 10: 100, 12: 125 } },
+  regions: { how: "size", rungs: { 6: 50, 8: 75, 10: 100, 12: 125 } },
   jirai: { how: "size", rungs: { 7: 50, 9: 65, 12: 95, 16: 125 } },
   kumimoji: { how: "tiles", full: TILES },
   tsunagi: { how: "ranked", rungs: { 4: 50, 5: 70, 6: 85, 7: 95, 8: 110, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 15: 150 } },

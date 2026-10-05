@@ -20,6 +20,7 @@ import { computerPair } from "@johnmorrisdotca/jarajara/table";
 import { isComputerSeat, playAtTable, readTable, seatName, startTable, tablePairs, undoAtTable } from "@johnmorrisdotca/jarajara/table";
 import type { AwaseSeat, AwaseTable } from "@johnmorrisdotca/jarajara/table";
 import { tilesLeft } from "@johnmorrisdotca/jarajara";
+import { ordinaryLevel } from "@/lib/puzzles/ordinaryLevel";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -86,7 +87,7 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
         <MahjongTableNames
           players={players}
           replacing={kept !== null && readTable(kept)?.over === false ? kept : null}
-          onBegin={(seats: AwaseSeat[]) => keep(startTable(puzzle, seats))}
+          onBegin={(seats: AwaseSeat[]) => keep(startTable({ ...puzzle, level: ordinaryLevel(puzzle.level) }, seats))}
         />
       </section>
     );

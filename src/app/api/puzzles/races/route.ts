@@ -5,7 +5,7 @@ import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/li
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberRow } from "@/lib/auth/currentSession";
 import { matchPath, seatPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_EVERY, isCheckAllowance, levelAskable } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isSeed } from "@/lib/puzzles/random";
 import { createRace } from "@/lib/puzzles/server/puzzleRaceChecks";
@@ -20,7 +20,7 @@ import { createRace } from "@/lib/puzzles/server/puzzleRaceChecks";
 const bodySchema = z.object({
   kind: z.enum(PUZZLE_KIND_LIST as [string, ...string[]]),
   size: z.number().int(),
-  level: z.enum(PUZZLE_LEVEL_LIST as [string, ...string[]]),
+  level: z.enum(PUZZLE_LEVEL_EVERY as [string, ...string[]]),
   seed: z.number().int(),
   language: z.enum(["english", "japanese"]).optional(),
   gameLength: z.enum(["short", "medium", "full"]).optional(),
@@ -45,6 +45,7 @@ export async function POST(request: Request) {
     const parsed = bodySchema.safeParse(body);
     if (!parsed.success) return badRequest("A puzzle, its size, level and seed, the givens and the answer.");
     if (!isSeed(parsed.data.seed)) return badRequest("Not a seed.");
+    if (!levelAskable(parsed.data.kind as PuzzleKind, parsed.data.level as PuzzleLevel)) return unprocessable(`No ${parsed.data.level} ${parsed.data.kind}.`);
     const checksAllowed = parsed.data.checksAllowed ?? null;
     if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
 

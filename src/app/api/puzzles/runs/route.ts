@@ -7,7 +7,7 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { progressFits, runGuessesFit } from "@/lib/puzzles/puzzleProgress";
 import { decodeStepLog, STEP_LOG_LONGEST } from "@/lib/puzzles/stepLog";
-import { PUZZLE_CLOCK_LIST, PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_LIST, PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_EVERY, PUZZLE_SPECS, isCheckAllowance, levelAskable } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isSeed } from "@/lib/puzzles/random";
 import { clockFor } from "@/lib/puzzles/puzzleClock";
@@ -31,7 +31,7 @@ function stepsFor(log: string | undefined, progress: string): string | null {
 const bodySchema = z.object({
   kind: z.enum(PUZZLE_KIND_LIST as [string, ...string[]]),
   size: z.number().int(),
-  level: z.enum(PUZZLE_LEVEL_LIST as [string, ...string[]]),
+  level: z.enum(PUZZLE_LEVEL_EVERY as [string, ...string[]]),
   seed: z.number().int(),
   language: z.enum(["english", "japanese"]).optional(),
   gameLength: z.enum(["short", "medium", "full"]).optional(),
@@ -70,6 +70,7 @@ export async function POST(request: Request) {
     const kind = parsed.data.kind as PuzzleKind;
     const { size, seed, progress } = parsed.data;
     if (!PUZZLE_SPECS[kind].sizes.includes(size)) return unprocessable(`No ${kind} at ${size}.`);
+    if (!levelAskable(kind, parsed.data.level as PuzzleLevel)) return unprocessable(`No ${parsed.data.level} ${kind}.`);
     if (!isSeed(seed)) return badRequest("Not a seed.");
     if (!progressFits(kind, size, progress)) return unprocessable("Not a grid of that size.");
     if (!runGuessesFit(kind, size, parsed.data.level as PuzzleLevel, seed, progress)) return unprocessable("More guesses than that puzzle has.");

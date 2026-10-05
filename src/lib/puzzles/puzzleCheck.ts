@@ -27,6 +27,7 @@ import { isDailyPoolWord } from "./dailyWords/dailyPools";
 import { checkKoushi } from "./koushi/check";
 import { checkNumbers } from "./kazu";
 import { checkTsunagi } from "./tsunagi/check";
+import { ordinaryLevel } from "./ordinaryLevel";
 import { PUZZLE_SPECS } from "./puzzles.constants";
 import type { PuzzleCheck, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
@@ -71,7 +72,7 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "tsunagi":
       return checkTsunagi(size, givens, answer);
     case "kumimoji":
-      return checkKumimoji(size, givens, answer, { ...kumimoji, level: level ?? "medium" });
+      return checkKumimoji(size, givens, answer, { ...kumimoji, level: ordinaryLevel(level ?? "medium") });
     case "koushi":
       return checkKoushi(size, givens, answer, "found", level);
     case "bridges":

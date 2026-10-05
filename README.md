@@ -276,8 +276,8 @@ are the same components (`LevelPicker`, `LevelChips`, `LevelFastestTable`,
 its words.
 
 **Pencil puzzles** 鉛筆 (2026-10-05, `src/lib/puzzles/pencil/`, plan in
-`docs/plans/pencil/README.md`): Shikaku, Cross Sums and Regions (Kazu's Kakuro and Fillomino, under plain names), from Kazu 1.2.0 (`@johnmorrisdotca/kazu`, pinned in `package.json`), on a shelf
-of their own. Kazu makes each board with exactly one answer, checks a finished one and
+`docs/plans/pencil/README.md`): Shikaku, Cross Sums and Regions (Kazu's Kakuro and Fillomino, under plain names), from Kazu 1.3.0 (`@johnmorrisdotca/kazu`, pinned in `package.json`), on a shelf
+of their own, each at four levels, easy to extra hard (the site's first extra hard) and at four sizes. Kazu makes each board with exactly one answer, checks a finished one and
 draws it as SVG; what is the site's own is here: a board is a string of marks, a
 character a cell, so a kept run, the scrubber and the
 finished page work as they do for a Number Place, and a press on the drawing is read

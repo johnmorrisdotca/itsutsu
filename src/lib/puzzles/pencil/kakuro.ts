@@ -6,14 +6,17 @@ import type { PencilEngine } from "./pencil.types";
 
 /**
  * KAKURO, crossword sums: Kazu's (`@johnmorrisdotca/kazu/kakuro`), which makes
- * the one board size it has, 10 by 10.
+ * boards from 5 by 5 to 12 by 12, the first row and column being the totals.
  *
  * The givens are the board cell by cell: `.` for a white cell, else `#` and
  * then the across sum and the down sum, two digits each (`--` for none), five
  * characters a black cell. What a reader writes is a character a cell: `#` for
  * a black cell, `.` for a white one with nothing in it, else the digit 1 to 9.
  */
-export const KAKURO_SIZE = 10;
+/** The sides Kazu makes a board at, counting the row and column of totals: 5 to 12. */
+export const KAKURO_LEAST_SIDE = 5;
+export const KAKURO_MOST_SIDE = 12;
+const isSide = (size: number): boolean => Number.isInteger(size) && size >= KAKURO_LEAST_SIDE && size <= KAKURO_MOST_SIDE;
 export const BLACK = "#";
 const NONE = "--";
 
@@ -22,7 +25,7 @@ const sumOf = (text: string): number | null | undefined => (text === NONE ? null
 
 /** The cells the givens are, or null for givens that are not a board of this size. */
 export function kakuroBoardOf(size: number, givens: string): KakuroBoard | null {
-  if (size !== KAKURO_SIZE) return null;
+  if (!isSide(size)) return null;
   const cells: KakuroCell[] = [];
   let at = 0;
   while (at < givens.length) {
@@ -73,9 +76,9 @@ export function kakuroCodeOf(board: KakuroBoard, values: readonly number[]): str
 
 export const kakuro: PencilEngine = {
   codeLength: (size) => size * size,
-  make(size, _level, seed) {
-    if (size !== KAKURO_SIZE) throw new RangeError(`no Cross Sums at ${size}`);
-    const made = generateKakuro(seed);
+  make(size, level, seed) {
+    if (!isSide(size)) throw new RangeError(`no Cross Sums at ${size}`);
+    const made = generateKakuro(seed, level, size);
     return { givens: givensOf(made), solution: kakuroCodeOf(made, made.solution) };
   },
   reads: (size, givens) => kakuroBoardOf(size, givens) !== null,

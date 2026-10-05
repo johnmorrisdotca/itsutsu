@@ -8,6 +8,7 @@ import { kumimojiRung, nativeReference, price, rankAdd, solveIp, toFive } from "
 import {
   HELP_COST,
   KUMIMOJI_SHORT_BAG,
+  LEVEL_ADD,
   LEVEL_FAMILY_PRICE_MOST,
   PUZZLE_PRICE_LEAST,
   PUZZLE_PRICE_MOST,
@@ -20,6 +21,7 @@ import { Prisma } from "@prisma/client";
 
 const RANKED: readonly PuzzleKind[] = PUZZLE_KIND_LIST.filter((kind) => PUZZLE_PRICING[kind].how === "ranked");
 const LEVELS: readonly PuzzleLevel[] = ["easy", "medium", "hard"];
+const LEVELS_WITH_EXTRA: readonly PuzzleLevel[] = [...LEVELS, "extra-hard"];
 
 /** The sizes a kind is priced at, in series from the easiest to the hardest. */
 function seriesOf(kind: PuzzleKind): readonly (readonly number[])[] {
@@ -75,7 +77,7 @@ describe("the puzzle ladder prices every puzzle", () => {
 
   it("starts every kind's offered sizes at 50 and tops an ordinary one at 150", () => {
     for (const kind of PUZZLE_KIND_LIST) {
-      if (RANKED.includes(kind) || kind === "kumimoji" || kind === "koushi" || kind === "solitaire" || kind === "crossSums") continue;
+      if (RANKED.includes(kind) || kind === "kumimoji" || kind === "koushi" || kind === "solitaire") continue;
       const offered = [...sizesOffered(kind)];
       const lowest = Math.min(...offered.map((size) => price(kind, size, "easy")));
       expect(lowest, kind).toBe(50);
@@ -98,18 +100,28 @@ describe("Tobiishi", () => {
 });
 
 describe("the Pencil puzzles", () => {
-  it("prices Shikaku, Regions and Jirai by size from 50 to 125, and a level adds 0, 10 or 25", () => {
-    expect([5, 7, 9, 12].map((size) => price("shikaku", size, "easy"))).toEqual([50, 70, 90, 125]);
-    expect(price("shikaku", 12, "hard")).toBe(150);
-    expect([4, 5, 6].map((size) => price("regions", size, "easy"))).toEqual([50, 80, 125]);
-    expect(price("regions", 5, "medium")).toBe(90);
-    expect([7, 9, 12, 16].map((size) => price("jirai", size, "easy"))).toEqual([50, 65, 95, 125]);
-    expect(price("jirai", 9, "medium")).toBe(75);
-    expect(price("jirai", 16, "hard")).toBe(150);
+  it("prices Shikaku, Cross Sums and Regions by size from 50 to 125, and a level adds 0, 10, 25 or 40", () => {
+    expect([5, 7, 10, 14].map((size) => price("shikaku", size, "easy"))).toEqual([50, 70, 95, 125]);
+    expect([6, 8, 10, 12].map((size) => price("crossSums", size, "easy"))).toEqual([50, 75, 100, 125]);
+    expect([6, 8, 10, 12].map((size) => price("regions", size, "easy"))).toEqual([50, 75, 100, 125]);
+    expect(LEVELS_WITH_EXTRA.map((level) => price("shikaku", 7, level))).toEqual([70, 80, 95, 110]);
+    expect(LEVELS_WITH_EXTRA.map((level) => price("crossSums", 8, level))).toEqual([75, 85, 100, 115]);
   });
 
-  it("prices Cross Sums, which comes in one size and one level, at the usual 100", () => {
-    expect(price("crossSums", 10, "medium")).toBe(100);
+  it("adds 40 for extra hard, and stops at the ceiling where that would pass it", () => {
+    expect(LEVEL_ADD["extra-hard"]).toBe(40);
+    // The biggest size's Hard is already the ceiling, so its Extra hard is the same 150: a rung never passes it.
+    expect(price("shikaku", 14, "hard")).toBe(150);
+    expect(price("shikaku", 14, "extra-hard")).toBe(PUZZLE_PRICE_MOST);
+    expect(price("crossSums", 10, "extra-hard")).toBe(140);
+  });
+
+  it("offers extra hard only to the puzzles that make it, and prices it only for them in SQL", () => {
+    const offering = PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].levels.includes("extra-hard"));
+    expect(offering).toEqual(expect.arrayContaining(["shikaku", "crossSums", "regions"]));
+    const query = bestSolvesSql(["shikaku", "numberPlace"], Prisma.empty, Prisma.empty);
+    expect(query.sql).toContain("('shikaku', 7, 'extra-hard', 110,");
+    expect(query.sql).not.toContain("('numberPlace', 9, 'extra-hard'");
   });
 });
 

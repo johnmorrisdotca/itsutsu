@@ -59,7 +59,7 @@ export function wordsOf(grid: readonly string[]): string[] {
  * perfect solve at any level leaves five swaps unused: five marks at the end.
  * Medium is the published game's count, ten and fifteen.
  */
-export const LEAST_SWAPS: Record<PuzzleLevel, number> = { easy: 8, medium: 10, hard: 12 };
+export const LEAST_SWAPS: Record<PuzzleLevel, number> = { easy: 8, medium: 10, hard: 12, "extra-hard": 12 };
 export const SPARE_SWAPS = 5;
 
 export function swapsAllowed(level: PuzzleLevel): number {

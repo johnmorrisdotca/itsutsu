@@ -255,7 +255,8 @@ export function PuzzleSetUp({
         {kind === "jirai" ? <JiraiSetUpOptions size={size} {...jirai} /> : null}
         {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
         {spec.levels.length < 2 ? null : (
-        <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Level">
+        /* Four levels (a Pencil puzzle's extra hard) are four chips to a row, so the row is one line high whether a puzzle has three levels or four. */
+        <div className={`grid ${spec.levels.length > 3 ? "grid-cols-4" : "grid-cols-3"} gap-1.5 sm:flex sm:flex-wrap`} role="radiogroup" aria-label="Level">
           {spec.levels.map((each) => (
             <button
               key={each}

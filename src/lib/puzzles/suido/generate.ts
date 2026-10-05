@@ -17,7 +17,7 @@ import { suidoShapeOf } from "./sizes";
  * same size (1 to 100), so a level is a target for it: easy aims at the plainer
  * fifth, medium the middle, hard the upper fifth.
  */
-export const SUIDO_DIFFICULTY: Record<PuzzleLevel, number> = { easy: 20, medium: 50, hard: 80 };
+export const SUIDO_DIFFICULTY: Record<PuzzleLevel, number> = { easy: 20, medium: 50, hard: 80, "extra-hard": 80 };
 
 /** A board of Suido, as one of the site's puzzles: Suido's board of this size and level from this seed. */
 export function generateSuido(size: number, level: PuzzleLevel, seed: number): Puzzle {

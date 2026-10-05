@@ -16,6 +16,7 @@ import type { PartyGame, PartySeat, PartySettings } from "@/lib/puzzles/kumimoji
 import { holdsItsBag, isPartyFor } from "@/lib/puzzles/kumimoji/partyKept";
 import { tileWords } from "@/lib/puzzles/kumimoji/tileWords";
 import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
+import { ordinaryLevel } from "@/lib/puzzles/ordinaryLevel";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import type { OnlineOffer } from "@/lib/party/online/online.types";
 import { freshSeed } from "@/lib/puzzles/random";
@@ -83,7 +84,7 @@ export function KumimojiParty({
   const words = useMemo(() => tileWords(language), [language]);
   const theme = tableTheme(appearance);
   const settings: PartySettings = useMemo(
-    () => ({ size: puzzle.size, level: puzzle.level, seed: puzzle.seed, gameLength: puzzle.gameLength ?? "short", language, doubleSet: puzzle.doubleSet ?? false, diagonals: puzzle.diagonals ?? false, hints }),
+    () => ({ size: puzzle.size, level: ordinaryLevel(puzzle.level), seed: puzzle.seed, gameLength: puzzle.gameLength ?? "short", language, doubleSet: puzzle.doubleSet ?? false, diagonals: puzzle.diagonals ?? false, hints }),
     [puzzle, language, hints],
   );
   const stored = useKeptParty();

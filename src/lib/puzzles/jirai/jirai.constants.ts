@@ -26,6 +26,7 @@ export const JIRAI_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
   easy: "About one square in eight is a mine.",
   medium: "About one square in six is a mine.",
   hard: "About one square in five is a mine: closer to the expert board of the classic game.",
+  "extra-hard": "About one square in five is a mine: closer to the expert board of the classic game.",
 };
 
 export const JIRAI_GRID_DISPLAY: Record<JiraiGrid, { label: string; kanji: string; blurb: string }> = {

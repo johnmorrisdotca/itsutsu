@@ -27,6 +27,7 @@ export const SCRAMBLE_LENGTHS: Record<PuzzleLevel, Record<number, number>> = {
   easy: { 2: 3, 3: 4, 4: 5, 5: 6 },
   medium: { 2: 6, 3: 9, 4: 14, 5: 18 },
   hard: { 2: 11, 3: 25, 4: 40, 5: 60 },
+  "extra-hard": { 2: 11, 3: 25, 4: 40, 5: 60 },
 };
 
 /** The scramble a seed names at this size and level. Part of what a seed means: changing it changes every kept cube. */

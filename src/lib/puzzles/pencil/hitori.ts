@@ -1,22 +1,30 @@
 import { checkHitori, generateHitori, isHitoriBoard, solveHitori, type HitoriBoard } from "@johnmorrisdotca/kazu/hitori";
 
 import type { PuzzleCheck } from "../puzzles.types";
-import { BLANK, SHADE, charFix, charMissing, charWrong, isCodeOf } from "./codes";
+import { BLANK, SHADE, charFix, charMissing, charWrong, isCodeOf, symbolFor, valueOf } from "./codes";
 import type { PencilEngine } from "./pencil.types";
 
 /**
  * HITORI 一人, shade the repeats: Kazu's (`@johnmorrisdotca/kazu/hitori`).
  *
- * The givens are the numbers, a digit a cell. What a reader writes is a
+ * The givens are the numbers, a character a cell (a digit, and a letter past 9: a 12×12 has numbers to 12). What a reader writes is a
  * character a cell: `.` for a number left alone, `#` for one shaded.
  */
 export { SHADE };
 
+/** Whether a side is one Kazu makes a Hitori board at: 4 to 12 (`HITORI_LEAST_SIDE`, `HITORI_MOST_SIDE`). */
+const isSide = (size: number): boolean => Number.isInteger(size) && size >= 4 && size <= 12;
+
 /** The board the givens are, or null for givens that are not one. */
 export function hitoriBoardOf(size: number, givens: string): HitoriBoard | null {
-  if (size !== 5 && size !== 7) return null;
-  if (givens.length !== size * size || !/^[1-7]+$/.test(givens)) return null;
-  const board: HitoriBoard = { size, numbers: [...givens].map(Number) };
+  if (!isSide(size) || givens.length !== size * size) return null;
+  const numbers: number[] = [];
+  for (const character of givens) {
+    const value = valueOf(character);
+    if (value === null || value < 1 || value > size) return null;
+    numbers.push(value);
+  }
+  const board: HitoriBoard = { size, numbers };
   return isHitoriBoard(board) ? board : null;
 }
 
@@ -30,10 +38,10 @@ const codeOf = (shaded: readonly boolean[]): string => shaded.map((one) => (one 
 
 export const hitori: PencilEngine = {
   codeLength: (size) => size * size,
-  make(size, _level, seed) {
-    if (size !== 5 && size !== 7) throw new RangeError(`no Hitori at ${size}`);
-    const made = generateHitori(size, seed);
-    return { givens: made.numbers.join(""), solution: codeOf(made.solution) };
+  make(size, level, seed) {
+    if (!isSide(size)) throw new RangeError(`no Hitori at ${size}`);
+    const made = generateHitori(size, seed, level);
+    return { givens: made.numbers.map((number) => symbolFor(number) ?? "?").join(""), solution: codeOf(made.solution) };
   },
   reads: (size, givens) => hitoriBoardOf(size, givens) !== null,
   blank: (size) => BLANK.repeat(size * size),

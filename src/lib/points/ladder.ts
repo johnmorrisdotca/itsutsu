@@ -45,7 +45,7 @@ export function levelAdd(oneLevel: boolean, level: PuzzleLevel): number {
 }
 
 /** The kinds made at one level only, so a level adds nothing to their rung. */
-const ONE_LEVEL: ReadonlySet<PuzzleKind> = new Set<PuzzleKind>(["freecell", "spider", "tobiishi", "crossSums"]);
+const ONE_LEVEL: ReadonlySet<PuzzleKind> = new Set<PuzzleKind>(["freecell", "spider", "tobiishi"]);
 
 /** The rung of a size, interpolated between the sizes priced where a kind keeps a size it prices no rung for; null where it prices none at all. */
 function rungOf(pricing: Exclude<Pricing, { how: "tiles" }>, size: number): number | null {

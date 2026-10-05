@@ -39,8 +39,8 @@ const codeOf = (size: number, bulbs: readonly number[]): string => Array.from({ 
 
 export const akari: PencilEngine = {
   codeLength: (size) => size * size,
-  make(size, _level, seed) {
-    const made = generateAkari(size, size, seed);
+  make(size, level, seed) {
+    const made = generateAkari(size, size, seed, level);
     const givens = made.cells.map((cell) => (cell === null ? BLANK : cell === false ? BLACK : String(cell))).join("");
     return { givens, solution: codeOf(size, made.solution) };
   },

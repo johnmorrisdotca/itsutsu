@@ -16,9 +16,9 @@ import type { WordCount } from "./words.types";
 const WORD_KINDS = ["gomoji", "gomojiMot", "gomojiWort", "gomojiPop", "gomojiKana"] as const;
 const COUNTS: readonly WordCount[] = [1, 2, 4];
 const EXPECTED: Record<WordCount, Record<PuzzleLevel, number>> = {
-  1: { easy: 8, medium: 7, hard: 6 },
-  2: { easy: 9, medium: 8, hard: 7 },
-  4: { easy: 11, medium: 10, hard: 9 },
+  1: { easy: 8, medium: 7, hard: 6, "extra-hard": 6 },
+  2: { easy: 9, medium: 8, hard: 7, "extra-hard": 7 },
+  4: { easy: 11, medium: 10, hard: 9, "extra-hard": 9 },
 };
 
 describe("the rows of every Gomoji", () => {

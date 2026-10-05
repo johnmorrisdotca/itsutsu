@@ -35,7 +35,7 @@ function styleOf(roll: number): PictureStyle {
   return roll < 0.45 ? "figure" : roll < 0.75 ? "hills" : "cloud";
 }
 
-const RANK: Record<PuzzleLevel, number> = { easy: 0, medium: 1, hard: 2 };
+const RANK: Record<PuzzleLevel, number> = { easy: 0, medium: 1, hard: 2, "extra-hard": 2 };
 
 export function generatePictureLogic(size: number, level: PuzzleLevel, seed: number): Puzzle {
   const random = seededRandom(seed);

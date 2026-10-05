@@ -16,8 +16,8 @@ import { MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SHAPES, meikyuuSizeLabe
 import { TOBIISHI_LEVELS_A_SIZE } from "./tobiishi/levelCounts";
 import { TOBIISHI_SIZES, tobiishiSizeLabel } from "./tobiishi/sizes";
 import { JIRAI_DISPLAY, JIRAI_LEVEL_BLURBS, JIRAI_SIZE_NAMES, JIRAI_SPEC } from "./jirai/jirai.constants";
-import { PENCIL_DISPLAY, PENCIL_KIND_LIST, PENCIL_LEVEL_BLURBS, PENCIL_SIZE_NAMES, PENCIL_SPECS } from "./pencil/pencil.constants";
-import type { PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
+import { PENCIL_DISPLAY, PENCIL_KIND_LIST, PENCIL_SIZE_NAMES, PENCIL_SPECS } from "./pencil/pencil.constants";
+import type { OrdinaryLevel, PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
 /**
  * The puzzles: what each is, how big it comes, and what a reader is told.
@@ -119,14 +119,23 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.jirai,
 ];
 
-export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
+export const PUZZLE_LEVELS = { easy: "easy", medium: "medium", hard: "hard", "extra-hard": "extra-hard" } as const satisfies Record<PuzzleLevel, PuzzleLevel>;
 
-export const PUZZLE_LEVEL_LIST: readonly PuzzleLevel[] = ["easy", "medium", "hard"];
+/**
+ * The three levels almost every puzzle offers, easiest first: what a spec that has levels lists, and what the
+ * tests that make every level of every puzzle loop over. A puzzle's own levels are its spec's `levels`.
+ */
+export const PUZZLE_LEVEL_LIST: readonly OrdinaryLevel[] = ["easy", "medium", "hard"];
+
+/** Every level a puzzle can be asked for at, the fourth first offered by the Pencil puzzles and Jirai (2026-10-05): what a request or an address may name. */
+export const PUZZLE_LEVEL_EVERY: readonly PuzzleLevel[] = ["easy", "medium", "hard", "extra-hard"];
+
 
 export const PUZZLE_LEVEL_DISPLAY: Record<PuzzleLevel, { label: string; kanji: string; blurb: string }> = {
   easy: { label: "Easy", kanji: "初級", blurb: "Every step can be found by looking; nothing has to be tried." },
   medium: { label: "Medium", kanji: "中級", blurb: "Looking gets you most of the way; somewhere you have to try one thing and see." },
   hard: { label: "Hard", kanji: "上級", blurb: "More than one place where you have to try something and see." },
+  "extra-hard": { label: "Extra hard", kanji: "超級", blurb: "Many places where you have to try something and see, and the tries lead to more tries." },
 };
 
 /**
@@ -500,6 +509,15 @@ export function drawnOnBoard(kind: PuzzleKind): boolean {
  */
 export const PUZZLE_CODE_LONGEST = Math.max(...Object.values(PUZZLE_SPECS).map((spec) => spec.mostCells));
 
+/**
+ * Whether a request may name this level for this kind: extra hard only where the kind offers it, since a puzzle made
+ * at a level it has no table for would be priced and kept as a level it never had. The three ordinary ones are not
+ * refused here, as they never were: a kept solve has always named whichever of them its browser played.
+ */
+export function levelAskable(kind: PuzzleKind, level: PuzzleLevel): boolean {
+  return level !== "extra-hard" || PUZZLE_SPECS[kind].levels.includes("extra-hard");
+}
+
 /** The levels a puzzle can be made at, at this size: the kind's levels, less any this size cannot have (`levelsAt`). */
 export function levelsFor(kind: PuzzleKind, size: number): readonly PuzzleLevel[] {
   const spec = PUZZLE_SPECS[kind];
@@ -705,12 +723,14 @@ const WORD_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
   easy: "One of the commonest words, and eight guesses to find it in.",
   medium: "A wider list of words, and seven guesses.",
   hard: "A wider list of words, and six guesses, the classic count.",
+  "extra-hard": "A wider list of words, and six guesses, the classic count.",
 };
 /** Kana: the free grey word is one of the level's rows (`layout.ts`), so easy and medium are a guess shorter than their rows. */
 const KANA_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
   easy: "One of the commonest words, a free grey word and seven guesses: eight rows.",
   medium: "A wider list of words, a free grey word and six guesses: seven rows.",
   hard: "A wider list of words, six guesses and no free word.",
+  "extra-hard": "A wider list of words, six guesses and no free word.",
 };
 export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<PuzzleLevel, string>>>> = {
   gomoji: WORD_LEVEL_BLURBS,
@@ -794,7 +814,6 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
     medium: "Solvable in 10 swaps, with 15 to do it in, and the commonest words.",
     hard: "Solvable in 12 swaps, with 17 to do it in, and a wider list of words.",
   },
-  ...PENCIL_LEVEL_BLURBS,
   jirai: JIRAI_LEVEL_BLURBS,
 };
 

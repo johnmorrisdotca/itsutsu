@@ -25,6 +25,7 @@ import { generateKumimoji } from "./kumimoji/generate";
 import type { KumimojiLanguage, KumimojiOptions } from "./kumimoji/kumimoji.types";
 import { loadTileWords } from "./kumimoji/tileWords";
 import { loadDailyPools } from "./dailyWords/dailyPools";
+import { ordinaryLevel } from "./ordinaryLevel";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 import { loadPopGuesses } from "./gomoji/popWords";
 
@@ -68,7 +69,7 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       return tsunagiPuzzle(size, seed);
     case "kumimoji":
       // Its bag is laid out as a crossword first, from its word list (`loadTileWords`); see its generator.
-      return generateKumimoji(size, level, seed, kumimoji);
+      return generateKumimoji(size, ordinaryLevel(level), seed, kumimoji);
     case "koushi":
       // One size, the lattice: `size` is always its 5, and the level decides the swaps.
       return generateKoushi(level, seed);

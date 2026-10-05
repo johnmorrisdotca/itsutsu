@@ -40,8 +40,15 @@ export type PuzzleKind =
   | "regions"
   | "jirai";
 
-/** How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone. */
-export type PuzzleLevel = "easy" | "medium" | "hard";
+/** The three levels every puzzle that has levels offers, easiest first: what a table kept for a puzzle that has no extra hard is keyed by. */
+export type OrdinaryLevel = "easy" | "medium" | "hard";
+
+/**
+ * How hard a puzzle was made: by what the solver needed to finish it, never by a count of givens alone.
+ * `extra-hard` (2026-10-05) is the fourth, which only the Pencil puzzles and Jirai offer: it is spelled as
+ * an address spells it, and as Kazu and Jirai spell it, so a level is the same word from the package to the page.
+ */
+export type PuzzleLevel = OrdinaryLevel | "extra-hard";
 
 /**
  * A puzzle's countdown, chosen on its set-up: none (the clock counts up, as it

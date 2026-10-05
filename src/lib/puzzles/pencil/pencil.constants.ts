@@ -19,7 +19,8 @@ import type { PencilKind } from "./pencil.types";
  * without the coined name, because the puzzles are made here by Kazu's code, none of
  * them reproducing a published grid. See `RULES_ATTRIBUTION`.
  */
-const THREE_LEVELS: readonly PuzzleLevel[] = ["easy", "medium", "hard"];
+/** Every level the Pencil puzzles make (Kazu 1.3.0): extra hard is the site's first (2026-10-05). */
+const FOUR_LEVELS: readonly PuzzleLevel[] = ["easy", "medium", "hard", "extra-hard"];
 
 /** Every pencil puzzle the site offers, in the order its family shows them: the one list the dispatch, the gates and the tests read. */
 export const PENCIL_KIND_LIST: readonly PencilKind[] = ["shikaku", "crossSums", "regions"];
@@ -29,17 +30,20 @@ export function isPencilKind(kind: string): kind is PencilKind {
   return (PENCIL_KIND_LIST as readonly string[]).includes(kind);
 }
 
+/*
+ * SIZES, all four levels at every one (Kazu 1.3.0 makes each at each, measured by `docs/plans/pencil/README.md`:
+ * the slowest board of any kind, size and level took a browser about half a second). Four boards a puzzle on the
+ * set-up, which is all it holds without moving (`picker.test.ts`), and the sizes are the ones Kazu says it offers
+ * (`SHIKAKU_SIZES` and the rest, which `pencil.test.ts` holds these to) because they are the ones it measured at.
+ * A size Kazu can make and the set-up does not offer is not in `sizes` either: nothing was kept at one.
+ */
 export const PENCIL_SPECS: Record<PencilKind, PuzzleSpec> = {
-  // 144: a 12×12's cells, one character each, a letter a rectangle in the answer.
-  shikaku: { sizes: [5, 7, 9, 12], offered: [5, 7, 9, 12], defaultSize: 7, levels: THREE_LEVELS, defaultLevel: "medium", mostCells: 144 },
-  // 500: a 10×10 of cells written as `.` for white and five characters for black (`#` and the two sums); its answer is 100.
-  crossSums: { sizes: [10], offered: [10], defaultSize: 10, levels: ["medium"], defaultLevel: "medium", mostCells: 500 },
-  /*
-   * 36 at most: Kazu makes none larger (`FILLOMINO_GENERATOR_MOST_CELLS`). A 6×6 is easy only: its medium puzzles
-   * took a browser a second and a half at the worst (measured over twenty seeds), and a page that stops for that
-   * long is not a puzzle that opens.
-   */
-  regions: { sizes: [4, 5, 6], offered: [4, 5, 6], defaultSize: 5, levels: ["easy", "medium"], levelsAt: { 6: ["easy"] }, defaultLevel: "easy", mostCells: 36 },
+  // 196: a 14×14's cells, one character each, a letter a rectangle in the answer.
+  shikaku: { sizes: [5, 7, 10, 14], offered: [5, 7, 10, 14], defaultSize: 7, levels: FOUR_LEVELS, defaultLevel: "medium", mostCells: 196 },
+  // 720: a 12×12 of cells written as `.` for white and five characters for black (`#` and the two sums), at the very most; its answer is 144.
+  crossSums: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: FOUR_LEVELS, defaultLevel: "medium", mostCells: 720 },
+  // 144: a 12×12's cells, a character each (a number is one character, to nine and then a letter, and `pencil.test.ts` makes the biggest boards at every level to see none outgrows it).
+  regions: { sizes: [6, 8, 10, 12], offered: [6, 8, 10, 12], defaultSize: 8, levels: FOUR_LEVELS, defaultLevel: "medium", mostCells: 144 },
 };
 
 /** What each size is for, under its picture on the size tiles. */
@@ -47,29 +51,20 @@ export const PENCIL_SIZE_NAMES: Record<PencilKind, Record<number, { label: strin
   shikaku: {
     5: { label: "Quick", kanji: "速" },
     7: { label: "Standard", kanji: "定番" },
-    9: { label: "Long", kanji: "長" },
-    12: { label: "Longest", kanji: "最長" },
+    10: { label: "Long", kanji: "長" },
+    14: { label: "Longest", kanji: "最長" },
   },
   crossSums: {
-    10: { label: "Standard", kanji: "定番" },
+    6: { label: "Quick", kanji: "速" },
+    8: { label: "Standard", kanji: "定番" },
+    10: { label: "Long", kanji: "長" },
+    12: { label: "Longest", kanji: "最長" },
   },
   regions: {
-    4: { label: "Quick", kanji: "速" },
-    5: { label: "Standard", kanji: "定番" },
-    6: { label: "Long", kanji: "長" },
-  },
-};
-
-/** What a level means for the pencil puzzles that have more than one: Kazu's generation profiles, not a rating of how hard they feel. */
-export const PENCIL_LEVEL_BLURBS: Partial<Record<PencilKind, Partial<Record<PuzzleLevel, string>>>> = {
-  shikaku: {
-    easy: "Mostly small rectangles: a number has only a few places it can reach.",
-    medium: "A mix of small and larger rectangles.",
-    hard: "Larger rectangles, so each number has more places it could stretch to.",
-  },
-  regions: {
-    easy: "More numbers printed, so most regions are half drawn already.",
-    medium: "Fewer numbers printed: some regions have to be worked out from the ones beside them.",
+    6: { label: "Quick", kanji: "速" },
+    8: { label: "Standard", kanji: "定番" },
+    10: { label: "Long", kanji: "長" },
+    12: { label: "Longest", kanji: "最長" },
   },
 };
 
@@ -91,7 +86,7 @@ export const PENCIL_DISPLAY: Record<PencilKind, VariantCopy> = {
       "Remove, under the board, lets you tap a rectangle to take it away. Undo takes back the last change.",
       "Every puzzle has exactly one answer. The clock starts on your first rectangle and stops when the last cell is covered rightly. Check tells you how many rectangles are wrong, never which.",
     ],
-    board: "7×7 is the usual size. 5×5 is quick; 9×9 and 12×12 are longer. Easy puzzles have mostly small rectangles; hard ones have larger ones.",
+    board: "7×7 is the usual size. 5×5 is quick; 10×10 and 14×14 are longer. At every size there are four levels, from easy, where every rectangle can be found by looking, to extra hard.",
   },
   crossSums: {
     label: "Cross Sums",
@@ -110,7 +105,7 @@ export const PENCIL_DISPLAY: Record<PencilKind, VariantCopy> = {
       "Every puzzle has exactly one answer. The clock starts on your first digit and stops when every run is right. Check tells you how many cells are wrong, never which.",
       "Cross Sums is known elsewhere as Kakuro, Kakkuro and Cross-sums.",
     ],
-    board: "Cross Sums comes in one size here, 10×10, with runs of two to nine cells. It is best on a tablet or a computer, where the cells are big enough to tap.",
+    board: "8×8 is the usual size, counting the row and column of sums. 6×6 is quick; 10×10 and 12×12 are longer, with runs of up to nine cells, and best on a tablet or a computer, where the cells are big enough to tap.",
   },
   regions: {
     label: "Regions",
@@ -129,6 +124,6 @@ export const PENCIL_DISPLAY: Record<PencilKind, VariantCopy> = {
       "Every puzzle has exactly one answer. The clock starts on your first number and stops when the grid is right. Check tells you how many cells are wrong, never which.",
       "Regions is known elsewhere as Fillomino and as Allied Occupation.",
     ],
-    board: "5×5 is the usual size. 4×4 is quick; 6×6 is longer, and easy only.",
+    board: "8×8 is the usual size. 6×6 is quick; 10×10 and 12×12 are longer. At every size there are four levels, from easy, with most numbers printed, to extra hard, with as few as the one answer allows.",
   },
 };

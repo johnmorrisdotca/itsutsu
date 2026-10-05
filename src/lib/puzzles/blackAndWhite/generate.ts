@@ -14,7 +14,7 @@ import { countSolutions, guessDepth, someSolution, type Grid } from "./solve";
  * Deterministic in the seed, like every generator here.
  */
 
-const LEVELS: Record<PuzzleLevel, number> = { easy: 0, medium: 1, hard: Infinity };
+const LEVELS: Record<PuzzleLevel, number> = { easy: 0, medium: 1, hard: Infinity, "extra-hard": Infinity };
 
 export function generateBlackAndWhite(size: number, level: PuzzleLevel, seed: number): Puzzle {
   const random = seededRandom(seed);

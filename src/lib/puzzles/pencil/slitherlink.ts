@@ -40,8 +40,8 @@ const codeOf = (size: number, edges: readonly number[]): string => Array.from({ 
 
 export const slitherlink: PencilEngine = {
   codeLength: edgesOf,
-  make(size, _level, seed) {
-    const made = generateSlitherlink(size, size, seed);
+  make(size, level, seed) {
+    const made = generateSlitherlink(size, size, seed, level);
     return { givens: made.clues.map((clue) => (clue === null ? BLANK : String(clue))).join(""), solution: codeOf(size, made.solution) };
   },
   reads: (size, givens) => slitherlinkBoardOf(size, givens) !== null,

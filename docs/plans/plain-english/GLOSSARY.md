@@ -344,6 +344,7 @@ them (`points/ladder.ts`, `points/gamePoints.ts`).
 | Label | Where | Word used, and why |
 |---|---|---|
 | Pencil puzzles 鉛筆 | the family's title | the plain word for the thing every one of them is solved with |
+| Extra hard 超級 | a level's chip (the fourth after Easy 初級, Medium 中級 and Hard 上級), the line over the board, My games, the fastest tables | the site's first fourth level (2026-10-05): sentence case and two words, "extra hard" in a line of facts ("8×8, extra hard"). Not "Expert", "Insane" or "Hardest"; its address and Kazu's and Jirai's own spelling is `extra-hard` |
 | Remove | under a Shikaku board | the usual word; a press then takes a rectangle off. Not "Erase" or "Clear" (a Gomoji's Clear is its row) |
 | Cross Sums · Regions | the games' names | plain English for what Kazu calls Kakuro and Fillomino; each says "known elsewhere as ..." on its rules page and nowhere else. Shikaku stays: an ordinary Japanese word (John, 2026-10-05) |
 | rectangle · cell | what Check counts ("2 rectangles are wrong, 1 still to draw") | each puzzle's own noun, so a Shikaku never counts "cells" |

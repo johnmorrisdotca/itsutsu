@@ -39,7 +39,7 @@ import { leastSwaps, swapsSolving } from "./leastSwaps";
 const WORD_TRIES = 20_000;
 const SCRAMBLE_TRIES = 400;
 
-const LEVEL_SALT: Record<PuzzleLevel, number> = { easy: 0, medium: 1_000_003, hard: 2_000_006 };
+const LEVEL_SALT: Record<PuzzleLevel, number> = { easy: 0, medium: 1_000_003, hard: 2_000_006, "extra-hard": 2_000_006 };
 
 export function generateKoushi(level: PuzzleLevel, seed: number, lang: GomojiLanguage = "en", kind: PuzzleKind = "koushi"): Puzzle {
   for (let bump = 0; bump < 50; bump += 1) {

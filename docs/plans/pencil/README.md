@@ -6,8 +6,11 @@
 `pencil-puzzles-ships-four-rectangles-cross-sums-regions-and-jirai`; the rest are waiting on
 `kazu-harder-akari-slitherlink-and-hitori-and-easy-medium-hard-and-extra-hard-for` and
 `pencil-puzzles-an-extra-hard-level-on-the-site-and-akari-slitherlink-and-hitori`).
-Source package: `@johnmorrisdotca/kazu` 1.2.0, pinned exactly in `package.json`
-(github.com/johnmorrisdotca/kazu, MIT, no dependencies).
+Source package: `@johnmorrisdotca/kazu` 1.3.0, pinned exactly in `package.json`
+(github.com/johnmorrisdotca/kazu, MIT, no dependencies). 1.3.0 (2026-10-05) made the six grid generators
+random instead of a few layouts, gave each four levels (easy, medium, hard, extra hard, rated by solving the board
+the way a person does) and more sizes; **a seed makes a different board from 1.2.0's**, which the site takes as it
+comes (a beta: no compatibility layer, a kept run of the old boards may not fit its seed's new board).
 
 Kazu 1.2.0 added twelve grid-puzzle engines beside the six number puzzles the site
 already played from 1.0.0. The six are unchanged: 8,280 puzzles (every kind, size and
@@ -42,8 +45,8 @@ log and a replay need the board as a string. The site draws Kazu's SVG in its bo
 | Givens | A character a cell: Shikaku's areas (base 36), Regions' numbers; Cross Sums' are longer than its cells (`#` and two two-digit sums for a black one), so its black cells are read off the code | each kind's file |
 | The answer is the code | Handed in as it stands; the check restates the rules through Kazu (`checkShikaku`, `checkKakuro`, `checkFillomino`), never the solver that made the board | `puzzleCheck.ts` |
 | A seed with no puzzle | Kazu throws when it cannot prove a board (Cross Sums seed 97: one in a hundred). The seed names the next that has one, as a winnable Solitaire's does; the page puts the address right | `generate.ts` |
-| Sizes and levels | Shikaku 5, 7, 9, 12 at easy, medium, hard; Regions 4, 5, 6 at easy and medium (6×6 easy only: its medium took up to 1.7 seconds to make); Cross Sums 10 | `pencil.constants.ts` |
-| Points | A puzzle's own score is five a cell the answer decides (`work`), less fifty a help; its IP is its price on the ladder (`ladder.constants.ts`, PTS-05): Shikaku 50, 70, 90, 125 at 5, 7, 9, 12; Regions 50, 80, 125 at 4, 5, 6; Cross Sums 100 (one size, one level); Jirai 50, 65, 95, 125 at 7, 9, 12, 16; a level adds 0, 10 or 25. Rungs are spaced by the work in a size | `ladder.constants.ts`, `puzzlePoints.ts` |
+| Sizes and levels | Four levels at every size, from easy (the rules alone, most numbers printed) to **extra hard** (the site's first: it needs the most supposing, the fewest numbers). Shikaku 5, 7, 10, 14; Cross Sums and Regions 6, 8, 10, 12 (Kazu's `SHIKAKU_SIZES`, `KAKURO_SIZES`, `FILLOMINO_SIZES`, which `pencil.test.ts` holds the site to). Measured on a Mac in node over eight seeds a kind, size and level, the slowest board took 0.54 s (Cross Sums 12, extra hard) and every other under 0.35 s | `pencil.constants.ts` |
+| Points | A puzzle's own score is five a cell the answer decides (`work`), less fifty a help; its IP is its price on the ladder (`ladder.constants.ts`, PTS-05): Shikaku 50, 70, 95, 125 at 5, 7, 10, 14; Regions 50, 75, 100, 125 at 6, 8, 10, 12; Cross Sums 50, 75, 100, 125 at 6, 8, 10, 12; Jirai 50, 65, 95, 125 at 7, 9, 12, 16; a level adds 0, 10, 25 or, for extra hard, 40, never past the ceiling of 150, so the biggest size's Hard and Extra hard are both 150. Rungs are spaced by the work in a size | `ladder.constants.ts`, `puzzlePoints.ts` |
 | Hints, Check and Show | As a Number Place's: against the answer this tab holds; Show is paid for from the Check allowance; Hint is chosen on the set-up | `PencilSolve.tsx` |
 
 ## Jirai 地雷 (board row `jirai-minesweeper-on-the-site-in-pencil-puzzles`)

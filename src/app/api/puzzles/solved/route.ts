@@ -17,7 +17,8 @@ import { helpOffered, SOLVE_HELP_LIST, SOLVE_HELPS, type SolveHelp } from "@/lib
 import { decodeLayout } from "@johnmorrisdotca/tsunagi";
 import { cubeOfSeed } from "@/lib/puzzles/cube/generate";
 import { cardDealOfSeed } from "@/lib/puzzles/cardDeals";
-import { PUZZLE_CLOCK_LIST, PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_LIST, PUZZLE_SPECS, isCheckAllowance } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_LIST, PUZZLE_CODE_LONGEST, PUZZLE_KIND_LIST, PUZZLE_LEVEL_EVERY, PUZZLE_SPECS, isCheckAllowance, levelAskable } from "@/lib/puzzles/puzzles.constants";
+import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { awardXp } from "@/lib/xp/awardXp";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
 import { awardTourBonuses } from "@/lib/xp/xpTour";
@@ -65,7 +66,7 @@ function stepsOfEnded(kind: (typeof PUZZLE_KIND_LIST)[number], size: number, log
 const bodySchema = z.object({
   kind: z.enum(PUZZLE_KIND_LIST as [string, ...string[]]),
   size: z.number().int(),
-  level: z.enum(PUZZLE_LEVEL_LIST as [string, ...string[]]),
+  level: z.enum(PUZZLE_LEVEL_EVERY as [string, ...string[]]),
   givens: z.string().max(PUZZLE_CODE_LONGEST),
   answer: z.string().max(PUZZLE_CODE_LONGEST),
   /** The browser's own clock, kept only to say it back: nothing here is timed. */
@@ -143,6 +144,7 @@ export async function POST(request: Request) {
     const kind = parsed.data.kind as (typeof PUZZLE_KIND_LIST)[number];
     const spec = PUZZLE_SPECS[kind];
     if (!spec.sizes.includes(size)) return unprocessable(`No ${kind} at ${size}.`);
+    if (!levelAskable(kind, parsed.data.level as PuzzleLevel)) return unprocessable(`No ${parsed.data.level} ${kind}.`);
     if (givens.length > spec.mostCells || answer.length > spec.mostCells) return unprocessable("Not a grid of that size.");
     /* A card game's deal is the plain shuffle of its seed (`cardDealOfSeed`), so the one it
        names is checked in a pass: a won game of some other deal is not a game of this one. */
@@ -151,7 +153,7 @@ export async function POST(request: Request) {
     }
     /* A cube's scramble is its seed's (`cube/generate.ts`), so the one it names is checked the same way:
        a solve of some other cube is not a solve of this one. */
-    if (kind === "cube" && (parsed.data.seed === undefined || !isSeed(parsed.data.seed) || cubeOfSeed(size, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number], parsed.data.seed) !== givens)) {
+    if (kind === "cube" && (parsed.data.seed === undefined || !isSeed(parsed.data.seed) || cubeOfSeed(size, parsed.data.level as PuzzleLevel, parsed.data.seed) !== givens)) {
       return unprocessable("Not the cube of that seed.");
     }
 
@@ -161,12 +163,12 @@ export async function POST(request: Request) {
     if (checksAllowed !== null && checksUsed > checksAllowed) return unprocessable("More checks than the allowance.");
     // A word puzzle's only help is its Head start; every other puzzle's hints are the ones it says it pressed.
     const words = spec.helps === false;
-    const headStart = parsed.data.headStart === true && offersHeadStart(kind, parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number]);
+    const headStart = parsed.data.headStart === true && offersHeadStart(kind, parsed.data.level as PuzzleLevel);
     const hintsUsed = words ? (headStart ? HEAD_START_HINTS : 0) : (parsed.data.hintsUsed ?? 0);
 
     const clock = clockFor(kind, parsed.data.clock);
     const limit = clockLimitMs(clock);
-    const level = parsed.data.level as (typeof PUZZLE_LEVEL_LIST)[number];
+    const level = parsed.data.level as PuzzleLevel;
 
     if (parsed.data.outOfTime === true) {
       const seed = parsed.data.seed;

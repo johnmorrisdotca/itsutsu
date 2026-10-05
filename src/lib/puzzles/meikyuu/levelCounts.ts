@@ -1,4 +1,4 @@
-import type { PuzzleLevel } from "../puzzles.types";
+import type { OrdinaryLevel } from "../puzzles.types";
 import { isMeikyuuSize, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SIZES } from "./sizes";
 
 /**
@@ -36,7 +36,7 @@ export function isMeikyuuLevelAt(size: number, level: number): boolean {
 }
 
 /** Which third of a size a level sits in, as the easy, medium and hard every puzzle is filed under: the lists of solves, the fastest times and the feed all speak in those words. */
-export function meikyuuLevelBand(size: number, level: number): PuzzleLevel {
+export function meikyuuLevelBand(size: number, level: number): OrdinaryLevel {
   const count = meikyuuLevelCount(size) || 1;
   const third = (level - 1) / count;
   return third < 1 / 3 ? "easy" : third < 2 / 3 ? "medium" : "hard";

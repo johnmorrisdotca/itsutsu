@@ -28,7 +28,7 @@ export const FLAG = "f";
 export const OUTSIDE = "-";
 
 /** The share of its squares that are mines, by level: Jirai's own beginner is 12%, intermediate 16% and expert 21%. */
-export const JIRAI_DENSITY: Record<PuzzleLevel, number> = { easy: 0.12, medium: 0.16, hard: 0.2 };
+export const JIRAI_DENSITY: Record<PuzzleLevel, number> = { easy: 0.12, medium: 0.16, hard: 0.2, "extra-hard": 0.2 };
 
 export type JiraiRecipe = { settings: Settings; first: number; cells: string };
 

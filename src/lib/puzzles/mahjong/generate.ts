@@ -1,6 +1,7 @@
 import { bonusRuleOfSeed, freshAwaseSeed, generateAwase } from "@johnmorrisdotca/jarajara/awase";
 import type { MahjongBonusRule } from "@johnmorrisdotca/jarajara";
 
+import { ordinaryLevel } from "../ordinaryLevel";
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { freshSeed, type Random } from "../random";
 
@@ -17,7 +18,7 @@ export { bonusRuleOfSeed };
 
 /** A deal of Mahjong, as one of the site's puzzles: Jarajara's deal of Awase from this seed. */
 export function generateMahjong(size: number, level: PuzzleLevel, seed: number): Puzzle {
-  return { kind: "mahjong", ...generateAwase(size, level, seed) };
+  return { kind: "mahjong", ...generateAwase(size, ordinaryLevel(level), seed) };
 }
 
 /** A new seed for a deal under this rule, the usual rule's drawn as every puzzle's are. */

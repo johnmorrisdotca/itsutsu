@@ -42,7 +42,7 @@ import { YOTSUGO_MORE_GUESSES } from "./yotsugo";
 export const LEAST_SPAN = 8;
 
 /** One word's rows at each level, the same at every length and in every language. */
-export const LEVEL_ROWS: Readonly<Record<PuzzleLevel, number>> = { easy: 8, medium: 7, hard: 6 };
+export const LEVEL_ROWS: Readonly<Record<PuzzleLevel, number>> = { easy: 8, medium: 7, hard: 6, "extra-hard": 6 };
 
 /** The rows more than one word's that several words give at every level: a guess more for each word past the first, three for a Yotsugo's four. */
 export const MORE_ROWS: Readonly<Record<WordCount, number>> = { 1: 0, 2: 1, 4: YOTSUGO_MORE_GUESSES };

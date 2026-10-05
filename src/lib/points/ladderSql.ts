@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+import { PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import { price, nativeReference } from "./ladder";
 import { HELP_COST, KUMIMOJI_TILES_LEAST, KUMIMOJI_TILES_MOST, LEVEL_ADD, PUZZLE_PRICING } from "./ladder.constants";
 
@@ -18,6 +19,9 @@ import { HELP_COST, KUMIMOJI_TILES_LEAST, KUMIMOJI_TILES_MOST, LEVEL_ADD, PUZZLE
  */
 const LEVELS: readonly PuzzleLevel[] = ["easy", "medium", "hard"];
 
+/** The levels a kind's price rows are written for: the three every kind has, and extra hard for the kinds that offer it (a Pencil puzzle, Jirai), so no other kind's table grows. */
+const levelsOf = (kind: PuzzleKind): readonly PuzzleLevel[] => (PUZZLE_SPECS[kind].levels.includes("extra-hard") ? [...LEVELS, "extra-hard"] : LEVELS);
+
 /** Kumimoji's size is the hand it opens with, which prices nothing: its rung is read from the tiles in the bag. */
 const KUMIMOJI_SIZE_KEY = 0;
 
@@ -32,7 +36,7 @@ function rows(kinds: readonly PuzzleKind[]): string {
     }
     for (const size of Object.keys(pricing.rungs).map(Number)) {
       const reference = nativeReference(kind, size);
-      for (const level of LEVELS) {
+      for (const level of levelsOf(kind)) {
         out.push(`('${kind}', ${size}, '${level}', ${price(kind, size, level)}, ${reference === null ? "NULL" : reference}::float8, 0::float8)`);
       }
     }

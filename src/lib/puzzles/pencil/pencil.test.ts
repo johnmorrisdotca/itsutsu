@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { PuzzleLevel } from "../puzzles.types";
 import { pencilEngine } from "./engines";
@@ -6,7 +6,7 @@ import { HELD_ENGINES } from "./held";
 import { HELD_PENCIL_KIND_LIST } from "./held.constants";
 import { generatePencil } from "./generate";
 import { entered, FRESH_UI, moved, pressed, type PencilPress, type PencilUi } from "./input";
-import { isPencilKind, PENCIL_KIND_LIST } from "./pencil.constants";
+import { isPencilKind, PENCIL_KIND_LIST, PENCIL_SPECS } from "./pencil.constants";
 import { shikakuCodeOf, shikakuPlace, shikakuRectsOf, shikakuRemove } from "./shikaku";
 import { slitherlinkEdgesOf } from "./slitherlink";
 import type { AnyPencilKind, PencilKind } from "./pencil.types";
@@ -17,12 +17,12 @@ const EVERY_KIND: readonly AnyPencilKind[] = [...PENCIL_KIND_LIST, ...HELD_PENCI
 
 /** The sizes and levels each kind is tested at: the ones the site offers, a size and a level at a time. */
 const CASES: Record<AnyPencilKind, { sizes: readonly number[]; levels: readonly PuzzleLevel[] }> = {
-  shikaku: { sizes: [5, 7, 9, 12], levels: ["easy", "medium", "hard"] },
+  shikaku: { sizes: PENCIL_SPECS.shikaku.sizes, levels: PENCIL_SPECS.shikaku.levels },
   akari: { sizes: [5, 7, 9, 12], levels: ["medium"] },
   slitherlink: { sizes: [4, 5, 7, 10], levels: ["medium"] },
   hitori: { sizes: [5, 7], levels: ["medium"] },
-  regions: { sizes: [4, 5, 6], levels: ["easy"] },
-  crossSums: { sizes: [10], levels: ["medium"] },
+  regions: { sizes: PENCIL_SPECS.regions.sizes, levels: PENCIL_SPECS.regions.levels },
+  crossSums: { sizes: PENCIL_SPECS.crossSums.sizes, levels: PENCIL_SPECS.crossSums.levels },
 };
 
 describe.each(EVERY_KIND)("%s is made, read, checked and solved", (kind) => {
@@ -157,13 +157,23 @@ describe("Slitherlink's code", () => {
 });
 
 describe("a seed with no puzzle names the next that has one", () => {
-  it("makes a Cross Sums from seed 97, which Kazu cannot prove a board for, as the seed after it", () => {
-    expect(() => pencilEngine("crossSums").make(10, "medium", 97)).toThrow();
-    const made = generatePencil("crossSums", 10, "medium", 97);
-    expect(made.seed).toBeGreaterThan(97);
-    expect(made.seed).toBeLessThan(97 + 40);
-    expect(made).toEqual(generatePencil("crossSums", 10, "medium", made.seed));
-    expect(pencilEngine("crossSums").check(10, made.givens, made.solution)).toEqual({ ok: true });
+  it("makes a Cross Sums from seed 97 at every level, which Kazu 1.2.0 could not prove a board for", () => {
+    for (const level of PENCIL_SPECS.crossSums.levels) {
+      const made = generatePencil("crossSums", 10, level, 97);
+      expect(made.seed).toBe(97);
+      expect(pencilEngine("crossSums").check(10, made.givens, made.solution)).toEqual({ ok: true });
+    }
+  });
+
+  it("names the next seed that has a puzzle where an engine cannot make one", () => {
+    const real = pencilEngine("regions");
+    const refuses = vi.spyOn(real, "make").mockImplementationOnce(() => {
+      throw new Error("no board from this seed");
+    });
+    const made = generatePencil("regions", 6, "easy", 40);
+    expect(made.seed).toBe(41);
+    expect(made).toEqual(generatePencil("regions", 6, "easy", 41));
+    refuses.mockRestore();
   });
 
   it("keeps the seed it was asked for wherever that seed has a puzzle", () => {
@@ -171,8 +181,8 @@ describe("a seed with no puzzle names the next that has one", () => {
   });
 
   it("refuses a size it does not make rather than looking for another seed", () => {
-    expect(() => generatePencil("crossSums", 8, "medium", 5)).toThrow(/no Cross Sums at 8/);
-    expect(() => HELD_ENGINES.hitori.make(6, "medium", 5)).toThrow(/no Hitori at 6/);
+    expect(() => generatePencil("crossSums", 13, "medium", 5)).toThrow(/no Cross Sums at 13/);
+    expect(() => HELD_ENGINES.hitori.make(3, "medium", 5)).toThrow(/no Hitori at 3/);
   });
 });
 

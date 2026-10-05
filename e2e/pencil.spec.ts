@@ -6,6 +6,7 @@ import { pencilEngine } from "../src/lib/puzzles/pencil/engines";
 import type { PencilKind } from "../src/lib/puzzles/pencil/pencil.types";
 import { shikakuRectsOf } from "../src/lib/puzzles/pencil/shikaku";
 import { PUZZLE_DISPLAY } from "../src/lib/puzzles/puzzles.constants";
+import type { PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { codeOnPage, makeNextMark, makeWrongMark, pressCell } from "./pencil";
 import { freshPuzzleSeed, ready } from "./support";
 
@@ -18,15 +19,16 @@ import { freshPuzzleSeed, ready } from "./support";
  */
 const CASES = [
   { kind: "shikaku", size: 5, level: "easy", rule: "its area", name: "Shikaku", elsewhere: null },
-  { kind: "crossSums", size: 10, level: "medium", rule: "no digit may appear twice", name: "Cross Sums", elsewhere: "Kakuro" },
-  { kind: "regions", size: 4, level: "easy", rule: "Two regions of the same size", name: "Regions", elsewhere: "Fillomino" },
-] as const satisfies readonly { kind: PencilKind; size: number; level: "easy" | "medium" | "hard"; rule: string; name: string; elsewhere: string | null }[];
+  { kind: "crossSums", size: 6, level: "hard", rule: "no digit may appear twice", name: "Cross Sums", elsewhere: "Kakuro" },
+  // The site's first extra hard level, solved the way a reader solves it: set up from its chip, then pressed to the end.
+  { kind: "regions", size: 6, level: "extra-hard", rule: "Two regions of the same size", name: "Regions", elsewhere: "Fillomino" },
+] as const satisfies readonly { kind: PencilKind; size: number; level: PuzzleLevel; rule: string; name: string; elsewhere: string | null }[];
 
 async function openPlay(page: Page, kind: PencilKind, size: number, level: string, extra = "") {
   await page.goto(`/games/${PUZZLE_SLUGS[kind]}/play?size=${size}&level=${level}&seed=${freshPuzzleSeed()}${extra}`);
   await ready(page, "puzzle-play");
   const seed = Number(await page.getByTestId("puzzle-play").getAttribute("data-seed"));
-  return generatePuzzle(kind, size, level as "easy", seed);
+  return generatePuzzle(kind, size, level as PuzzleLevel, seed);
 }
 
 for (const { kind, size, level, rule, name, elsewhere } of CASES) {
@@ -155,13 +157,13 @@ test.describe("what is each puzzle's own", () => {
   });
 
   test("Regions: a printed number cannot be written over, and the keyboard enters a number", async ({ page }) => {
-    const puzzle = await openPlay(page, "regions", 4, "easy");
+    const puzzle = await openPlay(page, "regions", 6, "easy");
     const printed = [...puzzle.givens].findIndex((character) => character !== ".");
     const empty = [...puzzle.givens].findIndex((character) => character === ".");
-    await pressCell(page, "regions", 4, printed);
+    await pressCell(page, "regions", 6, printed);
     await page.getByTestId("puzzle-key-2").click();
     expect(await codeOnPage(page)).toBe(puzzle.givens);
-    await pressCell(page, "regions", 4, empty);
+    await pressCell(page, "regions", 6, empty);
     await page.getByTestId("puzzle-grid").locator("[tabindex='0']").focus();
     await page.keyboard.press("3");
     await expect.poll(async () => (await codeOnPage(page))[empty]).toBe("3");

@@ -11,7 +11,7 @@ import type { KlondikeRules } from "@johnmorrisdotca/toranpu/klondike";
  */
 
 /** Easy, medium and hard: as many passes through the stock as you like, three, or one. */
-export const SOLITAIRE_PASSES: Record<PuzzleLevel, number> = { easy: Infinity, medium: 3, hard: 1 };
+export const SOLITAIRE_PASSES: Record<PuzzleLevel, number> = { easy: Infinity, medium: 3, hard: 1, "extra-hard": 1 };
 
 /** The seeds of deals dealt as they fall, winnable or not: the top quarter of the range, clear of the daily words' block. */
 export const ANY_DEAL_BLOCK = { from: 1_600_000_000, size: SEED_MOST - 1_600_000_000 + 1 } as const;
