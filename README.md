@@ -224,8 +224,12 @@ in Japan, so the Japanese name is ナンプレ); addresses kept their first slug
 **Logic puzzles** 理詰め (2026-09-28) is the shelf for grid puzzles that are not
 a Number Place, opened with **Bridges** 橋 (`src/lib/puzzles/bridges/`): our
 version of the island-and-bridge puzzle Nikoli first printed in 1990, under a
-name of our own. Islands at 7×7, 9×9, 11×11 and 13×13 are grown from an
-answer and kept only when the solver finds that answer and no other; easy
+name of our own. Islands at 7×7, 9×9, 11×11 and 13×13, and 17×17, 21×21 and
+25×25 on a second shelf of the set-up, are grown from an
+answer and kept only when the solver finds that answer and no other (the big
+boards are grown with longer runs and a level's own share of double bridges,
+because grown like the small ones one layout in three hundred and seventy-five
+at 25×25 has one answer); easy
 yields to counting, medium needs the joining rule (no group of islands may be
 closed off), hard needs a bridge tried. The answer and a run kept half way are
 one drawing, a character a cell (`- = | H` for the bridges), which the server

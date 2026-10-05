@@ -96,7 +96,8 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   // Sizes 5, 6, 8 and 10 are made and kept but not offered: between the measured ones.
   hiddenStones: { how: "size", rungs: { 4: 50, 5: 65, 6: 75, 7: 90, 8: 100, 9: 105, 10: 110, 12: 125 } },
   blackAndWhite: { how: "size", rungs: { 6: 50, 8: 80, 10: 105, 12: 125 } },
-  bridges: { how: "size", rungs: { 7: 50, 9: 85, 11: 105, 13: 125 } },
+  // Rungs by the log of the cells (49 to 625), 50 at 7×7 and 125 at 25×25.
+  bridges: { how: "size", rungs: { 7: 50, 9: 65, 11: 75, 13: 85, 17: 100, 21: 115, 25: 125 } },
   // Rungs by the log of the cells to decide (25 to 2,500), 50 at 5×5 and 125 at 50×50; 40×40 and 50×50 come at easy and medium only, so 135 at most.
   pictureLogic: { how: "size", rungs: { 5: 50, 10: 75, 15: 85, 20: 95, 40: 120, 50: 125 } },
   // The square of four tiles across is the browser tests' own, never offered.

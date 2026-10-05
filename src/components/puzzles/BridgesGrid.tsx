@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type MouseEvent, type PointerEvent } from "react";
+import { memo, useRef, useState, type MouseEvent, type PointerEvent } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { BridgesBoard } from "@/lib/puzzles/bridges/bridges.types";
@@ -143,13 +143,7 @@ export function BridgesGrid({
           data-aim={aim === null ? undefined : aim.span}
         >
           <svg viewBox={`0 0 ${size} ${size}`} className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
-            {/* The paper's faint rules, as every puzzle's paper has, so a reader can count along a row. */}
-            {Array.from({ length: size - 1 }, (_, at) => (
-              <g key={at} stroke={theme.line} strokeWidth={0.02} opacity={0.3}>
-                <line x1={at + 1} y1={0} x2={at + 1} y2={size} />
-                <line x1={0} y1={at + 1} x2={size} y2={at + 1} />
-              </g>
-            ))}
+            <Rules size={size} line={theme.line} />
             {spans.map((span, at) => {
               const count = counts[at] ?? 0;
               if (count === 0) return null;
@@ -162,13 +156,16 @@ export function BridgesGrid({
                 </g>
               );
             })}
-            {aim === null ? null : (
-              <g stroke={BRIDGES_LOOK.chosen} strokeWidth={BRIDGES_LOOK.stroke} strokeDasharray="0.15 0.12" strokeLinecap="round" data-testid="bridges-aim">
-                {strokes(aim.span, 1).map((line, k) => (
-                  <line key={k} {...line} />
-                ))}
-              </g>
-            )}
+            {/* The bridge a drag would lay, as a path that is always there and has its line or none: a node added to the page here would restyle all of it at every step of a drag (`shadedPath`, in the Picture logic code, says why). */}
+            <path
+              d={aim === null ? "" : aimPath(strokes(aim.span, 1)[0]!)}
+              fill="none"
+              stroke={BRIDGES_LOOK.chosen}
+              strokeWidth={BRIDGES_LOOK.stroke}
+              strokeDasharray="0.15 0.12"
+              strokeLinecap="round"
+              data-testid="bridges-aim"
+            />
             {islands.map((island, at) => {
               const has = bridgesAt(board, counts, at);
               const full = has === island.count;
@@ -228,3 +225,20 @@ export function BridgesGrid({
     </div>
   );
 }
+
+/** A line as a path's `d`. */
+const aimPath = ({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: number }) => `M${x1} ${y1}L${x2} ${y2}`;
+
+/** The paper's faint rules, as every puzzle's paper has, so a reader can count along a row: drawn once for a size, never again for a bridge laid or aimed. */
+const Rules = memo(function Rules({ size, line }: { size: number; line: string }) {
+  return (
+    <>
+      {Array.from({ length: size - 1 }, (_, at) => (
+        <g key={at} stroke={line} strokeWidth={0.02} opacity={0.3}>
+          <line x1={at + 1} y1={0} x2={at + 1} y2={size} />
+          <line x1={0} y1={at + 1} x2={size} y2={at + 1} />
+        </g>
+      ))}
+    </>
+  );
+});

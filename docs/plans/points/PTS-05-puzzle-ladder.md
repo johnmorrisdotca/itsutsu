@@ -62,7 +62,7 @@ Measured table (rung at the smallest to largest offered size, Easy):
 | More or Less, Towers 4 to 7 | 50, 80, 105, 125 |
 | Hidden Stones 4, 7, 9, 12 | 50, 90, 105, 125 |
 | Black and White 6, 8, 10, 12 | 50, 80, 105, 125 |
-| Bridges 7, 9, 11, 13 | 50, 85, 105, 125 |
+| Bridges 7, 9, 11, 13, 17, 21, 25 | 50, 65, 75, 85, 100, 115, 125 |
 | Picture logic 5, 10, 15, 20, 40, 50 | 50, 75, 85, 95, 120, 125 (40 and 50 at easy and medium only) |
 | Mahjong 8, 9, 10, 15 | 50, 90, 110, 125 |
 | Cube 2 to 5 | 50, 85, 105, 125 |

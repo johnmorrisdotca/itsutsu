@@ -290,12 +290,23 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   koushi: { sizes: [5], offered: [5], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: KOUSHI_ANSWER_MOST, helps: false, lattice: true },
   /*
    * Islands and bridges on a square of water, a character a cell for the
-   * givens and for the drawing (`bridges/code.ts`): 169 at 13×13. Every size
-   * and level is made in milliseconds (`bridges/generate.ts` has the
-   * measurements), so the four offered are the four a phone can play, the two
-   * big ones zoomed (`TsunagiViewport`).
+   * givens and for the drawing (`bridges/code.ts`): 169 at 13×13, 625 at
+   * 25×25. Every size and level is made in well under a second
+   * (`bridges/generate.ts` has the measurements). Seven sizes and room for four
+   * tiles, so they are a shelf (`shelves`): 7 to 13, then 13 to 25. 13×13 and
+   * bigger are zoomed on a phone (`TsunagiViewport`), where a cell of the whole
+   * board fitted to 390 pixels is about twenty-seven wide at 13×13 and fourteen
+   * at 25×25.
    */
-  bridges: { sizes: [7, 9, 11, 13], offered: [7, 9, 11, 13], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 169 },
+  bridges: {
+    sizes: [7, 9, 11, 13, 17, 21, 25],
+    offered: [7, 9, 11, 13],
+    defaultSize: 9,
+    levels: PUZZLE_LEVEL_LIST,
+    defaultLevel: "medium",
+    mostCells: 625,
+    shelves: true,
+  },
   /*
    * A picture to uncover from its row and column clues (`pictureLogic/`). The
    * givens are the two panels of clues, `2 × size × ⌈size/2⌉` characters (400
@@ -650,7 +661,10 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     7: { label: "Quick", kanji: "速" },
     9: { label: "Standard", kanji: "定番" },
     11: { label: "Long", kanji: "長" },
-    13: { label: "Longest", kanji: "最長" },
+    13: { label: "Longer", kanji: "長大" },
+    17: { label: "Huge", kanji: "巨大" },
+    21: { label: "Giant", kanji: "巨" },
+    25: { label: "Biggest", kanji: "超大" },
   },
   pictureLogic: {
     5: { label: "Quick", kanji: "速" },
@@ -1184,7 +1198,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Easy yields to counting alone. Medium needs the joining rule as well: no group of islands may be closed off from the rest, so two 1s are never joined to each other. Hard asks you, somewhere, to try a bridge and see.",
     ],
     board:
-      "9×9 is the usual size. 7×7 is quick; 11×11 and 13×13 are long evenings, and on a phone they zoom, with Fit and the arrows under the board.",
+      "9×9 is the usual size. 7×7 is quick; 11×11 and 13×13 are long evenings, and 17×17, 21×21 and 25×25 are for the patient. On a phone the bigger boards zoom, with Fit and the arrows under the board.",
   },
   /*
    * OUR OWN NAME FOR IT. The grid picture puzzle has many names, and some of

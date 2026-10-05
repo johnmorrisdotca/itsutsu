@@ -126,6 +126,33 @@ describe("generating Bridges", () => {
     expect(generateBridges(9, "medium", 4243).givens).not.toBe(one.givens);
   });
 
+  it("makes the boards up to 13×13 as they were first made, so a seed kept, raced or linked still makes the puzzle it did", () => {
+    expect(generateBridges(7, "easy", 1).givens).toBe("3..3..1.3...4.........1.....4....4........3.2....");
+    expect(generateBridges(13, "hard", 2).givens).toBe(
+      ".............3.........3.2.......2.4.1.3.........1.3.1.......6.3.............13.4......6.4...........1......2..3.3..14.7..3....2......2.3.3..4.2.2......3..3.............",
+    );
+  });
+
+  it("makes the three biggest in a browser's time, at every level, over whatever seeds it is given", () => {
+    for (const size of [17, 21, 25]) {
+      for (const level of PUZZLE_LEVEL_LIST) {
+        const started = performance.now();
+        for (let seed = 200; seed < 210; seed += 1) generateBridges(size, level, seed);
+        expect((performance.now() - started) / 10, `${size}×${size} ${level}`).toBeLessThan(500);
+      }
+    }
+  });
+
+  it("is checked by the server in one pass over a 25×25's 625 cells", () => {
+    const puzzle = generateBridges(25, "medium", 12);
+    expect(PUZZLE_SPECS.bridges.mostCells).toBeGreaterThanOrEqual(puzzle.givens.length);
+    const started = performance.now();
+    for (let again = 0; again < 20; again += 1) expect(checkBridges(25, puzzle.givens, puzzle.solution)).toEqual({ ok: true });
+    expect((performance.now() - started) / 20).toBeLessThan(10);
+    const board = boardOf(puzzle.givens, 25)!;
+    expect(board.islands.length).toBeGreaterThan(80);
+  });
+
   it("makes a hard 13×13 in the time a browser can spare", () => {
     const started = performance.now();
     for (const seed of [31, 32, 33, 34, 35]) generateBridges(13, "hard", seed);

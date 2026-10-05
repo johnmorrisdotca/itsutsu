@@ -1,8 +1,8 @@
 import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { seededRandom, type Random } from "../random";
-import type { Island } from "./bridges.types";
+import type { BridgesBoard, Island } from "./bridges.types";
 import { boardOf, encodeBridges, encodeIslands } from "./code";
-import { levelOf, solutionOf } from "./solve";
+import { glance, levelOf, openOptions, settled, solutionOf } from "./solve";
 
 /**
  * Making a Bridges puzzle, in the browser, from a seed.
@@ -23,6 +23,15 @@ import { levelOf, solutionOf } from "./solve";
  * 13×13 is a few dozen layouts, milliseconds, and `MOST_LAYOUTS` is far past
  * what any seed needs.
  *
+ * THE BOARDS PAST 13×13 (17×17, 21×21 and 25×25, 2026-10-05) were made the
+ * same way and measured: one layout in thirty at 17×17, one in a hundred at 21×21
+ * and one in three hundred and seventy-five at 25×25 was a puzzle, which put
+ * a 25×25 at a second or two and sometimes eight. They are grown another way
+ * (`SHORT_RUNS_UP_TO`, `DOUBLES`), and each layout is looked at before it is
+ * searched (`mayBe`). Over a hundred seeds each, on a laptop, the median
+ * and the slowest: 17×17 1 to 7 ms and 31, 21×21 2 to 18 ms and 91, 25×25 5
+ * to 35 ms and 273.
+ *
  * No two islands are ever side by side, as in every printed puzzle: a bridge
  * needs water to stand on, and the drawing (`code.ts`) has nowhere to put one.
  */
@@ -33,14 +42,39 @@ const ISLAND_SHARE = 0.2;
 /** How many layouts to grow before settling for the nearest level, so a seed can never run on. */
 const MOST_LAYOUTS = 3000;
 
+/**
+ * The biggest side grown the way the small boards were from the first, by
+ * short runs more often than long ones (`growLayout`). Past it the runs are
+ * any length, because measured at 21×21 and 25×25 the short ones made a layout
+ * with one answer in about three hundred and seventy-five (a 25×25 took a
+ * second or two to find), and any length made one in twelve at 25×25: the long
+ * bridges tie the board together, so far fewer of its numbers fit two
+ * pictures. The boards up to 13×13 are made exactly as they were, so the
+ * seed of one kept, raced or linked still makes the puzzle it did.
+ */
+export const SHORT_RUNS_UP_TO = 13;
+
+/**
+ * How often a bridge of a big board is a double, by the level wanted. Doubles
+ * are what counting finds at a glance, so a layout with many of them is easy
+ * and one with few needs the joining rule or a trial. Measured at 25×25 over
+ * fifteen hundred layouts each: at three doubles in four one layout in four is
+ * an easy puzzle (one in forty with one in two), at one in five one in eighteen
+ * is a hard one (one in forty-three with one in two). A 25×25 of any level is
+ * then made in about a tenth of a second, a few tenths at worst.
+ */
+const DOUBLES: Record<PuzzleLevel, number> = { easy: 0.75, medium: 0.55, hard: 0.2 };
+
 export function generateBridges(size: number, level: PuzzleLevel, seed: number): Puzzle {
   const random = seededRandom(seed);
   let fallback: { givens: string; solution: string } | null = null;
   for (let attempt = 0; attempt < MOST_LAYOUTS; attempt += 1) {
-    const islands = growLayout(size, random);
+    const islands = growLayout(size, random, size <= SHORT_RUNS_UP_TO, size <= SHORT_RUNS_UP_TO ? 0.45 : DOUBLES[level]);
     if (islands === null) continue;
     const givens = encodeIslands(size, islands);
     const board = boardOf(givens, size)!;
+    // On the big boards, a layout that cannot be the level asked is dropped by looking, before the search that proves it has one answer.
+    if (size > SHORT_RUNS_UP_TO && !mayBe(board, level)) continue;
     const found = levelOf(board);
     if (found === null) continue;
     const made = { givens, solution: encodeBridges(board, solutionOf(board)!) };
@@ -50,6 +84,23 @@ export function generateBridges(size: number, level: PuzzleLevel, seed: number):
   }
   if (fallback === null) throw new Error(`No ${size}×${size} Bridges puzzle came from seed ${seed}.`);
   return { kind: "bridges", size, level, seed, ...fallback };
+}
+
+/**
+ * Whether a layout can be a puzzle at this level, by the two readings that
+ * make a level (`levelOf`) and none of its search: counting alone settling it
+ * is easy, counting and joining settling it is medium, and neither is hard.
+ * Only a reading made to save work: a layout it lets through is still judged
+ * by `levelOf`, and one it turns away would not have been that level.
+ */
+function mayBe(board: BridgesBoard, level: PuzzleLevel): boolean {
+  const counting = openOptions(board);
+  const easy = glance(board, counting, false) && settled(counting);
+  if (level === "easy") return easy;
+  if (easy) return false;
+  const joining = openOptions(board);
+  const medium = glance(board, joining) && settled(joining);
+  return level === "medium" ? medium : !medium;
 }
 
 /** The four ways a bridge can run from an island: right, down, left, up. */
@@ -65,7 +116,7 @@ const STEPS = [
  * straight run of water from one already placed, never beside another island
  * and never across a bridge. Null when the grid would not take enough of them.
  */
-export function growLayout(size: number, random: Random): Island[] | null {
+export function growLayout(size: number, random: Random, shortRuns = true, doubles = 0.45): Island[] | null {
   const want = Math.max(4, Math.round(size * size * ISLAND_SHARE));
   // 0 water, 1 island, 2 a bridge across, 3 a bridge down.
   const ground = new Uint8Array(size * size);
@@ -79,7 +130,7 @@ export function growLayout(size: number, random: Random): Island[] | null {
     counts.set(cell, 0);
   };
   const lay = (from: number, to: number, cells: readonly number[], across: boolean) => {
-    const bridges = random() < 0.45 ? 2 : 1;
+    const bridges = random() < doubles ? 2 : 1;
     for (const cell of cells) ground[cell] = across ? 2 : 3;
     counts.set(from, counts.get(from)! + bridges);
     counts.set(to, counts.get(to)! + bridges);
@@ -105,8 +156,8 @@ export function growLayout(size: number, random: Random): Island[] | null {
       path.push(cellOf(r, c));
     }
     if (stops.length === 0) continue;
-    // A short run more often than a long one, as a printed puzzle has.
-    const stop = stops[Math.floor(random() * random() * stops.length)]!;
+    // A short run more often than a long one, as a printed puzzle has; on the biggest boards, any length (`SHORT_RUNS_UP_TO`).
+    const stop = shortRuns ? stops[Math.floor(random() * random() * stops.length)]! : stops[Math.floor(random() * stops.length)]!;
     add(stop.cell);
     lay(from, stop.cell, stop.path, dr === 0);
   }

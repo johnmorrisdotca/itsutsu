@@ -21,6 +21,12 @@ import { TsunagiViewport } from "./TsunagiViewport";
 import { useStepHistory } from "./useStepHistory";
 
 /**
+ * From this side the board opens at twice the box (Fit shows it whole): fitted to a phone a 21×21 has islands seventeen pixels
+ * across and a 25×25 fourteen, too small for their numbers to be read or an island pressed.
+ */
+const OPENS_ZOOMED_FROM = 21;
+
+/**
  * Solving Bridges: tap an island and then one in line with it for a bridge,
  * the same two again for a second, and again to take both away; or drag from
  * one to the other, which does the same. A bridge that would cross another is
@@ -29,9 +35,9 @@ import { useStepHistory } from "./useStepHistory";
  * them joined. The answer handed in, and the run kept half way, is the
  * drawing itself (`bridges/code.ts`).
  *
- * The two big boards are looked at through the zoom Tsunagi's big boards have
- * (`TsunagiViewport`): Fit, the arrows, the wheel, and the view nudged when a
- * drag nears an edge.
+ * The big boards, 11×11 and up, are looked at through the zoom Tsunagi's big
+ * boards have (`TsunagiViewport`): Fit, the arrows, the wheel, and the view
+ * nudged when a drag nears an edge.
  */
 export function BridgesSolve({
   puzzle,
@@ -148,7 +154,7 @@ export function BridgesSolve({
     <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-drawing={drawing} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <TsunagiViewport size={size} name="bridges">
+        <TsunagiViewport size={size} name="bridges" startZoom={size >= OPENS_ZOOMED_FROM ? 2 : undefined}>
           <BridgesGrid board={board} counts={counts} chosen={live ? chosen : null} wrong={hinting.marked} done={done !== null || history.reviewing} onTap={tap} onDrag={drag} />
         </TsunagiViewport>
       </SolvePaused>
