@@ -17,7 +17,7 @@ import { codeOnPage, makeNextMark, makeWrongMark, pressCell, pressEdge } from ".
  * no such element: Kazu draws a board as one SVG and Jirai's squares are
  * buttons of their own (`jirai-cell`). So the three steps those specs make — a
  * first entry, one wrong entry, and what Show and Hint then do to it — are made
- * here for the four, by pressing the board as a reader does, and the loops call
+ * here for all seven, by pressing the board as a reader does, and the loops call
  * these for them. Every kind still goes through every step; none is skipped.
  *
  * What each board offers instead of a `puzzle-cell`:
@@ -27,7 +27,7 @@ import { codeOnPage, makeNextMark, makeWrongMark, pressCell, pressEdge } from ".
  */
 export type DrawnKind = PencilKind | "jirai";
 
-/** Whether a kind is one of the four these helpers move. */
+/** Whether a kind is one of the seven these helpers move. */
 export function isDrawn(kind: PuzzleKind): kind is DrawnKind {
   return kind === "jirai" || isPencilKind(kind);
 }

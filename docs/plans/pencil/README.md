@@ -40,7 +40,7 @@ log and a replay need the board as a string. The site draws Kazu's SVG in its bo
 | Decision | What | Where |
 | --- | --- | --- |
 | One engine interface | `PencilEngine`: make, read, blank, fits, check, solve, wrong, missing, fix, work. The server's check and the browser's play are the same functions | `lib/puzzles/pencil/pencil.types.ts`, one file a kind |
-| A board is a string of marks | A code is one character a mark place: a cell for most, an edge for Loop (`2 × n × (n + 1)`), held, `progressLength`. So a kept run, a step log, the scrubber and a finished page's replay work unchanged | `codes.ts`, `puzzleProgress.ts` (`progressLength`, `progressFits`) |
+| A board is a string of marks | A code is one character a mark place: a cell for most, an edge for Loop (`2 × n × (n + 1)`), `progressLength`. So a kept run, a step log, the scrubber and a finished page's replay work unchanged | `codes.ts`, `puzzleProgress.ts` (`progressLength`, `progressFits`) |
 | Shikaku's rectangles | A letter a rectangle, touching rectangles never alike, so a run of one letter is one rectangle | `shikaku.ts` |
 | Givens | A character a cell: Shikaku's areas (base 36), Regions' numbers; Cross Sums' are longer than its cells (`#` and two two-digit sums for a black one), so its black cells are read off the code | each kind's file |
 | The answer is the code | Handed in as it stands; the check restates the rules through Kazu (`checkShikaku`, `checkKakuro`, `checkFillomino`), never the solver that made the board | `puzzleCheck.ts` |

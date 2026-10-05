@@ -5,7 +5,7 @@
  */
 export const BLANK = ".";
 
-/** The characters a mark is written with: an Akari bulb, a Slitherlink loop edge and a Hitori shade, which are held (`held.constants.ts`) and written here so the presses on them need no engine. */
+/** The characters a mark is written with: an Akari bulb, a Loop (Slitherlink) edge and a Hitori shade, written here so the presses on them (`input.ts`) need no engine. */
 export const BULB = "o";
 export const EDGE = "#";
 export const SHADE = "#";
