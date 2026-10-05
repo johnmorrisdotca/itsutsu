@@ -136,7 +136,9 @@ test.describe("what is each puzzle's own", () => {
   test("Shikaku: a drag from one corner to the other draws the rectangle, and Remove takes it off", async ({ page }) => {
     const puzzle = await openPlay(page, "shikaku", 5, "easy");
     const rect = shikakuRectsOf(5, puzzle.solution)!.find((each) => each.width * each.height > 1)!;
-    const box = (await page.getByTestId("puzzle-grid").locator("svg").boundingBox())!;
+    const svg = page.getByTestId("puzzle-grid").locator("svg");
+    await svg.scrollIntoViewIfNeeded();
+    const box = (await svg.boundingBox())!;
     const point = (cell: number) => ({ x: box.x + (((cell % 5) * 48 + 2 + 24) / (5 * 48 + 4)) * box.width, y: box.y + (((Math.floor(cell / 5)) * 48 + 2 + 24) / (5 * 48 + 4)) * box.height });
     const from = point(rect.y * 5 + rect.x);
     const to = point((rect.y + rect.height - 1) * 5 + rect.x + rect.width - 1);
