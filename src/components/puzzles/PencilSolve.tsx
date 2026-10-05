@@ -168,7 +168,7 @@ export function PencilSolve({
   const disabled = startedAt === null || pausing.paused;
 
   return (
-    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-code={code} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-code={code} data-wrong={[...hinting.marked].join(",")} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <PencilBoard

@@ -4,6 +4,7 @@ import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { boardOf } from "../src/lib/puzzles/bridges/code";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { PUZZLE_KIND_LIST, PUZZLE_SPECS } from "../src/lib/puzzles/puzzles.constants";
+import { firstEntry, isDrawn } from "./puzzleMoves";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
@@ -27,7 +28,7 @@ for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !=
     await expect(check).toHaveAttribute("data-left", "1");
     await expect(check).toBeDisabled();
 
-    // The clock starts on the first entry: a number in an empty cell, or a stone — on a cell nothing was printed in.
+    // The clock starts on the first entry: a number in an empty cell, or a stone — on a cell nothing was printed in; on a drawn board, a mark pressed on it.
     if (kind === "bridges") {
       // A bridge, laid by tapping two islands in line: the first island and the partner of any span it has.
       const islands = page.getByTestId("bridges-island");
@@ -37,7 +38,10 @@ for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !=
     } else if (kind === "pictureLogic") await page.getByTestId("picture-cell").first().click();
     else if (kind === "hiddenStones") await page.getByTestId("puzzle-cell").first().click();
     else if (kind === "blackAndWhite") await page.locator('[data-testid="puzzle-cell"][data-given="false"]').first().click();
-    else {
+    else if (isDrawn(kind)) {
+      // The Pencil puzzles and Jirai are drawn, with no `puzzle-cell` to press: `puzzleMoves.ts` presses their boards.
+      await firstEntry(page, kind, size, seed);
+    } else {
       await page.locator('[data-testid="puzzle-cell"][data-value=""]').first().click();
       await page.getByTestId("puzzle-key-1").click();
     }

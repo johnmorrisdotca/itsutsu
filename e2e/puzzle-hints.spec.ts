@@ -9,6 +9,7 @@ import { decodeStones } from "../src/lib/puzzles/hiddenStones/code";
 import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { PUZZLE_KIND_LIST, PUZZLE_SPECS } from "../src/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "../src/lib/puzzles/puzzles.types";
+import { HINT_STEP, changeEntry, distance, expectMarked, expectUnmarked, isDrawn, wrongEntry } from "./puzzleMoves";
 import { freshPuzzleSeed, ready } from "./support";
 import { loadEveryWordList } from "./wordLists";
 
@@ -52,6 +53,8 @@ function marked(page: Page, kind: PuzzleKind, index: number) {
 
 /** Puts one wrong entry on the grid, and says which cell (on Bridges, which span). */
 async function oneWrong(page: Page, kind: PuzzleKind, size: number, seed: number): Promise<number> {
+  // A drawn board (the Pencil puzzles, Jirai) has no cell to press by testid: `puzzleMoves.ts` presses it.
+  if (isDrawn(kind)) return wrongEntry(page, kind, size, seed);
   if (kind === "bridges") {
     // One bridge more than the answer lays on a span: on an empty span one tap, on a span of one bridge two taps.
     // Nothing is drawn yet, so it crosses nothing; a puzzle with no empty span still has a span of one or fewer.
@@ -134,18 +137,21 @@ for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !=
     const show = page.getByTestId("puzzle-show");
 
     const index = await oneWrong(page, kind, size, seed);
-    const cell = marked(page, kind, index);
+    const cell = isDrawn(kind) ? null : marked(page, kind, index);
     await expect(show).toBeEnabled();
     await show.click();
-    await expect(cell).toHaveAttribute("data-wrong", "true");
+    if (isDrawn(kind)) await expectMarked(page, index);
+    else await expect(cell!).toHaveAttribute("data-wrong", "true");
     // Paid for from the checks, as a Check is.
     await expect(page.getByTestId("puzzle-check")).toHaveAttribute("data-left", "2");
 
     // Changed, and the mark goes with the change.
-    if (kind === "bridges") await tapBridge(page, size, seed, index);
-    else if (kind === "hiddenStones" || kind === "blackAndWhite" || kind === "pictureLogic") await cell.click();
+    if (isDrawn(kind)) await changeEntry(page, kind, size, index);
+    else if (kind === "bridges") await tapBridge(page, size, seed, index);
+    else if (kind === "hiddenStones" || kind === "blackAndWhite" || kind === "pictureLogic") await cell!.click();
     else await page.getByTestId("puzzle-key-clear").click();
-    await expect(cell).not.toHaveAttribute("data-wrong", "true");
+    if (isDrawn(kind)) await expectUnmarked(page, index);
+    else await expect(cell!).not.toHaveAttribute("data-wrong", "true");
   });
 
   test(`${kind}: with hints chosen, Hint puts one right cell in`, async ({ page }) => {
@@ -157,6 +163,15 @@ for (const kind of PUZZLE_KIND_LIST.filter((each) => PUZZLE_SPECS[each].helps !=
     await expect(hint).toHaveAttribute("data-allowed", "true");
     // The clock starts on the first entry, and Hint waits for it as Check does.
     await oneWrong(page, kind, size, seed);
+    if (isDrawn(kind)) {
+      // How far the board is from the answer falls: by one where a hint is one mark, by at least one where it is a rectangle or an opening.
+      const before = await distance(page, kind, size, seed);
+      await hint.click();
+      await expect(hint).toContainText("1 used");
+      if (HINT_STEP[kind] === "one") await expect.poll(() => distance(page, kind, size, seed)).toBe(before - 1);
+      else await expect.poll(() => distance(page, kind, size, seed)).toBeLessThan(before);
+      return;
+    }
     const before = await rightCells(page, kind, size, seed);
     await hint.click();
     await expect(hint).toContainText("1 used");

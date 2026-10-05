@@ -116,7 +116,7 @@ export function JiraiSolve({
   const count = [...code].filter((character) => character === COVERED).length;
 
   return (
-    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="jirai" data-seed={seed} data-code={code} data-mistakes={mistakes} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="jirai" data-seed={seed} data-code={code} data-mistakes={mistakes} data-wrong={[...hinting.marked].join(",")} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <JiraiBoard
