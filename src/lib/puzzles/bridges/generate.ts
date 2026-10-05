@@ -63,7 +63,7 @@ export const SHORT_RUNS_UP_TO = 13;
  * is a hard one (one in forty-three with one in two). A 25×25 of any level is
  * then made in about a tenth of a second, a few tenths at worst.
  */
-const DOUBLES: Record<PuzzleLevel, number> = { easy: 0.75, medium: 0.55, hard: 0.2 };
+const DOUBLES: Record<PuzzleLevel, number> = { easy: 0.75, medium: 0.55, hard: 0.2, "extra-hard": 0.2 };
 
 export function generateBridges(size: number, level: PuzzleLevel, seed: number): Puzzle {
   const random = seededRandom(seed);
