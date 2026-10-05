@@ -3,7 +3,7 @@
 **Status: added 2026-10-02** (board row
 `meikyuu-a-maze-game-of-a-thousand-levels-in-many-shapes-drawn-through-by-finger-or-mouse`).
 Source package: `@johnmorrisdotca/meikyuu` 2.0.1, pinned exactly in `package.json`
-(github.com/johnmorrisdotca/meikyuu, MIT, no dependencies; tall levels, `ratio`, `orientation` and the zoom pad's gutters are 2.0). The site started on 1.0.0 (1,000
+(github.com/johnmorrisdotca/meikyuu, MIT, no dependencies; tall levels, `ratio`, `orientation`, the gutters, Move and edge panning are 2.0). The site started on 1.0.0 (1,000
 maze levels in sizes of 217, 231, 285 and 267) and moved to 2.0.x on 2026-10-02, which renumbered
 the list: see "Old solves" below.
 
@@ -16,8 +16,9 @@ and mirrors the two puzzles of fixed levels before it, Tsunagi and Suido.
 
 Press the start dot and drag (or tap, which runs the line to the next fork). The
 line follows the corridors, cannot pass a wall, and drawing back shortens it. A
-big maze is zoomed with a pinch, the wheel or the + and − buttons and moved with
-two fingers. The package's own board does all of that (`mountMeikyuu`, fetched in
+big maze is zoomed with a pinch, the wheel or the + and − buttons, moved with
+two fingers, or with one finger while Move is on, and a line drawn to the edge of
+a zoomed board slides the view along (see "Getting about a big maze"). The package's own board does all of that (`mountMeikyuu`, fetched in
 the browser only); the site adds the wood round it, the clock, Pause, Undo,
 Restart, Fit, the kept run and the check. A level has no hint and no clock, as a
 Suido level has none, so a time on it is one anybody can be raced on.
@@ -63,6 +64,16 @@ John, 2026-10-02: "Create a whole level of Vertical maps... a vertical container
 | A kept run on a turned board | A kept line is drawn again by pointer events (`meikyuuReplay.ts`), and a board lying down is drawn a quarter turn: the area fitted is the turned one and each cell is where the package shows it (`turnedBox`, `toDisplay`), so the same twelve cells come back whichever way up the board is opened | `meikyuuReplay.ts` |
 
 Held by `levels.test.ts` (the six sizes against the package's, every tall level made, answered and refused wrongly), `turn.test.ts`, `meikyuuStand.test.ts` (the stylesheet's numbers are the wood's shape), `e2e/meikyuu-tall.spec.ts`, the tall plays in `e2e/bare-board.spec.ts`'s survey and the tall wallpaper in `e2e/meikyuu-wallpaper.spec.ts`.
+
+## Getting about a big maze (touch, 2026-10-05)
+
+John, 2026-10-02: "the ability for mobile users to easily navigate from the top of the map to a bottom... allow users to zoom out enough that they can see the body easily on the left and right hand sides." The package's 2.0 board is built for it, and the site wires its own buttons to it:
+
+- **Zoom out and in** are the site's own − and + (`MeikyuuHandle.zoomOut`, `zoomIn`). Zoom out first shrinks the maze to a little past its fit, and then widens the **page beside the board**, a step at a time to 72 px each side; Zoom in brings it back first; **Fit** puts it all back. The package leaves page beside the box, but the wood round it is the site's, so the wood follows the gutter (`data-gutter` on the board, observed in `MeikyuuBoard`): at the most, 62 px of page shows on each side of the wood on a 390 px phone, which is what a swipe scrolls the page by.
+- **Only the maze's box takes touches.** `touch-action: none` is the package's, on `.mk-box` alone; the board's host is `pan-y pinch-zoom`, and nothing of the site's sets it (`e2e/meikyuu-touch.spec.ts` walks the board's ancestors and fails on any `none` outside the box). A swipe on the wood or the margin is the page's.
+- **Move** (beside Fit) makes every one-finger drag move the view and draw nothing (`pan`), for a finger that cannot find the line's end; two fingers always move it, and a pinch zooms it.
+- **Edge sliding** is the package's `edgePan`, on by default (gentle: nothing within 44 px of the edge, rising to 7 px a frame at it), with a switch in the Colours window ("Slide the view when the line reaches the edge"), kept on the device only (`meikyuuEdgeStore.ts`, `itsutsu.meikyuu.edgepan`).
+- Held by `e2e/meikyuu-touch.spec.ts` on real touches (CDP) at 390×844 and 360×740: the biggest tall maze drawn from its start to its goal, Zoom out widening and Fit restoring the gutters, a swipe on the margin scrolling the page, Move and two fingers, and the edge switch. A kept line drawn again on a board lying down is in `e2e/meikyuu-tall.spec.ts`.
 
 ## Old solves: the first list's numbers
 

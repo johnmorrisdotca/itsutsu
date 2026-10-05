@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
+import { useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 
 import type { MeikyuuMount } from "@johnmorrisdotca/meikyuu/play";
 
 import { loadMeikyuuPackage, MEIKYUU_LOOK } from "@/lib/puzzles/meikyuu/browser";
 import { MEIKYUU_TALL_RATIO } from "@/lib/puzzles/meikyuu/sizes";
+import { MEIKYUU_GUTTER_LEAST } from "@/lib/puzzles/meikyuu/turn";
 import { decodeWay, encodeCells } from "@/lib/puzzles/meikyuu/steps";
 
+import { useEdgePan } from "./meikyuuEdgeStore";
 import { drawAgain } from "./meikyuuReplay";
 import { MeikyuuFrame } from "./MeikyuuFrame";
 import { MeikyuuSlot, useStand } from "./MeikyuuStand";
@@ -29,7 +31,15 @@ export type MeikyuuReading = {
 };
 
 /** The press each button under the board makes on the package's board. */
-export type MeikyuuHandle = { undo: () => void; restart: () => void; fit: () => void; zoomIn: () => void; zoomOut: () => void };
+export type MeikyuuHandle = {
+  undo: () => void;
+  restart: () => void;
+  fit: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  /** Whether every one-finger drag moves the view and draws nothing (Move); with an argument, turn that on or off. */
+  pan: (on?: boolean) => boolean;
+};
 
 /** The padding the board's paper gets inside the wood: none, the package draws its own margin. */
 const INSET_SIZE = 9;
@@ -89,7 +99,17 @@ export function MeikyuuBoard({
     fit: () => mount.current?.fit(),
     zoomIn: () => mount.current?.zoomIn(),
     zoomOut: () => mount.current?.zoomOut(),
+    pan: (on) => mount.current?.pan(on) ?? false,
   }));
+  /* A line drawn to the edge slides the view along, unless this device has said not (`useEdgePan`); read as the board is made and told when it changes. */
+  const { edgePan } = useEdgePan();
+  const edgeNow = useRef(edgePan);
+  useEffect(() => {
+    edgeNow.current = edgePan;
+    mount.current?.edgePan(edgePan);
+  }, [edgePan]);
+  /* How much more of the page than the least the board has been asked to leave beside it (Zoom out widens the gutters a step at a time): the wood narrows by as much on each side, so the page shows beside it and can be scrolled by. */
+  const [extra, setExtra] = useState(0);
 
   /* The start line is read once, as the board is made: a later change of it is not a new line to draw. */
   const startWay = useRef(way);
@@ -103,7 +123,7 @@ export function MeikyuuBoard({
       if (!live) return;
       // A tall maze is played in its own box (`ratio`), stood up or lying as the site has decided (`meikyuu/turn.ts`) and not as the package would (`auto`); the page leaves its room itself (`reserve` 0), as the wood is sized to the window.
       const shape = tall ? { ratio: MEIKYUU_TALL_RATIO, orientation: turnedNow.current ? ("landscape" as const) : ("portrait" as const), reserve: 0 } : {};
-      const board = play.mountMeikyuu(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, tap: true, language: "en", ...shape });
+      const board = play.mountMeikyuu(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, tap: true, language: "en", edgePan: edgeNow.current, ...shape });
       if (board === null) return;
       mount.current = board;
       const read = (): void => {
@@ -121,8 +141,11 @@ export function MeikyuuBoard({
         });
       };
       // The board writes its state onto its element at every change (`data-cells`, `data-moves`, `data-solved`): that is the one place that hears every change, a key press and an undo included.
-      watch = new MutationObserver(read);
-      watch.observe(element, { attributes: true, attributeFilter: ["data-cells", "data-moves", "data-solved", "data-keys"] });
+      watch = new MutationObserver(() => {
+        read();
+        setExtra(Math.max(0, Math.round(Number(element.dataset.gutter ?? MEIKYUU_GUTTER_LEAST) - MEIKYUU_GUTTER_LEAST)));
+      });
+      watch.observe(element, { attributes: true, attributeFilter: ["data-cells", "data-moves", "data-solved", "data-keys", "data-gutter"] });
       const game = board.mazeGame();
       const cells = game === null || startWay.current === "" ? null : decodeWay(game.maze, startWay.current);
       if (game !== null && cells !== null && cells.length > 1) {
@@ -149,15 +172,17 @@ export function MeikyuuBoard({
   return (
     <div ref={column} className="w-full select-none" data-testid="puzzle-grid" data-kind="meikyuu" data-locked={locked ? "true" : "false"} data-stand={stand} data-wallpaper-focus={stand === "square" ? "" : undefined}>
       {/* A maze has no rows and columns to letter, so the wood is bare: the paper inside it is the package's own. */}
-      <MeikyuuSlot stand={stand}>
-        <MeikyuuFrame size={INSET_SIZE} stand={stand}>
-          <div
-            ref={host}
-            className={`h-full w-full ${locked ? "pointer-events-none" : ""} [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full`}
-            data-testid="meikyuu-board"
-          />
-        </MeikyuuFrame>
-      </MeikyuuSlot>
+      <div style={extra === 0 ? undefined : { paddingInline: extra }} data-testid="meikyuu-gutter" data-extra={extra}>
+        <MeikyuuSlot stand={stand}>
+          <MeikyuuFrame size={INSET_SIZE} stand={stand}>
+            <div
+              ref={host}
+              className={`h-full w-full ${locked ? "pointer-events-none" : ""} [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full`}
+              data-testid="meikyuu-board"
+            />
+          </MeikyuuFrame>
+        </MeikyuuSlot>
+      </div>
     </div>
   );
 }

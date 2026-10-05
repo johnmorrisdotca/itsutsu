@@ -12,7 +12,7 @@ import { isMeikyuuTall, meikyuuSizeInAddress, meikyuuSizeLabel } from "@/lib/puz
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MEIKYUU_COPY } from "./meikyuu.constants";
+import { MEIKYUU_COPY, MOVE_COPY } from "./meikyuu.constants";
 import { MeikyuuBoard, type MeikyuuHandle, type MeikyuuReading } from "./MeikyuuBoard";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
@@ -78,6 +78,8 @@ export function MeikyuuSolve({
   const row = meikyuuLevelsLoaded(size) ? meikyuuLevelsAt(size)[level - 1] : undefined;
   const handle = useRef<MeikyuuHandle>(null);
   const [reading, setReading] = useState<MeikyuuReading | null>(null);
+  /* Move: while it is on a finger drags the view and draws nothing (the board's `pan`). */
+  const [moving, setMoving] = useState(false);
   /* The line as it stands, for the run to keep: what a resumed run was left with until the board says otherwise. */
   const [way, setWay] = useState(resumed?.progress ?? "");
 
@@ -199,11 +201,23 @@ export function MeikyuuSolve({
               <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.fit()} disabled={!live} data-testid="meikyuu-fit">
                 Fit
               </button>
+              <button
+                type="button"
+                className={`${BUTTON_BASE} ${moving ? BUTTON_STRONG : BUTTON_QUIET} ${TAP_HEIGHT} ${press}`}
+                onClick={() => setMoving(handle.current?.pan(!moving) ?? false)}
+                disabled={!live}
+                aria-pressed={moving}
+                title={MOVE_COPY.says}
+                data-testid="meikyuu-move"
+                data-moving={moving ? "true" : "false"}
+              >
+                {MOVE_COPY.press}
+              </button>
             </div>
             {/* In the row of presses under the board, so it takes no row of its own and Just the board still fits a desk. */}
             <MeikyuuColours />
             {/* A tall maze can lie on its side: which way up is the reader's to choose, beside the colours. */}
-            {tall ? <MeikyuuWayUp /> : null}
+            {tall ? <MeikyuuWayUp className="basis-full" /> : null}
           </div>
           <span className="text-sm text-muted" data-testid="meikyuu-said" data-cells={cells} data-keys={reading?.keys ?? 0} aria-live="polite">
             {cells === 0 ? MEIKYUU_COPY.howTo : MEIKYUU_COPY.status(cells, reading?.keys ?? 0, reading?.keysOf ?? 0)}

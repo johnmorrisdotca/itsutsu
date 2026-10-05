@@ -20,6 +20,12 @@ export type MeikyuuWayUp = (typeof MEIKYUU_WAY_UP)[number];
 /** Where the choice is kept on a device. */
 export const WAY_UP_STORAGE = "itsutsu.meikyuu.wayup";
 
+/** Where the choice of whether a line drawn to a zoomed board's edge slides the view is kept on a device (`meikyuuEdgeStore.ts`). */
+export const EDGE_PAN_STORAGE = "itsutsu.meikyuu.edgepan";
+
+/** The page the package leaves beside a board at the least, in pixels (`MEIKYUU_GUTTER`, its default): the board and the wood round it are as wide as the window less this each side, and Zoom out widens it step by step. */
+export const MEIKYUU_GUTTER_LEAST = 24;
+
 /** What a window holds besides the board, in pixels, in the page: its header, the trail and title over it. The board is never taller than the window less this, and never under 60% of it. */
 export const MEIKYUU_RESERVE_PX = 256;
 

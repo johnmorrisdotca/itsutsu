@@ -7,6 +7,8 @@ import { choiceOfTheme, isDefaultChoice, themeOf, resolveFrame } from "@/lib/puz
 import { FRAME_LIST, FRAMES, INK_LIST, INKS, LOOK_COPY, PAPER_LIST, PAPERS, THEME_LIST, THEMES, type FrameId, type InkId, type PaperId } from "@/lib/puzzles/meikyuu/look.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
+import { MOVE_COPY } from "./meikyuu.constants";
+import { useEdgePan } from "./meikyuuEdgeStore";
 import { useMeikyuuLook } from "./meikyuuLookStore";
 
 /** A swatch a fingertip can hit, in the chosen colour, ringed when chosen. */
@@ -78,6 +80,7 @@ function Row<T extends string>({ title, name, list, chosen, onChoose, paint }: {
 export function MeikyuuColours({ className = "" }: { className?: string }) {
   const hydrated = useHydrated();
   const { choice, look, choose, reset } = useMeikyuuLook();
+  const { edgePan, choose: chooseEdgePan } = useEdgePan();
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -167,6 +170,11 @@ export function MeikyuuColours({ className = "" }: { className?: string }) {
                 paint={(id) => ({ label: INKS[id].label, style: { background: `radial-gradient(circle at 50% 50%, ${INKS[id].trail} 0 28%, ${INKS[id].wall} 31% 100%)` } })}
               />
             </div>
+            {/* How the view behaves for a hand that wants it to stay where it is put: kept on this device (`meikyuuEdgeStore.ts`). */}
+            <label className="flex min-h-11 cursor-pointer items-start gap-2.5 text-sm" title={MOVE_COPY.edge.says}>
+              <input type="checkbox" checked={edgePan} onChange={(event) => chooseEdgePan(event.target.checked)} className="mt-0.5 size-5 shrink-0 accent-[var(--color-moss,#2f7a4f)]" data-testid="meikyuu-edge-pan" />
+              <span>{MOVE_COPY.edge.label}</span>
+            </label>
             {/* Its room is always kept, so the window does not change height when a choice is adjusted. */}
             <p className="min-h-10 text-xs text-muted" data-testid="meikyuu-look-adjusted" data-adjusted={look.adjusted ? "true" : "false"} aria-live="polite">
               {look.adjusted ? LOOK_COPY.adjusted : ""}

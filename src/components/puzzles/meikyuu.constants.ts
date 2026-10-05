@@ -58,6 +58,16 @@ export const WAY_UP_COPY = {
   landscape: { label: "Lying down", says: "Always on its side, a quarter turn, which fits a wide screen. The line you draw is the same line either way up." },
 } as const;
 
+/** The press that makes every one-finger drag move the view, for a hand that cannot find the line's end, and the switch for the view sliding when the line reaches the edge. */
+export const MOVE_COPY = {
+  press: "Move",
+  says: "While it is on, a finger drags the view of a zoomed maze and draws nothing. Press it again to draw.",
+  edge: {
+    label: "Slide the view when the line reaches the edge",
+    says: "On a zoomed maze, a line drawn to the edge of the board moves the view along with it, gently. Switch it off to move the view yourself, with Move or two fingers.",
+  },
+} as const;
+
 /** The set-up's choice of the way a maze is shaped: the four sizes of squares and shapes, or the tall mazes for a phone held upright. */
 export const SHAPE_COPY = {
   legend: "Shape",
