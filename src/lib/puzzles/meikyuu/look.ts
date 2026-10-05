@@ -1,6 +1,6 @@
 import { blend, contrast, shade } from "@/lib/pieces/colourMath";
 
-import { DEFAULT_LOOK, FRAMES, GOAL_FALLBACKS, INKS, LOOK_RULES, PAPERS, THEMES, TRAIL_FALLBACKS, WALL_FALLBACKS, type FrameId, type InkId, type PaperId, type ThemeId } from "./look.constants";
+import { DEFAULT_LOOK, FRAMES, GOAL_FALLBACKS, INKS, LOOK_RULES, PAPERS, STONE_FALLBACKS, THEMES, TRAIL_FALLBACKS, WALL_FALLBACKS, type FrameId, type InkId, type PaperId, type ThemeId } from "./look.constants";
 
 /**
  * A MEIKYUU BOARD'S COLOURS, MADE SAFE. Three choices (`LookChoice`) go in and
@@ -14,7 +14,10 @@ import { DEFAULT_LOOK, FRAMES, GOAL_FALLBACKS, INKS, LOOK_RULES, PAPERS, THEMES,
  *  - the line against the paper and against the walls, 3:1;
  *  - the start against the paper, 3:1;
  *  - the goal against the paper (1.8:1: it is outlined in the walls' colour,
- *    and the solved line wears it) and against the line (1.4:1).
+ *    and the solved line wears it) and against the line (1.4:1);
+ *  - a stone, the marble laid beside the line, against the paper (3:1), against
+ *    its rim, which is the walls' colour (1.5:1), and against the line and the
+ *    goal (1.25:1), so it is a marble and is taken for neither.
  *
  * HOW A CHOICE THAT BREAKS IT IS ANSWERED. It is never refused, because a child
  * who pressed "navy" on "midnight" should see a maze, not a message. The ink is
@@ -34,6 +37,8 @@ export type ResolvedLook = {
   trail: string;
   start: string;
   goal: string;
+  /** A stone's fill; its rim is the wall's colour. */
+  stone: string;
   /** Whether any of the ink's own colours was changed to keep the maze readable on this paper. */
   adjusted: boolean;
 };
@@ -96,6 +101,11 @@ function wallAndLine(ink: (typeof INKS)[InkId], paper: string): { wall: string; 
   return { wall, trail: pick(own, (colour) => Math.min(contrast(colour, paper), contrast(colour, wall)), LOOK_RULES.trail) };
 }
 
+/** A stone against the paper, its rim (the wall), the line and the goal. */
+function stoneReads(colour: string, paper: string, wall: string, trail: string, goal: string): boolean {
+  return contrast(colour, paper) >= LOOK_RULES.stone && contrast(colour, wall) >= LOOK_RULES.stoneFromWall && contrast(colour, trail) >= LOOK_RULES.stoneFromTrail && contrast(colour, goal) >= LOOK_RULES.stoneFromGoal;
+}
+
 /** What a choice is drawn in. */
 export function resolveLook(choice: LookChoice): ResolvedLook {
   const paper = PAPERS[choice.paper].colour;
@@ -105,6 +115,9 @@ export function resolveLook(choice: LookChoice): ResolvedLook {
   const goal =
     tuned([ink.goal, ...GOAL_FALLBACKS], (colour) => contrast(colour, trail) >= LOOK_RULES.goalFromTrail && contrast(colour, paper) >= LOOK_RULES.goal) ??
     pick(GOAL_FALLBACKS, (colour) => (contrast(colour, trail) >= LOOK_RULES.goalFromTrail ? contrast(colour, paper) : -1), LOOK_RULES.goal);
+  const stone =
+    tuned(STONE_FALLBACKS, (colour) => stoneReads(colour, paper, wall, trail, goal)) ??
+    pick(STONE_FALLBACKS, (colour) => Math.min(contrast(colour, paper) / LOOK_RULES.stone, contrast(colour, wall) / LOOK_RULES.stoneFromWall), 1);
   const plain = choice.paper === DEFAULT_LOOK.paper && choice.ink === DEFAULT_LOOK.ink;
   return {
     paper,
@@ -114,12 +127,13 @@ export function resolveLook(choice: LookChoice): ResolvedLook {
     trail,
     start,
     goal,
+    stone,
     adjusted: wall !== ink.wall || trail !== ink.trail || start !== ink.start || goal !== ink.goal,
   };
 }
 
 /** The ratios a resolved look reaches: what `look.test.ts` holds to `LOOK_RULES`, and what a reader of the code can check. */
-export function readingOf(look: ResolvedLook): { wall: number; trail: number; trailOnWall: number; start: number; goal: number; goalFromTrail: number } {
+export function readingOf(look: ResolvedLook): { wall: number; trail: number; trailOnWall: number; start: number; goal: number; goalFromTrail: number; stone: number; stoneFromWall: number; stoneFromTrail: number; stoneFromGoal: number } {
   return {
     wall: contrast(look.wall, look.paper),
     trail: contrast(look.trail, look.paper),
@@ -127,6 +141,10 @@ export function readingOf(look: ResolvedLook): { wall: number; trail: number; tr
     start: contrast(look.start, look.paper),
     goal: contrast(look.goal, look.paper),
     goalFromTrail: contrast(look.goal, look.trail),
+    stone: contrast(look.stone, look.paper),
+    stoneFromWall: contrast(look.stone, look.wall),
+    stoneFromTrail: contrast(look.stone, look.trail),
+    stoneFromGoal: contrast(look.stone, look.goal),
   };
 }
 
@@ -139,7 +157,11 @@ export function isReadable(look: ResolvedLook): boolean {
     reading.trailOnWall >= LOOK_RULES.trail &&
     reading.start >= LOOK_RULES.start &&
     reading.goal >= LOOK_RULES.goal &&
-    reading.goalFromTrail >= LOOK_RULES.goalFromTrail
+    reading.goalFromTrail >= LOOK_RULES.goalFromTrail &&
+    reading.stone >= LOOK_RULES.stone &&
+    reading.stoneFromWall >= LOOK_RULES.stoneFromWall &&
+    reading.stoneFromTrail >= LOOK_RULES.stoneFromTrail &&
+    reading.stoneFromGoal >= LOOK_RULES.stoneFromGoal
   );
 }
 

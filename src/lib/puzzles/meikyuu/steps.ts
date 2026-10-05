@@ -49,3 +49,24 @@ export function decodeWay(maze: Maze, code: string): number[] | null {
 export function wayFits(code: string, most: number): boolean {
   return STEP.test(code) && code.length <= most;
 }
+
+/**
+ * A RUN KEPT HALF WAY: the line as its steps, and, if stones are down, a `~` and the cells they lie on in base 36 joined by dots
+ * (`0231~1a.2f`: the package's `encodeRun`). The stones are the player's own helper and never part of the answer, so what is handed in is
+ * the steps alone (`wayOfRun`) and a run with a `~` is no answer (`decodeWay` refuses it). Read against its maze when opened (`mount.restore`).
+ */
+const STONES = /^[0-9a-z]+(\.[0-9a-z]+)*$/;
+
+/** The steps of a kept run, without its stones. */
+export function wayOfRun(run: string): string {
+  const at = run.indexOf("~");
+  return at < 0 ? run : run.slice(0, at);
+}
+
+/** Whether text could be a kept run: steps no longer than `most`, and stones in their alphabet, no more than `mostStones` characters of them. */
+export function runFits(run: string, most: number, mostStones: number): boolean {
+  const at = run.indexOf("~");
+  if (at < 0) return wayFits(run, most);
+  const stones = run.slice(at + 1);
+  return wayFits(run.slice(0, at), most) && stones.length <= mostStones && STONES.test(stones);
+}

@@ -38,7 +38,17 @@ export const LOOK_RULES = {
   goal: 1.8,
   /** The goal against the line, so the end of the line is not lost in it. */
   goalFromTrail: 1.4,
+  /** A stone (the marble laid beside the line) against the paper: a mark of its own, so graphics-grade (WCAG 1.4.11). */
+  stone: 3,
+  /** A stone against its rim, which is the wall's colour, so the marble is a marble and not a hole. */
+  stoneFromWall: 1.5,
+  /** A stone against the line and against the goal, so it is not taken for either (its shape is not theirs either). */
+  stoneFromTrail: 1.25,
+  stoneFromGoal: 1.25,
 } as const;
+
+/** Stone colours tried, in order: the package's own slate blue for a light paper and its pale blue for a dark one, then others, each tuned lighter or darker if it nearly reads. */
+export const STONE_FALLBACKS = ["#4b5d8f", "#b3c0ea", "#6a5acd", "#e8ecf7", "#8a6a3b", "#d9c8a0", "#3b4a63", "#cfd6e6", "#ffffff", "#000000"] as const;
 
 /** The two ink colours a wall falls back on when its own cannot be seen on the paper. */
 export const WALL_FALLBACKS = ["#1f2320", "#f3efe4"] as const;

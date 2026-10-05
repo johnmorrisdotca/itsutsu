@@ -60,6 +60,20 @@ describe("Meikyuu's colours stay readable", () => {
     }
   });
 
+  it("shows a stone on every paper and ink: 3:1 on the paper, apart from its rim, the line and the goal", () => {
+    for (const paper of PAPER_LIST) {
+      for (const ink of INK_LIST) {
+        const look = resolveLook({ frame: "wood", paper, ink });
+        expect(contrast(look.stone, look.paper), `${ink} stone on ${paper}`).toBeGreaterThanOrEqual(LOOK_RULES.stone);
+        expect(contrast(look.stone, look.wall), `${ink} stone against its rim on ${paper}`).toBeGreaterThanOrEqual(LOOK_RULES.stoneFromWall);
+        expect(contrast(look.stone, look.trail), `${ink} stone against the line on ${paper}`).toBeGreaterThanOrEqual(LOOK_RULES.stoneFromTrail);
+        expect(contrast(look.stone, look.goal), `${ink} stone against the goal on ${paper}`).toBeGreaterThanOrEqual(LOOK_RULES.stoneFromGoal);
+      }
+    }
+    // The default look keeps the package's own stone.
+    expect(resolveLook(DEFAULT_CHOICE).stone).toBe("#4b5d8f");
+  });
+
   it("offers no paper in the middle of the scale, where neither a dark wall nor a light one can be seen", () => {
     for (const paper of PAPER_LIST) {
       const colour = PAPERS[paper].colour;

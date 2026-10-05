@@ -23,6 +23,7 @@ import { meikyuuLevelPath, MeikyuuLevelPicker } from "./MeikyuuLevelPicker";
 import { MeikyuuLevelPreview } from "./MeikyuuLevelPreview";
 import { keptSolvedLevels, keptSolves } from "./meikyuuKept";
 import { MeikyuuProgress } from "./MeikyuuProgress";
+import { MeikyuuStones } from "./MeikyuuStones";
 import { MeikyuuWayUp } from "./MeikyuuStand";
 import { SetUpResume } from "./SetUpResume";
 
@@ -209,6 +210,8 @@ export function MeikyuuSetUp({
           <MeikyuuColours className="self-start" />
           {/* Which way up a tall maze is shown; it keeps its place for a square one, dimmed, so choosing a size moves nothing. */}
           <MeikyuuWayUp active={upright} />
+          {/* How many stones may lie at once, for every maze: a setting, so it keeps its place whatever size is chosen. */}
+          <MeikyuuStones />
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
           <SetUpResume href={resumeHref} />

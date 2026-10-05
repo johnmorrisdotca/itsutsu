@@ -49,6 +49,15 @@ something uses the word already chosen for it.
 | Neither side ahead | **Even 互角** | Level 互角 (clashed with the XP "Level") |
 | Colours changing hands | **Swap colours** | Swap seats |
 
+## Meikyuu's stones (2026-10-05)
+
+| Concept | The label everywhere | No longer |
+|---|---|---|
+| The marble laid beside the line in a maze, which the line cannot enter | **Stone** | marble, blocker, pebble |
+| How many more may be laid | **Stones left** | stones remaining |
+| The count laid, where there is no limit | **Stones laid** | stones used |
+| The setting for how many may lie at once | **Stones**: **A few** or **As many as I like** | limited, unlimited |
+
 ## Header, footer and account
 
 | Now | Was | Kanji | Where | Why |

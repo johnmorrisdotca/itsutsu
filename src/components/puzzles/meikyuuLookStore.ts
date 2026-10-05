@@ -115,6 +115,7 @@ export function lookVariables(look: ResolvedLook): Record<string, string> {
     "--mkl-trail": look.trail,
     "--mkl-start": look.start,
     "--mkl-goal": look.goal,
+    "--mkl-stone": look.stone,
   };
 }
 

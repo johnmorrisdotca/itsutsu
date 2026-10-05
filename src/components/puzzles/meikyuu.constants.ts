@@ -85,6 +85,29 @@ export const MOVE_COPY = {
   },
 } as const;
 
+/**
+ * STONES, in the plain English of the glossary (`docs/plans/plain-english/GLOSSARY.md`): one word for the marble, "Stone", and "Stones left" for how many more
+ * may be laid. John, who asked for them: "a helper to let you know that a given path is exhausted/useless/dead end... it has to be a carefully placed item that
+ * you must lay adjacent to your existing path." So the words say where one goes (beside the line), and that it is a helper and not a pen.
+ */
+export const STONE_COPY = {
+  press: "Stone",
+  /** What the Stone press does, for its hover and its screen-reader name. */
+  says: "Lay a stone: with it on, tap a cell beside your line to shut that passage, and the line cannot go in. Tap a stone to take it up. Press again to draw. A stone goes at most two cells along the passages from your line.",
+  /** The line under the board while the Stone mode is on. */
+  how: "Stone mode. Tap a cell beside your line, up to two cells along the passages from it, to lay a stone the line cannot enter. Tap a stone to take it up.",
+  /** The other ways to lay one, said where the option is chosen and in the Stone press's hover. */
+  other: "You can also hold a finger on a cell beside your line for half a second to lay a stone, or hold Shift and press an arrow key at the end of your line.",
+  left: (n: number): string => `Stones left: ${n}`,
+  /** With no limit there is no "left", so the count laid is said instead. */
+  laid: (n: number): string => `Stones laid: ${n}`,
+  /** The set-up's option: how many may lie at once. */
+  legend: "Stones",
+  limited: { label: "A few", says: "A few stones at once, more for a bigger maze: 4 for a small one, 9 for a huge one, 13 for a colossal one. Take one up and you have it back." },
+  unlimited: { label: "As many as I like", says: "No limit on how many stones lie at once. They still go only beside your line." },
+  note: "A stone is only for you: it is never part of your answer, and it is kept with your game, so it is still there when you come back.",
+} as const;
+
 /** The set-up's choice of the way a maze is shaped: the four sizes of squares and shapes, the tall mazes for a phone held upright, or the colossal ones, the biggest there are. */
 export const SHAPE_COPY = {
   legend: "Shape",
@@ -102,7 +125,7 @@ export const MEIKYUU_COPY = {
   /** The front door's line for the levels: how many there are of each size, read from the sizes and never typed. */
   levelsLine: `${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (${MEIKYUU_SIZE_WORDS.join(", ")}) and in each of six tall ones for a phone held upright, each size easy to hard, and ${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} in each of two colossal ones of about ten thousand cells.`,
   /** The line under the board before the first stroke. */
-  howTo: "Press the start dot and drag. The line follows the corridors, and drawing back shortens it.",
+  howTo: "Press the start dot and drag. The line follows the corridors, and drawing back shortens it. To shut a passage, press Stone and tap a cell beside your line, or hold a finger on it.",
   /** The line under the board once there is a line: how far it has got. */
   status: (cells: number, keys: number, keysOf: number): string => {
     const drawn = `${cells} ${cells === 1 ? "cell" : "cells"} drawn.`;

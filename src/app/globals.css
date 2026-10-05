@@ -1119,6 +1119,7 @@ tr:has(> [data-row-actions]):focus {
   --mkl-trail: #2e8b57;
   --mkl-start: #2f7a4f;
   --mkl-goal: #e0b43b;
+  --mkl-stone: #4b5d8f;
 }
 .meikyuu {
   --mk-paper: var(--mkl-paper) !important;
@@ -1128,6 +1129,9 @@ tr:has(> [data-row-actions]):focus {
   --mk-start: var(--mkl-start) !important;
   --mk-goal: var(--mkl-goal) !important;
   --mk-key: var(--mkl-goal) !important;
+  /* A stone is the colour chosen, rimmed in the walls' colour (`meikyuu/look.ts` holds it readable on every paper). */
+  --mk-stone: var(--mkl-stone) !important;
+  --mk-stone-edge: var(--mkl-wall) !important;
 }
 
 /*

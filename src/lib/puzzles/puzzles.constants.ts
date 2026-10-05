@@ -463,7 +463,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * a short word such as `square:12x9:wilson:to-goal:48213` (45 characters at
    * the longest); the answer is the line drawn from the start to the goal, one
    * character a step (`meikyuu/way.ts`), 5,009 at the longest (a colossal maze), so
-   * 6,000 is room for it (`meikyuu/progress.ts`). No Check or Hint (the line is in plain sight, and a level's time is
+   * 6,000 is room for it and for a kept run's stones after it (`meikyuu/progress.ts`). No Check or Hint (the line is in plain sight, and a level's time is
    * one anybody can be raced on) and no countdown, as a Suido level has none.
    */
   meikyuu: {
@@ -1416,6 +1416,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A level is played one of four ways: in at one door in the outer wall and out at another; from a cell inside to a dot hidden deep in the maze; from the middle of the shape out through a door; or from inside, picking up every key on the way to a door. A key is at the end of a branch, off the way, so each one costs a detour, and stays picked up when you draw back.",
       "A big maze is looked at through the board. Zoom with the wheel, a pinch, or the + and − buttons, and move the view with two fingers or by dragging anywhere but the line. Fit brings the whole maze back, and near the edge a line you are drawing moves the view with it.",
       "Undo takes back your last stroke and Restart clears the line. The keyboard works too: the arrow keys step the line, and Backspace undoes.",
+      "Stone: when a passage is a dead end, you can shut it with a stone. Press Stone and tap a cell beside your line, or hold a finger on it, or hold Shift and press an arrow key at the end of your line. A stone goes at most two cells along the passages from your line, only so many at once, and the line cannot enter it. Tap a stone to take it up. A stone is only a help for you and is never part of your answer.",
       `Fixed levels: ${thousands(MEIKYUU_LEVELS_TOTAL)} of them, the same for everybody: ${MEIKYUU_LEVELS_A_SIZE} in each of four sizes, ${MEIKYUU_LEVELS_A_SIZE} in each of six tall ones, and ${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} in each of two colossal ones, each size ordered from easy to hard so that no level is easier than the one before. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
       "The clock starts with your first stroke, and the level is solved the moment the line reaches the goal, with every key picked up.",
     ],

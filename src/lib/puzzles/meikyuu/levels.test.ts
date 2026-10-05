@@ -8,13 +8,13 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { fixedLevelOf, nextLevelLabel } from "../fixedLevel";
 import { puzzleAsked, puzzleQuery } from "../puzzleAddress";
 import { checkSolution } from "../puzzleCheck";
-import { PUZZLE_SPECS } from "../puzzles.constants";
+import { PUZZLE_CODE_LONGEST, PUZZLE_SPECS } from "../puzzles.constants";
 import { MEIKYUU_COLOSSAL_LEVELS_A_SIZE, MEIKYUU_LEVEL_COUNTS, MEIKYUU_LEVELS_A_SIZE, isMeikyuuLevelAt, meikyuuBlockOf, meikyuuBlockRange, meikyuuBlocksIn, meikyuuLevelBand, meikyuuLevelCount } from "./levelCounts";
 import { loadEveryMeikyuuLevels, meikyuuLevelOfBoard, meikyuuLevelPuzzle, meikyuuLevelsAt } from "./levels";
 import "./levelsModule";
 import { meikyuuCodeFits, MEIKYUU_MOST_STEPS } from "./progress";
 import { isMeikyuuColossal, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_COLOSSAL_TALL_SIZE, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_SIZE_WORDS, MEIKYUU_TALL_RATIO, MEIKYUU_TALL_SIZES, isMeikyuuSize, isMeikyuuTall, meikyuuSizeFromAddress, meikyuuSizeInAddress, meikyuuSizeInWords, meikyuuSizeLabel, meikyuuSizeOfWord, meikyuuSizeWord, meikyuuTallShape } from "./sizes";
-import { decodeWay, encodeCells } from "./steps";
+import { decodeWay, encodeCells, wayOfRun } from "./steps";
 import { encodeWay, mazeOf } from "./way";
 
 /*
@@ -382,5 +382,21 @@ describe("meikyuu's colossal levels are the package's third list, two sizes of 1
     expect(checkSolution("meikyuu", 6496, colossal.givens, colossal.solution, colossal.level).ok).toBe(false);
     expect(checkSolution("meikyuu", 5, tall.givens, tall.solution, tall.level).ok).toBe(false);
     expect(checkSolution("meikyuu", 5, colossal.givens, `${colossal.solution}~1a.2f`, colossal.level).ok).toBe(false);
+  });
+
+  it("keeps a run half way with its stones: the steps, a tilde and the cells in base 36, held to what a route may take", () => {
+    expect(meikyuuCodeFits("0231")).toBe(true);
+    expect(meikyuuCodeFits("0231~1a.2f")).toBe(true);
+    expect(meikyuuCodeFits("~1a")).toBe(true);
+    expect(meikyuuCodeFits("0231~")).toBe(false);
+    expect(meikyuuCodeFits("0231~1a..2f")).toBe(false);
+    expect(meikyuuCodeFits("0231~1A")).toBe(false);
+    expect(meikyuuCodeFits("0231~1a~2f")).toBe(false);
+    expect(meikyuuCodeFits(`${"0".repeat(MEIKYUU_MOST_STEPS)}~${"z.".repeat(300)}z`)).toBe(true);
+    expect(meikyuuCodeFits(`0~${"z.".repeat(400)}z`)).toBe(false);
+    expect(wayOfRun("0231~1a.2f")).toBe("0231");
+    expect(wayOfRun("0231")).toBe("0231");
+    // The longest run a colossal maze can have, and a good many stones with it, fits what the runs route accepts.
+    expect(MEIKYUU_MOST_STEPS + 1 + 800).toBeLessThanOrEqual(PUZZLE_CODE_LONGEST);
   });
 });

@@ -13,12 +13,13 @@ import { isMeikyuuTall, meikyuuSizeInAddress, meikyuuSizeLabel } from "@/lib/puz
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MEIKYUU_COPY, MOVE_COPY, PROGRESS_COPY } from "./meikyuu.constants";
+import { MEIKYUU_COPY, MOVE_COPY, PROGRESS_COPY, STONE_COPY } from "./meikyuu.constants";
 import { MeikyuuBoard, type MeikyuuHandle, type MeikyuuReading } from "./MeikyuuBoard";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
 import { meikyuuLevelPath } from "./MeikyuuLevelPicker";
 import { keepSolveHere, keptSolves } from "./meikyuuKept";
+import { useStoneLimit } from "./meikyuuStonesStore";
 import { MeikyuuStill } from "./MeikyuuStill";
 import { MeikyuuWayUp } from "./MeikyuuStand";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
@@ -81,8 +82,10 @@ export function MeikyuuSolve({
   const [reading, setReading] = useState<MeikyuuReading | null>(null);
   /* Move: while it is on a finger drags the view and draws nothing (the board's `pan`). */
   const [moving, setMoving] = useState(false);
-  /* The line as it stands, for the run to keep: what a resumed run was left with until the board says otherwise. */
+  /* The run as it stands, for it to keep: the line and the stones laid beside it (`MeikyuuReading.run`). What a resumed run was left with until the board says otherwise. */
   const [way, setWay] = useState(resumed?.progress ?? "");
+  /* How many stones may lie at once: the reader's choice, kept on this device. */
+  const { stones: stoneLimit } = useStoneLimit();
 
   /*
    * THE LEVELS SOLVED, as this page knows them: the account's (`known`) and this browser's (`meikyuuKept`), read now:
@@ -107,7 +110,7 @@ export function MeikyuuSolve({
   const handedIn = useRef(false);
   const told = (next: MeikyuuReading) => {
     setReading(next);
-    if (next.way !== null) setWay(next.way);
+    if (next.run !== null) setWay(next.run);
     const now = latest.current;
     if (now.done !== null || handedIn.current) return;
     if (now.startedAt === null && next.cells >= 2) now.begin();
@@ -176,11 +179,14 @@ export function MeikyuuSolve({
 
   const cells = reading?.cells ?? 0;
   const press = "px-3 py-1 text-sm";
+  const stoning = reading?.stoneMode === true;
+  /* "Stones left: 3", or, with no limit, how many are laid: the one line a Stone press keeps beside it, in the room it always has. */
+  const stonesLine = reading === null ? STONE_COPY.left(0) : reading.stonesLeft === null ? STONE_COPY.laid(reading.stones) : STONE_COPY.left(reading.stonesLeft);
   return (
     <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={level} data-level={level} data-maze={puzzle.givens} data-cells={cells} data-solved={reading?.solved === true ? "true" : "false"} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
       <SolvePaused pausing={pausing}>
-        <MeikyuuBoard code={puzzle.givens} tall={tall} way={resumed?.progress ?? ""} locked={!live} onChange={told} handle={handle} />
+        <MeikyuuBoard code={puzzle.givens} tall={tall} way={resumed?.progress ?? ""} locked={!live} stones={stoneLimit} onChange={told} handle={handle} />
       </SolvePaused>
       {chips}
       {done === null ? (
@@ -193,6 +199,22 @@ export function MeikyuuSolve({
               <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.restart()} disabled={!live || reading?.clearable !== true} data-testid="meikyuu-restart">
                 Restart
               </button>
+              {/* A marble laid beside the line, which the line cannot enter (`meikyuu/stones.ts`): a toggle, like Move, so a tap lays one and nothing draws until it is pressed again. */}
+              <button
+                type="button"
+                className={`${BUTTON_BASE} ${stoning ? BUTTON_STRONG : BUTTON_QUIET} ${TAP_HEIGHT} ${press}`}
+                onClick={() => handle.current?.stoneMode(!stoning)}
+                disabled={!live}
+                aria-pressed={stoning}
+                title={`${STONE_COPY.says} ${STONE_COPY.other}`}
+                data-testid="meikyuu-stone"
+                data-stone-mode={stoning ? "true" : "false"}
+              >
+                {STONE_COPY.press}
+              </button>
+              <span className="min-w-[8.5rem] text-sm text-muted tabular-nums" data-testid="meikyuu-stones-left" data-stones={reading?.stones ?? 0} data-left={reading?.stonesLeft ?? "none"} aria-live="polite">
+                {stonesLine}
+              </span>
             </div>
             <div className="flex flex-wrap gap-1.5" role="group" aria-label="Zoom" data-testid="meikyuu-zoom">
               <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.zoomOut()} disabled={!live} aria-label="Zoom out" data-testid="meikyuu-zoom-out">
@@ -222,8 +244,8 @@ export function MeikyuuSolve({
             {/* A tall maze can lie on its side: which way up is the reader's to choose, beside the colours. */}
             {tall ? <MeikyuuWayUp className="basis-full" /> : null}
           </div>
-          <span className="text-sm text-muted" data-testid="meikyuu-said" data-cells={cells} data-keys={reading?.keys ?? 0} aria-live="polite">
-            {cells === 0 ? MEIKYUU_COPY.howTo : MEIKYUU_COPY.status(cells, reading?.keys ?? 0, reading?.keysOf ?? 0)}
+          <span className="min-h-10 text-sm text-muted" data-testid="meikyuu-said" data-cells={cells} data-keys={reading?.keys ?? 0} aria-live="polite">
+            {stoning ? STONE_COPY.how : cells === 0 ? MEIKYUU_COPY.howTo : MEIKYUU_COPY.status(cells, reading?.keys ?? 0, reading?.keysOf ?? 0)}
           </span>
         </div>
       ) : (

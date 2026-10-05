@@ -25,6 +25,8 @@ function Sample() {
       <path d="M2 2.2H4V2.9H5.5V4.5H7" fill="none" stroke={look.trail} strokeWidth="0.42" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx="2" cy="2.2" r="0.3" fill={look.start} stroke={look.paper} strokeWidth="0.06" />
       <circle cx="7" cy="4.5" r="0.34" fill={look.goal} stroke={look.wall} strokeWidth="0.1" />
+      <circle cx="4.5" cy="4.5" r="0.32" fill={look.stone} stroke={look.wall} strokeWidth="0.07" />
+      <circle cx="4.4" cy="4.39" r="0.09" fill="#fff" opacity="0.55" />
     </svg>
   );
 }
