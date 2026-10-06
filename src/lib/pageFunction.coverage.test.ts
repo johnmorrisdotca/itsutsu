@@ -3,6 +3,7 @@ import { dirname, join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { unpackText } from "./packed/pack";
 import { chainTo, pageRoots, reachOf, sourceGraph } from "./pageFunctionGraph";
 
 /*
@@ -28,17 +29,12 @@ const reached = [...reach.keys()];
 /*
  * A LIST'S SERVER READER: a module that imports a `.data` file where there is
  * no browser. A page that reaches one carries what it reads. These are the
- * readers a page has a use for, each with the use.
+ * readers a page has a use for, each with the use. The kana lists and Tsunagi's
+ * boards are not here any more: a page reads them from a packed file
+ * (`src/lib/packed/`, `packedData.coverage.test.ts`), 0.6 MB of source less in
+ * the function, and a module that imports them again fails the test below.
  */
 const READERS_A_PAGE_USES: ReadonlyMap<string, string> = new Map([
-  [
-    "src/lib/puzzles/gomojiKana/kanaWordsModule.ts",
-    "A kana dodger's word is replayed from its list on the page of one solve and on a member's own page (PuzzleSolvePage, PuzzleMePage).",
-  ],
-  [
-    "src/lib/puzzles/tsunagi/layoutsModule.ts",
-    "Which Tsunagi levels a member has solved, and a level's fastest times, are read from the levels' boards on the set-up and play pages (tsunagiRecords.ts): the boards alone, never the answers.",
-  ],
   [
     "src/lib/puzzles/dailyWords/dailyPoolsModule.ts",
     "Today's words, a day's page and the archive are printed by the server from the kana pools.",
@@ -56,7 +52,6 @@ const READERS_A_PAGE_USES: ReadonlyMap<string, string> = new Map([
 const BIG_FILE_BYTES = 64 * 1024;
 const BIG_FILES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map([
   ["src/lib/puzzles/puzzles.constants.ts", "Every puzzle's name, rules and sizes, printed by its page, its rules page and every list of games."],
-  ["src/lib/puzzles/suido/levelBoards.data.ts", "The hash and the first characters of every Suido level's board, 100 KB for the 4,000 levels of sixteen sizes where the boards themselves are a megabyte and a quarter: which level a solve was, on a solve's page, a member's page and a level's fastest times (suido/levels.ts, suidoRecords.ts)."],
 ]);
 
 /*
@@ -105,7 +100,6 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
    * does.
    */
   ["@johnmorrisdotca/tenka", "Tenka's rules and map for its rules page, a kept game and a table read on the server."],
-  ["@johnmorrisdotca/tenka/shapes", "The map's outlines, drawn on the server for the table's first paint."],
   ["@johnmorrisdotca/kumimoji", "Kumimoji's tiles, judging and tables for its pages, as before it was a package; never its word lists."],
   /* Tane, 48 KB whole (1.0.1): the seeded random and the day's seed, which the server needs to name a daily puzzle and to check a game's dice. */
   ["@johnmorrisdotca/tane", "The seeded random and the daily seed, used by the server as by the browser."],
@@ -121,9 +115,6 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ["@johnmorrisdotca/toranpu/freecell", "FreeCell's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
   ["@johnmorrisdotca/domino", "Mexican Train's rules: its rules page prints the sets, and a table played on several devices is read and drawn on the server."],
   ["@johnmorrisdotca/kotoba", "Marking a guess, scoring and the kana marks, for a finished word puzzle replayed and checked on the server; no word list (each is an entry of its own)."],
-  ["@johnmorrisdotca/kotoba/kana-3", "Read by kanaWordsModule.ts, which the readers above give the reason for."],
-  ["@johnmorrisdotca/kotoba/kana-4", "Read by kanaWordsModule.ts."],
-  ["@johnmorrisdotca/kotoba/kana-5", "Read by kanaWordsModule.ts."],
   ["@johnmorrisdotca/kotoba/pop-answers", "Pop Gomoji's answers and their categories (18 KB), whose category is the clue printed with a day's pop word."],
   ["@johnmorrisdotca/toranpu/spider", "Spider's rules: a kept or finished game replayed and checked on the server, and a day's deal named."],
   /* Kazu, 113 KB of source for the entry the site imports (1.0.0; its drawing, strings, play screen and tag are other entries the site does not import): the Numbers family's generators, solver, O(cells) check, codes and cage outline. The server checks a finished grid before it pays (puzzleCheck.ts), finds a kept solve's answer again, spells every puzzle's cells (puzzleCode.ts) and draws a finished grid's boxes and cages, where before it ran the same logic from the site's own files. */
@@ -177,7 +168,6 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ["@johnmorrisdotca/suido/levels-info", "Suido's levels without their boards: how many each size has, which are open, each one's marks, lessons and twists (suido/levels.ts)."],
   ["@johnmorrisdotca/tsunagi", "Tsunagi's rules: a kept or finished level replayed and checked on the server, and a level's board drawn in its set-up preview and on its finished page."],
   ["@johnmorrisdotca/tsunagi/renumbered", "Where each old level went (2 KB), for a browser's own record of its solves moved to the new numbers (`tsunagiKept.ts`), reached through the set-up screen."],
-  ["@johnmorrisdotca/tsunagi/layouts", "Every Tsunagi level's board without its answer (0.36 MB for all 2,624 levels, where the levels are 1 MB): read by layoutsModule.ts so that the server can check a solve against the level it names and list who solved which level. The levels themselves (answers too) are fetched in the browser alone, and by a unit test or a spec through levelsModule.ts."],
   ["@johnmorrisdotca/toranpu/card-backs", "The backs a reader may choose, reached by every face-down card a finished patience game's replay draws; about 11 KB, and the server draws only the Itsutsu back."],
 ]);
 
@@ -250,6 +240,38 @@ describe("the pages' server function", () => {
     expect(offenders, "a page's server build reaches Suido's level data, which is 1.3 MB in every function").toEqual([]);
   });
 
+  /*
+   * DATA A SERVER NEEDS AND A BROWSER NEEDS TOO IS READ BY THE SERVER FROM A FILE.
+   * An import is copied into the build's chunks once for each group of pages that
+   * reaches it, and again for each route: Suido's level hashes (97 KB of source)
+   * were four copies in the pages' function and three in the API's, and Tenka's
+   * outlines (563 KB) three, measured 2026-10-06. Each one is in `src/lib/packed/`
+   * as a Brotli file the server reads (`packedData.coverage.test.ts` holds the
+   * file to its data module), and the data module is the browser's alone, swapped
+   * in by `next.config.ts` for a browser build. So nothing a page or a route
+   * reaches imports the data module or the package's own copy.
+   */
+  const BROWSER_DATA_A_SERVER_READS_FROM_A_FILE: ReadonlyMap<string, string> = new Map([
+    ["src/lib/puzzles/suido/levelBoards.data.ts", "Suido's level hashes: read from src/lib/packed/suidoLevelBoards.json.br (suido/levelBoards.ts)"],
+    ["src/lib/puzzles/suido/levelBoards.browser.ts", "Suido's level hashes, as the browser's copy of suido/levelBoards.ts"],
+    ["src/lib/party/tenka/tenkaShapes.browser.ts", "Tenka's outlines: read from src/lib/packed/tenkaShapes.json.br (tenka/tenkaShapes.data.ts)"],
+  ]);
+  const PACKAGE_DATA_A_SERVER_READS_FROM_A_FILE: ReadonlyMap<string, string> = new Map([
+    ["@johnmorrisdotca/tenka/shapes", "Tenka's outlines: read from src/lib/packed/tenkaShapes.json.br (tenka/tenkaShapes.data.ts)"],
+    ["@johnmorrisdotca/tsunagi/layouts", "Every Tsunagi level's board without its answer: read from src/lib/packed/tsunagiLayouts.json.br (tsunagi/layoutsModule.ts)"],
+    ["@johnmorrisdotca/kotoba/kana-3", "The three-kana words: read from src/lib/packed/kanaWords.json.br (gomojiKana/kanaWordsModule.ts)"],
+    ["@johnmorrisdotca/kotoba/kana-4", "The four-kana words: read from src/lib/packed/kanaWords.json.br (gomojiKana/kanaWordsModule.ts)"],
+    ["@johnmorrisdotca/kotoba/kana-5", "The five-kana words: read from src/lib/packed/kanaWords.json.br (gomojiKana/kanaWordsModule.ts)"],
+  ]);
+
+  it("reads data a browser also imports from a packed file, importing none of it", () => {
+    const importsData = reached.filter((path) => BROWSER_DATA_A_SERVER_READS_FROM_A_FILE.has(path)).map((path) => `${BROWSER_DATA_A_SERVER_READS_FROM_A_FILE.get(path)}  ${chainTo(reach, path)}`);
+    const importsPackage = reached
+      .flatMap((path) => [...(files.get(path)?.packages ?? []), ...(files.get(path)?.serverDynamic ?? [])].filter((spec) => PACKAGE_DATA_A_SERVER_READS_FROM_A_FILE.has(spec)).map((spec) => `${spec}  ${chainTo(reach, path)}`));
+    expect([...importsData, ...importsPackage], "a page's server build imports data it reads from a file: every group of pages and every route copies it").toEqual([]);
+    for (const path of BROWSER_DATA_A_SERVER_READS_FROM_A_FILE.keys()) expect(files.has(path), `${path} is gone; take it off the list`).toBe(true);
+  });
+
   it("carries no big file nobody wrote down", () => {
     const big = reached.filter((path) => (files.get(path)?.bytes ?? 0) > BIG_FILE_BYTES);
     const unexpected = big.filter((path) => !BIG_FILES_A_PAGE_PRINTS.has(path)).map((path) => `${Math.round(files.get(path)!.bytes / 1024)} KB  ${chainTo(reach, path)}`);
@@ -263,13 +285,13 @@ describe("the pages' server function", () => {
    * components, and the client components drawn on the server), and once more for
    * each route handler's bundle: 0.51 MB of them twice in the pages' function and
    * four times in the API's, measured 2026-10-06 (37.5 MB for the pages, 31.2 for
-   * the API, of 39). Read off disk by `jaText.data.ts` they are one file of 0.26 MB,
-   * and only for a reader of Japanese. The path stays a literal the tracer can
+   * the API, of 39). Read off disk by `jaText.data.ts` they are one file, packed with
+   * Brotli (0.10 MB where the text is 0.47: `packed/pack.ts`), and only for a reader of Japanese. The path stays a literal the tracer can
    * follow, the file is named by nothing else, and no module a page reaches holds
    * sentences of its own: the few kana in a game's display copy are not them, and
    * the daily word pools are lists a page prints from, written down here.
    */
-  const JAPANESE_FILE = "src/lib/i18n/jaText.generated.json";
+  const JAPANESE_FILE = "src/lib/i18n/jaText.generated.json.br";
   const KANA = /[\u3040-\u30ff]/g;
   const KANA_A_TABLE_MAY_HOLD = 300;
   const KANA_POOLS_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map([
@@ -283,9 +305,12 @@ describe("the pages' server function", () => {
     expect(loader, "jaText.data.ts is gone: the server has no way to read the Japanese").toBeDefined();
     const text = readFileSync(resolve(__dirname, "../..", loader!.path), "utf8");
     expect(text, "read the Japanese with join(process.cwd(), <folder>, <file name>), both written out: a path the tracer cannot follow ships nothing, or everything").toMatch(
-      /readFileSync\(\s*join\(process\.cwd\(\),\s*"src\/lib\/i18n",\s*"jaText\.generated\.json"\s*\)/,
+      /unpackText\(\s*readFileSync\(\s*join\(process\.cwd\(\),\s*"src\/lib\/i18n",\s*"jaText\.generated\.json\.br"\s*\)/,
     );
     expect(existsSync(resolve(__dirname, "../..", JAPANESE_FILE)), `${JAPANESE_FILE} does not exist: run pnpm i18n:text`).toBe(true);
+    // Packed, and well: a file that is the plain text (or barely packed) puts 0.37 MB back in every function that carries it.
+    const packed = readFileSync(resolve(__dirname, "../..", JAPANESE_FILE));
+    expect(packed.length, "the Japanese file is not Brotli at its best setting: pnpm i18n:text writes it packed").toBeLessThan(Buffer.byteLength(unpackText(packed)) / 3);
   });
 
   it("imports the Japanese file from nowhere, so no build compiles it in", () => {

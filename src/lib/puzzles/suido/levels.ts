@@ -11,9 +11,10 @@ import {
   type LevelRow,
 } from "@johnmorrisdotca/suido/levels-info";
 
+import { suidoLevelBoards } from "@/lib/puzzles/suido/levelBoards";
+
 import type { Puzzle } from "../puzzles.types";
 import { HASH_LENGTH, suidoBoardHash } from "./boardHash";
-import { SUIDO_LEVEL_BOARDS } from "./levelBoards.data";
 import { isSuidoLevelAt, suidoLevelBand } from "./levelCounts";
 import { suidoLevelSeed } from "./seed";
 import { suidoSizeKey } from "./sizes";
@@ -100,7 +101,7 @@ export function suidoLevelsLoaded(size: number): boolean {
 
 /** The hash and the first characters of level `level`, which is how a server names the board; undefined for a size or a level that has none. */
 export function suidoBoardOf(size: number, level: number): { prefix: string; hash: string } | undefined {
-  const known = SUIDO_LEVEL_BOARDS[size];
+  const known = suidoLevelBoards()[size];
   if (known === undefined || !isSuidoLevelAt(size, level)) return undefined;
   const at = level - 1;
   return { prefix: known.prefixes.slice(at * known.prefixLength, (at + 1) * known.prefixLength), hash: known.hashes.slice(at * HASH_LENGTH, (at + 1) * HASH_LENGTH) };
@@ -112,7 +113,7 @@ const numbersByHash = new Map<number, ReadonlyMap<string, number>>();
 function levelNumbersOf(size: number): ReadonlyMap<string, number> | undefined {
   const already = numbersByHash.get(size);
   if (already !== undefined) return already;
-  const known = SUIDO_LEVEL_BOARDS[size];
+  const known = suidoLevelBoards()[size];
   if (known === undefined) return undefined;
   const numbers = new Map<string, number>();
   for (let at = 0; at * HASH_LENGTH < known.hashes.length; at += 1) numbers.set(known.hashes.slice(at * HASH_LENGTH, (at + 1) * HASH_LENGTH), at + 1);

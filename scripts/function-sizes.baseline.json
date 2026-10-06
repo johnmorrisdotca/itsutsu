@@ -2,7 +2,7 @@
   "functions": [
     {
       "name": "_not-found",
-      "mb": 36.9,
+      "mb": 36.2,
       "sample": [
         "_not-found",
         "about",
@@ -18,7 +18,7 @@
     },
     {
       "name": "api/admin/members/[id]/claim",
-      "mb": 30.4,
+      "mb": 29.6,
       "sample": [
         "api/admin/members/[id]/claim",
         "api/admin/members/[id]/phrase",

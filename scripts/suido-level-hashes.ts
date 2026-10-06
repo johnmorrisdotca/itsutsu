@@ -62,16 +62,19 @@ const rows = Object.entries(sizes).map(([size, levels]) => {
 });
 writeFileSync(
   new URL("../src/lib/puzzles/suido/levelBoards.data.ts", import.meta.url),
-  `/**
+  `import type { SuidoLevelBoards } from "./levelBoards.types";
+
+/**
  * WHAT A SERVER KNOWS OF EVERY SUIDO LEVEL: for each size (\`sizes.ts\`: a square's side, 507 for the 5×7, 2050 for the 20×50), the
  * sixteen-hex-digit hash of every level's board, run together in level order, and the first \`prefixLength\` characters of every
  * board the same way, as many as it takes for no two levels of the size to share them. The hash says which level a board is; the
  * prefix finds a level's solves in the database without the board (\`boardHash.ts\`). Written by \`node scripts/suido-level-hashes.ts\`,
  * never by hand, and held to the package's levels by \`levelBoards.test.ts\`: a level that changes fails the build until it is run again.
+ * This is the browser's copy; a server reads the same boards from a packed file (\`levelBoards.ts\`), which \`pnpm data:pack\` writes from it.
  */
-export const SUIDO_LEVEL_BOARDS: Readonly<Record<number, { prefixLength: number; prefixes: string; hashes: string }>> = {
+export const SUIDO_LEVEL_BOARDS: SuidoLevelBoards = {
 ${rows.join("\n")}
 };
 `,
 );
-console.log("src/lib/puzzles/suido/levelBoards.data.ts written");
+console.log("src/lib/puzzles/suido/levelBoards.data.ts written; run `pnpm data:pack` for the file a server reads");

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { TENKA_TERRITORIES } from "@/lib/party/tenka/tenkaMap";
-import { TENKA_SHAPES } from "@/lib/party/tenka/tenkaShapes.data";
+import { TENKA_SHAPES } from "@/lib/party/tenka/tenkaShapes.browser";
 
 import { TENKA_CHIP, TENKA_ZOOM_MOST } from "./tenka.constants";
 import type { MapBox } from "./tenka.types";

@@ -15,6 +15,7 @@
     "attribution:check": "node scripts/check-attribution.mjs",
     "i18n:check": "node scripts/check-i18n-strings.mjs",
     "i18n:text": "JA_TEXT_WRITE=1 vitest run src/lib/i18n/jaText.coverage.test.ts",
+    "data:pack": "PACKED_WRITE=1 vitest run src/lib/packed/packedData.coverage.test.ts",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "quality:check": "pnpm lint && pnpm loc:check && pnpm i18n:check && pnpm typecheck && pnpm test:unit",

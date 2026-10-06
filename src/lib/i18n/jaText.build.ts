@@ -30,7 +30,7 @@ import type { ImportedVolumeType } from "../xp/xpAwardCopy.constants";
  * a reviewer can mark what they have read. A browser needs none of that, and a
  * page's function does not either, so this reads the authored files and keeps
  * the sentences: `pnpm i18n:text` writes the result into the one generated
- * file a reader is given (`jaText.generated.json`), and
+ * file a reader is given (`jaText.generated.json.br`), and
  * `jaText.coverage.test.ts` fails when that is not what this makes.
  *
  * Reads the authored files, so it is for the tests and that one command only:
@@ -155,7 +155,8 @@ export function buildCopyText(): JaCopyText {
 
 /**
  * The one file a server reads the Japanese from (`jaText.data.ts`): the phrases
- * one to a line, then the copy beside data one table to a line, and nothing else.
+ * one to a line, then the copy beside data one table to a line, and nothing else;
+ * the file holds this text packed with Brotli (`packed/pack.ts`).
  * JSON has no comment to carry a "do not edit" header, so the rule is written
  * here, in `jaText.coverage.test.ts` (which fails when the file is not what this
  * makes) and in AGENTS.md. No indentation: every byte of it is in every function.

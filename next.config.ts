@@ -133,6 +133,16 @@ const nextConfig: NextConfig = {
        * that no other module a browser reaches imports the words.
        */
       "@/lib/i18n/jaText.server": { browser: "./src/lib/i18n/jaText.browser.ts" },
+      /*
+       * DATA A SERVER READS FROM A FILE AND A BROWSER IMPORTS. A server's reader
+       * (`src/lib/packed/`'s files, one reader each) is the module the code
+       * imports; a browser build gets the data module in its place. The same
+       * trick as the Japanese above, for the same reason: an import is copied
+       * into the pages' function once for each group of pages.
+       * `packedData.coverage.test.ts` holds each pair.
+       */
+      "@/lib/puzzles/suido/levelBoards": { browser: "./src/lib/puzzles/suido/levelBoards.browser.ts" },
+      "@/lib/party/tenka/tenkaShapes.data": { browser: "./src/lib/party/tenka/tenkaShapes.browser.ts" },
     },
   },
   async headers() {

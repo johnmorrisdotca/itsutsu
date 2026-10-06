@@ -289,8 +289,8 @@ rule that stops the gap growing, and the gate that holds it.
   it.** The authored files (`dictionaries/`, `xpAwardCopy.ja.constants.ts`,
   `levelNames.ja.constants.ts`) keep every sentence beside its `back`, `review`
   and `ask`, and only the review sheets and the tests read them. What the site
-  runs on is one generated file of sentences alone,
-  `jaText.generated.json`, read off disk by a server for a reader of Japanese
+  runs on is one generated file of sentences alone, packed with Brotli,
+  `jaText.generated.json.br`, read off disk by a server for a reader of Japanese
   and never imported (see Function Size): **after editing any Japanese, run
   `pnpm i18n:text` and commit the file**, or `jaText.coverage.test.ts`
   fails with that instruction (on a merge, run it again rather than resolving
@@ -1259,21 +1259,45 @@ deployment carries a copy.
   compiled twice (the server layer, and the layer that draws client components
   on the server), and a route handler's bundle holds its own copies on top, so
   naming a module from the layout cannot make it one (the rule above is about
-  groups of pages, and the phrase catalogue was already one copy per layer).
-  Measured 2026-10-06: the Japanese, 0.5 MB, was in two chunks of the pages'
-  function and four of the API's. It is now one file, `jaText.generated.json`,
-  read off disk by `jaText.data.ts` the first time a reader of Japanese asks,
-  by a path the tracer can follow, and imported by nothing
-  (`pageFunction.coverage.test.ts` fails by name for an import, a path it
-  cannot follow, or a page-reachable module holding more than 300 kana). That
-  took the pages' function 37.5 to 37.2 MB and the API's 31.2 to 30.5. What is
-  still compiled twice is the English: the phrase catalogue (about 125 KB a
-  copy, 60 KB for each thousand phrases) and the copy tables beside data
-  (`variants.constants.ts` and the like, about 200 KB a copy). Moving them to a
-  file the same way needs a server-only alias, which Turbopack does not have
-  (`resolveAlias` takes only `browser`), so a dev server would read a stale
-  file; `gzip -9` takes the Japanese file from 257 KB to 69 KB at half a
-  millisecond to open, and is the next lever if the ceiling closes in.
+  groups of pages, and the phrase catalogue was already one copy per layer; a
+  side-effect import from the layout, or from a client module behind
+  `typeof window`, was tried on 2026-10-06 and moved nothing, as did
+  `turbopackChunking` and `turbopackServerSideNestedAsyncChunking`, which touch
+  the browser's chunks only). Measured 2026-10-06: the Japanese, 0.5 MB, was in
+  two chunks of the pages' function and four of the API's. It is now one file,
+  `jaText.generated.json.br`, read off disk by `jaText.data.ts` the first time a
+  reader of Japanese asks, by a path the tracer can follow, and imported by
+  nothing (`pageFunction.coverage.test.ts` fails by name for an import, a path
+  it cannot follow, a file that is not packed, or a page-reachable module
+  holding more than 300 kana). **The file is Brotli at its best setting**
+  (`src/lib/packed/pack.ts`): 0.47 MB of text is 0.10 MB on disk and two
+  milliseconds to open, once for the life of the process; `pnpm i18n:text`
+  leaves a file that already unpacks to the right text alone, since Brotli's
+  bytes can differ between Node's builds.
+  **Data a server needs is read from a packed file, never imported.** An
+  import is copied into the build's chunks once for each group of pages that
+  reaches it and again for each route (Suido's level hashes were four copies,
+  Tenka's outlines three), so a big table a server reads sits in
+  `src/lib/packed/` as a Brotli file, written by `pnpm data:pack` from the data
+  the site already has, read by one reader that names the file literally
+  (`join(process.cwd(), "src/lib/packed", "<file>.json.br")`) the first time it
+  is asked and once for the life of the process, and imported by nothing else.
+  Where a browser needs the same data (Suido's hashes, Tenka's outlines) it
+  keeps its data module and `next.config.ts`'s `turbopack.resolveAlias`
+  (`browser`) swaps the server's reader for it in a browser build, so the reader
+  is imported by its `@/` address and no other way. Where only a server reads it
+  (Tsunagi's boards, the kana lists) there is no alias, and a client component
+  must not reach the reader. `packedData.coverage.test.ts` holds each file to its
+  data, its one reader and its alias, and `pageFunction.coverage.test.ts` fails,
+  naming the chain, when a page's server build imports the data again. A new row
+  is a line in both. Together these took the pages' function from 37.9 MB to
+  36.2 and the API's from 30.8 to 29.6, with the browser's first-load JavaScript
+  identical on every route. What is still compiled twice is the English: the
+  phrase catalogue (about 125 KB a copy, 60 KB for each thousand phrases) and the
+  copy tables beside data (`variants.constants.ts` and the like, about 200 KB a
+  copy), and `puzzles.constants.ts` (70 KB, four copies); they are code and copy
+  as much as data, so moving them is the next lever if the ceiling closes in,
+  with the kana pools and Meikyuu's levels (one copy each, 0.2 MB) behind them.
 
 ### Every Landed Commit Bumps The Version
 

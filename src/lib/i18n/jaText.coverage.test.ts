@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -17,6 +17,7 @@ import { PUZZLE_COPY_JA } from "./dictionaries/puzzles.ja.constants";
 import { overlayLines } from "./copyTable";
 import { buildCopyText, buildPhraseText, jaTextJson, PUZZLE_TABLES_AUTHORED } from "./jaText.build";
 import { loadJaText } from "./jaText.data";
+import { packText, unpackText } from "@/lib/packed/pack";
 import { LEVEL_NAMES_JA } from "../xp/levelNames.ja.constants";
 import { IMPORTED_VOLUME_COPY_JA, XP_AWARD_COPY_JA } from "../xp/xpAwardCopy.ja.constants";
 
@@ -32,7 +33,7 @@ import { IMPORTED_VOLUME_COPY_JA, XP_AWARD_COPY_JA } from "../xp/xpAwardCopy.ja.
  * on it, to read English; and every page's function carried the same.
  *
  * Now a reader's words are one generated file of text alone
- * (`jaText.generated.json`), read by a server for a reader of Japanese and handed
+ * (`jaText.generated.json.br`), read by a server for a reader of Japanese and handed
  * to a browser by `JaLocale`, and not otherwise. This holds both halves of that:
  * the generated file is what the authored files say, and nothing a browser or a
  * page can reach contains a back-translation.
@@ -41,18 +42,21 @@ import { IMPORTED_VOLUME_COPY_JA, XP_AWARD_COPY_JA } from "../xp/xpAwardCopy.ja.
  */
 
 const ROOT = resolve(__dirname, "../../..");
-const TEXT_FILE = "src/lib/i18n/jaText.generated.json";
+const TEXT_FILE = "src/lib/i18n/jaText.generated.json.br";
 
 describe("the Japanese a reader is given", () => {
   if (process.env.JA_TEXT_WRITE === "1") {
     it("is rewritten from the authored files (pnpm i18n:text)", () => {
-      writeFileSync(resolve(ROOT, TEXT_FILE), jaTextJson(buildPhraseText(), buildCopyText()));
+      // A file that already unpacks to these words stays as it is: Brotli's bytes can differ between Node's builds, and a rewrite would show as a change nobody made.
+      const json = jaTextJson(buildPhraseText(), buildCopyText());
+      const now = existsSync(resolve(ROOT, TEXT_FILE)) ? unpackText(readFileSync(resolve(ROOT, TEXT_FILE))) : null;
+      if (now !== json) writeFileSync(resolve(ROOT, TEXT_FILE), packText(json));
     });
     return;
   }
 
   it("is the text of the authored phrases and of the authored copy beside the games, the computer players, the families, the levels and the awards, none left out and none left over", () => {
-    expect(readFileSync(resolve(ROOT, TEXT_FILE), "utf8"), "run `pnpm i18n:text`: the authored Japanese and what a reader is given have come apart").toBe(jaTextJson(buildPhraseText(), buildCopyText()));
+    expect(unpackText(readFileSync(resolve(ROOT, TEXT_FILE))), "run `pnpm i18n:text`: the authored Japanese and what a reader is given have come apart").toBe(jaTextJson(buildPhraseText(), buildCopyText()));
     const text = loadJaText();
     expect(text.phrases).toEqual(buildPhraseText());
     expect({ ...text, phrases: undefined }).toEqual({ ...buildCopyText(), phrases: undefined });

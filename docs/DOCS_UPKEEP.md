@@ -126,7 +126,8 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `/releases` | `CHANGELOG.md` | written by `pnpm release:take`; never by hand | `releases.test.ts` |
 | `docs/japanese-review.md` | `src/lib/i18n/dictionaries/**` | regenerate; never edit | `japanese.coverage.test.ts` |
 | `docs/japanese-review-games.md` | `src/lib/i18n/dictionaries/*.ja.*` (games, openings, computer players, families, attribution) | regenerate; never edit | `gameCopyReview.coverage.test.ts` |
-| `src/lib/i18n/jaText.generated.json` | the authored Japanese: `src/lib/i18n/dictionaries/**`, `src/lib/xp/xpAwardCopy.ja.constants.ts`, `src/lib/xp/levelNames.ja.constants.ts` | any Japanese sentence is added or changed: run `pnpm i18n:text`; never edit by hand | `jaText.coverage.test.ts` |
+| `src/lib/i18n/jaText.generated.json.br` | the authored Japanese: `src/lib/i18n/dictionaries/**`, `src/lib/xp/xpAwardCopy.ja.constants.ts`, `src/lib/xp/levelNames.ja.constants.ts` | any Japanese sentence is added or changed: run `pnpm i18n:text`; never edit by hand | `jaText.coverage.test.ts` |
+| `src/lib/packed/*.json.br` | the data each is written from: Suido's level hashes, Tenka's outlines, Tsunagi's boards and the kana lists (the table in `packedData.coverage.test.ts`) | that data changes, or a package that holds it is bumped: run `pnpm data:pack`; never edit by hand | `packedData.coverage.test.ts` |
 | `docs/japanese-review-puzzles.md` | `src/lib/i18n/dictionaries/puzzles.ja.*` (every puzzle's tagline, origin and rules, and the tables its screens are made of) | regenerate; never edit | `puzzleCopyReview.coverage.test.ts` |
 
 When a new doc lands, it gets a row here in the same commit. A doc without a

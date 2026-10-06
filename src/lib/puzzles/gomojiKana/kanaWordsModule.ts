@@ -1,3 +1,10 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import type { Packed } from "@johnmorrisdotca/kotoba";
+
+import { unpackText } from "@/lib/packed/pack";
+
 import { type KanaWords, loadKanaWords, readKanaWordsWith } from "./kanaWords";
 
 /**
@@ -6,12 +13,23 @@ import { type KanaWords, loadKanaWords, readKanaWordsWith } from "./kanaWords";
  * test, a browser spec's own process. Importing this module is what lets
  * `loadKanaWords` answer there (see `kanaWords.ts`).
  */
+let everyList: Record<number, Packed> | null = null;
+
+/**
+ * The three lengths' lists, read from `kanaWords.json.br` (`src/lib/packed/`, 173 KB) the first time a server needs one and once
+ * for the life of the process, by a path the build's tracer can follow, so keep it literal. The package's own three were 408 KB
+ * of source in the pages' function (measured 2026-10-06); `pnpm data:pack` writes the file from them and
+ * `packedData.coverage.test.ts` fails when the two come apart.
+ */
+function packedLists(): Record<number, Packed> {
+  everyList ??= JSON.parse(unpackText(readFileSync(join(process.cwd(), "src/lib/packed", "kanaWords.json.br")))) as Record<number, Packed>;
+  return everyList;
+}
+
 readKanaWordsWith(async (size) => {
-  // Named one by one, so the bundler splits each length into its own chunk.
-  if (size === 3) return (await import("@johnmorrisdotca/kotoba/kana-3")).JA_WORDS_3;
-  if (size === 4) return (await import("@johnmorrisdotca/kotoba/kana-4")).JA_WORDS_4;
-  if (size === 5) return (await import("@johnmorrisdotca/kotoba/kana-5")).JA_WORDS_5;
-  throw new Error(`No ${size}-kana words.`);
+  const list = packedLists()[size];
+  if (list === undefined) throw new Error(`No ${size}-kana words.`);
+  return list;
 });
 
 /** A length's words, read from their module: `loadKanaWords` for a caller with no browser. */
