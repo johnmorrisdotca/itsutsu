@@ -8,8 +8,8 @@ import {
 } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
-import { removeMember, seedMember } from "./members";
-import { ADMIN_STATE, ready, watchForCrashes } from "./support";
+import { memberContext, removeMember, seedMember } from "./members";
+import { ready, watchForCrashes } from "./support";
 import { namesPlayedUnder } from "./tidy";
 
 /**
@@ -78,13 +78,29 @@ async function finishedGame(request: APIRequestContext, names: { blackName: stri
   return game;
 }
 
-/** A browser somewhere other than the server, signed in as the suite's operator or as nobody. */
-function readerContext(browser: Browser, reader: Reader, signedIn: boolean): Promise<BrowserContext> {
-  return browser.newContext({
-    storageState: signedIn ? ADMIN_STATE : { cookies: [], origins: [] },
-    locale: reader.locale,
-    timezoneId: reader.timezoneId,
-  });
+/** The members this file signs readers in as, removed when it is done. */
+const readers: string[] = [];
+
+test.afterAll(async () => {
+  for (const email of readers.splice(0)) await removeMember(email);
+});
+
+/**
+ * A browser somewhere other than the server, signed in as a member of this
+ * spec's own or as nobody. Not as the suite's operator: the operator's account
+ * keeps a language (the account-menu spec leaves it on English, as the other
+ * specs expect), and a language on the account beats the browser's own, so a
+ * reader in Tokyo signed in as the operator is read to in English and the page
+ * is right to. A member made here has no language kept, so the reader's own
+ * decides, which is the position this file is asking about.
+ */
+async function readerContext(browser: Browser, baseURL: string, reader: Reader, signedIn: boolean): Promise<BrowserContext> {
+  const options = { locale: reader.locale, timezoneId: reader.timezoneId };
+  if (!signedIn) return browser.newContext({ storageState: { cookies: [], origins: [] }, ...options });
+  const stamp = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  const member = { email: `hydrate-${stamp}@example.test`, name: `Hydrate ${stamp}` };
+  readers.push(member.email);
+  return memberContext(browser, baseURL, member, options);
 }
 
 /**
@@ -120,7 +136,7 @@ async function hydratesCleanly(
  */
 for (const reader of READERS) {
   test.describe(`a game's pages hydrate the same for a reader in ${reader.where}`, () => {
-    test("a live match on a clock", async ({ browser, request }) => {
+    test("a live match on a clock", async ({ browser, baseURL, request }) => {
       const stamp = Date.now().toString(36);
       /*
        * Five minutes a move, so the countdown is in seconds: the server's
@@ -132,7 +148,7 @@ for (const reader of READERS) {
         whiteName: under(`Hand ${stamp}`),
         moveTimeMs: 5 * 60_000,
       });
-      const context = await readerContext(browser, reader, true);
+      const context = await readerContext(browser, baseURL!, reader, true);
       try {
         const page = await hydratesCleanly(
           context,
@@ -152,13 +168,13 @@ for (const reader of READERS) {
       }
     });
 
-    test("a live match against somebody who is away", async ({ browser, request }) => {
+    test("a live match against somebody who is away", async ({ browser, baseURL, request }) => {
       const stamp = Date.now().toString(36);
       const away = { email: `away-${stamp}@example.test`, name: `Away ${stamp}` };
       await seedMember(away);
       const prisma = new PrismaClient();
       const game = await makeGame(request, { blackName: under(`Stay ${stamp}`), whiteName: under(away.name) });
-      const context = await readerContext(browser, reader, true);
+      const context = await readerContext(browser, baseURL!, reader, true);
       try {
         /*
          * Back at three in the morning UTC, three days from now: a moment
@@ -191,10 +207,10 @@ for (const reader of READERS) {
       }
     });
 
-    test("a finished game's replay, at its end and at its start", async ({ browser, request }) => {
+    test("a finished game's replay, at its end and at its start", async ({ browser, baseURL, request }) => {
       const stamp = Date.now().toString(36);
       const game = await finishedGame(request, { blackName: under(`Filed ${stamp}`), whiteName: under(`Kept ${stamp}`) });
-      const context = await readerContext(browser, reader, true);
+      const context = await readerContext(browser, baseURL!, reader, true);
       try {
         const end = await hydratesCleanly(
           context,
@@ -233,10 +249,10 @@ for (const reader of READERS) {
       }
     });
 
-    test("the record of games", async ({ browser, request }) => {
+    test("the record of games", async ({ browser, baseURL, request }) => {
       const stamp = Date.now().toString(36);
       await finishedGame(request, { blackName: under(`Listed ${stamp}`), whiteName: under(`Rowed ${stamp}`) });
-      const context = await readerContext(browser, reader, true);
+      const context = await readerContext(browser, baseURL!, reader, true);
       try {
         /*
          * A finished game reaches the record a moment after it ends, and a
@@ -259,14 +275,14 @@ for (const reader of READERS) {
       }
     });
 
-    test("an embed with its live figures", async ({ browser, request }) => {
+    test("an embed with its live figures", async ({ browser, baseURL, request }) => {
       const minted = await request.post("/api/embed-tokens", {
         data: { label: "playwright-hydration", scope: "data" },
       });
       expect(minted.status()).toBe(201);
       const { token } = (await minted.json()) as { token: string };
       // Nobody signed in: the position a third-party iframe is in.
-      const context = await readerContext(browser, reader, false);
+      const context = await readerContext(browser, baseURL!, reader, false);
       try {
         await hydratesCleanly(
           context,

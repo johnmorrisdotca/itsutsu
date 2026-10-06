@@ -23,12 +23,17 @@ export function BuddyButton({ memberId, isBuddy }: { memberId: string; isBuddy: 
 
   async function toggle() {
     setBusy(true);
-    const response = await fetch("/api/buddies", {
-      method: buddy ? "DELETE" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ memberId }),
-    });
-    setBusy(false);
+    let response: Response;
+    try {
+      response = await fetch("/api/buddies", {
+        method: buddy ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId }),
+      });
+    } finally {
+      // A request that never arrives must give the star back, or it stays disabled for good.
+      setBusy(false);
+    }
     if (response.ok) {
       setBuddy(!buddy);
       router.refresh();
