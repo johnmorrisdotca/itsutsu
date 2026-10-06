@@ -2,7 +2,6 @@ import { RECORDED_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { copyLocale } from "@/lib/i18n/copyLocale";
 import { fill } from "@/lib/i18n/i18n";
-import { jaText } from "@/lib/i18n/jaText";
 import type { Locale } from "@/lib/i18n/i18n.types";
 import { inWords } from "@/lib/text/inWords";
 
@@ -37,7 +36,7 @@ export function xpEventCopy(type: XpEventType, locale: Locale = "en"): Pick<XpEv
    */
   const counts = { games: inWords(RULE_VARIANT_LIST.length, language), families: inWords(RECORDED_FAMILIES.length, language) };
   if (language === "ja") {
-    const words = jaText().awards[type];
+    const words = XP_AWARD_COPY.ja[type];
     return { label: spec.kanji, kanji: spec.kanji, blurb: fill(words.blurb, counts), sentence: fill(words.sentence, counts) };
   }
   const words = XP_AWARD_COPY.en[type];

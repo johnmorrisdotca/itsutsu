@@ -14,7 +14,6 @@ import {
 } from "./xp.constants";
 import { placeholdersIn } from "@/lib/i18n/i18n";
 import { XP_AWARD_COPY } from "./xpAwardCopy.constants";
-import { XP_AWARD_COPY_JA } from "./xpAwardCopy.ja.constants";
 import { xpEventCopy } from "./xpAwardCopy";
 import { XP_SUBJECTS } from "./xpSubjects.constants";
 import {
@@ -116,13 +115,13 @@ describe("every event can explain itself", () => {
     const japanese = xpEventCopy(type, "ja");
     expect(japanese.label, "the heading of a Japanese reader is the kanji").toBe(XP_EVENT_SPECS[type].kanji);
     for (const field of ["blurb", "sentence"] as const) {
-      expect(placeholdersIn(XP_AWARD_COPY_JA[type][field]).sort(), `${field}'s names`).toEqual(
+      expect(placeholdersIn(XP_AWARD_COPY.ja[type][field]).sort(), `${field}'s names`).toEqual(
         placeholdersIn(XP_AWARD_COPY.en[type][field]).sort(),
       );
       expect(japanese[field], `Japanese ${field}`).toMatch(/[぀-ヿ一-鿿]/);
       for (const text of [english[field], japanese[field]]) expect(text, `${field} filled in`).not.toMatch(/[{}]/);
     }
-    expect(XP_AWARD_COPY_JA[type].back.trim().length, "back-translation").toBeGreaterThan(10);
+    expect(XP_AWARD_COPY.ja[type].back.trim().length, "back-translation").toBeGreaterThan(10);
   });
 
   it.each(types)("%s says what its subject is, so nobody has to guess", (type) => {

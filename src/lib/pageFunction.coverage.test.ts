@@ -56,7 +56,6 @@ const READERS_A_PAGE_USES: ReadonlyMap<string, string> = new Map([
 const BIG_FILE_BYTES = 64 * 1024;
 const BIG_FILES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map([
   ["src/lib/puzzles/puzzles.constants.ts", "Every puzzle's name, rules and sizes, printed by its page, its rules page and every list of games."],
-  ["src/lib/i18n/jaText.copy.generated.constants.ts", "The Japanese of every game's rules, opening, computer player, family, level and award, printed by every page for a reader of Japanese. 122 KB of sentences alone, made from 375 KB of authored files by `pnpm i18n:text`: the back-translations and review notes are not in it (`jaText.coverage.test.ts`)."],
   ["src/lib/puzzles/suido/levelBoards.data.ts", "The hash and the first characters of every Suido level's board, 100 KB for the 4,000 levels of sixteen sizes where the boards themselves are a megabyte and a quarter: which level a solve was, on a solve's page, a member's page and a level's fastest times (suido/levels.ts, suidoRecords.ts)."],
 ]);
 

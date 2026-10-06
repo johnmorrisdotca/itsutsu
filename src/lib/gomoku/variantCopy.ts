@@ -1,7 +1,8 @@
+import { jaText } from "../i18n/copyJa.types";
 import type { Locale } from "../i18n/i18n.types";
-import { jaText } from "../i18n/jaText";
 
 import type { RuleVariant } from "./gomoku.types";
+import { VARIANT_COPY_JA } from "../i18n/dictionaries/variants.ja.constants";
 import { RULE_VARIANT_DISPLAY, type VariantCopy } from "./variants.constants";
 
 const IN_JAPANESE = new Map<RuleVariant, VariantCopy>();
@@ -21,8 +22,14 @@ export function variantCopy(variant: RuleVariant, locale: Locale): VariantCopy {
   if (locale !== "ja") return english;
   const made = IN_JAPANESE.get(variant);
   if (made !== undefined) return made;
-  const ja = jaText().variants[variant];
-  const copy: VariantCopy = { ...english, tagline: ja.tagline, origin: ja.origin, rules: ja.rules, board: ja.board };
+  const ja = VARIANT_COPY_JA[variant];
+  const copy: VariantCopy = {
+    ...english,
+    tagline: jaText(ja.tagline),
+    origin: jaText(ja.origin),
+    rules: ja.rules.map(jaText),
+    board: jaText(ja.board),
+  };
   IN_JAPANESE.set(variant, copy);
   return copy;
 }

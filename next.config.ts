@@ -119,22 +119,6 @@ const nextConfig: NextConfig = {
    * computer player, whose worker has no `window`, found no words at all.
    */
   transpilePackages: ["@johnmorrisdotca/tenka", "@johnmorrisdotca/kumimoji"],
-  turbopack: {
-    resolveAlias: {
-      /*
-       * THE JAPANESE IS NOT IN THE JAVASCRIPT AN ENGLISH READER IS SENT.
-       *
-       * `jaText.ts` imports `jaText.server`, which loads the Japanese words as a
-       * side effect, so every server build has them and nobody has to remember to
-       * ask. In a browser build this module is an empty one instead, and the words
-       * come only from `JaLocale`, which the root layout draws for a reader of
-       * Japanese: its chunk is named by no page that renders English, so it is
-       * never fetched. `jaText.coverage.test.ts` holds that this alias is here and
-       * that no other module a browser reaches imports the words.
-       */
-      "@/lib/i18n/jaText.server": { browser: "./src/lib/i18n/jaText.browser.ts" },
-    },
-  },
   async headers() {
     return [
       /* The offline keeper (public/sw.js): a device checks it against the site's on every visit, never against a cached copy. */

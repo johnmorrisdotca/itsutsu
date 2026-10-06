@@ -1,9 +1,9 @@
 import { copyLocale } from "@/lib/i18n/copyLocale";
 import { speaker } from "@/lib/i18n/i18n";
 import type { Locale } from "@/lib/i18n/i18n.types";
-import { jaText } from "@/lib/i18n/jaText";
 
 import { LEVEL_NAMES, type LevelName } from "./levelNames.constants";
+import { LEVEL_NAMES_JA } from "./levelNames.ja.constants";
 import { XP_LEVELS } from "./xpCurve";
 
 /**
@@ -76,7 +76,7 @@ export function levelNameRow(level: number, locale: Locale = "en"): LevelName | 
   if (english === undefined) return null;
   if (copyLocale(locale) === "en") return english;
   /* The Japanese row is the same level; the kanji stays as it is, since it is the same word. */
-  const japanese = jaText().levels[level - 1];
+  const japanese = LEVEL_NAMES_JA[level - 1];
   return japanese === undefined ? english : { level, name: japanese.name, ...(english.kanji === undefined ? {} : { kanji: english.kanji }), note: japanese.note };
 }
 

@@ -2,7 +2,6 @@ import { LEVEL_NAMES } from "@/lib/xp/levelNames.constants";
 import { LEVEL_NAMES_JA } from "@/lib/xp/levelNames.ja.constants";
 import { XP_EVENT_SPECS } from "@/lib/xp/xp.constants";
 import { IMPORTED_VOLUME_COPY, XP_AWARD_COPY } from "@/lib/xp/xpAwardCopy.constants";
-import { IMPORTED_VOLUME_COPY_JA, XP_AWARD_COPY_JA } from "@/lib/xp/xpAwardCopy.ja.constants";
 import type { XpEventType } from "@/lib/xp/xp.types";
 
 import type { Review } from "./dictionaries/ja.drafted.constants";
@@ -50,7 +49,7 @@ export const JA_COPY_TABLES: readonly CopyTable[] = [
     rows: () => [
       ...(Object.keys(XP_AWARD_COPY.en) as XpEventType[]).map((type) => {
         const en = XP_AWARD_COPY.en[type];
-        const ja = XP_AWARD_COPY_JA[type];
+        const ja = XP_AWARD_COPY.ja[type];
         return {
           english: `${en.label}. ${en.blurb} / ${en.sentence}`,
           japanese: `${XP_EVENT_SPECS[type].kanji}。${ja.blurb} / ${ja.sentence}`,
@@ -60,7 +59,7 @@ export const JA_COPY_TABLES: readonly CopyTable[] = [
       }),
       ...(Object.keys(IMPORTED_VOLUME_COPY.en) as (keyof typeof IMPORTED_VOLUME_COPY.en)[]).map((type) => {
         const en = IMPORTED_VOLUME_COPY.en[type];
-        const ja = IMPORTED_VOLUME_COPY_JA[type];
+        const ja = IMPORTED_VOLUME_COPY.ja[type];
         return { english: `${en.label}. ${en.blurb}`, japanese: ja.blurb, back: ja.back, review: ja.review };
       }),
     ],

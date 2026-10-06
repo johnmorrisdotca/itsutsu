@@ -1,5 +1,6 @@
+import { jaText } from "../i18n/copyJa.types";
+import { BOT_COPY_JA } from "../i18n/dictionaries/bots.ja.constants";
 import type { Locale } from "../i18n/i18n.types";
-import { jaText } from "../i18n/jaText";
 
 import { BOT_PROFILES } from "./opponent.constants";
 import type { BotProfile, BotTier } from "./opponent.types";
@@ -21,13 +22,13 @@ export function botProfile(tier: BotTier, locale: Locale): BotProfile {
   if (locale !== "ja") return english;
   const made = IN_JAPANESE.get(tier);
   if (made !== undefined) return made;
-  const ja = jaText().bots[tier];
-  const profile: BotProfile = { ...english, strength: ja.strength, blurb: ja.blurb };
+  const ja = BOT_COPY_JA[tier];
+  const profile: BotProfile = { ...english, strength: jaText(ja.strength), blurb: jaText(ja.blurb) };
   IN_JAPANESE.set(tier, profile);
   return profile;
 }
 
 /** What a computer player's own page says about it, in the reader's language; the English comes from the caller. */
 export function botBio(tier: BotTier, english: string, locale: Locale): string {
-  return locale === "ja" ? jaText().bots[tier].bio : english;
+  return locale === "ja" ? jaText(BOT_COPY_JA[tier].bio) : english;
 }
