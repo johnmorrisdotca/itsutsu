@@ -57,7 +57,7 @@ export function PartyBlocksTray({ game, hold, onHold, onRotate, onFlip, refusal 
               type="button"
               onClick={() => onHold(piece)}
               aria-pressed={piece === hold.piece}
-              aria-label={`${blocksPieceSize(piece)}-square piece`}
+              aria-label={say.say("party.blocks.pieceAria", { size: String(blocksPieceSize(piece)) })}
               data-testid="blocks-piece"
               data-piece={piece}
               className={`flex aspect-square w-full min-h-11 items-center justify-center rounded-md border ${

@@ -1,5 +1,6 @@
 import type { JaOverlay } from "../copyTable";
 
+import type { CARD_BACK_WORDS } from "@/components/cards/Cards.constants";
 import type { CASUAL_COPY } from "@/components/casual/casual.constants";
 import type { DICE_WAR_COPY } from "@/components/party/diceWar/diceWar.constants";
 import type { GUNJIN_COPY, GUNJIN_PLACING_RULES, GUNJIN_SIDES } from "@/components/party/gunjin/gunjin.constants";
@@ -416,7 +417,7 @@ export const GUNJIN_COPY_JA = {
   opponent: ["相手の駒", "Opponent piece"],
   empty: ["空", "empty"],
   lake: ["湖：入れません", "lake, nothing can enter"],
-  cell: ["{0}、{1}", "{0}, {1}"],
+  cell: ["{0}のマス：{1}", "square {0}: {1}"],
   idleDetail: IDLE_DETAIL,
   idleKept: IDLE_KEPT,
 } as const satisfies JaOverlay<Omit<typeof GUNJIN_COPY, "nameOf">>;
@@ -496,7 +497,7 @@ export const TENKA_COPY_JA = {
   fit: ["地図を動かして拡大", "Move and zoom the map"],
   regions: ["見る場所", "Look at"],
   world: ["世界", "World"],
-  wrapTo: { by: 1, is: { true: ["{0} →", "{0} →"] }, other: ["← {0}", "← {0}"] },
+  wrapTo: { by: 1, is: { true: ["{0}へ →", "to {0} →"] }, other: ["← {0}へ", "← to {0}"] },
   wrapNote: ["{0}（ベーリング海峡の向こう）", "{0}, across the Bering Strait"],
 } as const satisfies JaOverlay<Omit<typeof TENKA_COPY, "lengthWords" | "lengthNote" | "roundOf">>;
 
@@ -560,3 +561,10 @@ export const CASUAL_COPY_JA = {
   idle: ["ゲームを読み込んでいます…", "Loading the game…"],
   board: ["{0}、レベル{1}", "{0}, level {1}"],
 } as const satisfies JaOverlay<typeof CASUAL_COPY>;
+
+/** The card backs' names a reader may choose between; the site's own back is named by the site's name, which is not translated. */
+export const CARD_BACK_WORDS_JA = {
+  "classic-red": ["クラシック（赤）", "Classic (red)"],
+  "classic-blue": ["クラシック（青）", "Classic (blue)"],
+  "ink-dots": ["インクの水玉", "Ink dots"],
+} as const satisfies JaOverlay<typeof CARD_BACK_WORDS>;

@@ -216,7 +216,7 @@ describe("every table round one device can be resigned", () => {
     const without = TABLES.filter((path) => !/\bTableEnding\b/.test(code(read(path))) && !(path in OWN_RESIGN));
     expect(without, "a table round one device has Resign (TableEnding), or is named in OWN_RESIGN with the reason").toEqual([]);
     for (const [path, reason] of Object.entries(OWN_RESIGN)) expect(reason.length, path).toBeGreaterThan(20);
-    expect(code(read("src/components/party/sugoroku/SugorokuStage.tsx"))).toContain("SUGOROKU_COPY.giveUp");
+    expect(code(read("src/components/party/sugoroku/SugorokuStage.tsx"))).toContain("ENDING.resign");
     expect(code(read("src/components/party/PairGoGame.tsx"))).toContain("EndGameButton");
   });
 

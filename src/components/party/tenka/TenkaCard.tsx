@@ -10,7 +10,7 @@ import { TENKA_PHASES, TENKA_WORLD_ROUNDS } from "@/lib/party/tenka/tenka.consta
 
 import { MarbleChip } from "../MarbleChip";
 import { useKeptTenkaGame } from "./tenkaStore";
-import { partyScreenWords, tenkaWords } from "@/components/party/partyWords";
+import { partyScreenWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { tenkaRoundLine } from "./tenkaWords";
 import { partyPlayerName } from "@/lib/party/partyNames";
@@ -25,7 +25,6 @@ import { partyPlayerName } from "@/lib/party/partyNames";
 export function TenkaCard() {
   const say = useSpeaker();
   const PARTY_COPY = partyScreenWords(say.locale);
-  const TENKA_COPY = tenkaWords(say.locale);
   const [game] = useKeptTenkaGame();
   if (game === undefined || game === null || game.phase === TENKA_PHASES.over) return null;
   const variant = PARTY_KINDS.tenka;

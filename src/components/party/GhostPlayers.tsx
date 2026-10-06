@@ -44,7 +44,7 @@ export function GhostPlayers({ game, room = 0 }: GhostPlayersProps) {
               data-player={seat}
               data-letters={held}
               data-out={out ? "true" : undefined}
-              aria-label={`${GHOST_COPY.lettersLeft(name, ghostLettersOf(game, seat))}${out ? `, ${GHOST_COPY.out}` : ""}`}
+              aria-label={out ? say.joined([GHOST_COPY.lettersLeft(name, ghostLettersOf(game, seat)), GHOST_COPY.out]) : GHOST_COPY.lettersLeft(name, ghostLettersOf(game, seat))}
             >
               <MarbleChip player={seat} />
               <span className={`min-w-0 flex-1 truncate ${out ? "line-through" : ""}`} data-testid="ghost-player-name">

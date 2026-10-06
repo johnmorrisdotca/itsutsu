@@ -27,6 +27,7 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
 import { onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { playerNumberName } from "@/lib/gomoku/seatWords";
+import { onlineSeatName } from "./onlineSeatName";
 
 /**
  * A PARTY TABLE ON SEVERAL DEVICES, at /games/<slug>/tables/<id>: the game's
@@ -79,7 +80,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
         setSending(false);
       }
     },
-    [view.id, view.moveCount, mutate],
+    [view.id, view.moveCount, mutate, ONLINE_COPY.couldNotStart, say],
   );
   const { thinking } = useComputerTurn({ view, rules, send, sending });
 
@@ -106,7 +107,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
   const moment = useWinMoment(playing ? "playing" : view.status === ONLINE_STATUS.finished ? "ended" : "unknown");
   const news = moment.open
     ? tableNews({
-        names: view.seats.map((seat, at) => seat.name || (seat.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : playerNumberName(say, at + 1))),
+        names: view.seats.map((seat, at) => onlineSeatName(seat, playerNumberName(say, at + 1), ONLINE_COPY.computerSeat)),
         winners: view.winners,
         you: view.mySeat,
         next: null,
@@ -214,7 +215,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
             )}
           </div>
         ) : null}
-        {view.status === ONLINE_STATUS.finished ? <TableWallpaper game={view.game} result={resultLine(view.seats.map((seat, at) => seat.name || playerNumberName(say, at + 1)), view.winners, false, say)} /> : null}
+        {view.status === ONLINE_STATUS.finished ? <TableWallpaper game={view.game} result={resultLine(view.seats.map((seat, at) => onlineSeatName(seat, playerNumberName(say, at + 1), ONLINE_COPY.computerSeat)), view.winners, false, say)} /> : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {ONLINE_COPY.about} →
@@ -244,12 +245,12 @@ function StatusLine({ view, sending, thinking }: { view: OnlineTableView; sendin
   const words = sending
     ? ONLINE_COPY.sending
     : thinking
-      ? ONLINE_COPY.computerThinking(toPlay?.name || ONLINE_COPY.computerSeat)
+      ? ONLINE_COPY.computerThinking(toPlay === undefined ? ONLINE_COPY.computerSeat : onlineSeatName(toPlay, ONLINE_COPY.computerSeat, ONLINE_COPY.computerSeat))
     : yours
       ? ONLINE_COPY.yourTurn
       : toPlay?.kind === ONLINE_SEAT_KINDS.open
         ? ONLINE_COPY.waitingOpen
-        : ONLINE_COPY.waitingOn(toPlay?.name || (toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : playerNumberName(say, view.toPlay + 1)));
+        : ONLINE_COPY.waitingOn(toPlay === undefined ? playerNumberName(say, view.toPlay + 1) : onlineSeatName(toPlay, playerNumberName(say, view.toPlay + 1), ONLINE_COPY.computerSeat));
   return (
     <p
       className={`text-sm font-semibold ${yours ? "text-ink" : "text-muted"}`}

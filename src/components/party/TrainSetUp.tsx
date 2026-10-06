@@ -8,7 +8,7 @@ import { PICK_CHIP_OPEN, PICK_CHIP_SHUT } from "@/components/live/picker.constan
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { TRAIN_DEFAULT_OPTIONS, startTrain, trainSetName } from "@johnmorrisdotca/domino";
 import type { TrainOptions } from "@johnmorrisdotca/domino";
-import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
+import { PARTY_NAME_MOST, computerNumberName } from "@/lib/party/partyNames";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { freshSeed } from "@/lib/puzzles/random";
 
@@ -18,6 +18,7 @@ import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTab
 import type { SeatChoice } from "./online/online.types";
 import { onlineWords, partyScreenWords, seatColourName, trainWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 
 const SPEC = PARTY_SPECS.mexicanTrain;
 const COUNTS = Array.from({ length: SPEC.mostPlayers - SPEC.fewestPlayers + 1 }, (_, at) => SPEC.fewestPlayers + at);
@@ -191,7 +192,7 @@ export function TrainSetUp({ appearance, onStart, ready, online }: TrainSetUpPro
                         type="text"
                         value={name}
                         maxLength={PARTY_NAME_MOST}
-                        placeholder={computers[seat] ? `${TRAIN_COPY.computer} ${seat + 1}` : `Player ${seat + 1}`}
+                        placeholder={computers[seat] ? computerNumberName(say, seat + 1) : playerNumberName(say, seat + 1)}
                         onChange={(event) => setNames((was) => was.map((one, at) => (at === seat ? event.target.value : one)))}
                         className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                         data-testid="train-name"

@@ -20,7 +20,7 @@ const KARAKURI = GAME_FAMILIES.find((family) => family.key === CASUAL_FAMILY_KEY
 
 /** The page's title, for the game page's metadata: the family's name and its kanji for a reader of English, the kanji alone for a reader of Japanese. */
 export function casualFamilyTitle(say: Speaker): string {
-  if (KARAKURI === undefined) return "Karakuri";
+  if (KARAKURI === undefined) return CASUAL_FAMILY_KEY;
   return say.pairsWithKanji ? `${KARAKURI.title} ${KARAKURI.kanji}` : KARAKURI.kanji;
 }
 

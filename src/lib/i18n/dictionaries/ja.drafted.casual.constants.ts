@@ -47,18 +47,13 @@ export const JA_DRAFTED_CASUAL: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "casual.source": {
-    text: "Itsutsuでは、1人で遊び、評価はなく、得点もつきません",
-    back: "On Itsutsu you play alone, it is not rated, and it earns no points",
+    text: "{site}では、1人で遊び、評価はなく、得点もつきません",
+    back: "On {site} you play alone, it is not rated, and it earns no points",
     review: AGENT_READ,
   },
   "casual.levelOf": {
     text: "{word}{level}（全{total}）",
     back: "{word} {level} of {total}",
-    review: AGENT_READ,
-  },
-  "casual.crumbLevel": {
-    text: "{word}{level}",
-    back: "{word} {level}",
     review: AGENT_READ,
   },
   "casual.cardGoing": {

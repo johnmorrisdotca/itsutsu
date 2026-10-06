@@ -185,7 +185,6 @@ export const GHOST_COPY_JA = {
   lettersLeft: {
     by: 1,
     is: { "": ["{0}：文字なし", "{0}: no letters"] },
-    other: ["{0}：{1}", "{0}: {1}"],
   },
   play: ["遊ぶ →", "Play →"],
   about: ["幽霊について：規則", "About Superghost and its rules"],
@@ -280,7 +279,7 @@ export const TRAIN_COPY_JA = {
   round: ["第{0}ラウンド（全{1}）", "Round {0} of {1}"],
   engine: ["ハブはダブル{0}", "Double {0} in the hub"],
   tiles: ["{0}枚", "{0} tiles"],
-  more: ["+{0}", "+{0}"],
+  more: ["+{0}枚", "+{0} tiles"],
   pass: ["{0}さんに端末を渡してください", "Pass the device to {0}"],
   passNote: ["その人が自分だと言うまで、ドミノは隠されています。", "Their tiles are hidden until they say it is them."],
   iAm: ["{0}です", "I am {0}"],

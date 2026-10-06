@@ -125,3 +125,9 @@ export const CARD_SOUND_KEY = "itsutsu.cardSound";
  */
 export const CARD_BACK_CHOICES = ["itsutsu", "classic-red", "classic-blue", "ink-dots"] as const;
 export const CARD_BACK_KEY = "itsutsu.cardBack";
+export const CARD_BACK_WORDS: Record<(typeof CARD_BACK_CHOICES)[number], string> = {
+  itsutsu: "Itsutsu",
+  "classic-red": "Classic red",
+  "classic-blue": "Classic blue",
+  "ink-dots": "Ink dots",
+};

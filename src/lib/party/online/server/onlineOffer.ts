@@ -28,7 +28,7 @@ export async function onlineOfferFor(game: string, memberId: string | null): Pro
   ]);
   return {
     game,
-    buddies: buddies.map(({ buddy }) => ({ id: buddy.id, name: buddy.name || "A buddy" })),
+    buddies: buddies.map(({ buddy }) => ({ id: buddy.id, name: buddy.name })),
     links: !isChild(me?.ageBand),
     computers: computersOf(game),
   };

@@ -16,6 +16,7 @@ import { PARTY_MARBLES } from "./party.constants";
 import type { PartyBlocksSetUpProps } from "./party.types";
 import { blocksWords, onlineWords, seatColourName } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 
 /**
  * THE TABLE, BEFORE A PIECE IS LAID: four names, if the table wants them.
@@ -70,7 +71,7 @@ export function PartyBlocksSetUp({ appearance, onStart, ready, online }: PartyBl
                   type="text"
                   value={names[index]}
                   maxLength={PARTY_NAME_MOST}
-                  placeholder={`Player ${index + 1}`}
+                  placeholder={playerNumberName(say, index + 1)}
                   onChange={(event) => setNames((was) => was.map((name, at) => (at === index ? event.target.value : name)))}
                   className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                   data-testid="blocks-name"

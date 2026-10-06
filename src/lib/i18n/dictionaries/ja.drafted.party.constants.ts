@@ -22,8 +22,8 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.rules.or": {
-    text: "{rest}、{last}",
-    back: "{rest}, {last}",
+    text: "{rest}、または{last}",
+    back: "{rest}, or {last}",
     review: AGENT_READ,
   },
   "party.rules.orTwo": {
@@ -208,13 +208,8 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.seatColour": {
-    text: "{player}、{colour}",
+    text: "{player}・{colour}",
     back: "{player}, {colour}",
-    review: AGENT_READ,
-  },
-  "party.seatColourLast": {
-    text: "{player}、{colour}、{role}",
-    back: "{player}, {colour}, {role}",
     review: AGENT_READ,
   },
   "party.playerColourAria": {
@@ -289,8 +284,8 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.turnTrail": {
-    text: "{colour}（{letter}）",
-    back: "{colour} ({letter})",
+    text: "{colour}・{letter}",
+    back: "{colour}, {letter}",
     review: AGENT_READ,
   },
   "party.dots.wins": {
@@ -386,8 +381,8 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
   },
   // Mexican Train
   "party.train.theMexican": {
-    text: "{train}",
-    back: "{train}",
+    text: "共通の{train}",
+    back: "the shared {train}",
     review: AGENT_READ,
   },
   "party.train.ownTrain": {
@@ -490,8 +485,8 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
   },
   // Pair Go
   "party.pairgo.team": {
-    text: "{colour}（{names}）",
-    back: "{colour} ({names})",
+    text: "{colour}チーム（{names}）",
+    back: "the {colour} team ({names})",
     review: AGENT_READ,
   },
   "party.pairgo.toPlayAfter": {
@@ -500,8 +495,8 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.pairgo.passedBy": {
-    text: "{name}（{colour}）",
-    back: "{name} ({colour})",
+    text: "{name}（{colour}の石）",
+    back: "{name} ({colour} stones)",
     review: AGENT_READ,
   },
   "party.pairgo.winBy": {
@@ -530,7 +525,7 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.pairgo.cardToPlay": {
-    text: "・{name}（{colour}）の番",
+    text: " ・{name}（{colour}）の番",
     back: "· {name} ({colour}) to play",
     review: AGENT_READ,
   },
@@ -617,8 +612,8 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.sugoroku.scoreLine": {
-    text: "{length}：{a} {x}、{b} {y}",
-    back: "{length}: {a} {x}, {b} {y}",
+    text: "{length}：{a}が{x}、{b}が{y}",
+    back: "{length}: {a} has {x}, {b} has {y}",
     review: AGENT_READ,
   },
   "party.sugoroku.matchDrawn": {
@@ -915,13 +910,13 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.tenka.chipAria": {
-    text: "{name}、{whose}（{colour}、{letter}）、{armies}",
-    back: "{name}, {whose} ({colour}, {letter}), {armies}",
+    text: "{name}は{whose}（{colour}、{letter}）で、{armies}",
+    back: "{name} is {whose} ({colour}, {letter}), with {armies}",
     review: AGENT_READ,
   },
   "party.tenka.chipTitle": {
-    text: "{name}：{whose}、{armies}",
-    back: "{name}: {whose}, {armies}",
+    text: "{name}は{whose}で、{armies}",
+    back: "{name} is {whose}, with {armies}",
     review: AGENT_READ,
   },
   "party.tenka.stepsAria": {
@@ -960,8 +955,8 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.tenka.cardLabel": {
-    text: "{kind}：{name}",
-    back: "{kind}: {name}",
+    text: "{kind}の札：{name}",
+    back: "{kind} card: {name}",
     review: AGENT_READ,
   },
   "party.tenka.deck": {
@@ -975,8 +970,8 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.tenka.tradeKinds": {
-    text: "{trade}：{kinds}",
-    back: "{trade}: {kinds}",
+    text: "{trade}：{kinds}の組",
+    back: "{trade}: the set of {kinds}",
     review: AGENT_READ,
   },
   "party.tenka.diceNone": {
@@ -995,7 +990,7 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.tenka.diceLostBoth": {
-    text: "{a}、{b}",
+    text: "{a}、そして{b}",
     back: "{a}, and {b}",
     review: AGENT_READ,
   },
@@ -1137,13 +1132,13 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.hitotsu.challengeGuilty": {
-    text: "{name}が{by}に挑戦しました。{by}はその色を持っていました。",
-    back: "{name} challenged {by}. {by} had the colour.",
+    text: "{name}が{by}に挑戦しました。相手はその色を持っていました。",
+    back: "{name} challenged {by}. They had the colour.",
     review: AGENT_READ,
   },
   "party.hitotsu.challengeInnocent": {
-    text: "{name}が{by}に挑戦しました。{by}はその色を持っていませんでした。",
-    back: "{name} challenged {by}. {by} did not have the colour.",
+    text: "{name}が{by}に挑戦しました。相手はその色を持っていませんでした。",
+    back: "{name} challenged {by}. They did not have the colour.",
     review: AGENT_READ,
   },
   "party.hitotsu.swap": {
@@ -1299,7 +1294,7 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.yacht.dieHeld": {
-    text: "{value}、{held}",
+    text: "{value}で{held}",
     back: "{value}, {held}",
     review: AGENT_READ,
   },
@@ -1435,6 +1430,37 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "party.onlineTableTitle": {
     text: "{game}のオンライン卓",
     back: "{game}, online table",
+    review: AGENT_READ,
+  },
+  "party.online.aBuddy": {
+    text: "仲間",
+    back: "A buddy",
+    review: AGENT_READ,
+  },
+  // Mexican Train's lanes and the Block pieces, for a screen reader
+  "party.train.laneOpen": {
+    text: "{owner}：{tiles}、開いた端は{end}",
+    back: "{owner}: {tiles}, the open end is {end}",
+    review: AGENT_READ,
+  },
+  "party.train.laneMarker": {
+    text: "{owner}：{tiles}、開いた端は{end}、目印が出ています",
+    back: "{owner}: {tiles}, the open end is {end}, and the marker is out",
+    review: AGENT_READ,
+  },
+  "party.train.laneEmptyTitle": {
+    text: "{owner}：空です。{engine}から始まります",
+    back: "{owner}: empty. It starts with {engine}",
+    review: AGENT_READ,
+  },
+  "party.train.laneOpenTitle": {
+    text: "{owner}：開いた端は{end}",
+    back: "{owner}: the open end is {end}",
+    review: AGENT_READ,
+  },
+  "party.blocks.pieceAria": {
+    text: "{size}マスのピース",
+    back: "a piece of {size} squares",
     review: AGENT_READ,
   },
 };

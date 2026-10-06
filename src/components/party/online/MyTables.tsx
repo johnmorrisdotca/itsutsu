@@ -16,6 +16,7 @@ import type { NameTag } from "@/lib/xp/nameTag.types";
 import { onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { playerNumberName } from "@/lib/gomoku/seatWords";
+import { onlineSeatName } from "./onlineSeatName";
 
 
 /**
@@ -106,7 +107,7 @@ export function TableRow({ table, finished, tags }: { table: MyTable; finished: 
               ? ONLINE_COPY.myYourMove
               : toPlay?.kind === ONLINE_SEAT_KINDS.open
                 ? ONLINE_COPY.myOpen
-                : ONLINE_COPY.myTheirMove(toPlay?.name || (toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : say.say("party.online.nextPlayer")))}
+                : ONLINE_COPY.myTheirMove(toPlay === undefined ? say.say("party.online.nextPlayer") : onlineSeatName(toPlay, say.say("party.online.nextPlayer"), ONLINE_COPY.computerSeat))}
         </span>
       </span>
       <span className="ml-auto flex shrink-0 items-center gap-2">

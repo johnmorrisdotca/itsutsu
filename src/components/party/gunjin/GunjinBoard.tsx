@@ -63,16 +63,17 @@ export function GunjinBoard({
 }) {
   const say = useSpeaker();
   const GUNJIN_COPY = gunjinWords(say.locale);
+  const language = say.locale === "ja" ? "ja" : "en";
   const { width, height } = view;
   const theme = BOARD_THEMES[appearance.boardTheme];
-  const svg = useMemo(() => drawGunjinBoard(view, { language: "en", material: "ivory", selected, targets, draft }), [view, selected, targets, draft]);
+  const svg = useMemo(() => drawGunjinBoard(view, { language, material: "ivory", selected, targets, draft }), [view, selected, targets, draft, language]);
   // What stands on each square, as the viewer may know it: their own piece by name, the other side's as "Opponent piece".
   const named = useMemo(() => {
     const map = new Map<string, string>();
-    for (const piece of view.pieces ?? []) map.set(`${piece.x}:${piece.y}`, piece.kind === null ? GUNJIN_COPY.opponent : roleName("en", piece.kind));
-    for (const piece of draft ?? []) map.set(`${piece.x}:${piece.y}`, roleName("en", piece.kind));
+    for (const piece of view.pieces ?? []) map.set(`${piece.x}:${piece.y}`, piece.kind === null ? GUNJIN_COPY.opponent : roleName(language, piece.kind));
+    for (const piece of draft ?? []) map.set(`${piece.x}:${piece.y}`, roleName(language, piece.kind));
     return map;
-  }, [view, draft]);
+  }, [view, draft, language, GUNJIN_COPY.opponent]);
 
   // One tab stop, the cursor, and the arrow keys move it: a hundred buttons are not a hundred tab stops.
   const [cursor, setCursor] = useState<GunjinSquare>({ x: 0, y: height - 1 });

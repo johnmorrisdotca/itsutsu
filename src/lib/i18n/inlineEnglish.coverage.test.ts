@@ -40,13 +40,6 @@ const RECORDED = [
   // ENJA-06, set-up screen, game screen and every ending
   "src/lib/history",
   // ENJA-07, puzzles: the folders are done, and what is left is the stamped screens, named one by one
-  // ENJA-08, party and card games
-  "src/lib/party",
-  "src/components/party",
-  "src/lib/cardGames",
-  "src/components/cards",
-  "src/lib/casual",
-  "src/components/casual",
   // ENJA-10, pages: home, About, Learn, players, history, My account, feed, inbox, join
   "src/app/about",
   "src/components/about",
@@ -118,6 +111,13 @@ const RECORDED = [
   "src/lib/puzzles/jirai/board.ts",
   "src/lib/puzzles/server/puzzleRaceChecks.ts",
   "src/lib/puzzles/server/puzzleRaces.ts",
+  // ENJA-13 also takes the party tables' refusals
+  "src/lib/party/kept/keptReport.ts",
+  "src/lib/party/online/onlineSeats.ts",
+  "src/lib/party/online/online.constants.ts",
+  "src/lib/party/online/server/tableCreate.ts",
+  "src/lib/party/online/server/tableMove.ts",
+  "src/lib/party/online/server/tableSeating.ts",
 ];
 
 const TICKETS = /^ENJA-(?:05|06|07|08|09|10|11|12|13)$/;

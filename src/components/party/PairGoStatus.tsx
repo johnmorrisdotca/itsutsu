@@ -4,7 +4,7 @@ import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { stoneName } from "@/lib/gomoku/seatWords";
 import type { Speaker } from "@/lib/i18n/i18n";
-import { GAME_STATUS, MOVE_KINDS, STONES, STONE_DISPLAY, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, MOVE_KINDS, STONES, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { pairCount, pairPlayerOfMove, pairPlayerToMove, pairPlayers } from "@/lib/gomoku/party/pairGo";
 import type { PairGoGame } from "@/lib/gomoku/party/pairGo.types";

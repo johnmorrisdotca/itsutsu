@@ -46,11 +46,6 @@ export const JA_DRAFTED_CTABLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Those cards cannot beat the cards on the table.",
     review: AGENT_READ,
   },
-  "ctable.followSuit": {
-    text: "できるなら、最初に出されたスートに合わせます。",
-    back: "If you can, match the suit that was led first.",
-    review: AGENT_READ,
-  },
   "ctable.tookTrick": {
     text: "{name}がトリックを取りました",
     back: "{name} took the trick",
@@ -92,7 +87,7 @@ export const JA_DRAFTED_CTABLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "ctable.bidOf": {
-    text: "{name} {bid}",
+    text: "{name}は{bid}",
     back: "{name} {bid}",
     review: AGENT_READ,
   },
@@ -579,12 +574,12 @@ export const JA_DRAFTED_CTABLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "ctable.crib.whyFifteen": {
-    text: "15",
+    text: "フィフティーン",
     back: "fifteen",
     review: AGENT_READ,
   },
   "ctable.crib.whyThirtyOne": {
-    text: "31",
+    text: "サーティワン",
     back: "thirty-one",
     review: AGENT_READ,
   },
@@ -624,7 +619,7 @@ export const JA_DRAFTED_CTABLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "ctable.crib.fifteens": {
-    text: "15 {n}",
+    text: "フィフティーン {n}",
     back: "fifteens {n}",
     review: AGENT_READ,
   },
@@ -921,26 +916,6 @@ export const JA_DRAFTED_CTABLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "ctable.back.label": {
     text: "{name}の裏柄",
     back: "{name} back",
-    review: AGENT_READ,
-  },
-  "ctable.back.itsutsu": {
-    text: "Itsutsu",
-    back: "Itsutsu",
-    review: AGENT_READ,
-  },
-  "ctable.back.classicRed": {
-    text: "クラシック（赤）",
-    back: "Classic (red)",
-    review: AGENT_READ,
-  },
-  "ctable.back.classicBlue": {
-    text: "クラシック（青）",
-    back: "Classic (blue)",
-    review: AGENT_READ,
-  },
-  "ctable.back.inkDots": {
-    text: "インクの水玉",
-    back: "Ink dots",
     review: AGENT_READ,
   },
 };

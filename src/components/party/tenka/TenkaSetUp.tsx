@@ -19,6 +19,7 @@ import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTab
 import type { SeatChoice } from "../online/online.types";
 import { onlineWords, partyScreenWords, seatColourName, tenkaWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { tenkaLengthNote, tenkaLengthWords } from "./tenkaWords";
 
 const SPEC = PARTY_SPECS.tenka;
@@ -132,7 +133,7 @@ export function TenkaSetUp({ appearance, onStart, ready, online }: TenkaSetUpPro
                     type="text"
                     value={name}
                     maxLength={TENKA_NAME_MOST}
-                    placeholder={`Player ${index + 1}`}
+                    placeholder={playerNumberName(say, index + 1)}
                     disabled={!sitting}
                     onChange={(event) => setNames((was) => was.map((one, at) => (at === index ? event.target.value : one)))}
                     className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"

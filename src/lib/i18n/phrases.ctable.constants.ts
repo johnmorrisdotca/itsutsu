@@ -13,7 +13,6 @@ export const PHRASES_CTABLE = {
   "ctable.chooseCards": "Choose the cards to play.",
   "ctable.chooseCard": "Choose a card to play.",
   "ctable.noBeat": "Those cards do not beat the play on the table.",
-  "ctable.followSuit": "Follow the suit led if you can.",
   "ctable.tookTrick": "{name} took the trick",
   "ctable.toLead": "{name} to lead.",
   "ctable.toPlay": "{name} to play.",
@@ -198,8 +197,4 @@ export const PHRASES_CTABLE = {
   // The card back's picker
   "ctable.back.aria": "Card back",
   "ctable.back.label": "{name} back",
-  "ctable.back.itsutsu": "Itsutsu",
-  "ctable.back.classicRed": "Classic red",
-  "ctable.back.classicBlue": "Classic blue",
-  "ctable.back.inkDots": "Ink dots",
 } as const;

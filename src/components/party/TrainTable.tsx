@@ -67,7 +67,7 @@ export function TrainTable({ game, appearance, holding = null, onTrain, readOnly
         data-round={game.round}
         data-boneyard={game.boneyard.length}
         role="group"
-        aria-label={`${TRAIN_COPY.round(game.round + 1, game.rounds)}. ${TRAIN_COPY.engine(game.engine)}. ${TRAIN_COPY.boneyard(game.boneyard.length)}.`}
+        aria-label={say.sentences([TRAIN_COPY.round(game.round + 1, game.rounds), TRAIN_COPY.engine(game.engine), TRAIN_COPY.boneyard(game.boneyard.length)].map((one) => say.sentence(one)))}
       >
         {/* THE HUB, along the top: the round, the engine double in its station, and the boneyard. */}
         <g data-testid="train-hub" aria-hidden="true">
@@ -110,7 +110,7 @@ export function TrainTable({ game, appearance, holding = null, onTrain, readOnly
               data-target={target ? "true" : undefined}
               role={tap === undefined ? undefined : "button"}
               tabIndex={tap === undefined ? undefined : 0}
-              aria-label={`${owner}: ${TRAIN_COPY.tiles(train.laid.length)}, open end ${openEnd(game, at)}${train.open && !isMexican ? ", marker out" : ""}`}
+              aria-label={say.say(train.open && !isMexican ? "party.train.laneMarker" : "party.train.laneOpen", { owner, tiles: TRAIN_COPY.tiles(train.laid.length), end: String(openEnd(game, at)) })}
               className={tap === undefined ? undefined : "cursor-pointer outline-none"}
               onClick={tap}
               onKeyDown={(event) => {
@@ -172,7 +172,7 @@ export function TrainTable({ game, appearance, holding = null, onTrain, readOnly
                   );
                 })
               )}
-              <title>{`${owner}: ${train.laid.length === 0 ? `empty, starts with ${game.engine}` : `open end ${openEnd(game, at)}`}`}</title>
+              <title>{train.laid.length === 0 ? say.say("party.train.laneEmptyTitle", { owner, engine: String(game.engine) }) : say.say("party.train.laneOpenTitle", { owner, end: String(openEnd(game, at)) })}</title>
             </g>
           );
         })}

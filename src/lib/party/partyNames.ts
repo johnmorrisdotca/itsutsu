@@ -1,4 +1,5 @@
 import { playerNumberName } from "../gomoku/seatWords";
+import { COMPUTER_SEAT_NAME } from "./online/online.constants";
 import type { Speaker } from "../i18n/i18n";
 
 /**
@@ -28,6 +29,8 @@ export function computerNumberName(say: Speaker, number: number): string {
 /** A seat's name at a table where some seats are computers: the one given, or "Computer 3" or "Player 3". */
 export function seatedName(game: { players: readonly string[]; computers: readonly boolean[] }, seat: number, say: Speaker): string {
   const given = game.players[seat]?.trim() ?? "";
-  if (given !== "") return given;
+  // A table on several devices keeps its computer's seat under the site's own default name; the reader's language says it afresh.
+  const kept = game.computers[seat] === true && given === COMPUTER_SEAT_NAME;
+  if (given !== "" && !kept) return given;
   return game.computers[seat] === true ? computerNumberName(say, seat + 1) : playerNumberName(say, seat + 1);
 }

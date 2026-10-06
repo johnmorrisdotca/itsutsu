@@ -59,7 +59,7 @@ export function SugorokuStage({
   const to = sugorokuToPlay(table);
   const over = match.over;
   const phase = turn.phase;
-  const view = seat === 1 ? "black" : "white";
+  const view: "black" | "white" = seat === 0 ? "white" : "black";
   const position = turn.game?.position ?? game?.position ?? viewOf(table).last?.position;
   const status = over ? sugorokuEnding(table, say) : thinking !== null ? SUGOROKU_COPY.thinking(thinking) : phase === "move" && to !== null ? say.say("party.sugoroku.toPlay", { name: names[to] }) : sugorokuStatus(table, say);
   const hint = confirming

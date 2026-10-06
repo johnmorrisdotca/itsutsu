@@ -1,9 +1,9 @@
 "use client";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+import { partyTable } from "@/lib/i18n/partyTables";
 
-import { CARD_BACK_CHOICES, CARD_BOX } from "./Cards.constants";
+import { CARD_BACK_CHOICES, CARD_BACK_WORDS, CARD_BOX } from "./Cards.constants";
 import { useCardBackChoice } from "./cardBackChoice";
 import { CardBackOf } from "./ChosenCardBack";
 
@@ -14,16 +14,11 @@ import { CardBackOf } from "./ChosenCardBack";
  * reader and on hover. A card is a card's shape, never a square: a square
  * patch is a board's.
  */
-const BACK_NAMES: Record<(typeof CARD_BACK_CHOICES)[number], PhraseKey> = {
-  itsutsu: "ctable.back.itsutsu",
-  "classic-red": "ctable.back.classicRed",
-  "classic-blue": "ctable.back.classicBlue",
-  "ink-dots": "ctable.back.inkDots",
-};
-
 export function CardBackPicker() {
   const say = useSpeaker();
   const { back, choose } = useCardBackChoice();
+  const words = partyTable(CARD_BACK_WORDS, "cardBacks", say.locale);
+  const backName = (each: (typeof CARD_BACK_CHOICES)[number]) => words[each];
   return (
     <div className="flex items-center gap-2" role="radiogroup" aria-label={say.say("ctable.back.aria")} data-testid="card-back-picker">
       {CARD_BACK_CHOICES.map((each) => {
@@ -34,8 +29,8 @@ export function CardBackPicker() {
             type="button"
             role="radio"
             aria-checked={chosen}
-            aria-label={say.say("ctable.back.label", { name: say.say(BACK_NAMES[each]) })}
-            title={say.say("ctable.back.label", { name: say.say(BACK_NAMES[each]) })}
+            aria-label={say.say("ctable.back.label", { name: backName(each) })}
+            title={say.say("ctable.back.label", { name: backName(each) })}
             onClick={() => choose(each)}
             data-testid={`card-back-${each}`}
             className={`surface-light block h-7 w-5 cursor-pointer rounded-[3px] outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-moss ${

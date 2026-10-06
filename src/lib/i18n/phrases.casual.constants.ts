@@ -13,9 +13,8 @@ export const PHRASES_CASUAL = {
   "casual.offered": "{levels} to play alone.",
   "casual.boardLine": "{levels}. {board}",
   "casual.line": "{levels} to play alone; unrated, kept in your browser.",
-  "casual.source": "On Itsutsu: played alone, unrated, and worth no points",
+  "casual.source": "On {site}: played alone, unrated, and worth no points",
   "casual.levelOf": "{word} {level} of {total}",
-  "casual.crumbLevel": "{word} {level}",
   "casual.cardGoing": "{word} {level} {going}",
   "casual.familyLine": "{count}, each played alone for a minute or two a level. Nothing here is rated or scored; the levels you win are kept in this browser.",
   // What the rules page says about the house

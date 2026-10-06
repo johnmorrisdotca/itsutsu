@@ -35,7 +35,7 @@ review on a schedule to catch what slipped.
 | Kind | Examples | Ships with a deploy | Held by |
 |---|---|---|---|
 | **A. Pages on the site** | `/about`, the home page, rules pages, `/learn`, a game's background and history, `/games` | yes, they are code | coverage tests that read the code |
-| **B. Generated docs** | `CHANGELOG.md` (written by `pnpm release:take`, read by `/releases`), `docs/japanese-review.md`, `docs/japanese-review-games.md`, `docs/japanese-review-puzzles.md`, the game pictures and thumbnails | yes (`CHANGELOG.md` is the one Markdown file that deploys) | the generator plus a test that fails on drift; never edited by hand |
+| **B. Generated docs** | `CHANGELOG.md` (written by `pnpm release:take`, read by `/releases`), `docs/japanese-review.md`, `docs/japanese-review-games.md`, `docs/japanese-review-puzzles.md`, `docs/japanese-review-party.md`, the game pictures and thumbnails | yes (`CHANGELOG.md` is the one Markdown file that deploys) | the generator plus a test that fails on drift; never edited by hand |
 | **C. Hand-written docs** | `README.md`, `AGENTS.md`, `docs/email.md`, `docs/brand/*`, `docs/plans/*` | no (the `paths` filters skip `*.md` and `docs/**`) | the map below, the release checklist, and the scheduled review |
 
 ## Standing conventions
@@ -130,6 +130,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `src/lib/i18n/jaText.generated.json.br` | the authored Japanese: `src/lib/i18n/dictionaries/**`, `src/lib/xp/xpAwardCopy.ja.constants.ts`, `src/lib/xp/levelNames.ja.constants.ts` | any Japanese sentence is added or changed: run `pnpm i18n:text`; never edit by hand | `jaText.coverage.test.ts` |
 | `src/lib/packed/*.json.br` | the data each is written from: Suido's level hashes, Tenka's outlines, Tsunagi's boards and the kana lists (the table in `packedData.coverage.test.ts`) | that data changes, or a package that holds it is bumped: run `pnpm data:pack`; never edit by hand | `packedData.coverage.test.ts` |
 | `docs/japanese-review-puzzles.md` | `src/lib/i18n/dictionaries/puzzles.ja.*` (every puzzle's tagline, origin and rules, and the tables its screens are made of) | regenerate; never edit | `puzzleCopyReview.coverage.test.ts` |
+| `docs/japanese-review-party.md` | `src/lib/i18n/dictionaries/party.ja.*` and the packages' own words (every party, card and casual game's tagline, origin and rules; the tables its screens are made of; Tenka's territory names; Hitotsu's colours and cards) | regenerate; never edit | `partyCopyReview.coverage.test.ts` |
 
 When a new doc lands, it gets a row here in the same commit. A doc without a
 row has no trigger, so nothing will ever make anybody re-read it.

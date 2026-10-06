@@ -1,5 +1,7 @@
 "use client";
 
+import type { ComponentType } from "react";
+
 import { BIG_TWO_RULES } from "@/lib/cardGames/bigTwo/bigTwoRules";
 import type { BigTwoGame } from "@/lib/cardGames/bigTwo/bigTwo.types";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
@@ -117,5 +119,5 @@ export const PRESIDENT_ADAPTER: CardAdapter<PresidentGame, PresidentMove> = {
     note: game.titles === null ? undefined : say.say(TITLE_WORDS[presidentTitle(game.titles, seat)]),
   }),
   scoreWords: (say) => say.say("ctable.pointsMost"),
-  Centre: ClimbCentre as CardAdapter<PresidentGame, PresidentMove>["Centre"],
+  Centre: ClimbCentre as ComponentType<CardCentreProps<PresidentGame>>,
 };

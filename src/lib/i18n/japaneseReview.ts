@@ -47,6 +47,9 @@ const MET: readonly { prefix: string; seen: string; place: string }[] = [
   { prefix: "record.", seen: "Finished games of go, Othello, gomoku, renju and Hex", place: "beside Copy as text, in the move list under the replay" },
   { prefix: "rivalry.", seen: "Two members' games", place: "the head-to-head scoreboard above a pair's record, and on a match before and after it" },
   { prefix: "feed.", seen: "The feed, /feed", place: "its heading, tabs, every line of activity and its empty states" },
+  { prefix: "party.", seen: "Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables", place: "the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels" },
+  { prefix: "ctable.", seen: "The family card games' tables", place: "the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles" },
+  { prefix: "casual.", seen: "The Karakuri games' pages", place: "the front door, the levels line, the play page's crumbs and what the rules page says of the house" },
 ];
 
 function metBy(key: PhraseKey): { rank: number; seen: string; place: string } {

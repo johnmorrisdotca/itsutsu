@@ -1,7 +1,7 @@
 import { VARIANTS, pipCount, replayRecord, seededDice, openingFrom } from "@johnmorrisdotca/sugoroku";
 import { describe, expect, it } from "vitest";
 
-import { SUGOROKU_KIND_LIST, SUGOROKU_LENGTHS, SUGOROKU_STRENGTHS, SUGOROKU_VARIANT_KEY, sugorokuComputerName, sugorokuStrengthOfName, type SugorokuKind } from "./sugoroku.constants";
+import { SUGOROKU_KIND_LIST, SUGOROKU_LENGTHS, SUGOROKU_STRENGTHS, SUGOROKU_VARIANT_KEY, sugorokuComputerName, sugorokuComputerShown, sugorokuStrengthOfName, type SugorokuKind } from "./sugoroku.constants";
 import type { SugorokuMove, SugorokuTable } from "./sugoroku.types";
 import { SUGOROKU_RULES } from "./sugorokuRules";
 import {
@@ -291,7 +291,8 @@ describe("the computer's four strengths play the table's own moves", () => {
     expect(sugorokuStrengthOfName("Computer")).toBeNull();
     // One word, so the site's shortening of a name with a space in it (`shownName`) cannot cut the strength off; said to the players with the space.
     expect(sugorokuComputerName("careful")).not.toMatch(/\s/);
-    expect(namedSugoroku(start("backgammon"), ["Ann", sugorokuComputerName("careful")]).players).toEqual(["Ann", "Computer (Careful)"]);
+    expect(namedSugoroku(start("backgammon"), ["Ann", sugorokuComputerName("careful")]).players).toEqual(["Ann", sugorokuComputerName("careful")]);
+    expect(sugorokuComputerShown(sugorokuComputerName("careful"), EN)).toBe("Computer (Careful)");
     expect(sugorokuStrengthOfName("Ann")).toBeNull();
   });
 

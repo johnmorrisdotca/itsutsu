@@ -17,6 +17,7 @@ import type { SeatChoice } from "./online/online.types";
 import type { GhostSetUpProps } from "./party.types";
 import { ghostWords, onlineWords, partyScreenWords, seatColourName } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 
 const SPEC = PARTY_SPECS.superghost;
 const COUNTS = Array.from({ length: SPEC.mostPlayers - SPEC.fewestPlayers + 1 }, (_, index) => SPEC.fewestPlayers + index);
@@ -111,7 +112,7 @@ export function GhostSetUp({ onStart, ready, online }: GhostSetUpProps) {
                     type="text"
                     value={name}
                     maxLength={PARTY_NAME_MOST}
-                    placeholder={`Player ${index + 1}`}
+                    placeholder={playerNumberName(say, index + 1)}
                     disabled={!sitting}
                     onChange={(event) => setNames((was) => was.map((one, at) => (at === index ? event.target.value : one)))}
                     className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"

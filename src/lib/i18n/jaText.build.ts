@@ -32,6 +32,7 @@ import {
   TRAIN_COPY_JA,
 } from "./dictionaries/party.ja.screens.constants";
 import {
+  CARD_BACK_WORDS_JA,
   CASUAL_COPY_JA,
   DICE_WAR_COPY_JA,
   GUNJIN_BOARDS_JA,
@@ -161,6 +162,7 @@ export const PARTY_TABLES_AUTHORED = {
   tenkaRegions: TENKA_REGION_NAMES_JA,
   tenka: TENKA_COPY_JA,
   casual: CASUAL_COPY_JA,
+  cardBacks: CARD_BACK_WORDS_JA,
 } as const;
 
 export type PartyTablesAuthored = typeof PARTY_TABLES_AUTHORED;

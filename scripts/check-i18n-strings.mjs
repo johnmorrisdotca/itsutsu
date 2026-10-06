@@ -90,13 +90,6 @@ export const PENDING_PATHS = [
    * not edit, since any edit makes every puzzle picture stale until `pnpm screenshots:puzzles` is run. They come
    * off the list in the change that re-takes the pictures.
    */
-  // ENJA-08, party and card games
-  { path: "src/lib/party", ticket: "ENJA-08" },
-  { path: "src/components/party", ticket: "ENJA-08" },
-  { path: "src/lib/cardGames", ticket: "ENJA-08" },
-  { path: "src/components/cards", ticket: "ENJA-08" },
-  { path: "src/lib/casual", ticket: "ENJA-08" },
-  { path: "src/components/casual", ticket: "ENJA-08" },
   // ENJA-10, pages: home, About, Learn, players, history, My account, feed, inbox, join
   { path: "src/app/about", ticket: "ENJA-10" },
   { path: "src/components/about", ticket: "ENJA-10" },
@@ -172,6 +165,18 @@ export const PENDING_PATHS = [
   { path: "src/lib/puzzles/jirai/board.ts", ticket: "ENJA-13" },
   { path: "src/lib/puzzles/server/puzzleRaceChecks.ts", ticket: "ENJA-13" },
   { path: "src/lib/puzzles/server/puzzleRaces.ts", ticket: "ENJA-13" },
+  /*
+   * ENJA-13 also takes the party tables' refusals: the reason the site gives for a seat it will not offer, a move
+   * it will not take or a table it will not open, which a route sends back as the body of the error and a page
+   * shows in a message (`keptReport.ts`, `onlineSeats.ts`, `online.constants.ts`'s two notices for a table that has since been retired, and the three server files that apply them). They are the
+   * API's words, as the puzzles' are; everything a party or card table says on its own screens is done (ENJA-08).
+   */
+  { path: "src/lib/party/kept/keptReport.ts", ticket: "ENJA-13" },
+  { path: "src/lib/party/online/onlineSeats.ts", ticket: "ENJA-13" },
+  { path: "src/lib/party/online/online.constants.ts", ticket: "ENJA-13" },
+  { path: "src/lib/party/online/server/tableCreate.ts", ticket: "ENJA-13" },
+  { path: "src/lib/party/online/server/tableMove.ts", ticket: "ENJA-13" },
+  { path: "src/lib/party/online/server/tableSeating.ts", ticket: "ENJA-13" },
 ];
 
 /**
@@ -299,6 +304,37 @@ export const ALLOWED_FILES = new Map([
   ["src/components/puzzles/kumimoji.constants.ts", "Tailwind class lists the scanner reads as words; no sentence is in it. The pictures' stamp hashes this file"],
   ["src/components/puzzles/paint.constants.ts", "CSS gradients, selectors and a developer's width reason, which read as words to the scanner; never drawn as text"],
   ["src/lib/houseki/housekiCopy.ts", "the five Houseki games' English names (Falling Triplets, Colour Chains, Stone Collapse, Gem Swap, Magnetic Blocks), each beside its own kanji (HOUSEKI_KANJI) that a Japanese reader is shown instead (Speaker.pairName); every sentence about a game is a phrase"],
+  /*
+   * THE PARTY, CARD AND CASUAL GAMES' ENGLISH HALVES (ENJA-08), as the games' and the puzzles' above: each is a table of English
+   * beside a Japanese overlay of the same shape (`copyTable.ts`, read through `partyTable`) under src/lib/i18n/dictionaries/party.ja.*.
+   */
+  ["src/components/casual/casual.constants.ts", "the English half of the casual games' own screens' words (`CASUAL_COPY`); the Japanese is the `casual` overlay in party.ja.tables.constants.ts, read through casualWords.ts and held by partyCopyTables.coverage.test.ts"],
+  ["src/lib/casual/casual.constants.ts", "the English half of the eight casual games' copy (`CASUAL_DISPLAY`: name, tagline, origin, rules, board advice); the Japanese is party.ja.casual.constants.ts, read through casualCopy (partyCopy.ts) and held by partyCopyJa.coverage.test.ts"],
+  ["src/components/party/cards/cardTable.constants.ts", "the English half of the card tables' own screens' words (`CARD_TABLE_COPY`); the Japanese is the `cardTable` overlay in party.ja.screens.constants.ts, read through cardTableWords (partyWords.ts) and held by partyCopyTables.coverage.test.ts"],
+  ["src/components/party/diceWar/diceWar.constants.ts", "the English half of Dice War's screen words (`DICE_WAR_COPY`); the Japanese is the `diceWar` overlay in party.ja.tables.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/components/party/gunjin/gunjin.constants.ts", "the English half of Gunjin's screen words (`GUNJIN_COPY`, its sides and placing rules); the Japanese is the `gunjin`, `gunjinSides` and `gunjinPlacing` overlays in party.ja.tables.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/components/party/hitotsu/hitotsu.constants.ts", "the English half of Hitotsu's screen words and house rules (`HITOTSU_COPY`, `HITOTSU_HOUSE_COPY`); the Japanese is the `hitotsu` and `hitotsuHouse` overlays in party.ja.tables.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/components/party/kept.constants.ts", "the English half of the kept-game pages' words (`KEPT_COPY`); the Japanese is the `kept` overlay in party.ja.screens.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/components/party/online/online.constants.ts", "the English half of the online tables' words (`ONLINE_COPY`); the Japanese is the `online` overlay in party.ja.screens.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/components/party/pachisi/pachisi.constants.ts", "the English half of Pachisi's screen words (`PACHISI_COPY`); the Japanese is the `pachisi` overlay in party.ja.tables.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/components/party/pairGo.constants.ts", "the English half of Pair Go's screen words (`PAIR_GO_COPY`); the Japanese is the `pairGo` overlay in party.ja.screens.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/components/party/party.constants.ts", "the English half of the party tables' shared screen words and of Dots and Boxes, Superghost, Mancala and Mexican Train (`PARTY_COPY`, `DOTS_COPY`, `GHOST_COPY`, `MANCALA_COPY`, `TRAIN_COPY`, the marbles); the Japanese is the matching overlays in party.ja.screens.constants.ts, held by partyCopyTables.coverage.test.ts. The party pictures' fingerprint hashes this file (partyArtFingerprint.ts), so it is never edited to translate it"],
+  ["src/components/cards/Cards.constants.ts", "the English half of the card backs' names (`CARD_BACK_WORDS`), read through cardBackWords (partyWords.ts); the Japanese is the `cardBacks` overlay in party.ja.tables.constants.ts, held by partyCopyTables.coverage.test.ts. The puzzle and party pictures' fingerprints hash this file (puzzleArtFingerprint.ts, partyArtFingerprint.ts), so it is never edited to translate it"],
+  ["src/components/party/partyBlocks.constants.ts", "the English half of Block Five for four's screen words (`PARTY_BLOCKS_COPY`); the Japanese is the `blocks` overlay in party.ja.screens.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/components/party/sugoroku/sugoroku.constants.ts", "the English half of the backgammon games' screen words (`SUGOROKU_COPY`); the Japanese is the `sugoroku` overlay in party.ja.tables.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/components/party/tenka/tenka.constants.ts", "the English half of Tenka's screen words and region names (`TENKA_COPY`, `TENKA_REGION_NAMES`, the neutral army's marble); the Japanese is the `tenka`, `tenkaRegions` and `tenkaNeutral` overlays in party.ja.tables.constants.ts, held by partyCopyTables.coverage.test.ts; territory and continent names are the package's own (tenkaWords.ts). The party pictures' fingerprint hashes this file (partyArtFingerprint.ts), so it is never edited to translate it"],
+  ["src/components/party/yacht/yacht.constants.ts", "the English half of Yacht's screen words and score boxes (`YACHT_COPY`, `YACHT_BOX_WORDS`); the Japanese is the `yacht` and `yachtBoxes` overlays in party.ja.tables.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/lib/cardGames/cardGames.copy.ts", "the English half of the eleven card games' copy (name, tagline, origin, rules, board advice); the Japanese is party.ja.cards.constants.ts, read through partyCopy.ts and held by partyCopyJa.coverage.test.ts"],
+  ["src/lib/party/gunjin/gunjin.constants.ts", "the English half of Gunjin's boards' names and notes (`GUNJIN_BOARDS`); the Japanese is the `gunjinBoards` overlay in party.ja.tables.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/lib/party/gunjin/gunjin.copy.ts", "the English half of Gunjin's copy (name, tagline, origin, rules, board advice); the Japanese is party.ja.games.constants.ts, read through partyCopy.ts and held by partyCopyJa.coverage.test.ts"],
+  ["src/lib/party/gunjin/gunjinFlag.ts", "the two seat names ('Ann', 'Ben') of the game the browser specs set up by hand (`flagWithinReach`), never drawn as the site's words"],
+  ["src/lib/party/hitotsu/hitotsu.copy.ts", "the English half of Hitotsu's copy (name, tagline, origin, rules, board advice); the Japanese is party.ja.games.constants.ts, read through partyCopy.ts and held by partyCopyJa.coverage.test.ts"],
+  ["src/lib/party/mancala/mancala.constants.ts", "the names of Mancala's two rule sets, Kalah and Oware, which a reader of Japanese is shown in the same letters as the rules page writes them (a decision John is asked to review: katakana for both)"],
+  ["src/lib/party/party.constants.ts", "the English half of the party games' copy (name, tagline, origin, rules, board advice) for Dots and Boxes, Superghost, Mancala, Tenka, Mexican Train, Yacht, Pachisi, Dice War and the race games; the Japanese is party.ja.games.constants.ts, read through partyCopy.ts and held by partyCopyJa.coverage.test.ts"],
+  ["src/lib/party/partyTableWords.ts", "the English half of what every party game says of its table on its rules page (how a turn is made, the house rules, what the table has settled); the Japanese is party.ja.tableWords*.constants.ts, laid over it by partyRulesPage and held by partyCopyTables.coverage.test.ts"],
+  ["src/lib/party/sugoroku/sugoroku.constants.ts", "the English half of the backgammon games' strength names and lines (`SUGOROKU_STRENGTH_NAMES`, `SUGOROKU_STRENGTH_LINES`); the Japanese is the `sugorokuStrengthNames` and `sugorokuStrengthLines` overlays in party.ja.tables.constants.ts, held by partyCopyTables.coverage.test.ts"],
+  ["src/lib/party/sugoroku/sugoroku.copy.ts", "the English half of the seven backgammon games' copy; the Japanese is party.ja.sugoroku.constants.ts, read through partyCopy.ts and held by partyCopyJa.coverage.test.ts"],
+  ["src/lib/party/sugoroku/sugorokuRulesPage.ts", "the English half of what the seven backgammon games say of their table on a rules page; the Japanese is `PARTY_TABLE_WORDS_JA_SUGOROKU` in party.ja.tableWordsCards.constants.ts, laid over it by partyRulesPage and held by partyCopyTables.coverage.test.ts"],
   ["src/lib/ui/keyNames.constants.ts", "the names `KeyboardEvent.key` reports for Enter, Delete and Space, compared and never drawn"],
 ]);
 

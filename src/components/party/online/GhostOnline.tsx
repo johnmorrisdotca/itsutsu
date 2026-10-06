@@ -15,7 +15,6 @@ import { useGhostWords } from "../useGhostWords";
 import type { OnlineBoardProps } from "./online.types";
 import { ghostWords, onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import type { Speaker } from "@/lib/i18n/i18n";
 
 /**
  * SUPERGHOST AT A TABLE ON SEVERAL DEVICES: the turn line, the fragment and
@@ -60,7 +59,7 @@ export function GhostOnline({ game, canMove, onMove }: OnlineBoardProps<GhostGam
 }
 
 /** A seat's standing at Superghost: the letters of the ghost it holds, or none. */
-export function ghostStanding(game: GhostGame, seat: number, _say: Speaker): string {
+export function ghostStanding(game: GhostGame, seat: number): string {
   const held = ghostLettersOf(game, seat);
   return held === "" ? "—" : held;
 }

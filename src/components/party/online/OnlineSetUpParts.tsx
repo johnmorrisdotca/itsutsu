@@ -106,7 +106,7 @@ export function SeatChoiceSelect({
         const value: SeatChoice = `buddy:${buddy.id}`;
         return (
           <option key={buddy.id} value={value} disabled={takenElsewhere.has(value)}>
-            {ONLINE_COPY.buddyLabel(buddy.name)}
+            {ONLINE_COPY.buddyLabel(buddy.name || say.say("party.online.aBuddy"))}
           </option>
         );
       })}

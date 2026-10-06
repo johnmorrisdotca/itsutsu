@@ -1,6 +1,6 @@
 // Relative: the engine boundary (`boundary.coverage.test.ts`) allows no alias under src/lib/gomoku.
 import { canPass, createGame, passTurn, playMove, resign, scoreArea } from "../engine";
-import { speaker, type Speaker } from "../../i18n/i18n";
+import type { Speaker } from "../../i18n/i18n";
 
 import { GAME_STATUS, MOVE_KINDS, RULE_VARIANTS, STONES, boardSizesFor } from "../gomoku.constants";
 import type { Point, Stone } from "../gomoku.types";

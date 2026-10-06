@@ -81,7 +81,7 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
               </button>
             ))}
           </div>
-          <p className={`min-h-5 text-xs text-muted ${count === 1 ? "" : "invisible"}`}>{YACHT_COPY.alone}</p>
+          <p className={`min-h-5 text-xs text-muted ${count > 1 ? "invisible" : ""}`}>{YACHT_COPY.alone}</p>
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
