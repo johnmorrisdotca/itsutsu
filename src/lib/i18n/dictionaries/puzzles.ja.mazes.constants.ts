@@ -34,44 +34,44 @@ export const PUZZLE_COPY_JA_MAZES = {
     ],
     inspiredBy: ["ネットやネットウォークとして知られるパイプ回しのパズル", "the pipe-turning puzzle known as Net or NetWalk"],
     origin: [
-      "動かせない部品を回して、1つの網につなげるパズルです。パズル集に「ネット」や「ネットウォーク」などの名で、長く載っています。水道は、水を町に運ぶ設備のことで、水は水、道は道すじなので、文字どおりには水の道です。ここの盤は、このサイトのコードが作り、どれも答えがちょうど1つで、水は流れるように描かれます。そのうち3,520問は固定のレベルで、1度作って、答えがちょうど1つであることを確かめてあります。",
+      "動かせない駒を回して、1つの網につなげるパズルです。パズル集に「ネット」や「ネットウォーク」などの名で、長く載っています。水道は、水を町に運ぶ設備のことで、水は水、道は道すじなので、文字どおりには水の道です。ここの盤は、このサイトのコードが作り、どれも答えがちょうど1つで、水は流れるように描かれます。そのうち3,520問は固定のレベルで、1度作って、答えがちょうど1つであることを確かめてあります。",
       "A puzzle of turning fixed pieces until they join into one network, found in puzzle collections for many years under names such as Net and NetWalk. 水道 is Japanese for waterworks: 水 is water and 道 a way, so literally a water way. The boards here are made by our own code, each with exactly one answer, and the water is drawn flowing. 3,520 of them are fixed levels, made once and proved to have exactly one answer.",
     ],
     rules: [
       [
-        "どのマスにもパイプの部品があります。部品は動かしたり変えたりできず、回すだけです。ポンプは、水が出てくるところです。",
+        "どのマスにもパイプの駒があります。駒は動かしたり変えたりできず、回すだけです。ポンプは、水が出てくるところです。",
         "Every square holds a piece of pipe. A piece is never moved or changed, only turned, and the pump is where the water comes from.",
       ],
       [
-        "部品をタップすると、時計回りに4分の1回転します。盤の下の「反時計回り」を選ぶか、Shiftを押しながらクリックするか、マウスの右クリックで、逆向きに回ります。キーボードでは、矢印キーで動き、Enterで回し、Shiftを押しながらEnterで戻します。",
+        "駒をタップすると、時計回りに4分の1回転します。盤の下の「反時計回り」を選ぶか、Shiftを押しながらクリックするか、マウスの右クリックで、逆向きに回ります。キーボードでは、矢印キーで動き、Enterで回し、Shiftを押しながらEnterで戻します。",
         "Tap a piece to turn it a quarter clockwise. Choose Anticlockwise under the board to turn the other way, or Shift-click or right-click with a mouse. With the keyboard, the arrow keys move, Enter turns a piece and Shift with Enter turns it back.",
       ],
       [
-        "水は、口が合っているところから次の部品へ流れます。何ともつながらない口からは、水があふれます。盤の端、何もない地面、口が合わない部品などです。しずくが、その場所を示します。",
+        "水は、口が合っているところから次の駒へ流れます。何ともつながらない口からは、水があふれます。盤の端、何もない地面、口が合わない駒などです。しずくが、その場所を示します。",
         "The water goes from one piece into the next wherever their openings meet. It runs out of any opening that meets nothing: the edge of the board, bare ground, or a piece that does not open back. A drip shows where.",
       ],
       [
-        "「排水口」は、ふつうの形です。水がすべての排水口に届き、濡れた部品から水が漏れないことが条件です。水が必要ない部品は予備で、どの向きでもかまいません。何もない地面には、何も置かれません。",
+        "「排水口」は、ふつうの形です。水がすべての排水口に届き、濡れた駒から水が漏れないことが条件です。水が必要ない駒は予備で、どの向きでもかまいません。何もない地面には、何も置かれません。",
         "Drains, the usual kind: the water must reach every drain, and nothing wet may run out. Pieces the water does not need are spares, left facing any way, and bare ground has nothing on it.",
       ],
       [
-        "「網」は、もう1つの形です。すべての部品が濡れなければならないので、予備はなく、何も漏れてはいけません。",
+        "「網」は、もう1つの形です。すべての駒が濡れなければならないので、予備はなく、何も漏れてはいけません。",
         "Network, the other kind: every piece must be wet, so there are no spares and nothing may run out.",
       ],
       [
-        "「大きな部品」は、「盤を作る」で選び、いつも網です。4マスぶんの大きさで1つの部品となり、1辺に2つずつ、最大8つの口があるものがあります。どの部分をタップしても、その場で、部品全体が4分の1回転します。下の板と、真ん中の輪が目印です。",
+        "「大きな駒」は、「盤を作る」で選び、いつも網です。4マスぶんの大きさで1つの駒となり、1辺に2つずつ、最大8つの口があるものがあります。どの部分をタップしても、その場で、駒全体が4分の1回転します。下の板と、真ん中の輪が目印です。",
         "Big pieces, chosen in Make a board and always a network: some pieces fill four squares and have up to eight openings, two on each side. Tap any part of one to turn the whole piece a quarter, where it stands. A plate under it and a ring at its middle mark it.",
       ],
       [
-        "「ブロック回し」も、「盤を作る」で選び、いつも網です。4つの部品でできた四角が、破線の輪で囲まれ、真ん中に回転の印がついています。4つのどれをタップしても、4つがいっしょに4分の1回転し、各部品は次の場所へ回って移ります。この4つは、単独では回せません。ヒントは、ブロックを回します。",
+        "「ブロック回転」も、「盤を作る」で選び、いつも網です。4つの駒でできた四角が、破線の輪で囲まれ、真ん中に回転の印がついています。4つのどれをタップしても、4つがいっしょに4分の1回転し、各駒は次の場所へ回って移ります。この4つは、単独では回せません。ヒントは、ブロックを回します。",
         "Block turns, also chosen in Make a board and always a network: some squares of four pieces are ringed by a dashed line, with a turning mark at their middle. A tap on any of the four turns all four together a quarter: each piece moves round to the next place as it turns. Those four cannot be turned on their own, and a Hint turns the block.",
       ],
       [
-        "レベルは、どのサイズにも決まったものがあります。14×14までは256問、巨大な盤（20×20、28×28、細長い20×50）は64問です。やさしい順に並び、全員が同じなので、自分のタイムをほかの人と比べられます。16問ずつのブロックで、前のブロックのレベルをすべて解くと、次のブロックが開きます。レベルには、ひねりが入ることがあり、盤の下のチップに名前が出ます。「ポンプ」は、ポンプが複数あり、それぞれ自分のパイプに水を送ります。「固定された部品」は、錠前がついていて、回せません。向きはすでに正しいので、そこから組み立てます。「壁」は、水が越えられません。「端がつながる」は、破線の縁で表されます。片側から出た水は、反対側から入ります。「入口から出口へ」は、左上から右下まで、枝分かれのない1本の道で、ほかの部品はおとりで、濡れません。ブロックの15問めがひねりを紹介し、16問めがそれを試します。",
+        "レベルは、どのサイズにも決まったものがあります。14×14までは256問、巨大な盤（20×20、28×28、細長い20×50）は64問です。やさしい順に並び、全員が同じなので、自分のタイムをほかの人と比べられます。16問ずつのブロックで、前のブロックのレベルをすべて解くと、次のブロックが開きます。レベルには、ひねりが入ることがあり、盤の下のチップに名前が出ます。「ポンプ」は、ポンプが複数あり、それぞれ自分のパイプに水を送ります。「固定された駒」は、錠前がついていて、回せません。向きはすでに正しいので、そこから組み立てます。「壁」は、水が越えられません。「端がつながる」は、破線の縁で表されます。片側から出た水は、反対側から入ります。「入口から出口へ」は、左上から右下まで、枝分かれのない1本の道で、ほかの駒はおとりで、濡れません。ブロックの15問めがひねりを紹介し、16問めがそれを試します。",
         "Levels: every size has fixed levels, 256 of them up to 14×14 and sixty-four on the huge boards (20×20, 28×28 and the long 20×50), easy to hard and the same for everybody, so a time on one can be compared with anybody's. They come in blocks of 16, and a block opens when every level of the block before it is solved. A level can have a twist, named in a chip under the board: Pumps, more than one, each feeding its own pipes. Locked pieces, which wear a padlock, cannot be turned and already face the right way, so build from them. Walls, which water cannot cross. Edges join, drawn with a dashed rim: water leaving one side comes in at the opposite one. Inlet to outlet, one path with no branch from the top left to the bottom right, the other pieces being decoys that stay dry. The 15th level of a block shows its twist and the 16th tests it.",
       ],
       [
-        "「大きい駒」のレベルは、定番のレベルとは別の、64問のもう1つのセットで、セットアップで選びます。どのレベルにも、ふつうの駒のあいだに大きい駒があり、5×5から20×20まで、あらゆるサイズにまたがって、やさしい順に並びます。進むほど、大きい駒の数が増え、形も複雑になります。大きい駒の中には、つながっていないパイプが1本、2本、または3本あり、近くを通っていても、片方の水がもう片方に届くことはありません。下に、すべての駒を描いています。",
+        "「大きな駒」のレベルは、定番のレベルとは別の、64レベルのもう1つのセットで、設定画面で選びます。どのレベルにも、ふつうの駒のあいだに大きな駒があり、5×5から20×20まで、あらゆるサイズにまたがって、やさしい順に並びます。進むほど、大きな駒の数が増え、形も複雑になります。大きな駒の中には、つながっていないパイプが1本、2本、または3本あり、近くを通っていても、片方の水がもう片方に届くことはありません。下に、すべての駒を描いています。",
         "Big-pieces levels are a second set of sixty-four, chosen on the set-up beside the classic levels: every one has big pieces among its ordinary ones, from the easiest to the hardest across every size from 5×5 to 20×20, with more big pieces, and trickier ones, as the levels climb. A big piece holds one, two or three separate pipes, and the water in one never reaches another, however close. Below, every piece is drawn.",
       ],
       [
@@ -79,15 +79,16 @@ export const PUZZLE_COPY_JA_MAZES = {
         "It is solved the moment the water reaches what its kind asks and nothing runs out. Every level and every board has exactly one answer, and the clock starts on your first turn.",
       ],
       [
-        "レベルの横にある「盤を作る」は、選んだサイズとレベルで新しい盤を作ります。そこで選ぶと、ヒントは、ポンプにいちばん近い部品から、答えの向きに1つ回し、ヒント1回分の点がかかります。レベルにヒントも時計の制限もありません。",
+        "レベルの横にある「盤を作る」は、選んだサイズとレベルで新しい盤を作ります。そこで選ぶと、ヒントは、ポンプにいちばん近い駒から、答えの向きに1つ回し、ヒント1回分の点がかかります。レベルにヒントも時計の制限もありません。",
         "Make a board, beside the levels, makes a new one at a size and a level you choose, and Hint, if chosen there, turns one piece to face the way the answer has it, starting nearest the pump, and costs a hint. A level has no hint and no clock.",
       ],
     ],
     board: [
-      "7×7が普段の大きさです。5×5は手早く、9×9は長め、12×12は夜長向きです。スマートフォンでは、10×10以上の盤は拡大され、盤の下の「全体」と矢印で動かします。巨大な20×20、28×28、20×50は、つまむ、ドラッグする、3つのボタンで、拡大して動かします。サイズは16種類で、5×5から14×14、巨大な20×20と28×28、そして縦長の5×7、6×10、8×14、20×50です。「排水口」は予備の部品が残るので、見るべきところが絞れます。「網」はすべての部品を使うので、無視できる部品がありません。「大きな部品」は4マスぶんで、「ブロック回し」は、4つの部品が輪で囲まれて、いっしょに回ります。どちらも網になります。",
+      "7×7が普段の大きさです。5×5は手早く、9×9は長め、12×12は夜長向きです。スマートフォンでは、10×10以上の盤は拡大され、盤の下の「全体」と矢印で動かします。巨大な20×20、28×28、20×50は、つまむ、ドラッグする、3つのボタンで、拡大して動かします。サイズは16種類で、5×5から14×14、巨大な20×20と28×28、そして縦長の5×7、6×10、8×14、20×50です。「排水口」は予備の駒が残るので、見るべきところが絞れます。「網」はすべての駒を使うので、無視できる駒がありません。「大きな駒」は4マスぶんで、「ブロック回転」は、4つの駒が輪で囲まれて、いっしょに回ります。どちらも網になります。",
       "7×7 is the usual size. 5×5 is quick, 9×9 is longer, and 12×12 is an evening; on a phone a board of 10×10 or more zooms, with Fit and the arrows under the board, and the huge 20×20, 28×28 and 20×50 zoom and move by a pinch, a drag and three buttons. There are 16 sizes, 5×5 to 14×14, the huge 20×20 and 28×28, and four long boards taller than they are wide, 5×7, 6×10, 8×14 and 20×50. Drains leaves spare pieces to see past; network uses every piece, so it has no spares to ignore. Big pieces fill four squares, and block turns ring four pieces that turn together; both make a network.",
     ],
     review: AGENT_READ,
+    ask: "The new rules paragraph about the Big pieces levels (rules[8]) and the description of the Big pieces set chip on the set-up (Suido screen: sets.big.says) were written for the 64 levels with big pieces and read by the agent only: a native read is wanted, mainly on 設定画面で選びます, 定番 for Classic (as in Tsunagi) and 大きな駒 as the one term for big pieces (the kanji beside the English name is now 大きな駒 too).",
   },
   meikyuu: {
     tagline: [

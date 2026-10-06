@@ -33,10 +33,10 @@ export const SUIDO_SQUARES_LIST = ["none", "big", "turn"] as const satisfies rea
 
 /** What each choice of squares is called on the set-up, with the line under the chips. */
 export const SUIDO_SQUARES: Record<SuidoSquares, { label: string; kanji: string; blurb: string }> = {
-  none: { label: "Single pieces", kanji: "単駒", blurb: "Every piece is one square, and a tap turns that piece." },
+  none: { label: "Single pieces", kanji: "1マスの駒", blurb: "Every piece is one square, and a tap turns that piece." },
   big: {
     label: "Big pieces",
-    kanji: "大駒",
+    kanji: "大きな駒",
     blurb: "Some pieces are big: four squares that are one piece, with up to eight openings. A tap turns the whole piece a quarter, where it stands. A network, so every piece must carry water.",
   },
   turn: {
@@ -58,7 +58,7 @@ export const SUIDO_TWISTS: Record<Twist, { label: string; kanji: string; says: s
   wrap: { label: "Edges join", kanji: "巡", says: "The edges of the board join: water leaving the right side comes in at the left, and out of the bottom at the top. A dashed rim shows it." },
   "inlet-outlet": { label: "Inlet to outlet", kanji: "入出", says: "The water comes in at the top left and must leave at the bottom right, in one path with no branches. The other pieces are decoys and stay dry." },
   // Only a board made on request has these two (Make a board): the fixed levels do not.
-  "big-pieces": { label: "Big pieces", kanji: "大駒", says: "A big piece fills four squares and has up to eight openings. One tap turns the whole piece a quarter, where it stands." },
+  "big-pieces": { label: "Big pieces", kanji: "大きな駒", says: "A big piece fills four squares and has up to eight openings. One tap turns the whole piece a quarter, where it stands." },
   "block-turns": { label: "Block turns", kanji: "回転", says: "Where four pieces are ringed by a dashed line, a tap turns all four together: each moves round to the next place as it turns. They cannot be turned on their own." },
 };
 
@@ -82,7 +82,7 @@ export const SUIDO_MODES = {
 export const SUIDO_SETS = {
   aria: "Levels",
   classic: { label: "Classic", kanji: "定番", says: "Fixed boards at every size, easy to hard: 256 at each size to 14×14 and 64 on the huge ones." },
-  big: { label: "Big pieces", kanji: "大駒", says: "Sixty-four levels from the easiest to the hardest across every size, each with big pieces among the ordinary ones, more of them and trickier ones as the levels climb." },
+  big: { label: "Big pieces", kanji: "大きな駒", says: "Sixty-four levels from the easiest to the hardest across every size, each with big pieces among the ordinary ones, more of them and trickier ones as the levels climb." },
 } as const;
 
 /** Which way a tap turns a piece, chosen under the board. */

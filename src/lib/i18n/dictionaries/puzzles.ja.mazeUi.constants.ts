@@ -25,9 +25,9 @@ export const SUIDO_WORDS_JA = {
   squares: {
     none: { label: ["1マスの駒", "Single pieces"], blurb: ["どの駒も1マスで、タップするとその駒が回ります。", "Every piece is one square, and a tap turns that piece."] },
     big: {
-      label: ["大きい駒", "Big pieces"],
+      label: ["大きな駒", "Big pieces"],
       blurb: [
-        "大きい駒があります。4マスで1つの駒になり、開口部は最大8つです。タップすると、その場で駒全体が4分の1回転します。ネットワークなので、すべての駒に水を通す必要があります。",
+        "大きな駒があります。4マスで1つの駒になり、口は最大8つです。タップすると、その場で駒全体が4分の1回転します。ネットワークなので、すべての駒に水を通す必要があります。",
         "Some pieces are big: four squares that are one piece, with up to eight openings. A tap turns the whole piece a quarter, where it stands. A network, so every piece must carry water.",
       ],
     },
@@ -59,8 +59,8 @@ export const SUIDO_WORDS_JA = {
       ],
     },
     "big-pieces": {
-      label: ["大きい駒", "Big pieces"],
-      says: ["大きい駒は4マスを占め、開口部は最大8つです。1回タップすると、その場で駒全体が4分の1回転します。", "A big piece fills four squares and has up to eight openings. One tap turns the whole piece a quarter, where it stands."],
+      label: ["大きな駒", "Big pieces"],
+      says: ["大きな駒は4マスを占め、口は最大8つです。1回タップすると、その場で駒全体が4分の1回転します。", "A big piece fills four squares and has up to eight openings. One tap turns the whole piece a quarter, where it stands."],
     },
     "block-turns": {
       label: ["ブロック回転", "Block turns"],
@@ -101,21 +101,21 @@ export const SUIDO_WORDS_JA = {
       says: ["どのサイズも、やさしい順に並んだ固定の盤です。14×14までの各サイズに256問、巨大な盤には64問あります。", "Fixed boards at every size, easy to hard: 256 at each size to 14×14 and 64 on the huge ones."],
     },
     big: {
-      label: ["大きい駒", "Big pieces"],
+      label: ["大きな駒", "Big pieces"],
       says: [
-        "あらゆるサイズにまたがる、やさしい順の64レベルです。どのレベルにも、ふつうの駒のあいだに大きい駒があり、進むほど数も、中の形も増えます。",
+        "あらゆるサイズにまたがる、やさしい順の64レベルです。どのレベルにも、ふつうの駒のあいだに大きな駒があり、進むほど数が増え、中の形も複雑になります。",
         "Sixty-four levels from the easiest to the hardest across every size, each with big pieces among the ordinary ones, more of them and trickier ones as the levels climb.",
       ],
     },
   },
   copy: {
     bigNote: [
-      "ふつうの駒のあいだに大きい駒がある、64のレベルです。5×5から20×20まで、やさしい順に並び、どのレベルも答えがちょうど1つです。最初のレベルには、単純な大きい駒が少しだけあります。進むほど数が増え、中の形も複雑になり、ブロック回転、2つ目のポンプ、壁、つながる端も出てきます。16レベルのブロックは、ひとつ前のブロックを解くと開きます。",
+      "ふつうの駒のあいだに大きな駒がある、64レベルです。5×5から20×20まで、やさしい順に並び、どのレベルも答えがちょうど1つです。最初のレベルには、単純な大きな駒が少しだけあります。進むほど数が増え、中の形も複雑になり、ブロック回転、2つ目のポンプ、壁、つながる端も出てきます。16レベルのブロックは、ひとつ前のブロックをすべて解くと開きます。",
       "Sixty-four levels with big pieces among the ordinary ones, easy to hard across every size from 5×5 to 20×20, and each has exactly one answer. The first levels have a few plain big pieces; later ones have more of them, with trickier shapes inside, and take in blocks that turn as one, a second pump, walls and edges that join. A block of 16 opens when the one before it is all solved.",
     ],
     levelsNote: [
-      "どのサイズにも固定のレベルがあり、14×14までは各256問、巨大な盤は各64問です。やさしい順に並び、どのレベルも答えがちょうど1つです。レベルには仕掛けがつくことがあります。ポンプが複数、固定された駒、壁、つながる端、入口から出口までの1本の道です。16レベルのブロックは、ひとつ前のブロックを解くと開きます。",
-      "Every size has fixed levels, 256 of them up to 14×14 and 64 on the huge boards, easy to hard, and each has exactly one answer. A level can come with a twist: several pumps, locked pieces, walls, edges that join, or a single path from an inlet to an outlet. A block of 16 levels opens when the one before it is solved.",
+      "どのサイズにも固定のレベルがあり、14×14までは各256問、巨大な盤は各64問です。やさしい順に並び、どのレベルも答えがちょうど1つです。レベルには仕掛けがつくことがあります。ポンプが複数、固定された駒、壁、つながる端、入口から出口までの1本の道です。16レベルのブロックは、ひとつ前のブロックをすべて解くと開きます。",
+      "Every size has fixed levels, 256 of them up to 14×14 and 64 on the huge boards, easy to hard, and each has exactly one answer. A level can come with a twist: several pumps, locked pieces, walls, edges that join, or a single path from an inlet to an outlet. A block of 16 levels opens when the one before it is all solved.",
     ],
     levelsLine: [
       "16のサイズに、やさしい順の固定レベルもあります。5×5から14×14までと、細長い5×7、6×10、8×14は各256問、巨大な20×20、28×28、20×50は各64問です。",

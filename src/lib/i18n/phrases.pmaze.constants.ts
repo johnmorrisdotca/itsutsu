@@ -210,7 +210,7 @@ export const PHRASES_PMAZE = {
   "pmaze.guide.blockTurn.name": "Block that turns as one",
   "pmaze.guide.blockTurn.text": "Four ordinary pieces, a corner, an end, a straight and a tee, that cannot be turned on their own. A tap turns the whole square a quarter, and each piece moves round to the next place as it turns, like a bigger piece that is not joined inside.",
   "pmaze.guide.title": "The pieces",
-  "pmaze.guide.lead": "Every piece in Suido, each drawn by the package itself. A tap turns an ordinary piece a quarter; a big piece and a block turn as one square.",
+  "pmaze.guide.lead": "Every piece in Suido, drawn just as it is on the board. A tap turns an ordinary piece a quarter; a big piece and a block turn as one square.",
   "pmaze.guide.groupTurn": "Pieces you turn",
   "pmaze.guide.groupWater": "Where the water starts and ends",
   "pmaze.guide.groupTwist": "What a board adds",

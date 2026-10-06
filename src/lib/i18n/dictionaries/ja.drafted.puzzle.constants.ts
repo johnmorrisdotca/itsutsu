@@ -121,9 +121,9 @@ export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "puzzle.level.big": {
-    text: "大きい駒のレベル{number}",
+    text: "大きな駒のレベル{number}",
     back: "Big-pieces level {number}",
-    ask: "Drafted by the builder, not yet read by the Japanese reviewer or a person: is 大きい駒 the term for the big 2×2 pieces?",
+    review: AGENT_READ,
   },
   "puzzle.level.next": {
     text: "レベル{next} →",

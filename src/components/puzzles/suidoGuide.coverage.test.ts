@@ -32,6 +32,6 @@ describe("the words of the guide to Suido's pieces", () => {
         expect(ja.say(key), `${piece.id} ${key}`).toMatch(/[぀-ヿ一-鿿]/);
       }
     }
-    expect(ja.say("pmaze.guide.family", { family: "2+2", count: "36" })).toBe("2+2 ・ 36通り");
+    expect(ja.say("pmaze.guide.family", { family: "2+2", count: "36" })).toBe("2+2・36通り");
   });
 });
