@@ -30,8 +30,8 @@ importers:
         specifier: 0.4.1
         version: 0.4.1(react@19.2.8)
       '@johnmorrisdotca/karakuri':
-        specifier: 0.1.0
-        version: 0.1.0
+        specifier: 0.1.1
+        version: 0.1.1
       '@johnmorrisdotca/kazu':
         specifier: 2.0.0
         version: 2.0.0
@@ -471,8 +471,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/karakuri@0.1.0':
-    resolution: {integrity: sha512-s8SI718nDivgpnQyrdivwq07+IhlOFyIHk0IPhcVhoR/Pu6pmx0GnYGxpyD+UmQ7Ad9nK0LaRxnH3+H13RA/Ig==}
+  '@johnmorrisdotca/karakuri@0.1.1':
+    resolution: {integrity: sha512-YBuHfoTBfXti2zafjBFWNJ0FsWHhfxLheFBAqkfKowxxbnpiGtE3fScZYqyqOaTMBERVnVfpoa0VR+TCHd8OhQ==}
     engines: {node: '>=22'}
 
   '@johnmorrisdotca/kazu@2.0.0':
@@ -3182,7 +3182,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/karakuri@0.1.0': {}
+  '@johnmorrisdotca/karakuri@0.1.1': {}
 
   '@johnmorrisdotca/kazu@2.0.0': {}
 
