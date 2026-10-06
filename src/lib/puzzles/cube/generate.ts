@@ -9,10 +9,11 @@ import { seededRandom } from "../random";
  * its 3D view — is Kyuubu (`@johnmorrisdotca/kyuubu`), a package of its own; what is
  * here is what makes it a puzzle on this site.
  *
- * `size` is the cube's side, 2 to 5; `level` is how far from solved it is
+ * `size` is the cube's side, 2 to 7; `level` is how far from solved it is
  * turned. Easy is a handful of turns a beginner can take back by looking,
  * medium enough that looking stops working, and hard a competition's
- * scramble: as long as the ones official events use for each size.
+ * scramble: as long as the ones official events use for each size (the
+ * package's `FULL_SCRAMBLE_LENGTHS`, which the 6×6 and 7×7 are read from).
  *
  * The givens are the scrambled stickers and the solution is the scramble
  * taken back, which always solves it; any other way to solved is a solve too
@@ -20,14 +21,14 @@ import { seededRandom } from "../random";
  */
 
 /** The sizes a cube is turned at here. */
-export const CUBE_SIZES = [2, 3, 4, 5] as const;
+export const CUBE_SIZES = [2, 3, 4, 5, 6, 7] as const;
 
 /** How many turns a scramble is, by level and size. */
 export const SCRAMBLE_LENGTHS: Record<PuzzleLevel, Record<number, number>> = {
-  easy: { 2: 3, 3: 4, 4: 5, 5: 6 },
-  medium: { 2: 6, 3: 9, 4: 14, 5: 18 },
-  hard: { 2: 11, 3: 25, 4: 40, 5: 60 },
-  "extra-hard": { 2: 11, 3: 25, 4: 40, 5: 60 },
+  easy: { 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8 },
+  medium: { 2: 6, 3: 9, 4: 14, 5: 18, 6: 24, 7: 30 },
+  hard: { 2: 11, 3: 25, 4: 40, 5: 60, 6: 80, 7: 100 },
+  "extra-hard": { 2: 11, 3: 25, 4: 40, 5: 60, 6: 80, 7: 100 },
 };
 
 /** The scramble a seed names at this size and level. Part of what a seed means: changing it changes every kept cube. */

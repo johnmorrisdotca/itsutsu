@@ -404,7 +404,7 @@ laid pair by pair in reverse, so it can be cleared; the answer and a kept run
 are the moves, which the server plays through to check. The tiles are our own
 Japanese-style SVG. See `docs/plans/mahjong/README.md`.
 
-The **Cube** 立方体 (2026-09-30, `src/lib/puzzles/cube/`): the Rubik's Cube, 2×2 to 5×5, drawn in
+The **Cube** 立方体 (2026-09-30, `src/lib/puzzles/cube/`): the Rubik's Cube, 2×2 to 7×7 (the 6×6 and 7×7 on the set-up's second shelf), drawn in
 CSS 3D by **Kyuubu** キューブ (`@johnmorrisdotca/kyuubu`), a framework-free package
 with a thin React wrapper and its own repository (github.com/johnmorrisdotca/kyuubu).
 The site installs it from a GitHub release's tarball, pinned in `package.json`;

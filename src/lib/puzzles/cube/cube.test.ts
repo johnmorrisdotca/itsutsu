@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { checkSolution, checkOutOfGuesses } from "../puzzleCheck";
 import { decodeCubeProgress, encodeCubeProgress, progressFits } from "../puzzleProgress";
 
-import { checkCube } from "./check";
+import { CUBE_MOVES_MOST, checkCube } from "./check";
 import { CUBE_SIZES, SCRAMBLE_LENGTHS, cubeOfSeed, generateCube, scrambleOf } from "./generate";
 
 describe("a cube made from a seed", () => {
@@ -21,6 +21,34 @@ describe("a cube made from a seed", () => {
 
   it("is another cube from another seed", () => {
     expect(generateCube(3, "hard", 1).givens).not.toBe(generateCube(3, "hard", 2).givens);
+  });
+});
+
+describe("the biggest cubes, 6×6 and 7×7", () => {
+  it("are scrambled a competition's length on hard, and a first solve of seven thousand turns is checked in a moment", () => {
+    expect(SCRAMBLE_LENGTHS.hard[6]).toBe(80);
+    expect(SCRAMBLE_LENGTHS.hard[7]).toBe(100);
+    const cube = generateCube(7, "hard", 3);
+    expect(cube.givens).toHaveLength(6 * 49);
+    // A long way round: seven thousand turns wandering and back, then the scramble taken back. Three characters a turn.
+    const wandering = encodeCubeMoves(parseMoves("3R 3R' 2U 2U' ".repeat(1750), 7)!);
+    const answer = `${wandering}${cube.solution}`;
+    expect(answer.length).toBeGreaterThan(21_000);
+    expect(answer.length).toBeLessThanOrEqual(CUBE_MOVES_MOST);
+    const started = performance.now();
+    expect(checkCube(7, cube.givens, answer)).toEqual({ ok: true });
+    expect(performance.now() - started).toBeLessThan(2000);
+    expect(progressFits("cube", 7, answer)).toBe(true);
+    // And one turn too many to be kept is refused.
+    expect(checkCube(7, cube.givens, `${answer}${"x01".repeat(Math.ceil((CUBE_MOVES_MOST - answer.length) / 3) + 1)}`).ok).toBe(false);
+  });
+
+  it("turn every layer they have, and refuse one they do not", () => {
+    for (const size of [6, 7]) {
+      const cube = generateCube(size, "easy", 9);
+      expect(checkCube(size, cube.givens, `x${size}1`).ok).toBe(false);
+      expect(turnAll(cube.givens, size, decodeCubeMoves(cube.solution)!)).toMatch(new RegExp(`^U{${size * size}}R{${size * size}}F{${size * size}}D{${size * size}}L{${size * size}}B{${size * size}}$`));
+    }
   });
 });
 

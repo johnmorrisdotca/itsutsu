@@ -4,7 +4,7 @@ import { setUpPath } from "@/lib/gomoku/slugs";
 import { EndGameButton, GameEnding, NewGameLink } from "@/components/play/GameEnding";
 import { ENDINGS } from "@/components/play/gameEnding.constants";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { countsAsMove, cubeSolved, decodeCubeMoves, encodeCubeMoves, movesNotation, turnAll, undoAll, undoOf, type CubeMove } from "@johnmorrisdotca/kyuubu";
+import { countsAsMove, cubeSolved, decodeCubeMoves, encodeCubeMoves, movesNotation, turnAll, turnCube, undoAll, undoOf, type CubeMove } from "@johnmorrisdotca/kyuubu";
 import type { KyuubuHandle } from "@johnmorrisdotca/kyuubu/react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -49,12 +49,20 @@ export function CubeSolve({
   const n = puzzle.size;
   // A kept run's turns are made at once, not played out again.
   const kept = resumed === null ? null : decodeCubeProgress(resumed.progress);
-  const [moves, setMoves] = useState<CubeMove[]>(() => kept?.moves ?? []);
+  /*
+   * THE TURNS AND THE CUBE THEY LEAVE, kept together. Each turn made or taken back is turned onto the cube as it stands, one
+   * turn's work, not every turn since the scramble again: a first 7×7 is a thousand turns or more, and turning them all
+   * from the start for every one more was about fifty milliseconds on a phone by the three-thousandth.
+   */
+  const [run, setRun] = useState(() => {
+    const turns = kept?.moves ?? [];
+    return { moves: turns, state: turnAll(puzzle.givens, n, turns) };
+  });
+  const { moves, state } = run;
   // Shown its steps (`CubeGuide`): kept with the run, and the solve is handed in as guided.
   const [guided, setGuided] = useState(kept?.guided ?? false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [onCube, setOnCube] = useState(false);
-  const state = useMemo(() => turnAll(puzzle.givens, n, moves), [puzzle.givens, n, moves]);
   const solved = cubeSolved(state, n);
   // The method's next move, drawn on the cube while the guide is open and asked to show it there.
   const hint = useMemo(() => (guideOpen && onCube && !solved ? (stepsFrom(state, n)?.[0]?.moves.slice(0, 1) ?? null) : null), [guideOpen, onCube, solved, state, n]);
@@ -90,14 +98,17 @@ export function CubeSolve({
   const turned = (move: CubeMove) => {
     // A turn of the whole cube is a look, and starts nothing.
     if (countsAsMove(move)) begin();
-    setMoves((so) => [...so, move]);
+    setRun((so) => ({ moves: [...so.moves, move], state: turnCube(so.state, n, move) }));
   };
 
   const undo = () => {
     const last = moves.at(-1);
     if (last === undefined || !live) return;
     cube.current?.turn(undoOf(last));
-    setMoves((so) => so.slice(0, -1));
+    setRun((so) => {
+      const back = so.moves.at(-1);
+      return back === undefined ? so : { moves: so.moves.slice(0, -1), state: turnCube(so.state, n, undoOf(back)) };
+    });
   };
 
   const turnFor = (steps: readonly CubeMove[]) => {

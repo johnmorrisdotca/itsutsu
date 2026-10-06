@@ -105,7 +105,8 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   pictureLogic: { how: "size", rungs: { 5: 50, 10: 75, 15: 85, 20: 95, 40: 120, 50: 125 } },
   // The square of four tiles across is the browser tests' own, never offered.
   mahjong: { how: "size", rungs: { 4: 50, 8: 50, 9: 90, 10: 110, 15: 125 } },
-  cube: { how: "size", rungs: { 2: 50, 3: 85, 4: 105, 5: 125 } },
+  // Rungs by the log of the stickers (24 on the 2×2 to 294 on the 7×7): 50 at the 2×2 and 125 at the 7×7.
+  cube: { how: "size", rungs: { 2: 50, 3: 75, 4: 90, 5: 105, 6: 115, 7: 125 } },
   // A word is as long as its size: four to six letters (Kana three to five; Pop three to seven).
   gomoji: { how: "size", rungs: WORD_RUNGS, full: WORD },
   gomojiMot: { how: "size", rungs: WORD_RUNGS, full: WORD },

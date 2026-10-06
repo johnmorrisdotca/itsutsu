@@ -412,14 +412,16 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   },
   /*
    * THE CUBE, turned in three dimensions (`cube/`): its size is its side, 2×2
-   * to 5×5, and its level how far it is scrambled (`SCRAMBLE_LENGTHS`). The
+   * to 7×7, and its level how far it is scrambled (`SCRAMBLE_LENGTHS`). The
+   * 6×6 and 7×7 are a second shelf (`shelves`, 2×2 to 5×5 and then 4×4 to 7×7).
+   * The
    * givens are the scrambled stickers, six faces of size × size; the answer
    * is the turns (`encodeCubeMoves`), checked by turning them. No Check or
    * Hint, since every sticker is in plain sight, and no countdown: the clock,
    * started by the first turn after a look at the scramble, is its measure.
    */
   cube: {
-    sizes: [2, 3, 4, 5],
+    sizes: [2, 3, 4, 5, 6, 7],
     offered: [2, 3, 4, 5],
     defaultSize: 3,
     levels: PUZZLE_LEVEL_LIST,
@@ -428,6 +430,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     helps: false,
     clock: false,
     cube: true,
+    shelves: true,
   },
   /*
    * SUIDO, the pipe puzzle (`suido/`, the package `@johnmorrisdotca/suido`):
@@ -553,11 +556,12 @@ export function levelAskable(kind: PuzzleKind, level: PuzzleLevel): boolean {
 }
 
 /**
- * THE LONGEST CODE OF A PUZZLE THAT KEEPS A STEP LOG (`stepLog.ts`): every kind but Meikyuu. A maze's line is kept whole
- * and carries no log (it has no scrubber), and its codes are the longest there are (a colossal maze's way is 5,009 steps),
- * so the step log's ceiling is read from the others and does not grow with the maze.
+ * THE LONGEST CODE OF A PUZZLE THAT KEEPS A STEP LOG (`stepLog.ts`): every kind but Meikyuu and the cube. A maze's line is
+ * kept whole and carries no log (it has no scrubber), and its codes are the longest there are (a colossal maze's way is
+ * 5,009 steps); a cube's turns are kept whole too, and a 7×7's are the longest of all (ten thousand turns, 30,000 characters).
+ * So the step log's ceiling is read from the others and does not grow with the maze or the cube.
  */
-export const PUZZLE_LOGGED_CODE_LONGEST = Math.max(...Object.entries(PUZZLE_SPECS).filter(([kind]) => kind !== "meikyuu").map(([, spec]) => spec.mostCells));
+export const PUZZLE_LOGGED_CODE_LONGEST = Math.max(...Object.entries(PUZZLE_SPECS).filter(([kind]) => kind !== "meikyuu" && kind !== "cube").map(([, spec]) => spec.mostCells));
 
 /** The levels a puzzle can be made at, at this size: the kind's levels, less any this size cannot have (`levelsAt`). */
 export function levelsFor(kind: PuzzleKind, size: number): readonly PuzzleLevel[] {
@@ -778,6 +782,8 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     3: { label: "Standard", kanji: "定番" },
     4: { label: "Big", kanji: "大" },
     5: { label: "Bigger", kanji: "特大" },
+    6: { label: "Huge", kanji: "巨大" },
+    7: { label: "Giant", kanji: "超巨大" },
   },
   ...PENCIL_SIZE_NAMES,
   jirai: JIRAI_SIZE_NAMES,
@@ -1377,7 +1383,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
   cube: {
     label: "Cube",
     kanji: "立方体",
-    tagline: "The turning cube: scramble it, then turn its layers until every face is one colour again. From the 2×2 to the 5×5, in 3D.",
+    tagline: "The turning cube: scramble it, then turn its layers until every face is one colour again. From the 2×2 to the 7×7, in 3D.",
     inspiredBy: "the Rubik's Cube, invented by Ernő Rubik in 1974",
     alsoKnownAs: ["Rubik's Cube", "Magic Cube", "Speedcube"],
     origin:
@@ -1387,12 +1393,12 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Each face of a solved cube is one colour. The cube starts scrambled; turn its layers until every face is one colour again.",
       "Any layer can be turned a quarter or a half turn: a face, or on a bigger cube a layer inside it. Turning the whole cube to look at another side is free, and is not counted as a move.",
       "Drag a sticker across the cube to turn the layer it sits in that way. Drag the space around the cube to turn the whole cube and look at it from anywhere.",
-      "With a mouse, the wheel over the cube turns the layer under the pointer, and Ctrl with the wheel turns the layer across it; over the space around the cube, the wheel turns the whole cube. Keys work too, in the notation cubers write: R, L, U, D, F and B turn a face clockwise, with Shift anticlockwise; M, E and S turn a middle layer, and x, y and z the whole cube. A number first, 2 to 5, turns a layer that far in from the face.",
+      "With a mouse, the wheel over the cube turns the layer under the pointer, and Ctrl with the wheel turns the layer across it; over the space around the cube, the wheel turns the whole cube. Keys work too, in the notation cubers write: R, L, U, D, F and B turn a face clockwise, with Shift anticlockwise; M, E and S turn a middle layer, and x, y and z the whole cube. A number first, 2 to 7, turns a layer that far in from the face.",
       "You get fifteen seconds to look at the scramble, as a competition gives. The clock starts with your first turn, or when the look runs out, and stops the moment the cube is solved.",
       "Undo takes back a turn, as often as you like. Your time is your score, and your moves are kept, so a solve can be seen again.",
     ],
     board:
-      "The 3×3 is the classic cube. The 2×2 has no centres to show which colour a face should be, so it is a quick one to learn on; the 4×4 and 5×5 have layers inside, and are long evenings. Easy is a few turns from solved; hard is a full scramble.",
+      "The 3×3 is the classic cube. The 2×2 has no centres to show which colour a face should be, so it is a quick one to learn on; the 4×4 and 5×5 have layers inside, and are long evenings, and the 6×6 and 7×7 are longer still: a first solve is a thousand turns or more, and on a phone the cube zooms in to find the stickers. Easy is a few turns from solved; hard is a full scramble, as long as a competition gives (a hundred turns on the 7×7).",
   },  /*
    * OUR OWN NAME FOR IT. The pipe-turning puzzle goes by Net and by NetWalk
    * where it is a puzzle of turning pieces until they join; the names of the

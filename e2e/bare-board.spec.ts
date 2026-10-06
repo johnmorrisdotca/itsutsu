@@ -492,6 +492,8 @@ const SURVEY: Survey[] = [
       await expect(page.getByTestId("picture-viewport")).toHaveAttribute("data-zoom", "1.00");
     },
   },
+  // The Cube's biggest, the 7×7 (2026-10-05): 294 stickers a cube's face-on drawing has to hold with nothing to scroll and no empty column.
+  puzzle("cube", "size=7&level=medium"),
   // Tsunagi's levels are fixed boards: its first, as a new player meets it.
   { name: "/games/tsunagi/play", open: async (page) => {
     await page.goto("/games/tsunagi/play?size=4&level=easy&seed=6");

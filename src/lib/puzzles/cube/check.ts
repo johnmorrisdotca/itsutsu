@@ -4,8 +4,12 @@ import { cubeSolved, decodeCubeMoves, isCubeState, moveFits, turnAll } from "@jo
 
 import { CUBE_SIZES } from "./generate";
 
-/** The most characters a cube's moves may be kept with: three a move, and room for a long first solve of a 5×5. */
-export const CUBE_MOVES_MOST = 9000;
+/**
+ * The most characters a cube's moves may be kept with: three a move, ten thousand moves, which is as many as Kyuubu keeps in
+ * one saved solve (`MAX_RECORD_MOVES`). It was 9,000 (three thousand moves), room for a long first solve of a 5×5; a first
+ * 7×7 is a long evening of single layers, a thousand turns of them or well past it.
+ */
+export const CUBE_MOVES_MOST = 30_000;
 
 function playedOut(size: number, givens: string, answer: string): { state: string } | { reason: string } {
   if (!(CUBE_SIZES as readonly number[]).includes(size)) return { reason: "no cube of that size" };
