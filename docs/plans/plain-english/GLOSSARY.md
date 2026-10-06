@@ -58,6 +58,17 @@ something uses the word already chosen for it.
 | The count laid, where there is no limit | **Stones laid** | stones used |
 | The setting for how many may lie at once | **Stones**: **A few** or **As many as I like** | limited, unlimited |
 
+## Meikyuu over a solid (2026-10-05)
+
+| Concept | The label everywhere | No longer |
+|---|---|---|
+| The mazes over the surface of a solid, a shape of the set-up | **3D** 立体 | solid mazes, 3-D, three-dimensional |
+| The four solids | **Cube**, **Sphere**, **Octahedron**, **Icosahedron** | box, ball, globe, bipyramid |
+| Moving the solid round to see another side | **Turn** (the arrows: **Turn left**, **Turn right**, **Turn up**, **Turn down**) | rotate, spin, orbit |
+| Bringing the end of the line round to the front | **Face me** | centre, follow, recentre |
+| Every drag turns the solid, and draws nothing | **Turn only** | rotate mode, view mode |
+| A solid's sizes | **Small**, **Medium**, **Large** (the step under the tiles) | tiny, huge |
+
 ## Header, footer and account
 
 | Now | Was | Kanji | Where | Why |

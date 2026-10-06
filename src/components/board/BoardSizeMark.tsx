@@ -2,6 +2,8 @@ import { pictureBox } from "@/components/games/picture";
 
 import { BOARD_SIZE_LATTICE, BOARD_SIZE_MARK_CLASS, BOARD_SIZE_NUMERAL_CLASS } from "./Board.constants";
 import { longBoardOf } from "./boardShape";
+import { MEIKYUU_SOLID_NAMES, MEIKYUU_SOLID_STEPS, meikyuuSolidOf } from "@/lib/puzzles/meikyuu/sizes";
+import { SOLID_LINES } from "./solidMarkLines";
 import type { BoardSizeMarkProps } from "./board.types";
 /*
  * Not `./boardSizeMark`: on a case-insensitive disk that name and this file's
@@ -48,6 +50,28 @@ import { boardSizeMarkVoice, boardSizeNumeralPx } from "./boardSizeVoice";
  */
 export function BoardSizeMark({ side, size, words, className = "" }: BoardSizeMarkProps) {
   const box = pictureBox(size);
+  // A Meikyuu maze over a solid: the solid, with its step big in the middle (`SolidMark`).
+  const solid = meikyuuSolidOf(side);
+  if (solid !== null) {
+    const step = MEIKYUU_SOLID_STEPS.indexOf(solid.step) + 1;
+    const drawing = SOLID_LINES[solid.kind];
+    const voice = words === "beside" ? ({ "aria-hidden": "true" } as const) : ({ role: "img", "aria-label": `${MEIKYUU_SOLID_NAMES[solid.kind]}, size ${step} of 3` } as const);
+    return (
+      <span {...voice} className={className === "" ? BOARD_SIZE_MARK_CLASS : `${BOARD_SIZE_MARK_CLASS} ${className}`} style={box} data-testid="board-size-mark" data-solid={solid.kind} data-step={step} data-picture={size}>
+        <svg viewBox="0 0 100 100" className="absolute inset-0 size-full text-rule-strong" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {drawing.paths.map((d) => (
+            <path key={d} d={d} />
+          ))}
+          {(drawing.dashed ?? []).map((d) => (
+            <path key={d} d={d} strokeDasharray="4 5" opacity="0.6" />
+          ))}
+        </svg>
+        <span className={`${BOARD_SIZE_NUMERAL_CLASS} relative`} style={{ fontSize: Math.round(box.width * 0.34 * 10) / 10 }}>
+          {step}
+        </span>
+      </span>
+    );
+  }
   /*
    * A LONG BOARD (Suido's 5×7, 6×10 and 8×14, `longBoardOf`) is drawn at its own shape, not squared: the same lattice
    * at the density of its width and height, its longer side as long as the picture is, in the picture's own box so

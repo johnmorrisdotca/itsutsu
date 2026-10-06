@@ -9,11 +9,11 @@ import { nextLevelLabel } from "@/lib/puzzles/fixedLevel";
 import { completesSize } from "@/lib/puzzles/meikyuu/completion";
 import { meikyuuLevelCount } from "@/lib/puzzles/meikyuu/levelCounts";
 import { meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
-import { isMeikyuuTall, meikyuuSizeInAddress, meikyuuSizeLabel } from "@/lib/puzzles/meikyuu/sizes";
+import { isMeikyuuSolid, isMeikyuuTall, meikyuuSizeInAddress, meikyuuSizeLabel } from "@/lib/puzzles/meikyuu/sizes";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MEIKYUU_COPY, MOVE_COPY, PROGRESS_COPY, STONE_COPY } from "./meikyuu.constants";
+import { MEIKYUU_COPY, MOVE_COPY, PROGRESS_COPY, STONE_COPY, TURN_COPY } from "./meikyuu.constants";
 import { MeikyuuBoard, type MeikyuuHandle, type MeikyuuReading } from "./MeikyuuBoard";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
@@ -21,6 +21,7 @@ import { meikyuuLevelPath } from "./MeikyuuLevelPicker";
 import { keepSolveHere, keptSolves } from "./meikyuuKept";
 import { useStoneLimit } from "./meikyuuStonesStore";
 import { MeikyuuStill } from "./MeikyuuStill";
+import { SolidBoard } from "./SolidBoard";
 import { MeikyuuWayUp } from "./MeikyuuStand";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveTime } from "./SolveTime";
@@ -77,6 +78,8 @@ export function MeikyuuSolve({
   const { kind, size, seed: level } = puzzle;
   const count = meikyuuLevelCount(size);
   const tall = isMeikyuuTall(size);
+  /* A maze over a solid (`SolidBoard`): the solid is turned as well as drawn on, so the presses under it are Turn's and not the zoom pad's Move. */
+  const solid = isMeikyuuSolid(size);
   const row = meikyuuLevelsLoaded(size) ? meikyuuLevelsAt(size)[level - 1] : undefined;
   const handle = useRef<MeikyuuHandle>(null);
   const [reading, setReading] = useState<MeikyuuReading | null>(null);
@@ -186,7 +189,11 @@ export function MeikyuuSolve({
     <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={level} data-level={level} data-maze={puzzle.givens} data-cells={cells} data-solved={reading?.solved === true ? "true" : "false"} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
       <SolvePaused pausing={pausing}>
-        <MeikyuuBoard code={puzzle.givens} tall={tall} way={resumed?.progress ?? ""} locked={!live} stones={stoneLimit} onChange={told} handle={handle} />
+        {solid ? (
+          <SolidBoard code={puzzle.givens} way={resumed?.progress ?? ""} locked={!live} stones={stoneLimit} onChange={told} handle={handle} />
+        ) : (
+          <MeikyuuBoard code={puzzle.givens} tall={tall} way={resumed?.progress ?? ""} locked={!live} stones={stoneLimit} onChange={told} handle={handle} />
+        )}
       </SolvePaused>
       {chips}
       {done === null ? (
@@ -232,20 +239,33 @@ export function MeikyuuSolve({
                 onClick={() => setMoving(handle.current?.pan(!moving) ?? false)}
                 disabled={!live}
                 aria-pressed={moving}
-                title={MOVE_COPY.says}
-                data-testid="meikyuu-move"
+                title={solid ? TURN_COPY.onlySays : MOVE_COPY.says}
+                data-testid={solid ? "meikyuu-turn-only" : "meikyuu-move"}
                 data-moving={moving ? "true" : "false"}
               >
-                {MOVE_COPY.press}
+                {solid ? TURN_COPY.only : MOVE_COPY.press}
               </button>
             </div>
+            {/* A solid is turned as well as zoomed: the four turns and Face me, in a row of their own that a flat maze does not have. */}
+            {solid ? (
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={TURN_COPY.legend} data-testid="meikyuu-turn">
+                {([["left", "◀", TURN_COPY.left], ["up", "▲", TURN_COPY.up], ["down", "▼", TURN_COPY.down], ["right", "▶", TURN_COPY.right]] as const).map(([by, mark, words]) => (
+                  <button key={by} type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.turn?.(by)} disabled={!live} aria-label={words} title={words} data-testid={`meikyuu-turn-${by}`}>
+                    {mark}
+                  </button>
+                ))}
+                <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.faceMe?.()} disabled={!live} title={TURN_COPY.faceMeSays} data-testid="meikyuu-face-me">
+                  {TURN_COPY.faceMe}
+                </button>
+              </div>
+            ) : null}
             {/* In the row of presses under the board, so it takes no row of its own and Just the board still fits a desk. */}
             <MeikyuuColours />
             {/* A tall maze can lie on its side: which way up is the reader's to choose, beside the colours. */}
             {tall ? <MeikyuuWayUp className="basis-full" /> : null}
           </div>
           <span className="min-h-10 text-sm text-muted" data-testid="meikyuu-said" data-cells={cells} data-keys={reading?.keys ?? 0} aria-live="polite">
-            {stoning ? STONE_COPY.how : cells === 0 ? MEIKYUU_COPY.howTo : MEIKYUU_COPY.status(cells, reading?.keys ?? 0, reading?.keysOf ?? 0)}
+            {stoning ? STONE_COPY.how : cells === 0 ? (solid ? TURN_COPY.howTo : MEIKYUU_COPY.howTo) : MEIKYUU_COPY.status(cells, reading?.keys ?? 0, reading?.keysOf ?? 0)}
           </span>
         </div>
       ) : (

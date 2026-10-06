@@ -11,12 +11,12 @@ import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { meikyuuBlockOf, meikyuuBlockRange, meikyuuBlocksIn, meikyuuLevelCount } from "@/lib/puzzles/meikyuu/levelCounts";
 import { loadMeikyuuLevelsFor, meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
-import { isMeikyuuColossal, isMeikyuuTall, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_SIZES, MEIKYUU_TALL_SIZES, meikyuuSizeLabel, meikyuuTallShape } from "@/lib/puzzles/meikyuu/sizes";
+import { isMeikyuuColossal, isMeikyuuSolid, isMeikyuuTall, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_SIZES, MEIKYUU_SOLID_STEPS, MEIKYUU_TALL_SIZES, meikyuuSizeLabel, meikyuuSolidOf, meikyuuSolidSize, meikyuuSolidTiles, meikyuuTallShape, type MeikyuuSolidStep } from "@/lib/puzzles/meikyuu/sizes";
 import { progressOf, type SolvedLevels } from "@/lib/puzzles/meikyuu/completion";
 import { PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MEIKYUU_CHOICE, MEIKYUU_COPY, PROGRESS_COPY, SHAPE_COPY } from "./meikyuu.constants";
+import { MEIKYUU_CHOICE, MEIKYUU_COPY, PROGRESS_COPY, SHAPE_COPY, SOLID_STEP_COPY } from "./meikyuu.constants";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
 import { meikyuuLevelPath, MeikyuuLevelPicker } from "./MeikyuuLevelPicker";
@@ -30,10 +30,10 @@ import { SetUpResume } from "./SetUpResume";
 /** How many tall sizes a shelf of the set-up holds: the four tiles every set-up keeps room for. */
 const TALL_SHELF = 4;
 
-/** The three shapes of the set-up: the squares and shapes, the tall mazes, and the colossal ones. */
-type Shape = "square" | "tall" | "colossal";
+/** The four shapes of the set-up: the squares and shapes, the tall mazes, the colossal ones, and the mazes over a solid. */
+type Shape = "square" | "tall" | "colossal" | "solid";
 
-const SHAPES: readonly Shape[] = ["square", "tall", "colossal"];
+const SHAPES: readonly Shape[] = ["square", "tall", "colossal", "solid"];
 
 /** A tall size as it is read, "20×30". */
 function sizeFrom(size: number): string {
@@ -54,9 +54,11 @@ function nextLevelOf(count: number, done: ReadonlySet<number>): number {
  * beside it; a block of sixteen levels is the picker under it, and Start plays the
  * one chosen — the next one not yet solved until another is.
  *
- * THREE SHAPES, NO MORE THAN FOUR TILES IN ANY: the squares and shapes have four sizes, so no shelf to turn; the tall ones have six and a
- * shelf that turns; and the two COLOSSAL mazes (about ten thousand cells, a square box and a tall one) are a shape of their own, beside the
- * other two, so that a set-up never has a fifth tile and nothing that was there moves. Every level is open: a maze
+ * FOUR SHAPES, NO MORE THAN FOUR TILES IN ANY: the squares and shapes have four sizes, so no shelf to turn; the tall ones have six and a
+ * shelf that turns; the two COLOSSAL mazes (about ten thousand cells, a square box and a tall one) are a shape of their own, beside the
+ * other two; and the SOLIDS (a maze over the whole surface of a cube, a sphere, an octahedron or an icosahedron: the tiles are the four solids)
+ * are the fourth, with their three steps (small, medium, large) chosen in the room the tall shelf's press keeps under the tiles, so a set-up
+ * never has a fifth tile, nothing that was there moves, and no shape is taller than another. Every level is open: a maze
  * is not a lesson that needs the one before it (the package orders its list so that
  * none is easier than the one before, which is what the order is for), so a reader
  * may look at and play any. A member's solves are on the account; anybody's are
@@ -80,8 +82,11 @@ export function MeikyuuSetUp({
 }) {
   const hydrated = useHydrated();
   const [size, setSize] = useState(initialSize);
-  const shapeOf = (each: number): Shape => (isMeikyuuColossal(each) ? "colossal" : isMeikyuuTall(each) ? "tall" : "square");
+  const shapeOf = (each: number): Shape => (isMeikyuuSolid(each) ? "solid" : isMeikyuuColossal(each) ? "colossal" : isMeikyuuTall(each) ? "tall" : "square");
   const shape = shapeOf(size);
+  /* A solid and its step (small, medium, large); the tiles are the four solids at this step, and the step is chosen under them. */
+  const solid = meikyuuSolidOf(size);
+  const step: MeikyuuSolidStep = solid?.step ?? "small";
   /* A maze in a tall box, which the way-up choice is for: the tall sizes and the colossal tall one. */
   const upright = isMeikyuuTall(size);
   const tall = shape === "tall";
@@ -90,6 +95,7 @@ export function MeikyuuSetUp({
     square: shape === "square" ? initialSize : MEIKYUU_SIZES[0]!,
     tall: shape === "tall" ? initialSize : MEIKYUU_TALL_SIZES[0]!,
     colossal: shape === "colossal" ? initialSize : MEIKYUU_COLOSSAL_SIZE,
+    solid: shape === "solid" ? initialSize : meikyuuSolidSize("cube", "small"),
   });
   const chooseSize = (next: number) => {
     setSize(next);
@@ -125,11 +131,10 @@ export function MeikyuuSetUp({
   const done = useMemo(() => new Set(Object.keys(best).map(Number)), [best]);
   const count = meikyuuLevelCount(size);
   /* HOW FAR THROUGH EACH SIZE ON SHOW: the account's solves, which the page read once for every size, and this browser's, joined (`completion.ts`). */
-  const shownSizes = useMemo(() => (shape === "colossal" ? MEIKYUU_COLOSSAL_SIZES : tall ? tallShown : MEIKYUU_SIZES), [shape, tall, tallShown]);
-  const progress = useMemo(() => {
-    const account: SolvedLevels = Object.fromEntries(Object.entries(solved).map(([each, levels]) => [Number(each), Object.keys(levels).map(Number)]));
-    return progressOf(shownSizes, account, hydrated && ready ? keptSolvedLevels(shownSizes) : null);
-  }, [shownSizes, solved, hydrated, ready]);
+  const solidTiles = meikyuuSolidTiles(step);
+  const shownSizes = shape === "solid" ? solidTiles : shape === "colossal" ? MEIKYUU_COLOSSAL_SIZES : tall ? tallShown : MEIKYUU_SIZES;
+  const account: SolvedLevels = Object.fromEntries(Object.entries(solved).map(([each, levels]) => [Number(each), Object.keys(levels).map(Number)]));
+  const progress = progressOf(shownSizes, account, hydrated && ready ? keptSolvedLevels(shownSizes) : null);
   const whole = progress.find((row) => row.size === size)?.complete === true;
   const next = nextLevelOf(count, done);
 
@@ -145,6 +150,10 @@ export function MeikyuuSetUp({
   const blocks = meikyuuBlocksIn(count);
   const block = turnedTo !== null && turnedTo.size === size ? turnedTo.block : meikyuuBlockOf(chosen);
   const { first, last } = meikyuuBlockRange(block, count);
+  /* A solid's step, chosen under the tiles: the same solid at another size. */
+  const chooseStep = (next: MeikyuuSolidStep) => {
+    if (solid !== null) chooseSize(meikyuuSolidSize(solid.kind, next));
+  };
   const turnBlock = (by: number) => setTurnedTo({ size, block: Math.min(blocks, Math.max(1, block + by)) });
   const row = ready ? meikyuuLevelsAt(size)[chosen - 1] : undefined;
 
@@ -191,11 +200,31 @@ export function MeikyuuSetUp({
               ))}
             </div>
           </fieldset>
-          <BoardPicker value={size} sizes={shape === "colossal" ? MEIKYUU_COLOSSAL_SIZES : tall ? tallShown : MEIKYUU_SIZES} onChange={chooseSize} names={PUZZLE_SIZE_NAMES.meikyuu} beside legend="Size" />
-          {/* The press that turns the tall sizes' shelf: always in its place, so a square size's screen is as tall as a tall one's. */}
-          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm ${tall ? "" : "invisible"}`} onClick={turnTall} disabled={!tall} aria-hidden={tall ? undefined : true} tabIndex={tall ? undefined : -1} data-testid="meikyuu-more-sizes">
-            {moreTall ? SHAPE_COPY.lessTall(sizeFrom(MEIKYUU_TALL_SIZES[0]!)) : SHAPE_COPY.moreTall(sizeFrom(MEIKYUU_TALL_SIZES[MEIKYUU_TALL_SIZES.length - 1]!))}
-          </button>
+          <BoardPicker value={size} sizes={shape === "solid" ? solidTiles : shape === "colossal" ? MEIKYUU_COLOSSAL_SIZES : tall ? tallShown : MEIKYUU_SIZES} onChange={chooseSize} names={PUZZLE_SIZE_NAMES.meikyuu} beside legend={shape === "solid" ? "Solid" : "Size"} />
+          {/* The press that turns the tall sizes' shelf: always in its place, so a square size's screen is as tall as a tall one's. A solid's three steps are chosen in the same room. */}
+          <div className="relative flex w-full justify-center" data-testid="meikyuu-under-tiles">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm ${tall ? "" : "invisible"}`} onClick={turnTall} disabled={!tall} aria-hidden={tall ? undefined : true} tabIndex={tall ? undefined : -1} data-testid="meikyuu-more-sizes">
+              {moreTall ? SHAPE_COPY.lessTall(sizeFrom(MEIKYUU_TALL_SIZES[0]!)) : SHAPE_COPY.moreTall(sizeFrom(MEIKYUU_TALL_SIZES[MEIKYUU_TALL_SIZES.length - 1]!))}
+            </button>
+            {solid === null ? null : (
+              <div className="absolute inset-0 flex items-center justify-center gap-1.5" role="group" aria-label={SHAPE_COPY.stepLegend} data-testid="meikyuu-steps">
+                {MEIKYUU_SOLID_STEPS.map((each) => (
+                  <button
+                    key={each}
+                    type="button"
+                    className={`${BUTTON_BASE} !rounded-full ${each === step ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+                    aria-pressed={each === step}
+                    title={SOLID_STEP_COPY[each].says}
+                    onClick={() => chooseStep(each)}
+                    data-testid={`meikyuu-step-${each}`}
+                    data-chosen={each === step ? "true" : "false"}
+                  >
+                    {SOLID_STEP_COPY[each].label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {/* How many of each size on show are solved: every level is open, and this is what there is to finish. Four rows whichever shape is chosen, so nothing moves. */}
           <MeikyuuProgress rows={progress} label={meikyuuSizeLabel} className="max-w-[14.5rem]" holds={4} />
         </div>

@@ -1,5 +1,5 @@
 import type { OrdinaryLevel, PuzzleLevel } from "../puzzles.types";
-import { isMeikyuuColossal, isMeikyuuSize, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SIZES } from "./sizes";
+import { isMeikyuuColossal, isMeikyuuSize, isMeikyuuSolid, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_SOLID_SIZES, MEIKYUU_TALL_SIZES } from "./sizes";
 
 /**
  * HOW MANY LEVELS A MEIKYUU SIZE HAS, AND WHICH THIRD A LEVEL SITS IN, with
@@ -22,12 +22,18 @@ export const MEIKYUU_LEVELS_A_SIZE = 256;
 /** The levels in each of the two colossal lists: 128, eight blocks of sixteen (`MEIKYUU_COLOSSAL_PER_LIST` in the package). A colossal maze takes much longer than a huge one. */
 export const MEIKYUU_COLOSSAL_LEVELS_A_SIZE = 128;
 
-export const MEIKYUU_LEVEL_COUNTS: Readonly<Record<number, number>> = Object.fromEntries(MEIKYUU_EVERY_SIZE.map((size) => [size, isMeikyuuColossal(size) ? MEIKYUU_COLOSSAL_LEVELS_A_SIZE : MEIKYUU_LEVELS_A_SIZE]));
+/** The levels in each size of a solid: 64, four blocks of sixteen (`MEIKYUU_SOLID_PER_LIST` in the package). */
+export const MEIKYUU_SOLID_LEVELS_A_SIZE = 64;
+
+export const MEIKYUU_LEVEL_COUNTS: Readonly<Record<number, number>> = Object.fromEntries(
+  MEIKYUU_EVERY_SIZE.map((size) => [size, isMeikyuuColossal(size) ? MEIKYUU_COLOSSAL_LEVELS_A_SIZE : isMeikyuuSolid(size) ? MEIKYUU_SOLID_LEVELS_A_SIZE : MEIKYUU_LEVELS_A_SIZE]),
+);
 
 /** How many levels the four sizes have between them, and how many the six tall ones: read from the sizes, never typed into copy. */
 export const MEIKYUU_SQUARE_LEVELS_TOTAL = MEIKYUU_SIZES.length * MEIKYUU_LEVELS_A_SIZE;
 export const MEIKYUU_TALL_LEVELS_TOTAL = MEIKYUU_TALL_SIZES.length * MEIKYUU_LEVELS_A_SIZE;
 export const MEIKYUU_COLOSSAL_LEVELS_TOTAL = MEIKYUU_COLOSSAL_SIZES.length * MEIKYUU_COLOSSAL_LEVELS_A_SIZE;
+export const MEIKYUU_SOLID_LEVELS_TOTAL = MEIKYUU_SOLID_SIZES.length * MEIKYUU_SOLID_LEVELS_A_SIZE;
 
 /** How many levels a size has; nought for a size the levels do not come in. */
 export function meikyuuLevelCount(size: number): number {

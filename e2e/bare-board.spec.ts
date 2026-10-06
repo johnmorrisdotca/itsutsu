@@ -530,6 +530,15 @@ const SURVEY: Survey[] = [
     await page.goto("/games/meikyuu/play?size=64x96&level=hard&seed=128");
     await ready(page, "puzzle-play");
   } },
+  // A maze over a solid (Meikyuu 2.2): the smallest, a cube, and the biggest, an icosahedron of 720 cells, with the turn pad and Face me among the presses: the modal holds them with nothing to scroll or empty.
+  { name: "/games/meikyuu/play over a cube", open: async (page) => {
+    await page.goto("/games/meikyuu/play?size=cube-small&level=easy&seed=6");
+    await ready(page, "puzzle-play");
+  } },
+  { name: "/games/meikyuu/play over an icosahedron", open: async (page) => {
+    await page.goto("/games/meikyuu/play?size=icosahedron-large&level=hard&seed=64");
+    await ready(page, "puzzle-play");
+  } },
   // Tobiishi's levels are fixed boards: its first, as a new player meets it, and the tall board at its longest, which is the one that has to be laid out by its height (a wide one is laid out by its width).
   { name: "/games/tobiishi/play", open: async (page) => {
     await page.goto("/games/tobiishi/play?size=3&level=easy&seed=1");

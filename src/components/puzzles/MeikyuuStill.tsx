@@ -7,6 +7,7 @@ import { decodeWay } from "@/lib/puzzles/meikyuu/steps";
 
 import { MeikyuuFrame, MeikyuuHeld, type MeikyuuStand } from "./MeikyuuFrame";
 import { MeikyuuSlot, useStand } from "./MeikyuuStand";
+import { SolidStill } from "./SolidStill";
 
 /** The side the frame is laid out for: a maze has no rows to letter, so only its rim depends on it (`MeikyuuBoard`). */
 const FRAME_SIDE = 9;
@@ -24,7 +25,13 @@ const FRAME_SIDE = 9;
  * (`useStand`), or in the one `stand` a caller fixes: the set-up's preview, which has a box of one size and so keeps
  * the maze upright in it.
  */
-export function MeikyuuStill({
+export function MeikyuuStill(props: Parameters<typeof FlatStill>[0]) {
+  // A maze over a solid has four parts to its recipe (`cube:7:prim:48213`) and a flat one five: the solid is looked at in a board of its own (`SolidStill`).
+  if (props.code.split(":").length === 4) return <SolidStill code={props.code} way={props.way} solved={props.solved} testId={props.testId} picture={props.picture} />;
+  return <FlatStill {...props} />;
+}
+
+function FlatStill({
   code,
   way = null,
   solved = false,
@@ -45,6 +52,8 @@ export function MeikyuuStill({
   tall?: boolean;
   /** Held in this stand whatever the room: for a box that cannot change shape. */
   stand?: MeikyuuStand;
+  /** A picture, for the set-up's preview: a solid takes no input at all, so the page scrolls over it. A flat maze is always one. */
+  picture?: boolean;
 }) {
   const { column, stand: measured } = useStand(tall && fixed === undefined);
   const stand: MeikyuuStand = !tall ? "square" : (fixed ?? measured);

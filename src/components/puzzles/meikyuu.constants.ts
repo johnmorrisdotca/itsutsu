@@ -1,7 +1,7 @@
 import type { MeikyuuMode, MeikyuuShape } from "@johnmorrisdotca/meikyuu";
 
-import { MEIKYUU_COLOSSAL_LEVELS_A_SIZE, MEIKYUU_LEVELS_A_SIZE } from "@/lib/puzzles/meikyuu/levelCounts";
-import { MEIKYUU_SIZE_WORDS } from "@/lib/puzzles/meikyuu/sizes";
+import { MEIKYUU_COLOSSAL_LEVELS_A_SIZE, MEIKYUU_LEVELS_A_SIZE, MEIKYUU_SOLID_LEVELS_A_SIZE } from "@/lib/puzzles/meikyuu/levelCounts";
+import { MEIKYUU_SIZE_WORDS, MEIKYUU_SOLID_STEPS, type MeikyuuSolidKind, type MeikyuuSolidStep } from "@/lib/puzzles/meikyuu/sizes";
 
 import type { LevelChipsCopy } from "./LevelChips";
 
@@ -36,6 +36,45 @@ export const MEIKYUU_WAY_COPY: Record<MeikyuuMode, { label: string; kanji: strin
   "centre-out": { label: "Out from the middle", kanji: "中心から", says: "From the middle of the shape out through a door in the outer wall." },
   keys: { label: "Keys", kanji: "鍵", says: "From inside, picking up every key on the way to a door in the outer wall. A key is at the end of a branch, so each costs a detour. It is picked up by passing over it, and stays picked up when you draw back." },
 };
+
+/** The solids a maze can be over (`meikyuu/sizes.ts`), as a chip on a level: what each is, and how its surface is cut into cells. */
+export const MEIKYUU_SOLID_COPY: Record<MeikyuuSolidKind, { label: string; kanji: string; says: string }> = {
+  cube: { label: "Cube", kanji: "立方体", says: "Six square faces, each cut into squares, joined across every edge: four ways out of every cell." },
+  sphere: { label: "Sphere", kanji: "球", says: "A globe cut into hexagons, like a football, with twelve pentagons for corners: six ways out of a cell, five at a corner." },
+  octahedron: { label: "Octahedron", kanji: "八面体", says: "Eight triangular faces, each cut into small triangles: three ways out of every cell." },
+  icosahedron: { label: "Icosahedron", kanji: "二十面体", says: "Twenty triangular faces, each cut into small triangles: three ways out of every cell." },
+};
+
+/** How a maze over a solid is played, as the chip where a flat maze says its way to play. */
+export const MEIKYUU_SURFACE_COPY = { label: "Over the surface", kanji: "表面", says: "From a cell on one side of the solid to a dot far across it, over the whole surface. Turn the solid to follow your line: it turns by itself when the line reaches the edge of the side you can see." } as const;
+
+/** The three steps of a solid, as the set-up's choice of size under its tiles reads them. */
+export const SOLID_STEP_COPY: Record<MeikyuuSolidStep, { label: string; says: string }> = {
+  small: { label: "Small", says: "About a hundred cells: the quick ones." },
+  medium: { label: "Medium", says: "About three hundred cells." },
+  large: { label: "Large", says: "About six hundred and fifty cells: they take a while, and want the solid turned again and again." },
+};
+
+/**
+ * TURNING A SOLID, in the plain English of the glossary (`docs/plans/plain-english/GLOSSARY.md`): "Turn" for the solid, "Face me" for bringing the end of the line
+ * round to the front, and "Turn only" for the press that makes every drag turn the solid, as Move makes every drag move a zoomed maze.
+ */
+export const TURN_COPY = {
+  legend: "Turn the solid",
+  left: "Turn left",
+  right: "Turn right",
+  up: "Turn up",
+  down: "Turn down",
+  faceMe: "Face me",
+  faceMeSays: "Turn the solid so that the end of your line faces you. With no line yet it is the start.",
+  only: "Turn only",
+  onlySays: "While it is on, a finger turns the solid wherever it drags and draws nothing. Press it again to draw. Dragging away from the end of your line turns the solid anyway.",
+  /** The line under the board before the first stroke, for a maze over a solid. */
+  howTo: "Press the green start and drag along the passages. Drag away from your line, or press the arrows, to turn the solid; it turns by itself when your line reaches the edge of the side you can see. Face me brings the end of the line to the front.",
+} as const;
+
+/** The solid's steps in order, as the chips under the tiles run. */
+export const SOLID_STEPS = MEIKYUU_SOLID_STEPS;
 
 /** The row of chips under a level (`LevelChips`): what its difficulty mark measures. The package's lists have no lessons, so a level is never a block's 15th or 16th. The marks are the score in fifths. */
 export const MEIKYUU_CHIPS: LevelChipsCopy = {
@@ -114,6 +153,8 @@ export const SHAPE_COPY = {
   square: { label: "Square", kanji: "四角", says: "Mazes in a square box: four sizes, from small to huge." },
   tall: { label: "Tall", kanji: "縦", says: "Mazes in a tall box, two columns to three rows, made to be played on a phone held upright. They lie on their side on a wide screen." },
   colossal: { label: "Colossal", kanji: "巨", says: "The biggest mazes there are, about ten thousand cells: one in a square box and one in a tall one. Zoom in, and move about it." },
+  solid: { label: "3D", kanji: "立体", says: "Mazes over the whole surface of a solid: a cube, a sphere, an octahedron or an icosahedron. Turn it to follow your line round." },
+  stepLegend: "Size of the solid",
   moreTall: (to: string) => `Bigger, to ${to} →`,
   lessTall: (from: string) => `← Smaller, from ${from}`,
 } as const;
@@ -121,9 +162,9 @@ export const SHAPE_COPY = {
 export const MEIKYUU_COPY = {
   /** The set-up's note under the levels' options: what a level is. */
   levelsNote:
-    `A level is a maze, the same for everybody, and each size has ${MEIKYUU_LEVELS_A_SIZE} levels in order from easy to hard (${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} for each colossal one). Pick any of them: Start plays the first one you have not solved. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
+    `A level is a maze, the same for everybody, and each size has ${MEIKYUU_LEVELS_A_SIZE} levels in order from easy to hard (${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} for each colossal one, ${MEIKYUU_SOLID_LEVELS_A_SIZE} for each size of a solid). Pick any of them: Start plays the first one you have not solved. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
   /** The front door's line for the levels: how many there are of each size, read from the sizes and never typed. */
-  levelsLine: `${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (${MEIKYUU_SIZE_WORDS.join(", ")}) and in each of six tall ones for a phone held upright, each size easy to hard, and ${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} in each of two colossal ones of about ten thousand cells.`,
+  levelsLine: `${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (${MEIKYUU_SIZE_WORDS.join(", ")}) and in each of six tall ones for a phone held upright, each size easy to hard, ${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} in each of two colossal ones of about ten thousand cells, and ${MEIKYUU_SOLID_LEVELS_A_SIZE} in each of three sizes of four solids to turn.`,
   /** The line under the board before the first stroke. */
   howTo: "Press the start dot and drag. The line follows the corridors, and drawing back shortens it. To shut a passage, press Stone and tap a cell beside your line, or hold a finger on it.",
   /** The line under the board once there is a line: how far it has got. */

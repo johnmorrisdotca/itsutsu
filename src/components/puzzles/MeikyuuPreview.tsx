@@ -27,5 +27,5 @@ export function MeikyuuPreview({ size }: { size: number }) {
   if (row === undefined) {
     return <MeikyuuBlank stand={tall ? "upright" : "square"} />;
   }
-  return <MeikyuuStill key={`${size}`} code={row.code} testId="meikyuu-preview-maze" tall={tall} stand={tall ? "upright" : undefined} />;
+  return <MeikyuuStill key={`${size}`} code={row.code} testId="meikyuu-preview-maze" tall={tall} stand={tall ? "upright" : undefined} picture />;
 }

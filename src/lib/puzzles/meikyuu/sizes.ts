@@ -55,8 +55,59 @@ export function meikyuuTallSize(width: number, height: number): number {
 /** The tall sizes as the site keeps them, smallest first. */
 export const MEIKYUU_TALL_SIZES: readonly number[] = MEIKYUU_TALL_SHAPES.map(([width, height]) => meikyuuTallSize(width, height));
 
-/** Every size a Meikyuu level comes in: the four, the six tall ones, then the two colossal ones. */
-export const MEIKYUU_EVERY_SIZE: readonly number[] = [...MEIKYUU_SIZES, ...MEIKYUU_TALL_SIZES, ...MEIKYUU_COLOSSAL_SIZES];
+/**
+ * THE SOLIDS: mazes over the whole surface of a cube, a globe, an octahedron or an icosahedron (`@johnmorrisdotca/meikyuu/3d`, package 2.2): a fourth shape of
+ * the set-up, with a tile for each solid. A solid at a size is one list of 64 levels (small, medium or large: about 90, 300 and 600 cells), so a size
+ * here is a solid and a step together, kept as one whole number like the tall sizes are: 7000, then ten for the solid and its step from 1: 7001 is the
+ * small cube, 7003 the large cube, 7011 the small globe, 7033 the large icosahedron. No other size is seven thousand or more, so the kinds of size cannot be
+ * mistaken, and an address says `cube-medium`. The package also makes a tetrahedron; it is not offered, because a shape has at most four boards.
+ */
+export const MEIKYUU_SOLID_KINDS = ["cube", "sphere", "octahedron", "icosahedron"] as const;
+export type MeikyuuSolidKind = (typeof MEIKYUU_SOLID_KINDS)[number];
+
+/** The three steps a solid comes in, which are the package's words (`SOLID_SIZE_NAMES`). */
+export const MEIKYUU_SOLID_STEPS = ["small", "medium", "large"] as const;
+export type MeikyuuSolidStep = (typeof MEIKYUU_SOLID_STEPS)[number];
+
+/** Where the solids' sizes begin. */
+export const MEIKYUU_SOLID_BASE = 7000;
+
+/** The size a solid at a step is kept as. */
+export function meikyuuSolidSize(kind: MeikyuuSolidKind, step: MeikyuuSolidStep): number {
+  return MEIKYUU_SOLID_BASE + MEIKYUU_SOLID_KINDS.indexOf(kind) * 10 + MEIKYUU_SOLID_STEPS.indexOf(step) + 1;
+}
+
+/** Every solid's every size, a solid's three together, the cube's first. */
+export const MEIKYUU_SOLID_SIZES: readonly number[] = MEIKYUU_SOLID_KINDS.flatMap((kind) => MEIKYUU_SOLID_STEPS.map((step) => meikyuuSolidSize(kind, step)));
+
+/** The solid and the step a size is, or null for a size that is not one of the solids'. */
+export function meikyuuSolidOf(size: number): { kind: MeikyuuSolidKind; step: MeikyuuSolidStep } | null {
+  if (!MEIKYUU_SOLID_SIZES.includes(size)) return null;
+  const offset = size - MEIKYUU_SOLID_BASE;
+  return { kind: MEIKYUU_SOLID_KINDS[Math.floor(offset / 10)]!, step: MEIKYUU_SOLID_STEPS[(offset % 10) - 1]! };
+}
+
+/** Whether a size is one of the solids'. */
+export function isMeikyuuSolid(size: number): boolean {
+  return meikyuuSolidOf(size) !== null;
+}
+
+const SOLID_TILES: Readonly<Record<MeikyuuSolidStep, readonly number[]>> = {
+  small: MEIKYUU_SOLID_KINDS.map((kind) => meikyuuSolidSize(kind, "small")),
+  medium: MEIKYUU_SOLID_KINDS.map((kind) => meikyuuSolidSize(kind, "medium")),
+  large: MEIKYUU_SOLID_KINDS.map((kind) => meikyuuSolidSize(kind, "large")),
+};
+
+/** The four solids at one step, the tiles of the set-up's shape: the same array each time, so a page may depend on it. */
+export function meikyuuSolidTiles(step: MeikyuuSolidStep): readonly number[] {
+  return SOLID_TILES[step];
+}
+
+/** The names of the solids, and the step as the person reads it. */
+export const MEIKYUU_SOLID_NAMES: Readonly<Record<MeikyuuSolidKind, string>> = { cube: "Cube", sphere: "Sphere", octahedron: "Octahedron", icosahedron: "Icosahedron" };
+
+/** Every size a Meikyuu level comes in: the four, the six tall ones, the two colossal ones, then the solids'. */
+export const MEIKYUU_EVERY_SIZE: readonly number[] = [...MEIKYUU_SIZES, ...MEIKYUU_TALL_SIZES, ...MEIKYUU_COLOSSAL_SIZES, ...MEIKYUU_SOLID_SIZES];
 
 /** The shape of the box a tall maze is played in, width over height as it is made: two columns to three rows. */
 export const MEIKYUU_TALL_RATIO = 2 / 3;
@@ -83,14 +134,22 @@ export function isMeikyuuSize(size: number): boolean {
   return MEIKYUU_EVERY_SIZE.includes(size);
 }
 
-/** The size as an address writes it: 2 for the second of the four, "6x9" for a tall one, so a link says what it is. */
+/** The size as an address writes it: 2 for the second of the four, "6x9" for a tall one, "cube-medium" for a solid, so a link says what it is. */
 export function meikyuuSizeInAddress(size: number): string {
+  const solid = meikyuuSolidOf(size);
+  if (solid !== null) return `${solid.kind}-${solid.step}`;
   const tall = meikyuuTallShape(size);
   return tall === null ? String(size) : `${tall.width}x${tall.height}`;
 }
 
-/** A size read from an address: `2`, or `6x9`; null for anything that is neither a number nor a tall shape. */
+/** A size read from an address: `2`, `6x9` or `cube-medium`; null for anything that is none of them. */
 export function meikyuuSizeFromAddress(text: string): number | null {
+  const solid = /^([a-z]+)-([a-z]+)$/.exec(text);
+  if (solid !== null) {
+    const kind = (MEIKYUU_SOLID_KINDS as readonly string[]).includes(solid[1]!) ? (solid[1] as MeikyuuSolidKind) : null;
+    const step = (MEIKYUU_SOLID_STEPS as readonly string[]).includes(solid[2]!) ? (solid[2] as MeikyuuSolidStep) : null;
+    return kind === null || step === null ? null : meikyuuSolidSize(kind, step);
+  }
   const shape = /^(\d{1,2})x(\d{1,2})$/.exec(text);
   if (shape !== null) return meikyuuTallSize(Number(shape[1]), Number(shape[2]));
   return /^\d+$/.test(text) ? Number(text) : null;
@@ -106,8 +165,10 @@ export function meikyuuSizeOfWord(word: MeikyuuSizeWord): number {
   return MEIKYUU_SIZE_WORDS.indexOf(word) + 1;
 }
 
-/** What a page says of a size: "Small", "Tall 6×9" for a tall one, "Colossal" and "Colossal tall 64×96" for the two colossal ones. */
+/** What a page says of a size: "Small", "Tall 6×9" for a tall one, "Colossal" and "Colossal tall 64×96" for the two colossal ones, "Medium cube" for a solid's. */
 export function meikyuuSizeLabel(size: number): string {
+  const solid = meikyuuSolidOf(size);
+  if (solid !== null) return `${solid.step.charAt(0).toUpperCase()}${solid.step.slice(1)} ${solid.kind}`;
   if (size === MEIKYUU_COLOSSAL_SIZE) return "Colossal";
   if (size === MEIKYUU_COLOSSAL_TALL_SIZE) return `Colossal tall ${MEIKYUU_COLOSSAL_TALL_SHAPE[0]}×${MEIKYUU_COLOSSAL_TALL_SHAPE[1]}`;
   const tall = meikyuuTallShape(size);
@@ -116,7 +177,7 @@ export function meikyuuSizeLabel(size: number): string {
   return word === null ? String(size) : `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
 }
 
-/** A size said inside a sentence, with its noun: "small size", "tall 6×9 size". */
+/** A size said inside a sentence, with its noun: "small size", "tall 6×9 size", "the medium cube". */
 export function meikyuuSizeInWords(size: number): string {
-  return `${meikyuuSizeLabel(size).toLowerCase()} size`;
+  return isMeikyuuSolid(size) ? `the ${meikyuuSizeLabel(size).toLowerCase()}` : `${meikyuuSizeLabel(size).toLowerCase()} size`;
 }

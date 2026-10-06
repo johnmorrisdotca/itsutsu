@@ -35,3 +35,27 @@ export function loadMeikyuuPackage(): Promise<MeikyuuPackage> {
  * the package's, given as colours, wears the same in both.
  */
 export const MEIKYUU_LOOK = { paper: "#fbf8f1", wall: "#1f2320", frame: "#a98954", dark: false, trail: "#2e8b57" } as const;
+
+/**
+ * THE SOLIDS' BOARD AND ITS RULES, FETCHED IN A BROWSER (`@johnmorrisdotca/meikyuu/3d/play` and `/3d`, package 2.2): a cube, a globe or a solid of triangles
+ * with a maze over its surface. They are not part of the flat package above, so a page that shows no solid never fetches them; asking on a server is a
+ * refusal, written as the flat package's is.
+ */
+export type SolidPackage = {
+  rules: typeof import("@johnmorrisdotca/meikyuu/3d");
+  play: typeof import("@johnmorrisdotca/meikyuu/3d/play");
+};
+
+let loadingSolids: Promise<SolidPackage> | null = null;
+
+async function importSolids(): Promise<SolidPackage> {
+  if (typeof window === "undefined") throw new Error("A maze over a solid is drawn and played in a browser.");
+  const [rules, play] = await Promise.all([import("@johnmorrisdotca/meikyuu/3d"), import("@johnmorrisdotca/meikyuu/3d/play")]);
+  return { rules, play };
+}
+
+/** The solids' two entries, fetched once. */
+export function loadSolidPackage(): Promise<SolidPackage> {
+  loadingSolids ??= importSolids();
+  return loadingSolids;
+}

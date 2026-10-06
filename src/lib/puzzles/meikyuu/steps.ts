@@ -1,4 +1,4 @@
-import type { Maze } from "@johnmorrisdotca/meikyuu";
+import type { MazeCore } from "@johnmorrisdotca/meikyuu";
 
 /**
  * A LINE DRAWN THROUGH A MAZE, AS THE SITE KEEPS IT: one character a step, the
@@ -20,7 +20,7 @@ import type { Maze } from "@johnmorrisdotca/meikyuu";
 const STEP = /^[0-9a-z]*$/;
 
 /** A line, cell by cell from the start, as its steps. Null if it is not a run of neighbours. */
-export function encodeCells(maze: Maze, cells: readonly number[]): string | null {
+export function encodeCells(maze: MazeCore, cells: readonly number[]): string | null {
   let out = "";
   for (let at = 1; at < cells.length; at += 1) {
     const place = maze.grid.neighbours[cells[at - 1]!]?.indexOf(cells[at]!) ?? -1;
@@ -31,7 +31,7 @@ export function encodeCells(maze: Maze, cells: readonly number[]): string | null
 }
 
 /** The cells a code walks from the maze's start, or null if any step goes where the line cannot: into a wall, off the maze, or back onto the line. */
-export function decodeWay(maze: Maze, code: string): number[] | null {
+export function decodeWay(maze: MazeCore, code: string): number[] | null {
   if (!STEP.test(code)) return null;
   const cells = [maze.start];
   const seen = new Set(cells);

@@ -2,8 +2,8 @@
 
 **Status: added 2026-10-02** (board row
 `meikyuu-a-maze-game-of-a-thousand-levels-in-many-shapes-drawn-through-by-finger-or-mouse`).
-Source package: `@johnmorrisdotca/meikyuu` 2.1.0, pinned exactly in `package.json`
-(github.com/johnmorrisdotca/meikyuu, MIT, no dependencies; tall levels, `ratio`, `orientation`, the gutters, Move and edge panning are 2.0; the colossal levels and stones are 2.1). The site started on 1.0.0 (1,000
+Source package: `@johnmorrisdotca/meikyuu` 2.2.0, pinned exactly in `package.json`
+(github.com/johnmorrisdotca/meikyuu, MIT, no dependencies; tall levels, `ratio`, `orientation`, the gutters, Move and edge panning are 2.0; the colossal levels and stones are 2.1; the mazes over a solid are 2.2). The site started on 1.0.0 (1,000
 maze levels in sizes of 217, 231, 285 and 267) and moved to 2.0.x on 2026-10-02, which renumbered
 the list: see "Old solves" below.
 
@@ -114,6 +114,37 @@ John, 2026-10-02: "are any levels locked? I like the small levels being all play
 - **A whole size is marked and cheered in a line, never a window.** The row gets a ✓ and its bar turns moss; the preview's caption says "Every small level is solved: all 256. Well done!"; and the solve that finishes a size says so under the level (`meikyuu-size-done`, only when this solve is the one that made it whole, `completesSize`). The board of levels stays open, every level can still be looked at and played again.
 - Only current levels count: a solved maze that is no level now (see below) is a record and is not in the 256.
 
+## Over a solid 立体 (2026-10-05, package 2.2)
+
+Ticket `meikyuu-3d-a-maze-over-the-whole-surface-of-a-cube-a-sphere-and-triangle-solids`. John: "a 3d meikyuu where we have globes and squares and triangles that you
+can rotate... and solve the puzzle in 3 dimensions", and then that he was not asking for Rubik-style layer turns (a separate ticket, `meikyuu-twisty-...`).
+A maze over the whole SURFACE of a cube, a sphere (a football of hexagons and twelve pentagons), an octahedron or an icosahedron, looked at from outside one
+side at a time and turned to follow the line. The package makes a fifth solid, a tetrahedron; the site does not offer it, because a shape has at most four
+boards (decision to review below).
+
+- **Sizes.** A solid at a size is one list of 64 levels (small about 90 cells, medium about 300, large about 650), kept as one whole number like the tall
+  sizes are: 7000, then ten for the solid and its step from 1 (`meikyuu/sizes.ts`: 7001 the small cube, 7033 the large icosahedron). 12 sizes, 768
+  levels the site offers (the package has 960 with the tetrahedron). An address says `size=cube-medium`. `longBoardOf` leaves 7000 and over alone, because
+  7011 read as a long board is 70 by 11.
+- **The set-up.** A fourth shape beside Square, Tall and Colossal ("3D 立体"), the tiles the four solids (a hand-drawn outline in `BoardSizeMark`, the step 1, 2 or 3
+  in the middle where a size's number is), the three steps (Small, Medium, Large) chosen in the room under the tiles that the tall shape's "Bigger" press keeps (so
+  no shape is taller than another; `e2e/meikyuu-solid.spec.ts` holds the set-up still across every shape, solid, step and level at 390 and 1280). The
+  progress rows are the four solids at the step on show. The preview is the live solid, a picture that takes no input (`still`), so a phone scrolls over it.
+- **The play screen.** `SolidBoard` is `MeikyuuBoard`'s twin (the package's `mountSolid`, the same wood, the same reading of the line and its stones, the same
+  buttons), with the turn pad (◀ ▲ ▼ ▶), **Face me** and **Turn only** where a flat maze has Move. A drag anywhere that is not the end of the line turns the solid;
+  the solid turns by itself when the line nears the edge of the side in view, so a line is drawn across an edge in one stroke. Stones, tap-to-extend, Undo,
+  Restart, Fit and the zoom are as for a flat maze. A solved level opens on its finished solid, which can be turned (`SolidStill`).
+- **The answer** is the list of cells, kept as the steps of the line (`lineToSteps`): the same text however the solid is turned. The server walks it on the maze
+  its recipe rebuilds (`checkMeikyuu`, `mazeOf` knows both recipes: five parts for a flat maze, four for a solid's) and holds the recipe to a level of the size.
+- **The points ladder.** A solid is priced by its cells on the rungs the flat sizes already have (`ladder.constants.ts`, the comment there has the sum):
+  a size takes the rung its cells come to on a log scale through the flat sizes' typical cells, to the nearest five: 60 to 65 small, 85 to 90 medium, 105 large,
+  and the level adds its 0 to 50 for its place, up to the family's 200.
+- **Function size.** A solid's check reads the package's `/3d` entry (25 KB) and its levels (59 KB of recipes) are read through `levelsModule.ts` only for a solid's
+  size; the drawing and the board are fetched by the browser alone (`meikyuu/browser.ts`). `pnpm functions:size` before and after is in the commit message.
+- **Decisions to review.** The tetrahedron is in the package and not on the site. The sphere is a football, not a rounded cube (a rounded cube is the cube's own graph).
+  Sizes are steps under the tiles, not twelve tiles and not a 192-level list. The three steps are 90, 300 and 650 cells; a larger size was not made, because a cell on a
+  phone needs to be a finger wide.
+
 ## Old solves: the first list's numbers
 
 Package 2.0.0 renumbered the maze list. Of the 1,000 levels of 1.0.0, 843 are at the same
@@ -149,7 +180,7 @@ a picture), `puzzleArt.coverage.test.ts` (the picture stamp: `meikyuu/way.ts`,
 `gameEnding.coverage.test.ts` (New game beside Pause), the dead-end and picture
 gates (`GameName`, `GameThumb`), `openSource.test.ts` (the credit under the game),
 `gameAdded.coverage.test.ts` (`pnpm games:added`), and the plain-English gate.
-`e2e/meikyuu.spec.ts` opens the set-up, draws a level through by mouse and by a
+`e2e/meikyuu-solid.spec.ts` plays all four solids through by mouse and by a real touch, with the set-up held still. `e2e/meikyuu.spec.ts` opens the set-up, draws a level through by mouse and by a
 real touch, keeps and resumes a half-drawn one, zooms a huge maze and checks the
 server's answer.
 

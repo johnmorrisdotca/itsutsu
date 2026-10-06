@@ -141,7 +141,17 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   suido: { how: "ranked", rungs: { 5: 50, 6: 70, 7: 85, 8: 95, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 20: 150, 28: 150, 507: 65, 610: 90, 814: 120, 2050: 150 } },
   // The four square sizes (small to huge, 1 to 4) and the six tall ones (609 is 6×9), and the two colossal ones (2026-10-05, package 2.1): the square list is size 5, the top rung of the squares
   // (160, so its hardest levels reach the 200 ceiling a family of levels has), and the tall list is 6496 (64×96), the top rung of the tall ones (110). A solve is priced at the middle of the third of its list it was in, as every family's is, however many levels the list has (the colossal lists have 128).
-  meikyuu: { how: "ranked", rungs: { 1: 55, 2: 95, 3: 120, 4: 150, 5: 160, 609: 50, 812: 60, 1015: 70, 1218: 80, 1624: 90, 2030: 100, 6496: 110 } },
+  // The solids (2026-10-05, package 2.2; `meikyuu/sizes.ts`: 7001 is the small cube, 7033 the large icosahedron) are priced by their cells on the rungs the flat sizes already have: a rung is drawn on a log scale
+  // through the flat sizes' typical cells (the geometric mean of each size's levels: 56 cells is 55, 367 is 95, 1,765 is 120, 6,606 is 150, 10,674 is 160), and a solid's size takes the rung its own cells
+  // come to, to the nearest five (`levels.test.ts` redoes the sum). So a small solid of about 90 cells is a little above a small maze, a medium one of about 300 is about a medium maze, and a large one
+  // of about 650, which has the cells of a small medium maze, is 105. Their levels add the same 0 to 50 for their place, and the ceiling is the family's 200.
+  meikyuu: {
+    how: "ranked",
+    rungs: {
+      1: 55, 2: 95, 3: 120, 4: 150, 5: 160, 609: 50, 812: 60, 1015: 70, 1218: 80, 1624: 90, 2030: 100, 6496: 110,
+      7001: 65, 7002: 90, 7003: 105, 7011: 65, 7012: 85, 7013: 105, 7021: 60, 7022: 90, 7023: 105, 7031: 65, 7032: 90, 7033: 105,
+    },
+  },
 };
 
 /**
@@ -162,5 +172,10 @@ export const SIZE_SERIES: Partial<Record<PuzzleKind, readonly (readonly number[]
   meikyuu: [
     [1, 2, 3, 4, 5],
     [609, 812, 1015, 1218, 1624, 2030, 6496],
+    // A solid's three sizes, each solid a series of its own.
+    [7001, 7002, 7003],
+    [7011, 7012, 7013],
+    [7021, 7022, 7023],
+    [7031, 7032, 7033],
   ],
 };

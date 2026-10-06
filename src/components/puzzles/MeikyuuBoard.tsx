@@ -48,6 +48,9 @@ export type MeikyuuHandle = {
   pan: (on?: boolean) => boolean;
   /** Whether the Stone mode is on (a tap lays a stone beside the line, or takes one up, and nothing draws); with an argument, turn it on or off. */
   stoneMode: (on?: boolean) => boolean;
+  /** For a maze over a solid (`SolidBoard`): turn the solid a step, and bring the end of the line round to face the reader. A flat maze has neither. */
+  turn?: (by: "left" | "right" | "up" | "down") => void;
+  faceMe?: () => void;
 };
 
 /** The padding the board's paper gets inside the wood: none, the package draws its own margin. */

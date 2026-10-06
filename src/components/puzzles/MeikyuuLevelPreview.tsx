@@ -48,7 +48,7 @@ export function MeikyuuLevelPreview({
         {row === undefined ? (
           <MeikyuuBlank stand={tall ? "upright" : "square"} />
         ) : (
-          <MeikyuuStill key={`${size}-${level}-${solved ? "solved" : "dealt"}`} code={row.code} solved={solved} testId="meikyuu-preview-maze" tall={tall} stand={tall ? "upright" : undefined} />
+          <MeikyuuStill key={`${size}-${level}-${solved ? "solved" : "dealt"}`} code={row.code} solved={solved} testId="meikyuu-preview-maze" tall={tall} stand={tall ? "upright" : undefined} picture />
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION} data-testid="meikyuu-preview-caption">

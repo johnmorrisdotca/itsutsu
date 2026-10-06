@@ -9,6 +9,7 @@ import { suidoShapeOf } from "@/lib/puzzles/suido/sizes";
  * (`boardArtFingerprint.ts`): a long board is no game's picture, so nothing here asks them to be re-taken.
  */
 export function longBoardOf(size: number): { width: number; height: number } | null {
-  const shape = size >= 100 ? suidoShapeOf(size) : null;
+  // Seven thousand and over is a Meikyuu solid (7011 is the small sphere, not a board 70 across and 11 down): `SolidMark` draws it.
+  const shape = size >= 100 && size < 7000 ? suidoShapeOf(size) : null;
   return shape === null || shape.width === shape.height ? null : shape;
 }

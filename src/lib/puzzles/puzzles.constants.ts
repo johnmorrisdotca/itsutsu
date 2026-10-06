@@ -11,7 +11,7 @@ import { SPIDER_MOVES_MOST } from "./spider/check";
 import { layoutFor } from "@johnmorrisdotca/jarajara";
 import { SUIDO_CODE_MOST, SUIDO_LEVEL_SIZES } from "./suido/sizes";
 import { thousands } from "../ui/thousands";
-import { MEIKYUU_COLOSSAL_LEVELS_A_SIZE, MEIKYUU_COLOSSAL_LEVELS_TOTAL, MEIKYUU_LEVELS_A_SIZE, MEIKYUU_SQUARE_LEVELS_TOTAL, MEIKYUU_TALL_LEVELS_TOTAL } from "./meikyuu/levelCounts";
+import { MEIKYUU_COLOSSAL_LEVELS_A_SIZE, MEIKYUU_COLOSSAL_LEVELS_TOTAL, MEIKYUU_LEVELS_A_SIZE, MEIKYUU_SOLID_LEVELS_A_SIZE, MEIKYUU_SOLID_LEVELS_TOTAL, MEIKYUU_SQUARE_LEVELS_TOTAL, MEIKYUU_TALL_LEVELS_TOTAL } from "./meikyuu/levelCounts";
 import { MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_TALL_SHAPES, meikyuuSizeLabel } from "./meikyuu/sizes";
 import { TOBIISHI_LEVELS_A_SIZE } from "./tobiishi/levelCounts";
 import { TOBIISHI_SIZES, tobiishiSizeLabel } from "./tobiishi/sizes";
@@ -81,8 +81,8 @@ function mahjongTiles(size: number): number {
   return layoutFor(size)?.slots.length ?? 0;
 }
 
-/** How many levels Meikyuu has in all, read from its sizes rather than typed into its copy: the four sizes, and the tall ones beside them. */
-const MEIKYUU_LEVELS_TOTAL = MEIKYUU_SQUARE_LEVELS_TOTAL + MEIKYUU_TALL_LEVELS_TOTAL + MEIKYUU_COLOSSAL_LEVELS_TOTAL;
+/** How many levels Meikyuu has in all, read from its sizes rather than typed into its copy: the four sizes, the tall ones, the colossal ones and the solids'. */
+const MEIKYUU_LEVELS_TOTAL = MEIKYUU_SQUARE_LEVELS_TOTAL + MEIKYUU_TALL_LEVELS_TOTAL + MEIKYUU_COLOSSAL_LEVELS_TOTAL + MEIKYUU_SOLID_LEVELS_TOTAL;
 /** The tall sizes as a person reads them, "6×9, 8×12 and so on to 20×30". */
 const MEIKYUU_TALL_RANGE = `${MEIKYUU_TALL_SHAPES[0]![0]}×${MEIKYUU_TALL_SHAPES[0]![1]} to ${MEIKYUU_TALL_SHAPES.at(-1)![0]}×${MEIKYUU_TALL_SHAPES.at(-1)![1]}`;
 
@@ -471,7 +471,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    * one anybody can be raced on) and no countdown, as a Suido level has none.
    */
   meikyuu: {
-    // The four sizes and the six tall ones (`meikyuu/sizes.ts`: 609 is 6×9). The set-up offers the four as tiles and turns to the tall ones on a choice of its own (`MeikyuuSetUp`).
+    // The four sizes, the six tall ones, the colossal ones and the solids' twelve (`meikyuu/sizes.ts`: 609 is 6×9, 7002 the medium cube). The set-up offers the four as tiles and turns to the others on a choice of shape of its own (`MeikyuuSetUp`).
     sizes: MEIKYUU_EVERY_SIZE,
     offered: MEIKYUU_SIZES,
     defaultSize: 1,
@@ -746,6 +746,19 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     1218: { label: "Big", kanji: "大型" },
     1624: { label: "Bigger", kanji: "特大" },
     2030: { label: "Biggest", kanji: "超大" },
+    // The solids (`meikyuu/sizes.ts`): a tile is a solid, and its three steps (small, medium, large) are chosen under the tiles, so a solid has the one name at every step.
+    7001: { label: "Cube", kanji: "立方体" },
+    7002: { label: "Cube", kanji: "立方体" },
+    7003: { label: "Cube", kanji: "立方体" },
+    7011: { label: "Sphere", kanji: "球" },
+    7012: { label: "Sphere", kanji: "球" },
+    7013: { label: "Sphere", kanji: "球" },
+    7021: { label: "Octahedron", kanji: "八面体" },
+    7022: { label: "Octahedron", kanji: "八面体" },
+    7023: { label: "Octahedron", kanji: "八面体" },
+    7031: { label: "Icosahedron", kanji: "二十面体" },
+    7032: { label: "Icosahedron", kanji: "二十面体" },
+    7033: { label: "Icosahedron", kanji: "二十面体" },
   },
   // A Tobiishi level by the length of its shortest way, the number of jumps being the big number on the tile (`tobiishi/sizes.ts`).
   tobiishi: {
@@ -1415,7 +1428,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
   meikyuu: {
     label: "Meikyuu",
     kanji: "迷宮",
-    tagline: `Draw a line through a maze from the start to the goal, with your finger or the mouse. ${thousands(MEIKYUU_LEVELS_TOTAL)} levels, in squares, hexagons, triangles, circles and shapes cut out of them, tall ones for a phone held upright, and colossal ones of about ten thousand cells.`,
+    tagline: `Draw a line through a maze from the start to the goal, with your finger or the mouse. ${thousands(MEIKYUU_LEVELS_TOTAL)} levels, in squares, hexagons, triangles, circles and shapes cut out of them, tall ones for a phone held upright, colossal ones of about ten thousand cells, and mazes over a cube, a sphere and other solids that you turn to follow your line.`,
     inspiredBy: "the maze drawn through with a pencil, from its start to its goal",
     alsoKnownAs: ["Maze", "Labyrinth", "迷路"],
     origin:
@@ -1426,12 +1439,13 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "A level is played one of four ways: in at one door in the outer wall and out at another; from a cell inside to a dot hidden deep in the maze; from the middle of the shape out through a door; or from inside, picking up every key on the way to a door. A key is at the end of a branch, off the way, so each one costs a detour, and stays picked up when you draw back.",
       "A big maze is looked at through the board. Zoom with the wheel, a pinch, or the + and − buttons, and move the view with two fingers or by dragging anywhere but the line. Fit brings the whole maze back, and near the edge a line you are drawing moves the view with it.",
       "Undo takes back your last stroke and Restart clears the line. The keyboard works too: the arrow keys step the line, and Backspace undoes.",
+      "Over a solid, the maze is on the whole surface of a cube, a sphere, an octahedron or an icosahedron, and you see one side of it at a time. Draw as you would, and turn the solid by dragging anywhere that is not the end of your line, with two fingers, with the arrow buttons, or with Face me, which brings the end of your line round to face you. When your line reaches the edge of the side you can see, the solid turns by itself, so the line can cross from one face to the next without letting go. Turn only makes every drag turn the solid.",
       "Stone: when a passage is a dead end, you can shut it with a stone. Press Stone and tap a cell beside your line, or hold a finger on it, or hold Shift and press an arrow key at the end of your line. A stone goes at most two cells along the passages from your line, only so many at once, and the line cannot enter it. Tap a stone to take it up. A stone is only a help for you and is never part of your answer.",
-      `Fixed levels: ${thousands(MEIKYUU_LEVELS_TOTAL)} of them, the same for everybody: ${MEIKYUU_LEVELS_A_SIZE} in each of four sizes, ${MEIKYUU_LEVELS_A_SIZE} in each of six tall ones, and ${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} in each of two colossal ones, each size ordered from easy to hard so that no level is easier than the one before. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
+      `Fixed levels: ${thousands(MEIKYUU_LEVELS_TOTAL)} of them, the same for everybody: ${MEIKYUU_LEVELS_A_SIZE} in each of four sizes, ${MEIKYUU_LEVELS_A_SIZE} in each of six tall ones, and ${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} in each of two colossal ones, and ${MEIKYUU_SOLID_LEVELS_A_SIZE} in each of three sizes of four solids, each size ordered from easy to hard so that no level is easier than the one before. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
       "The clock starts with your first stroke, and the level is solved the moment the line reaches the goal, with every key picked up.",
     ],
     board:
-      `Small mazes have under 150 cells and are the quick ones; medium ones under 800; large under 4,000; and huge ones run to thousands of cells and are meant to be zoomed. Within a size the levels run from easy to hard, and every shape turns up: squares, hexagons, triangles and circles, and a heart, a leaf, a star, a ring, a diamond, a cross and a moon. The tall ones are for a phone held upright, two columns to three rows, in six sizes from ${MEIKYUU_TALL_RANGE} cells, and turn on their side by themselves on a wide screen. The colossal ones are the biggest there are, about ten thousand cells, in a square box and a tall one: they take a while, and want zooming and a few stones.`,
+      `Small mazes have under 150 cells and are the quick ones; medium ones under 800; large under 4,000; and huge ones run to thousands of cells and are meant to be zoomed. Within a size the levels run from easy to hard, and every shape turns up: squares, hexagons, triangles and circles, and a heart, a leaf, a star, a ring, a diamond, a cross and a moon. The tall ones are for a phone held upright, two columns to three rows, in six sizes from ${MEIKYUU_TALL_RANGE} cells, and turn on their side by themselves on a wide screen. The colossal ones are the biggest there are, about ten thousand cells, in a square box and a tall one: they take a while, and want zooming and a few stones. The solids are the cube, the sphere, the octahedron and the icosahedron, each in a small size of about a hundred cells, a medium one of about three hundred and a large one of about six hundred and fifty.`,
   },
   /*
    * OUR OWN NAME FOR IT, and a plain one. Peg solitaire is a traditional game that belongs to nobody (the

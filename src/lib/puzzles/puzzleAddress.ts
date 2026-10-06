@@ -14,7 +14,7 @@ import { isAnyDeal } from "./solitaire/rules";
 import { bonusRuleOfSeed } from "./mahjong/generate";
 import { isSuidoLevelAt, suidoLevelBand } from "./suido/levelCounts";
 import { isMeikyuuLevelAt, meikyuuLevelBand } from "./meikyuu/levelCounts";
-import { meikyuuSizeFromAddress } from "./meikyuu/sizes";
+import { isMeikyuuSolid, meikyuuSizeFromAddress, meikyuuSizeInAddress } from "./meikyuu/sizes";
 import { isTobiishiLevelAt } from "./tobiishi/levelCounts";
 import { tobiishiBand } from "./tobiishi/sizes";
 import { suidoKindOfSeed, suidoLevelOfSeed, suidoLevelSeed, suidoSquaresOfSeed, type SuidoSquares } from "./suido/seed";
@@ -218,7 +218,8 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
 
 /** The query for a solve, as `?size=…&level=…&seed=…&checks=…`, the seed left off while there is none and the checks while there is no limit. */
 export function puzzleQuery(asked: PuzzleAsked): string {
-  const params = new URLSearchParams({ [PUZZLE_PARAMS.size]: suidoSizeInAddress(asked.size), [PUZZLE_PARAMS.level]: asked.level });
+  // A Meikyuu solid's size (7002) is said as the solid and its step (`cube-medium`); every other size by the shape rule Suido's long boards and Meikyuu's tall ones share (`5x7`).
+  const params = new URLSearchParams({ [PUZZLE_PARAMS.size]: isMeikyuuSolid(asked.size) ? meikyuuSizeInAddress(asked.size) : suidoSizeInAddress(asked.size), [PUZZLE_PARAMS.level]: asked.level });
   // A Suido level is asked for by its number, which is the whole of what its seed says (`suidoLevelOfSeed`).
   const levelNumber = asked.seed !== null && isSuidoLevelSize(asked.size) ? suidoLevelOfSeed(asked.seed) : null;
   if (levelNumber !== null) params.set(PUZZLE_PARAMS.number, String(levelNumber));
