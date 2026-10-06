@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { stampIsAPerson } from "@/lib/auth/inviteRequestStamp";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { RATE_LIMITS, checkRateLimit } from "@/lib/api/rateLimit";
-import { MAIL_REFUSAL_TEXT } from "@/lib/mail/mail.constants";
+import { mailRefusalText } from "@/lib/mail/mailWords";
 import { readInviteRequest, sendInviteRequest } from "@/lib/mail/inviteRequest";
 import { fetchSiteSettings } from "@/lib/site/siteStore";
 import type { AskForInviteState } from "@/components/auth/askForInvite.types";
@@ -49,7 +49,7 @@ export async function askForInvite(_before: AskForInviteState, form: FormData): 
    * change. Nothing is sent and nothing is counted.
    */
   const stamp = form.get("stamp");
-  const reading = readInviteRequest(form);
+  const reading = readInviteRequest(form, say);
   if (reading.kind === "bot" || !(await stampIsAPerson(typeof stamp === "string" ? stamp : undefined))) {
     return sent;
   }
@@ -62,5 +62,5 @@ export async function askForInvite(_before: AskForInviteState, form: FormData): 
    * site not sending mail at all here, a provider that failed — are said as
    * what they are, with the address to write to instead.
    */
-  return { kind: "problem", message: MAIL_REFUSAL_TEXT[outcome.refusal] };
+  return { kind: "problem", message: mailRefusalText(say, outcome.refusal) };
 }

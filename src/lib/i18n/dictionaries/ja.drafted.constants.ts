@@ -1,4 +1,7 @@
 import type { PhraseKey } from "../i18n.constants";
+import { JA_DRAFTED_PRIVACY } from "./ja.drafted.privacy.constants";
+import { JA_DRAFTED_TERMS } from "./ja.drafted.terms.constants";
+import { JA_DRAFTED_MAIL } from "./ja.drafted.mail.constants";
 import { JA_DRAFTED_PIECES } from "./ja.drafted.pieces.constants";
 import { JA_DRAFTED_GAMEPAGES } from "./ja.drafted.gamepages.constants";
 import { JA_DRAFTED_ENDING } from "./ja.drafted.ending.constants";
@@ -1034,6 +1037,9 @@ const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
  */
 export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
   ...JA_DRAFTED_BASE,
+  ...JA_DRAFTED_PRIVACY,
+  ...JA_DRAFTED_TERMS,
+  ...JA_DRAFTED_MAIL,
   ...JA_DRAFTED_XP,
   ...JA_DRAFTED_COUNTRIES,
   ...JA_DRAFTED_LEARN,

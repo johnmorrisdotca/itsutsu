@@ -88,3 +88,28 @@ export const currentLocale = cache(async (): Promise<Locale> => {
 export async function currentSpeaker(): Promise<Speaker> {
   return speaker(await currentLocale());
 }
+
+/**
+ * The site, ready to talk to somebody whose own language is already known, as the page an email links to: the
+ * stop page reads the language of the member the link's signed token names, because the email it came from was
+ * written in it (ENJA-12), and the reader holding the link may not be signed in at all.
+ *
+ * Only the account's place in the order differs from `currentLocale`. A language chosen a moment ago on this very
+ * request still wins, and with nothing saved on the account the cookie and then the browser's own header answer, as
+ * they do everywhere. It keeps nothing: the reader is not necessarily that member, so a choice made here is not
+ * written to anybody's account.
+ */
+export async function speakerFor(onAccount: Locale | null): Promise<Speaker> {
+  const [jar, head] = await Promise.all([cookies(), headers()]);
+  return speaker(
+    resolveLocale(
+      {
+        justChosen: jar.get(LANG_CHOSEN_COOKIE)?.value ?? null,
+        onAccount,
+        remembered: jar.get(LANG_COOKIE)?.value ?? null,
+        accepts: head.get("accept-language"),
+      },
+      OFFERED_LOCALES,
+    ),
+  );
+}

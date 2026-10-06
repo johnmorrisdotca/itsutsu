@@ -1,5 +1,8 @@
 import type { Locale, LocaleSpec } from "./i18n.types";
 import { PHRASES_SITE } from "./phrases.site.constants";
+import { PHRASES_PRIVACY } from "./phrases.privacy.constants";
+import { PHRASES_TERMS } from "./phrases.terms.constants";
+import { PHRASES_MAIL } from "./phrases.mail.constants";
 import { PHRASES_INSTALL } from "./phrases.install.constants";
 import { PHRASES_COUNTRIES } from "./phrases.countries.constants";
 import { PHRASES_LEARN } from "./phrases.learn.constants";
@@ -145,6 +148,9 @@ export const LANG_CHOSEN_FOR_SECONDS = 60;
  */
 export const PHRASE_AREAS = {
   site: PHRASES_SITE,
+  privacy: PHRASES_PRIVACY,
+  terms: PHRASES_TERMS,
+  mail: PHRASES_MAIL,
   install: PHRASES_INSTALL,
   countries: PHRASES_COUNTRIES,
   learn: PHRASES_LEARN,
@@ -231,6 +237,9 @@ export const PHRASE_AREAS = {
  */
 export const PHRASES = {
   ...PHRASES_SITE,
+  ...PHRASES_PRIVACY,
+  ...PHRASES_TERMS,
+  ...PHRASES_MAIL,
   ...PHRASES_INSTALL,
   ...PHRASES_COUNTRIES,
   ...PHRASES_LEARN,

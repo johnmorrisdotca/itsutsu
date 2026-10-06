@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { speaker } from "@/lib/i18n/i18n";
+import type { Locale } from "@/lib/i18n/i18n.types";
 import type { OutgoingMail, SendOutcome } from "@/lib/mail/mail.types";
 
 /**
@@ -12,6 +14,8 @@ import type { OutgoingMail, SendOutcome } from "@/lib/mail/mail.types";
  */
 let member: { id: string; name: string } | null = { id: "m-1", name: "Kenji" };
 let outcome: SendOutcome = { sent: true, id: "e-1" };
+// The language the inviter is reading the site in (ENJA-12): the friend's email follows it.
+let language: Locale = "en";
 
 const mintInviteCode = vi.fn(async () => ({ code: "hoshi-kuma-nami" }));
 const sendMail = vi.fn(async (mail: OutgoingMail, sender: { memberId: string }) => {
@@ -25,6 +29,7 @@ vi.mock("@/lib/auth/currentSession", () => ({
   currentMemberRow: async () => member,
   currentEmail: async () => null,
 }));
+vi.mock("@/lib/i18n/currentLocale", () => ({ currentSpeaker: async () => speaker(language) }));
 vi.mock("@/lib/invite/inviteStore", () => ({ mintInviteCode: () => mintInviteCode() }));
 // The member inviting is an adult here; the under-13 refusal is childRules.test.ts and child-rules.spec.ts.
 vi.mock("@/lib/auth/ageBandStore", () => ({ ageBandOf: async () => ({ band: null, consented: false }) }));
@@ -44,6 +49,7 @@ function post(body?: unknown): Request {
 beforeEach(() => {
   member = { id: "m-1", name: "Kenji" };
   outcome = { sent: true, id: "e-1" };
+  language = "en";
   mintInviteCode.mockClear();
   sendMail.mockClear();
 });
@@ -67,6 +73,24 @@ describe("POST /api/invites/mine", () => {
     expect(mail.text).toContain("https://itsutsu.com/join?code=hoshi-kuma-nami");
     expect(mail.subject).toContain("Kenji");
     expect(sender).toEqual({ memberId: "m-1" });
+  });
+
+  it("is English to a friend when the inviter reads English, and both languages, English first, when they read Japanese", async () => {
+    await POST(post({ sendTo: "friend@example.com" }));
+    expect(sendMail.mock.calls[0]![0].subject).toBe("Kenji has invited you to play on Itsutsu");
+
+    language = "ja";
+    await POST(post({ sendTo: "friend@example.com" }));
+    const mail = sendMail.mock.calls[1]![0];
+    expect(mail.subject).toBe("Kenji has invited you to play on Itsutsu / Kenjiさんから、Itsutsuへのご招待です");
+    expect(mail.text.indexOf("has invited you to Itsutsu")).toBeLessThan(mail.text.indexOf("へのご招待です"));
+  });
+
+  it("tells the inviter why an email was not sent in their own language", async () => {
+    outcome = { sent: false, refusal: "site-day-cap" };
+    language = "ja";
+    const body = await (await POST(post({ sendTo: "friend@example.com" }))).json();
+    expect(body.notice).toBe("サイトが今日送れるメールの上限に達したため、このメールは送信されませんでした。明日、もう一度お試しください。");
   });
 
   it("refused by a cap, still hands back the link, with the reason in words", async () => {

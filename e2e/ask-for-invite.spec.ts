@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { MAIL_REFUSAL_TEXT } from "../src/lib/mail/mail.constants";
+import { PHRASES_MAIL } from "../src/lib/i18n/phrases.mail.constants";
 import { ready } from "./support";
 
 /**
@@ -60,7 +60,7 @@ test.describe("asking for an invite", () => {
     // Off one of exactly two ways: not the live site (the dev server), or a production build with no key (the suite's own).
     const problem = page.getByTestId("ask-for-invite-problem");
     await expect(problem).toBeVisible();
-    expect([MAIL_REFUSAL_TEXT["not-production"], MAIL_REFUSAL_TEXT["no-key"]]).toContain(await problem.textContent());
+    expect([PHRASES_MAIL["mail.refusal.notProduction"], PHRASES_MAIL["mail.refusal.noKey"]]).toContain(await problem.textContent());
   });
 
   test("a form sent faster than anybody reads it is told it was sent, and never reaches the sender", async ({ page }) => {

@@ -3,7 +3,7 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
-import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { currentSpeaker, speakerFor } from "@/lib/i18n/currentLocale";
 import type { Speaker } from "@/lib/i18n/i18n";
 import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { SITE_NAME } from "@/lib/i18n/siteName";
@@ -35,52 +35,56 @@ const KIND_WORDS: Readonly<Record<StopKind, PhraseKey>> = { "your-turn": "auth.s
 export default async function StopPage({ params, searchParams }: PageProps<"/stop/[token]">) {
   const { token } = await params;
   const { done } = await searchParams;
-  const say = await currentSpeaker();
   const stop = await verifyStopToken(token);
   const state = stop === null ? null : await stopStateOf(stop.member, stop.mail);
+  // The language of the email that led here: the member's own, which the token names. Nobody is signed in, so
+  // without one the page answers as any page does (a language just chosen, the browser's own).
+  const say = state === null ? await currentSpeaker() : await speakerFor(state.language);
   const words = stop === null ? "" : say.say(KIND_WORDS[stop.mail]);
   const said = stop === null || typeof done !== "string" ? null : doneWords(done, words, say);
 
   return (
     <Page>
       <SiteHeader />
-      <PageTitle title={say.say("auth.stop.title")} kanji="配信停止" lead={say.say("auth.stop.lead", { site: SITE_NAME })} />
+      <div lang={say.tag} className="flex flex-col gap-6" data-testid="stop-language" data-locale={say.locale}>
+        <PageTitle title={say.say("auth.stop.title")} kanji={say.pairsWithKanji ? "配信停止" : ""} lead={say.say("auth.stop.lead", { site: SITE_NAME })} />
 
-      {stop === null || state === null ? (
-        <p className="text-sm" data-testid="stop-unknown">
-          {say.say("auth.stop.unknown", { address: CONTACT_ADDRESS })}
-        </p>
-      ) : (
-        <section className="flex flex-col gap-5" data-testid="stop-page" data-kind={stop.mail} data-kind-on={state.kindOn} data-all-on={state.allOn}>
-          {said === null ? null : (
-            <p className="rounded-md border border-moss bg-moss/10 px-3 py-2 text-sm" role="status" data-testid="stop-done">
-              {said}
-            </p>
-          )}
-
-          <StopChoice
-            token={token}
-            what={stop.mail}
-            on={state.kindOn}
-            now={say.say(state.kindOn ? "auth.stop.youGet" : "auth.stop.youDoNotGet", { words })}
-            stopLabel={say.say("auth.stop.stopKind", { words })}
-            turnOn={say.say("auth.stop.turnOn")}
-            testId="stop-kind"
-          />
-          <StopChoice
-            token={token}
-            what="all"
-            on={state.allOn}
-            now={say.say(state.allOn ? "auth.stop.allOn" : "auth.stop.allOff", { site: SITE_NAME })}
-            stopLabel={say.say("auth.stop.stopAll", { site: SITE_NAME })}
-            turnOn={say.say("auth.stop.turnOn")}
-            testId="stop-all"
-          />
-          <p className="text-xs text-muted">
-            {say.say("auth.stop.signedInNote", { address: CONTACT_ADDRESS })}
+        {stop === null || state === null ? (
+          <p className="text-sm" data-testid="stop-unknown">
+            {say.say("auth.stop.unknown", { address: CONTACT_ADDRESS })}
           </p>
-        </section>
-      )}
+        ) : (
+          <section className="flex flex-col gap-5" data-testid="stop-page" data-kind={stop.mail} data-kind-on={state.kindOn} data-all-on={state.allOn}>
+            {said === null ? null : (
+              <p className="rounded-md border border-moss bg-moss/10 px-3 py-2 text-sm" role="status" data-testid="stop-done">
+                {said}
+              </p>
+            )}
+
+            <StopChoice
+              token={token}
+              what={stop.mail}
+              on={state.kindOn}
+              now={say.say(state.kindOn ? "auth.stop.youGet" : "auth.stop.youDoNotGet", { words })}
+              stopLabel={say.say("auth.stop.stopKind", { words })}
+              turnOn={say.say("auth.stop.turnOn")}
+              testId="stop-kind"
+            />
+            <StopChoice
+              token={token}
+              what="all"
+              on={state.allOn}
+              now={say.say(state.allOn ? "auth.stop.allOn" : "auth.stop.allOff", { site: SITE_NAME })}
+              stopLabel={say.say("auth.stop.stopAll", { site: SITE_NAME })}
+              turnOn={say.say("auth.stop.turnOn")}
+              testId="stop-all"
+            />
+            <p className="text-xs text-muted">
+              {say.say("auth.stop.signedInNote", { address: CONTACT_ADDRESS })}
+            </p>
+          </section>
+        )}
+      </div>
     </Page>
   );
 }

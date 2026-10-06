@@ -163,6 +163,45 @@ describe("sending a game notice", () => {
     vi.resetModules();
   });
 
+  /*
+   * THE EMAIL IS WRITTEN IN THE LANGUAGE THE MEMBER SAVED (ENJA-12), asked of the address book once a notice is going
+   * and never before, and English for a member who chose nothing or whose language cannot be read.
+   */
+  it("writes in the language the member saved, and in English where they saved none", async () => {
+    vi.doMock("@/lib/site/gameEmails", () => ON);
+    vi.resetModules();
+    const { sendNotice } = await import("./sendNotice");
+    const run = async (language: "ja" | "en" | null) => {
+      const sent: OutgoingMail[] = [];
+      const addresses: AddressBook = { ...book("hanako@example.test"), languageOf: async () => language };
+      await sendNotice(gameOver, {
+        transport: async (mail) => (sent.push(mail), { ok: true as const, id: "x" }),
+        counter: { reserve: async () => null },
+        addresses,
+        games: games([]),
+      });
+      return sent[0]!;
+    };
+    expect((await run("ja")).subject).toBe("五目並べでKuro T.さんに勝ちました");
+    expect((await run("ja")).text).toContain("対局中のページ：");
+    expect((await run("en")).subject).toBe("You won at Gomoku against Kuro T.");
+    expect((await run(null)).subject).toBe("You won at Gomoku against Kuro T.");
+    vi.doUnmock("@/lib/site/gameEmails");
+    vi.resetModules();
+  });
+
+  it("asks for no language where nothing is going to be sent, and reads a book with no languages as English", async () => {
+    vi.doMock("@/lib/site/gameEmails", () => ON);
+    vi.resetModules();
+    const { sendNotice } = await import("./sendNotice");
+    const asked: string[] = [];
+    const quiet: AddressBook = { addressOf: async () => null, languageOf: async (id) => (asked.push(id), "ja") };
+    await sendNotice(yourTurn, { transport: vi.fn(), addresses: quiet });
+    expect(asked, "a language was read for an email that could not go").toEqual([]);
+    vi.doUnmock("@/lib/site/gameEmails");
+    vi.resetModules();
+  });
+
   it("says how to stop it, in its footer and in the headers a mail program offers, for that member and that kind", async () => {
     vi.doMock("@/lib/site/gameEmails", () => ON);
     vi.resetModules();

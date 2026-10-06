@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MAIL_CAPS, MAIL_REFUSAL_TEXT, RESEND_FREE_PLAN } from "./mail.constants";
+import { speaker } from "@/lib/i18n/i18n";
+
+import { MAIL_CAPS, MAIL_REFUSAL_PHRASE, RESEND_FREE_PLAN } from "./mail.constants";
+import { mailRefusalText } from "./mailWords";
 import type { MailCounter, MailRefusal, MailTransport, OutgoingMail } from "./mail.types";
 import { mailLimits } from "./mailLimits";
 import { mailRefusalFor } from "./mailSwitch";
@@ -91,7 +94,7 @@ describe("sendMail", () => {
 
         expect(outcome).toEqual({ sent: false, refusal });
         expect(transport).not.toHaveBeenCalled();
-        expect(MAIL_REFUSAL_TEXT[refusal]).toMatch(/not sent/);
+        expect(mailRefusalText(speaker("en"), refusal)).toMatch(/not sent/);
         expect(warn).toHaveBeenCalledWith(expect.stringContaining(refusal));
         // Nothing else was counted for an email that did not go.
         for (const key of [memberDayKey, siteDayKey, siteMonthKey]) {
@@ -222,8 +225,11 @@ describe("the caps stay inside Resend's free plan", () => {
     expect(MAIL_CAPS.siteMonth * 2).toBeLessThanOrEqual(RESEND_FREE_PLAN.perMonth);
   });
 
-  it("have words for every refusal", () => {
-    for (const text of Object.values(MAIL_REFUSAL_TEXT)) expect(text.trim()).not.toBe("");
+  it("have words for every refusal, in both languages", () => {
+    for (const refusal of Object.keys(MAIL_REFUSAL_PHRASE) as (keyof typeof MAIL_REFUSAL_PHRASE)[]) {
+      expect(mailRefusalText(speaker("en"), refusal).trim()).not.toBe("");
+      expect(mailRefusalText(speaker("ja"), refusal).trim()).not.toBe("");
+    }
   });
 });
 

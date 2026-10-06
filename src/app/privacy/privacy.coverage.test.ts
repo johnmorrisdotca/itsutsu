@@ -7,9 +7,11 @@ import { OPERATOR_ACTIONS } from "@/lib/auth/operatorLog.constants";
 import { PLAYER_SESSION_DAYS } from "@/lib/auth/session";
 import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
 import { SITE_SETTING_SPECS } from "@/lib/site/site.constants";
+import { speaker } from "@/lib/i18n/i18n";
 import { PHRASES } from "@/lib/i18n/i18n.constants";
 
-import { CONTACT, PRIVACY_CHANGED, privacySections, wordsAccountSentence } from "./privacy.constants";
+import { CONTACT, PRIVACY_CHANGED } from "./privacy.constants";
+import { privacySections } from "./privacy.sections";
 
 /*
  * THE PRIVACY PAGE IS HELD TO THE CODE.
@@ -42,7 +44,8 @@ import { CONTACT, PRIVACY_CHANGED, privacySections, wordsAccountSentence } from 
 const ROOT = process.cwd();
 const read = (path: string) => readFileSync(join(ROOT, path), "utf8");
 
-const sections = privacySections(PLAYER_SESSION_DAYS);
+// The English is the text the page is held to, and the one these checks read; the Japanese is held beside it below.
+const sections = privacySections(speaker("en"), PLAYER_SESSION_DAYS);
 const text = sections
   .flatMap((section) => [section.heading, ...section.paragraphs, ...(section.points ?? [])])
   .join("\n");
@@ -148,10 +151,12 @@ describe("the privacy page", () => {
   });
 
   it("fills the words-only account's lifetime from the cookie, never by hand", () => {
-    expect(section("what")).toContain(wordsAccountSentence(PLAYER_SESSION_DAYS));
-    const source = read("src/app/privacy/privacy.constants.ts");
-    expect(source).not.toMatch(/for \d+ days/);
-    expect(read("src/app/privacy/page.tsx")).toContain("privacySections(PLAYER_SESSION_DAYS)");
+    expect(section("what")).toContain(`lives in one browser for ${PLAYER_SESSION_DAYS} days`);
+    // Not typed into any sentence, in either language: the figure is a placeholder, and the page fills it.
+    expect(PHRASES["privacy.wordsAccount"]).toContain("{days}");
+    expect(PHRASES["privacy.wordsAccount"]).not.toMatch(/\d+ days/);
+    expect(read("src/app/privacy/privacy.sections.ts")).toContain("String(days)");
+    expect(read("src/app/privacy/page.tsx")).toContain("privacySections(say, PLAYER_SESSION_DAYS)");
   });
 
   it("names the services that really handle the data, and no advertising or analytics has arrived", () => {
@@ -185,7 +190,7 @@ describe("the privacy page", () => {
   });
 
   it("says what an invite request keeps, which is nothing, in the mail's own words", () => {
-    expect(read("src/lib/mail/inviteRequest.ts")).toContain("Nothing about this request was saved by the site.");
+    expect(read("src/lib/mail/inviteRequestOperatorMail.ts")).toContain("Nothing about this request was saved by the site.");
     expect(section("not")).toContain("the site saves none of it");
   });
 
@@ -242,7 +247,7 @@ describe("removal is described as the control it is", () => {
  */
 describe("the Children section says what changes for a member under 13", () => {
   const children = () => {
-    const found = privacySections(PLAYER_SESSION_DAYS).find((one) => one.id === "children")!;
+    const found = privacySections(speaker("en"), PLAYER_SESSION_DAYS).find((one) => one.id === "children")!;
     return [...found.paragraphs, ...(found.points ?? [])].join("\n");
   };
   it("names each rule, and each rule is in the code", () => {

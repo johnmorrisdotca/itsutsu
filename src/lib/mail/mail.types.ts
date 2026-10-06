@@ -1,4 +1,5 @@
 import type { GameResultFacts } from "@/lib/history/gameResult.types";
+import type { Locale } from "@/lib/i18n/i18n.types";
 
 import type { StopKind } from "./mailStop";
 
@@ -96,6 +97,11 @@ export type NoticeOutcome = SendOutcome;
 export type AddressBook = {
   /** The member's address, or null where there is none or they have stopped this kind of email, or all of it. */
   addressOf(memberId: string, kind: StopKind): Promise<string | null>;
+  /**
+   * The language the member saved on their account, or null where they never chose one: the notice is English
+   * then. Optional, so a test's address book that says nothing about languages writes in English.
+   */
+  languageOf?(memberId: string): Promise<Locale | null>;
 };
 
 export type NoticeDeps = SendDeps & {

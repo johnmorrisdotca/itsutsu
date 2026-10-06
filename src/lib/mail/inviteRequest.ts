@@ -2,9 +2,13 @@ import "server-only";
 
 import { createHmac } from "node:crypto";
 
-import { CONTACT_ADDRESS } from "./mail.constants";
-import type { OutgoingMail, SendDeps, SendOutcome } from "./mail.types";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+
+import type { SendDeps, SendOutcome } from "./mail.types";
+import { inviteRequestMail } from "./inviteRequestOperatorMail";
 import { sendMail } from "./sendMail";
+
+export { inviteRequestMail };
 
 /**
  * A VISITOR WITH NO INVITE, ASKING FOR ONE.
@@ -50,7 +54,7 @@ export type InviteRequest = { email: string; name: string; about: string };
 /** What reading a submitted form came to. */
 export type InviteRequestReading =
   | { kind: "request"; request: InviteRequest }
-  /** Said to the person, who can fix it. */
+  /** Said to the person, who can fix it, in their language. */
   | { kind: "problem"; problem: string }
   /** A bot: answered as though it had worked, and nothing is sent. */
   | { kind: "bot" };
@@ -88,8 +92,8 @@ function plain(value: string, keepLines: boolean): string {
     .trim();
 }
 
-/** The form, read: a request, a problem the person can fix, or a bot. */
-export function readInviteRequest(form: FormData): InviteRequestReading {
+/** The form, read: a request, a problem the person can fix (said in their language), or a bot. */
+export function readInviteRequest(form: FormData, say: Speaker = speaker("en")): InviteRequestReading {
   if (field(form, INVITE_REQUEST.trap) !== "") return { kind: "bot" };
 
   const email = field(form, "email").toLowerCase();
@@ -97,37 +101,18 @@ export function readInviteRequest(form: FormData): InviteRequestReading {
   const about = plain(field(form, "about"), true);
 
   if (email === "" || email.length > INVITE_REQUEST.emailLength || !LOOKS_LIKE_AN_ADDRESS.test(email)) {
-    return { kind: "problem", problem: "Please give an email address we can answer you at." };
+    return { kind: "problem", problem: say.say("mail.request.badAddress") };
   }
   if (name.length > INVITE_REQUEST.nameLength) {
-    return { kind: "problem", problem: `Please keep your name under ${INVITE_REQUEST.nameLength} characters.` };
+    return { kind: "problem", problem: say.say("mail.request.nameLong", { limit: String(INVITE_REQUEST.nameLength) }) };
   }
   if (about.length > INVITE_REQUEST.aboutLength) {
-    return { kind: "problem", problem: `Please keep it under ${INVITE_REQUEST.aboutLength} characters.` };
+    return { kind: "problem", problem: say.say("mail.request.aboutLong", { limit: String(INVITE_REQUEST.aboutLength) }) };
   }
   if (HAS_A_LINK.test(about) || HAS_A_LINK.test(name)) {
-    return { kind: "problem", problem: "Please leave links out — a sentence about who you are is plenty." };
+    return { kind: "problem", problem: say.say("mail.request.links") };
   }
   return { kind: "request", request: { email, name, about } };
-}
-
-/** The email John receives. Plain text, and everything the visitor typed is only ever text in it. */
-export function inviteRequestMail(request: InviteRequest): OutgoingMail {
-  const who = request.name === "" ? request.email : `${request.name} (${request.email})`;
-  return {
-    to: CONTACT_ADDRESS,
-    replyTo: request.email,
-    subject: `Invite request from ${request.name === "" ? request.email : request.name}`,
-    text: [
-      `${who} asked for an invitation to Itsutsu, from the join page.`,
-      "",
-      request.about === "" ? "They said nothing more." : `What they said:\n\n${request.about}`,
-      "",
-      "Reply to this email to answer them — it goes to the address they gave. To let them in, send an invitation from your own page on the site, or mint a code from Admin.",
-      "",
-      "Nothing about this request was saved by the site.",
-    ].join("\n"),
-  };
 }
 
 /**

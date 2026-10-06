@@ -2,7 +2,10 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { TERMS_CHANGED, TERMS_SECTIONS } from "./terms.constants";
+import { speaker } from "@/lib/i18n/i18n";
+
+import { TERMS_CHANGED } from "./terms.constants";
+import { termsSections } from "./terms.sections";
 
 /**
  * THE TERMS SAY ONLY WHAT THE SITE DOES (PRIV-05).
@@ -15,6 +18,8 @@ import { TERMS_CHANGED, TERMS_SECTIONS } from "./terms.constants";
  */
 
 const read = (path: string) => readFileSync(path, "utf8");
+// The English is the text the page is held to, and the one these checks read; the Japanese is held beside it below.
+const TERMS_SECTIONS = termsSections(speaker("en"));
 const text = TERMS_SECTIONS.flatMap((section) => [...section.paragraphs, ...(section.points ?? [])]).join("\n");
 const said = (id: string) => {
   const section = TERMS_SECTIONS.find((one) => one.id === id);

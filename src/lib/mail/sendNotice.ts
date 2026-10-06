@@ -1,5 +1,8 @@
 import "server-only";
 
+import { speaker } from "@/lib/i18n/i18n";
+import type { Locale } from "@/lib/i18n/i18n.types";
+import { languageFrom } from "@/lib/i18n/languagePreference";
 import { preferencesFrom } from "@/lib/preferences/preferences";
 import { prisma } from "@/lib/prisma";
 import { RECENCY_MINUTES } from "@/lib/social/presence";
@@ -48,6 +51,8 @@ import { sendMail } from "./sendMail";
  *      read only now, when an email is really going, so an ending nobody is
  *      told about costs nothing. Unreadable, it is left out and the email
  *      says what the event knows.
+ *      The notice is written in the language the member saved (`AddressBook.languageOf`), English where they
+ *      never chose one: the subject, the body and the footer are phrases (`noticeMail.ts`).
  *   5. `sendMail`, which is where the caps are. The member a notice is FOR is
  *      the member it is counted against, so the five-a-day limit protects the
  *      person receiving it rather than some notion of a system sender.
@@ -62,7 +67,9 @@ export async function sendNotice(event: NoticeEvent, deps: NoticeDeps = {}): Pro
   if (token === null) return { sent: false, refusal: "no-stop-link" };
 
   const summary = event.kind === "game-over" ? await (deps.games ?? gameBookOnce()).gameOverOf(event.gameId) : null;
-  const mail = noticeMail(event, to, summary, `${SITE_ORIGIN}${stopPagePath(token)}`);
+  // In the language the recipient saved on their account, English where they never chose one (ENJA-12).
+  const locale = (await (deps.addresses ?? memberAddresses).languageOf?.(event.memberId)) ?? null;
+  const mail = noticeMail(event, to, summary, `${SITE_ORIGIN}${stopPagePath(token)}`, speaker(locale ?? "en"));
   return sendMail({ ...mail, headers: stopHeaders(token) }, { memberId: event.memberId }, deps);
 }
 
@@ -98,6 +105,22 @@ export const memberAddresses: AddressBook = {
       return member.email;
     } catch (error) {
       console.error("[mail] a member's address could not be read", error);
+      return null;
+    }
+  },
+
+  /**
+   * The language the member chose on their account (`languageFrom`, the one reading the site's pages use), or null
+   * where they never chose one or it cannot be read: English then. Asked only once a notice is going to be sent, so
+   * it costs one primary-key read for an email already worth sending. A language the site cannot read is never a
+   * reason to send nothing.
+   */
+  async languageOf(memberId: string): Promise<Locale | null> {
+    try {
+      const member = await prisma.member.findUnique({ where: { id: memberId }, select: { preferences: true } });
+      return member === null ? null : languageFrom(member.preferences);
+    } catch (error) {
+      console.error("[mail] a member's language could not be read", error);
       return null;
     }
   },

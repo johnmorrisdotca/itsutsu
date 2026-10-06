@@ -40,11 +40,6 @@ const RECORDED = [
   "src/lib/history",
   // ENJA-07, puzzles: the folders are done, and what is left is the stamped screens, named one by one
   // ENJA-10, pages: home, About, Learn, players, history, My account, feed, inbox, join
-  // ENJA-11, Privacy and Terms (with a native read)
-  "src/app/privacy",
-  "src/app/terms",
-  // ENJA-12, emails
-  "src/lib/mail",
   // ENJA-13, API errors a person can see
   "src/app/api",
   "src/proxy.ts",

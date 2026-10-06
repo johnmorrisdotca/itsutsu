@@ -1,15 +1,17 @@
+import { GoverningNote } from "@/components/layout/GoverningNote";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SectionedDocument, longDate } from "@/components/layout/SectionedDocument";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
-import { CONTACT, TERMS_CHANGED, TERMS_SECTIONS, TERMS_SUBTITLE, TERMS_TITLE } from "./terms.constants";
+import { CONTACT, TERMS_CHANGED, TERMS_KANJI } from "./terms.constants";
+import { termsSections } from "./terms.sections";
 
-export const metadata = {
-  title: TERMS_TITLE.en,
-  description: TERMS_SUBTITLE,
-};
+export async function generateMetadata() {
+  const say = await currentSpeaker();
+  return { title: say.say("terms.title"), description: say.say("terms.subtitle") };
+}
 
 /**
  * The terms of play (PRIV-05): one account each, your own moves, kindness at
@@ -17,21 +19,24 @@ export const metadata = {
  *
  * Open to strangers (`OPEN_EXACTLY` in `proxy.ts`), like /privacy beside it,
  * because the reader deciding whether to ask for an invite is the one it is
- * for. Drawn by `SectionedDocument`, exactly as /privacy is.
+ * for. Drawn by `SectionedDocument`, exactly as /privacy is, and in the same
+ * way it opens, for a reader whose language is not English, with the line that
+ * says the English version governs (ENJA-11).
  */
 export default async function TermsPage() {
-  const locale = await currentLocale();
+  const say = await currentSpeaker();
   return (
     <Page>
       <SiteHeader />
 
-      <PageTitle title={TERMS_TITLE.en} kanji={TERMS_TITLE.kanji} lead={TERMS_SUBTITLE}>
+      <PageTitle title={say.say("terms.title")} kanji={TERMS_KANJI} lead={say.say("terms.subtitle")}>
+        <GoverningNote say={say} phrase="terms.governing" testId="terms-governing" />
         <p className="text-xs text-muted" data-testid="terms-changed">
-          Last changed {longDate(TERMS_CHANGED, locale)}
+          {say.say("terms.lastChanged", { date: longDate(TERMS_CHANGED, say.locale) })}
         </p>
       </PageTitle>
 
-      <SectionedDocument sections={TERMS_SECTIONS} contact={CONTACT} testId="terms-section" />
+      <SectionedDocument sections={termsSections(say)} contact={CONTACT} testId="terms-section" />
     </Page>
   );
 }

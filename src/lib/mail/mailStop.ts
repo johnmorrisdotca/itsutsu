@@ -1,4 +1,5 @@
 import { expiryInDays, nowInSeconds, signPayload, verifyPayload, type Signed } from "../auth/signing.ts";
+import type { PhraseKey } from "../i18n/i18n.constants.ts";
 import type { Preferences } from "../preferences/preferences.types.ts";
 
 /**
@@ -38,8 +39,8 @@ import type { Preferences } from "../preferences/preferences.types.ts";
  *
  * - `preference`: the registry row that says this kind is on or off, whose
  *   fallback is the default (`preferences.constants.ts`).
- * - `words`: what the stop page and an email's footer call it.
- * - `label` and `hint`: the switch in Settings and in the welcome.
+ * - `words`: the phrase that names it in a sentence, which the stop page and an email's footer say in the reader's
+ *   language (`auth.stop.words*`). The switch in Settings and in the welcome has its own labels (`MailChoices`).
  * - `notWhileHere`: held back while the member is on the site
  *   (`RECENCY_MINUTES.now`), where they would see it anyway.
  *
@@ -49,19 +50,15 @@ import type { Preferences } from "../preferences/preferences.types.ts";
 export const MAIL_KINDS = {
   "your-turn": {
     preference: "mail.yourTurn",
-    words: "emails telling you it is your turn",
-    label: "When it is my move",
-    hint: "Never while you are on the site: only when a game is waiting and you are away.",
+    words: "auth.stop.wordsYourTurn",
     notWhileHere: true,
   },
   "game-over": {
     preference: "mail.gameOver",
-    words: "emails telling you a game of yours has finished",
-    label: "When a game of mine finishes",
-    hint: "Who won and why, how long it took, and a link to play again.",
+    words: "auth.stop.wordsGameOver",
     notWhileHere: false,
   },
-} as const;
+} as const satisfies Record<string, { preference: keyof Preferences; words: PhraseKey; notWhileHere: boolean }>;
 
 export type StopKind = keyof typeof MAIL_KINDS;
 

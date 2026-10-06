@@ -1,3 +1,5 @@
+import type { PhraseKey } from "../i18n/i18n.constants";
+
 import type { MailRefusal } from "./mail.types";
 
 /**
@@ -84,21 +86,22 @@ export const MAIL_TIMEOUT_MS = 10_000;
  */
 
 /**
- * What a person is told when an email they asked for was not sent. Each says
- * plainly that it did not go, and none pretends it did.
+ * What a person is told when an email they asked for was not sent, as the phrase that says it (`mail.refusal.*`).
+ * Each says plainly that it did not go, and none pretends it did. `mailRefusalText` (`mailWords.ts`) says it in
+ * the reader's language; the word `{limit}` is `MAIL_CAPS.memberDay` and `{address}` is `CONTACT_ADDRESS`.
  */
-export const MAIL_REFUSAL_TEXT: Record<MailRefusal, string> = {
-  "not-production": "Email is not switched on here, so nothing was sent.",
-  "no-key": "Email is not switched on here yet, so nothing was sent.",
-  "member-day-cap": `You have sent as many emails as one person may in a day (${MAIL_CAPS.memberDay}), so this one was not sent. Try again tomorrow.`,
-  "site-day-cap": "The site has sent all the email it allows itself today, so this one was not sent. Try again tomorrow.",
-  "request-repeat-cap": "A request for this address, or from where you are, has already been sent today. Please wait for an answer.",
-  "request-day-cap": `Today's invite requests have all been sent. Please write to ${CONTACT_ADDRESS} instead, and say who you are.`,
-  "site-month-cap": "The site has sent all the email it allows itself this month, so this one was not sent.",
-  "count-unavailable": "The email could not be sent just now, so nothing was sent.",
-  "transport-error": "The email could not be confirmed as sent. It may not arrive.",
-  "notices-off": "Notices about games are not switched on yet, so nothing was sent.",
-  "no-address": "There is no address to write to, so nothing was sent.",
-  "no-stop-link": "Not sent: every email says how to stop getting it, and this one could not be given that link.",
-  "to-a-child": "Not sent: the address belongs to a member under 13, and the site never emails a child.",
+export const MAIL_REFUSAL_PHRASE: Record<MailRefusal, PhraseKey> = {
+  "not-production": "mail.refusal.notProduction",
+  "no-key": "mail.refusal.noKey",
+  "member-day-cap": "mail.refusal.memberDayCap",
+  "site-day-cap": "mail.refusal.siteDayCap",
+  "request-repeat-cap": "mail.refusal.requestRepeatCap",
+  "request-day-cap": "mail.refusal.requestDayCap",
+  "site-month-cap": "mail.refusal.siteMonthCap",
+  "count-unavailable": "mail.refusal.countUnavailable",
+  "transport-error": "mail.refusal.transportError",
+  "notices-off": "mail.refusal.noticesOff",
+  "no-address": "mail.refusal.noAddress",
+  "no-stop-link": "mail.refusal.noStopLink",
+  "to-a-child": "mail.refusal.toAChild",
 };

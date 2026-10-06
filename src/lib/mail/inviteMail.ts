@@ -1,3 +1,8 @@
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import type { Locale } from "@/lib/i18n/i18n.types";
+import { SITE_NAME } from "@/lib/i18n/siteName";
+
 import { CONTACT_ADDRESS } from "./mail.constants";
 import type { OutgoingMail } from "./mail.types";
 
@@ -27,21 +32,42 @@ function oneLine(value: string): string {
  *
  * It says why it arrived and that nothing was kept, because it is going to
  * somebody who never asked the site for anything.
+ *
+ * WHAT LANGUAGE (ENJA-12). The friend has no account here, so there is no saved language to read, and the one thing
+ * known about them is who wrote to them. So it is English, which every reader of this site can be asked to read,
+ * unless the INVITER reads another language (`locale`, the language they are using the site in): then the email is
+ * both, English first and theirs under it, so the friend gets the words their friend would have written and the
+ * ones the site can be sure of. The subject is both too, joined with a slash. This is John's to change: it is a
+ * decision for review, recorded in `docs/plans/en-ja-everywhere/ENJA-12-emails.md`.
  */
-export function inviteMail(input: { to: string; inviterName: string; joinUrl: string; days: number }): OutgoingMail {
-  const who = oneLine(input.inviterName).slice(0, NAME_LIMIT) || "A friend";
+export function inviteMail(input: { to: string; inviterName: string; joinUrl: string; days: number; locale?: Locale }): OutgoingMail {
+  const name = oneLine(input.inviterName).slice(0, NAME_LIMIT);
+  const languages: Locale[] = input.locale === undefined || input.locale === DEFAULT_LOCALE ? [DEFAULT_LOCALE] : [DEFAULT_LOCALE, input.locale];
+  const parts = languages.map((locale) => inviteIn(speaker(locale), name, input));
   return {
     to: input.to,
-    subject: `${who} has invited you to play on Itsutsu`,
+    subject: parts.map((part) => part.subject).join(" / "),
+    text: parts.map((part) => part.text).join(`\n\n${DIVIDER}\n\n`),
+  };
+}
+
+/** Between the two languages of one email: a line that is the same in both. */
+const DIVIDER = "- - -";
+
+function inviteIn(say: Speaker, name: string, input: { joinUrl: string; days: number }): { subject: string; text: string } {
+  const who = name === "" ? say.say("mail.invite.aFriend") : say.say("mail.invite.named", { name });
+  const vars = { who, site: SITE_NAME };
+  return {
+    subject: say.say("mail.invite.subject", vars),
     text: [
-      `${who} has invited you to Itsutsu, a site for turn-based board games — five in a row, Othello, Pente and more — played at your own pace.`,
+      say.say("mail.invite.lead", vars),
       "",
-      `Your invitation lets one person in and is good for ${input.days} days:`,
+      say.say("mail.invite.valid", { days: String(input.days) }),
       input.joinUrl,
       "",
-      `You are getting this because ${who} typed your address into Itsutsu to send it. Itsutsu has not saved your address, and will not write to you again unless somebody sends you another invitation.`,
+      say.say("mail.invite.why", vars),
       "",
-      `Questions? Write to ${CONTACT_ADDRESS}.`,
+      say.say("mail.questions", { address: CONTACT_ADDRESS }),
     ].join("\n"),
   };
 }

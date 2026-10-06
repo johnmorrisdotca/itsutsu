@@ -96,11 +96,14 @@ describe("who a notice is written to", () => {
 });
 
 describe("the rows a member chooses from", () => {
-  it("gives every kind the words each door needs, and a row in the registry", async () => {
+  it("gives every kind the words each door needs, in both languages, and a row in the registry", async () => {
     const { MAIL_KINDS: kinds } = await import("./mailStop");
+    const { speaker } = await import("@/lib/i18n/i18n");
     for (const kind of STOP_KIND_LIST) {
       const row = kinds[kind];
-      for (const words of [row.words, row.label, row.hint]) expect(words.trim().length, `${kind} is missing words`).toBeGreaterThan(0);
+      for (const locale of ["en", "ja"] as const) {
+        expect(speaker(locale).say(row.words).trim().length, `${kind} is missing words in ${locale}`).toBeGreaterThan(0);
+      }
       expect(PREFERENCE_SPECS).toHaveProperty([row.preference]);
     }
   });

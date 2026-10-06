@@ -95,4 +95,29 @@ test.describe("stopping email from its own link", () => {
     await page.goto(`/stop/${token.slice(0, -4)}`);
     await expect(page).toHaveURL(/\/join/);
   });
+
+  /*
+   * THE PAGE READS THE MEMBER'S LANGUAGE (ENJA-12): the email that led here was written in the language the member
+   * saved, and the page it links to answers in it, whatever the browser holding the link asks for. Nobody is signed
+   * in. The way back is a click on the picker, which is read before the account's language.
+   */
+  test("reads in the language the member saved, and the picker still takes a reader back to English", async ({ page }) => {
+    await withPrisma((prisma) => prisma.member.update({ where: { id: memberId }, data: { preferences: { language: "ja" } } }));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/stop/${token}`);
+    const language = page.getByTestId("stop-language");
+    await expect(language).toHaveAttribute("data-locale", "ja");
+    await expect(language).toHaveAttribute("lang", "ja");
+    await expect(page.getByTestId("stop-kind-press")).toHaveText("対局の終了をお知らせするメールを停止");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+
+    await page.getByTestId("stop-kind-press").click();
+    await expect(page.getByTestId("stop-done")).toHaveText("完了しました。対局の終了をお知らせするメールは届かなくなります。");
+    expect(await wanted(memberId)).toEqual({ gameOver: "off", all: true });
+
+    // The way back: the picker, by clicking, and the page answers in English with the same state behind it.
+    await page.getByTestId("language-picker").locator('[data-locale="en"]').click();
+    await expect(page.getByTestId("stop-language")).toHaveAttribute("data-locale", "en");
+    await expect(page.getByTestId("stop-kind-press")).toHaveText("Turn them back on");
+  });
 });

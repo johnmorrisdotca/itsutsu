@@ -6,7 +6,9 @@ import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentEmail, currentMemberRow } from "@/lib/auth/currentSession";
 import { mintInviteCode } from "@/lib/invite/inviteStore";
 import { inviteMail } from "@/lib/mail/inviteMail";
-import { MAIL_REFUSAL_TEXT, SITE_ORIGIN } from "@/lib/mail/mail.constants";
+import { SITE_ORIGIN } from "@/lib/mail/mail.constants";
+import { mailRefusalText } from "@/lib/mail/mailWords";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { sendMail } from "@/lib/mail/sendMail";
 import { ageBandOf } from "@/lib/auth/ageBandStore";
 import { mayEmailInvites } from "@/lib/social/childRules";
@@ -72,8 +74,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ code: invite.code }, { status: 201, headers: NO_STORE });
     }
 
+    // The friend has no account to read a language from: the email is English, and the inviter's own language too
+    // where it is another (`inviteMail.ts`).
+    const say = await currentSpeaker();
     const outcome = await sendMail(
       inviteMail({
+        locale: say.locale,
         to: sendTo,
         // The name they go by here, never their address: this goes to somebody else.
         inviterName: row.name,
@@ -86,7 +92,7 @@ export async function POST(request: Request) {
       {
         code: invite.code,
         emailed: outcome.sent,
-        notice: outcome.sent ? null : MAIL_REFUSAL_TEXT[outcome.refusal],
+        notice: outcome.sent ? null : mailRefusalText(say, outcome.refusal),
       },
       { status: 201, headers: NO_STORE },
     );

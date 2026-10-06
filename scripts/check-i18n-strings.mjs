@@ -90,11 +90,6 @@ export const PENDING_PATHS = [
    * off the list in the change that re-takes the pictures.
    */
   // ENJA-10, pages: home, About, Learn, players, history, My account, feed, inbox, join
-  // ENJA-11, Privacy and Terms (with a native read)
-  { path: "src/app/privacy", ticket: "ENJA-11" },
-  { path: "src/app/terms", ticket: "ENJA-11" },
-  // ENJA-12, emails
-  { path: "src/lib/mail", ticket: "ENJA-12" },
   // ENJA-13, API errors a person can see
   { path: "src/app/api", ticket: "ENJA-13" },
   { path: "src/proxy.ts", ticket: "ENJA-13" },
@@ -157,6 +152,7 @@ export const EXCLUDED_PATHS = [
   ["src/components/backlog", "the features board, as src/app/backlog"],
   ["src/lib/backlog", "the features board, as src/app/backlog"],
   ["src/lib/auth/operatorLog.constants.ts", "the operator's own log of what the operator did"],
+  ["src/lib/mail/inviteRequestOperatorMail.ts", "the email the operator receives when a visitor asks for an invite: it goes to one person, as Admin does, so it is English by decision (everything the visitor reads is a phrase)"],
   ["src/lib/auth/claimRecord.constants.ts", "refusals shown to the operator when claiming a kept record for a member"],
   ["src/components/reports/AdminReports.tsx", "the operator's list of problems members reported"],
   ["src/components/auth/MemberRemoveModal.tsx", "the operator's window for removing a member, opened from the Admin members panel"],
@@ -199,6 +195,8 @@ export const ALLOWED_FILES = new Map([
   ["src/lib/xp/xpBoard.sort.ts", "a sort spec's column labels and notes, which `paging.ts` only checks are not empty; the board's headings are phrases"],
   ["src/lib/xp/xpHistory.sort.ts", "a sort spec's column label, as xpBoard.sort.ts"],
   ["src/lib/points/ladderSql.ts", "a SQL fragment the database runs, not language"],
+  ["src/lib/mail/mailLimits.ts", "the keys the send counter's rows are named by (`request:from:<hash>:day:<day>`): identifiers in the database, never drawn"],
+  ["src/lib/mail/resendTransport.ts", "the provider's HTTP call: an Authorization header, and the status of its answer, which is only ever logged by `sendMail` and never shown to a person"],
   /*
    * THE ENGLISH HALF OF A PAIR. A game's own words are a table of English beside
    * a sibling table of Japanese (`Record<…>` each), so the English row is not an

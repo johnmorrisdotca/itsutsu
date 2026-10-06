@@ -61,6 +61,24 @@ cap goes over it.
   reaches production it needs, as AGENTS.md says, a Neon branch, a DS1 dump,
   and John's word.
 
+### What language an email is in (ENJA-12)
+
+Every email is words in the phrase catalogue (`mail.*`, `src/lib/i18n/phrases.mail.constants.ts`, with its Japanese
+beside a literal back-translation), so it reads in the language its reader saved.
+
+- **A game notice** is written in the language the member saved on their account (`AddressBook.languageOf`, the
+  same `languageFrom` the pages use), and in English where they never chose one. The subject, the body and the
+  footer are all in it, and so is the page the footer's link opens: `/stop/<token>` reads the language of the member
+  the link's token names, whoever is holding it.
+- **An invitation to somebody with no account** has no saved language to read. It is English, and English first
+  with the inviter's own language under it where the inviter reads another (the subject is both, joined with a
+  slash). This is a decision for review: it is recorded in `docs/plans/en-ja-everywhere/ENJA-12-emails.md`.
+- **What a person is told when an email was not sent** (`mailRefusalText`) is said in the language of the request.
+- **The one email that stays English** is the request the operator receives when a visitor asks for an invite
+  (`inviteRequestOperatorMail.ts`): it goes to one person, like Admin.
+- `mailLanguages.coverage.test.ts` renders every email in both languages, from each side of each ending, and fails
+  for a missing phrase or for English left in a Japanese render. Nothing there sends: the test builds strings.
+
 ### What sends, and what doesn't
 
 - **Two flows send.** A member's "Email an invitation" under
