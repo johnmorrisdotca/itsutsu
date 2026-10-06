@@ -289,6 +289,22 @@ rule that stops the gap growing, and the gate that holds it.
   a path that was not on the recorded list. A new path is never the way out of
   a red gate: the text goes through `PHRASES`. The list names folders where it
   can, so renaming a file inside one breaks nothing.
+- **Dates, numbers, lists and counts follow the reader, with no `Intl` and no
+  locale typed in.** The months, weekdays, thousands mark, list joins and date
+  shapes of each language are one table, `src/lib/i18n/format.constants.ts`,
+  and the `Speaker` carries them: `say.day(key, style)` and `say.month(key)`
+  ("6 Oct 2026", "2026年10月6日"), `say.number(n)`, `say.list(items)` ("a, b and
+  c", "a、b、c"), `say.words(n)`. A moment in the reader's own zone is
+  `LocalTime` or, for a bare day after hydration, `readerDay` in `ui/when.ts`.
+  **A count is a phrase pair**, `count.move.one` and `count.move.other` in
+  `phrases.count.constants.ts`, read with `say.count("count.move", n)`: English
+  has a singular, Japanese counts with a counter word (3手, 5人, 2局) and
+  answers both forms alike. The gate also fails on `.toLocale*String(` (any
+  locale, typed or the runtime's), on a plural made by hand (`n === 1 ? "game" :
+  "games"`, `+ "s"`), and on `countText(n)` with no locale; they count against a
+  pending path like a sentence, so a path comes off the list only when it holds
+  none of them. A new language is a row in `FORMATS`, which `format.test.ts`
+  demands of every offered one.
 - **It is a sweep, not a parser.** Prose is told from code by the function
   words it carries (the, a, is, you) and by short capitalised phrases, so it
   can miss a one-word label in lower case and can flag a code word. Do not
