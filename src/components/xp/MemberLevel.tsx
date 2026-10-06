@@ -156,7 +156,7 @@ export function MemberLevel({ xp, imported = null, testId = "member-level" }: Me
               data-testid={`${testId}-next-level`}
             >
               {say.say("xp.toNext", {
-                count: countText(standing.toNext),
+                count: countText(standing.toNext, say.locale),
                 name: `Lv ${next} · ${xpLevelName(next, say.locale)}`,
               })}
             </Link>

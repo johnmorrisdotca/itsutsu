@@ -146,7 +146,7 @@ function Standing({ xp, say }: { xp: number; say: Speaker }) {
                 className="underline underline-offset-4"
                 data-testid="my-xp-next-level"
               >
-                {xpLevelName(next)}
+                {xpLevelName(next, say.locale)}
               </Link>
             </>
           )}

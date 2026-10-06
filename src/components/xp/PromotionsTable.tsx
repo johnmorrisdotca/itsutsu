@@ -86,7 +86,7 @@ export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty
                     {/* One award over several rungs is one line, and it says how many. */}
                     {climbed > 1 ? (
                       <span className="ml-2 text-xs text-muted" data-testid="promotion-several">
-                        {say.say("xp.promotions.several", { count: String(climbed) })}
+                        {say.say("xp.promotions.several", { levels: say.count("count.level", climbed) })}
                       </span>
                     ) : null}
                   </td>

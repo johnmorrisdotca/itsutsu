@@ -5,6 +5,7 @@ import { JA_DRAFTED } from "./dictionaries/ja.drafted.constants";
 import { JA_ALREADY_SAID } from "./dictionaries/ja.site.constants";
 import { placeholdersIn } from "./i18n";
 import { PHRASES, PHRASE_KEYS } from "./i18n.constants";
+import { JA_COPY_TABLES } from "./japaneseCopyTables";
 import { awaitsPerson, japaneseReview } from "./japaneseReview";
 import { renderedSource, withoutComments } from "./rendered";
 
@@ -205,6 +206,39 @@ describe("who has read the Japanese a machine wrote", () => {
       if (row?.review?.by === "person") {
         expect(row.ask, `${key} has been read by a person: take its ask out`).toBeUndefined();
       }
+    }
+  });
+});
+
+describe("who has read the Japanese kept in tables beside its data", () => {
+  /*
+   * A level name or an award is not a phrase, but it is Japanese a machine
+   * wrote and a person would be publishing unread, so each row carries the same
+   * `review` a phrase does (a row without it does not compile) and the gate
+   * holds the rest: a real day, somebody known, a literal reading back, and a
+   * Japanese line that says something. WHEN THIS FAILS for a row you just
+   * added: run `japanese-reviewer` over it and stamp the row; a table of copy
+   * that sits beside its data adds itself to `JA_COPY_TABLES`.
+   */
+  for (const table of JA_COPY_TABLES) {
+    it(`${table.table}: every row is read, dated and read back`, () => {
+      const rows = table.rows();
+      expect(rows.length, `${table.table} is empty`).toBeGreaterThan(0);
+      for (const row of rows) {
+        const label = row.english.slice(0, 40);
+        expect(["agent", "person"], `${label} was read by somebody unknown`).toContain(row.review?.by);
+        expect(row.review?.on, `${label} has no real date`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(Number.isNaN(Date.parse(row.review?.on ?? "")), `${label}'s date does not exist`).toBe(false);
+        expect(row.back.trim(), `${label} has no back-translation`).not.toBe("");
+        expect(row.japanese.replace(/[。\s/]/g, ""), `${label} has no Japanese`).not.toBe("");
+      }
+    });
+  }
+
+  it("puts every table on the review sheet", () => {
+    const sheet = japaneseReview();
+    for (const table of JA_COPY_TABLES) {
+      expect(sheet, `${table.table} is missing from the review sheet`).toContain(table.table);
     }
   });
 });

@@ -46,8 +46,8 @@ export function XpBoardFoot({
         {board.total === 0
           ? say.say("xp.board.nobody")
           : say.say("xp.board.count", {
-              shown: countText(shownTo - Math.min(from, shownTo)),
-              total: countText(board.total),
+              shown: countText(shownTo - Math.min(from, shownTo), say.locale),
+              total: countText(board.total, say.locale),
             })}
       </p>
       {board.next === null ? null : (
@@ -56,7 +56,7 @@ export function XpBoardFoot({
           className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
           data-testid="xp-board-next"
         >
-          {say.say("xp.board.next", { count: countText(Math.min(board.items.length, board.total - shownTo)) })}
+          {say.say("xp.board.next", { count: countText(Math.min(board.items.length, board.total - shownTo), say.locale) })}
         </Link>
       )}
       {from === 0 ? null : (

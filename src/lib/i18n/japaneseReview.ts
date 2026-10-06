@@ -2,6 +2,7 @@ import { JA_DRAFTED, type DraftedPhrase } from "./dictionaries/ja.drafted.consta
 import { JA_ALREADY_SAID } from "./dictionaries/ja.site.constants";
 import { PHRASES, PHRASE_KEYS, type PhraseKey } from "./i18n.constants";
 import { placeholdersIn } from "./i18n";
+import { JA_COPY_TABLES } from "./japaneseCopyTables";
 
 /**
  * The review sheet, built from the dictionaries themselves.
@@ -149,6 +150,43 @@ export function reviewCounts(): { total: number; drafted: number; agent: number;
   return counts;
 }
 
+/**
+ * The Japanese that sits in a table beside its data (`japaneseCopyTables.ts`),
+ * as a section of the sheet: each table with who has read how many of its rows,
+ * and every row with the English it answers and a literal reading back. A row
+ * with no `review` reads "Drafted, unread" here, as a phrase does.
+ */
+function copyTableSection(): string[] {
+  const lines: string[] = [
+    `## 5. Written by a machine and kept in tables — please check these too`,
+    "",
+    "These are not phrases: each is a table of copy beside the data it describes,",
+    "in both languages, so a row with no Japanese is a compile error. They are read",
+    "and stamped the same way as the phrases above.",
+    "",
+  ];
+  const body: string[] = [];
+  for (const table of JA_COPY_TABLES) {
+    const rows = table.rows();
+    const read = rows.filter((row) => row.review !== undefined);
+    lines.push(
+      `- **${cell(table.table)}**: ${rows.length} rows; read by the reviewer agent: ${read.filter((row) => row.review.by === "agent").length}, by a person: ${read.filter((row) => row.review.by === "person").length}, unread: ${rows.length - read.length}. A reader meets it at: ${cell(table.where)}.`,
+    );
+    for (const row of rows) {
+      const state = row.review === undefined ? "Drafted, unread" : `${row.review.by === "agent" ? "Agent" : "Person"} ${row.review.on}`;
+      body.push(`| ${cell(table.table)} | ${cell(row.english)} | **${cell(row.japanese)}** | ${cell(row.back)} | ${state} |  |`);
+    }
+  }
+  lines.push(
+    "",
+    "| Table | English on the site | Japanese | What it says back | Review | Correction |",
+    "| --- | --- | --- | --- | --- | --- |",
+    ...body,
+    "",
+  );
+  return lines;
+}
+
 export function japaneseReview(): string {
   const drafted = inReadingOrder(PHRASE_KEYS.filter((key) => JA_DRAFTED[key] !== undefined));
   const already = inReadingOrder(PHRASE_KEYS.filter((key) => JA_ALREADY_SAID[key] !== undefined));
@@ -268,6 +306,7 @@ export function japaneseReview(): string {
     '"Black won 黒勝" — and a Japanese reader is simply shown the half that was',
     "always theirs.",
     "",
+    ...copyTableSection(),
     "## What is still English, and why",
     "",
     "Each game's tagline, origin and rule bullets — the prose across the 39 rules",

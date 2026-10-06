@@ -76,7 +76,7 @@ export async function YourXpStanding({
   return (
     <p className="text-sm" data-testid="your-xp" data-rank={rank ?? undefined}>
       {weave(say.say("xp.standing.have"), {
-        total: countText(total),
+        total: countText(total, say.locale),
         badge: <LevelName level={level} linkable={false} />,
         name: (
           <Link href={levelPath(level)} className="underline underline-offset-4">
@@ -92,8 +92,8 @@ export async function YourXpStanding({
         <span className="text-muted">
           {" "}
           {say.say(who === DIRECTORY_WHO.people ? "xp.standing.rankPeople" : "xp.standing.rankBoard", {
-            rank: countText(rank),
-            total: countText(board.total),
+            rank: countText(rank, say.locale),
+            total: countText(board.total, say.locale),
           })}
         </span>
       )}

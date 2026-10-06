@@ -79,7 +79,7 @@ function slot(name: string, entry: FeedActivityEntry, say: Speaker): ReactNode {
     case "name":
       return entry.kind === FEED_KINDS.level ? (
         <Link href={levelPath(entry.level)} className="underline-offset-2 hover:underline" data-testid="feed-level">
-          {xpLevelName(entry.level)}
+          {xpLevelName(entry.level, say.locale)}
         </Link>
       ) : null;
     case "count":

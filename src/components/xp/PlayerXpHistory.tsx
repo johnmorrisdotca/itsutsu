@@ -107,7 +107,7 @@ export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHi
                         {weave(say.say("xp.history.dayTotal"), {
                           total: (
                             <span className="font-mono text-moss" data-testid="xp-history-day-total">
-                              +{countText(day.total)}
+                              +{countText(day.total, say.locale)}
                             </span>
                           ),
                         })}
@@ -146,9 +146,7 @@ export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHi
 
       {history.skipped.unknownType > 0 ? (
         <p className="text-xs text-muted" data-testid="xp-history-skipped">
-          {say.say(history.skipped.unknownType === 1 ? "xp.history.skipped.one" : "xp.history.skipped.other", {
-            count: countText(history.skipped.unknownType),
-          })}
+          {say.count("xp.history.skipped", history.skipped.unknownType)}
         </p>
       ) : null}
     </section>
@@ -189,10 +187,10 @@ function Award({ entry, whose, say }: { entry: XpHistoryEntry; whose: AwardWhose
         <AwardAbout about={entry.about} whose={whose} say={say} />
       </td>
       <td className={`${CELL} whitespace-nowrap align-top`} data-testid="xp-history-points">
-        +{countText(entry.points)}
+        +{countText(entry.points, say.locale)}
       </td>
       <td className={`${CELL} whitespace-nowrap align-top text-muted`} data-testid="xp-history-running">
-        {countText(entry.runningTotal)}
+        {countText(entry.runningTotal, say.locale)}
       </td>
     </tr>
   );

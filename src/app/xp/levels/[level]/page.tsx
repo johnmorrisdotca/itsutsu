@@ -144,7 +144,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
         <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm" data-testid="level-costs">
           <div>
             <dt className="text-xs text-muted uppercase">{say.say("xp.level.toReachIt")}</dt>
-            <dd className="font-mono tabular-nums">{say.say("xp.amount", { count: countText(rung.toReach) })}</dd>
+            <dd className="font-mono tabular-nums">{say.say("xp.amount", { count: countText(rung.toReach, say.locale) })}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted uppercase">
@@ -153,7 +153,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
             {/* Nobody climbed to level 1, so there is no figure — an em dash, not
                 a nought, which would read as a rung that was free. */}
             <dd className="font-mono tabular-nums">
-              {rung.step === 0 ? "—" : say.say("xp.amount", { count: countText(rung.step) })}
+              {rung.step === 0 ? "—" : say.say("xp.amount", { count: countText(rung.step, say.locale) })}
             </dd>
           </div>
           <div>
@@ -164,7 +164,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
               {range.to === null ? (
                 <span className="text-muted">{say.say("xp.level.nothingAbove")}</span>
               ) : (
-                say.say("xp.amount", { count: countText(range.to - range.from) })
+                say.say("xp.amount", { count: countText(range.to - range.from, say.locale) })
               )}
             </dd>
           </div>
@@ -172,8 +172,8 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
 
         <p className="text-sm text-muted">
           {range.to === null
-            ? say.say("xp.level.rangeOpen", { from: countText(range.from) })
-            : say.say("xp.level.rangeClosed", { from: countText(range.from), to: countText(range.to - 1) })}{" "}
+            ? say.say("xp.level.rangeOpen", { from: countText(range.from, say.locale) })
+            : say.say("xp.level.rangeClosed", { from: countText(range.from, say.locale), to: countText(range.to - 1, say.locale) })}{" "}
           {weave(say.say("xp.level.where"), {
             ladder: (
               <Link href="/xp/levels" className="underline underline-offset-4" data-testid="to-ladder">
@@ -338,7 +338,7 @@ function WhoIsHere({
       {roll.more ? (
         <p className="text-xs text-muted" data-testid="level-more">
           {weave(say.say("xp.level.more"), {
-            count: countText(LEVEL_ROLL),
+            count: countText(LEVEL_ROLL, say.locale),
             leaderboard: (
               <Link href="/xp" className="underline underline-offset-4">
                 {say.say("xp.level.whereBoard")}

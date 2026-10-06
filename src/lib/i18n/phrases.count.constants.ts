@@ -27,6 +27,8 @@ export const PHRASES_COUNT = {
   "count.puzzle.other": "{count} puzzles",
   "count.step.one": "{count} step",
   "count.step.other": "{count} steps",
+  "count.level.one": "{count} level",
+  "count.level.other": "{count} levels",
   "count.pair.one": "{count} pair",
   "count.pair.other": "{count} pairs",
 } as const;

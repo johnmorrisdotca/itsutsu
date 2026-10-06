@@ -149,7 +149,7 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
               <Paired en={say.say("xp.promotions.title")} kanji="昇級" />
             </Link>
             <Link href="/xp/levels" className="text-sm underline underline-offset-4" data-testid="to-ladder">
-              <Paired en={say.say("xp.levels.titleCount", { count: countText(XP_LEVELS) })} kanji="段位" />
+              <Paired en={say.say("xp.levels.titleCount", { levels: say.count("count.level", XP_LEVELS) })} kanji="段位" />
             </Link>
           </div>
         }
@@ -187,7 +187,7 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           {narrowed ? (
             /* "Every page a link lands on says what it was narrowed to, and lets it be taken off." */
             <p className="text-xs text-muted" data-testid="xp-narrowed">
-              {say.say("xp.board.narrowed", { who: say.say(XP_WHO_SAID[who]), count: countText(board.total) })}{" "}
+              {say.say("xp.board.narrowed", { who: say.say(XP_WHO_SAID[who]), count: countText(board.total, say.locale) })}{" "}
               <Link href={xpWhoHref("/xp", query, DIRECTORY_WHO.everyone)} className="underline underline-offset-4">
                 {say.say("xp.showEveryone")}
               </Link>

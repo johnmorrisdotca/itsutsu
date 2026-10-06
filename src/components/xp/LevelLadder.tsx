@@ -112,11 +112,11 @@ function Rung({ rung, here, say }: { rung: LadderRung; here: boolean; say: Speak
           )}
         </Link>
       </td>
-      <td className={CELL}>{countText(rung.toReach)}</td>
+      <td className={CELL}>{countText(rung.toReach, say.locale)}</td>
       <td className={`${CELL} text-muted`}>
         {/* Nobody climbed to level 1, so there is no figure for it. An em dash
             rather than a nought, which would read as a rung that was free. */}
-        {rung.step === 0 ? "—" : countText(rung.step)}
+        {rung.step === 0 ? "—" : countText(rung.step, say.locale)}
       </td>
       <td className="py-1.5 pr-3 text-sm text-ink-soft">{rung.note}</td>
     </tr>

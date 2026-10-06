@@ -18,7 +18,7 @@ export function ImportedXpNote({ note, testId = "xp-imported-note" }: { note: Im
       {before}
       {note.games === null || after === undefined ? null : (
         <>
-          <GameCount count={countText(note.games)} here={false} testId={`${testId}-games`} />
+          <GameCount count={countText(note.games, note.locale)} here={false} testId={`${testId}-games`} />
           {after}
         </>
       )}

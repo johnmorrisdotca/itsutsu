@@ -948,6 +948,8 @@ const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "count.puzzle.other": { text: "{count}問", back: "{count} puzzles.", review: AGENT_READ },
   "count.step.one": { text: "{count}手順", back: "{count} step.", review: AGENT_READ },
   "count.step.other": { text: "{count}手順", back: "{count} steps.", review: AGENT_READ },
+  "count.level.one": { text: "{count}レベル", back: "{count} level.", review: AGENT_READ },
+  "count.level.other": { text: "{count}レベル", back: "{count} levels.", review: AGENT_READ },
   "count.pair.one": { text: "{count}組", back: "{count} pair.", review: AGENT_READ },
   "count.pair.other": { text: "{count}組", back: "{count} pairs.", review: AGENT_READ },
 };

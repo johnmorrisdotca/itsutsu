@@ -12,7 +12,6 @@ import { PromotionsTable } from "@/components/xp/PromotionsTable";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { weave } from "@/lib/i18n/weave";
-import { countText } from "@/lib/rating/figures";
 import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
 import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
 import { importedSitesSaid } from "@/lib/xp/importedNote";
@@ -98,7 +97,7 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
               <Paired en={say.say("xp.board.metaTitle")} kanji="経験値" />
             </Link>
             <Link href="/xp/levels" className="text-sm underline underline-offset-4" data-testid="to-ladder">
-              <Paired en={say.say("xp.levels.titleCount", { count: countText(XP_LEVELS) })} kanji="段位" />
+              <Paired en={say.say("xp.levels.titleCount", { levels: say.count("count.level", XP_LEVELS) })} kanji="段位" />
             </Link>
           </div>
         }

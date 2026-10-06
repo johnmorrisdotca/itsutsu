@@ -79,8 +79,8 @@ export default async function LevelsPage() {
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
         <p className="text-sm text-muted">
           {weave(say.say("xp.levels.intro"), {
-            count: countText(XP_LEVELS),
-            xp: countText(xpForLevel(XP_LEVELS)),
+            count: countText(XP_LEVELS, say.locale),
+            xp: countText(xpForLevel(XP_LEVELS), say.locale),
             top: (
               <Link href={levelPath(XP_LEVELS)} className="underline underline-offset-4">
                 {xpLevelName(XP_LEVELS, say.locale)}
@@ -145,7 +145,6 @@ function YourRung({
   toNext,
   say,
 }: {
-  say: Speaker;
   level: number;
   xp: number;
   into: number;
@@ -167,7 +166,7 @@ function YourRung({
               {say.say("xp.standing.levelName", { level: String(level), name: xpLevelName(level, say.locale) })}
             </Link>
           ),
-          xp: countText(xp),
+          xp: countText(xp, say.locale),
           rest: top ? (
             <span className="text-muted">
               {say.say("xp.levels.topOfLadder", { top: xpLevelName(XP_LEVELS, say.locale) })}
@@ -175,7 +174,7 @@ function YourRung({
           ) : (
             <span className="text-muted">
               {weave(say.say("xp.levels.moreReaches"), {
-                count: countText(toNext),
+                count: countText(toNext, say.locale),
                 next: (
                   <Link href={levelPath(level + 1)} className="underline underline-offset-4">
                     {xpLevelName(level + 1, say.locale)}
@@ -192,7 +191,7 @@ function YourRung({
         <div
           className="h-1.5 w-full overflow-hidden rounded-full bg-rule"
           role="img"
-          aria-label={say.say("xp.levels.progress", { into: countText(into), span: countText(span), level: String(level) })}
+          aria-label={say.say("xp.levels.progress", { into: countText(into, say.locale), span: countText(span, say.locale), level: String(level) })}
         >
           <div
             className="h-full rounded-full bg-moss"

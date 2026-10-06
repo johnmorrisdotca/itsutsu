@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 
+import type { Locale } from "@/lib/i18n/i18n.types";
 import { countText } from "@/lib/rating/figures";
 
 import { IMPORTED_XP_TYPES } from "./importedXp.constants";
@@ -116,13 +117,13 @@ export function xpGapsFor(totals: readonly number[], above: number | null): (num
 }
 
 /** A gain as the board prints it: "+45", "0", or a dash for a member the read did not cover. */
-export function xpGainText(points: number | undefined): string {
+export function xpGainText(points: number | undefined, locale: Locale): string {
   if (points === undefined) return "—";
-  return points > 0 ? `+${countText(points)}` : "0";
+  return points > 0 ? `+${countText(points, locale)}` : "0";
 }
 
 /** A gap as the board prints it: blank at the top, a dash for a row ahead of the one above. */
-export function xpBehindText(gap: number | null): string {
+export function xpBehindText(gap: number | null, locale: Locale): string {
   if (gap === null) return "";
-  return gap < 0 ? "—" : countText(gap);
+  return gap < 0 ? "—" : countText(gap, locale);
 }

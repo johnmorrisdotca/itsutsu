@@ -39,7 +39,7 @@ export async function MemberStrip() {
       <StripGames memberId={member.id} />
       {level === null ? null : (
         <Link href={levelPath(level)} className="whitespace-nowrap underline-offset-4 hover:text-ink hover:underline" data-testid="strip-level">
-          Lv {level} · {xpLevelName(level)}
+          Lv {level} · {xpLevelName(level, say.locale)}
         </Link>
       )}
       <Link href="/xp" className="whitespace-nowrap underline-offset-4 hover:text-ink hover:underline" data-testid="strip-xp">

@@ -304,22 +304,22 @@ export function Leaderboard({
                   <td className="py-1.5 pr-3">
                     <LevelName level={xpLevelFor(row.xp)} />
                   </td>
-                  <td className={CELL} data-testid="xp-board-xp">{countText(row.xp)}</td>
+                  <td className={CELL} data-testid="xp-board-xp">{countText(row.xp, say.locale)}</td>
                   <td className={`${CELL} text-muted`} data-testid="xp-board-ip" data-ip={ip.get(row.id) ?? 0}>
-                    {countText(ip.get(row.id) ?? 0)}
+                    {countText(ip.get(row.id) ?? 0, say.locale)}
                   </td>
                   <td className={`${CELL} text-moss`} data-testid="xp-board-today">
-                    {xpGainText(gains.get(row.id)?.today)}
+                    {xpGainText(gains.get(row.id)?.today, say.locale)}
                   </td>
                   <td className={`${CELL} text-moss`} data-testid="xp-board-week">
-                    {xpGainText(gains.get(row.id)?.week)}
+                    {xpGainText(gains.get(row.id)?.week, say.locale)}
                   </td>
                   <td
                     className={`${CELL} text-muted`}
                     data-testid="xp-board-behind"
                     title={(gaps[index] ?? 0) < 0 ? say.say("xp.col.aheadTitle") : undefined}
                   >
-                    {xpBehindText(gaps[index])}
+                    {xpBehindText(gaps[index], say.locale)}
                   </td>
                   <td className={`${CELL} text-muted`}>
                     {/*

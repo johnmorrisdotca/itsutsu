@@ -106,15 +106,15 @@ describe("how far each row trails the row above", () => {
 
 describe("as the board prints them", () => {
   it("prints a gain with its sign, nought as nought, and an unmeasured one as a dash", () => {
-    expect(xpGainText(1250)).toBe("+1,250");
-    expect(xpGainText(0)).toBe("0");
-    expect(xpGainText(undefined)).toBe("—");
+    expect(xpGainText(1250, "en")).toBe("+1,250");
+    expect(xpGainText(0, "en")).toBe("0");
+    expect(xpGainText(undefined, "en")).toBe("—");
   });
 
   it("prints the top row's gap as nothing and a row ahead as a dash", () => {
-    expect(xpBehindText(null)).toBe("");
-    expect(xpBehindText(0)).toBe("0");
-    expect(xpBehindText(2500)).toBe("2,500");
-    expect(xpBehindText(-90)).toBe("—");
+    expect(xpBehindText(null, "en")).toBe("");
+    expect(xpBehindText(0, "en")).toBe("0");
+    expect(xpBehindText(2500, "en")).toBe("2,500");
+    expect(xpBehindText(-90, "en")).toBe("—");
   });
 });
