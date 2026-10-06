@@ -48,14 +48,12 @@ jobs:
       # still five legs, and five legs plus fourteen browser shards is nineteen
       # jobs, inside GitHub's twenty at once on a free account.
       #
-      # `i18n` is the sixth (2026-10-06, ENJA-02): the gate on English typed
-      # outside the phrase table. It reads source files and nothing else, about
-      # a second of work, but it is a leg of its own so that its verdict is its
-      # own and no `&&` joins it to another check. Six legs and fourteen shards
-      # are twenty jobs, which is the cap and not past it; the deploy job waits
-      # on the lot, so nothing here is queued behind it.
+      # The gate on English typed outside the phrase table (2026-10-06) is a
+      # step of `static`, not a leg: it reads source files for about a second,
+      # and a leg of its own would pay a whole runner's set-up on every push
+      # and fill the twenty-job cap exactly. A step keeps its own verdict.
       matrix:
-        check: [static, unit-1, unit-2, unit-3, build, i18n]
+        check: [static, unit-1, unit-2, unit-3, build]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -92,7 +90,7 @@ jobs:
       # English typed outside the phrase table, with the pending list that only
       # shrinks. See AGENTS.md, "Every Word Goes Through The Phrase Table".
       - name: English outside the phrase table
-        if: matrix.check == 'i18n'
+        if: matrix.check == 'static'
         run: pnpm i18n:check
 
       - name: Audit production dependencies

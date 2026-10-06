@@ -270,7 +270,7 @@ rule that stops the gap growing, and the gate that holds it.
   prose attribute (`title`, `aria-label`, `placeholder`, `alt`, `label`), and on any
   string literal that reads as English: a ternary's branches, an object's
   values, a list of rule bullets, an API's refusal. It runs in `quality:check`,
-  as its own lane in `scripts/preflight.mjs` and as the `i18n` leg of `verify`,
+  as its own lane in `scripts/preflight.mjs` and as a step of the `static` leg of `verify`,
   and it reads files only, so it takes about a second and the same on every
   machine. What it does not count is a thrown `Error`, a console line, a path,
   a class name, a test and the phrase catalogue itself.
@@ -1057,12 +1057,12 @@ below before trusting it — these numbers move):
    requests only now. Before adding a workflow, count the jobs one push starts.
 3. **Keep the slowest shard short.** When it passes about eight minutes, add
    shards — they are free on this public repository — or rebalance the files.
-   The one ceiling is GitHub's twenty concurrent jobs on a free account: six
-   checks and fourteen shards are twenty, which is the ceiling itself (the
-   deploy waits for them rather than running beside them), so an overlapping
-   pull-request run queues for a while and costs nothing. Another leg or shard
-   goes past it; fold a check into an existing leg rather than adding a
-   twenty-first job.
+   The one ceiling is GitHub's twenty concurrent jobs on a free account: five
+   checks and fourteen shards are nineteen (the deploy waits for them rather
+   than running beside them), so an overlapping pull-request run queues for a
+   while and costs nothing. A quick check is a step of an existing leg, as
+   `pnpm i18n:check` is of `static`, never a leg of its own: a leg pays a
+   runner's whole set-up on every push.
 4. **Shards are balanced by time, not by count.** `e2e.yml` gives each shard
    the files `scripts/e2e-shard.mjs` deals it from `e2e/shard-times.json`
    (heaviest first, each to the lightest shard). Refresh the times from a run
