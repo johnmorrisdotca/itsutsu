@@ -5,6 +5,9 @@ import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { freshPuzzleSeed, ready } from "./support";
 
+/** What the replay says at a position: the start is the scramble, each later one its move (CUBE_COPY.replayStart). */
+const atLabel = (at: number, last: number) => (at === 0 ? "The scramble" : `Move ${at} of ${last}`);
+
 /**
  * THE CUBE'S MOVES, said and listed and turned. A kept solve's replay names the move it stands at (its code in large
  * type, what it turns in words), lists the moves as buttons that follow it and take it anywhere, and turns the layers as
@@ -63,7 +66,7 @@ test.describe("a kept cube's replay says and lists its moves", () => {
 
     await expect(tokens(page)).toHaveCount(last);
     // It opens at the end, as the game finished.
-    await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${last} of ${last}`);
+    await expect(page.getByTestId("cube-replay-at")).toHaveText(atLabel(last, last));
     await expect(page.getByTestId("cube-replay-turn")).toHaveText(movesNotation(stepOf(last), 2));
     const first = moveName(movesNotation([stepOf(last).at(-1)!], 2));
     await expect(page.getByTestId("cube-replay-says")).toContainText(first!);
@@ -81,7 +84,7 @@ test.describe("a kept cube's replay says and lists its moves", () => {
     // A press on a move takes the replay there: the cube is the cube after it, its code and words are the move's.
     const mid = Math.ceil(last / 2);
     await tokens(page).nth(mid - 1).click();
-    await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${mid} of ${last}`);
+    await expect(page.getByTestId("cube-replay-at")).toHaveText(atLabel(mid, last));
     await settled(page);
     await expect(page.locator("[data-kyuubu]")).toHaveAttribute("data-state", stateAt(mid));
     await expect(page.getByTestId("cube-replay-turn")).toHaveText(movesNotation(stepOf(mid), 2));
@@ -89,13 +92,13 @@ test.describe("a kept cube's replay says and lists its moves", () => {
 
     // The keys: a move on and back, Home and End, with the focus going along.
     await page.keyboard.press("ArrowRight");
-    await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${mid + 1} of ${last}`);
+    await expect(page.getByTestId("cube-replay-at")).toHaveText(atLabel(mid + 1, last));
     await expect(tokens(page).nth(mid)).toBeFocused();
     await page.keyboard.press("ArrowLeft");
     await page.keyboard.press("ArrowLeft");
-    await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${mid - 1} of ${last}`);
+    await expect(page.getByTestId("cube-replay-at")).toHaveText(atLabel(mid - 1, last));
     await page.keyboard.press("End");
-    await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${last} of ${last}`);
+    await expect(page.getByTestId("cube-replay-at")).toHaveText(atLabel(last, last));
     await page.keyboard.press("Home");
     await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move 1 of ${last}`);
     await settled(page);
@@ -126,7 +129,7 @@ test.describe("a kept cube's replay says and lists its moves", () => {
 
     // Back by three: the cube goes through each cube between, last move first.
     await scrubber.fill(String(last - 3));
-    await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${last - 3} of ${last}`);
+    await expect(page.getByTestId("cube-replay-at")).toHaveText(atLabel(last - 3, last));
     await settled(page);
     await expect(page.locator("[data-kyuubu]")).toHaveAttribute("data-state", stateAt(last - 3));
     const back = await seen();
@@ -155,7 +158,7 @@ test.describe("a kept cube's replay says and lists its moves", () => {
     turns.forEach((move, index) => countsAsMove(move) && ends.push(index + 1));
     const last = ends.length - 1;
     await page.getByRole("button", { name: "One move back" }).click();
-    await expect(page.getByTestId("cube-replay-at")).toHaveText(`Move ${last - 1} of ${last}`);
+    await expect(page.getByTestId("cube-replay-at")).toHaveText(atLabel(last - 1, last));
     await settled(page);
     await expect(page.locator("[data-kyuubu]")).toHaveAttribute("data-state", turnAll(puzzle.givens, 2, turns.slice(0, ends[last - 1])));
     await expect(marked(page)).toHaveAttribute("data-index", String(last - 2));
