@@ -6,7 +6,7 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 179. Drafted and unread: 0. Read by the reviewer agent: 179.
+Phrases: 196. Drafted and unread: 0. Read by the reviewer agent: 196.
 Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 2
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
@@ -31,7 +31,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | 39 rules pages — one per game | Inspired by {name}. The name belongs to its owner; this is our own version of the rules. | **{name}に着想を得た版です。名称は権利者に帰属し、ここに記すのは当サイト独自の規則です。** | This is a version inspired by {name}. The name belongs to its rights holder; what is set down here is this site's own rules. | Agent 2026-10-06, native read wanted | A trademark notice (the name belongs to its owner): a native read is recommended. |  |
 | The feed, /feed — its heading, tabs, every line of activity and its empty states | Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only bots and members who have said they are 18 or over are named. | **最近ここで終わった対局、新しく加わったゲーム、そしてサイトのニュース（初めての出来事、新しい首位、最速記録）です。名前を表示するのは、コンピュータと18歳以上と答えた会員だけです。** | Games that ended here recently, games newly added, and the site's news (first events, new leaders, fastest records). Names are shown only for computers and members who answered that they are 18 or over. | Agent 2026-10-06, native read wanted | Says who is named by age (18 or over): about children, so a native read is recommended. |  |
 
-## 2. Written by a machine — please check these (176)
+## 2. Written by a machine — please check these (193)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -81,7 +81,6 @@ consent, brands, legal): the agent's pass is not enough for it.
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Dismiss | **閉じる** | Close. | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Includes {xp} XP for {games} games played on {sites}. | **{sites}で対局した{games}局の分として、{xp}経験値を含みます。** | Includes {xp} experience points as credit for the {games} games played on {sites}. | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Includes {xp} XP credited for games played on other sites. | **他のサイトで対局した分として、{xp}経験値を含みます。** | Includes {xp} experience points as credit for games played on other sites. | Agent 2026-10-06 |  |
-| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | {list} and {last} | **{list}と{last}** | {list} and {last} | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Level | **レベル** | Level. | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Level up | **昇級** | Promotion — going up a grade. | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Next level: {name} | **次のレベル：{name}** | Next level: {name} | Agent 2026-10-06 |  |
@@ -98,8 +97,8 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The games index, /games — under every game and every family, in all three views | Most crowns | **最多首位** | Most first places. | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | Crowns shared by {count} players | **{count}人が首位を分け合っています** | {count} players share the first places. | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | The rated games they drew on this ladder | **この順位表で引き分けたレーティング対局** | The rated games drawn on this ladder. | Agent 2026-10-06 |  |
-| The games index, /games — under every game and every family, in all three views | {count} games played across the family | **この系統で{count}局** | {count} games in this family. | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | {count} game played across the family | **この系統で{count}局** | {count} games in this family. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | {count} games played across the family | **この系統で{count}局** | {count} games in this family. | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | {played} of {total} tried here | **{total}種目中{played}種目で対局あり** | Played in {played} of its {total} games. | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | Join to see who → | **参加すると、誰なのかわかります →** | Join, and you will see who it is → | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | Last played {count} days ago | **最終対局：{count}日前** | Last game: {count} days ago. | Agent 2026-10-06 |  |
@@ -111,8 +110,8 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The games index, /games — under every game and every family, in all three views | Nobody has played this yet | **まだ誰も対局していません** | Nobody has played yet. | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | No rated games yet | **レーティング対局はまだありません** | No rated games yet. | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | Play → | **対局する →** | Play → | Agent 2026-10-06 |  |
-| The games index, /games — under every game and every family, in all three views | {count} games played | **対局数 {count}** | Games played: {count} | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | {count} game played | **対局数 {count}** | Games played: {count} | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | {count} games played | **対局数 {count}** | Games played: {count} | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | against bots | **対コンピュータ** | Against the computer. | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | among people | **対人** | Against people. | Agent 2026-10-06 |  |
 | The games index, /games — under every game and every family, in all three views | Leaderboard → | **順位表 →** | Standings → | Agent 2026-10-06 |  |
@@ -122,6 +121,8 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The games index, /games — under every game and every family, in all three views | The rated games they won on this ladder | **この順位表で勝ったレーティング対局** | The rated games won on this ladder. | Agent 2026-10-06 |  |
 | Finished games of checkers and draughts — beside Copy as text, in the move list under the replay | Download as PDN | **PDN形式でダウンロード** | Download in PDN format. | Agent 2026-10-06 |  |
 | Finished games of go, Othello, gomoku, renju and Hex — beside Copy as text, in the move list under the replay | Download as SGF | **SGF形式でダウンロード** | Download in SGF format. | Agent 2026-10-06 |  |
+| Finished games of go, Othello, gomoku, renju and Hex — beside Copy as text, in the move list under the replay | Finished in {when} | **{when}に終了** | Finished in {when}. | Agent 2026-10-06 |  |
+| Finished games of go, Othello, gomoku, renju and Hex — beside Copy as text, in the move list under the replay | the week of {date} | **{date}の週** | The week of {date}. | Agent 2026-10-06 |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | against {name} | **{name}との対戦** | Games against {name}. | Agent 2026-10-06 |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Every game between {one} and {other} has been a draw | **{one}と{other}の対局はすべて引き分け** | Every game between {one} and {other} has been a draw. | Agent 2026-10-06 |  |
 | Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Every game between you and {name} has been a draw | **{name}との対局はすべて引き分け** | Every game with {name} has been a draw. | Agent 2026-10-06 |  |
@@ -211,6 +212,22 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} earned {xp} | **{who}が{xp}を獲得しました** | {who} earned {xp}. | Agent 2026-10-06 |  |
 | The feed, /feed — its heading, tabs, every line of activity and its empty states | You earned {xp} | **{xp}を獲得しました** | You earned {xp}. | Agent 2026-10-06 |  |
 | The feed, /feed — its heading, tabs, every line of activity and its empty states | Yesterday | **昨日** | Yesterday. | Agent 2026-10-06 |  |
+| — — — | {count} game | **{count}ゲーム** | {count} game. | Agent 2026-10-06 |  |
+| — — — | {count} games | **{count}ゲーム** | {count} games. | Agent 2026-10-06 |  |
+| — — — | {count} game | **{count}局** | {count} game. | Agent 2026-10-06 |  |
+| — — — | {count} games | **{count}局** | {count} games. | Agent 2026-10-06 |  |
+| — — — | {count} move | **{count}手** | {count} move. | Agent 2026-10-06 |  |
+| — — — | {count} moves | **{count}手** | {count} moves. | Agent 2026-10-06 |  |
+| — — — | {count} offer | **{count}件の対局申し込み** | {count} request to play a game. | Agent 2026-10-06 |  |
+| — — — | {count} offers | **{count}件の対局申し込み** | {count} requests to play a game. | Agent 2026-10-06 |  |
+| — — — | {count} pair | **{count}組** | {count} pair. | Agent 2026-10-06 |  |
+| — — — | {count} pairs | **{count}組** | {count} pairs. | Agent 2026-10-06 |  |
+| — — — | {count} player | **{count}人** | {count} person. | Agent 2026-10-06 |  |
+| — — — | {count} players | **{count}人** | {count} people. | Agent 2026-10-06 |  |
+| — — — | {count} puzzle | **{count}問** | {count} puzzle. | Agent 2026-10-06 |  |
+| — — — | {count} puzzles | **{count}問** | {count} puzzles. | Agent 2026-10-06 |  |
+| — — — | {count} step | **{count}手順** | {count} step. | Agent 2026-10-06 |  |
+| — — — | {count} steps | **{count}手順** | {count} steps. | Agent 2026-10-06 |  |
 
 `{game}`, `{name}`, `{names}` and `{country}` are filled in when the page is
 drawn — a game's name, a country. They have to survive a correction exactly as
