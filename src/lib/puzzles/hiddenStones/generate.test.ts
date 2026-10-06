@@ -4,6 +4,7 @@ import { PUZZLE_SPECS } from "../puzzles.constants";
 import { decodeRegions, decodeStones, encodeRegions, encodeStones } from "./code";
 import { generateHiddenStones } from "./generate";
 import { applyReasoning, countSolutions, guessDepth } from "./solve";
+import { cpuMs } from "@/lib/testing/cpuTime";
 
 /** Two grids as they were made before 12×12 was climbed: sizes up to ten must go on making exactly these. */
 const PINNED_7_EASY = "ccbbbbaccbcbbbccccbddecccbddeeecdddfeeddggffggggg";
@@ -51,10 +52,11 @@ describe("generating Hidden Stones", () => {
   });
 
   it("makes a 10×10 in the time a browser can spare", () => {
-    const started = performance.now();
-    for (const seed of [21, 22, 23]) generateHiddenStones(10, "hard", seed);
-    // Four seconds: the gate runs its five lanes side by side, and this measured 2.2 s under that load.
-    expect((performance.now() - started) / 3).toBeLessThan(4000);
+    // The CPU the work used, not the wall clock, which a busy machine stretches (`cpuMs`). Four seconds a puzzle, as it was.
+    const used = cpuMs(() => {
+      for (const seed of [21, 22, 23]) generateHiddenStones(10, "hard", seed);
+    });
+    expect(used / 3).toBeLessThan(4000);
   });
 
   it("has no hard 4×4 to make: two answers are possible, and looking always tells them apart", () => {

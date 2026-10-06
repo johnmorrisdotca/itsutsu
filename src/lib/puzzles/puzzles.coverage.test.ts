@@ -19,6 +19,7 @@ import { puzzleRulesPage } from "./puzzleRulesPage";
 import { suidoShapeOf } from "./suido/sizes";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS, levelsFor } from "./puzzles.constants";
 import type { Puzzle, PuzzleKind, PuzzleLevel } from "./puzzles.types";
+import { cpuMs } from "@/lib/testing/cpuTime";
 
 /**
  * The New Game Gate, for a puzzle.
@@ -90,9 +91,11 @@ describe("every puzzle is finished, not just declared", () => {
     const spec = PUZZLE_SPECS[kind];
     for (const size of spec.sizes) {
       for (const level of levelsFor(kind, size)) {
-        const started = performance.now();
-        const puzzle = make(size, level, 5);
-        const took = performance.now() - started;
+        // The CPU the work used, not the wall clock, which a busy machine stretches (`cpuMs`).
+        let puzzle!: Puzzle;
+        const took = cpuMs(() => {
+          puzzle = make(size, level, 5);
+        });
         expect(took, `${kind} ${size}×${size} ${level} took ${Math.round(took)} ms to make`).toBeLessThan(3000);
         // At least the cells; More or Less writes its marks after them, within the kind's cap. A Gomoji's
         // givens (every one drawn in a word grid, Pop Gomoji's too) are its one word, whose length is its size:
