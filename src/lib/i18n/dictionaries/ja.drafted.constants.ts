@@ -81,9 +81,9 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "nav.games": {
-    text: "種目",
-    back: "Kinds of game — the catalogue of games, not a game in progress.",
-    ask: "Which word is the catalogue's name in Japanese: 種目 (John's own, kept everywhere else on the site) or ゲーム?",
+    text: "ゲーム",
+    back: "Games — the catalogue of games, not a game in progress.",
+    review: AGENT_READ,
   },
   "nav.privacy": {
     text: "プライバシー",

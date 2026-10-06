@@ -6,8 +6,8 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 179. Drafted and unread: 1. Read by the reviewer agent: 178.
-Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 3
+Phrases: 179. Drafted and unread: 0. Read by the reviewer agent: 179.
+Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 2
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
 
@@ -20,7 +20,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Waiting for a decision or a native read — start here (3)
+## 1. Waiting for a decision or a native read — start here (2)
 
 A **question** is a wording only the site's owner can choose between. A line the
 agent has read but marked for a native read is high-stakes text (children,
@@ -28,14 +28,14 @@ consent, brands, legal): the agent's pass is not enough for it.
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | What is asked | Correction |
 | --- | --- | --- | --- | --- | --- | --- |
-| Every screen — navigation bar | Games | **種目** | Kinds of game — the catalogue of games, not a game in progress. | Question, unread | Which word is the catalogue's name in Japanese: 種目 (John's own, kept everywhere else on the site) or ゲーム? |  |
 | 39 rules pages — one per game | Inspired by {name}. The name belongs to its owner; this is our own version of the rules. | **{name}に着想を得た版です。名称は権利者に帰属し、ここに記すのは当サイト独自の規則です。** | This is a version inspired by {name}. The name belongs to its rights holder; what is set down here is this site's own rules. | Agent 2026-10-06, native read wanted | A trademark notice (the name belongs to its owner): a native read is recommended. |  |
 | The feed, /feed — its heading, tabs, every line of activity and its empty states | Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only bots and members who have said they are 18 or over are named. | **最近ここで終わった対局、新しく加わったゲーム、そしてサイトのニュース（初めての出来事、新しい首位、最速記録）です。名前を表示するのは、コンピュータと18歳以上と答えた会員だけです。** | Games that ended here recently, games newly added, and the site's news (first events, new leaders, fastest records). Names are shown only for computers and members who answered that they are 18 or over. | Agent 2026-10-06, native read wanted | Says who is named by age (18 or over): about children, so a native read is recommended. |  |
 
-## 2. Written by a machine — please check these (175)
+## 2. Written by a machine — please check these (176)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
+| Every screen — navigation bar | Games | **ゲーム** | Games — the catalogue of games, not a game in progress. | Agent 2026-10-06 |  |
 | Every screen — navigation bar | New game | **新規対局** | New game — the same word as the heading of the set-up screen this button opens. | Agent 2026-10-06 |  |
 | Every screen — navigation bar | My games | **対局中** | Games in progress — my own games, going. | Agent 2026-10-06 |  |
 | Every screen — navigation bar | Privacy | **プライバシー** | Privacy — the loanword every Japanese site uses for the page that says what it keeps about you. | Agent 2026-10-06 |  |

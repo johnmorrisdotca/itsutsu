@@ -15,7 +15,7 @@ phrases use.
 | English | Japanese | Why (one line) |
 | --- | --- | --- |
 | a game between people (a match, a played game) | 対局 (counter 局) | It is the word a Go, shogi or gomoku player already says for one game played, and the site's own pages use it. |
-| a game, as a thing in the catalogue (Gomoku, Hex) | 種目 (John's own word) | It is published on `/games` and in 全種目, so the drafted phrases follow it; see the open question below. |
+| a game, as a thing in the catalogue (Gomoku, Hex) | ゲーム in the navigation; 種目 stays as the kanji beside English headings and in 全種目 | John, 2026-10-06: ゲーム for the link every page shows, because 種目 reads as "sports event"; his 全種目 heading on /games stays. |
 | a game of any kind, in a sentence ("a new game was added") | ゲーム | Puzzles, cards and party tables are not 対局, and ゲーム is the plain word. |
 | new game | 新規対局 | It is the heading of the set-up screen, so the button and the screen it opens say the same thing. |
 | my games / in progress | 対局中 | It is the title John gave the "Your games" page. |
@@ -27,7 +27,7 @@ phrases use.
 | buddy | 仲間 | It is John's word on the Players and My account pages. |
 | people you know | 知人 | The set-up screen's own heading for them. |
 | online now | オンライン中 | That is how a Japanese site says who is here; 在室 stays beside the English only. |
-| bots, the computer | コンピュータ (対コンピュータ as a heading) | It is the long-vowel-less spelling the site already uses; never コンピューター. |
+| bots, the computer | コンピュータ (対コンピュータ as a heading) | John, 2026-10-06: one word. 機械 (Players tab, the mark beside a bot's name) and 棋士 (About) become コンピュータ in ENJA-03. Never コンピューター. |
 | board | 盤 (the position on it: 盤面) | The Go and gomoku word, and John's own on every rules page. |
 | move | 手 (counter 手) | The word for a move in every board game it is played in. |
 | resign | 投了 | The established word, already beside "Resign" on the site. |
@@ -66,6 +66,5 @@ phrases use.
 
 These are listed on the review sheet and are not settled by the reviewer.
 
-1. **The catalogue's name: 種目 or ゲーム?** 種目 is John's, and is kept in 全種目 and the page headings, so it stays for now. But 種目 reads as "sports event" to a Japanese reader, and `nav.games` is one of the three words every page shows.
-2. **One word for bots.** The site says 機械 (the Players tab, John's), コンピュータ (My account, and the drafted phrases), 棋士 (an About chapter) and 対コンピュータ (the set-up group). The drafted phrases use コンピュータ; if John prefers another, `setup.theComputer`, `catalogue.poolComputer`, `catalogue.topMeansComputer` and `feed.leadEveryone` change together.
-3. **Native read for `rules.inspiredBy` and `feed.leadEveryone`.** One is a trademark notice and the other says that only members aged 18 or over are named: both are high-stakes, so the agent's pass is not enough.
+Both were answered by John on 2026-10-06: ゲーム for the navigation link (全種目 stays), and コンピュータ as the one word for bots, applied in ENJA-03.
+- **Native read for `rules.inspiredBy` and `feed.leadEveryone`.** One is a trademark notice and the other says that only members aged 18 or over are named: both are high-stakes, so the agent's pass is not enough.

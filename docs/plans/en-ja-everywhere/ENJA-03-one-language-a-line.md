@@ -19,6 +19,16 @@ already says a label is one language on one line, through `OneName`.
 3. Add a check (beside `gamePictures.coverage.test.ts`) that fails on a new
    hand-written pair outside the components.
 
+## And one word for bots
+
+John, 2026-10-06: the bots are コンピュータ in Japanese, everywhere. 機械 (the
+Players tab, `WhoFilter`, `memberKind.ts`, the mark beside a bot's name and
+rating in `PlayerFigures`, `recordTrailing`, `MyRecord`, `OpenGamesBoard`, the
+standings page) and 棋士 (About's chapter and `about.engine.tsx`) change to it.
+対コンピュータ stays as the set-up heading. `e2e/set-up-again.spec.ts` and
+`e2e/computer-ladder.spec.ts` assert 機械, so they change in the same commit.
+The mark beside a name is narrow, so look at it at 390px.
+
 ## Done when
 
 The check passes with no exceptions left unexplained, and the home page,
