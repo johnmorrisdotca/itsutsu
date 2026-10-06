@@ -1001,12 +1001,10 @@ export const XP_EVENTS = {
 
 export type XpEventSpec = {
   points: number;
-  label: string;
   kanji: string;
-  /** The sentence a toast says. Second person, present tense. */
-  sentence: string;
-  /** What the member reads on their history, where the label is too terse. */
-  blurb: string;
+  // The words (`label`, the toast's `sentence` and the history's `blurb`) moved to
+  // `src/lib/xp/xpAwardCopy.constants.ts` with ENJA-09, one table per language:
+  // `xpEventCopy(type, locale)` joins them back.
   /** Events of this type allowed in one day. Absent means no allowance. */
   cap?: number;
   /** Gated by the day's allowance on gameFinished. Milestones never are. */

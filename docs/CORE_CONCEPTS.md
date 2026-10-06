@@ -273,7 +273,8 @@ bots:play`.
 
 Experience points (XP) reward taking part, alongside ratings, which measure
 strength. There are a hundred levels on a curve kept as a table in
-`src/lib/xp/xpCurve.ts`, each with a name (`levelNames.constants.ts`).
+`src/lib/xp/xpCurve.ts`, each with a name (`levelNames.constants.ts`, and its Japanese in
+`levelNames.ja.constants.ts`).
 
 - **The ledger is `XpEvent`,** one row per thing earned. Its unique index on
   `(memberId, type, subject)` is the whole idempotency design: the subject

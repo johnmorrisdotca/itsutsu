@@ -278,6 +278,12 @@ rule that stops the gap growing, and the gate that holds it.
   the brand (Itsutsu, XP), a format's name (SGF, PDN), board coordinates, the
   operator's own pages (admin and the board), names copied from other sites'
   records, and tables of boards and word lists. Anything else is a phrase.
+  **Tables of copy that belong to data** (what each XP award is called, the
+  hundred level names) are the one other thing: they are listed in `COPY_TABLES`
+  in the script, each with its reason and where its Japanese is, and a coverage
+  test holds every row answered in both languages. The English in one is the
+  site's English, so a table is added there only by a ticket that writes its
+  Japanese beside it.
   Adding an allowance because the gate is in the way is the move "Nothing
   Answers What It Cannot Answer" describes: read what it objects to first.
 - **The pending list only shrinks.** `PENDING_PATHS` in the script is every

@@ -256,7 +256,7 @@ const JA: Record<XpEventType, AwardWordsJa> = {
     back: "On top of the win, you get it when you beat a highly ranked opponent whose rating is at least 300 above yours. || You beat one of the strongest players here.",
   },
   firstOfVariant: {
-    blurb: "ゲームごとに、初めて対局したときにもらえます。ゲームは全部で{games}種類あります。",
+    blurb: "ゲームごとに、初めて遊んだときにもらえます。ゲームは全部で{games}種類あります。",
     sentence: "まだ遊んだことのないゲームでした。",
     back: "You get it, for each game, when you play it for the first time. There are {games} kinds of game in all. || It was a game you had not played yet.",
   },
@@ -461,9 +461,9 @@ const JA: Record<XpEventType, AwardWordsJa> = {
     back: "You get it when you play on from a position in the middle of a finished game. || You played a position on.",
   },
   timeGiven: {
-    blurb: "相手が時間を必要としていたときに、持ち時間を足してあげたときにもらえます。",
+    blurb: "相手が時間を必要としているときに、持ち時間を足してあげるともらえます。",
     sentence: "思いやりのある行いでした。",
-    back: "You get it when you give your opponent more time when they needed it. || That was a considerate act.",
+    back: "You get it when you give your opponent more time while they need it. || That was a considerate act.",
   },
   applauseGiven: {
     blurb: "誰かが指した対局に拍手を送ったときにもらえます。",

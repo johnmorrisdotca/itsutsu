@@ -107,7 +107,7 @@ test.describe("the XP toast speaks the reader's language", () => {
     expect(seen.toast).toContain("経験値");
     // 昇級, promotion — the heading's own kanji, standing alone for this reader — and the rung's name.
     expect(seen.level).toContain("昇級");
-    expect(seen.level).toContain(xpLevelName(2));
+    expect(seen.level).toContain(xpLevelName(2, "ja"));
     // What a screen reader is told: the stack's name, and the announcement.
     expect(seen.hostLabel).toBe("獲得経験値");
     expect(seen.announcer).toContain("経験値");
@@ -133,8 +133,8 @@ test.describe("the XP toast speaks the reader's language", () => {
     await nextDay(page);
 
     const level = page.getByTestId("xp-toast").getByTestId("xp-toast-level");
-    // 次のレベル：{name}, "next level: {name}", with the name filled in.
-    await expect(level).toHaveText(`次のレベル：${xpLevelName(2)}`);
+    // 次のレベル：{name}, "next level: {name}", with the name filled in, the rung's own name in Japanese.
+    await expect(level).toHaveText(`次のレベル：${xpLevelName(2, "ja")}`);
     await expect(level).not.toContainText("Next level");
 
     await context.close();

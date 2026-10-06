@@ -1,5 +1,7 @@
 import type { PhraseKey } from "../i18n.constants";
 
+import { JA_DRAFTED_XP } from "./ja.drafted.xp.constants";
+
 /**
  * Japanese written here, by a machine, and read since by `japanese-reviewer`
  * but not yet by a person who reads Japanese.
@@ -50,7 +52,7 @@ export type DraftedPhrase = {
 /** The reviewer agent's pass over the first 179 phrases, 2026-10-06. */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
 
-export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
+const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "site.language": {
     text: "言語",
     back: "Language",
@@ -948,4 +950,19 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "count.step.other": { text: "{count}手順", back: "{count} steps.", review: AGENT_READ },
   "count.pair.one": { text: "{count}組", back: "{count} pair.", review: AGENT_READ },
   "count.pair.other": { text: "{count}組", back: "{count} pairs.", review: AGENT_READ },
+};
+
+/**
+ * Every drafted phrase, joined from this file and the per-area files beside it.
+ *
+ * Split the way the English catalogue is (`phrases.<area>.constants.ts`): the
+ * drafted Japanese had grown past 64 KB in one file, which every page's server
+ * function carries, and a file that size is a decision `pageFunction.coverage.test.ts`
+ * wants written down. An area's Japanese is its own file, so two tickets adding
+ * phrases at once no longer both edit the end of the same one. A key said in
+ * two of them is refused by `japanese.coverage.test.ts`, which reads the join.
+ */
+export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
+  ...JA_DRAFTED_BASE,
+  ...JA_DRAFTED_XP,
 };
