@@ -469,7 +469,10 @@ describe("a stop link needs no sign-in, and opens nothing else", () => {
   it("sends a stranger with no token, or a wrong one, the ordinary way", async () => {
     production();
     const token = (await signStopToken("m-1", "your-turn"))!;
-    for (const path of ["/stop/nonsense", `/stop/${token.slice(0, -2)}xx`, "/stop/", `/stop/${token}/more`]) {
+    // Spoiled at the signature's first character: its last carries two bits nobody reads, so rewriting the end left it valid about once a thousand runs.
+    const dot = token.indexOf(".") + 1;
+    const spoiled = `${token.slice(0, dot)}${token[dot] === "A" ? "B" : "A"}${token.slice(dot + 1)}`;
+    for (const path of ["/stop/nonsense", `/stop/${spoiled}`, "/stop/", `/stop/${token}/more`]) {
       const response = await proxy(new NextRequest(`https://itsutsu.com${path}`));
       expect(response.status, path).not.toBe(200);
     }

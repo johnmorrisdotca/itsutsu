@@ -40,7 +40,9 @@ describe("a stop link's token", () => {
 
   it("refuses one altered, unsigned, for a kind of email nobody sends, or without a member", async () => {
     const token = (await signStopToken("m-1", "your-turn"))!;
-    expect(await verifyStopToken(`${token.slice(0, -2)}xx`)).toBeNull();
+    // Altered at the signature's first character: its last carries two bits nobody reads.
+    const dot = token.indexOf(".") + 1;
+    expect(await verifyStopToken(`${token.slice(0, dot)}${token[dot] === "A" ? "B" : "A"}${token.slice(dot + 1)}`)).toBeNull();
     expect(await verifyStopToken("")).toBeNull();
     expect(await verifyStopToken(null)).toBeNull();
     const exp = Math.floor(Date.now() / 1000) + 3600;
