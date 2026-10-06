@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Zen_Old_Mincho } from "next/font/google";
 import "./globals.css";
 
-import { LocaleProvider } from "@/components/i18n/LocaleProvider";
+import { JaLocale } from "@/components/i18n/JaLocale";
 import { APP_COLOURS } from "@/lib/app/app.constants";
 import { appleStartupImages } from "@/lib/app/appleLaunch";
 import { BARE_HEAD_SCRIPT } from "@/components/layout/bare";
@@ -24,6 +24,7 @@ import "@/components/layout/SiteHeader";
 import { TestModeBanner } from "@/components/layout/TestModeBanner";
 import { OfflineKeeper } from "@/components/offline/OfflineKeeper";
 import { currentLocale } from "@/lib/i18n/currentLocale";
+import { jaText } from "@/lib/i18n/jaText";
 import { LOCALES } from "@/lib/i18n/i18n.constants";
 
 const geistSans = Geist({
@@ -124,12 +125,18 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {/*
           The same locale the server just rendered with, handed to the half of
           the site React draws in the browser. One reading of the request, used
-          twice, so the two cannot disagree at hydration.
+          twice, so the two cannot disagree at hydration. Every reader
+          is drawn inside `JaLocale`, one component whatever the language so that
+          changing it updates the page and never rebuilds it; a reader of
+          Japanese is handed the Japanese as a prop, which is the only way a
+          browser gets it, and an English reader is never sent a word of it.
         */}
         <TestModeBanner />
         {/* The offline keeper, started on every page, and the line that says so when there is no connection. */}
         <OfflineKeeper />
-        <LocaleProvider locale={locale}>{children}</LocaleProvider>
+        <JaLocale locale={locale} text={locale === "ja" ? jaText() : undefined}>
+          {children}
+        </JaLocale>
       </body>
     </html>
   );

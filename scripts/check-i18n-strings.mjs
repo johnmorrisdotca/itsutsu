@@ -244,7 +244,8 @@ export const ALLOWED_FILES = new Map([
  * Each path says what the table is and where its Japanese is.
  */
 export const COPY_TABLES = new Map([
-  ["src/lib/xp/xpAwardCopy.constants.ts", "what every XP award is called and why, English and Japanese side by side, a `Record<XpEventType, …>` each; held complete by xp.coverage.test.ts"],
+  ["src/lib/xp/xpAwardCopy.constants.ts", "what every XP award is called and why, in English, a `Record<XpEventType, …>`; its Japanese is in xpAwardCopy.ja.constants.ts; held complete by xp.coverage.test.ts"],
+  ["src/lib/xp/xpAwardCopy.ja.constants.ts", "what every XP award is for and what its notice says in Japanese, whose `back` field is English reading the Japanese back for the review sheet; held complete by xp.coverage.test.ts"],
   ["src/lib/xp/levelNames.constants.ts", "the hundred level names in English; the Japanese row for each is in levelNames.ja.constants.ts, held to the same hundred by levelNames.test.ts"],
   ["src/lib/xp/levelNames.ja.constants.ts", "the hundred level names in Japanese, whose `back` field is English reading the Japanese back for the review sheet; held to the same hundred by levelNames.test.ts"],
 ]);

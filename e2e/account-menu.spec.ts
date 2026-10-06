@@ -137,6 +137,39 @@ test.describe("the account menu", () => {
     await expect(page.getByTestId("account-menu-panel").getByTestId("admin-link")).toHaveText("Admin");
   });
 
+  /*
+   * Japanese, then English, then Japanese again, all by clicking in the one menu
+   * and with no reload: the way back and the way there again, in a single page.
+   * The menu is the state that proves the page was UPDATED and not rebuilt: a
+   * layout that draws a different component for a different language makes React
+   * throw the page away on the switch, and the menu the reader just used is shut.
+   * The document's own language is read too, since it is what a screen reader and
+   * the browser's hyphenation follow.
+   */
+  test("goes to Japanese, back to English and to Japanese again, by clicking, with the menu staying open", async ({ page }) => {
+    await page.goto("/games");
+    await ready(page, "account-menu");
+    await page.getByTestId("account-menu-button").click();
+    const panel = page.getByTestId("account-menu-panel");
+    const picker = panel.getByTestId("menu-language-picker");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    for (const [to, tag, admin] of [
+      ["ja", "ja", "管理"],
+      ["en", "en", "Admin"],
+      ["ja", "ja", "管理"],
+    ] as const) {
+      await picker.locator(`[data-locale=${to}]`).click();
+      await expect(picker.locator("[data-current=true]")).toHaveAttribute("data-locale", to);
+      await expect(panel).toBeVisible();
+      await expect(panel.getByTestId("admin-link")).toHaveText(admin);
+      await expect(page.locator("html")).toHaveAttribute("lang", tag);
+    }
+    // Left as it was found: the operator's language is the account's, and the other specs read it.
+    await picker.locator("[data-locale=en]").click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(panel.getByTestId("admin-link")).toHaveText("Admin");
+  });
+
   test("offers About, the Profile tab and the Settings tab, and points at its trigger", async ({ page }) => {
     await page.goto("/games");
     await ready(page, "account-menu");

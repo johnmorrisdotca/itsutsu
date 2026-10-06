@@ -277,6 +277,28 @@ rule that stops the gap growing, and the gate that holds it.
   sites publish it under his name, so a phrase that no reader has passed does
   not ship. The process, and each ticket's part in it, is
   `docs/plans/en-ja-everywhere/README.md`.
+- **A reader is given the Japanese as text alone, and `pnpm i18n:text` makes
+  it.** The authored files (`dictionaries/`, `xpAwardCopy.ja.constants.ts`,
+  `levelNames.ja.constants.ts`) keep every sentence beside its `back`, `review`
+  and `ask`, and only the review sheets and the tests read them. What the site
+  runs on is two generated modules of sentences alone,
+  `jaText.phrases.generated.constants.ts` and
+  `jaText.copy.generated.constants.ts`: **after editing any Japanese, run
+  `pnpm i18n:text` and commit the two files**, or `jaText.coverage.test.ts`
+  fails with that instruction (on a merge, run it again rather than resolving
+  the generated files by hand). Code reads the words through `jaText()`
+  (`src/lib/i18n/jaText.ts`) and never imports an authored file or a generated
+  one: a server build loads them itself, and a browser is handed them as a prop
+  of `JaLocale` only when the reader's language is Japanese, so an English
+  reader downloads none of it and no `back` reaches any browser or page
+  function. The root layout draws `JaLocale` for every language and never a
+  different component for another: a different component at the same place
+  makes React rebuild the whole page when the language is chosen (the account
+  menu refreshes the router), which shut the menu the reader had just used. That test holds both halves (nothing a client module or a page
+  reaches imports the review data, and none holds a back-translation), and
+  `next.config.ts`'s `turbopack.resolveAlias` for `jaText.server` is what keeps
+  the words out of a browser build. A new table of Japanese copy beside data
+  adds its text to `jaText.types.ts` and `jaText.build.ts` in the same change.
 - **The gate is `pnpm i18n:check`** (`scripts/check-i18n-strings.mjs`). It reads
   every `.ts` and `.tsx` file under `src/` and fails on a JSX sentence, on a
   prose attribute (`title`, `aria-label`, `placeholder`, `alt`, `label`), and on any

@@ -3,6 +3,8 @@ import { speaker } from "@/lib/i18n/i18n";
 import type { Locale } from "@/lib/i18n/i18n.types";
 
 import { XP_EVENTS, XP_EVENT_SPECS } from "./xp.constants";
+import { jaText } from "@/lib/i18n/jaText";
+
 import { IMPORTED_VOLUME_COPY, type ImportedVolumeType } from "./xpAwardCopy.constants";
 import { xpEventCopy } from "./xpAwardCopy";
 import type { XpEventType } from "./xp.types";
@@ -113,7 +115,7 @@ export function importedXpCopy(type: ImportedXpType, locale: Locale = "en"): Imp
   if (twin === undefined) {
     const volume = type as ImportedVolumeType;
     const kanji = VOLUME_KANJI[volume];
-    if (copyLocale(locale) === "ja") return { label: kanji, kanji, blurb: IMPORTED_VOLUME_COPY.ja[volume].blurb };
+    if (copyLocale(locale) === "ja") return { label: kanji, kanji, blurb: jaText().importedVolumes[volume].blurb };
     const words = IMPORTED_VOLUME_COPY.en[volume];
     return { label: words.label, kanji, blurb: words.blurb };
   }
