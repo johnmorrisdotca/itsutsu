@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.529.2 — 2026-10-06 02:55 UTC
+- A browser check of the 32×32 Jirai that failed about one run in eight now measures the right square, and a zoomed board keeps its place if its box changes width.
+
 ## 0.529.1 — 2026-10-06 02:14 UTC
 - Pages load lighter: the Japanese display font is fetched as it is drawn instead of up to 1.6 MB of it in every page's head, and the site's server code is 1.7 MB smaller.
 
