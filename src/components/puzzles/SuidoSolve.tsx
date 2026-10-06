@@ -18,13 +18,19 @@ import { resumedGame, suidoReading } from "@/lib/puzzles/suido/play";
 import {
   blockOf,
   blockRange,
+  firstUnsolvedSuidoBigLevel,
   firstUnsolvedSuidoLevelAt,
+  openSuidoBigLevels,
   openSuidoLevelsAt,
+  SUIDO_BIG_LEVEL_COUNT,
+  suidoBigBoardRow,
+  suidoBigRowsLoaded,
   suidoLevelCount,
   suidoLevelsAt,
   suidoLevelsLoaded,
 } from "@/lib/puzzles/suido/levels";
-import { suidoLevelOfSeed, suidoSquaresOfSeed } from "@/lib/puzzles/suido/seed";
+import { suidoLevelOfSeed, suidoSetOfSeed, suidoSquaresOfSeed, type SuidoSet } from "@/lib/puzzles/suido/seed";
+import { suidoBigSizeOf as suidoBigSizeOfLevel } from "@/lib/puzzles/suido/bigLevels";
 import { isSuidoHugeSize, suidoShapeOf, suidoSizeInAddress, suidoSizeWord } from "@/lib/puzzles/suido/sizes";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -36,7 +42,7 @@ import { SuidoLevelChips } from "./SuidoLevelChips";
 import { SuidoSquaresChips } from "./SuidoSquaresChips";
 import { SuidoZoomBar } from "./SuidoZoomBar";
 import { suidoLevelPath } from "./SuidoLevelPicker";
-import { keepSolveHere, keptSolves } from "./suidoKept";
+import { keepSolveHere, keptBigSolves, keptSolves } from "./suidoKept";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
 import { SolveTime } from "./SolveTime";
@@ -85,9 +91,9 @@ function SuidoLooked({ size, board }: { size: number; board: (more: { zoomable: 
   );
 }
 
-/** The board of levels at a size: the levels' set-up, opened on that size. */
-function suidoLevelsPath(size: number): string {
-  return `${setUpPath("suido")}?size=${suidoSizeInAddress(size)}`;
+/** The board of levels at a size: the levels' set-up, opened on that size, and on the big-pieces set where the level is of it. */
+function suidoLevelsPath(size: number, set: SuidoSet = "classic"): string {
+  return `${setUpPath("suido")}?size=${suidoSizeInAddress(size)}${set === "big" ? "&set=big" : ""}`;
 }
 
 /**
@@ -135,6 +141,9 @@ export function SuidoSolve({
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
   const level = suidoLevelOfSeed(seed);
+  // A level of the big-pieces set is numbered across every size (1 to 64) and opens by blocks of sixteen of its own.
+  const set: SuidoSet = suidoSetOfSeed(seed) ?? "classic";
+  const big = set === "big";
   const shape = suidoShapeOf(size) ?? { width: size, height: size };
   const dealt = useMemo(() => newGame(puzzle.givens)!, [puzzle.givens]);
   const answer = useMemo(() => decodeLayout(puzzle.solution)!.cells, [puzzle.solution]);
@@ -148,9 +157,9 @@ export function SuidoSolve({
    * this page is drawn in the browser only (`PuzzlePlayClient`), and its size's levels are here (`PuzzlePlay` waits
    * for them), which is what says which boards the browser's solves were.
    */
-  const [solvedHere] = useState<Record<number, number>>(() => (level === null || !suidoLevelsLoaded(size) ? {} : { ...keptSolves(size), ...known }));
+  const [solvedHere] = useState<Record<number, number>>(() => (level === null || !(big ? suidoBigRowsLoaded() : suidoLevelsLoaded(size)) ? {} : { ...(big ? keptBigSolves() : keptSolves(size)), ...known }));
   const solvedSet = useMemo(() => new Set(Object.keys(solvedHere).map(Number)), [solvedHere]);
-  const open = level === null ? 0 : openSuidoLevelsAt(size, solvedSet);
+  const open = level === null ? 0 : big ? openSuidoBigLevels(solvedSet) : openSuidoLevelsAt(size, solvedSet);
   // Past the open blocks is shut, except a level already solved (it opens on its finished board) and a run kept of it, which was open when it was begun.
   const shut = level !== null && race === null && resumed === null && level > open && !solvedSet.has(level);
   // A level already solved opens on its finished board; only "Play it again" starts it over.
@@ -187,29 +196,33 @@ export function SuidoSolve({
   const said = SUIDO_COPY.status(reading.kind, reading.solved, reading.reached, reading.wanted, reading.leaks);
 
   // Where "next" leads once this one is solved: the lowest level still unsolved, this one counted in.
-  const onwardTo = level === null ? null : firstUnsolvedSuidoLevelAt(size, new Set([...solvedSet, level]));
+  const unsolvedAfter = (done: ReadonlySet<number>) => (big ? firstUnsolvedSuidoBigLevel(done) : firstUnsolvedSuidoLevelAt(size, done));
+  const onwardTo = level === null ? null : unsolvedAfter(new Set([...solvedSet, level]));
+  // The next level of the big-pieces set may be at another size: its address names its own.
+  const onwardPath = (to: number) => suidoLevelPath(big ? (suidoBigSizeOfLevel(to) ?? size) : size, to, set);
   const onward =
     level === null
       ? undefined
       : {
-          next: onwardTo === null ? null : { href: suidoLevelPath(size, onwardTo), label: nextLevelLabel(level, onwardTo, say) },
-          all: { href: suidoLevelsPath(size), label: say.say("pset.mine.allLevels") },
+          next: onwardTo === null ? null : { href: onwardPath(onwardTo), label: nextLevelLabel(level, onwardTo, say) },
+          all: { href: suidoLevelsPath(size, set), label: say.say("pset.mine.allLevels") },
         };
-  const count = suidoLevelCount(size);
+  const count = big ? SUIDO_BIG_LEVEL_COUNT : suidoLevelCount(size);
   const asked =
     level === null ? undefined : (
       <>
-        {suidoSizeWord(size)} · {say.say("puzzle.level.number", { number: String(level) })} <span className="text-xs">{say.say("pmaze.ofCount", { count: String(count) })}</span>
+        {suidoSizeWord(size)} · {say.say(big ? "puzzle.level.big" : "puzzle.level.number", { number: String(level) })} <span className="text-xs">{say.say("pmaze.ofCount", { count: String(count) })}</span>
       </>
     );
-  const twists = level === null || !suidoLevelsLoaded(size) ? [] : declaredTwists(suidoLevelsAt(size)[level - 1]!);
+  const levelRow = level === null ? undefined : big ? suidoBigBoardRow(level) : suidoLevelsLoaded(size) ? suidoLevelsAt(size)[level - 1] : undefined;
+  const twists = levelRow === undefined ? [] : declaredTwists(levelRow);
   // A board made with squares says so in a row of its own, as a level's row says its twists.
   const squares = suidoSquaresOfSeed(seed);
-  const chips = level === null ? (squares === "none" ? null : <SuidoSquaresChips twists={squares === "big" ? ["big-pieces"] : ["block-turns"]} />) : <SuidoLevelChips size={size} level={level} twists={twists} />;
+  const chips = level === null ? (squares === "none" ? null : <SuidoSquaresChips twists={squares === "big" ? ["big-pieces"] : ["block-turns"]} />) : <SuidoLevelChips size={size} level={level} twists={twists} set={set} />;
 
   if (shut && level !== null) {
     const block = blockOf(level);
-    const first = firstUnsolvedSuidoLevelAt(size, solvedSet) ?? 1;
+    const first = unsolvedAfter(solvedSet) ?? 1;
     const { first: from, last: to } = blockRange(block - 1, count);
     return (
       <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-level={level} {...readyMark(hydrated)}>
@@ -217,10 +230,10 @@ export function SuidoSolve({
           {say.say("pmaze.shut", { level: String(level), size: suidoSizeWord(size), block: String(block - 1), first: String(from), last: String(to) })}
         </p>
         <p className="flex flex-wrap gap-2">
-          <Link href={suidoLevelPath(size, first)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="suido-shut-first">
+          <Link href={onwardPath(first)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="suido-shut-first">
             {say.say("pmaze.playFirst", { level: String(first) })}
           </Link>
-          <Link href={suidoLevelsPath(size)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
+          <Link href={suidoLevelsPath(size, set)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
             {say.say("pset.mine.allLevels")}
           </Link>
         </p>

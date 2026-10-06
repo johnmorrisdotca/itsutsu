@@ -27,6 +27,7 @@ export const PHRASES_PUZZLE = {
   "puzzle.sizeLabel.size": "Size",
   "puzzle.level.number": "Level {number}",
   "puzzle.level.portal": "Portal level {number}",
+  "puzzle.level.big": "Big-pieces level {number}",
   "puzzle.level.next": "Level {next} →",
   "puzzle.level.nextSkipping": "Level {next}, the first one you have not finished →",
   "puzzle.key.inWordTwice": "in the word twice",

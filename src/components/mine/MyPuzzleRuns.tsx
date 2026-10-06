@@ -100,7 +100,7 @@ export async function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnT
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">
                 {fixed !== null ? (
-                  <Link href={joinQuery(setUpPath(kind), kind === "tsunagi" ? levelsQueryOf(kind, run.size, run.seed) : `?size=${suidoSizeInAddress(run.size)}`)} className={`${RAISED_LINK} shrink-0 text-sm text-muted underline underline-offset-4`} data-testid="puzzle-going-levels">
+                  <Link href={joinQuery(setUpPath(kind), kind === "tsunagi" || kind === "suido" ? levelsQueryOf(kind, run.size, run.seed) : `?size=${suidoSizeInAddress(run.size)}`)} className={`${RAISED_LINK} shrink-0 text-sm text-muted underline underline-offset-4`} data-testid="puzzle-going-levels">
                     {say.say("pset.mine.allLevels")}
                   </Link>
                 ) : null}

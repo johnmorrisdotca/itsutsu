@@ -2,7 +2,8 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { suidoBoardOf, suidoLevelBand, suidoLevelOfBoard } from "../suido/levels";
+import { suidoBigSizeOf } from "../suido/bigLevels";
+import { suidoBigBoardOf, suidoBigLevelBand, suidoBigLevelOfBoard, suidoBoardOf, suidoLevelBand, suidoLevelOfBoard } from "../suido/levels";
 import { SUIDO_LEVEL_SIZES } from "../suido/sizes";
 import type { LevelFastest } from "./tsunagiRecords";
 
@@ -41,6 +42,25 @@ export async function suidoSolvedBy(memberId: string): Promise<SuidoSolved> {
   return out;
 }
 
+/**
+ * Every level of the big-pieces set a member has solved, by the level's number in the set (1 to 64), each with their best time on it. A level of the set
+ * is a level of its own size, so its solve is a solve at that size; every board of the set carries big pieces (`;b` in its code) and no level by size does,
+ * so the read narrows to those and each is named by its hash.
+ */
+export async function suidoBigSolvedBy(memberId: string): Promise<Record<number, SuidoLevelBest>> {
+  const rows = await prisma.puzzleSolve.findMany({
+    where: { memberId, kind: "suido", solved: true, givens: { contains: ";b" } },
+    orderBy: { elapsedMs: "asc" },
+    select: { id: true, givens: true, elapsedMs: true },
+  });
+  const out: Record<number, SuidoLevelBest> = {};
+  for (const row of rows) {
+    const level = suidoBigLevelOfBoard(row.givens);
+    if (level !== null) out[level] ??= { elapsedMs: row.elapsedMs, solveId: row.id };
+  }
+  return out;
+}
+
 export const SUIDO_FASTEST_SHOWN = 5;
 
 /**
@@ -63,6 +83,25 @@ export async function suidoLevelFastest(size: number, level: number): Promise<Le
   const seen = new Set<string>();
   return rows
     .filter((row) => suidoLevelOfBoard(size, row.givens) === level)
+    .filter((row) => (seen.has(row.memberId) ? false : (seen.add(row.memberId), true)))
+    .slice(0, SUIDO_FASTEST_SHOWN)
+    .map(({ givens: _board, ...rest }) => rest);
+}
+
+/** The fastest solves of one level of the big-pieces set, one per member at their best: found as a size's are, by the level's size, its third of the set and its board. */
+export async function suidoBigLevelFastest(level: number): Promise<LevelFastest[]> {
+  const known = suidoBigBoardOf(level);
+  const size = suidoBigSizeOf(level);
+  if (known === undefined || size === null) return [];
+  const rows = await prisma.puzzleSolve.findMany({
+    where: { kind: "suido", size, level: suidoBigLevelBand(level), givens: { startsWith: known.prefix }, solved: true, helped: null, hintsUsed: 0, clock: "none" },
+    orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
+    take: SUIDO_FASTEST_SHOWN * 4,
+    select: { id: true, memberId: true, elapsedMs: true, finishedAt: true, givens: true },
+  });
+  const seen = new Set<string>();
+  return rows
+    .filter((row) => suidoBigLevelOfBoard(row.givens) === level)
     .filter((row) => (seen.has(row.memberId) ? false : (seen.add(row.memberId), true)))
     .slice(0, SUIDO_FASTEST_SHOWN)
     .map(({ givens: _board, ...rest }) => rest);

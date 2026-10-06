@@ -26,6 +26,7 @@ import { SUIDO_7X7 } from "@johnmorrisdotca/suido/levels-7x7";
 import { SUIDO_8X14 } from "@johnmorrisdotca/suido/levels-8x14";
 import { SUIDO_8X8 } from "@johnmorrisdotca/suido/levels-8x8";
 import { SUIDO_9X9 } from "@johnmorrisdotca/suido/levels-9x9";
+import { SUIDO_BIG } from "@johnmorrisdotca/suido/levels-big";
 
 import { PREFIX_FLOOR, suidoBoardHash } from "../src/lib/puzzles/suido/boardHash.ts";
 
@@ -51,7 +52,8 @@ const sizes: Record<number, Rows> = {
   2050: SUIDO_20X50,
 };
 
-const rows = Object.entries(sizes).map(([size, levels]) => {
+const sets: [string, Rows][] = [...Object.entries(sizes), ["big", SUIDO_BIG]];
+const rows = sets.map(([size, levels]) => {
   const boards = levels.map(([board]) => board);
   let length = PREFIX_FLOOR;
   while (new Set(boards.map((board) => board.slice(0, length))).size !== boards.length) length += 1;
@@ -66,7 +68,7 @@ writeFileSync(
 
 /**
  * WHAT A SERVER KNOWS OF EVERY SUIDO LEVEL: for each size (\`sizes.ts\`: a square's side, 507 for the 5×7, 2050 for the 20×50), the
- * sixteen-hex-digit hash of every level's board, run together in level order, and the first \`prefixLength\` characters of every
+ * sixteen-hex-digit hash of every level's board, run together in level order (and under \`big\` the sixty-four big-pieces levels, in their own order), and the first \`prefixLength\` characters of every
  * board the same way, as many as it takes for no two levels of the size to share them. The hash says which level a board is; the
  * prefix finds a level's solves in the database without the board (\`boardHash.ts\`). Written by \`node scripts/suido-level-hashes.ts\`,
  * never by hand, and held to the package's levels by \`levelBoards.test.ts\`: a level that changes fails the build until it is run again.

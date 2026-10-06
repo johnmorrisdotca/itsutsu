@@ -1,7 +1,8 @@
 import { checkSuidoAnswer, decodeLayout, shapeOf, type Layout } from "@johnmorrisdotca/suido";
 
 import type { PuzzleCheck } from "../puzzles.types";
-import { suidoLevelOfBoard } from "./levels";
+import { suidoBigLevelOfBoard, suidoLevelOfBoard } from "./levels";
+import { suidoBigSizeOf } from "./bigLevels";
 import { suidoShapeOf } from "./sizes";
 
 /**
@@ -14,11 +15,14 @@ import { suidoShapeOf } from "./sizes";
  *    declares (several pumps, locked pieces, walls, edges that join, an inlet
  *    and an outlet). It is a level when its hash is a level's of the size
  *    (`suidoLevelOfBoard`), which needs no level loaded: a server has none.
+ *  - A LEVEL OF THE BIG-PIECES SET (`bigLevels.ts`): one of the package's sixty-four, of the size the level is at, found by its hash the same way.
  *  - A BOARD made from a seed (`generate.ts`): of the shape the size says, one
  *    pump, edges that do not join, and none of the twists.
  */
 export function checkSuido(size: number, givens: string, answer: string): PuzzleCheck {
-  if (suidoLevelOfBoard(size, givens) === null && boardOf(givens, size) === null) return { ok: false, reason: "the givens are not a board of that size" };
+  const big = suidoBigLevelOfBoard(givens);
+  const bigHere = big !== null && suidoBigSizeOf(big) === size;
+  if (suidoLevelOfBoard(size, givens) === null && !bigHere && boardOf(givens, size) === null) return { ok: false, reason: "the givens are not a board of that size" };
   return checkSuidoAnswer(givens, answer);
 }
 

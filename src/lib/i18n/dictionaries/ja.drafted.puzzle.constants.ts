@@ -120,6 +120,11 @@ export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Portal level {number}",
     review: AGENT_READ,
   },
+  "puzzle.level.big": {
+    text: "大きい駒のレベル{number}",
+    back: "Big-pieces level {number}",
+    ask: "Drafted by the builder, not yet read by the Japanese reviewer or a person: is 大きい駒 the term for the big 2×2 pieces?",
+  },
   "puzzle.level.next": {
     text: "レベル{next} →",
     back: "Level {next} →",

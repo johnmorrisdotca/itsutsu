@@ -1,6 +1,6 @@
 "use client";
 
-import { suidoLevelOfBoard, suidoLevelsLoaded } from "@/lib/puzzles/suido/levels";
+import { suidoBigLevelOfBoard, suidoBigRowsLoaded, suidoLevelOfBoard, suidoLevelsLoaded, SUIDO_BIG_SIZE_LIST } from "@/lib/puzzles/suido/levels";
 
 /**
  * WHAT A BROWSER REMEMBERS OF SUIDO'S LEVELS for somebody with no account: the
@@ -41,6 +41,22 @@ export function keptSolves(size: number): Record<number, number> {
   for (const [board, ms] of Object.entries(keptBoards(size))) {
     const level = suidoLevelOfBoard(size, board);
     if (level !== null) out[level] = ms;
+  }
+  return out;
+}
+
+/**
+ * The levels of the big-pieces set this browser has solved, each with its best time, by the level's number in the set: none until the set's levels
+ * are loaded. A level of the set is a level of its own size, so its solve is kept with that size's (`keepSolveHere`) and found among them by its board.
+ */
+export function keptBigSolves(): Record<number, number> {
+  if (!suidoBigRowsLoaded()) return {};
+  const out: Record<number, number> = {};
+  for (const size of SUIDO_BIG_SIZE_LIST) {
+    for (const [board, ms] of Object.entries(keptBoards(size))) {
+      const level = suidoBigLevelOfBoard(board);
+      if (level !== null) out[level] = Math.min(ms, out[level] ?? ms);
+    }
   }
   return out;
 }

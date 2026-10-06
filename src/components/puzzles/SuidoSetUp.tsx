@@ -1,18 +1,10 @@
 "use client";
 
-import Link from "@/components/ui/Link";
 import { useEffect, useMemo, useState } from "react";
 
 import { declaredTwists } from "@johnmorrisdotca/suido/levels-info";
 
-import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { BoardPicker } from "@/components/live/BoardPicker";
-import { START_PRESS } from "@/components/live/live.constants";
-import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
-import { SetUpSection } from "@/components/live/SetUpSection";
-import { PressLabel } from "@/components/ui/PressLabel";
-import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
-import { PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
+import { useHydrated } from "@/lib/ui/hydrated";
 import {
   blockOf,
   blockRange,
@@ -24,14 +16,12 @@ import {
   suidoLevelCount,
   suidoLevelsAt,
 } from "@/lib/puzzles/suido/levels";
-import { SUIDO_LEVEL_SIZES, suidoSizeWord } from "@/lib/puzzles/suido/sizes";
-import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import type { SuidoSet } from "@/lib/puzzles/suido/seed";
+import { SUIDO_LEVEL_SIZES } from "@/lib/puzzles/suido/sizes";
 
 import { useSizeShelves } from "./sizeShelves";
-import { suidoWords } from "./mazeWords";
-import { SuidoLevelChips } from "./SuidoLevelChips";
-import { SuidoLevelPicker, suidoLevelPath } from "./SuidoLevelPicker";
-import { SuidoLevelPreview } from "./SuidoLevelPreview";
+import { SuidoBigSetUp } from "./SuidoBigSetUp";
+import { SuidoSetUpLayout, type SuidoScreen } from "./SuidoSetUpLayout";
 import { keptSolves } from "./suidoKept";
 
 /**
@@ -40,6 +30,11 @@ import { keptSolves } from "./suidoKept";
  * chosen level's own board stands where every set-up's preview stands, with the
  * size tiles beside it; a block of sixteen levels is the picker under it, and
  * Start plays the one chosen — the next one not yet solved until another is.
+ *
+ * TWO SETS OF LEVELS, as Tsunagi has: the ones by size (this file), and the sixty-four
+ * with big pieces among the ordinary ones (`SuidoBigSetUp`), chosen with a pair of chips
+ * under the board. Both are drawn by one screen (`SuidoSetUpLayout`), so choosing a set
+ * moves nothing on the page.
  *
  * SIXTEEN SIZES, FOUR TILES. The set-up keeps room for four boards and no more
  * (`picker.test.ts`), so the tiles show four at a time — 5 to 8, 9 to 12, the 13 and
@@ -53,21 +48,29 @@ import { keptSolves } from "./suidoKept";
  * and Start says it is locked. A member's solves are on the account; anybody's are
  * also in this browser (`suidoKept`), joined here once it has hydrated.
  */
-export function SuidoSetUp({
-  hasAccount,
-  solved,
-  bestSolves = {},
-  initialSize,
-}: {
+export type SuidoSetUpProps = {
   hasAccount: boolean;
   /** The member's solved levels by size, each with its best time: none for anybody without an account. */
   solved: Record<number, Record<number, number>>;
   /** The member's best solve of each level by size, which the preview's time opens: none for anybody without an account. */
   bestSolves?: Record<number, Record<number, string>>;
+  /** The member's solved levels of the big-pieces set by their number in it, each with its best time. */
+  bigSolved?: Record<number, number>;
+  /** The member's best solve of each level of the big-pieces set. */
+  bigBestSolves?: Record<number, string>;
   initialSize: number;
-}) {
-  const say = useSpeaker();
-  const SUIDO_COPY = suidoWords(say.locale).copy;
+  /** The size an address asked for in the big-pieces set, or null where it asked for none. */
+  askedSize?: number | null;
+  initialSet?: SuidoSet;
+};
+
+export function SuidoSetUp({ initialSet = "classic", ...props }: SuidoSetUpProps) {
+  const [set, setSet] = useState<SuidoSet>(initialSet);
+  // Each set has its own sizes and its own levels, so choosing one starts its screen again: the same size where the set has it.
+  return set === "big" ? <SuidoBigSetUp key="big" {...props} onSet={setSet} /> : <SuidoClassicSetUp key="classic" {...props} onSet={setSet} />;
+}
+
+function SuidoClassicSetUp({ hasAccount, solved, bestSolves = {}, initialSize, onSet }: SuidoSetUpProps & { onSet: (next: SuidoSet) => void }) {
   const hydrated = useHydrated();
   const { size, setSize, shown, onLast, turnShelf, furthest } = useSizeShelves(SUIDO_LEVEL_SIZES, initialSize);
 
@@ -109,76 +112,34 @@ export function SuidoSetUp({
   const blocks = blocksIn(count);
   const block = turnedTo !== null && turnedTo.size === size ? turnedTo.block : blockOf(chosen);
   const { first, last } = blockRange(block, count);
-  const turnBlock = (by: number) => setTurnedTo({ size, block: Math.min(blocks, Math.max(1, block + by)) });
 
   // What the chosen level has: its own twists once its size is here, and a lesson's from the marks before then (`SuidoLevelChips`).
   const twists = ready ? (suidoLevelsAt(size)[chosen - 1] === undefined ? [] : declaredTwists(suidoLevelsAt(size)[chosen - 1]!)) : [];
 
-  return (
-    <section className="flex flex-col gap-5" data-testid="puzzle-set-up" data-kind="suido" data-mode="levels" {...readyMark(hydrated)}>
-      {/*
-        THE PREVIEW AND THE LEVEL PICKER, THE SIZES BESIDE THEM OR UNDER THEM, as
-        Tsunagi's are: the row wraps, so where the two do not fit side by side the
-        sizes go under the board, and their column never gives up the width it
-        needs (`shrink-0`): nothing is ever clipped.
-      */}
-      <div className={`${PICK_BOARD_ROW} py-2 md:flex-wrap`}>
-        <div className={`${PICK_BOARD_PREVIEW} flex flex-col items-center gap-2`}>
-          <SuidoLevelPreview size={size} level={chosen} best={best[chosen]} solveId={bestSolves[size]?.[chosen] ?? null} locked={chosenLocked} ready={ready} />
-          <SuidoLevelPicker size={size} block={block} best={best} open={open} next={next} chosen={chosen} onChoose={(level) => setPicked({ size, level })} />
-          <div className="flex items-center gap-2" data-testid="suido-blocks">
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(-1)} disabled={block <= 1} aria-label={say.say("pmaze.blockBefore")} data-testid="suido-block-back">
-              ‹
-            </button>
-            <span className="min-w-44 text-center text-sm tabular-nums" data-testid="suido-block" data-block={block}>
-              {say.say("pmaze.blockLine", { block: String(block), blocks: String(blocks), first: String(first), last: String(last) })}
-            </span>
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(1)} disabled={block >= blocks} aria-label={say.say("pmaze.blockAfter")} data-testid="suido-block-on">
-              ›
-            </button>
-          </div>
-          <p className="text-xs text-muted" data-testid="suido-levels-caption">
-            {say.say("pmaze.tallyBlocks", { what: suidoSizeWord(size), done: String(done.size), count: String(count) })}
-          </p>
-        </div>
-        <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="suido-sizes">
-          <BoardPicker value={size} sizes={shown} onChange={setSize} names={PUZZLE_SIZE_NAMES.suido} beside />
-          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm`} onClick={turnShelf} data-testid="suido-more-sizes">
-            {onLast ? say.say("pmaze.smallerBoards", { size: suidoSizeWord(SUIDO_LEVEL_SIZES[0]!) }) : say.say("pmaze.biggerBoards", { size: suidoSizeWord(furthest) })}
-          </button>
-        </div>
-      </div>
-
-      <div className={SET_UP_OPTIONS_AND_PLAY}>
-        <SetUpSection title={say.say("pset.options")} kanji="設定" testId="puzzle-settings">
-          <p className="text-xs text-muted" data-testid="puzzle-size-note">
-            {SUIDO_COPY.levelsNote}
-          </p>
-          <p className="text-xs text-muted">{SUIDO_COPY.levelsNoHelp}</p>
-        </SetUpSection>
-        <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
-          {chosenLocked ? (
-            // The same button, saying why it cannot start: a locked level is looked at, never played.
-            <span className={`${PLAY_BUTTON} cursor-not-allowed opacity-60`} aria-disabled="true" data-testid="puzzle-solve" data-level={chosen} data-locked="true">
-              <PressLabel words={say.say("pmaze.levelLocked", { level: String(chosen) })} kanji="鍵" />
-            </span>
-          ) : (
-            <Link href={suidoLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
-              <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={START_PRESS.start.kanji} />
-            </Link>
-          )}
-          {/* What the level Start plays asks, before it is started. */}
-          <SuidoLevelChips size={size} level={chosen} twists={twists} />
-          {skippedPast ? (
-            <p className="text-xs text-muted" data-testid="suido-first-unsolved">
-              {say.say("pmaze.firstUnfinished", { level: String(gap) })}
-            </p>
-          ) : null}
-          <p className="text-xs text-muted" data-testid="suido-kept-where">
-            {say.say(hasAccount ? "pmaze.keptAccount" : "pmaze.keptBrowser")}
-          </p>
-        </div>
-      </div>
-    </section>
-  );
+  const screen: SuidoScreen = {
+    set: "classic",
+    onSet,
+    hasAccount,
+    hydrated,
+    size,
+    ready,
+    best,
+    bestSolves: bestSolves[size] ?? {},
+    open,
+    next,
+    chosen,
+    chosenLocked,
+    onChoose: (level) => setPicked({ size, level }),
+    skippedPast: skippedPast ? gap : null,
+    count,
+    done: done.size,
+    block,
+    blocks,
+    first,
+    last,
+    turnBlock: (by) => setTurnedTo({ size, block: Math.min(blocks, Math.max(1, block + by)) }),
+    tiles: { sizes: shown, onChange: setSize, onLast, turnShelf, furthest, smallest: SUIDO_LEVEL_SIZES[0]! },
+    twists,
+  };
+  return <SuidoSetUpLayout screen={screen} />;
 }

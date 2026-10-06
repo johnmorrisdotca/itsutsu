@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { keptRunAsked, puzzleAsked, puzzleQuery } from "./puzzleAddress";
+import { suidoBigSizeOf } from "./suido/bigLevels";
+import { suidoBigLevelBand } from "./suido/levelCounts";
+import { suidoLevelSeed } from "./suido/seed";
 
 describe("the Check allowance in a puzzle's address", () => {
   it("reads 3 and 1, and no limit for anything else or nothing", () => {
@@ -98,5 +101,29 @@ describe("Kumimoji language in its address", () => {
       gameLength: "medium",
       doubleSet: false,
     })).toMatchObject({ language: "japanese", gameLength: "medium", doubleSet: false });
+  });
+});
+
+describe("a Suido level of the big-pieces set in a puzzle's address", () => {
+  it("is asked for by its number and its set, and is at the size the level is, whatever size the address said", () => {
+    const asked = puzzleAsked("suido", { number: "44", set: "big", size: "5" });
+    expect(asked.seed).toBe(suidoLevelSeed(44, "big"));
+    expect(asked.size).toBe(suidoBigSizeOf(44));
+    expect(asked.level).toBe(suidoBigLevelBand(44));
+    expect(puzzleAsked("suido", { number: "44", size: "5" }).seed).toBe(suidoLevelSeed(44));
+    // A number that is no level of the set asks for a board, not a level.
+    expect(puzzleAsked("suido", { number: "65", set: "big" }).seed).toBeNull();
+  });
+
+  it("writes its number and says `set=big`, and reads back what it writes, by the seed alone too", () => {
+    for (const level of [1, 19, 44, 64]) {
+      const asked = puzzleAsked("suido", { number: String(level), set: "big" });
+      const query = puzzleQuery(asked);
+      expect(query).toContain(`number=${level}`);
+      expect(query).toContain("set=big");
+      expect(puzzleAsked("suido", Object.fromEntries(new URLSearchParams(query.slice(1))))).toEqual(asked);
+      expect(puzzleAsked("suido", { seed: String(suidoLevelSeed(level, "big")) }).seed).toBe(suidoLevelSeed(level, "big"));
+    }
+    expect(puzzleQuery(puzzleAsked("suido", { number: "12", size: "7" }))).not.toContain("set=");
   });
 });

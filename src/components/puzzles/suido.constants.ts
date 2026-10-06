@@ -78,6 +78,13 @@ export const SUIDO_MODES = {
   make: { label: "Make a board", kanji: "作る", says: "A new board each time, at a size and a level you choose." },
 } as const;
 
+/** Which levels, chosen under the board: the ones by size, or the sixty-four with big pieces among the ordinary ones (the pair of chips beside Tsunagi's Classic and Portals). */
+export const SUIDO_SETS = {
+  aria: "Levels",
+  classic: { label: "Classic", kanji: "定番", says: "Fixed boards at every size, easy to hard: 256 at each size to 14×14 and 64 on the huge ones." },
+  big: { label: "Big pieces", kanji: "大駒", says: "Sixty-four levels from the easiest to the hardest across every size, each with big pieces among the ordinary ones, more of them and trickier ones as the levels climb." },
+} as const;
+
 /** Which way a tap turns a piece, chosen under the board. */
 export const SUIDO_WAYS = {
   clockwise: { label: "Clockwise", kanji: "右回り" },
@@ -88,6 +95,9 @@ export const SUIDO_COPY = {
   /** The set-up's note under the levels' options: what a level is and what a twist is, in the words the glossary keeps. */
   levelsNote:
     "Every size has fixed levels, 256 of them up to 14×14 and 64 on the huge boards, easy to hard, and each has exactly one answer. A level can come with a twist: several pumps, locked pieces, walls, edges that join, or a single path from an inlet to an outlet. A block of 16 levels opens when the one before it is solved.",
+  /** The set-up's note under the options while the big-pieces levels are chosen. */
+  bigNote:
+    "Sixty-four levels with big pieces among the ordinary ones, easy to hard across every size from 5×5 to 20×20, and each has exactly one answer. The first levels have a few plain big pieces; later ones have more of them, with trickier shapes inside, and take in blocks that turn as one, a second pump, walls and edges that join. A block of 16 opens when the one before it is all solved.",
   /** The front door's line for the levels, beside the line that says which boards it makes. */
   levelsLine: "Also fixed levels at each of 16 sizes, easy to hard: 256 at each from 5×5 to 14×14 and the long boards 5×7, 6×10 and 8×14, and 64 at each of the huge 20×20, 28×28 and 20×50.",
   /** Said on the disabled Hint press of a level, which has none to choose. */

@@ -19,7 +19,7 @@ import {
   WAY_UP_COPY,
 } from "./meikyuu.constants";
 import { TSUNAGI_CHIPS } from "./puzzles.constants";
-import { SUIDO_CHIPS, SUIDO_COPY, SUIDO_KINDS, SUIDO_MODES, SUIDO_SQUARES, SUIDO_TWISTS } from "./suido.constants";
+import { SUIDO_CHIPS, SUIDO_COPY, SUIDO_KINDS, SUIDO_MODES, SUIDO_SETS, SUIDO_SQUARES, SUIDO_TWISTS } from "./suido.constants";
 import { TOBIISHI_CHIPS, TOBIISHI_COPY } from "./tobiishi.constants";
 
 /**
@@ -46,7 +46,7 @@ const MEIKYUU = {
 };
 export const meikyuuWords = (locale: Locale): typeof MEIKYUU => puzzleTable(MEIKYUU, "meikyuu", locale);
 
-const SUIDO = { kinds: SUIDO_KINDS, squares: SUIDO_SQUARES, twists: SUIDO_TWISTS, chips: SUIDO_CHIPS, modes: SUIDO_MODES, copy: SUIDO_COPY };
+const SUIDO = { kinds: SUIDO_KINDS, squares: SUIDO_SQUARES, twists: SUIDO_TWISTS, chips: SUIDO_CHIPS, modes: SUIDO_MODES, sets: SUIDO_SETS, copy: SUIDO_COPY };
 export const suidoWords = (locale: Locale): typeof SUIDO => puzzleTable(SUIDO, "suido", locale);
 
 const TOBIISHI = { chips: TOBIISHI_CHIPS, copy: TOBIISHI_COPY };

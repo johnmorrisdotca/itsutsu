@@ -50,15 +50,34 @@ export function freshSuidoSeed(kind: Kind, squares: SuidoSquares = "none", rando
  * first seed and N more. A level is the same board for everybody, so there is nothing to draw; the seed is where a
  * kept run, a race and an address say which level it is, as a Tsunagi level's seed is its number, without a
  * Tsunagi's board of seeds being free for it. Null for a seed that is not a level's: every board made at random.
+ *
+ * THE BIG-PIECES LEVELS are the block's later half: level N of that set (1 to 64, its own numbering across every size)
+ * is the block's first seed and 500 and N more, as Tsunagi's portal levels are its numbers plus a thousand
+ * (`tsunagi/levels.ts`). A size has 256 levels at most, so the two never meet; the seed says which set a level is of
+ * (`suidoSetOfSeed`), and the number it returns is the number a reader knows the level by.
  */
 export function suidoLevelOfSeed(seed: number): number | null {
   const number = seed - SUIDO_LEVEL_SEED_BLOCK.from;
-  return Number.isInteger(seed) && number >= 1 && number < SUIDO_LEVEL_SEED_BLOCK.size ? number : null;
+  if (!Number.isInteger(seed) || number < 1 || number >= SUIDO_LEVEL_SEED_BLOCK.size) return null;
+  return number >= SUIDO_BIG_LEVEL_OFFSET ? number - SUIDO_BIG_LEVEL_OFFSET : number;
 }
 
-/** The seed that names level `level`. */
-export function suidoLevelSeed(level: number): number {
-  return SUIDO_LEVEL_SEED_BLOCK.from + level;
+/** The two sets of levels: the ones by size, and the sixty-four with big pieces among the ordinary ones. */
+export type SuidoSet = "classic" | "big";
+
+/** How far into the level block the big-pieces levels begin: a size has at most 256 levels, so nothing of the first set reaches it. */
+export const SUIDO_BIG_LEVEL_OFFSET = 500;
+
+/** Which set a level seed is of, or null for a seed that names no level. */
+export function suidoSetOfSeed(seed: number): SuidoSet | null {
+  const number = seed - SUIDO_LEVEL_SEED_BLOCK.from;
+  if (!Number.isInteger(seed) || number < 1 || number >= SUIDO_LEVEL_SEED_BLOCK.size) return null;
+  return number >= SUIDO_BIG_LEVEL_OFFSET ? "big" : "classic";
+}
+
+/** The seed that names level `level` of a set (the first set's by default). */
+export function suidoLevelSeed(level: number, set: SuidoSet = "classic"): number {
+  return SUIDO_LEVEL_SEED_BLOCK.from + (set === "big" ? SUIDO_BIG_LEVEL_OFFSET : 0) + level;
 }
 
 /** A kind of board and its squares, as chosen on the set-up. */

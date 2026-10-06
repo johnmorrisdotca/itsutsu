@@ -41,7 +41,7 @@ import { ResultMark } from "@/components/game/ResultMark";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { puzzleOutcome, puzzleSizeLabel, type PuzzleOutcome } from "@/lib/puzzles/puzzleOutcome";
 
-import { suidoLevelOfBoard } from "@/lib/puzzles/suido/levels";
+import { suidoBigLevelOfBoard, suidoLevelOfBoard } from "@/lib/puzzles/suido/levels";
 import { isSuidoLevelSize } from "@/lib/puzzles/suido/sizes";
 import { meikyuuLevelOfSolve } from "@/lib/puzzles/server/meikyuuRecords";
 import { tobiishiLevelOfSolve } from "@/lib/puzzles/server/tobiishiRecords";
@@ -110,7 +110,10 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
    * themselves (John, 2026-09-26: "How is this a solved puzzle?").
    */
   // A Suido solve is of a LEVEL when its board is one of its size's levels (named by its hash): the same board for good, like a Tsunagi level.
-  const suidoLevel = kind === "suido" && isSuidoLevelSize(found.size) ? suidoLevelOfBoard(found.size, found.givens) : null;
+  const suidoBySize = kind === "suido" && isSuidoLevelSize(found.size) ? suidoLevelOfBoard(found.size, found.givens) : null;
+  // Or of the big-pieces set, whose boards are told from a size's by their hash too, and whose numbers run across every size.
+  const suidoBig = kind === "suido" && isSuidoLevelSize(found.size) && suidoBySize === null ? suidoBigLevelOfBoard(found.givens) : null;
+  const suidoLevel = suidoBySize ?? suidoBig;
   // And a Meikyuu solve is of a LEVEL whenever its maze is one of the list's: the same maze for good.
   const meikyuuLevel = kind === "meikyuu" ? await meikyuuLevelOfSolve(found.size, found.givens) : null;
   // And a Tobiishi solve is of a LEVEL whenever its code is one of the package's: the same board for good.
@@ -150,7 +153,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   // A level is named by its number, the third of its size it sits in said beside it; a board by its level.
   const levelNumber = suidoLevel ?? meikyuuLevel ?? tobiishiLevel;
   const levelLabel = levelNumber === null ? bandLabel : say.say("pset.solve.levelBand", { number: String(levelNumber), level: levelNameOf(solve.level, say.locale) });
-  const levelTitle = levelNumber === null ? bandLabel : say.say("puzzle.level.number", { number: String(levelNumber) });
+  const levelTitle = levelNumber === null ? bandLabel : say.say(suidoBig !== null ? "puzzle.level.big" : "puzzle.level.number", { number: String(levelNumber) });
   // "Draw 1", "7 tiles", "9×9": the size in the words its set-up chooses it by, capitalised as a value in a list is.
   const sizeShown = capitalised(sizeWordIn(solve.size, kind, say));
   const sizeLabel = puzzleSizeLabel(kind, say);

@@ -10,10 +10,10 @@ import { generateMahjong } from "./mahjong/generate";
 import { generateCube } from "./cube/generate";
 import { generateDiagonal, generateJigsaw, generateMoreOrLess, generateNumberPlace, generateSumCages, generateTowers } from "./kazu";
 import { generateSuido } from "./suido/generate";
-import { loadSuidoLevelsAt, suidoLevelPuzzle, suidoLevelsReadable } from "./suido/levels";
+import { loadSuidoBigRows, loadSuidoLevelsAt, suidoBigLevelPuzzle, suidoLevelPuzzle, suidoLevelsReadable } from "./suido/levels";
 import { loadMeikyuuLevelsFor, meikyuuLevelPuzzle } from "./meikyuu/levels";
 import { tobiishiLevelPuzzle } from "./tobiishi/levels";
-import { suidoLevelOfSeed } from "./suido/seed";
+import { suidoLevelOfSeed, suidoSetOfSeed } from "./suido/seed";
 import { loadWordData } from "./gomoji/wordData";
 import { generateBlackAndWhite } from "./blackAndWhite/generate";
 import { generateGomoji } from "./gomoji/generate";
@@ -100,7 +100,7 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
       return tobiishiLevelPuzzle(size, seed);
     case "suido":
       // A fixed level, its number the seed, read from its size's list (`preparePuzzle` loads it); any other seed a board of pipes made by the package, aimed at the level's rank among boards of its size (`suido/generate.ts`).
-      return suidoLevelOfSeed(seed) === null ? generateSuido(size, level, seed) : suidoLevelPuzzle(size, suidoLevelOfSeed(seed)!);
+      return suidoLevelOfSeed(seed) === null ? generateSuido(size, level, seed) : suidoSetOfSeed(seed) === "big" ? suidoBigLevelPuzzle(suidoLevelOfSeed(seed)!) : suidoLevelPuzzle(size, suidoLevelOfSeed(seed)!);
     case "shikaku":
     case "akari":
     case "loop":
@@ -145,7 +145,8 @@ export async function preparePuzzle(kind: PuzzleKind, size: number, language: Ku
   if (kind === "tsunagi") await Promise.all([loadTsunagiLevels(size), loadTsunagiLevelsOfSeed(size, seed ?? 1)]);
   if (kind === "meikyuu") await loadMeikyuuLevelsFor(size);
   // Suido's boards are the browser's to load: a server (no window) knows a level by a hash (`suido/levels.ts`). A test or a spec with no browser loads them through `suido/levelsModule.ts`.
-  if (kind === "suido" && puzzleLoads(kind, seed) && suidoLevelsReadable()) await loadSuidoLevelsAt(size);
+  // A level of the big-pieces set is read from its own file, whatever its size.
+  if (kind === "suido" && puzzleLoads(kind, seed) && suidoLevelsReadable()) await (suidoSetOfSeed(seed!) === "big" ? loadSuidoBigRows() : loadSuidoLevelsAt(size));
   if (kind === "kumimoji") await loadTileWords(language);
   // Pop Gomoji's dictionary guesses at three and seven letters (`popWords.ts`).
   if (kind === "gomojiPop") await loadPopGuesses(size);

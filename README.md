@@ -283,7 +283,13 @@ digits each, 507 being 5×7 (`suido/sizes.ts`). A level has no hint and no clock
 so its fastest times are one race run apart. Tsunagi's level screens and Suido's
 are the same components (`LevelPicker`, `LevelChips`, `LevelFastestTable`,
 `useSizeShelves`); what is each game's own is how a solved level is marked, and
-its words.
+its words. Suido has a second set of levels beside them (2026-10-06, package 1.5.0),
+chosen with a pair of chips on the set-up as Tsunagi's Classic and Portals are:
+**Big pieces**, sixty-four levels with 2×2 big pieces among the ordinary ones, easy
+to hard across every size from 5×5 to 20×20 in four blocks of sixteen, numbered
+across the sizes and named by a seed in the second half of the level block
+(`suidoSetOfSeed`). The rules page draws a guide to every piece with the package's own
+pictures (`SuidoPieceGuide`, plan in `docs/plans/suido/README.md`).
 
 **Pencil puzzles** 鉛筆 (2026-10-05, `src/lib/puzzles/pencil/`, plan in
 `docs/plans/pencil/README.md`): Shikaku, Akari, Loop, Hitori, Cross Sums and Regions (known elsewhere as Slitherlink, Kakuro and Fillomino), from Kazu 1.3.0 (`@johnmorrisdotca/kazu`, pinned in `package.json`), on a shelf

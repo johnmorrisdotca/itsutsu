@@ -15,12 +15,14 @@ import { suidoLevelBoards } from "@/lib/puzzles/suido/levelBoards";
 
 import type { Puzzle } from "../puzzles.types";
 import { HASH_LENGTH, suidoBoardHash } from "./boardHash";
-import { isSuidoLevelAt, suidoLevelBand } from "./levelCounts";
+import { suidoBigSizeOf } from "./bigLevels";
+import { isSuidoBigLevel, isSuidoLevelAt, suidoBigLevelBand, suidoLevelBand } from "./levelCounts";
 import { suidoLevelSeed } from "./seed";
 import { suidoSizeKey } from "./sizes";
 
 export { nextLevelLabel } from "../fixedLevel";
-export { isSuidoLevelAt, suidoLevelBand, suidoLevelCount } from "./levelCounts";
+export { isSuidoBigLevel, isSuidoLevelAt, suidoBigLevelBand, suidoLevelBand, suidoLevelCount, SUIDO_BIG_LEVEL_COUNT } from "./levelCounts";
+export { firstUnsolvedSuidoBigLevel, isSuidoBigLevelAt, nextSuidoBigLevel, openSuidoBigLevels, SUIDO_BIG_SIZE_LIST, suidoBigLevelsAt, suidoBigSizeOf } from "./bigLevels";
 export { blockOf, blockRange, blocksIn, SUIDO_BLOCK };
 export type { LevelRow };
 
@@ -50,6 +52,10 @@ export type { LevelRow };
  */
 const loaded = new Map<number, readonly LevelRow[]>();
 
+/** What the loader is asked for to read the big-pieces set (`levelsModule.ts` answers to it too). */
+export const BIG_KEY = "big";
+let bigLoaded: readonly LevelRow[] | null = null;
+
 /** How a caller with no browser reads a size's levels; set by `levelsModule.ts`, which no page imports. */
 let readWithoutBrowser: ((key: string) => Promise<readonly LevelRow[]>) | null = null;
 
@@ -65,8 +71,8 @@ export function suidoLevelsReadable(): boolean {
 
 async function readLevels(key: string): Promise<readonly LevelRow[]> {
   if (typeof window !== "undefined") {
-    const { loadSuidoLevels } = await import("@johnmorrisdotca/suido/levels");
-    return loadSuidoLevels(key);
+    const { loadSuidoBigLevels, loadSuidoLevels } = await import("@johnmorrisdotca/suido/levels");
+    return key === BIG_KEY ? loadSuidoBigLevels() : loadSuidoLevels(key);
   }
   if (readWithoutBrowser === null) throw new Error(`The ${key} levels are read in the browser only: a server knows a level by its hash (suido/levels.ts).`);
   return readWithoutBrowser(key);
@@ -97,6 +103,59 @@ export function suidoLevelsAt(size: number): readonly LevelRow[] {
 /** Whether a size's levels have been loaded here. */
 export function suidoLevelsLoaded(size: number): boolean {
   return loaded.has(size);
+}
+
+/** The big-pieces set's sixty-four levels, fetched once and kept; where there is no browser (a server), a refusal, as for a size. */
+export async function loadSuidoBigRows(): Promise<readonly LevelRow[]> {
+  bigLoaded ??= await readLevels(BIG_KEY);
+  return bigLoaded;
+}
+
+/** The big-pieces set, already loaded, or a refusal: nothing answers for a list it does not have. */
+export function suidoBigRows(): readonly LevelRow[] {
+  if (bigLoaded === null) throw new Error("Suido's big-pieces levels have not been loaded (loadSuidoBigRows).");
+  return bigLoaded;
+}
+
+/** Level `level` of the big-pieces set as a row, or undefined where the set is not loaded or the number is no level. */
+export function suidoBigBoardRow(level: number): LevelRow | undefined {
+  return bigLoaded?.[level - 1];
+}
+
+/** Whether the big-pieces set has been loaded here. */
+export function suidoBigRowsLoaded(): boolean {
+  return bigLoaded !== null;
+}
+
+/** The hash and the first characters of level `level` of the big-pieces set; undefined for a number that is no level. */
+export function suidoBigBoardOf(level: number): { prefix: string; hash: string } | undefined {
+  const known = suidoLevelBoards().big;
+  if (!isSuidoBigLevel(level)) return undefined;
+  const at = level - 1;
+  return { prefix: known.prefixes.slice(at * known.prefixLength, (at + 1) * known.prefixLength), hash: known.hashes.slice(at * HASH_LENGTH, (at + 1) * HASH_LENGTH) };
+}
+
+let bigNumbers: ReadonlyMap<string, number> | null = null;
+
+/** The level of the big-pieces set a board is, found by its hash whether the set is loaded or not; null for a board that is none of them. */
+export function suidoBigLevelOfBoard(board: string): number | null {
+  if (bigNumbers === null) {
+    const known = suidoLevelBoards().big;
+    const numbers = new Map<string, number>();
+    for (let at = 0; at * HASH_LENGTH < known.hashes.length; at += 1) numbers.set(known.hashes.slice(at * HASH_LENGTH, (at + 1) * HASH_LENGTH), at + 1);
+    bigNumbers = numbers;
+  }
+  return bigNumbers.get(suidoBoardHash(board)) ?? null;
+}
+
+/** Level `level` of the big-pieces set (loaded), as a puzzle: of the size it is at, its number in the set carried as its seed. */
+export function suidoBigLevelPuzzle(level: number): Puzzle {
+  const number = isSuidoBigLevel(level) ? level : 1;
+  const row = suidoBigRows()[number - 1]!;
+  const solution = levelAnswer(row);
+  const size = suidoBigSizeOf(number);
+  if (solution === null || size === null) throw new Error(`Suido big-pieces level ${number} is not a board and its answer.`);
+  return { kind: "suido", size, level: suidoBigLevelBand(number), seed: suidoLevelSeed(number, "big"), givens: row[0], solution };
 }
 
 /** The hash and the first characters of level `level`, which is how a server names the board; undefined for a size or a level that has none. */

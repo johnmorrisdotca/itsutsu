@@ -18,15 +18,17 @@ import { SUIDO_7X7 } from "@johnmorrisdotca/suido/levels-7x7";
 import { SUIDO_8X14 } from "@johnmorrisdotca/suido/levels-8x14";
 import { SUIDO_8X8 } from "@johnmorrisdotca/suido/levels-8x8";
 import { SUIDO_9X9 } from "@johnmorrisdotca/suido/levels-9x9";
+import { SUIDO_BIG } from "@johnmorrisdotca/suido/levels-big";
 import { makeSuido } from "@johnmorrisdotca/suido";
 
 import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_CODE_LONGEST, PUZZLE_SPECS } from "../puzzles.constants";
 import { HASH_LENGTH, suidoBoardHash } from "./boardHash";
 import { SUIDO_LEVEL_BOARDS } from "./levelBoards.data";
-import { suidoLevelBand, suidoLevelCount } from "./levelCounts";
-import { loadSuidoLevelsAt, suidoBoardOf, suidoLevelOfBoard } from "./levels";
-import { SUIDO_CODE_MOST, SUIDO_HUGE_SIZES, SUIDO_LEVEL_SIZES, suidoShapeOf } from "./sizes";
+import { SUIDO_BIG_LEVEL_COUNT, suidoBigLevelBand, suidoLevelBand, suidoLevelCount } from "./levelCounts";
+import { suidoBigSizeOf } from "./bigLevels";
+import { loadSuidoBigRows, loadSuidoLevelsAt, suidoBigBoardOf, suidoBigLevelOfBoard, suidoBoardOf, suidoLevelOfBoard } from "./levels";
+import { SUIDO_CODE_MOST, SUIDO_HUGE_SIZES, SUIDO_LEVEL_SIZES, suidoShapeOf, suidoSizeKey } from "./sizes";
 
 /**
  * EVERY LEVEL, AS A SERVER KNOWS IT: by a hash of the board and its first characters, and not by the boards, which are
@@ -55,7 +57,8 @@ const DATA: Record<number, readonly LevelRow[]> = {
 
 describe("a level, known by its hash", () => {
   it("has a hash and a prefix for every level the package has, in its order, and no two alike", () => {
-    expect(Object.keys(SUIDO_LEVEL_BOARDS).map(Number)).toEqual([...SUIDO_LEVEL_SIZES].sort((a, b) => a - b));
+    expect(Object.keys(SUIDO_LEVEL_BOARDS).filter((key) => key !== "big").map(Number)).toEqual([...SUIDO_LEVEL_SIZES].sort((a, b) => a - b));
+    expect(Object.keys(SUIDO_LEVEL_BOARDS)).toContain("big");
     for (const size of SUIDO_LEVEL_SIZES) {
       const rows = DATA[size]!;
       const known = SUIDO_LEVEL_BOARDS[size]!;
@@ -71,6 +74,34 @@ describe("a level, known by its hash", () => {
       // A prefix is no longer than it has to be, so the data stays small (`functions:size`): one less would not have told the levels apart.
       if (known.prefixLength > 12) expect(new Set(rows.map(([board]) => board.slice(0, known.prefixLength - 1))).size, `${size} prefix length`).toBeLessThan(rows.length);
     }
+  });
+
+  it("has a hash and a prefix for every level of the big-pieces set, in its own order, and no two alike", () => {
+    const known = SUIDO_LEVEL_BOARDS.big;
+    expect(SUIDO_BIG).toHaveLength(SUIDO_BIG_LEVEL_COUNT);
+    expect(known.hashes).toHaveLength(SUIDO_BIG.length * HASH_LENGTH);
+    expect(known.prefixes).toHaveLength(SUIDO_BIG.length * known.prefixLength);
+    SUIDO_BIG.forEach(([board], at) => {
+      expect(suidoBigBoardOf(at + 1), `level ${at + 1}`).toEqual({ prefix: board.slice(0, known.prefixLength), hash: suidoBoardHash(board) });
+      expect(suidoBigLevelOfBoard(board), `level ${at + 1}`).toBe(at + 1);
+    });
+    expect(new Set(SUIDO_BIG.map(([board]) => suidoBoardHash(board))).size).toBe(SUIDO_BIG.length);
+    expect(new Set(SUIDO_BIG.map(([board]) => board.slice(0, known.prefixLength))).size).toBe(SUIDO_BIG.length);
+    expect(suidoBigBoardOf(0)).toBeUndefined();
+    expect(suidoBigBoardOf(65)).toBeUndefined();
+    // No level of a size is a level of the set, and none of the set a level of a size.
+    for (const size of SUIDO_LEVEL_SIZES) for (const [board] of DATA[size]!.slice(0, 20)) expect(suidoBigLevelOfBoard(board)).toBeNull();
+    for (const [board] of SUIDO_BIG) for (const size of SUIDO_LEVEL_SIZES) expect(suidoLevelOfBoard(size, board)).toBeNull();
+  });
+
+  it("checks a level of the set at the size it is at, in full, and at no other", () => {
+    SUIDO_BIG.forEach((row, at) => {
+      const size = suidoBigSizeOf(at + 1)!;
+      expect(suidoSizeKey(size), `level ${at + 1}`).toBe(decodeLayout(row[0])!.width + "x" + decodeLayout(row[0])!.height);
+      expect(checkSolution("suido", size, row[0], levelAnswer(row)!, suidoBigLevelBand(at + 1)), `level ${at + 1}`).toEqual({ ok: true });
+      expect(checkSolution("suido", size, row[0], row[0]).ok, `level ${at + 1}`).toBe(false);
+      expect(checkSolution("suido", size === 5 ? 6 : 5, row[0], levelAnswer(row)!).ok, `level ${at + 1}`).toBe(false);
+    });
   });
 
   it("is a hash of sixteen hex digits, whatever the board", () => {
@@ -125,5 +156,6 @@ describe("a level, known by its hash", () => {
 
   it("is never loaded on a server, where there is no window: the boards are the browser's", async () => {
     for (const size of SUIDO_LEVEL_SIZES) await expect(loadSuidoLevelsAt(size)).rejects.toThrow("browser only");
+    await expect(loadSuidoBigRows()).rejects.toThrow("browser only");
   });
 });

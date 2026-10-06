@@ -30,3 +30,20 @@ export function suidoLevelBand(size: number, level: number): PuzzleLevel {
   const third = (level - 1) / count;
   return third < 1 / 3 ? "easy" : third < 2 / 3 ? "medium" : "hard";
 }
+
+/**
+ * THE BIG-PIECES SET: sixty-four levels with big pieces among the ordinary ones, from the easiest to the hardest across sizes 5×5 to 20×20,
+ * numbered 1 to 64 in a numbering of their own (`bigLevels.ts` says which size each is). Four blocks of sixteen, so a third of them is a band.
+ */
+export const SUIDO_BIG_LEVEL_COUNT = 64;
+
+/** Whether `level` is a level of the big-pieces set. */
+export function isSuidoBigLevel(level: number): boolean {
+  return Number.isInteger(level) && level >= 1 && level <= SUIDO_BIG_LEVEL_COUNT;
+}
+
+/** Which third of the big-pieces set a level sits in, as `suidoLevelBand` says it of a size's. */
+export function suidoBigLevelBand(level: number): PuzzleLevel {
+  const third = (level - 1) / SUIDO_BIG_LEVEL_COUNT;
+  return third < 1 / 3 ? "easy" : third < 2 / 3 ? "medium" : "hard";
+}

@@ -22,9 +22,9 @@ import { puzzleCopy } from "@/lib/puzzles/puzzleCopy";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
 import { PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
-import { suidoSolvedBy } from "@/lib/puzzles/server/suidoRecords";
+import { suidoBigSolvedBy, suidoSolvedBy } from "@/lib/puzzles/server/suidoRecords";
 import { tsunagiAttemptsBy, tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
-import { suidoLevelOfSeed } from "@/lib/puzzles/suido/seed";
+import { suidoLevelOfSeed, suidoSetOfSeed } from "@/lib/puzzles/suido/seed";
 import { SuidoLevelFastest } from "./SuidoLevelFastest";
 import { MeikyuuLevelFastest } from "./MeikyuuLevelFastest";
 import { meikyuuSolvedBy } from "@/lib/puzzles/server/meikyuuRecords";
@@ -85,7 +85,8 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
   const closed = Object.entries(solved?.[asked.size] ?? {}).flatMap(([level, best]) => (best.opens ? [] : [Number(level)]));
   /* A Suido LEVEL (its seed names one, `suido/seed.ts`): the member's solved levels at this size, so a level past the open blocks is shut and a solved one opens solved (`SuidoSolve`), and its fastest times below. A Suido board made from a seed reads nothing. */
   const suidoLevel = kind === "suido" && asked.seed !== null ? suidoLevelOfSeed(asked.seed) : null;
-  const suidoSolved = suidoLevel !== null && reader.memberId !== null ? (await suidoSolvedBy(reader.memberId))[asked.size] ?? {} : null;
+  // A level of the big-pieces set is read by its number across every size, a level by size by its number at the size.
+  const suidoSolved = suidoLevel === null || reader.memberId === null ? null : suidoSetOfSeed(asked.seed!) === "big" ? await suidoBigSolvedBy(reader.memberId) : ((await suidoSolvedBy(reader.memberId))[asked.size] ?? {});
   const suido =
     suidoLevel === null
       ? null
@@ -149,7 +150,7 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
       ) : null}
       {suidoLevel !== null ? (
         <div data-chrome>
-          <SuidoLevelFastest size={asked.size} level={suidoLevel} />
+          <SuidoLevelFastest size={asked.size} level={suidoLevel} set={suidoSetOfSeed(asked.seed!) ?? "classic"} />
         </div>
       ) : null}
       {/* Furniture, for just the board. */}

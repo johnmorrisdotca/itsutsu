@@ -12,12 +12,13 @@ import type { KumimojiLanguage, KumimojiLength } from "./kumimoji/kumimoji.types
 import { partyPlayersAsked } from "./kumimoji/party";
 import { isAnyDeal } from "./solitaire/rules";
 import { bonusRuleOfSeed } from "./mahjong/generate";
-import { isSuidoLevelAt, suidoLevelBand } from "./suido/levelCounts";
+import { suidoBigSizeOf } from "./suido/bigLevels";
+import { isSuidoBigLevel, isSuidoLevelAt, suidoBigLevelBand, suidoLevelBand } from "./suido/levelCounts";
 import { isMeikyuuLevelAt, meikyuuLevelBand } from "./meikyuu/levelCounts";
 import { isMeikyuuSolid, meikyuuSizeFromAddress, meikyuuSizeInAddress } from "./meikyuu/sizes";
 import { isTobiishiLevelAt } from "./tobiishi/levelCounts";
 import { tobiishiBand } from "./tobiishi/sizes";
-import { suidoKindOfSeed, suidoLevelOfSeed, suidoLevelSeed, suidoSquaresOfSeed, type SuidoSquares } from "./suido/seed";
+import { suidoKindOfSeed, suidoLevelOfSeed, suidoLevelSeed, suidoSetOfSeed, suidoSquaresOfSeed, type SuidoSet, type SuidoSquares } from "./suido/seed";
 import { isSuidoLevelSize, suidoSizeFromAddress, suidoSizeInAddress } from "./suido/sizes";
 import { CLASSIC_JIRAI, isJiraiVariant, jiraiSideFor, jiraiVariantOfSeed, type JiraiGrid, type JiraiShape, type JiraiVariant } from "./jirai/variants";
 import type { Kind as SuidoKind } from "@johnmorrisdotca/suido";
@@ -133,7 +134,7 @@ export type PuzzleAsked = {
   jirai?: JiraiVariant;
 };
 
-export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige", backwards: "sakasa", pipes: "pipes", squares: "squares", number: "number", grid: "grid", shape: "shape" } as const;
+export const PUZZLE_PARAMS = { size: "size", level: "level", seed: "seed", checks: "checks", hints: "hints", strict: "strict", headStart: "head-start", twins: "twins", quadruplets: "quadruplets", gameLength: "length", language: "language", doubleSet: "double", diagonals: "diagonals", players: "players", clock: "clock", bonus: "flowers", deal: "deal", dodge: "nige", backwards: "sakasa", pipes: "pipes", squares: "squares", number: "number", set: "set", grid: "grid", shape: "shape" } as const;
 
 /** The size and level a query asks for, or the kind's defaults where it asks for nothing usable. */
 export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | string[] | undefined>): PuzzleAsked {
@@ -169,7 +170,13 @@ export function puzzleAsked(kind: PuzzleKind, query: Record<string, string | str
   if (kind === "suido") {
     const numberText = one(PUZZLE_PARAMS.number);
     const number = numberText !== undefined ? Number(numberText) : suidoLevelOfSeed(seedAsked);
-    if (number !== null && isSuidoLevelSize(size) && isSuidoLevelAt(size, number)) {
+    // A level of the big-pieces set is of the size the level is at, whatever size the address said (`suido/bigLevels.ts`).
+    const set: SuidoSet = numberText !== undefined ? (one(PUZZLE_PARAMS.set) === "big" ? "big" : "classic") : (suidoSetOfSeed(seedAsked) ?? "classic");
+    if (set === "big" && number !== null && isSuidoBigLevel(number)) {
+      const bigSize = suidoBigSizeOf(number)!;
+      return { size: bigSize, level: suidoBigLevelBand(number), seed: suidoLevelSeed(number, "big"), checks: null, hints: false, strict: false, headStart: false, words: 1, clock: "none", pipes: "drains" };
+    }
+    if (set === "classic" && number !== null && isSuidoLevelSize(size) && isSuidoLevelAt(size, number)) {
       return { size, level: suidoLevelBand(size, number), seed: suidoLevelSeed(number), checks: null, hints: false, strict: false, headStart: false, words: 1, clock: "none", pipes: "drains" };
     }
   }
@@ -222,7 +229,11 @@ export function puzzleQuery(asked: PuzzleAsked): string {
   const params = new URLSearchParams({ [PUZZLE_PARAMS.size]: isMeikyuuSolid(asked.size) ? meikyuuSizeInAddress(asked.size) : suidoSizeInAddress(asked.size), [PUZZLE_PARAMS.level]: asked.level });
   // A Suido level is asked for by its number, which is the whole of what its seed says (`suidoLevelOfSeed`).
   const levelNumber = asked.seed !== null && isSuidoLevelSize(asked.size) ? suidoLevelOfSeed(asked.seed) : null;
-  if (levelNumber !== null) params.set(PUZZLE_PARAMS.number, String(levelNumber));
+  if (levelNumber !== null) {
+    params.set(PUZZLE_PARAMS.number, String(levelNumber));
+    // A level of the big-pieces set says so, as a Tsunagi level with portals does in its set-up's address.
+    if (suidoSetOfSeed(asked.seed!) === "big") params.set(PUZZLE_PARAMS.set, "big");
+  }
   else if (asked.seed !== null) params.set(PUZZLE_PARAMS.seed, String(asked.seed));
   if (asked.checks !== undefined && asked.checks !== null) params.set(PUZZLE_PARAMS.checks, String(asked.checks));
   if (asked.hints === true) params.set(PUZZLE_PARAMS.hints, "1");

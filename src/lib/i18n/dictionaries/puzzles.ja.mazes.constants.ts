@@ -71,6 +71,10 @@ export const PUZZLE_COPY_JA_MAZES = {
         "Levels: every size has fixed levels, 256 of them up to 14×14 and sixty-four on the huge boards (20×20, 28×28 and the long 20×50), easy to hard and the same for everybody, so a time on one can be compared with anybody's. They come in blocks of 16, and a block opens when every level of the block before it is solved. A level can have a twist, named in a chip under the board: Pumps, more than one, each feeding its own pipes. Locked pieces, which wear a padlock, cannot be turned and already face the right way, so build from them. Walls, which water cannot cross. Edges join, drawn with a dashed rim: water leaving one side comes in at the opposite one. Inlet to outlet, one path with no branch from the top left to the bottom right, the other pieces being decoys that stay dry. The 15th level of a block shows its twist and the 16th tests it.",
       ],
       [
+        "「大きい駒」のレベルは、定番のレベルとは別の、64問のもう1つのセットで、セットアップで選びます。どのレベルにも、ふつうの駒のあいだに大きい駒があり、5×5から20×20まで、あらゆるサイズにまたがって、やさしい順に並びます。進むほど、大きい駒の数が増え、形も複雑になります。大きい駒の中には、つながっていないパイプが1本、2本、または3本あり、近くを通っていても、片方の水がもう片方に届くことはありません。下に、すべての駒を描いています。",
+        "Big-pieces levels are a second set of sixty-four, chosen on the set-up beside the classic levels: every one has big pieces among its ordinary ones, from the easiest to the hardest across every size from 5×5 to 20×20, with more big pieces, and trickier ones, as the levels climb. A big piece holds one, two or three separate pipes, and the water in one never reaches another, however close. Below, every piece is drawn.",
+      ],
+      [
         "水が、その形が求めるところに届き、どこからも漏れなくなった瞬間に完成です。どのレベルも盤も、答えはちょうど1つで、時計は最初の1回転で動き出します。",
         "It is solved the moment the water reaches what its kind asks and nothing runs out. Every level and every board has exactly one answer, and the clock starts on your first turn.",
       ],

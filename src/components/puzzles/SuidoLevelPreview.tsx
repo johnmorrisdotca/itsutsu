@@ -9,7 +9,8 @@ import { phraseWith } from "@/components/i18n/phraseWith";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { playingAreaInset } from "@/components/board/margin";
 import { SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "@/components/live/live.constants";
-import { blockOf, suidoLevelCount, suidoLevelsAt } from "@/lib/puzzles/suido/levels";
+import { blockOf, suidoBigRows, suidoLevelCount, suidoLevelsAt, SUIDO_BIG_LEVEL_COUNT } from "@/lib/puzzles/suido/levels";
+import type { SuidoSet } from "@/lib/puzzles/suido/seed";
 import { suidoShapeOf, suidoSizeWord } from "@/lib/puzzles/suido/sizes";
 
 import { PuzzleBoard } from "./PuzzleBoard";
@@ -52,6 +53,7 @@ export function suidoFrameWidth(width: number, height: number): string {
  */
 export function SuidoLevelPreview({
   size,
+  set = "classic",
   level,
   best,
   solveId = null,
@@ -59,6 +61,8 @@ export function SuidoLevelPreview({
   ready,
 }: {
   size: number;
+  /** Which set the level is of: by size, or the big-pieces set (its numbers run across sizes, and `size` is the level's own). */
+  set?: SuidoSet;
   level: number;
   /** Its best time, where solved. */
   best: number | undefined;
@@ -72,7 +76,7 @@ export function SuidoLevelPreview({
   const solved = best !== undefined;
   const drawn = useMemo<{ layout: Layout; masks: number[] } | null>(() => {
     if (!ready) return null;
-    const row = suidoLevelsAt(size)[level - 1];
+    const row = (set === "big" ? suidoBigRows() : suidoLevelsAt(size))[level - 1];
     const layout = row === undefined ? null : decodeLayout(row[0]);
     if (row === undefined || layout === null) return null;
     /*
@@ -84,11 +88,11 @@ export function SuidoLevelPreview({
      */
     const answer = solved ? decodeLayout(levelAnswer(row) ?? "") : null;
     return answer === null ? { layout, masks: layout.cells } : { layout: answer, masks: answer.cells };
-  }, [ready, size, level, solved]);
+  }, [ready, set, size, level, solved]);
   const shape = suidoShapeOf(size) ?? { width: size, height: size };
-  const count = suidoLevelCount(size);
+  const count = set === "big" ? SUIDO_BIG_LEVEL_COUNT : suidoLevelCount(size);
   return (
-    <figure className="flex w-full flex-col items-center gap-2" data-testid="suido-preview" data-size={size} data-level={level} data-state={solved ? "solved" : locked ? "locked" : "open"} data-drawn={drawn !== null ? "true" : "false"} data-board={drawn === null ? undefined : encodeLayout(drawn.layout)}>
+    <figure className="flex w-full flex-col items-center gap-2" data-testid="suido-preview" data-set={set} data-size={size} data-level={level} data-state={solved ? "solved" : locked ? "locked" : "open"} data-drawn={drawn !== null ? "true" : "false"} data-board={drawn === null ? undefined : encodeLayout(drawn.layout)}>
       <div className={`${SET_UP_PREVIEW_BOX} relative aspect-square [container-type:size]`} aria-hidden="true">
         <div className="absolute inset-0 flex items-center justify-center">
           <div style={{ width: suidoFrameWidth(shape.width, shape.height) }}>

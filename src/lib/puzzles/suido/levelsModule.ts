@@ -9,6 +9,7 @@ import { readSuidoLevelsWith } from "./levels";
  */
 readSuidoLevelsWith(async (key) => {
   // Named one by one, so each size is its own chunk.
+  if (key === "big") return (await import("@johnmorrisdotca/suido/levels-big")).SUIDO_BIG;
   if (key === "5x5") return (await import("@johnmorrisdotca/suido/levels-5x5")).SUIDO_5X5;
   if (key === "6x6") return (await import("@johnmorrisdotca/suido/levels-6x6")).SUIDO_6X6;
   if (key === "7x7") return (await import("@johnmorrisdotca/suido/levels-7x7")).SUIDO_7X7;

@@ -1,7 +1,7 @@
 # Suido 水道: the pipe puzzle
 
-**Status: levels and boards since 2026-10-01; expanded 2026-10-05** (huge boards, big pieces, blocks that turn as one).
-Source package: `@johnmorrisdotca/suido` 1.4.0, pinned exactly in `package.json`
+**Status: levels and boards since 2026-10-01; expanded 2026-10-05** (huge boards, big pieces, blocks that turn as one); **the big-pieces levels and the piece guide 2026-10-06** (package 1.5.0).
+Source package: `@johnmorrisdotca/suido` 1.5.0, pinned exactly in `package.json`
 (github.com/johnmorrisdotca/suido, MIT, no dependencies).
 
 A pipe puzzle is a puzzle (a `PuzzleKind`, `src/lib/puzzles/suido/`), never a row in
@@ -66,3 +66,16 @@ exactly one answer, and the check is still O(cells): the board as played is the 
 | Made boards only | A level keeps its board for good, so none has them | |
 | A Hint | Lights the block's plate and its four pieces, and turns the block to face the answer | `SuidoBoard.tsx` |
 | A row under the board | "Block turns 回転" | `SuidoSquaresChips.tsx` |
+
+## The big-pieces levels and the guide to every piece (2026-10-06, package 1.5.0)
+
+John: "Could we try to make 64 levels, from difficulty 1 through 100 with big pieces integrated?", "why are all the different pieces types not in the documentation?", and "probably should be mixed 1x1 and 2x2 pieces right?". The package made a big piece hold one, two or three separate pipes (699 shapes in 32 families) and a second set of sixty-four levels where every level is a mix of 1×1 and 2×2 pieces, scored 1 to 100 across every size, with more big pieces and trickier ones as the levels climb (`docs/LEVELS.md` and `docs/PIECES.md` in the package).
+
+| Decision | What | Where |
+| --- | --- | --- |
+| A second set, chosen like Tsunagi's Portals | Two chips under the board on the set-up, Classic and Big pieces (大駒). The screen is one (`SuidoSetUpLayout`), drawn from either set's data (`SuidoSetUp` for the sizes' own levels, `SuidoBigSetUp` for the sixty-four), so choosing a set moves nothing. Offered to everyone from the first day, with no unlock | `SuidoSetPicker.tsx`, `SuidoSetUp.tsx`, `SuidoBigSetUp.tsx`, `SuidoSetUpLayout.tsx` |
+| Numbered across the sizes, each level at its own size | Level 1 to 64, in blocks of sixteen that open one after another across sizes. The size tiles stay (the set has fourteen of the sixteen: four shelves of four) and are a way about the set: a press goes to the first open level of that size not yet solved, and picking a level makes its size the one shown. A size's levels are not always side by side (the score puts 13×13 and 14×14 in turns), so a size is a list of levels (`suidoBigLevelsAt`) | `suido/bigLevels.ts`, `SuidoBigSetUp.tsx` |
+| The seed names the set | The second half of the level block: level N of the set is the block's first seed plus 500 plus N (`SUIDO_BIG_LEVEL_OFFSET`). A size has at most 256 levels, so the two never meet; every record that carries (size, seed) carries a level of either set, so kept runs, solves, races and addresses work as they do. The address says `number=12&set=big` and the size the level is at, whatever size it was asked at | `suido/seed.ts`, `puzzleAddress.ts` |
+| A server knows them by hash, as every level | `levelBoards.data.ts` has a `big` entry (the sixty-four, in their order) beside the sizes', written by `scripts/suido-level-hashes.ts` and packed by `pnpm data:pack`; the boards themselves are the browser's (`loadSuidoBigRows`, read from `@johnmorrisdotca/suido/levels-big`), so no server function carries them. `checkSuido` accepts a level of the set at the size it is at | `suido/levels.ts`, `suido/check.ts`, `levelBoards.test.ts` |
+| Records | A member's solved levels of the set (`suidoBigSolvedBy`, found by the `;b` every board of the set has) and the fastest on a level (`suidoBigLevelFastest`); this browser's solves are kept with the size's (`keepSolveHere`) and found by the board's hash (`keptBigSolves`). Priced by the ladder as any Suido solve is: the size's rung and the level's third of its set | `server/suidoRecords.ts`, `suidoKept.ts` |
+| The guide | A section on the rules page: every piece the package guides (`SUIDO_PIECE_GUIDE`), drawn by the package's own `drawGuidePiece`, with its name and what it does in English and Japanese from the phrase table (`suidoGuideWords.ts`, held to the package's words by `suidoGuide.coverage.test.ts`), then a few big pieces and one of each of the 32 families. It is loaded in the browser only (`SuidoPieceGuideLazy`, `ssr: false`) so no server function carries the package's guide | `SuidoPieceGuide.tsx`, `rules/page.tsx` |

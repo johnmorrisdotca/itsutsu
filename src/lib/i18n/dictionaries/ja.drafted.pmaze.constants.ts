@@ -770,4 +770,319 @@ export const JA_DRAFTED_PMAZE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "{name} board",
     review: AGENT_READ,
   },
+  "pmaze.guide.ground.name": {
+    text: "地面",
+    back: "Ground",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.ground.text": {
+    text: "何も置かれていないマス。水をすべての駒に通さなくてよい盤にだけあり、回すことはできません。",
+    back: "Bare ground, with nothing on it. Only boards whose water need not reach every piece have it, and it is never turned.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.end.name": {
+    text: "行き止まり",
+    back: "End",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.end.text": {
+    text: "口が1つの駒で、パイプの端です。4方向に向けられます。水が届いたら、口は隣の駒の口と合わせないと、水がこぼれます。",
+    back: "One opening: a pipe that stops. It faces any of four ways. Wherever the water reaches an end, the opening must meet the opening of a piece beside it, or the water runs out.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.straight.name": {
+    text: "まっすぐ",
+    back: "Straight",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.straight.text": {
+    text: "向かい合う2辺に口がある駒。縦と横の2通りに向けられるので、押すと切り替わります。",
+    back: "Two openings on opposite sides. It faces two ways, along or across, so a tap on it flips it.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.elbow.name": {
+    text: "曲がり",
+    back: "Elbow",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.elbow.text": {
+    text: "隣り合う2辺に口がある、角の駒。4方向に向けられます。",
+    back: "Two openings on sides that meet, a corner. It faces any of four ways.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.tee.name": {
+    text: "T字",
+    back: "Tee",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.tee.text": {
+    text: "口が3つで、枝分かれする駒。4方向に向けられ、水はここで分かれます。",
+    back: "Three openings, a pipe that branches. It faces any of four ways, and the water splits at it.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.cross.name": {
+    text: "十字",
+    back: "Cross",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.cross.text": {
+    text: "口が4つの交差点で、4方向の隣と全部つながります。回しても同じ見た目なので、押しても何も変わりません。",
+    back: "Four openings, a crossing where all four neighbours join. It looks the same turned, so a tap on it changes nothing.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.pump.name": {
+    text: "ポンプ",
+    back: "Pump",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.pump.text": {
+    text: "水の出どころ。駒の上のこい青の円に描かれたしずくです。地面以外のどの駒にも置け、その駒と同じように回ります。ポンプは1つの盤に1つか複数あり、それぞれが自分のパイプを満たします。",
+    back: "Where the water comes from, drawn as a drop in a dark blue disc on a piece. A pump may sit on any piece but ground, and is turned like it. A board has one pump or several, and every pump fills its own pipes.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.drain.name": {
+    text: "排水口",
+    back: "Drain",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.drain.text": {
+    text: "水が最後に届くべき場所。駒の上の丸い鉢で、水が届くと満ちます。排水口の盤では、すべての排水口に水を届けます。水がいらない駒は乾いたままで、どの向きでもかまいません。",
+    back: "Where the water must end up, a round bowl on a piece that fills when the water reaches it. On a board of drains the water must reach every drain, and pieces it does not need may stay dry and face any way.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.pumpAndDrain.name": {
+    text: "ポンプから排水口へ",
+    back: "Pump to drain",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.pumpAndDrain.text": {
+    text: "口がつながったポンプと排水口。水は一方からもう一方へ流れ、両方が満ちます。これがゲームのすべてです。駒を回して、すべての排水口に水を届け、どこからもこぼさないようにします。",
+    back: "A pump and a drain with their openings joined: the water runs from the one to the other and fills both. It is the whole of the game: turn the pieces until every drain is reached and nothing leaks.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.locked.name": {
+    text: "固定駒",
+    back: "Locked piece",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.locked.text": {
+    text: "回せない駒で、小さな鍵がついています。盤に置かれた向きのままなので、ここを手がかりに考えられます。",
+    back: "A piece that cannot be turned, marked by a small padlock. It stays as the board gives it, so it is a fixed point to work from.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.wall.name": {
+    text: "壁",
+    back: "Wall",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.wall.text": {
+    text: "2つのマスのあいだにある太い棒。水は越えられません。壁をはさんで向かい合う2つの駒は、つながりません。",
+    back: "A thick bar across the edge between two cells, which the water cannot cross: two pieces that face each other across it do not join.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.wrap.name": {
+    text: "端がつながる盤",
+    back: "Edges that join",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.wrap.text": {
+    text: "赤い点線のふちの盤。一方の端から出たパイプが、反対側の端から入ってきます。盤は輪になっていて、端がありません。",
+    back: "A board with a dashed red rim: a pipe that leaves one side comes in at the opposite side, so the board is a ring and its edge is no edge.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigSnake.name": {
+    text: "大きな駒：口が1つ",
+    back: "Big piece: one pipe, one opening",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigSnake.text": {
+    text: "4マスが1つの駒で、中にはぐるりと回って止まる1本のパイプがあります。口は1つだけ。ぜんたいで1つの駒として、4分の1ずつ回ります。",
+    back: "A square of four cells that is one piece, with one pipe in it that winds round and stops: a single opening. It turns as a whole, a quarter at a time.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigHairpin.name": {
+    text: "大きな駒：ヘアピン",
+    back: "Big piece: a hairpin",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigHairpin.text": {
+    text: "入って、そのまま戻ってくる1本のパイプ。2つの口が、四角の同じ辺に並びます。",
+    back: "One pipe that goes in and comes straight back out, so both of its openings are side by side on one edge of the square.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigTwoStraights.name": {
+    text: "大きな駒：並んだ2本",
+    back: "Big piece: two pipes side by side",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigTwoStraights.text": {
+    text: "すれちがうだけで、つながらない2本のパイプ。近くても、片方の水がもう片方に届くことはありません。口は4つで、向かい合う2辺に2つずつ。2方向に向けられます。",
+    back: "Two pipes that run past each other and never meet, however close: the water in one never reaches the other. Four openings, two on each of two opposite sides. It faces two ways.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigTwoElbows.name": {
+    text: "大きな駒：曲がりの中の曲がり",
+    back: "Big piece: one corner inside another",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigTwoElbows.text": {
+    text: "どちらも曲がった2本のパイプで、1本がもう1本の内側を曲がります。つながりません。口は4つで、隣り合う2辺にあります。",
+    back: "Two pipes, each a corner, one bending inside the other. They never meet. Four openings, on two sides that meet.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigThroughAndBranch.name": {
+    text: "大きな駒：通り抜ける1本と枝分かれ",
+    back: "Big piece: one pipe through, one branching",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigThroughAndBranch.text": {
+    text: "1本のパイプは四角をまっすぐ抜け、もう1本は横に枝分かれします。口は6つで、3辺に2つずつあります。",
+    back: "One pipe runs straight through the square while the other branches off to the side. Six openings, two on each of three sides.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigHairpinOverStraight.name": {
+    text: "大きな駒：ヘアピンとまっすぐ",
+    back: "Big piece: a hairpin and a straight pipe",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigHairpinOverStraight.text": {
+    text: "口が同じ辺に2つあるU字のパイプと、四角の反対側を横切るまっすぐなパイプ。2本はつながりません。",
+    back: "A U-shaped pipe with both openings on one edge, and a straight pipe running across the opposite side of the square. They never meet.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigBranchAndStraight.name": {
+    text: "大きな駒：枝のあるパイプとまっすぐ",
+    back: "Big piece: a branching pipe and a straight one",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigBranchAndStraight.text": {
+    text: "入って枝分かれし、枝の1つが四角の中で止まるパイプと、まっすぐ横切るパイプが並びます。",
+    back: "A pipe that comes in, branches, and has one branch ending inside the square, beside a pipe that runs straight across.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigTwoStubbedPipes.name": {
+    text: "大きな駒：中で止まる枝のある2本",
+    back: "Big piece: two pipes with a stub inside",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigTwoStubbedPipes.text": {
+    text: "口が2つずつの2本のパイプ。どちらもT字で、枝の1つが四角の中で止まります。",
+    back: "Two pipes of two openings each. Each is a tee with one of its branches ending inside the square.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigThreePipes.name": {
+    text: "大きな駒：口が1つずつの3本",
+    back: "Big piece: three pipes, one opening each",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigThreePipes.text": {
+    text: "4マスの中に、つながっていない3本のパイプがあります。短い行き止まりが2つと、入って中で止まる少し長い1本です。",
+    back: "Three separate pipes in a square of four cells: two short stubs and a longer one that goes in and stops inside. None is joined to another.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigThreePipesTwoOpenings.name": {
+    text: "大きな駒：口が2つずつの3本",
+    back: "Big piece: three pipes, two openings each",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigThreePipesTwoOpenings.text": {
+    text: "口が2つずつの、つながっていない3本のパイプ。ふつうの曲がりが2本と、枝が四角の中で止まる1本です。",
+    back: "Three separate pipes of two openings each: two plain corners and a pipe with a branch that stops inside the square.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigCrossingAndStub.name": {
+    text: "大きな駒：十字の入った駒と行き止まり",
+    back: "Big piece: a crossing inside, and a stub",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigCrossingAndStub.text": {
+    text: "十字とT字が中でつながった、口が6つの1本のパイプと、そのとなりにある別の行き止まり。",
+    back: "One pipe with six openings, a cross and tees joined inside the square, and a stub of its own beside it.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigGrid.name": {
+    text: "大きな駒：十字の格子",
+    back: "Big piece: a grid of crossings",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigGrid.text": {
+    text: "口が8つの1本のパイプ。四角が持てる最多です。どのマスもT字か十字で、中で水があらゆる方向へ進みます。",
+    back: "One pipe with eight openings, the most a square has: every cell a tee or a cross, so the water goes every way inside it.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigTwoTeePipes.name": {
+    text: "大きな駒：T字2つの2本",
+    back: "Big piece: two pipes of two tees",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigTwoTeePipes.text": {
+    text: "口が4つずつの2本のパイプが並び、どのマスもT字です。口は合わせて8つで、片方の水がもう片方へ移ることはありません。",
+    back: "Two pipes of four openings each, every cell a tee: eight openings in all, and water that never crosses from one pipe to the other.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.blockTurn.name": {
+    text: "いっしょに回るブロック",
+    back: "Block that turns as one",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.blockTurn.text": {
+    text: "曲がり、行き止まり、まっすぐ、T字の4つのふつうの駒。1つずつは回せません。押すと四角ぜんたいが4分の1回り、それぞれの駒が次の場所へ動きながら回ります。中がつながっていない、大きな駒のようなものです。",
+    back: "Four ordinary pieces, a corner, an end, a straight and a tee, that cannot be turned on their own. A tap turns the whole square a quarter, and each piece moves round to the next place as it turns, like a bigger piece that is not joined inside.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.title": {
+    text: "駒の一覧",
+    back: "The pieces",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.lead": {
+    text: "水道のすべての駒を、パッケージ自身が描いています。ふつうの駒は、押すと4分の1回ります。大きな駒とブロックは、四角ごといっしょに回ります。",
+    back: "Every piece in Suido, each drawn by the package itself. A tap turns an ordinary piece a quarter; a big piece and a block turn as one square.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.groupTurn": {
+    text: "回す駒",
+    back: "Pieces you turn",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.groupWater": {
+    text: "水の出発点と行き先",
+    back: "Where the water starts and ends",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.groupTwist": {
+    text: "盤に加わるもの",
+    back: "What a board adds",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.groupBlock": {
+    text: "いっしょに回る四角",
+    back: "A square that turns as one",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigTitle": {
+    text: "大きな駒",
+    back: "Big pieces",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.bigLead": {
+    text: "大きな駒は4マスを使い、回すときは1つの駒です。中には1本、2本、または3本の、つながっていないパイプがあります。近くを通っていても、片方の水がもう片方に届くことはありません。大きな駒がとれる699通りの形のうち、いくつかを見せます。",
+    back: "A big piece fills four squares and is one piece to turn. Inside it are one, two or three separate pipes: water in one never reaches another, however close they run. These are a few of the 699 shapes a big piece can have.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.familiesTitle": {
+    text: "大きな駒の全グループ",
+    back: "Every family of big piece",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.familiesLead": {
+    text: "グループとは、パイプごとの口の数が同じ大きな駒のことです。2+2は口が2つのパイプ2本、1+1+1は口が1つのパイプ3本です。32グループあり、絵はそれぞれのグループの形を1つずつ、形の数といっしょに示します。",
+    back: "A family is the big pieces whose pipes have the same numbers of openings: 2+2 is two pipes of two openings each, and 1+1+1 is three pipes of one opening each. There are 32 families, and each picture is one shape of its family, with how many shapes it has.",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
+  "pmaze.guide.family": {
+    text: "{family} ・ {count}通り",
+    back: "{family} · {count}",
+    ask: "Drafted by the builder from the demo's own wording, not yet read by the Japanese reviewer or a person.",
+  },
 };

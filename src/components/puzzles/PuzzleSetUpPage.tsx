@@ -15,9 +15,10 @@ import { meikyuuSolvedBy } from "@/lib/puzzles/server/meikyuuRecords";
 import { isMeikyuuSize, meikyuuSizeFromAddress } from "@/lib/puzzles/meikyuu/sizes";
 import { tobiishiSolvedBy } from "@/lib/puzzles/server/tobiishiRecords";
 import { isTobiishiSize } from "@/lib/puzzles/tobiishi/sizes";
-import { suidoSolvedBy } from "@/lib/puzzles/server/suidoRecords";
+import { suidoBigSolvedBy, suidoSolvedBy } from "@/lib/puzzles/server/suidoRecords";
 import { tsunagiAttemptsBy, tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import { suidoModeOf } from "@/lib/puzzles/suido/mode";
+import { suidoBigLevelsAt } from "@/lib/puzzles/suido/bigLevels";
 import { suidoSizeFromAddress } from "@/lib/puzzles/suido/sizes";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { keptRunAsked, puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
@@ -108,8 +109,10 @@ export async function PuzzleSetUpPage({
       {kind === "suido" && suidoModeOf(query) === "levels" ? (
         <SuidoSetUp
           hasAccount={hasAccount}
-          {...(memberId === null ? { solved: {} } : setUpSuidoSolves(await suidoSolvedBy(memberId)))}
+          {...(memberId === null ? { solved: {} } : { ...setUpSuidoSolves(await suidoSolvedBy(memberId)), ...setUpBigSolves(await suidoBigSolvedBy(memberId)) })}
           initialSize={suidoSizeAsked(query)}
+          initialSet={(Array.isArray(query.set) ? query.set[0] : query.set) === "big" ? "big" : "classic"}
+          askedSize={suidoBigSizeAsked(query)}
         />
       ) : kind === "meikyuu" ? (
         <>
@@ -197,6 +200,22 @@ function suidoSizeAsked(query: Record<string, string | string[] | undefined>): n
   const text = Array.isArray(query.size) ? query.size[0] : query.size;
   const asked = text === undefined ? null : suidoSizeFromAddress(text);
   return asked !== null && PUZZLE_SPECS.suido.sizes.includes(asked) ? asked : PUZZLE_SPECS.suido.defaultSize;
+}
+
+/** The size an address asks the big-pieces levels to open on, or null where it names none (or one the set has no levels at). */
+function suidoBigSizeAsked(query: Record<string, string | string[] | undefined>): number | null {
+  const text = Array.isArray(query.size) ? query.size[0] : query.size;
+  const asked = text === undefined ? null : suidoSizeFromAddress(text);
+  return asked !== null && suidoBigLevelsAt(asked).length > 0 ? asked : null;
+}
+
+/** A member's solved levels of the big-pieces set, by their number in it: each level's best time, and the solve it was, which its time opens. */
+function setUpBigSolves(solved: Awaited<ReturnType<typeof suidoBigSolvedBy>>): { bigSolved: Record<number, number>; bigBestSolves: Record<number, string> } {
+  const entries = Object.entries(solved);
+  return {
+    bigSolved: Object.fromEntries(entries.map(([level, best]) => [level, best.elapsedMs])),
+    bigBestSolves: Object.fromEntries(entries.map(([level, best]) => [level, best.solveId])),
+  };
 }
 
 /**
