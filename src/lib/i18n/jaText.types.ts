@@ -1,3 +1,4 @@
+import type { Outlook } from "../gomoku/analysis.types";
 import type { HandicapRule, OpeningRule, RuleVariant } from "../gomoku/gomoku.types";
 import type { BotTier } from "../gomoku/opponent.types";
 import type { XpEventType } from "../xp/xp.types";
@@ -33,6 +34,7 @@ export type JaOpeningText = { label: string; tagline: string; rules: readonly st
 export type JaHandicapText = { description: string; from: string };
 export type JaBotText = { strength: string; blurb: string; bio: string };
 export type JaLevelText = { name: string; note: string };
+export type JaOutlookText = { label: string; detail: string };
 export type JaAwardText = { blurb: string; sentence: string };
 
 /** The Japanese that sits beside data: games, openings, computer players, families, levels and awards. */
@@ -52,6 +54,10 @@ export type JaCopyText = {
    * the puzzle's own `kanji`, filled in when the paragraph is drawn, so a rename is still one edit.
    */
   attribution: readonly string[];
+  /** The threat reading's heading and detail, by outlook. */
+  outlooks: Record<Outlook, JaOutlookText>;
+  /** The losing-move note's heading and detail. */
+  fatalMove: JaOutlookText;
   /** The hundred level names, level 1 first. */
   levels: readonly JaLevelText[];
   awards: Record<XpEventType, JaAwardText>;

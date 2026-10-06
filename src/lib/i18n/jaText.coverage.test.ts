@@ -7,6 +7,7 @@ import { chainTo, pageRoots, reachOf, sourceGraph } from "../pageFunctionGraph";
 
 import { jaBack } from "./copyJa.types";
 import { JA_DRAFTED } from "./dictionaries/ja.drafted.constants";
+import { FATAL_MOVE_COPY_JA, OUTLOOK_COPY_JA } from "./dictionaries/analysis.ja.constants";
 import { ALSO_LISTED_COPY_JA, FAMILY_COPY_JA } from "./dictionaries/families.ja.constants";
 import { rulesAttributionJa } from "./dictionaries/attribution.ja.constants";
 import { BOT_COPY_JA } from "./dictionaries/bots.ja.constants";
@@ -139,6 +140,8 @@ function sentencesWithBacks(): { ja: string; back: string }[] {
   for (const ja of Object.values(BOT_COPY_JA)) [ja.strength, ja.blurb, ja.bio].forEach(line);
   for (const ja of Object.values(FAMILY_COPY_JA)) line(ja.blurb);
   for (const ja of Object.values(ALSO_LISTED_COPY_JA)) line(ja.why);
+  for (const ja of Object.values(OUTLOOK_COPY_JA)) [ja.label, ja.detail].forEach(line);
+  [FATAL_MOVE_COPY_JA.label, FATAL_MOVE_COPY_JA.detail].forEach(line);
   rulesAttributionJa((kind) => ({ ja: kind, en: kind })).paragraphs.forEach(line);
   for (const row of LEVEL_NAMES_JA) pairs.push({ ja: row.name, back: row.back });
   for (const row of [...Object.values(XP_AWARD_COPY_JA), ...Object.values(IMPORTED_VOLUME_COPY_JA)]) pairs.push({ ja: row.blurb, back: row.back });

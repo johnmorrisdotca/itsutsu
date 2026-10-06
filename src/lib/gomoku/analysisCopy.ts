@@ -1,6 +1,5 @@
-import { FATAL_MOVE_COPY_JA, OUTLOOK_COPY_JA } from "../i18n/dictionaries/analysis.ja.constants";
-import { jaText } from "../i18n/copyJa.types";
 import type { Locale } from "../i18n/i18n.types";
+import { jaText } from "../i18n/jaText";
 
 import { FATAL_MOVE_DISPLAY, OUTLOOK_DISPLAY, type AdviceTone } from "./analysis.constants";
 import type { Outlook } from "./analysis.types";
@@ -16,12 +15,13 @@ import type { Outlook } from "./analysis.types";
 export function outlookCopy(outlook: Outlook, locale: Locale): { label: string; kanji: string; tone: AdviceTone; detail: string } {
   const english = OUTLOOK_DISPLAY[outlook];
   if (locale !== "ja") return english;
-  const ja = OUTLOOK_COPY_JA[outlook];
-  return { ...english, label: jaText(ja.label), detail: jaText(ja.detail) };
+  const ja = jaText().outlooks[outlook];
+  return { ...english, label: ja.label, detail: ja.detail };
 }
 
 /** The losing-move note's heading and detail, in the reader's language. */
 export function fatalMoveCopy(locale: Locale): { label: string; kanji: string; detail: string } {
   if (locale !== "ja") return FATAL_MOVE_DISPLAY;
-  return { ...FATAL_MOVE_DISPLAY, label: jaText(FATAL_MOVE_COPY_JA.label), detail: jaText(FATAL_MOVE_COPY_JA.detail) };
+  const ja = jaText().fatalMove;
+  return { ...FATAL_MOVE_DISPLAY, label: ja.label, detail: ja.detail };
 }

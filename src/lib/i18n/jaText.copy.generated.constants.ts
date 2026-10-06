@@ -775,6 +775,40 @@ export const JA_COPY_TEXT: JaCopyText = {
     "Connect FourはHasbroの、PentagoはMindtwisterの、PenteとKeryo-PenteはWinning Movesの商標です。いずれもこのサイトとは関係がなく、これらの名前は、ゲームが何に似ているかを説明するためだけに載せています。連珠、オモク、Caro、Connect6、Squava、Teeko、Notakto、Wild tic-tac-toe（自由三目）は、昔からあるか、すでに出版されているゲームで、その規則は自分たちの言葉で説明しています。罠三と四角四目は、最初の2つ（SquavaとTeeko）につけた、このサイト独自の名前です。",
     "パズルもこのサイト独自のもので、規則から自前のコードで作っていますが、多くはすでによく知られた名前で呼ばれています。{puzzle.numberPlace}、{puzzle.jigsaw}、{puzzle.diagonal}、{puzzle.sumCages}は、Howard GarnsがNumber Placeとして最初に印刷したパズルと、そのもっとも一般的な変種です。数独はニコリの日本での商標なので、日本語では日本の出版社と同じようにナンプレと呼びます。{puzzle.moreOrLess}は、ニコリが出版したTamaki Seimiyaのパズルで、{puzzle.towers}は同名の盤面パズルです。{puzzle.hiddenStones}は、Star Battleの1つ星の形のこのサイト版で、Queensの名前で毎日遊ばれてもいますが、この名前はLinkedInのものです。{puzzle.blackAndWhite}は、TakuzuやBinairoの名前で売られている二値パズルのこのサイト版で、これらの名前はEUで商標になっています。LinkedInはこれを独自の形でTangoとして遊ばせていますが、この名前もLinkedInのものです。{puzzle.gomoji}は、The New York Times Companyの商標であるWordleの名前で出版された、言葉当てゲームのこのサイト版です。言葉はSCOWL（Kevin Atkinson）をもとに作った、このサイト独自のリストです。{puzzle.bridges}は、ニコリが1990年に初めて印刷した島と橋のパズルのこのサイト版で、ニコリが出版している名前ではなく、このサイト独自の名前をつけています。{puzzle.pictureLogic}は、英語ではnonogramとして知られる、盤面で絵を作るパズルのこのサイト版で、Non IshidaとTetsuya Nishioが、それぞれ1987年に日本で考案しました。多くの名前で売られ、その一部は商標ですが、ここではそのどれも使っていません。{puzzle.mahjong}は、Brodie Lockardが1981年にMah-Jonggとして最初に作った、牌を合わせて取り除く一人遊びで、その後、持ち主のものである多くの名前で売られてきました。このサイト版は、独自の配置と、このサイトのために描いた牌で遊びます。{puzzle.shikaku}、{puzzle.akari}、{puzzle.loop}、{puzzle.hitori}、{puzzle.crossSums}、{puzzle.regions}は、ニコリが日本で出版しているペンシルパズルで、{puzzle.loop}、{puzzle.crossSums}、{puzzle.regions}は別の名前で出版されています。{puzzle.crossSums}は、1966年にDell MagazinesのJacob E. Funkが考案しました。盤面は、このサイト独自のオープンソースのパッケージKazuが作り、出版された盤面は一切再現していません。{puzzle.jirai}は、Microsoftの名前であるMinesweeperで売られている地雷探しゲームのこのサイト版で、盤面はこのサイト独自のオープンソースのパッケージJiraiが配ります。これらの名前は、パズルが何かを説明するためだけに載せていて、一部はニコリの商標かもしれません。これらの権利者は、いずれもこのサイトとは関係がありません。"
   ],
+  "outlooks": {
+    "won": {
+      "label": "勝ち",
+      "detail": "5つ並びました。対局は終わりです。"
+    },
+    "winning": {
+      "label": "必勝の形です",
+      "detail": "相手が止められない線があります。見つけられますか？"
+    },
+    "ahead": {
+      "label": "主導権があります",
+      "detail": "相手が答えているのは、こちらの狙いです。この調子で続けましょう。"
+    },
+    "even": {
+      "label": "互角",
+      "detail": "盤上に、強制されている手はまだありません。"
+    },
+    "danger": {
+      "label": "受けが必要です",
+      "detail": "盤上に狙いがあります。受けないと、5つ並んでしまいます。"
+    },
+    "critical": {
+      "label": "あと1手で負けです",
+      "detail": "いま、まさに正しい場所を止めないと、次の1手で決まってしまいます。"
+    },
+    "lost": {
+      "label": "敗勢です",
+      "detail": "相手には止められない勝ちがあります。見つけられれば、ですが。"
+    }
+  },
+  "fatalMove": {
+    "label": "敗着",
+    "detail": "この手で勝負が決まってしまいました。この手の前までは、まだ戦える形でした。"
+  },
   "levels": [
     {
       "name": "インサートコイン",

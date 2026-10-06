@@ -1,3 +1,4 @@
+import { FATAL_MOVE_COPY_JA, OUTLOOK_COPY_JA } from "./dictionaries/analysis.ja.constants";
 import { ALSO_LISTED_COPY_JA, FAMILY_COPY_JA } from "./dictionaries/families.ja.constants";
 import { rulesAttributionJa } from "./dictionaries/attribution.ja.constants";
 import { BOT_COPY_JA } from "./dictionaries/bots.ja.constants";
@@ -62,6 +63,8 @@ export function buildCopyText(): JaCopyText {
   const families = Object.fromEntries(Object.entries(FAMILY_COPY_JA).map(([key, ja]) => [key, lineText(ja.blurb)]));
   const alsoListed = Object.fromEntries(Object.entries(ALSO_LISTED_COPY_JA).map(([key, ja]) => [key, lineText(ja.why)]));
   const attribution = rulesAttributionJa((kind) => ({ ja: puzzleMark(kind), en: puzzleMark(kind) })).paragraphs.map(lineText);
+  const outlooks = Object.fromEntries(Object.entries(OUTLOOK_COPY_JA).map(([outlook, ja]) => [outlook, { label: lineText(ja.label), detail: lineText(ja.detail) }]));
+  const fatalMove = { label: lineText(FATAL_MOVE_COPY_JA.label), detail: lineText(FATAL_MOVE_COPY_JA.detail) };
   const levels = LEVEL_NAMES_JA.map((row) => ({ name: row.name, note: row.note }));
   const awards = Object.fromEntries(
     (Object.keys(XP_AWARD_COPY_JA) as XpEventType[]).map((type) => [type, { blurb: XP_AWARD_COPY_JA[type].blurb, sentence: XP_AWARD_COPY_JA[type].sentence }]),
@@ -69,7 +72,7 @@ export function buildCopyText(): JaCopyText {
   const importedVolumes = Object.fromEntries(
     (Object.keys(IMPORTED_VOLUME_COPY_JA) as ImportedVolumeType[]).map((type) => [type, { blurb: IMPORTED_VOLUME_COPY_JA[type].blurb }]),
   );
-  return { variants, openings, handicaps, secondStone, bots, families, alsoListed, attribution, levels, awards, importedVolumes } as unknown as JaCopyText;
+  return { variants, openings, handicaps, secondStone, bots, families, alsoListed, attribution, outlooks, fatalMove, levels, awards, importedVolumes } as unknown as JaCopyText;
 }
 
 const HEADER = `/*
