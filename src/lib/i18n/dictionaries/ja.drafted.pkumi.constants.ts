@@ -501,7 +501,7 @@ export const JA_DRAFTED_PKUMI: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pkumi.party.playerLabel": {
-    text: "プレイヤー{n}",
+    text: "対局者{n}",
     back: "Player {n}",
     review: AGENT_READ,
   },
@@ -511,7 +511,7 @@ export const JA_DRAFTED_PKUMI: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pkumi.party.computerAria": {
-    text: "プレイヤー{n}はコンピュータです",
+    text: "対局者{n}はコンピュータです",
     back: "Player {n} is a computer",
     review: AGENT_READ,
   },
@@ -671,7 +671,7 @@ export const JA_DRAFTED_PKUMI: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pkumi.seats.nameAria": {
-    text: "新しいプレイヤーの名前",
+    text: "新しい対局者の名前",
     back: "The new player's name",
     review: AGENT_READ,
   },
@@ -686,7 +686,7 @@ export const JA_DRAFTED_PKUMI: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pkumi.seats.note": {
-    text: "新しいプレイヤーは、{name}の次の席に着き、袋から{size}枚の手札を受け取ります。席を外れると、そのプレイヤーの手札とテーブルのタイルは、袋に戻ります。",
+    text: "新しい対局者は、{name}の次の席に着き、袋から{size}枚の手札を受け取ります。席を外れると、その人の手札とテーブルのタイルは、袋に戻ります。",
     back: "A new player sits down after {name} with a hand of {size} from the bag. Leaving puts a player's hand and table back in the bag.",
     review: AGENT_READ,
   },

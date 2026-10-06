@@ -1841,7 +1841,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | {what} are too small for {players}. | **{players}人には、{what}では足りません。** | {what} are too small for {players}. | Agent 2026-10-06 |  |
 | — — — | Begin | **はじめる** | Begin | Agent 2026-10-06 |  |
 | — — — | bot | **コンピュータ** | bot | Agent 2026-10-06 |  |
-| — — — | Player {n} is a computer | **プレイヤー{n}はコンピュータです** | Player {n} is a computer | Agent 2026-10-06 |  |
+| — — — | Player {n} is a computer | **対局者{n}はコンピュータです** | Player {n} is a computer | Agent 2026-10-06 |  |
 | — — — | Computer {n} | **コンピュータ{n}** | Computer {n} | Agent 2026-10-06 |  |
 | — — — | Continue the pass-and-play game | **回し遊びのゲームを続ける** | Continue the pass-and-play game | Agent 2026-10-06 |  |
 | — — — | Continue that one instead | **そちらを続ける** | Continue that one instead | Agent 2026-10-06 |  |
@@ -1852,7 +1852,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | At least one seat is a person's: somebody has to watch. | **少なくとも1つの席は人にしてください。見ている人が必要です。** | At least one seat is a person's: somebody has to watch. | Agent 2026-10-06 |  |
 | — — — | The order of play | **遊ぶ順番** | The order of play | Agent 2026-10-06 |  |
 | — — — | out | **あがり** | out | Agent 2026-10-06 |  |
-| — — — | Player {n} | **プレイヤー{n}** | Player {n} | Agent 2026-10-06 |  |
+| — — — | Player {n} | **対局者{n}** | Player {n} | Agent 2026-10-06 |  |
 | — — — | Beginning forgets the pass-and-play game this browser is keeping. | **はじめると、このブラウザーに残っている回し遊びのゲームは、忘れられます。** | Beginning forgets the pass-and-play game this browser is keeping. | Agent 2026-10-06 |  |
 | — — — | {names} share the win | **{names}が勝ちを分け合いました** | {names} share the win | Agent 2026-10-06 |  |
 | — — — | {name} wins, the last one standing | **{name}の勝ちです。最後まで残りました** | {name} wins, the last one standing | Agent 2026-10-06 |  |
@@ -1884,8 +1884,8 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | the last person: end the game instead | **最後の1人なので、代わりにゲームを終えてください** | the last person: end the game instead | Agent 2026-10-06 |  |
 | — — — | went out: stays to the end | **あがったので、最後まで残ります** | went out: stays to the end | Agent 2026-10-06 |  |
 | — — — | Yes, leave | **はい、外れる** | Yes, leave | Agent 2026-10-06 |  |
-| — — — | The new player's name | **新しいプレイヤーの名前** | The new player's name | Agent 2026-10-06 |  |
-| — — — | A new player sits down after {name} with a hand of {size} from the bag. Leaving puts a player's hand and table back in the bag. | **新しいプレイヤーは、{name}の次の席に着き、袋から{size}枚の手札を受け取ります。席を外れると、そのプレイヤーの手札とテーブルのタイルは、袋に戻ります。** | A new player sits down after {name} with a hand of {size} from the bag. Leaving puts a player's hand and table back in the bag. | Agent 2026-10-06 |  |
+| — — — | The new player's name | **新しい対局者の名前** | The new player's name | Agent 2026-10-06 |  |
+| — — — | A new player sits down after {name} with a hand of {size} from the bag. Leaving puts a player's hand and table back in the bag. | **新しい対局者は、{name}の次の席に着き、袋から{size}枚の手札を受け取ります。席を外れると、その人の手札とテーブルのタイルは、袋に戻ります。** | A new player sits down after {name} with a hand of {size} from the bag. Leaving puts a player's hand and table back in the bag. | Agent 2026-10-06 |  |
 | — — — | Join or leave | **席に加わる・席を外れる** | Join or leave | Agent 2026-10-06 |  |
 | — — — | The game is over. | **ゲームは終わりました。** | The game is over. | Agent 2026-10-06 |  |
 | — — — | Stay | **残る** | Stay | Agent 2026-10-06 |  |

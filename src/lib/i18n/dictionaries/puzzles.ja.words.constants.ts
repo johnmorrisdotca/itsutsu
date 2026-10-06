@@ -296,7 +296,7 @@ export const PUZZLE_COPY_JA_WORDS = {
         "Every crossword a member finishes is kept on their record, and its Wallpaper button draws them all as one picture, for a desk or a phone.",
       ],
       [
-        "ターンの合間、交代の画面で、プレイヤーは抜けられます。手札と盤の上のタイルは全部袋に戻り、ゲームはその人なしで続きます。最後の1周が始まるまでは、新しい人が8人まで加われ、手札は袋から配られます。どの席もコンピュータにでき、「BOT」と表示されます。コンピュータは、みんなに見える形で自分のターンを遊び、単語を1つずつ組み立て、引き、交換し、同じ決まりで上がります。残った人が1人になったら、その人が最後に残った人です。",
+        "ターンの合間、交代の画面で、対局者は抜けられます。手札と盤の上のタイルは全部袋に戻り、ゲームはその人なしで続きます。最後の1周が始まるまでは、新しい人が8人まで加われ、手札は袋から配られます。どの席もコンピュータにでき、「BOT」と表示されます。コンピュータは、みんなに見える形で自分のターンを遊び、単語を1つずつ組み立て、引き、交換し、同じ決まりで上がります。残った人が1人になったら、その人が最後に残った人です。",
         "Between turns, from the pass screen, a player may leave: every tile in their hand and on their table goes back into the bag, and play goes on without them. Somebody new may join, up to eight, with a hand dealt from the bag, until the last round begins. Any seat can be a computer, marked BOT, which plays its own turn where everybody can watch: it builds its crossword a word at a time, draws, trades and goes out by the same rules. With one player left, they are the last one standing.",
       ],
     ],
