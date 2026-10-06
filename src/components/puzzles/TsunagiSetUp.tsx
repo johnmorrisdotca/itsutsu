@@ -27,7 +27,6 @@ import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, Tsunagi
 import { TsunagiHelpPickers } from "./TsunagiHelpPickers";
 import { TsunagiLevelPicker, tsunagiLevelPath } from "./TsunagiLevelPicker";
 import { TsunagiLevelPreview } from "./TsunagiLevelPreview";
-import { SetUpResume } from "./SetUpResume";
 import { useSizeShelves } from "./sizeShelves";
 import { TsunagiFillPicker, TsunagiMarksPicker, TsunagiSetPicker } from "./TsunagiMarksPicker";
 import { keptAttempts, keptSolves, keptSolvesOff } from "./tsunagiKept";
@@ -70,7 +69,6 @@ function TsunagiSetUpFor({
   cheatsChosen = null,
   attempts = {},
   initialSize,
-  resumeHref = null,
 }: {
   hasAccount: boolean;
   appearance?: Appearance;
@@ -88,8 +86,6 @@ function TsunagiSetUpFor({
   /** The member's attempts by size and level, on the account: none for anybody without one, whose are in this browser. */
   attempts?: Record<number, Record<number, number>>;
   initialSize: number;
-  /** A level of Tsunagi already going, if any: offered first, above Start (`SetUpResume`). */
-  resumeHref?: string | null;
   /** Which levels: the classic ones, or the ones with portals. */
   set: TsunagiSet;
   onSet: (next: TsunagiSet) => void;
@@ -215,7 +211,6 @@ function TsunagiSetUpFor({
           <TsunagiHelpPickers explosions={explosions} onExplosions={chooseExplosions} cheats={cheats} onCheats={chooseCheats} />
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
-          <SetUpResume href={resumeHref} />
           {chosenLocked ? (
             // The same button, saying why it cannot start: a locked level is looked at, never played.
             <span className={`${PLAY_BUTTON} cursor-not-allowed opacity-60`} aria-disabled="true" data-testid="puzzle-solve" data-level={chosen} data-locked="true">

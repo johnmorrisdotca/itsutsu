@@ -28,7 +28,6 @@ import { keptSolvedLevels, keptSolves } from "./meikyuuKept";
 import { MeikyuuProgress } from "./MeikyuuProgress";
 import { MeikyuuStones } from "./MeikyuuStones";
 import { MeikyuuWayUp } from "./MeikyuuStand";
-import { SetUpResume } from "./SetUpResume";
 
 /** How many tall sizes a shelf of the set-up holds: the four tiles every set-up keeps room for. */
 const TALL_SHELF = 4;
@@ -72,7 +71,6 @@ export function MeikyuuSetUp({
   solved,
   bestSolves = {},
   initialSize,
-  resumeHref = null,
 }: {
   hasAccount: boolean;
   /** The member's solved levels by size, each with its best time: none for anybody without an account. */
@@ -80,8 +78,6 @@ export function MeikyuuSetUp({
   /** The member's best solve of each level by size, which the preview's time opens: none for anybody without an account. */
   bestSolves?: Record<number, Record<number, string>>;
   initialSize: number;
-  /** A Meikyuu already going, if any: offered first, above Start (`SetUpResume`). */
-  resumeHref?: string | null;
 }) {
   const say = useSpeaker();
   const words = meikyuuWords(say.locale);
@@ -249,7 +245,6 @@ export function MeikyuuSetUp({
           <MeikyuuStones />
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
-          <SetUpResume href={resumeHref} />
           <Link href={meikyuuLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
             <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={START_PRESS.start.kanji} />
           </Link>

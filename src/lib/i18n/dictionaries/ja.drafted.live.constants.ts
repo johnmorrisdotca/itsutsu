@@ -629,6 +629,31 @@ export const JA_DRAFTED_LIVE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Continue",
     review: AGENT_READ,
   },
+  "live.kept.one": {
+    text: "途中のものが1つあります",
+    back: "You have one in progress",
+    review: AGENT_READ,
+  },
+  "live.kept.other": {
+    text: "途中のものが{count}つあります",
+    back: "You have {count} in progress",
+    review: AGENT_READ,
+  },
+  "live.keptContinue": {
+    text: "{run}を続ける",
+    back: "Continue your {run}",
+    review: AGENT_READ,
+  },
+  "live.keptNote": {
+    text: "下の「始める」は、この画面で選んだものを始めます。途中のものはそのまま残ります。",
+    back: "The Start below begins what is chosen on this screen. The one in progress stays as it is.",
+    review: AGENT_READ,
+  },
+  "live.keptMyGames": {
+    text: "途中のものはすべて「自分の対局」にあります",
+    back: "All of the ones in progress are in My games",
+    review: AGENT_READ,
+  },
   "live.starting": {
     text: "開始しています…",
     back: "Starting…",

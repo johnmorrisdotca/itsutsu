@@ -90,12 +90,14 @@ test("left by a link without pausing, it is kept too", async ({ page }) => {
   await expect(resume).toHaveAttribute("href", new RegExp(`seed=${seed}`));
   const resumeHref = await resume.getAttribute("href");
 
-  // So does its set-up screen (reached by New game, which leaves the run in My games), first above Start, to the same grid (John, 2026-09-26, BUG CRITICAL: it showed only Start).
+  // So does its set-up screen (reached by New game, which leaves the run in My games): a note of its own above the set-up, naming the run and leading to the same grid, and not among the Start presses (John, 2026-09-26, BUG CRITICAL: it showed only Start; 2026-10-06: Continue beside the Start presses read as the way to start what was chosen).
   await page.getByTestId("game-new").click();
   await ready(page, "puzzle-set-up");
-  const setUpResume = page.getByTestId("puzzle-play-buttons").getByTestId("set-up-resume");
+  const setUpResume = page.getByTestId("set-up-kept").getByTestId("set-up-resume");
   await expect(setUpResume).toHaveAttribute("href", resumeHref!);
-  await expect(page.getByTestId("puzzle-play-buttons").locator("a, button").first()).toHaveAttribute("data-testid", "set-up-resume");
+  await expect(setUpResume).toContainText(`Continue your ${SIZE}×${SIZE}`);
+  await expect(page.getByTestId("puzzle-play-buttons").getByTestId("set-up-resume")).toHaveCount(0);
+  await expect(page.getByTestId("puzzle-play-buttons").locator("a, button").first()).toHaveAttribute("data-testid", "puzzle-solve");
   await setUpResume.click();
   await ready(page, "puzzle-play");
   await expect(page.getByTestId("puzzle-cell").nth(first)).toHaveAttribute("data-value", String(solution[first]));

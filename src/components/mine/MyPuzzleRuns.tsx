@@ -7,18 +7,16 @@ import { PlayerName } from "@/components/players/PlayerName";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
 import { familyPath, joinQuery, matchPath, playPath, setUpPath } from "@/lib/gomoku/slugs";
-import { clockText } from "@/lib/puzzles/clockText";
 import { fixedLevelName, fixedLevelOf, levelsQueryOf } from "@/lib/puzzles/fixedLevel";
 import { suidoSizeInAddress } from "@/lib/puzzles/suido/sizes";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_CLOCK_DISPLAY } from "@/lib/puzzles/puzzles.constants";
 import { levelLabel, puzzleName } from "@/lib/puzzles/puzzleCopy";
-import { clockWord } from "@/lib/puzzles/puzzleClock";
 import { sizeWordIn } from "@/lib/puzzles/sizeWord";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { runsOf } from "@/lib/puzzles/server/puzzleRuns";
 import type { racesWaitingOn } from "@/lib/puzzles/server/puzzleRaces";
 
+import { keptRunDetail } from "@/components/puzzles/keptRunDetail";
 import { GroupHeading } from "./GroupHeading";
 import { MY_GAMES_COPY, MY_PUZZLE_ROW } from "./mine.constants";
 
@@ -80,7 +78,6 @@ export async function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnT
         })}
         {runs.map((run) => {
           const kind = run.kind as PuzzleKind;
-          const level = run.level as PuzzleLevel;
           const asked = keptRunAsked(kind, run);
           const href = joinQuery(playPath(kind), puzzleQuery(asked));
           // A run of a fixed level is named by its number (Tsunagi's, and a Suido level's: `fixedLevelOf`), and has its board of levels to go back to.
@@ -95,14 +92,8 @@ export async function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnT
                   <GameName variant={kind} raised />
                 </span>
                 <span className="text-xs text-muted">
-                  {/* A fixed level is named by its number, every other puzzle by its level. */}
-                  {sizeWordIn(run.size, kind, say)} · {fixedLevelName(kind, run.seed, say) ?? levelLabel(level, say.locale)} · {say.say("pset.mine.soFar", { time: clockText(run.elapsedMs) })}
-                  {run.checksAllowed !== null ? ` · ${say.count("pset.mine.checks", run.checksAllowed)}` : ""}
-                  {asked.hints ? ` · ${say.say("pset.mine.hints")}` : ""}
-                  {run.strict ? ` · ${say.say("pset.mine.strict")}` : ""}
-                  {asked.headStart ? ` · ${say.say("pset.fast.headStart")}` : ""}
-                  {/* A countdown says what it has left, the number that matters when it is picked up again. */}
-                  {asked.clock === undefined || asked.clock === "none" ? "" : ` · ${say.say("pset.mine.countdownLeft", { countdown: clockWord(asked.clock, say), time: clockText(Math.max(0, (PUZZLE_CLOCK_DISPLAY[asked.clock].ms ?? 0) - run.elapsedMs)) })}`}
+                  {/* A fixed level is named by its number, every other puzzle by its level; a countdown says what it has left (`keptRunDetail`). */}
+                  {keptRunDetail(kind, run, say)}
                 </span>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">

@@ -41,7 +41,6 @@ import { FutagoChips } from "./FutagoChips";
 import { PlayWayChips } from "./PlayWayChips";
 import { HeadStartChips } from "./HeadStartChips";
 import { PuzzleClockChips } from "./PuzzleClockChips";
-import { KumimojiPartyResume } from "./KumimojiPartyScreens";
 import { KumimojiSetUpOptions } from "./KumimojiSetUpOptions";
 import { SolitaireSetUpOptions } from "./SolitaireSetUpOptions";
 import { useSolitaireScoring } from "./useSolitaireScoring";
@@ -49,9 +48,7 @@ import { MahjongSetUpOptions, useMahjongChoice } from "./MahjongSetUpOptions";
 import { SuidoSetUpOptions, useSuidoChoice } from "./SuidoSetUpOptions";
 import { JiraiSetUpOptions, useJiraiChoice } from "./JiraiSetUpOptions";
 import { freshJiraiSeed } from "@/lib/puzzles/jirai/variants";
-import { MahjongTableResume } from "./MahjongTableSeats";
 import { useKumimojiChoice } from "./useKumimojiChoice";
-import { SetUpResume } from "./SetUpResume";
 import { useWordStyle } from "./WordStyleContext";
 
 
@@ -72,7 +69,6 @@ export function PuzzleSetUp({
   sized,
   appearance = DEFAULT_APPEARANCE,
   asked,
-  resumeHref = null,
   onKind,
 }: {
   kind: PuzzleKind;
@@ -89,8 +85,6 @@ export function PuzzleSetUp({
   appearance?: Appearance;
   /** What the address asked for (`puzzleAsked`): the choice this screen opens on, so a reload keeps what was chosen. */
   asked?: PuzzleAsked;
-  /** The reader's puzzle of this kind already going, if any: offered first, above Start (`SetUpResume`). */
-  resumeHref?: string | null;
   /**
    * A word game's language or word list chosen (`WordSettingChips`): another
    * kind of the same game. Left out, the game's own set-up opens that
@@ -427,9 +421,6 @@ export function PuzzleSetUp({
         they read Start alone and Start with a friend (`START_PRESS`).
       */}
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
-        <SetUpResume href={resumeHref} />
-        {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
-        {kind === "mahjong" ? <MahjongTableResume /> : null}
         <Link
           href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, checks, hints, strict, headStart: headStart && offersHeadStart(kind, level) && played === "find", words: count, dodge: dodging, backwards: turned, gameLength, language, doubleSet, diagonals, players, clock, bonus, pipes, squares, jirai: jiraiWay, anyDeal: kind === "solitaire" && anyDeal }))}
           className={PLAY_BUTTON}

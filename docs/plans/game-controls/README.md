@@ -58,7 +58,16 @@ Continue or its own New game question, and Resume stays the word for a clock.
   Gunjin table on several devices (which also offers a draw) keep Resign; Sugoroku's "Give up" is Resign, in its fixed row of three presses.
 - The patience games and the cube used to give up on one press with no
   question. They ask now.
-- The puzzle set-up's "Resume" is Continue.
+- The puzzle set-up's "Resume" is Continue, and it is a note of its own above
+  the set-up (`SetUpKept`), never one of the Start presses. John, 2026-10-06,
+  after choosing a 2×2 at the Cube's set-up and pressing the Continue first in
+  the column: "it starts with a 3x3 game. It's confusing to offer a continue
+  when I think I was setting up a new game." So it says "You have one in
+  progress" (or how many, with a link to My games), names the run it resumes
+  ("Continue your 3×3 · Easy · 1:23 so far", `keptRunDetail`, the line My games
+  uses), and the Start presses below begin exactly what is chosen. A pass-and-play
+  game or a table kept only in the browser (Kumimoji, Mahjong) is the same
+  kind of quiet button above the set-up. `e2e/set-up-kept-names-it.spec.ts`.
 
 ## Resign at a table round one device (second commit)
 

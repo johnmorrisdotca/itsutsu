@@ -21,13 +21,17 @@ import { suidoModeOf } from "@/lib/puzzles/suido/mode";
 import { suidoSizeFromAddress } from "@/lib/puzzles/suido/sizes";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { keptRunAsked, puzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { latestRunOf } from "@/lib/puzzles/server/puzzleRuns";
+import { keptRunCountOf, latestRunOf } from "@/lib/puzzles/server/puzzleRuns";
 
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
 import { Suspense } from "react";
 
 import { DailyWordButtonsLive, DailyWordButtonsShell } from "./DailyWordButtonsLive";
 import { PuzzleSetUp } from "./PuzzleSetUp";
+import { KumimojiPartyResume } from "./KumimojiPartyScreens";
+import { MahjongTableResume } from "./MahjongTableSeats";
+import { SetUpKept } from "./SetUpKept";
+import { keptRunDetail } from "./keptRunDetail";
 import { MeikyuuSetUp } from "./MeikyuuSetUp";
 import { TobiishiSetUp } from "./TobiishiSetUp";
 import { SuidoModeSwitch } from "./SuidoModeSwitch";
@@ -67,9 +71,8 @@ export async function PuzzleSetUpPage({
   const say = await currentSpeaker();
   const copy = puzzleCopy(listedGameOf(kind), say.locale);
   const onBoard = drawnOnBoard(kind);
-  // One of this puzzle already going leads the Start column, as it leads the front door (`PuzzlePlayOrResume`).
-  const run = memberId === null ? null : await latestRunOf(memberId, kind);
-  const resumeHref = run === null ? null : joinQuery(playPath(kind), puzzleQuery(keptRunAsked(kind, run)));
+  // One of this puzzle already going is noted above the set-up, naming itself, apart from the Start presses that begin what is chosen (`SetUpKept`).
+  const [run, runs] = memberId === null ? [null, 0] : await Promise.all([latestRunOf(memberId, kind), keptRunCountOf(memberId, kind)]);
   // The stone puzzles read the reader's stone set too, for the preview's stones.
   const [appearance, preferences] = onBoard
     ? await Promise.all([appearanceFor(memberId), preferencesFor()])
@@ -94,6 +97,10 @@ export async function PuzzleSetUpPage({
           </>
         }
       />
+      {run === null ? null : <SetUpKept href={joinQuery(playPath(kind), puzzleQuery(keptRunAsked(kind, run)))} detail={keptRunDetail(kind, run, say)} count={Math.max(runs, 1)} />}
+      {/* A pass-and-play game or a table kept only in this browser, apart from the Start presses in the same way. */}
+      {kind === "kumimoji" ? <KumimojiPartyResume /> : null}
+      {kind === "mahjong" ? <MahjongTableResume /> : null}
       {/* Suido is played two ways, each its own screen under this switch: its levels first, and Make a board, a new one from a seed (`SuidoModeSwitch`). */}
       {kind === "suido" ? <SuidoModeSwitch mode={suidoModeOf(query)} size={suidoSizeAsked(query)} /> : null}
       {kind === "suido" && suidoModeOf(query) === "levels" ? (
@@ -101,7 +108,6 @@ export async function PuzzleSetUpPage({
           hasAccount={hasAccount}
           {...(memberId === null ? { solved: {} } : setUpSuidoSolves(await suidoSolvedBy(memberId)))}
           initialSize={suidoSizeAsked(query)}
-          resumeHref={resumeHref}
         />
       ) : kind === "meikyuu" ? (
         <>
@@ -110,15 +116,13 @@ export async function PuzzleSetUpPage({
             hasAccount={hasAccount}
             {...(memberId === null ? { solved: {} } : setUpSuidoSolves(await meikyuuSolvedBy(memberId)))}
             initialSize={meikyuuSizeAsked(query)}
-            resumeHref={resumeHref}
-          />
+            />
         </>
       ) : kind === "tobiishi" ? (
         <TobiishiSetUp
           hasAccount={hasAccount}
           {...(memberId === null ? { solved: {} } : setUpSuidoSolves(await tobiishiSolvedBy(memberId)))}
           initialSize={tobiishiSizeAsked(query)}
-          resumeHref={resumeHref}
         />
       ) : kind === "tsunagi" ? (
         <TsunagiSetUp
@@ -132,11 +136,10 @@ export async function PuzzleSetUpPage({
           attempts={memberId === null ? {} : await tsunagiAttemptsBy(memberId)}
           initialSize={sizeAsked(kind, query)}
           initialSet={(Array.isArray(query.set) ? query.set[0] : query.set) === "portals" ? "portals" : "classic"}
-          resumeHref={resumeHref}
         />
       ) : (
         <WordStyleProvider initial={preferences?.wordStyle ?? WORD_STYLES.reversi} saves={hasAccount}>
-          <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} asked={setUpAsked(kind, query)} resumeHref={resumeHref} />
+          <PuzzleSetUp kind={kind} hasAccount={hasAccount} appearance={appearance ?? undefined} asked={setUpAsked(kind, query)} />
         </WordStyleProvider>
       )}
       {dailyLanguageOf(kind) !== null ? (

@@ -236,8 +236,8 @@ export function KumimojiPartyResume() {
   const game = useKeptParty();
   if (game === null || game.ending !== null) return null;
   return (
-    <Link href={partyAddress(game)} className={PLAY_BUTTON} data-testid="kumimoji-party-continue">
-      <PressLabel words={say.say("pkumi.party.continueGame")} kanji="続" />
+    <Link href={partyAddress(game)} className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full`} data-testid="kumimoji-party-continue">
+      {say.say("pkumi.party.continueGame")} →
     </Link>
   );
 }

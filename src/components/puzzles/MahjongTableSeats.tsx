@@ -5,8 +5,8 @@ import { useState } from "react";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 import { PressLabel } from "@/components/ui/PressLabel";
-import { PLAY_BUTTON } from "@/components/ui/ui.constants";
-import { AWASE_TABLE, SEAT_WINDS, readTable } from "@johnmorrisdotca/jarajara/table";
+import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
+import { AWASE_TABLE, SEAT_WINDS, readTable, seatName } from "@johnmorrisdotca/jarajara/table";
 import type { AwaseSeat, AwaseTable, AwaseTableState } from "@johnmorrisdotca/jarajara/table";
 
 import { windIn, windName, mahjongSeatName } from "./cardWords";
@@ -130,8 +130,8 @@ export function MahjongTableResume() {
   const state = table === null || table === undefined ? null : readTable(table);
   if (table === null || table === undefined || state === null || state.over) return null;
   return (
-    <Link href={tableAddress(table)} className={PLAY_BUTTON} data-testid="mahjong-table-continue">
-      <PressLabel words={say.say("pcard.mj.continueGame")} kanji="続" />
+    <Link href={tableAddress(table)} className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full`} data-testid="mahjong-table-continue">
+      {say.say("pcard.mj.continueGame")} →
     </Link>
   );
 }

@@ -27,7 +27,6 @@ import {
 import { SUIDO_LEVEL_SIZES, suidoSizeWord } from "@/lib/puzzles/suido/sizes";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { SetUpResume } from "./SetUpResume";
 import { useSizeShelves } from "./sizeShelves";
 import { suidoWords } from "./mazeWords";
 import { SuidoLevelChips } from "./SuidoLevelChips";
@@ -59,7 +58,6 @@ export function SuidoSetUp({
   solved,
   bestSolves = {},
   initialSize,
-  resumeHref = null,
 }: {
   hasAccount: boolean;
   /** The member's solved levels by size, each with its best time: none for anybody without an account. */
@@ -67,8 +65,6 @@ export function SuidoSetUp({
   /** The member's best solve of each level by size, which the preview's time opens: none for anybody without an account. */
   bestSolves?: Record<number, Record<number, string>>;
   initialSize: number;
-  /** A Suido already going, if any (a level or a board made): offered first, above Start (`SetUpResume`). */
-  resumeHref?: string | null;
 }) {
   const say = useSpeaker();
   const SUIDO_COPY = suidoWords(say.locale).copy;
@@ -161,7 +157,6 @@ export function SuidoSetUp({
           <p className="text-xs text-muted">{SUIDO_COPY.levelsNoHelp}</p>
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
-          <SetUpResume href={resumeHref} />
           {chosenLocked ? (
             // The same button, saying why it cannot start: a locked level is looked at, never played.
             <span className={`${PLAY_BUTTON} cursor-not-allowed opacity-60`} aria-disabled="true" data-testid="puzzle-solve" data-level={chosen} data-locked="true">

@@ -16,7 +16,6 @@ import { tobiishiCodeOf, tobiishiRefOf } from "@/lib/puzzles/tobiishi/levels";
 import { TOBIISHI_SIZES, tobiishiSizeLabel } from "@/lib/puzzles/tobiishi/sizes";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { SetUpResume } from "./SetUpResume";
 import { keptSolves } from "./tobiishiKept";
 import { tobiishiWords } from "./mazeWords";
 import { TobiishiLevelChips } from "./TobiishiLevelChips";
@@ -45,7 +44,6 @@ export function TobiishiSetUp({
   solved,
   bestSolves = {},
   initialSize,
-  resumeHref = null,
 }: {
   hasAccount: boolean;
   /** The member's solved levels by length, each with its best time: none for anybody without an account. */
@@ -53,8 +51,6 @@ export function TobiishiSetUp({
   /** The member's best solve of each level by length, which the preview's time opens: none for anybody without an account. */
   bestSolves?: Record<number, Record<number, string>>;
   initialSize: number;
-  /** A Tobiishi already going, if any: offered first, above Start (`SetUpResume`). */
-  resumeHref?: string | null;
 }) {
   const say = useSpeaker();
   const TOBIISHI_COPY = tobiishiWords(say.locale).copy;
@@ -99,7 +95,6 @@ export function TobiishiSetUp({
           </p>
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
-          <SetUpResume href={resumeHref} />
           <Link href={tobiishiLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
             <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={START_PRESS.start.kanji} />
           </Link>

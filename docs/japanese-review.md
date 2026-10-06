@@ -6,7 +6,7 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 2752. Drafted and unread: 0. Read by the reviewer agent: 2752.
+Phrases: 2757. Drafted and unread: 0. Read by the reviewer agent: 2757.
 Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 5
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
@@ -34,7 +34,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | From {country} | **発祥：{country}** | Origin: {country} | Agent 2026-10-06, native read wanted | The country is printed as the data holds it, in English ("発祥：Japan"). Localising country names needs a table of its own; John to decide whether to add one. |  |
 | — — — | Sit in with your four words | **4つの合言葉で着席する** | Sit in with my four words | Agent 2026-10-06, native read wanted | The "four words" a member chooses to sit in as themselves are 合言葉 here. The account pages that set them must use the same word; John to confirm 合言葉 is the one he wants. |  |
 
-## 2. Written by a machine — please check these (2627)
+## 2. Written by a machine — please check these (2632)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -1223,6 +1223,11 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Send a player their own link. Whoever opens it plays that colour, so it is only shown while the seat is still waiting for somebody — once they have sat down it is their credential, not an invitation. | **対局者に、それぞれ専用のリンクを送ります。リンクを開いた人がその色を持つので、席がまだ誰かを待っている間だけ表示されます。着席したあとは、招待ではなく、その人の認証情報になります。** | Send each player their own link. Whoever opens it takes that colour, so it is shown only while the seat is still waiting for somebody. After they sit down, it is their credential rather than an invitation. | Agent 2026-10-06 |  |
 | — — — | Your seat in our gomoku game ({colour}): {url} | **五目並べの自分の席（{colour}）：{url}** | Your seat in our gomoku game ({colour}): {url} | Agent 2026-10-06 |  |
 | — — — | Invite links | **招待リンク** | Invitation links | Agent 2026-10-06 |  |
+| — — — | You have one in progress | **途中のものが1つあります** | You have one in progress | Agent 2026-10-06 |  |
+| — — — | You have {count} in progress | **途中のものが{count}つあります** | You have {count} in progress | Agent 2026-10-06 |  |
+| — — — | Continue your {run} | **{run}を続ける** | Continue your {run} | Agent 2026-10-06 |  |
+| — — — | All of them are in My games | **途中のものはすべて「自分の対局」にあります** | All of the ones in progress are in My games | Agent 2026-10-06 |  |
+| — — — | Start, below, begins what is chosen on this screen. The one you have stays where it is. | **下の「始める」は、この画面で選んだものを始めます。途中のものはそのまま残ります。** | The Start below begins what is chosen on this screen. The one in progress stays as it is. | Agent 2026-10-06 |  |
 | — — — | Random | **ランダム** | Random | Agent 2026-10-06 |  |
 | — — — | You have already begun this game. The button below opens its board rather than making a second one. | **この対局はすでに始めています。下のボタンは、2つ目を作らずに、その盤を開きます。** | You have already begun this game. The button below opens its board instead of making a second one. | Agent 2026-10-06 |  |
 | — — — | Black won | **黒の勝ち** | Black won | Agent 2026-10-06 |  |

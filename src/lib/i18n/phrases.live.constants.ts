@@ -142,6 +142,12 @@ export const PHRASES_LIVE = {
   "live.startFriend": "Start with a friend",
   "live.startResume": "Continue",
   "live.starting": "Starting…",
+  // A puzzle already going, noted above its set-up screen: Continue names it, Start never resumes it
+  "live.kept.one": "You have one in progress",
+  "live.kept.other": "You have {count} in progress",
+  "live.keptContinue": "Continue your {run}",
+  "live.keptNote": "Start, below, begins what is chosen on this screen. The one you have stays where it is.",
+  "live.keptMyGames": "All of them are in My games",
   // Your pieces' colour, at set-up and beside a board
   "live.yourPieces": "Your pieces",
   "live.ownStones": "The game's own stones",

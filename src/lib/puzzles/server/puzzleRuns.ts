@@ -85,8 +85,13 @@ export async function latestRunOf(memberId: string, kind: PuzzleKind) {
   return prisma.puzzleRun.findFirst({
     where: { memberId, kind },
     orderBy: { updatedAt: "desc" },
-    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, language: true, gameLength: true, doubleSet: true, diagonals: true, clock: true },
+    select: { size: true, level: true, seed: true, checksAllowed: true, hintsAllowed: true, strict: true, elapsedMs: true, language: true, gameLength: true, doubleSet: true, diagonals: true, clock: true },
   });
+}
+
+/** How many runs of one puzzle the member has going (one indexed count), for the set-up screen to say so and lead to My games. */
+export async function keptRunCountOf(memberId: string, kind: PuzzleKind): Promise<number> {
+  return prisma.puzzleRun.count({ where: { memberId, kind } });
 }
 
 /** A grid finished: it is no longer going. */

@@ -221,7 +221,7 @@ ongoing game." One set of words, from `GAME_ENDING_COPY`
 
 | Now | Was | Where | Why |
 |---|---|---|---|
-| Continue → | Resume →, Continue your game of Yacht | every game's front door (`GameInProgressOffer`), a puzzle's set-up | going back to a game is Continue, as My games says; Resume is only for un-pausing a clock |
+| Continue → | Resume →, Continue your game of Yacht | every game's front door (`GameInProgressOffer`), the note above a puzzle's set-up (`SetUpKept`), which names the run: Continue your 3×3 · Easy | going back to a game is Continue, as My games says; Resume is only for un-pausing a clock |
 | New game | Or start a new one, Yes start again, a small button in a corner | a front door beside Continue, and the row under every board (`GameEnding`) | the same name as the screen it leads to (New game 新規対局) |
 | Resign | Give up (Sugoroku) | any game against somebody or something that can win it | the other side wins |
 | Give up | Give up (no question asked) | a puzzle or patience played alone | there is no other side; it ends unsolved ("Given up" on the card at the end) |
