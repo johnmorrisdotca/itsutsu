@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { CASUAL_SLUGS, mySolvePath } from "../src/lib/gomoku/slugs";
+import { CASUAL_SLUGS, HOUSEKI_SLUGS, mySolvePath } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { freshPuzzleSeed, playSequence, ready, winningSequence } from "./support";
 import { gamesMade } from "./tidy";
@@ -424,6 +424,18 @@ function casual(slug: string): Survey {
   };
 }
 
+/** A Houseki game, opened at its fourth level: the board in the page's own column, with its controls and its result below it. */
+function houseki(slug: string): Survey {
+  return {
+    name: `/games/${slug}/play`,
+    open: async (page) => {
+      await page.goto(`/games/${slug}/play?level=4`);
+      await ready(page, "houseki-game");
+      await expect(page.locator('[data-testid="houseki-well"]')).toBeVisible();
+    },
+  };
+}
+
 const SURVEYED_PUZZLES = [
   "number-place",
   "hidden-stones",
@@ -629,6 +641,7 @@ const SURVEY: Survey[] = [
   table("block-five", "blocks-start"),
   table("go", "pairgo-start"),
   ...Object.values(CASUAL_SLUGS).map(casual),
+  ...Object.values(HOUSEKI_SLUGS).map(houseki),
 ];
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 1920, height: 1080 }]) {

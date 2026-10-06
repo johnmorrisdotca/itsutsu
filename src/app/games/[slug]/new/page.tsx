@@ -11,9 +11,10 @@ import { gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFor } from "@/lib/auth/memberAccount";
 import { PuzzleSetUpPage } from "@/components/puzzles/PuzzleSetUpPage";
 import { CasualSetUpPage } from "@/components/casual/CasualSetUpPage";
+import { HousekiSetUpPage } from "@/components/houseki/HousekiSetUpPage";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
-import { casualKindFor, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
+import { casualKindFor, housekiKindFor, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
 import { fetchOpponents } from "@/lib/social/opponents";
@@ -25,7 +26,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/new">): Promise<Metadata> {
   const { slug } = await params;
   const say = await currentSpeaker();
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? casualKindFor(slug) ?? "", say.locale);
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? casualKindFor(slug) ?? housekiKindFor(slug) ?? "", say.locale);
   return { title: copy === null ? say.say("gamepages.newGame") : say.say("gamepages.newGameOf", { game: copy.label }) };
 }
 
@@ -51,6 +52,9 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
   // A casual game has one choice, its level, kept in the browser: nothing to read on the server.
   const casual = casualKindFor(slug);
   if (casual !== null) return <CasualSetUpPage kind={casual} />;
+  // A Houseki game: a level, a lesson, the Daily or a free game, chosen in the browser from what it keeps.
+  const houseki = housekiKindFor(slug);
+  if (houseki !== null) return <HousekiSetUpPage kind={houseki} />;
   const reader = await currentReader();
   // A puzzle is set up with a size and a level, and nothing a game asks: see `PuzzleSetUp`.
   // A Gomoji's language and word list are in the query (`gameSettings.ts`).

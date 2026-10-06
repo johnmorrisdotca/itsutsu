@@ -4,6 +4,7 @@ import { joinQuery } from "./addressQuery";
 
 export { joinQuery };
 import type { CasualKind } from "../casual/casual.types";
+import type { HousekiKind } from "../houseki/houseki.types";
 import type { PartyKind } from "../party/party.types";
 import type { PuzzleKind } from "../puzzles/puzzles.types";
 
@@ -14,9 +15,9 @@ import type { RuleVariant } from "./gomoku.types";
  * address — are a table of their own (`slugs.data.ts`); this file builds the
  * paths from them.
  */
-import { CASUAL_SLUGS, GAME_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS } from "./slugs.data";
+import { CASUAL_SLUGS, GAME_SLUGS, HOUSEKI_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS } from "./slugs.data";
 
-export { CASUAL_SLUGS, GAME_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS };
+export { CASUAL_SLUGS, GAME_SLUGS, HOUSEKI_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS };
 
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(
   (Object.entries(GAME_SLUGS) as [RuleVariant, string][]).map(([variant, slug]) => [slug, variant]),
@@ -35,6 +36,15 @@ const CASUAL_BY_SLUG = new Map<string, CasualKind>(
   (Object.entries(CASUAL_SLUGS) as [CasualKind, string][]).map(([kind, slug]) => [slug, kind]),
 );
 
+const HOUSEKI_BY_SLUG = new Map<string, HousekiKind>(
+  (Object.entries(HOUSEKI_SLUGS) as [HousekiKind, string][]).map(([kind, slug]) => [slug, kind]),
+);
+
+/** The Houseki game a slug names, or null for an address that names none. */
+export function housekiKindFor(slug: string): HousekiKind | null {
+  return HOUSEKI_BY_SLUG.get(slug) ?? null;
+}
+
 /** The casual game a slug names, or null for an address that names none. */
 export function casualKindFor(slug: string): CasualKind | null {
   return CASUAL_BY_SLUG.get(slug) ?? null;
@@ -52,7 +62,7 @@ export function puzzleFor(slug: string): PuzzleKind | null {
 
 /** The game, puzzle or party game a slug names, or null. */
 export function gameKeyFor(slug: string): GameKey | null {
-  return VARIANT_BY_SLUG.get(slug) ?? PUZZLE_BY_SLUG.get(slug) ?? PARTY_BY_SLUG.get(slug) ?? CASUAL_BY_SLUG.get(slug) ?? null;
+  return VARIANT_BY_SLUG.get(slug) ?? PUZZLE_BY_SLUG.get(slug) ?? PARTY_BY_SLUG.get(slug) ?? CASUAL_BY_SLUG.get(slug) ?? HOUSEKI_BY_SLUG.get(slug) ?? null;
 }
 
 /**
@@ -61,7 +71,7 @@ export function gameKeyFor(slug: string): GameKey | null {
  * key falls back to itself rather than throwing a whole page away.
  */
 export function slugFor(variant: string): string {
-  return GAME_SLUGS[variant as RuleVariant] ?? PUZZLE_SLUGS[variant as PuzzleKind] ?? PARTY_SLUGS[variant as PartyKind] ?? CASUAL_SLUGS[variant as CasualKind] ?? variant;
+  return GAME_SLUGS[variant as RuleVariant] ?? PUZZLE_SLUGS[variant as PuzzleKind] ?? PARTY_SLUGS[variant as PartyKind] ?? CASUAL_SLUGS[variant as CasualKind] ?? HOUSEKI_SLUGS[variant as HousekiKind] ?? variant;
 }
 
 /** The variant a slug names, or null for an address that names nothing. */
@@ -174,6 +184,11 @@ export function playPath(variant: string): string {
 /** /games/<slug>/play?level=N — a casual game at a level (Karakuri); the level chosen at its set-up. */
 export function casualPlayPath(kind: string, level: number): string {
   return joinQuery(`${gameBase(kind)}/play`, `?level=${level}`);
+}
+
+/** /games/<slug>/play?level=N and its kin — a Houseki game at what a set-up chose (`housekiQuery`). */
+export function housekiPlayPath(kind: string, query: string): string {
+  return joinQuery(`${gameBase(kind)}/play`, query);
 }
 
 /** /games/<slug>/new — setting a shared game up, before it exists. */

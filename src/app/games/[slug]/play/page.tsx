@@ -15,8 +15,10 @@ import { gameNameFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
 import { PuzzlePlayPage } from "@/components/puzzles/PuzzlePlayPage";
 import { CasualPlayPage, casualLevelAsked } from "@/components/casual/CasualPlayPage";
+import { HousekiPlayPage } from "@/components/houseki/HousekiPlayPage";
+import { housekiRequestOf } from "@/lib/houseki/housekiAddress";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
-import { casualKindFor, gamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
+import { casualKindFor, gamePath, housekiKindFor, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { variantCopy } from "@/lib/gomoku/variantCopy";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
@@ -31,7 +33,7 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/play
   const { slug } = await params;
   const puzzle = puzzleFor(slug);
   const say = await currentSpeaker();
-  const copy = gameCopyOf(variantFor(slug) ?? puzzle ?? casualKindFor(slug) ?? "", say.locale);
+  const copy = gameCopyOf(variantFor(slug) ?? puzzle ?? casualKindFor(slug) ?? housekiKindFor(slug) ?? "", say.locale);
   return { title: copy === null ? say.say("gamepages.games") : say.say("gamepages.playGame", { game: say.pairName(copy.label, copy.kanji).text }) };
 }
 
@@ -54,6 +56,9 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
   // A casual game: the level in the query, the board drawn in the browser (`CasualPlay`).
   const casual = casualKindFor(slug);
   if (casual !== null) return <CasualPlayPage kind={casual} level={casualLevelAsked(casual, query)} />;
+  // A Houseki game: what the query asks for (a level, a lesson, the Daily or a free game), played and kept in the browser (`HousekiPlay`).
+  const houseki = housekiKindFor(slug);
+  if (houseki !== null) return <HousekiPlayPage kind={houseki} request={housekiRequestOf(houseki, query)} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const say = await currentSpeaker();

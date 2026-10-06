@@ -8,6 +8,7 @@ import Link from "@/components/ui/Link";
 
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
 import { CasualCards } from "@/components/casual/CasualCard";
+import { HousekiCards } from "@/components/houseki/HousekiCards";
 import { PartyCheckersCard } from "@/components/party/PartyCheckersGame";
 import { PartyHalmaCard } from "@/components/party/PartyHalmaGame";
 import { PairGoCard } from "@/components/party/PairGoCard";
@@ -166,6 +167,8 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
             })}
             {/* Karakuri's casual games: a card for each with a level won or in progress, kept in this browser (`CasualCards`). */}
             <CasualCards />
+            {/* The Houseki games with a game half way or a level won, kept the same way (`HousekiCards`). */}
+            <HousekiCards />
           </>
         }
         openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}

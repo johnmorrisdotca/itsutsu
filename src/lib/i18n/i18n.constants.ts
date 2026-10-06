@@ -40,6 +40,7 @@ import { PHRASES_PWORD } from "./phrases.pword.constants";
 import { PHRASES_PSET } from "./phrases.pset.constants";
 import { PHRASES_PUZZLE } from "./phrases.puzzle.constants";
 import { PHRASES_CUBEMETHOD } from "./phrases.cubemethod.constants";
+import { PHRASES_HOUSEKI } from "./phrases.houseki.constants";
 
 /**
  * The languages the site knows about, and the English it speaks in by default.
@@ -163,6 +164,7 @@ export const PHRASE_AREAS = {
   cubemethod: PHRASES_CUBEMETHOD,
   rating: PHRASES_RATING,
   puzzle: PHRASES_PUZZLE,
+  houseki: PHRASES_HOUSEKI,
   pset: PHRASES_PSET,
   pword: PHRASES_PWORD,
   pgrid: PHRASES_PGRID,
@@ -233,6 +235,7 @@ export const PHRASES = {
   ...PHRASES_CUBEMETHOD,
   ...PHRASES_RATING,
   ...PHRASES_PUZZLE,
+  ...PHRASES_HOUSEKI,
   ...PHRASES_PSET,
   ...PHRASES_PWORD,
   ...PHRASES_PGRID,

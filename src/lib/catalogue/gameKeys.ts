@@ -7,6 +7,9 @@ import { DEFAULT_LOCALE } from "../i18n/i18n.constants";
 import type { Speaker } from "../i18n/i18n";
 import type { Locale } from "../i18n/i18n.types";
 import { CASUAL_DISPLAY, CASUAL_KIND_LIST } from "../casual/casual.constants";
+import { HOUSEKI_KIND_LIST } from "../houseki/houseki.constants";
+import { housekiCopy } from "../houseki/housekiCopy";
+import type { HousekiKind } from "../houseki/houseki.types";
 import type { CasualKind } from "../casual/casual.types";
 import { PARTY_DISPLAY, PARTY_KIND_LIST } from "../party/party.constants";
 import type { PartyKind } from "../party/party.types";
@@ -16,10 +19,12 @@ import type { PuzzleKind } from "../puzzles/puzzles.types";
 import { isSettingKind } from "./gameSettings";
 
 /**
- * A game in the catalogue is one of four things: a rule variant the engine
+ * A game in the catalogue is one of five things: a rule variant the engine
  * plays between two colours, a puzzle one person solves, a party game a
- * table of people plays round one device, or a casual game one person plays
- * for a minute (Karakuri's eight, `docs/plans/casual-games/README.md`).
+ * table of people plays round one device, a casual game one person plays
+ * for a minute (Karakuri's eight, `docs/plans/casual-games/README.md`), or a
+ * Houseki game, a gem or stone puzzle played a level at a time whose won levels
+ * are worth points (`docs/plans/houseki/README.md`).
  *
  * The three are kept as three kinds rather than one stretched one (see
  * docs/plans/numbers/README.md for the puzzles and
@@ -29,12 +34,13 @@ import { isSettingKind } from "./gameSettings";
  * two-player set-up, a ladder, a record, a solve — ask `isRuleVariant`,
  * `isPuzzleKind` or `isPartyKind` and say what they skip.
  */
-export type GameKey = RuleVariant | PuzzleKind | PartyKind | CasualKind;
+export type GameKey = RuleVariant | PuzzleKind | PartyKind | CasualKind | HousekiKind;
 
 const VARIANTS = new Set<string>(RULE_VARIANT_LIST);
 const PUZZLES = new Set<string>(PUZZLE_KIND_LIST);
 const PARTIES = new Set<string>(PARTY_KIND_LIST);
 const CASUALS = new Set<string>(CASUAL_KIND_LIST);
+const HOUSEKIS = new Set<string>(HOUSEKI_KIND_LIST);
 
 export function isPuzzleKind(key: string): key is PuzzleKind {
   return PUZZLES.has(key);
@@ -48,6 +54,11 @@ export function isPartyKind(key: string): key is PartyKind {
 /** A casual game: played alone for a minute a level, kept only in the browser it is played in, never rated and worth no points. */
 export function isCasualKind(key: string): key is CasualKind {
   return CASUALS.has(key);
+}
+
+/** A Houseki game: a gem or stone puzzle played alone a level at a time, kept in the browser until finished, and worth points when a level is won. */
+export function isHousekiKind(key: string): key is HousekiKind {
+  return HOUSEKIS.has(key);
 }
 
 /**
@@ -65,7 +76,7 @@ export function isRuleVariant(key: string): key is RuleVariant {
  * French is stored as `gomojiMot`. What a stored row, a picture or a date is
  * kept by; never what a list of games shows.
  */
-export const EVERY_KIND_KEY: readonly GameKey[] = [...RULE_VARIANT_LIST, ...PUZZLE_KIND_LIST, ...PARTY_KIND_LIST, ...CASUAL_KIND_LIST];
+export const EVERY_KIND_KEY: readonly GameKey[] = [...RULE_VARIANT_LIST, ...PUZZLE_KIND_LIST, ...PARTY_KIND_LIST, ...CASUAL_KIND_LIST, ...HOUSEKI_KIND_LIST];
 
 /**
  * Every game, puzzle and party game, in that order: the whole catalogue, what
@@ -96,6 +107,7 @@ export function gameCopyFor(key: GameKey, locale: Locale = DEFAULT_LOCALE): Vari
   if (isPuzzleKind(key)) return puzzleCopy(key, locale);
   if (isPartyKind(key)) return PARTY_DISPLAY[key];
   if (isCasualKind(key)) return CASUAL_DISPLAY[key];
+  if (isHousekiKind(key)) return housekiCopy(key, locale);
   return variantCopy(key, locale);
 }
 
@@ -104,6 +116,7 @@ export function gameCopyOf(key: string, locale: Locale = DEFAULT_LOCALE): Varian
   if (isPuzzleKind(key)) return puzzleCopy(key, locale);
   if (isPartyKind(key)) return PARTY_DISPLAY[key];
   if (isCasualKind(key)) return CASUAL_DISPLAY[key];
+  if (isHousekiKind(key)) return housekiCopy(key, locale);
   if (key in RULE_VARIANT_DISPLAY) return variantCopy(key as RuleVariant, locale);
   return null;
 }

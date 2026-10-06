@@ -20,12 +20,16 @@ import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } 
 import { PuzzleFrontDoor } from "@/components/puzzles/PuzzleFrontDoor";
 import { PartyFrontDoor } from "@/components/party/PartyFrontDoor";
 import { CasualFrontDoor } from "@/components/casual/CasualFrontDoor";
+import { HOUSEKI_FAMILY_TITLE, HousekiFamilyPage } from "@/components/houseki/HousekiFamilyPage";
+import { HousekiFrontDoor } from "@/components/houseki/HousekiFrontDoor";
+import { HOUSEKI_FAMILY_KEY } from "@/lib/houseki/houseki.constants";
 import { CASUAL_FAMILY_TITLE, CasualFamilyPage } from "@/components/casual/CasualFamilyPage";
 import { CASUAL_FAMILY_KEY } from "@/lib/casual/casual.constants";
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import {
   backgroundPath,
   casualKindFor,
+  housekiKindFor,
   familyPath,
   historyPath,
   myGamePath,
@@ -50,15 +54,16 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]">): 
   const { slug } = await params;
   // Karakuri's family page answers here too, at /games/karakuri (`CasualFamilyPage`).
   if (slug === CASUAL_FAMILY_KEY) return { title: CASUAL_FAMILY_TITLE };
+  if (slug === HOUSEKI_FAMILY_KEY) return { title: HOUSEKI_FAMILY_TITLE };
   const say = await currentSpeaker();
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? "", say.locale);
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? housekiKindFor(slug) ?? "", say.locale);
   if (copy === null) return { title: say.say("gamepages.games") };
   return { title: say.pairsWithKanji ? `${copy.label} ${copy.kanji}` : copy.label, description: copy.tagline };
 }
 
 export function generateStaticParams() {
   // The puzzles and the party games have front doors at the same address shape as the games, and Karakuri's family page is answered here as well.
-  return [...EVERY_GAME_KEY.map((variant) => ({ slug: slugFor(variant) })), { slug: CASUAL_FAMILY_KEY }];
+  return [...EVERY_GAME_KEY.map((variant) => ({ slug: slugFor(variant) })), { slug: CASUAL_FAMILY_KEY }, { slug: HOUSEKI_FAMILY_KEY }];
 }
 
 /**
@@ -90,6 +95,8 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
   const { slug } = await params;
   // The family of the casual games has no game at home that its page could be under, so its page is answered here (`CasualFamilyPage`).
   if (slug === CASUAL_FAMILY_KEY) return <CasualFamilyPage />;
+  // And Houseki's, for the same reason (`HousekiFamilyPage`).
+  if (slug === HOUSEKI_FAMILY_KEY) return <HousekiFamilyPage />;
   /*
    * A puzzle first: it has a front door of its own shape, with no ladder, no
    * record and no board — see `PuzzleFrontDoor`, and docs/plans/numbers for
@@ -111,6 +118,12 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
    */
   const casual = casualKindFor(slug);
   if (casual !== null) return <CasualFrontDoor kind={casual} />;
+  /*
+   * And a Houseki game: a gem or stone puzzle played alone a level at a time, whose
+   * won levels earn points — see `HousekiFrontDoor`, and docs/plans/houseki.
+   */
+  const houseki = housekiKindFor(slug);
+  if (houseki !== null) return <HousekiFrontDoor kind={houseki} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const say = await currentSpeaker();

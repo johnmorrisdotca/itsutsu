@@ -22,6 +22,7 @@ const ALLOWED: Record<string, string> = {
   "src/components/live/BeginBar.tsx": "the set-up form's answers (colour, how many games), a form's choices rather than a view of a page",
   "src/components/party/PlayerCountChoice.tsx": "how many are playing, the one row every pass-and-play table's set-up uses: a form's answer before the game starts, drawn as BeginBar draws its own",
   "src/components/party/online/OnlineSetUpParts.tsx": "where a party table is played, this device or several: a form's answer before the game starts, drawn as the count beside it is",
+  "src/components/houseki/HousekiSetUp.tsx": "how to play a Houseki game (a level, a lesson, the Daily or a free game) and its size, colours and pace: a form's answers before the game starts, drawn as the other set-ups draw theirs",
   "src/components/casual/CasualSetUp.tsx": "which level of a casual game to start: a form's answer before the level begins, drawn as the other set-ups draw theirs",
   "src/components/party/tenka/TenkaSetUp.tsx": "how many are playing at Tenka, for how long and how the armies go down: a form's answers before the game starts, drawn as the other tables' set-ups draw theirs",
 };

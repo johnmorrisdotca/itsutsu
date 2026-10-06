@@ -17,4 +17,6 @@ export const GAME_CARD_KINDS: { kind: GameCardKind; label: string; kanji: string
   { kind: "party", label: "Party games", kanji: "団欒" },
   // Played alone for a minute a level, and kept nowhere but the browser (Karakuri's eight).
   { kind: "casual", label: "Casual games", kanji: "気軽" },
+  // Gem and stone puzzles played a level at a time, whose won levels earn points (Houseki's five).
+  { kind: "gems", label: "Gem puzzles", kanji: "宝石" },
 ];

@@ -1,5 +1,6 @@
 import { dependencies } from "../../../package.json";
 import { CASUAL_KIND_LIST } from "../casual/casual.constants";
+import { HOUSEKI_KIND_LIST } from "../houseki/houseki.constants";
 import { CARD_GAME_LIST } from "../cardGames/cardGames.constants";
 import { SUGOROKU_KIND_LIST } from "../party/sugoroku/sugoroku.constants";
 import { isRuleVariant, type GameKey } from "./gameKeys";
@@ -12,7 +13,7 @@ import { isRuleVariant, type GameKey } from "./gameKeys";
  * build carries, read from the site's own package.json, which pins each one
  * exactly; a version is never typed twice.
  */
-export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu" | "tobiishi" | "gunjin" | "jirai" | "karakuri";
+export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu" | "tobiishi" | "gunjin" | "jirai" | "karakuri" | "houseki";
 
 /** Each package's name as it is written, and its repository. */
 export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: string; repo: string }>> = {
@@ -35,6 +36,7 @@ export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: st
   gunjin: { name: "Gunjin", repo: "https://github.com/johnmorrisdotca/gunjin" },
   jirai: { name: "Jirai", repo: "https://github.com/johnmorrisdotca/jirai" },
   karakuri: { name: "Karakuri", repo: "https://github.com/johnmorrisdotca/karakuri" },
+  houseki: { name: "Houseki", repo: "https://github.com/johnmorrisdotca/houseki" },
 };
 
 const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
@@ -73,6 +75,7 @@ const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
   gunjin: "gunjin",
   ...Object.fromEntries(SUGOROKU_KIND_LIST.map((kind) => [kind, "sugoroku"])),
   ...Object.fromEntries(CASUAL_KIND_LIST.map((kind) => [kind, "karakuri"])),
+  ...Object.fromEntries(HOUSEKI_KIND_LIST.map((kind) => [kind, "houseki"])),
   ...Object.fromEntries(CARD_GAME_LIST.map((kind) => [kind, "toranpu"])),
 };
 

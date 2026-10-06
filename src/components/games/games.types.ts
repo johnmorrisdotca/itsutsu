@@ -8,7 +8,7 @@ import type { ShelvedGame } from "@/lib/gomoku/families.types";
 export type PictureSize = "small" | "regular" | "large";
 
 /** What a game is won by: a line of this many, or turning discs — or, for a puzzle, solving it. Derived from its spec. */
-export type GameCardKind = "3" | "4" | "5" | "6" | "flips" | "puzzle" | "party" | "casual";
+export type GameCardKind = "3" | "4" | "5" | "6" | "flips" | "puzzle" | "party" | "casual" | "gems";
 
 /** One game as the card view knows it: enough to show and enough to narrow by. */
 export type GameCard = {

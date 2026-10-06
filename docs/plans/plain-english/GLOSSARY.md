@@ -429,3 +429,18 @@ them (`points/ladder.ts`, `points/gamePoints.ts`).
 | End a level unsolved | **Give up** (a game played alone, as a puzzle's is) | Resign, Quit |
 | Another level or game | **New game** (to the set-up, leaving the level where it is) | |
 | How a casual game is counted | **Unrated, worth no points** | free play, practice |
+
+## Houseki: gem and stone puzzles (2026-10-06)
+
+| Concept | The label everywhere | No longer |
+|---|---|---|
+| One step of a game | **Level** (a number, and a difficulty of 1 to 5) | stage, board, round |
+| A short guided game that teaches | **Lesson** (nothing is counted) | tutorial |
+| The game everybody gets on a date | **Daily** (the date is in UTC) | challenge of the day |
+| A game with a size and colours of your own | **Free play** | endless, sandbox |
+| A game with no clock / with one | **Relaxed** / **Arcade** | casual, timed |
+| A run of clears, each step after the first | **Chain** | combo |
+| Take a group of stones away | **Take group** | pop, remove |
+| A group of Colour Chains' campaigns | **Classic**, **Shizen**, **Arashi** (campaigns, not games) | mode, world |
+| Magnetic Blocks' floor | **Calm** / **Pull**, and the **Floor Switch** | gravity |
+| What a won level earns | **points** (never XP) | coins |

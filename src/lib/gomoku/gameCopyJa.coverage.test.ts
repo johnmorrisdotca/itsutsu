@@ -72,7 +72,8 @@ describe("the families speak Japanese", () => {
     const ja = FAMILY_COPY_JA[key];
     expect(ja, `family ${key} has no Japanese`).toBeDefined();
     holds([ja!.blurb], key);
-    expect(ja!.review, `${key}: nobody has read its Japanese`).toBeDefined();
+    // Read by the reviewer or a person, or drafted with a question open for whoever reads it next (the gate the phrases keep: ENJA-01).
+    expect(ja!.review ?? ja!.ask, `${key}: nobody has read its Japanese, and no question is open`).toBeDefined();
   });
 
   it("has Japanese for no family that does not exist", () => {

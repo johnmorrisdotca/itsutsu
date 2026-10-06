@@ -16,7 +16,8 @@ import {
   setUpPath,
   standingsPath,
 } from "@/lib/gomoku/slugs";
-import { gameCopyFor, isCasualKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { gameCopyFor, isCasualKind, isHousekiKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { HousekiLine } from "@/components/houseki/HousekiLine";
 import { CasualLine } from "@/components/casual/CasualLine";
 import { PartyLine } from "@/components/party/PartyLine";
 import { familyBlurb } from "@/lib/gomoku/familyCopy";
@@ -69,7 +70,7 @@ export async function GameList({ stats, signedIn }: { stats: CatalogueStats; sig
           <dl className="flex flex-col gap-3">
             {family.games.map((variant) => {
               const copy = gameCopyFor(variant, locale);
-              const aliases = isPuzzleKind(variant) || isPartyKind(variant) || isCasualKind(variant) ? [] : aliasesFor(variant);
+              const aliases = isPuzzleKind(variant) || isPartyKind(variant) || isCasualKind(variant) || isHousekiKind(variant) ? [] : aliasesFor(variant);
               return (
                 <div key={variant} className="grid gap-x-6 gap-y-1 sm:grid-cols-[14rem_1fr]" data-testid={`every-game-${variant}`}>
                   <dt className="flex items-center gap-2 font-medium">
@@ -119,6 +120,16 @@ export async function GameList({ stats, signedIn }: { stats: CatalogueStats; sig
                       // A casual game is kept in one browser: no record, no standings, and its family has a page of its own.
                       <>
                         <CasualLine kind={variant} signedIn={signedIn} />
+                        <span className="flex flex-wrap gap-x-3 text-xs">
+                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
+                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>
+                          <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetFamily")}</Link>
+                        </span>
+                      </>
+                    ) : isHousekiKind(variant) ? (
+                      // A Houseki game is kept in one browser: no record of games, and its points and its family are on pages of their own.
+                      <>
+                        <HousekiLine kind={variant} signedIn={signedIn} />
                         <span className="flex flex-wrap gap-x-3 text-xs">
                           <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
                           <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>

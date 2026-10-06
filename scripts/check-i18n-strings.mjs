@@ -298,6 +298,7 @@ export const ALLOWED_FILES = new Map([
   ["src/components/puzzles/mahjong.constants.ts", "the English half of Mahjong Solitaire's lines under the board; the Japanese is puzzles.ja.cards.constants.ts, laid over it by cardWords.ts. The pictures' stamp hashes this file, so it is never edited to translate it"],
   ["src/components/puzzles/kumimoji.constants.ts", "Tailwind class lists the scanner reads as words; no sentence is in it. The pictures' stamp hashes this file"],
   ["src/components/puzzles/paint.constants.ts", "CSS gradients, selectors and a developer's width reason, which read as words to the scanner; never drawn as text"],
+  ["src/lib/houseki/housekiCopy.ts", "the five Houseki games' English names (Falling Triplets, Colour Chains, Stone Collapse, Gem Swap, Magnetic Blocks), each beside its own kanji (HOUSEKI_KANJI) that a Japanese reader is shown instead (Speaker.pairName); every sentence about a game is a phrase"],
   ["src/lib/ui/keyNames.constants.ts", "the names `KeyboardEvent.key` reports for Enter, Delete and Space, compared and never drawn"],
 ]);
 

@@ -19,6 +19,8 @@ import { puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
 export function ipHref(scope: IpScope, memberId: string, month: string | null, week: string | null = null): string | null {
   const [variant] = scope.variants;
   const [puzzle] = scope.puzzles;
+  // A Houseki win is a level kept in this site's own table and in the winner's browser: no page lists those wins yet, so its figure is printed plain.
+  if ((scope.houseki ?? []).length > 0) return null;
   if (scope.variants.length === 1 && scope.puzzles.length === 0 && variant !== undefined) {
     return gamesHref({ variant, memberId, ip: "paid", month, week });
   }

@@ -19,7 +19,8 @@ import {
   type CatalogueView,
 } from "@/lib/gomoku/catalogueView";
 import { GAMES_TABS } from "@/lib/catalogue/gamesTabs";
-import { EVERY_GAME_KEY, gameCopyFor, isCasualKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { EVERY_GAME_KEY, gameCopyFor, isCasualKind, isHousekiKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { HousekiLine } from "@/components/houseki/HousekiLine";
 import { CasualLine } from "@/components/casual/CasualLine";
 import { PartyLine } from "@/components/party/PartyLine";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
@@ -274,6 +275,8 @@ function FamilyGameCard({
           <PartyLine kind={game.variant} signedIn={signedIn} />
         ) : isCasualKind(game.variant) ? (
           <CasualLine kind={game.variant} signedIn={signedIn} />
+        ) : isHousekiKind(game.variant) ? (
+          <HousekiLine kind={game.variant} signedIn={signedIn} />
         ) : (
           <GameStatsStrip stats={stats.games[game.variant]} signedIn={signedIn} />
         )}
@@ -309,6 +312,8 @@ function buildCards(locale: Locale): GameCard[] {
       ? "party"
       : isCasualKind(variant)
       ? "casual"
+      : isHousekiKind(variant)
+      ? "gems"
       : VARIANT_SPECS[variant].flips
         ? "flips"
         : (String(VARIANT_SPECS[variant].winLength ?? 5) as GameCardKind);

@@ -169,6 +169,7 @@ export async function removeMember(
     // Their lines in the site's news, as their XP and solves: the feed tells what members did, and they are not one.
     prisma.siteNews.deleteMany({ where: { memberId } }),
     prisma.puzzleSolve.deleteMany({ where: { memberId } }),
+    prisma.housekiWin.deleteMany({ where: { memberId } }),
     // The puzzles they left unfinished, kept for them to come back to.
     prisma.puzzleRun.deleteMany({ where: { memberId } }),
     // How many times they started each Tsunagi level.

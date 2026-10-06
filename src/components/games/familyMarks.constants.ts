@@ -334,6 +334,25 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     path: "M 0.5 0.5 Q 3.2 0.7 3.5 3 M 4.5 1.2 L 4.5 3.2",
   },
   /*
+   * HOUSEKI 宝石 (2026-10-06): a gem on a cut square, a column of three gems
+   * cycling, and a line of three on the foot of the board that is about to go:
+   * the shape of the whole family, which is something falling into a line.
+   */
+  Houseki: {
+    n: 5,
+    cells: true,
+    stones: [
+      { r: 4, c: 0 },
+      { r: 4, c: 1 },
+      { r: 4, c: 2 },
+      { r: 3, c: 4, white: true },
+      { r: 2, c: 4 },
+      { r: 1, c: 4, white: true },
+      { r: 0, c: 1, faded: true },
+    ],
+    path: "M 3.5 4.5 L 4.4 4.5 M 4.1 4.2 L 4.4 4.5 L 4.1 4.8",
+  },
+  /*
    * TERRITORY AND RACES, one picture for the family that took the races in
    * on 2026-09-24: the surrounded stone of Territory on the left, and on the
    * right a black piece hopping over a white one towards the far end of the

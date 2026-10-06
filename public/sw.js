@@ -43,7 +43,7 @@ const KEPT = [PAGES, FILES, PICTURES];
 const OFFLINE_PAGE = "/offline.html";
 
 /** How many of each are kept, oldest dropped first: room for every game kept at once (`offlineGames.ts`), never the whole site. */
-const MOST = { [PAGES]: 200, [FILES]: 2000, [PICTURES]: 300 };
+const MOST = { [PAGES]: 240, [FILES]: 2000, [PICTURES]: 300 };
 
 /** How long a page waits on a network that has not answered before a kept copy is offered instead. */
 const PATIENCE_MS = 6000;

@@ -103,3 +103,11 @@ Measured table (rung at the smallest to largest offered size, Easy):
   gives `solveIp`'s figure for 1,900 seeded solves, helps and lost words included.
 - A new puzzle adds its row to `PUZZLE_PRICING`
   and its rungs from a measurement of its sizes, as above.
+
+## Houseki (2026-10-06)
+
+A won Houseki level or Daily is on the same scale and is read the same way, when
+a board is drawn, never stored: marks 1 to 5 are 50, 70, 90, 110 and 130, Shizen
+adds 10, Arashi 20 and a Daily is a flat 60. See `docs/plans/houseki/README.md`
+and `src/lib/points/housekiLadder.ts`; `housekiLadder.test.ts` holds it to the
+puzzle ladder's own least and most.

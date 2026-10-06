@@ -10,7 +10,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { GameStatsStrip } from "@/components/games/GameStats";
 import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
-import { isCasualKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { isCasualKind, isHousekiKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { HousekiLine } from "@/components/houseki/HousekiLine";
 import { CasualLine } from "@/components/casual/CasualLine";
 import { PartyLine } from "@/components/party/PartyLine";
 import { GameThumb } from "@/components/games/GameThumb";
@@ -154,6 +155,8 @@ export function GameCards({
                 <PartyLine kind={copy.variant} signedIn={signedIn} />
               ) : isCasualKind(copy.variant) ? (
                 <CasualLine kind={copy.variant} signedIn={signedIn} />
+              ) : isHousekiKind(copy.variant) ? (
+                <HousekiLine kind={copy.variant} signedIn={signedIn} />
               ) : (
                 <GameStatsStrip stats={stats.games[copy.variant]} signedIn={signedIn} compact />
               )}

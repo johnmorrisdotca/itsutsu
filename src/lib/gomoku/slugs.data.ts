@@ -1,5 +1,6 @@
 // Relative, like the rest of this folder: the browser specs import the addresses, and Playwright resolves no alias.
 import type { CasualKind } from "../casual/casual.types";
+import type { HousekiKind } from "../houseki/houseki.types";
 import type { PartyKind } from "../party/party.types";
 import type { PuzzleKind } from "../puzzles/puzzles.types";
 
@@ -161,4 +162,18 @@ export const CASUAL_SLUGS: Record<CasualKind, string> = {
   ropeCut: "rope-cut",
   tubeSort: "tube-sort",
   choiceStory: "choice-story",
+};
+
+/**
+ * The Houseki games' slugs (`HousekiKind`): the package's own entry names, which
+ * are already kebab case. Under each is a front door, rules, a set-up
+ * (`/new`) that chooses a level, lesson, the Daily or a free game, the game
+ * itself (`/play?level=`), and the family's page.
+ */
+export const HOUSEKI_SLUGS: Record<HousekiKind, string> = {
+  fallingTriplets: "falling-triplets",
+  colourChains: "colour-chains",
+  stoneCollapse: "stone-collapse",
+  gemSwap: "gem-swap",
+  magneticBlocks: "magnetic-blocks",
 };

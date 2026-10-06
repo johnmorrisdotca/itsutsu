@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { UNCLAIMABLE_REASONS } from "@/lib/auth/memberId";
 import { HIDES_TEST_MEMBERS, type TestModeReader } from "@/lib/testMode/testMode";
 import { SITE_SCOPE, type IpScope } from "./ipScope";
+import { housekiWinsSql } from "./housekiLadderSql";
 import { bestSolvesSql } from "./ladderSql";
 
 /**
@@ -65,6 +66,12 @@ function earnedOf(
     const when = since === null ? Prisma.empty : Prisma.sql` AND "finishedAt" >= ${since}`;
     // A grid counts once, at the member's best solve of it: the most it was worth on the ladder (`ladder.ts`).
     parts.push(bestSolvesSql(scope.puzzles, when, solver));
+  }
+  if ((scope.houseki ?? []).length > 0) {
+    const when = since === null ? Prisma.empty : Prisma.sql` AND w."finishedAt" >= ${since}`;
+    const wins = members === null ? Prisma.empty : Prisma.sql` AND w."memberId" IN (${among})`;
+    // A won level or Daily, priced on the Houseki ladder (`housekiLadder.ts`): one row each, since a level counts once.
+    parts.push(Prisma.sql`SELECT "memberId", ip, at, game FROM (${housekiWinsSql(scope.houseki!, when, wins)}) AS housekiWins`);
   }
   if (parts.length === 0) return null;
   const tests = reader.showsTestMembers ? Prisma.empty : Prisma.sql`WHERE "Member"."unclaimableBecause" IS DISTINCT FROM ${UNCLAIMABLE_REASONS.test}`;

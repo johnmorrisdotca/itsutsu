@@ -1,7 +1,9 @@
 import { CASUAL_SPECS } from "../casual/casual.constants";
-import { EVERY_GAME_KEY, isCasualKind, isPartyKind, isPuzzleKind } from "../catalogue/gameKeys";
+import { EVERY_GAME_KEY, isCasualKind, isHousekiKind, isPartyKind, isPuzzleKind } from "../catalogue/gameKeys";
+import { HOUSEKI_SPECS } from "../houseki/houseki.constants";
+import { housekiQuery } from "../houseki/housekiAddress";
 import { PARTY_PLAY_GAMES } from "../gomoku/party/partyGames";
-import { casualPlayPath, joinQuery, passAndPlayPath, playPath, setUpPath } from "../gomoku/slugs";
+import { casualPlayPath, housekiPlayPath, joinQuery, passAndPlayPath, playPath, setUpPath } from "../gomoku/slugs";
 import { PUZZLE_SPECS } from "../puzzles/puzzles.constants";
 import { puzzleQuery } from "../puzzles/puzzleAddress";
 
@@ -37,6 +39,14 @@ export function offlineGameAddresses(): string[] {
       // A casual game asks nothing of the site once its page is open: its set-up, and a level of it at each of its levels, are kept.
       pages.push(setUpPath(key));
       for (let level = 1; level <= CASUAL_SPECS[key].levels; level += 1) pages.push(casualPlayPath(key, level));
+    } else if (isHousekiKind(key)) {
+      // A Houseki game asks nothing of the site once its page is open, except to count a win: its set-up, and its first level, a lesson, the Daily and a free game, are kept; a level of it is kept when it is visited.
+      const spec = HOUSEKI_SPECS[key];
+      pages.push(setUpPath(key));
+      pages.push(housekiPlayPath(key, housekiQuery({ kind: "level", campaign: "classic", number: 1 })));
+      pages.push(housekiPlayPath(key, housekiQuery({ kind: "lesson", number: 1 })));
+      if (spec.daily) pages.push(housekiPlayPath(key, housekiQuery({ kind: "daily" })));
+      pages.push(housekiPlayPath(key, housekiQuery({ kind: "free", size: spec.sizes[0]!.id, colours: spec.colours[0]!, arcade: false })));
     } else {
       pages.push(playPath(key));
       if (PARTY_PLAY_GAMES.includes(key)) pages.push(passAndPlayPath(key));

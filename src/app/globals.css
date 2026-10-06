@@ -1201,7 +1201,8 @@ tr:has(> [data-row-actions]):focus {
  */
 @media (min-width: 64rem) {
   html[data-bare="true"] [data-suido-tall] {
-    width: calc((100dvh - 10rem) * var(--suido-ratio));
+    /* `--tall-reserve` is the room a board keeps for what is round it: Suido's ten rem, or what a board names (Houseki's wells keep a little more). */
+    width: calc((100dvh - var(--tall-reserve, 10rem)) * var(--suido-ratio));
     max-width: 100%;
   }
   html[data-bare="true"] [data-strippable] :has(> [data-scale-board][data-scale-stack]):has([data-suido-tall]) {

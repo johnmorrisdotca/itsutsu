@@ -11,7 +11,8 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { IpBoard } from "@/components/points/IpBoard";
 import { pairedText } from "@/lib/gomoku/seatWords";
-import { EVERY_GAME_KEY, isCasualKind, isPartyKind, gameNameFor } from "@/lib/catalogue/gameKeys";
+import { EVERY_GAME_KEY, isCasualKind, isHousekiKind, isPartyKind, gameNameFor } from "@/lib/catalogue/gameKeys";
+import { HousekiFamilyPage } from "@/components/houseki/HousekiFamilyPage";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { familyOf, gamesShownIn } from "@/lib/gomoku/families";
 import { familyBlurb } from "@/lib/gomoku/familyCopy";
@@ -54,6 +55,8 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
    * second door to one room. Nothing links here for one.
    */
   if (variant === null || isPartyKind(variant) || isCasualKind(variant)) notFound();
+  // A Houseki game's family is the one page the family has, drawn here as it is at /games/houseki: the same room, reached from the game as every game's family is.
+  if (isHousekiKind(variant)) return <HousekiFamilyPage />;
   const family = familyOf(variant);
   const say = await currentSpeaker();
   const locale = say.locale;

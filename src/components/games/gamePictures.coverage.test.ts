@@ -324,6 +324,9 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/app/games/tables/page.tsx": { FamilyMark: "regular" },
   // The same tab's casual games, a row for each with a level won or in progress, kept in this browser: a row like the rest.
   "src/components/casual/CasualCard.tsx": { GameThumb: "small" },
+  // And the Houseki games kept the same way in this browser, a row each, and the family's page under its own mark.
+  "src/components/houseki/HousekiCards.tsx": { GameThumb: "small" },
+  "src/components/houseki/HousekiFamilyPage.tsx": { FamilyMark: "regular" },
   // My games' Pass and play tab: a race table's game kept in this browser (Chinese Checkers, Halma), a row like the board for two beside it.
   "src/components/party/PartyGameCard.tsx": { GameThumb: "small" },
   // The same tab's Pair Go game, kept in this browser: a row like the two beside it.

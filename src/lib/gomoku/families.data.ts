@@ -495,4 +495,31 @@ export const GAME_FAMILIES: GameFamily[] = [
     games: ["gridEscape", "tubeSort", "nutsAndBolts", "pinRescue", "ropeCut", "saveTheCharacter", "stretchGrabber", "choiceStory"],
     notOnSetUp: "A casual game has one choice, its level, made on the game's own set-up page; the set-up screen makes a game between two seats.",
   },
+  {
+    key: "houseki",
+    /*
+     * HOUSEKI 宝石 (2026-10-06). Five gem and stone puzzles from the open-source
+     * package `@johnmorrisdotca/houseki`: a column of three to cycle and drop, a
+     * pair to turn into chains (with magnetic stones and weather in two more
+     * campaigns), a group of stones to take, a neighbour to swap, and a block of
+     * four to set down on a floor that turns magnetic. Each has fifty to a
+     * hundred graded levels, lessons, and (but for Magnetic Blocks) a Daily.
+     *
+     * A HOUSEKI GAME IS A KIND OF ITS OWN (`lib/houseki/`, docs/plans/houseki/README.md):
+     * played by the package in the browser and kept there until it is finished,
+     * like a casual game, but a won level is also written to the server, which
+     * plays the game again from its start before it counts, and it is worth points
+     * on the ladder (`lib/points/housekiLadder.ts`). It earns no rating and no XP,
+     * and its games are not among the ones an award is counted over
+     * (`RECORDED_GAME_KEYS`), so the family counts towards no award
+     * (`RECORDED_FAMILIES`) and has a page of its own at `/games/houseki`.
+     *
+     * 宝石: a gem or precious stone, which is what every piece of these games is.
+     */
+    title: "Houseki",
+    kanji: "宝石",
+    blurb: "Gem and stone puzzles for one, a level at a time. Cycle a falling column of three, turn a pair into chains, take groups of stones, swap neighbours, or set a magnetic block down on a floor that pulls. Fifty to a hundred graded levels in each, with lessons and a Daily, played alone. A level won earns points.",
+    games: ["fallingTriplets", "colourChains", "stoneCollapse", "gemSwap", "magneticBlocks"],
+    notOnSetUp: "A Houseki game is set up on its own page, where a level, a lesson, the Daily or a free game is chosen; the set-up screen makes a game between two seats.",
+  },
 ];

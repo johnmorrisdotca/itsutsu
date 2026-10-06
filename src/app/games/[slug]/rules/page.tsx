@@ -10,7 +10,8 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { casualRulesPage } from "@/lib/casual/casualRulesPage";
-import { gamePath, casualKindFor, historyPath, partyKindFor, passAndPlayPath, puzzleFor, setUpPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { housekiRulesPage } from "@/lib/houseki/housekiRulesPage";
+import { gamePath, casualKindFor, housekiKindFor, historyPath, partyKindFor, passAndPlayPath, puzzleFor, setUpPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
 import { partyRulesPage } from "@/lib/party/partyRulesPage";
 
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
@@ -30,7 +31,7 @@ import { titleWithKanji } from "@/components/games/pageTitles";
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/rules">): Promise<Metadata> {
   const { slug } = await params;
   const say = await currentSpeaker();
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? "", say.locale);
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? housekiKindFor(slug) ?? "", say.locale);
   const rules = titleWithKanji(say, "gamepages.rules", "規則");
   return { title: copy === null ? rules : `${copy.label} · ${rules}` };
 }
@@ -96,11 +97,13 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
   const party = puzzle === null ? partyKindFor(slug) : null;
   // And a casual game's, built by `casualRulesPage` the same way.
   const casual = puzzle === null && party === null ? casualKindFor(slug) : null;
-  const variant = puzzle === null && party === null && casual === null ? variantFor(slug) : null;
-  if (puzzle === null && party === null && casual === null && variant === null) notFound();
-  const key = puzzle ?? party ?? casual ?? variant!;
+  // And a Houseki game's, built by `housekiRulesPage` the same way.
+  const houseki = puzzle === null && party === null && casual === null ? housekiKindFor(slug) : null;
+  const variant = puzzle === null && party === null && casual === null && houseki === null ? variantFor(slug) : null;
+  if (puzzle === null && party === null && casual === null && houseki === null && variant === null) notFound();
+  const key = puzzle ?? party ?? casual ?? houseki ?? variant!;
   const say = await currentSpeaker();
-  const page = puzzle !== null ? puzzleRulesPage(puzzle, say) : party !== null ? partyRulesPage(party) : casual !== null ? casualRulesPage(casual) : rulesPageFor(variant!, say);
+  const page = puzzle !== null ? puzzleRulesPage(puzzle, say) : party !== null ? partyRulesPage(party) : casual !== null ? casualRulesPage(casual) : houseki !== null ? housekiRulesPage(houseki, say) : rulesPageFor(variant!, say);
   // A game's strategy guides; the cube's method, which is a guide of its own (`/learn/cube`).
   const guides =
     variant !== null

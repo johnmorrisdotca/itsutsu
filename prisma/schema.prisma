@@ -1406,3 +1406,32 @@ model PartyAction {
 
   @@id([tableId, index], map: "PartyAction_pkey")
 }
+
+/// A Houseki level, lesson or Daily one member has won (`lib/houseki/`): one row for each thing won, kept once and refreshed by a better score,
+/// written only after the server has played the game again from its start (`lib/houseki/server/housekiWin.ts`) and found it won. What it is
+/// worth is not stored: `marks` and `campaign` name the price on the ladder (`lib/points/housekiLadder.ts`), read when a board is drawn, so a
+/// change to a price reprices every win ever kept. `levelKey` is the level's id in the package, or the day for a Daily.
+model HousekiWin {
+  id         String   @id @default(cuid())
+  memberId   String
+  /// A HousekiKind: "fallingTriplets", "colourChains", "stoneCollapse", "gemSwap" or "magneticBlocks".
+  kind       String
+  /// "classic", "shizen" or "arashi" for a level, and "daily" for a Daily.
+  campaign   String
+  /// The level's id in the package, or the day (YYYY-MM-DD, UTC) of a Daily.
+  levelKey   String
+  /// The level's number in its campaign, or 0 for a Daily.
+  number     Int
+  /// How hard the level is, 1 to 5 (0 for a Daily): what the price is read from.
+  marks      Int
+  /// The score of the best win kept.
+  score      Int
+  /// The finished game's own save, which the server played again; the replay on its page reads it.
+  save       String
+  firstWonAt DateTime @default(now())
+  finishedAt DateTime @default(now())
+
+  @@unique([memberId, kind, levelKey])
+  @@index([kind, finishedAt])
+  @@index([memberId, finishedAt])
+}

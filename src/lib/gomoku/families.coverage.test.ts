@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { CASUAL_FAMILY_KEY } from "../casual/casual.constants";
-import { isCasualKind, isPartyKind } from "../catalogue/gameKeys";
+import { isCasualKind, isHousekiKind, isPartyKind } from "../catalogue/gameKeys";
+import { HOUSEKI_FAMILY_KEY } from "../houseki/houseki.constants";
 
 import { familyCountWords } from "./familyWords";
 import { gameKeyFor } from "./slugs";
@@ -39,15 +40,16 @@ describe("a family no recorded game calls home", () => {
     expect(noRecord.map((family) => family.key)).toContain("party");
   });
 
-  it("has only party or casual games at home, if it has any", () => {
-    for (const family of noRecord) expect(family.games.every((game) => isPartyKind(game) || isCasualKind(game)), family.title).toBe(true);
+  it("has only party, casual or Houseki games at home, if it has any", () => {
+    for (const family of noRecord) expect(family.games.every((game) => isPartyKind(game) || isCasualKind(game) || isHousekiKind(game)), family.title).toBe(true);
   });
 
   it("has a page of its own at /games/<key>, which no game's address can be", () => {
     for (const family of noRecord) {
       expect(familyPagePath(family)).toBe(`/games/${family.key}`);
-      // A folder of its own, or the game page's route answering for it by name: Karakuri's is the latter, to spare the server function a route's manifests (`CasualFamilyPage`).
-      const answeredBySlug = family.key === CASUAL_FAMILY_KEY && readFileSync("src/app/games/[slug]/page.tsx", "utf8").includes("<CasualFamilyPage />");
+      // A folder of its own, or the game page's route answering for it by name: Karakuri's and Houseki's are the latter, to spare the server function a route's manifests (`CasualFamilyPage`, `HousekiFamilyPage`).
+      const page = readFileSync("src/app/games/[slug]/page.tsx", "utf8");
+      const answeredBySlug = (family.key === CASUAL_FAMILY_KEY && page.includes("<CasualFamilyPage />")) || (family.key === HOUSEKI_FAMILY_KEY && page.includes("<HousekiFamilyPage />"));
       expect(existsSync(join("src/app/games", family.key, "page.tsx")) || answeredBySlug, `${family.title} has no page`).toBe(true);
       expect(gameKeyFor(family.key), `${family.key} is also a game's address`).toBeNull();
     }
@@ -57,8 +59,8 @@ describe("a family no recorded game calls home", () => {
     for (const family of noRecord) {
       const shelf = gamesShownIn(family);
       expect(shelf.length, `${family.title} shows nothing`).toBeGreaterThan(0);
-      // Its own party or casual games at home, and every other game a guest that knows where it lives.
-      for (const shown of shelf) expect(shown.listed === "shelf" || isPartyKind(shown.variant) || isCasualKind(shown.variant), `${shown.variant} on ${family.title}`).toBe(true);
+      // Its own party, casual or Houseki games at home, and every other game a guest that knows where it lives.
+      for (const shown of shelf) expect(shown.listed === "shelf" || isPartyKind(shown.variant) || isCasualKind(shown.variant) || isHousekiKind(shown.variant), `${shown.variant} on ${family.title}`).toBe(true);
       if (shelf.some((shown) => shown.listed === "shelf")) expect(familyCountWords(family)).toMatch(/from other families$/);
     }
   });

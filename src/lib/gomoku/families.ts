@@ -1,5 +1,5 @@
 // Relative, not `@/`: the browser specs import this file, and Playwright resolves no alias in what it imports.
-import { type GameKey, isCasualKind, isPartyKind, isRuleVariant } from "../catalogue/gameKeys";
+import { type GameKey, isCasualKind, isHousekiKind, isPartyKind, isRuleVariant } from "../catalogue/gameKeys";
 import { listedGameOf } from "../catalogue/gameSettings";
 
 import { ALSO_LISTED_IN } from "./familyShelves";
@@ -20,9 +20,12 @@ export function familyKeepsRecords(family: GameFamily): boolean {
   return family.games.some((game) => !isUnrecorded(game));
 }
 
-/** A game the site keeps no record of: a party game (kept in one browser) or a casual game (the same, played alone). */
+/**
+ * A game no award is counted over: a party game (kept in one browser), a casual game (the same, played alone) or a Houseki game, whose won
+ * levels are kept in the browser and paid points by the server but make no rating, no record and no XP.
+ */
 function isUnrecorded(game: GameKey): boolean {
-  return isPartyKind(game) || isCasualKind(game);
+  return isPartyKind(game) || isCasualKind(game) || isHousekiKind(game);
 }
 
 /**

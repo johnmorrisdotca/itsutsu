@@ -181,6 +181,8 @@ export const RATE_LIMITS = {
   recordGame: { windowMs: 60_000, maxRequests: 20 },
   /** Handing in a solved puzzle: a cost limit, since each one is a ledger write. A 4×4 takes a minute. */
   puzzleSolved: { windowMs: 60_000, maxRequests: 12 },
+  /** Handing in a won Houseki level or Daily: the server plays the game again, so it is a cost limit too. */
+  housekiWin: { windowMs: 60_000, maxRequests: 12 },
   /** Keeping an unfinished puzzle: one write when it is paused or its page is left, never while it is being solved. */
   puzzleRun: { windowMs: 60_000, maxRequests: 20 },
   /** Filing a game played on one device: when it starts, ends or is put away, and when its page is left — never a write a move. */

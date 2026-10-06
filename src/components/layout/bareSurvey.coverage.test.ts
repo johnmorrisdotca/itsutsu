@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { isSettingKind } from "@/lib/catalogue/gameSettings";
 import { PARTY_PLAY_GAMES } from "@/lib/gomoku/party/partyGames";
-import { CASUAL_SLUGS, GAME_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS } from "@/lib/gomoku/slugs.data";
+import { CASUAL_SLUGS, GAME_SLUGS, HOUSEKI_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS } from "@/lib/gomoku/slugs.data";
 
 /**
  * EVERY PLAY IS IN THE SURVEY THAT HOLDS JUST THE BOARD TO A DESK'S WINDOW.
@@ -39,6 +39,11 @@ describe("the just-the-board survey covers every play", () => {
   it("names every casual game", () => {
     const missing = Object.values(CASUAL_SLUGS).filter((slug) => !SURVEY.includes("CASUAL_SLUGS") && !SURVEY.includes(`casual("${slug}"`));
     expect(missing, "a casual game whose just-the-board modal nothing measures: add it to SURVEY in e2e/bare-board.spec.ts").toEqual([]);
+  });
+
+  it("names every Houseki game", () => {
+    const missing = Object.values(HOUSEKI_SLUGS).filter((slug) => !SURVEY.includes("HOUSEKI_SLUGS") && !SURVEY.includes(`houseki("${slug}"`));
+    expect(missing, "a Houseki game whose just-the-board modal nothing measures: add it to SURVEY in e2e/bare-board.spec.ts").toEqual([]);
   });
 
   it("names the practice board and a live game", () => {
