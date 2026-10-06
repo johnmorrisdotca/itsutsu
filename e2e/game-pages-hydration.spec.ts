@@ -46,8 +46,8 @@ const READERS = [
 
 /** What a reader's own language prints for a clock, an absent opponent and a finished game: the page reads in their language, not in English. */
 const SAYS = {
-  "ja-JP": { clock: /^\d+分\d{2}秒$/, away: "まで不在", ended: "終局" },
-  "en-US": { clock: /^\d+m \d{2}s$/, away: "Away until", ended: "ended" },
+  "ja-JP": { clock: /^\d+分\d{2}秒$/, away: "まで不在", ended: "終局", started: "開始" },
+  "en-US": { clock: /^\d+m \d{2}s$/, away: "Away until", ended: "ended", started: "started" },
 } as const;
 
 type Reader = (typeof READERS)[number];
@@ -226,7 +226,7 @@ for (const reader of READERS) {
           `/games/gomoku/match/${game.id}/0`,
           "game-replay",
           `a finished game at move 0 for a reader in ${reader.where}`,
-          (page) => expect(page.getByTestId("replay-started-at")).toContainText("started"),
+          (page) => expect(page.getByTestId("replay-started-at")).toContainText(SAYS[reader.locale].started),
         );
       } finally {
         await context.close();
