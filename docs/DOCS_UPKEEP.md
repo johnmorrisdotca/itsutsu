@@ -126,6 +126,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `/releases` | `CHANGELOG.md` | written by `pnpm release:take`; never by hand | `releases.test.ts` |
 | `docs/japanese-review.md` | `src/lib/i18n/dictionaries/**` | regenerate; never edit | `japanese.coverage.test.ts` |
 | `docs/japanese-review-games.md` | `src/lib/i18n/dictionaries/*.ja.*` (games, openings, computer players, families, attribution) | regenerate; never edit | `gameCopyReview.coverage.test.ts` |
+| `src/lib/i18n/jaText.phrases.generated.constants.ts`, `jaText.copy.generated.constants.ts` | the authored Japanese: `src/lib/i18n/dictionaries/**`, `src/lib/xp/xpAwardCopy.ja.constants.ts`, `src/lib/xp/levelNames.ja.constants.ts` | any Japanese sentence is added or changed: run `pnpm i18n:text`; never edit by hand | `jaText.coverage.test.ts` |
 
 When a new doc lands, it gets a row here in the same commit. A doc without a
 row has no trigger, so nothing will ever make anybody re-read it.

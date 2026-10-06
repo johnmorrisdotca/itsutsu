@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Zen_Old_Mincho } from "next/font/google";
 import "./globals.css";
 
+import { JaLocale } from "@/components/i18n/JaLocale";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { APP_COLOURS } from "@/lib/app/app.constants";
 import { appleStartupImages } from "@/lib/app/appleLaunch";
@@ -24,6 +25,7 @@ import "@/components/layout/SiteHeader";
 import { TestModeBanner } from "@/components/layout/TestModeBanner";
 import { OfflineKeeper } from "@/components/offline/OfflineKeeper";
 import { currentLocale } from "@/lib/i18n/currentLocale";
+import { jaText } from "@/lib/i18n/jaText";
 import { LOCALES } from "@/lib/i18n/i18n.constants";
 
 const geistSans = Geist({
@@ -124,12 +126,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {/*
           The same locale the server just rendered with, handed to the half of
           the site React draws in the browser. One reading of the request, used
-          twice, so the two cannot disagree at hydration.
+          twice, so the two cannot disagree at hydration. A reader of Japanese
+          is drawn inside `JaLocale`, which is handed the Japanese as a prop and
+          is the only way their browser gets it: an English reader is never sent
+          a word of it.
         */}
         <TestModeBanner />
         {/* The offline keeper, started on every page, and the line that says so when there is no connection. */}
         <OfflineKeeper />
-        <LocaleProvider locale={locale}>{children}</LocaleProvider>
+        {locale === "ja" ? <JaLocale text={jaText()}>{children}</JaLocale> : <LocaleProvider locale={locale}>{children}</LocaleProvider>}
       </body>
     </html>
   );

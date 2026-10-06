@@ -1,10 +1,10 @@
 import { calendarDay, calendarMonth } from "@/lib/ui/when";
 
-import { DICTIONARIES } from "./dictionaries";
 import type { DateStyle } from "./format.constants";
 import { listIn, listPiecesIn, numberIn, pluralFormIn, wordsIn } from "./format";
 import { LOCALES, PHRASES, type PhraseKey } from "./i18n.constants";
 import type { Locale, Paired, Vars } from "./i18n.types";
+import { dictionaryFor } from "./jaText";
 
 /**
  * Saying something in the reader's language, and the LOCALE + JP rule.
@@ -99,7 +99,7 @@ export type Speaker = {
 
 export function speaker(locale: Locale): Speaker {
   const spec = LOCALES[locale];
-  const dictionary = DICTIONARIES[locale] ?? PHRASES;
+  const dictionary = dictionaryFor(locale);
 
   /**
    * LOCALE + JP, in one place.

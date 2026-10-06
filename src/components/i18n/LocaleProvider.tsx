@@ -21,10 +21,11 @@ import type { Locale } from "@/lib/i18n/i18n.types";
  * React hydrates into agree by construction. Nothing here reads a cookie: a
  * second reader of the same fact is how the two come apart.
  *
- * The dictionary does travel to the browser with this, which is the cost.
- * It is a few dozen short strings, and most of the Japanese a reader sees is
- * not in it at all — it is the `kanji` already sitting beside the English in
- * the display tables, which the bundle was carrying anyway.
+ * What travels with it is the English phrase catalogue, which the bundle
+ * carries anyway. The Japanese does not: a reader of Japanese is drawn inside
+ * `JaLocale`, which loads the Japanese words (the sentences alone, never their
+ * back-translations) and then draws this, and an English reader is never sent
+ * them.
  */
 const LocaleContext = createContext<Locale>(DEFAULT_LOCALE);
 

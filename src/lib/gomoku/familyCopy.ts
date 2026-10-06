@@ -1,6 +1,5 @@
-import { jaText } from "../i18n/copyJa.types";
-import { ALSO_LISTED_COPY_JA, FAMILY_COPY_JA } from "../i18n/dictionaries/families.ja.constants";
 import type { Locale } from "../i18n/i18n.types";
+import { jaText } from "../i18n/jaText";
 
 import type { GameFamily } from "./families.types";
 
@@ -11,13 +10,11 @@ import type { GameFamily } from "./families.types";
  */
 export function familyBlurb(family: Pick<GameFamily, "key" | "blurb">, locale: Locale): string {
   if (locale !== "ja") return family.blurb;
-  const ja = FAMILY_COPY_JA[family.key];
-  return ja === undefined ? family.blurb : jaText(ja.blurb);
+  return jaText().families[family.key] ?? family.blurb;
 }
 
 /** Why a game is also shelved on another family, in the reader's language. */
 export function listingWhy(game: string, familyKey: string, why: string, locale: Locale): string {
   if (locale !== "ja") return why;
-  const ja = ALSO_LISTED_COPY_JA[`${game}/${familyKey}`];
-  return ja === undefined ? why : jaText(ja.why);
+  return jaText().alsoListed[`${game}/${familyKey}`] ?? why;
 }

@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-import { DICTIONARIES, OFFERED_LOCALES, languageOptions, speaks } from "./dictionaries";
+import { OFFERED_LOCALES, languageOptions, speaks } from "./dictionaries";
+import { DICTIONARIES } from "./dictionaries.review";
 import { placeholdersIn, speaker } from "./i18n";
 import { DEFAULT_LOCALE, LOCALES, LOCALE_LIST, PHRASES, PHRASE_KEYS } from "./i18n.constants";
 import { renderedSource, withoutComments } from "./rendered";
@@ -55,6 +56,8 @@ describe("every language the site names", () => {
 describe("a language is offered only when it can be spoken", () => {
   it("offers exactly the languages that have a dictionary", () => {
     expect([...OFFERED_LOCALES]).toEqual(LOCALE_LIST.filter((locale) => speaks(locale)));
+    /* The list is written down (`COPY_LOCALES`) so that nothing which only asks "is it offered?" has to import the words; this is what keeps it true. */
+    expect([...OFFERED_LOCALES]).toEqual(LOCALE_LIST.filter((locale) => DICTIONARIES[locale] !== undefined));
   });
 
   it("always offers the language the site is written in", () => {
