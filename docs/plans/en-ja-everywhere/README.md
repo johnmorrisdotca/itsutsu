@@ -176,7 +176,7 @@ before starting.
 | Onibako | Vite dashboard, no mechanism, about 265 inline items, English email alerts | Small to medium | Only if wanted: it is a one-operator tool |
 | Sumilabu dashboard | 7 components, no mechanism; `en-US` formatting in `ics.ts`, `board/rules.ts`, `reports/image.ts` | Small | Low value (operator tool). Make its formatting locale-neutral at most |
 | rest-in-pieces | 2-component playground | Small | Optional |
-| Yukikuma | Expo prototype, a year old, superseded by UmaKuma | None | Archive. No ticket |
+| Yukikuma | Expo prototype, superseded by UmaKuma | None | Deleted from the Mac on 2026-10-06 (John: "not used. it's the old Umakuma"); its history stays at github.com/spxis/yukikuma. No ticket |
 | address-plus, toudai, ayatori | A library, a script and machine set-up: no UI | None | No ticket |
 
 ### The packages (`@johnmorrisdotca/…`)
