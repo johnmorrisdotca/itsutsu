@@ -1,3 +1,5 @@
+import type { Speaker } from "@/lib/i18n/i18n";
+
 /**
  * The expected score of a player against an opponent, by the difference in
  * their ratings: the whole of Elo in one curve. Drawn as SVG from the formula
@@ -10,7 +12,7 @@ const SPAN = 400;
 
 const expected = (difference: number) => 1 / (1 + 10 ** (-difference / 400));
 
-export function EloCurve() {
+export function EloCurve({ say }: { say: Speaker }) {
   const plotW = WIDTH - PAD.left - PAD.right;
   const plotH = HEIGHT - PAD.top - PAD.bottom;
   const x = (d: number) => PAD.left + ((d + SPAN) / (2 * SPAN)) * plotW;
@@ -21,7 +23,7 @@ export function EloCurve() {
 
   return (
     <figure className="mx-auto flex w-full max-w-2xl flex-col items-center gap-2" data-testid="about-elo-curve">
-      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" role="img" aria-label="The expected score against an opponent, from a 400-point deficit to a 400-point lead: a smooth S-curve through one half at equal ratings.">
+      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full" role="img" aria-label={say.say("about.elo.label")}>
         {[0, 0.25, 0.5, 0.75, 1].map((e) => (
           <g key={e}>
             <line x1={PAD.left} x2={WIDTH - PAD.right} y1={y(e)} y2={y(e)} stroke="var(--rule)" />
@@ -48,12 +50,11 @@ export function EloCurve() {
           </g>
         ))}
         <text x={WIDTH / 2} y={HEIGHT - 4} textAnchor="middle" fontSize={10} fill="var(--muted)">
-          your rating minus theirs
+          {say.say("about.elo.axis")}
         </text>
       </svg>
       <figcaption className="text-center text-xs leading-relaxed text-muted">
-        What Elo expects of you. Equal ratings: half a point a game. Two hundred points ahead: three wins in four.
-        Four hundred ahead: nine in ten. Beat the expectation and your rating rises by the shortfall times K.
+        {say.say("about.elo.caption")}
       </figcaption>
     </figure>
   );

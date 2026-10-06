@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { PHRASES } from "@/lib/i18n/i18n.constants";
+
 import { MEMBER_KINDS, MEMBER_KIND_DISPLAY, memberKind, worthShowing } from "./memberKind";
 import { UNCLAIMABLE_REASONS } from "./memberId";
 
@@ -58,9 +60,9 @@ describe("the words for each kind", () => {
     for (const kind of Object.values(MEMBER_KINDS)) {
       const copy = MEMBER_KIND_DISPLAY[kind];
       expect(copy, kind).toBeDefined();
-      expect(copy.label.length, kind).toBeGreaterThan(2);
+      expect(PHRASES[copy.label].length, kind).toBeGreaterThan(2);
       expect(copy.kanji.length, kind).toBeGreaterThan(0);
-      expect(copy.note.length, kind).toBeGreaterThan(10);
+      expect(PHRASES[copy.note].length, kind).toBeGreaterThan(10);
     }
   });
 });

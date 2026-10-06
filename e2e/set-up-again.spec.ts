@@ -357,7 +357,7 @@ test.describe("carrying a position into a new game", () => {
     expect(before.status()).toBe(200);
     const source = (await before.json()) as { whiteMemberId: string | null; whiteName: string };
     expect(source.whiteMemberId, "a program is seated, not asked").toBe("kyu");
-    const machine = `${source.whiteName} 機械`;
+    const machine = `${source.whiteName} コンピュータ`;
 
     /*
      * ONE STONE OF MINE, AND NOT A SECOND, which is a deliberate limit rather

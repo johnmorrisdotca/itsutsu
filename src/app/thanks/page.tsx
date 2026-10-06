@@ -1,3 +1,4 @@
+import { titleWithKanji } from "@/components/games/pageTitles";
 import { BetaAsk } from "@/components/home/BetaAsk";
 import { PageTitle, SectionHeading } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -6,12 +7,17 @@ import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { findMembersByNames } from "@/lib/auth/members";
 import { currentReader } from "@/lib/auth/currentReader";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { SITE_NAME } from "@/lib/i18n/siteName";
+import { weave } from "@/lib/i18n/weave";
 import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
 import { playerKey } from "@/lib/rating/playerKey";
 import { BETA_TESTERS, communitiesSaid } from "@/lib/thanks/testers";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 
-export const metadata = { title: "Thank you" };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "auth.thanks.title", "感謝") };
+}
 
 /**
  * THANK YOU, TO THE PEOPLE TESTING THE SITE.
@@ -40,6 +46,7 @@ export const metadata = { title: "Thank you" };
  * names will go and how to be among them, which is the page's second job.
  */
 export default async function ThanksPage() {
+  const say = await currentSpeaker();
   const reader = await currentReader();
   const members = reader.signedIn ? await findMembersByNames(BETA_TESTERS.map((tester) => tester.name)) : null;
   // The flag, badge and level beside each name, as on every list.
@@ -47,18 +54,13 @@ export default async function ThanksPage() {
   return (
     <Page>
       <SiteHeader />
-      <PageTitle
-        title="Thank you"
-        kanji="感謝"
-        lead="Itsutsu is free and in beta. The people below have given their own time to play it before it was finished: finding the rule that was wrong, the button that did nothing, the page that made no sense on a phone, and telling us. Every fix they lead to is theirs as much as ours. We are very grateful, and this page is where we say so."
-      />
+      <PageTitle title={say.say("auth.thanks.title")} kanji="感謝" lead={say.say("auth.thanks.lead", { site: SITE_NAME })} />
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="thanks-testers">
-        <SectionHeading title="Our beta testers" kanji="試験協力者" />
+        <SectionHeading title={say.say("auth.thanks.testers")} kanji="試験協力者" />
         {BETA_TESTERS.length === 0 ? (
           <p className="text-sm text-muted" data-testid="thanks-empty">
-            The first names will go here. If you have been testing and would like to be thanked by the name you play
-            under, write to us and we will add you with pleasure.
+            {say.say("auth.thanks.empty")}
           </p>
         ) : (
           <ul className="flex flex-col divide-y divide-rule">
@@ -75,8 +77,8 @@ export default async function ThanksPage() {
                   ) : (
                     <span data-testid="thanks-tester-name">{tester.name}</span>
                   )}
-                  {tester.from ? <span className="text-xs font-normal text-muted">from {tester.from}</span> : null}
-                  <span className="text-xs font-normal text-muted">since {tester.since}</span>
+                  {tester.from ? <span className="text-xs font-normal text-muted">{say.say("auth.thanks.from", { place: tester.from })}</span> : null}
+                  <span className="text-xs font-normal text-muted">{say.say("auth.thanks.since", { when: tester.since })}</span>
                 </span>
                 <span className="text-sm text-muted">{tester.helped}</span>
               </li>
@@ -92,30 +94,25 @@ export default async function ThanksPage() {
         more beta testers."
       */}
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="thanks-join" id="join">
-        <SectionHeading title="Become a beta tester" kanji="協力募集" />
+        <SectionHeading title={say.say("auth.thanks.join")} kanji="協力募集" />
         <BetaAsk signedIn={reader.signedIn} testId="thanks-join" />
       </section>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="thanks-communities">
-        <SectionHeading title="If you played on the older sites" kanji="先達" />
-        <p className="text-sm leading-relaxed text-ink-soft">
-          People have played these games for years on {communitiesSaid()}. If you are one of them, we would be
-          especially glad of your help. You already know how a game between people should
-          feel when it is kept properly, which is exactly what we are trying to get right, and you will notice what we
-          have missed long before we do. Bring a friend you used to play there, and bring your old record too: it can
-          be copied over and shown beside what you play here.
-        </p>
+        <SectionHeading title={say.say("auth.thanks.older")} kanji="先達" />
+        <p className="text-sm leading-relaxed text-ink-soft">{say.say("auth.thanks.olderBody", { sites: communitiesSaid(say) })}</p>
       </section>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="thanks-how">
-        <SectionHeading title="To be listed, or to stop being" kanji="掲載" />
+        <SectionHeading title={say.say("auth.thanks.how")} kanji="掲載" />
         <p className="text-sm leading-relaxed text-ink-soft">
-          Write to{" "}
-          <a href={`mailto:${CONTACT_ADDRESS}`} className="underline underline-offset-4" data-testid="thanks-mail">
-            {CONTACT_ADDRESS}
-          </a>{" "}
-          with the name you play under here and, if you like, the site you came from and what you have been looking at.
-          Nobody is listed without asking, and anybody can be taken off by saying so.
+          {weave(say.say("auth.thanks.howBody"), {
+            mail: (
+              <a href={`mailto:${CONTACT_ADDRESS}`} className="underline underline-offset-4" data-testid="thanks-mail">
+                {CONTACT_ADDRESS}
+              </a>
+            ),
+          })}
         </p>
       </section>
     </Page>

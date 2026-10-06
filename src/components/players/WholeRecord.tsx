@@ -1,4 +1,5 @@
-import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import { Figures } from "@/components/ui/Figures";
 import { PlayedFigure, RecordFigure } from "./PlayerRecord";
 import { RecordTable } from "./RecordTable";
@@ -33,18 +34,16 @@ import { SECTION_TITLE } from "@/components/ui/ui.constants";
  * number it qualifies moves to the top of the page has quietly become fine
  * print, which is the same as not saying it.
  */
-export function SnapshotWarning() {
+export async function SnapshotWarning() {
+  const say = await currentSpeaker();
   return (
     <p className="text-xs leading-snug text-muted" data-testid="whole-record-snapshot">
-      <span className="font-semibold text-ink-soft">This does not update.</span> The figures from other
-      sites were copied down by hand, once, and are a snapshot of that day rather than a live count —
-      nothing played there since is in them. Only what happened here is counted as it happens.
-      Bringing the rest up to date automatically is a thing we would like to do and have not done.
+      {weave(say.say("players.snapshot"), { bold: <span className="font-semibold text-ink-soft">{say.say("players.snapshotBold")}</span> })}
     </p>
   );
 }
 
-export function WholeRecordPanel({
+export async function WholeRecordPanel({
   whole,
   name,
   memberId,
@@ -58,11 +57,14 @@ export function WholeRecordPanel({
   showFigures?: boolean;
 }) {
   if (whole.figures.played === 0) return null;
+  const say = await currentSpeaker();
+  const title = say.pair("players.wholeTitle", "通算");
 
   return (
     <section className="flex flex-col gap-3" data-testid="whole-record">
       <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
-        <Paired en="Everything played" kanji="通算" kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
+        {title.text}
+        {title.kanji === null ? null : <span className="text-[0.8rem] font-normal tracking-normal">{title.kanji}</span>}
       </h2>
 
       {/*
@@ -76,9 +78,10 @@ export function WholeRecordPanel({
           testId="whole-record-figures"
           figures={[
             {
-              label: "Played",
+              label: say.say("players.colPlayed"),
               value: (
                 <PlayedFigure
+                  say={say}
                   record={{
                     wins: whole.figures.won,
                     losses: whole.figures.lost,
@@ -90,7 +93,7 @@ export function WholeRecordPanel({
               testId: "whole-played",
             },
             {
-              label: "Won · Lost · Drawn",
+              label: say.say("players.wld"),
               /*
                 A total that includes another site has no set of games here to
                 open — it is partly a number copied down once. When this site
@@ -98,6 +101,7 @@ export function WholeRecordPanel({
               */
               value: (
                 <RecordFigure
+                  say={say}
                   record={{
                     wins: whole.figures.won,
                     losses: whole.figures.lost,
@@ -108,7 +112,7 @@ export function WholeRecordPanel({
               ),
               testId: "whole-record-line",
             },
-            { label: "Win rate", value: winRateText(whole.figures.winRate), testId: "whole-win-rate" },
+            { label: say.say("players.colWinRate"), value: winRateText(whole.figures.winRate), testId: "whole-win-rate" },
           ]}
         />
       ) : null}
@@ -130,7 +134,8 @@ export function WholeRecordPanel({
         that says nothing while looking like one that does.
       */}
       <RecordTable
-        subject="Site"
+        say={say}
+        subject={say.say("players.colSite")}
         rows={whole.sources.map((source) => ({
           key: source.site,
           subject: (
@@ -158,7 +163,7 @@ export function WholeRecordPanel({
                 )}
               </span>
               {source.handle !== null ? (
-                <span className="ml-1.5 text-muted">as {source.handle}</span>
+                <span className="ml-1.5 text-muted">{say.say("players.asHandle", { handle: source.handle })}</span>
               ) : null}
             </>
           ),
@@ -174,8 +179,7 @@ export function WholeRecordPanel({
           */
           of: { player: name, memberId, here: source.here },
           streak: null,
-          streakBlankBecause:
-            "These rows are one site's totals, and a run is an order — the games of two sites interleave in time, so no site's row is a run of anything.",
+          streakBlankBecause: say.say("players.wholeStreakBlank"),
         }))}
         /*
           `xp: false` BECAUSE THE ROWS ARE SITES, NOT PEOPLE. The XP column is
@@ -185,15 +189,13 @@ export function WholeRecordPanel({
         */
         columns={{ rating: false, xp: false, ip: false }}
         testId="whole-record-sources"
-        empty={<>Nothing has been recorded under this name anywhere yet.</>}
+        empty={<>{say.say("players.wholeEmpty")}</>}
       />
 
       {whole.kept && showFigures ? <SnapshotWarning /> : null}
 
       <p className="text-xs leading-snug text-muted" data-testid="whole-record-no-rating">
-        No combined rating, and there will not be one: a rating from another site is on another
-        scale, against other players, and adding or averaging two of them would make a number that
-        describes nothing. Games and wins add up honestly; ratings do not.
+        {say.say("players.noCombined")}
       </p>
     </section>
   );

@@ -1,4 +1,6 @@
 import Link from "@/components/ui/Link";
+import { weave } from "@/lib/i18n/weave";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 import { ZONE_FROM, zoneSourceFrom, zoneStanding } from "@/lib/auth/zoneGuess";
 
@@ -33,7 +35,9 @@ export function DayZoneNote({
   timeZone,
   country,
   preferences,
+  say,
 }: {
+  say: Speaker;
   timeZone: string | null;
   country: string | null;
   /** The member's stored preferences, raw: the zone's source is kept there. */
@@ -44,7 +48,7 @@ export function DayZoneNote({
   if (from === ZONE_FROM.member) {
     return (
       <p className="text-xs text-muted" data-testid="day-zone-known">
-        Days are counted in {zone}, so a run of days is your days.
+        {say.say("mine.zoneKnown", { zone })}
       </p>
     );
   }
@@ -52,24 +56,26 @@ export function DayZoneNote({
   if (from === ZONE_FROM.guessed) {
     return (
       <p className="text-xs text-ink-soft" data-testid="day-zone-guessed">
-        Days are counted in {zone} — a guess from your country, not something you told us. If your
-        day ends somewhere else,{" "}
-        <Link href="/me/profile" className="underline underline-offset-4">
-          say where you are
-        </Link>{" "}
-        and this follows you.
+        {weave(say.say("mine.zoneGuessed", { zone }), {
+          link: (
+            <Link href="/me/profile" className="underline underline-offset-4">
+              {say.say("mine.zoneGuessedLink")}
+            </Link>
+          ),
+        })}
       </p>
     );
   }
 
   return (
     <p className="text-xs text-ink-soft" data-testid="day-zone-floor">
-      Days are counted in {zone}, because nothing here knows your time zone yet — so a day may end
-      in the middle of your afternoon.{" "}
-      <Link href="/me/profile" className="underline underline-offset-4">
-        Set your time zone
-      </Link>{" "}
-      and the run of days becomes your own.
+      {weave(say.say("mine.zoneFloor", { zone }), {
+        link: (
+          <Link href="/me/profile" className="underline underline-offset-4">
+            {say.say("mine.zoneFloorLink")}
+          </Link>
+        ),
+      })}
     </p>
   );
 }

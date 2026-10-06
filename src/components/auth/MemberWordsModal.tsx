@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { WORDS_COPY } from "@/components/mine/mine.constants";
+import { wordsCopy } from "@/components/mine/mine.copy";
+import { speaker } from "@/lib/i18n/i18n";
 import {
   emptyArrangement,
   reconcileArrangement,
@@ -17,6 +18,9 @@ import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
 import { LocalTime } from "@/components/ui/LocalTime";
 
 import { ADMIN_WORDS_COPY } from "./admin.constants";
+
+/** The operator reads the Admin page in English, whatever language they chose for the site. */
+const WORDS_COPY = wordsCopy(speaker("en"));
 import type { AdminDrawFields, MemberWordsModalProps } from "./admin.types";
 
 /**

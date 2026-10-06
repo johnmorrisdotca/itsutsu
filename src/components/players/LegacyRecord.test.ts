@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { keptRecordTail } from "./LegacyRecord";
+import { speaker } from "@/lib/i18n/i18n";
+
+import { keptRecordTail as tailFor } from "./LegacyRecord";
+
+const keptRecordTail = (kind: Parameters<typeof tailFor>[0], games: number) => tailFor(kind, games, speaker("en"));
 
 /*
  * Chibi and Kyokosan share one real, finished Itsutsu game — freestyle, 37

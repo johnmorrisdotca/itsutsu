@@ -9,6 +9,7 @@ import { Button, RowActions } from "@/components/ui/Controls";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import type { MemberSummary } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
+import { speaker } from "@/lib/i18n/i18n";
 import { ageBandLabel } from "@/lib/social/ageBand";
 import { PlayerName } from "@/components/players/PlayerName";
 import { ADMIN_AGE_COPY, ADMIN_CLAIM_COPY, ADMIN_REMOVE_COPY, ADMIN_WORDS_COPY } from "./admin.constants";
@@ -189,7 +190,7 @@ export function AdminMembers() {
                 {member.kind === MEMBER_KINDS.robot ? null : (
                   <span data-testid="member-age">
                     {" · "}
-                    {ageBandLabel(member.ageBand) === null ? ADMIN_AGE_COPY.rowUnsaid : ADMIN_AGE_COPY.row(ageBandLabel(member.ageBand)!.label)}
+                    {ageBandLabel(member.ageBand) === null ? ADMIN_AGE_COPY.rowUnsaid : ADMIN_AGE_COPY.row(speaker("en").say(ageBandLabel(member.ageBand)!.label))}
                     {member.consent === null ? "" : ` · ${ADMIN_AGE_COPY.rowConsented}`}
                   </span>
                 )}

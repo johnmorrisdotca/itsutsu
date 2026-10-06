@@ -8,7 +8,8 @@ import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, INPUT_CLASS, TAP_HEIGHT } fro
 import { removalConfirmed, removalPhrase } from "@/lib/auth/removeAccountRules";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { REMOVE_COPY } from "./mine.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { removeCopy } from "./mine.copy";
 import type { RemoveAccountProps } from "./removeAccount.types";
 
 /** Back to this tab after Google, through the route that turns Google's answer into a session. */
@@ -25,6 +26,8 @@ const AFTER_GOOGLE = `/api/session/google?next=${encodeURIComponent("/me/profile
  */
 export function RemoveAccount({ name, google, fresh }: RemoveAccountProps) {
   const router = useRouter();
+  const say = useSpeaker();
+  const REMOVE_COPY = removeCopy(say);
   const hydrated = useHydrated();
   const [open, setOpen] = useState(false);
   const [blankSeats, setBlankSeats] = useState<boolean | null>(null);
@@ -51,14 +54,14 @@ export function RemoveAccount({ name, google, fresh }: RemoveAccountProps) {
       return;
     }
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    setError(body?.error ?? "Your account could not be removed.");
+    setError(body?.error ?? say.say("mine.removeFailed"));
     setBusy(false);
   }
 
   return (
     <section className="flex flex-col gap-3 border-t border-rule pt-4" data-testid="remove-account" {...readyMark(hydrated)}>
       <h3 className="text-sm font-semibold">
-        {REMOVE_COPY.heading} <span className="font-mincho text-muted">{REMOVE_COPY.kanji}</span>
+        {REMOVE_COPY.heading}{say.pairsWithKanji ? <> <span className="font-mincho text-muted">{REMOVE_COPY.kanji}</span></> : null}
       </h3>
       {!open ? (
         <button
@@ -73,7 +76,7 @@ export function RemoveAccount({ name, google, fresh }: RemoveAccountProps) {
         <form onSubmit={submit} className="flex flex-col gap-3" data-testid="remove-account-form">
           <p className="text-sm text-ink-soft">{REMOVE_COPY.lead}</p>
           <fieldset className="flex flex-col gap-2">
-            <legend className="sr-only">Your name on your old games</legend>
+            <legend className="sr-only">{say.say("mine.removeLegend")}</legend>
             {[false, true].map((blank) => (
               <label key={String(blank)} className="flex items-center gap-2 text-sm">
                 <input

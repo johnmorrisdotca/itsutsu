@@ -1,4 +1,5 @@
 import { Paired } from "@/components/i18n/Paired";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { PlayerName } from "./PlayerName";
 import { RecordTable } from "./RecordTable";
 import { TABLE_CLASS, TABLE_HEAD_CLASS } from "./PlayerRecord";
@@ -39,15 +40,17 @@ export function TierMark({ tier }: { tier: RatingTier }) {
  * orders between five pages.
  */
 export function StandingsTable({
+  say,
   standings,
   pool = "people",
   actions,
   actionsLabel = "",
   testId = "standings-table",
-  empty = "Nobody has a rated game of this yet.",
+  empty = say.say("players.standingsEmpty"),
   game,
   ip,
 }: {
+  say: Speaker;
   standings: LadderStanding[];
   /**
    * The game this ladder is, and what each member on it has won at it: the IP
@@ -87,7 +90,8 @@ export function StandingsTable({
 }) {
   return (
     <RecordTable
-      subject="Player"
+      say={say}
+      subject={say.say("players.colPlayer")}
       rows={standings.map((standing) => ({
         key: standing.key,
         // The level is the table's own, beside the name (`RecordTable`), so the tag goes without it.
@@ -144,11 +148,13 @@ export function StandingsTable({
  * has to be told that the door is a door before being sent to it.
  */
 export function LadderSideView({
+  say,
   standings,
   emptyNote,
   invitation,
   testId = "ladder-side-view",
 }: {
+  say: Speaker;
   standings: LadderStanding[];
   /** What no rows MEANS here, in a sentence, under the headings. */
   emptyNote: string;
@@ -172,8 +178,8 @@ export function LadderSideView({
           <thead className={TABLE_HEAD_CLASS}>
             <tr>
               <th className="py-1 pr-2">#</th>
-              <th className="py-1 pr-2">Player</th>
-              <th className="py-1 text-right">Rating</th>
+              <th className="py-1 pr-2">{say.say("players.colPlayer")}</th>
+              <th className="py-1 text-right">{say.say("players.colRating")}</th>
             </tr>
           </thead>
           <tbody>

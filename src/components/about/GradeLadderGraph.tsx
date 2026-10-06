@@ -1,3 +1,5 @@
+import type { Speaker } from "@/lib/i18n/i18n";
+import { weave } from "@/lib/i18n/weave";
 import { GameName } from "@/components/games/GameName";
 import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
 import { builtLadderFingerprint } from "@/lib/gomoku/ladderFingerprint.built";
@@ -77,7 +79,7 @@ function stepOf(measurement: LadderMeasurement, higher: BotTier, lower: BotTier)
   return { variant: measurement.variant as RuleVariant, higher, lower, share: wins / decided, played: decided + draws };
 }
 
-export function GradeLadderGraph() {
+export function GradeLadderGraph({ say }: { say: Speaker }) {
   const measured = measuredLadderAll(builtLadderFingerprint());
   /*
    * GROUPED BY GAME, because a bar has to say what it is about. Drawn as a
@@ -119,7 +121,7 @@ export function GradeLadderGraph() {
         viewBox={`0 0 ${WIDTH} ${height}`}
         className="w-full"
         role="img"
-        aria-label={`How often each computer grade beat the grade directly below it, over ${all.length} measured pairings across ${games.length} games. A bar reaching halfway means the two grades are as strong as each other.`}
+        aria-label={say.say("about.bots.graphLabel", { pairings: String(all.length), games: String(games.length) })}
       >
         {/* The quarters, and the half drawn darker: it is the line the whole figure is about. */}
         {[0, 0.25, 0.5, 0.75, 1].map((mark) => (
@@ -165,7 +167,7 @@ export function GradeLadderGraph() {
                   fill="var(--ink)"
                   textDecoration="underline"
                 >
-                  {RULE_VARIANT_DISPLAY[game.variant].label}
+                  {say.pairName(RULE_VARIANT_DISPLAY[game.variant].label, RULE_VARIANT_DISPLAY[game.variant].kanji).text}
                 </text>
               </a>
               {game.steps.map((step) => {
@@ -176,7 +178,7 @@ export function GradeLadderGraph() {
                 return (
                   <g key={`${game.variant}-${step.higher}`}>
                     <text x={PAD.left - 8} y={y + 13} textAnchor="end" fontSize={10} fill="var(--ink-soft)">
-                      {BOT_MEMBERS[step.higher].name} over {BOT_MEMBERS[step.lower].name}
+                      {say.say("about.bots.graphOver", { higher: BOT_MEMBERS[step.higher].name, lower: BOT_MEMBERS[step.lower].name })}
                     </text>
                     <rect
                       x={PAD.left}
@@ -197,20 +199,12 @@ export function GradeLadderGraph() {
         })}
       </svg>
       <figcaption className="text-xs text-muted">
-        Each bar is one step of the ladder at one game: how often the higher grade beat the grade directly below
-        it, over {played} measured games. Half would be two players nothing separates.{" "}
-        {inOrder ? (
-          <>
-            Every step here is above half, so at these games the ladder is in the order it claims — the closest
-            is {BOT_MEMBERS[lowest.higher].name} over {BOT_MEMBERS[lowest.lower].name} at{" "}
-            <GameName variant={lowest.variant} /> ({Math.round(lowest.share * 100)}%).
-          </>
-        ) : (
-          <>
-            The closest step is {BOT_MEMBERS[lowest.higher].name} over {BOT_MEMBERS[lowest.lower].name} at{" "}
-            <GameName variant={lowest.variant} />, at {Math.round(lowest.share * 100)}%.
-          </>
-        )}
+        {say.say("about.bots.graphCaption", { played: String(played) })}{" "}
+        {weave(say.say(inOrder ? "about.bots.graphInOrder" : "about.bots.graphClosest", {
+          higher: BOT_MEMBERS[lowest.higher].name,
+          lower: BOT_MEMBERS[lowest.lower].name,
+          share: String(Math.round(lowest.share * 100)),
+        }), { game: <GameName variant={lowest.variant} /> })}
       </figcaption>
     </figure>
   );

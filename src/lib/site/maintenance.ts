@@ -131,5 +131,9 @@ const MAINTENANCE_HTML = `<!doctype html>
 <h1 style="font-size: 1.25rem;">Itsutsu is being worked on</h1>
 <p>The site is closed for a short while. Nothing has been lost — your games are
 where you left them. Please try again shortly.</p>
+<div lang="ja">
+<h2 style="font-size: 1.1rem;">Itsutsuはメンテナンス中です</h2>
+<p>しばらくのあいだ、サイトを閉じています。何も失われていません。対局はそのままの状態で残っています。少し時間をおいて、もう一度お試しください。</p>
+</div>
 </body>
 </html>`;

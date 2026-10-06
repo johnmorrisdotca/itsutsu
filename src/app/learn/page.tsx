@@ -10,10 +10,13 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
-import { CUBE_GUIDE_COPY } from "@/lib/learn/cubeMethod";
-import { GUIDES } from "@/lib/learn/strategy";
+import { Paired } from "@/components/i18n/Paired";
+import { cubeGuideCopy } from "@/lib/learn/cubeMethod";
+import { GUIDES, guideWords } from "@/lib/learn/strategy";
 
-export const metadata = { title: "Learn" };
+export async function generateMetadata() {
+  return { title: (await currentSpeaker()).say("learn.pageTitle") };
+}
 
 /**
  * The strategy guides, one card each, with the games they cover.
@@ -31,6 +34,7 @@ export default async function LearnIndexPage() {
    * "Learn" untranslated to every reader until it got one.
    */
   const say = await currentSpeaker();
+  const CUBE_GUIDE_COPY = cubeGuideCopy(say);
   return (
     <Page>
       <SiteHeader />
@@ -39,12 +43,14 @@ export default async function LearnIndexPage() {
         learning shelf open (`GAMES_TABS`). The shelf's own name is the tab.
       */}
       <PageTitle title={say.say("nav.games")} kanji="種目" />
-      <Tabs tabs={GAMES_TABS} active="learn" base="/games" label="How to show the games" />
+      <Tabs tabs={GAMES_TABS} active="learn" base="/games" label={say.say("learn.tabsLabel")} />
       <p className="text-sm text-muted">
-        {say.say("nav.learn")}: the shapes that win, the moves that force, and the mistakes everyone makes once.
+        {say.say("learn.lead", { learn: say.say("nav.learn") })}
       </p>
       <ul className="grid gap-3 sm:grid-cols-2" data-testid="learn-index">
-        {GUIDES.map((guide) => (
+        {GUIDES.map((guide) => {
+          const words = guideWords(guide, say);
+          return (
           <li key={guide.slug}>
             {/* A whole-card link, with the arrow every card that opens carries. */}
             <Link
@@ -56,26 +62,25 @@ export default async function LearnIndexPage() {
               <GameThumb variant={guide.variants[0]} size="regular" />
               <span className="flex min-w-0 flex-1 flex-col gap-2">
                 <span className="flex items-baseline gap-2 font-semibold">
-                  {guide.title}
-                  <span className="font-mincho text-xs font-normal opacity-70">{guide.kanji}</span>
+                  <Paired en={words.title} kanji={guide.kanji} kanjiClassName="text-xs font-normal opacity-70" />
                 </span>
-                <span className="text-xs text-muted">{guide.summary}</span>
+                <span className="text-xs text-muted">{words.summary}</span>
                 <span className="text-[0.65rem] text-muted">
-                  {guide.variants.map((variant) => RULE_VARIANT_DISPLAY[variant].label).join(" · ")}
+                  {guide.variants.map((variant) => say.pairName(RULE_VARIANT_DISPLAY[variant].label, RULE_VARIANT_DISPLAY[variant].kanji).text).join(" · ")}
                 </span>
               </span>
               <CardArrow />
             </Link>
           </li>
-        ))}
+          );
+        })}
         {/* The cube's method: a guide of its own (`/learn/cube`), not a strategy for a game of two. */}
         <li>
           <Link href="/learn/cube" data-card-link="" className={`${PANEL_CLASS} ${STRETCHED_CARD} flex h-full items-center justify-between gap-3`} data-testid="learn-cube">
             <GameThumb variant="cube" size="regular" />
             <span className="flex min-w-0 flex-1 flex-col gap-2">
               <span className="flex items-baseline gap-2 font-semibold">
-                {CUBE_GUIDE_COPY.title}
-                <span className="font-mincho text-xs font-normal opacity-70">{CUBE_GUIDE_COPY.kanji}</span>
+                <Paired en={CUBE_GUIDE_COPY.title} kanji={CUBE_GUIDE_COPY.kanji} kanjiClassName="text-xs font-normal opacity-70" />
               </span>
               <span className="text-xs text-muted">{CUBE_GUIDE_COPY.lead}</span>
             </span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 import { RAISED_LINK } from "@/components/ui/ui.constants";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
@@ -18,6 +19,7 @@ import { useKeptGames } from "./keptGames";
  */
 export function ReadyOffline({ game }: { game: GameKey }) {
   const kept = useKeptGames();
+  const say = useSpeaker();
   const href = kept?.get(gamePath(game));
   if (href === undefined) return null;
   return (
@@ -25,10 +27,10 @@ export function ReadyOffline({ game }: { game: GameKey }) {
       href={href}
       data-testid="ready-offline"
       data-game={game}
-      title="Opened on this device before, so it plays with no connection"
+      title={say.say("chrome.offline.readyTitle")}
       className={`${RAISED_LINK} inline-flex w-fit items-center gap-1 rounded-full bg-moss-soft px-2 py-0.5 text-[0.7rem] font-medium text-moss`}
     >
-      <span aria-hidden="true">✓</span> Ready offline
+      <span aria-hidden="true">✓</span> {say.say("chrome.offline.ready")}
     </Link>
   );
 }

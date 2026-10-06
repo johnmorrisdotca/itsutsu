@@ -3,6 +3,8 @@
 import QRCode from "qrcode";
 import { useState, type FormEvent } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, PANEL_CLASS, SECTION_HEADING } from "@/components/ui/ui.constants";
 import type { InviteFriendsProps, InviteReply } from "./inviteFriends.types";
 
@@ -18,6 +20,7 @@ import type { InviteFriendsProps, InviteReply } from "./inviteFriends.types";
  * link is shown with it, so the member can still send it themselves.
  */
 export function InviteFriends({ canEmail }: InviteFriendsProps) {
+  const say = useSpeaker();
   const [link, setLink] = useState<string | null>(null);
   const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -38,13 +41,13 @@ export function InviteFriends({ canEmail }: InviteFriendsProps) {
     );
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "That invitation could not be made.");
+      setError(body?.error ?? say.say("mine.inviteFailed"));
       setBusy(false);
       return;
     }
     const reply = (await response.json()) as InviteReply;
     if (sendTo !== undefined && reply.emailed === true) {
-      setNotice(`Sent to ${sendTo}. The invitation in it lets one person in and is good for a month.`);
+      setNotice(say.say("mine.inviteSent", { address: sendTo }));
       setAddress("");
       setBusy(false);
       return;
@@ -54,7 +57,7 @@ export function InviteFriends({ canEmail }: InviteFriendsProps) {
     setCopied(false);
     setQr(await QRCode.toDataURL(url, { width: 240, margin: 1 }));
     if (sendTo !== undefined) {
-      setNotice(`${reply.notice ?? "The email was not sent."} The link below works: send it yourself.`);
+      setNotice(say.say("mine.inviteNotSent", { notice: reply.notice ?? say.say("mine.inviteNotSentDefault") }));
     }
     setBusy(false);
   }
@@ -78,17 +81,15 @@ export function InviteFriends({ canEmail }: InviteFriendsProps) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="invite-friends">
       <h2 className={SECTION_HEADING}>
-        Invite a friend <span className="font-mincho text-xs font-normal opacity-70">招待</span>
+        <Paired en={say.say("mine.inviteTitle")} kanji="招待" kanjiClassName="text-xs font-normal opacity-70" />
       </h2>
       <p className="text-sm text-muted">
-        A link that lets one person in, good for a month. Send it any way you like
-        {canEmail ? ", or have the site email it to them" : ""}; once they are in, press Play beside them on the players
-        page.
+        {say.say(canEmail ? "mine.inviteLeadEmail" : "mine.inviteLead")}
       </p>
       {link === null ? (
         <span>
           <button type="button" onClick={() => void invite()} disabled={busy} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3 py-1.5 text-sm`}>
-            Create an invite link
+            {say.say("mine.inviteCreate")}
           </button>
         </span>
       ) : (
@@ -97,23 +98,23 @@ export function InviteFriends({ canEmail }: InviteFriendsProps) {
             <input readOnly value={link} className={`${INPUT_CLASS} font-mono text-xs`} onFocus={(e) => e.currentTarget.select()} />
             <span className="flex gap-2">
               <button type="button" onClick={copy} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3 py-1 text-xs`}>
-                {copied ? "Copied" : "Copy link"}
+                {say.say(copied ? "mine.inviteCopied" : "mine.inviteCopy")}
               </button>
               <button type="button" onClick={() => void invite()} disabled={busy} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3 py-1 text-xs`}>
-                New link
+                {say.say("mine.inviteNew")}
               </button>
             </span>
           </div>
           {qr !== null ? (
             // eslint-disable-next-line @next/next/no-img-element -- a data URL drawn here
-            <img src={qr} alt="QR code for the invitation" className="size-32 rounded-md border border-rule bg-ivory p-1" />
+            <img src={qr} alt={say.say("mine.inviteQr")} className="size-32 rounded-md border border-rule bg-ivory p-1" />
           ) : null}
         </div>
       )}
       {canEmail ? (
         <form onSubmit={emailIt} className="flex flex-wrap items-center gap-2" data-testid="invite-by-email">
           <label htmlFor="invite-email" className="sr-only">
-            Their email address
+            {say.say("mine.inviteEmailLabel")}
           </label>
           <input
             id="invite-email"
@@ -123,11 +124,11 @@ export function InviteFriends({ canEmail }: InviteFriendsProps) {
             autoComplete="off"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            placeholder="their email address"
+            placeholder={say.say("mine.inviteEmailPlaceholder")}
             className={`${INPUT_CLASS} min-w-0 flex-1 text-sm`}
           />
           <button type="submit" disabled={busy} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3 py-1.5 text-sm`}>
-            Email an invitation
+            {say.say("mine.inviteEmail")}
           </button>
         </form>
       ) : null}

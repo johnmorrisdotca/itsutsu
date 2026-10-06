@@ -17,6 +17,8 @@ import { fetchComputerPlayers } from "@/lib/rating/directoryRows";
 import { keptRecordStars, type KeptRecordStar } from "@/lib/social/keptRecordStars";
 import { readRecordScope, SCOPE_PARAM } from "@/lib/rating/recordScope";
 import { openTabOf, TAB_FROM_PATH } from "@/lib/ui/tabs";
+import { titleWithKanji } from "@/components/games/pageTitles";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { PLAYERS_TABS as TABS, PLAYERS_OWN_TABS } from "./players.tabs";
 
 /** Everything the address already says, as a query string. */
@@ -30,7 +32,9 @@ function addressOf(asked: Record<string, string | string[] | undefined>): string
   return params.toString();
 }
 
-export const metadata = { title: "Players" };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "nav.players", "対局者") };
+}
 
 // The tables are read from the database on every request, never at build time.
 export const dynamic = "force-dynamic";
@@ -50,6 +54,7 @@ async function ComputerTab() {
  * section was being looked at, which is four queries to render one table.
  */
 export default async function PlayersPage({ searchParams }: PageProps<"/players">) {
+  const say = await currentSpeaker();
   const now = new Date();
   const asked = await searchParams;
   const open = openTabOf(PLAYERS_OWN_TABS, asked);
@@ -95,13 +100,13 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
   return (
     <Page>
       <SiteHeader />
-      <PageTitle title="Players" kanji="対局者" />
+      <PageTitle title={say.say("nav.players")} kanji="対局者" />
 
       {/* Above the tabs, not behind one: it is the only thing here that answers
           "can I get a game this minute", and it is three lines whoever is in. */}
       <HereNow now={now} />
 
-      <Tabs tabs={TABS} active={open} base="/players" label="Which players to look at" />
+      <Tabs tabs={TABS} active={open} base="/players" label={say.say("players.tabsLabel")} />
 
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="players-panel">
         {shown !== null ? (
@@ -132,8 +137,7 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
         {open === "buddies" ? (
           reader.memberId === null ? (
             <p className="text-sm text-muted" data-testid="buddies-need-account">
-              Your buddies are the people you want to find again. Sign in, star somebody on the
-              members list, and they are listed here.
+              {say.say("players.buddiesNeedAccount")}
             </p>
           ) : (
             <BuddyList memberId={reader.memberId} />
@@ -143,13 +147,9 @@ export default async function PlayersPage({ searchParams }: PageProps<"/players"
         {open === "bots" ? <ComputerTab /> : null}
         {open === "honors" ? (
           <div className="flex flex-col gap-3" data-testid="remembered-section">
-            <p className="text-sm text-muted">
-              Players who never came here, whose record from elsewhere is kept under their name.
-              A kept record has nobody on the other end of it: there is nothing to challenge,
-              and nothing that can be played for.
-            </p>
-            <LegacyRoll kind="remembered" label="Remembered" kanji="偲ぶ" stars={stars} />
-            <LegacyRoll kind="honorary" label="Honorary members" kanji="名誉会員" stars={stars} />
+            <p className="text-sm text-muted">{say.say("players.honorsLead")}</p>
+            <LegacyRoll kind="remembered" label={say.say("players.rollRemembered")} kanji="偲ぶ" stars={stars} />
+            <LegacyRoll kind="honorary" label={say.say("players.rollHonorary")} kanji="名誉会員" stars={stars} />
           </div>
         ) : null}
       </section>

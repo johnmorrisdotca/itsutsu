@@ -4,6 +4,7 @@ import { BuddyButton } from "@/components/mine/BuddyButton";
 import { messagesPath } from "@/lib/messages/messages.constants";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { shownName } from "@/lib/rating/shownName";
 
 import { RowMore } from "./RowMore";
@@ -28,7 +29,7 @@ import { RowMore } from "./RowMore";
  * buddy — John, 2026-10-01: "ALL members should be addable" — where the star had
  * been for people only. And nobody is offered any of it about themselves.
  */
-export function PlayerActions({
+export async function PlayerActions({
   memberId,
   person,
   isBuddy,
@@ -94,6 +95,8 @@ export function PlayerActions({
   testId?: string;
 }) {
   if (isYou || !canAsk || memberId === undefined) return null;
+  const say = await currentSpeaker();
+  const message = say.pair("players.message", "手紙");
   const rowName = shownName(name ?? "");
   if (isComputer || !person) {
     // A program is offered a game; a kept record plays none. Either may be starred.
@@ -131,7 +134,7 @@ export function PlayerActions({
       {reachable ? <ChallengeButton memberId={memberId} strong /> : null}
       {!reachable ? (
         <span className="text-xs text-muted" data-testid="child-closed">
-          Under 13: only the people on their own buddy list can offer them a game or write to them.
+          {say.say("players.childClosed")}
         </span>
       ) : null}
       {/* Off the board: a conversation, the ignore list applied in full — see `messages.ts`. */}
@@ -141,7 +144,8 @@ export function PlayerActions({
           className="inline-flex min-h-11 items-center rounded-lg border border-rule-strong/80 bg-ivory/80 px-3 py-1.5 text-sm font-medium text-ink hover:bg-rule/60 sm:min-h-0"
           data-testid="message-link"
         >
-          Message 手紙
+          {message.text}
+          {message.kanji === null ? null : ` ${message.kanji}`}
         </Link>
       ) : null}
       <BuddyButton memberId={memberId} isBuddy={isBuddy} />

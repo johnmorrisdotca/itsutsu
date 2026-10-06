@@ -2,11 +2,15 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { InboxList } from "@/components/inbox/InboxList";
-import { INBOX_COPY } from "@/components/inbox/inbox.constants";
+import { INBOX_KANJI } from "@/components/inbox/inbox.constants";
+import { titleWithKanji } from "@/components/games/pageTitles";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { openInbox } from "@/lib/inbox/inbox";
 
-export const metadata = { title: "Inbox 受信" };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "inbox.title", INBOX_KANJI) };
+}
 
 /* A member's own list, read and marked read on each visit. */
 export const dynamic = "force-dynamic";
@@ -17,12 +21,13 @@ export const dynamic = "force-dynamic";
  * and clears what is past thirty days — see `openInbox`.
  */
 export default async function InboxPage() {
+  const say = await currentSpeaker();
   const memberId = await currentMemberId();
   const items = memberId === null ? [] : await openInbox(memberId);
   return (
     <Page>
       <SiteHeader />
-      <PageTitle title={INBOX_COPY.title} kanji={INBOX_COPY.kanji} lead={INBOX_COPY.lead} />
+      <PageTitle title={say.say("inbox.title")} kanji={INBOX_KANJI} lead={say.say("inbox.lead")} />
       <section className="flex flex-col gap-4" data-testid="inbox">
         <InboxList items={items} />
       </section>

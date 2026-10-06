@@ -10,6 +10,7 @@ import {
   BUTTON_QUIET,
   BUTTON_STRONG,
   PLAY_BUTTON,
+  ROW_ACTIONS_WRAP_REASON,
   SECTION_TITLE,
   SELECT_CLASS,
 } from "./ui.constants";
@@ -125,7 +126,7 @@ export function Field({
         the control past the edge of the panel and the panel with it.
       */}
       <label className="flex min-w-0 items-center justify-between gap-3 text-sm text-ink-soft">
-        <span className="min-w-0">{label}</span>
+        <span className="min-w-0 break-keep">{label}</span>
         <FieldHint.Provider value={hint === undefined ? undefined : hintId}>
           {children}
         </FieldHint.Provider>
@@ -267,7 +268,7 @@ export function RowActions({ children, wrap = false }: { children?: ReactNode; w
   return (
     <span
       className={`flex min-h-8 items-center justify-end gap-1 ${wrap ? "max-w-full flex-wrap" : ""}`}
-      data-width-reason={wrap ? "a row's own controls; max-w-full only lets them wrap under the name on a phone" : undefined}
+      data-width-reason={wrap ? ROW_ACTIONS_WRAP_REASON : undefined}
     >
       {children}
     </span>

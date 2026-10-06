@@ -6,7 +6,8 @@ import { describe, expect, it } from "vitest";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { ABOUT_TABS } from "./about.chapters";
-import { ABOUT_SECTIONS } from "./about.constants";
+import { speaker } from "@/lib/i18n/i18n";
+import { aboutSections } from "./about.constants";
 import { SITE_PAGES } from "./about.pages";
 import { SHOTS } from "./about.shots";
 import { wouldBeOpen } from "@/proxy";
@@ -33,6 +34,8 @@ import { wouldBeOpen } from "@/proxy";
  */
 
 const ABOUT = join(process.cwd(), "src", "app", "about");
+/** The sections in English; the same sections are built for every language. */
+const ABOUT_SECTIONS = aboutSections(speaker("en"));
 
 /** "40 games", "forty games", "about 35 games" — a size of this site, set in prose. */
 const COUNTED = [

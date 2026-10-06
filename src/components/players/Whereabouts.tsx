@@ -1,3 +1,4 @@
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { localTimeIn } from "@/lib/social/presence";
 
 /**
@@ -12,13 +13,14 @@ import { localTimeIn } from "@/lib/social/presence";
  * takes a week, and knowing it is four in the morning where your opponent is
  * turns a slow reply from a slight into a person who is asleep.
  */
-export function Whereabouts({
+export async function Whereabouts({
   city,
   timeZone,
 }: {
   city: string | null | undefined;
   timeZone: string | null | undefined;
 }) {
+  const say = await currentSpeaker();
   const where = (city ?? "").trim();
   // The country is already said beside the name, so it is not repeated here —
   // this line is the city, and the time, and nothing anybody has read already.
@@ -30,7 +32,7 @@ export function Whereabouts({
       {where !== "" ? <span data-testid="whereabouts-city">{where}</span> : null}
       {where !== "" && time !== null ? " · " : null}
       {time !== null ? (
-        <span data-testid="whereabouts-time">Local time {time}</span>
+        <span data-testid="whereabouts-time">{say.say("players.localTime", { time })}</span>
       ) : null}
     </p>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BuddyButton } from "@/components/mine/BuddyButton";
 import { IgnoreButton } from "@/components/mine/IgnoreButton";
 import { RowMenu } from "@/components/ui/RowMenu";
@@ -27,11 +28,11 @@ import type { RowMoreProps } from "./recordTable.types";
  * button — because who is your buddy is a fact about the row, not an action.
  */
 export function RowMore({ memberId, name, isBuddy, ignoring, ignorable = true }: RowMoreProps) {
-  const state = `${isBuddy ? ", your buddy" : ""}${ignoring ? ", ignored" : ""}`;
+  const say = useSpeaker();
   return (
     <RowMenu
-      label={`More for ${name}${state}`}
-      title={ignorable ? `Buddy or ignore ${name}` : `Buddy ${name}`}
+      label={say.say(isBuddy ? (ignoring ? "players.moreForBoth" : "players.moreForBuddy") : ignoring ? "players.moreForIgnored" : "players.moreFor", { name })}
+      title={say.say(ignorable ? "players.rowTitleBoth" : "players.rowTitleBuddy", { name })}
       className={ignoring ? "text-shu" : ""}
       face={
         <>

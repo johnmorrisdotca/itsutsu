@@ -51,10 +51,15 @@ import { closedToReader } from "@/lib/social/childReach";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { botBio } from "@/lib/gomoku/botCopy";
 import { currentLocale, currentSpeaker } from "@/lib/i18n/currentLocale";
+import { SITE_NAME } from "@/lib/i18n/siteName";
+import { Paired } from "@/components/i18n/Paired";
 
-export const metadata = { title: "Player" };
+export async function generateMetadata() {
+  return { title: (await currentSpeaker()).say("players.titleFallback") };
+}
 
 export default async function PlayerPage({ params, searchParams }: PageProps<"/players/[slug]">) {
+  const say = await currentSpeaker();
   const { slug } = await params;
   const asked = await searchParams;
   const scope = readRecordScope(asked[SCOPE_PARAM]);
@@ -293,7 +298,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         {keptRecord === null ? null : (
           <p className="text-sm text-muted" data-testid="kept-record-note">
             {keptRecord.location !== undefined ? `${keptRecord.location} · ` : ""}
-            <PlayedEverywhere legacy={keptRecord} lead="Played as" />.{" "}
+            <PlayedEverywhere say={say} legacy={keptRecord} lead={say.say("players.playedAsLead")} />{say.sentence("")}{say.sentences(["", ""])}
             {/*
               NOT the unconditional "never played on Itsutsu" this used to
               say — Chibi and Kyokosan share one real, finished game here,
@@ -302,7 +307,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
               show it. `record.games` is already read above for that table;
               this asks it the same question rather than assuming the answer.
             */}
-            {keptRecordTail(keptRecord.kind, record.games)}
+            {keptRecordTail(keptRecord.kind, record.games, say)}
           </p>
         )}
         {/* A child's local time is never shown, and their city is never kept (childRules.ts, PRIV-03). */}
@@ -346,7 +351,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           first. Drawn only where there is another site to count — otherwise
           the two answers are the same games.
         */}
-        {offered ? <RecordScopeBar base={`/players/${slug}`} view={openTab} scope={scope} /> : null}
+        {offered ? <RecordScopeBar say={say} base={`/players/${slug}`} view={openTab} scope={scope} /> : null}
         {/*
           The figures: the two pools' ratings, then played, the record and the
           rate, over whichever games the scope above says. Played and the
@@ -357,6 +362,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
           of the same row; `PlayerFigures` has the rest of the argument.
         */}
         <PlayerFigures
+          say={say}
           rating={rating}
           computer={player === null ? null : player.computer}
           counted={counted}
@@ -385,7 +391,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         {earner === null ? null : <PlayerIp memberId={earner} />}
         {earner === null ? null : (
           <Link href={xpHistoryHref(`/players/${slug}`, new URLSearchParams(), null)} className="self-start text-xs underline underline-offset-4" data-testid="xp-history-link">
-            How this XP was earned
+            {say.say("players.xpHistory")}
           </Link>
         )}
         {offered && scope === RECORD_SCOPES.everywhere ? (
@@ -397,8 +403,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
               Saying so here is cheaper than letting somebody read a rating as
               covering four thousand games it never saw.
             */}
-            Counting every site, {whole.sources.length} of them, listed below. The ratings are
-            Itsutsu&rsquo;s own: a rating earned elsewhere is on another scale and does not add.
+            {say.say("players.countingEverywhere", { count: say.number(whole.sources.length), site: SITE_NAME })}
           </p>
         ) : null}
         {/*
@@ -414,16 +419,15 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         ) : null}
         {tier !== null ? (
           <p className="text-xs text-muted" data-testid="player-tier">
-            <span className="font-medium text-ink-soft">{tier.label}</span>{" "}
-            <span className="font-mincho">{tier.kanji}</span> · {(await currentSpeaker()).say(tier.note)}
+            <span className="font-medium text-ink-soft"><Paired en={tier.label} kanji={tier.kanji} kanjiClassName="font-mincho font-normal" /></span> · {say.say(tier.note)}
           </p>
         ) : null}
         {linked.length > 0 ? (
           <p className="text-sm text-muted" data-testid="legacy-elsewhere">
             {linked.map((legacy) => (
-              <PlayedEverywhere key={legacy.slug} legacy={legacy} lead="Also played as" />
+              <PlayedEverywhere key={legacy.slug} say={say} legacy={legacy} lead={say.say("players.alsoPlayedAsLead")} />
             ))}
-            . Kept from before Itsutsu, in its own tab.
+            {say.say("players.alsoKept", { site: SITE_NAME })}
           </p>
         ) : null}
         </div>

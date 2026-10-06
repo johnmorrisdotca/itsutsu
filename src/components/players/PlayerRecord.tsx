@@ -1,8 +1,10 @@
 import { GameCount } from "@/components/games/GameCount";
-import { countText, figuresOf, winRateText } from "@/lib/rating/figures";
+import { figuresOf, winRateText } from "@/lib/rating/figures";
 import type { Streak } from "@/lib/rating/streak";
 import type { GameOutcome } from "@/lib/history/gameHistory.types";
 import { CELL } from "./players.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { weave } from "@/lib/i18n/weave";
 import { SortableHead, type RecordSort } from "./recordSort";
 import type { RecordOf, WonLostDrawn } from "./recordTable.types";
 import { StreakMark } from "./StreakMark";
@@ -55,7 +57,7 @@ export { playedScopeNote } from "./recordScopeWords";
  */
 
 /** The four counts as links, in one place, so no table invents its own. */
-function counts(record: WonLostDrawn, of: RecordOf) {
+function counts(record: WonLostDrawn, of: RecordOf, say: Speaker) {
   const figures = figuresOf({ won: record.wins, lost: record.losses, drawn: record.draws });
   const linked = (count: ReactNode, outcome: GameOutcome, what: string) => (
     <GameCount
@@ -80,10 +82,10 @@ function counts(record: WonLostDrawn, of: RecordOf) {
    */
   return {
     figures,
-    played: linked(countText(figures.played), "decided", "Every game counted here"),
-    won: linked(countText(record.wins), "won", "The games won"),
-    lost: linked(countText(record.losses), "lost", "The games lost"),
-    drawn: linked(countText(record.draws), "drawn", "The games drawn"),
+    played: linked(say.number(figures.played), "decided", say.say("players.titlePlayed")),
+    won: linked(say.number(record.wins), "won", say.say("players.titleWon")),
+    lost: linked(say.number(record.losses), "lost", say.say("players.titleLost")),
+    drawn: linked(say.number(record.draws), "drawn", say.say("players.titleDrawn")),
   };
 }
 
@@ -95,10 +97,12 @@ function counts(record: WonLostDrawn, of: RecordOf) {
  * quantity and nothing looks broken.
  */
 export function RecordHeadings({
+  say,
   trailing,
   playedTitle,
   sort,
 }: {
+  say: Speaker;
   trailing?: ReactNode;
   /** What this table's Played column counts, when it is not every finished game. See `playedScopeNote`. */
   playedTitle?: string;
@@ -116,23 +120,23 @@ export function RecordHeadings({
 }) {
   return (
     <>
-      <SortableHead sort={sort} slot="played" title={playedTitle}>
-        Played
+      <SortableHead say={say} sort={sort} slot="played" title={playedTitle}>
+        {say.say("players.colPlayed")}
       </SortableHead>
-      <SortableHead sort={sort} slot="won">
-        W
+      <SortableHead say={say} sort={sort} slot="won">
+        {say.say("chrome.strip.won")}
       </SortableHead>
-      <SortableHead sort={sort} slot="lost">
-        L
+      <SortableHead say={say} sort={sort} slot="lost">
+        {say.say("chrome.strip.lost")}
       </SortableHead>
-      <SortableHead sort={sort} slot="drawn">
-        D
+      <SortableHead say={say} sort={sort} slot="drawn">
+        {say.say("chrome.strip.drawn")}
       </SortableHead>
-      <SortableHead sort={sort} slot="winRate">
-        Win rate
+      <SortableHead say={say} sort={sort} slot="winRate">
+        {say.say("players.colWinRate")}
       </SortableHead>
-      <SortableHead sort={sort} slot="streak">
-        Streak
+      <SortableHead say={say} sort={sort} slot="streak">
+        {say.say("players.colStreak")}
       </SortableHead>
       {trailing}
     </>
@@ -147,6 +151,7 @@ export function RecordHeadings({
  * shared ones stay in the same position on every page.
  */
 export function RecordCells({
+  say,
   record,
   of = {},
   streak,
@@ -154,6 +159,7 @@ export function RecordCells({
   trailing,
   note,
 }: {
+  say: Speaker;
   record: WonLostDrawn;
   /** Whose games, so the counts lead to them. */
   of?: RecordOf;
@@ -184,7 +190,7 @@ export function RecordCells({
    */
   note?: ReactNode;
 }) {
-  const cells = counts(record, of);
+  const cells = counts(record, of, say);
   return (
     <>
       <td className={CELL} data-testid="record-played">
@@ -199,6 +205,7 @@ export function RecordCells({
       </td>
       <td className={CELL}>
         <StreakMark
+          say={say}
           streak={streak}
           of={of}
           played={cells.figures.played}
@@ -218,12 +225,14 @@ export function RecordCells({
  * which is a different figure.
  */
 export function RecordLine({
+  say,
   record,
   of = {},
   streak,
   trailing,
   testId,
 }: {
+  say: Speaker;
   record: WonLostDrawn;
   /** Whose games, so the counts lead to them. */
   of?: RecordOf;
@@ -233,19 +242,24 @@ export function RecordLine({
   trailing?: ReactNode;
   testId?: string;
 }) {
-  const cells = counts(record, of);
+  const cells = counts(record, of, say);
   const { figures } = cells;
   if (figures.played === 0) {
     return (
       <span className="font-mono text-xs tabular-nums text-muted" data-testid={testId}>
-        No games yet
+        {say.say("players.noGamesYet")}
       </span>
     );
   }
   return (
     <span className="font-mono text-xs tabular-nums text-muted" data-testid={testId}>
-      {cells.played} played · {cells.won}W {cells.lost}L {cells.drawn}D · {winRateText(figures.winRate)} ·{" "}
-      <StreakMark streak={streak} of={of} played={figures.played} />
+      {weave(say.say("players.recordLine", { rate: winRateText(figures.winRate) }), {
+        played: cells.played,
+        won: cells.won,
+        lost: cells.lost,
+        drawn: cells.drawn,
+        streak: <StreakMark say={say} streak={streak} of={of} played={figures.played} />,
+      })}
       {trailing === undefined ? null : <> · {trailing}</>}
     </span>
   );
@@ -260,16 +274,16 @@ export function RecordLine({
  * identical, so nothing about the page reads differently; the numbers in them
  * now go somewhere.
  */
-export function RecordFigure({ record, of = {} }: { record: WonLostDrawn; of?: RecordOf }) {
-  const cells = counts(record, of);
+export function RecordFigure({ say, record, of = {} }: { say: Speaker; record: WonLostDrawn; of?: RecordOf }) {
+  const cells = counts(record, of, say);
   return (
     <span data-testid="record-figure">
-      {cells.won}W · {cells.lost}L · {cells.drawn}D
+      {weave(say.say("players.figure"), { won: cells.won, lost: cells.lost, drawn: cells.drawn })}
     </span>
   );
 }
 
 /** The same for a count of games played, where a page shows that on its own. */
-export function PlayedFigure({ record, of = {} }: { record: WonLostDrawn; of?: RecordOf }) {
-  return counts(record, of).played;
+export function PlayedFigure({ say, record, of = {} }: { say: Speaker; record: WonLostDrawn; of?: RecordOf }) {
+  return counts(record, of, say).played;
 }

@@ -88,10 +88,13 @@ describe("resolveCountry", () => {
     // its own, "Fictional Land" would not resolve — it isn't a real country.
     const fictional: MemberCountry = { code: "FK", name: "Fictional Land", flag: flagOf("FK") };
     expect(resolveCountry("Fictional Land", [fictional])?.code).toBe("FK");
-    // And the server's real spelling for FK is absent from this short list,
-    // so it must not resolve — proving the lookup is not secretly falling
-    // back to this module's own allCountries()/names().
-    expect(resolveCountry("Falkland Islands", [fictional])).toBeNull();
+    // The names are the committed tables' now, not Intl's, so a real spelling of
+    // FK resolves to FK. A country the short list does not carry must not resolve:
+    // that proves the lookup is not secretly falling back to this module's own
+    // allCountries()/names().
+    expect(resolveCountry("Falkland Islands", [fictional])?.code).toBe("FK");
+    expect(resolveCountry("Japan", [fictional])).toBeNull();
+    expect(resolveCountry("日本", [fictional])).toBeNull();
   });
 
   it("still takes a code, and still keeps words it cannot place, exactly like countryFrom", () => {
@@ -121,5 +124,29 @@ describe("flagOf", () => {
     expect(flagOf("JP")).toBe("🇯🇵");
     expect(flagOf("CA")).toBe("🇨🇦");
     expect(flagOf("GB")).toBe("🇬🇧");
+  });
+});
+
+/**
+ * A country in a reader's own language. John, 2026-10-06: "発祥：Japan" must read "発祥：日本". The names are the
+ * `countries.*` phrases, so Japanese comes from the packed file and the English from the catalogue.
+ */
+describe("a country named in the reader's language", () => {
+  it("is the Japanese name for a reader of Japanese, and the English one for everybody else", async () => {
+    const { countryNameIn } = await import("./countries");
+    expect(countryNameIn("JP", "ja")).toBe("日本");
+    expect(countryNameIn("CA", "ja")).toBe("カナダ");
+    expect(countryNameIn("JP", "en")).toBe("Japan");
+  });
+
+  it("lists every country in the reader's language, in that language's order", () => {
+    expect(allCountries("ja").find((country) => country.code === "JP")?.name).toBe("日本");
+    expect(allCountries("ja")).toHaveLength(COUNTRY_CODES.length);
+  });
+
+  it("finds a country written in Japanese for a reader of Japanese, and still finds it written in English", () => {
+    expect(countryFrom("日本", "ja")?.code).toBe("JP");
+    expect(countryFrom("Japan", "ja")?.code).toBe("JP");
+    expect(countryFrom("日本")).toBeNull();
   });
 });

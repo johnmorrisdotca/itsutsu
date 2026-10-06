@@ -1,4 +1,5 @@
 import { ToggleLink } from "@/components/ui/ViewTabs";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 import {
   RECORD_SCOPES,
@@ -27,13 +28,15 @@ import {
  * chapter which is not there.
  */
 export function RecordScopeBar({
+  say,
   base,
   view,
   query,
   scope,
-  label = "How much of this player's record to count",
+  label = say.say("players.scopeLabel"),
   hrefFor,
 }: {
+  say: Speaker;
   base: string;
   view?: string;
   /**
@@ -68,11 +71,11 @@ export function RecordScopeBar({
         testId="include-worldwide"
         title={
           on
-            ? "Counting every site played on, this one included. Untick for this site only."
-            : "Counting this site only. Tick to add the games played on other sites."
+            ? say.say("players.scopeOnTitle")
+            : say.say("players.scopeOffTitle")
         }
       >
-        Include worldwide
+        {say.say("xp.scope.countEverywhere")}
       </ToggleLink>
     </span>
   );

@@ -5,6 +5,8 @@ import { ladderNeighbours, readsAsLevel } from "@/lib/gomoku/ladderNeighbours";
 import type { LadderMeasurement, LadderNeighbour } from "@/lib/gomoku/ladderStrength.types";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 /**
  * WHAT THIS GRADE ACTUALLY DOES, GAME BY GAME.
@@ -37,7 +39,9 @@ import { SECTION_TITLE } from "@/components/ui/ui.constants";
  * "we have not measured this" is a fact about us, and a reader choosing an
  * opponent is not helped by it.
  */
-export function LadderStrength({ tier, measured }: { tier: BotTier; measured: readonly LadderMeasurement[] }) {
+export async function LadderStrength({ tier, measured }: { tier: BotTier; measured: readonly LadderMeasurement[] }) {
+  const say = await currentSpeaker();
+  const title = say.pair("players.strengthTitle", "実力");
   const rows = measured
     .map((measurement) => ({ measurement, beside: ladderNeighbours(measurement, tier) }))
     .filter(({ beside }) => beside.above !== null || beside.below !== null);
@@ -46,7 +50,8 @@ export function LadderStrength({ tier, measured }: { tier: BotTier; measured: re
   return (
     <section className="flex flex-col gap-2" data-testid="ladder-strength">
       <h2 className={SECTION_TITLE}>
-        Strength by game <span className="font-mincho normal-case tracking-normal">実力</span>
+        {title.text}
+        {title.kanji === null ? null : <> <span className="font-mincho normal-case tracking-normal">{title.kanji}</span></>}
       </h2>
       <ul className="flex flex-col gap-1.5">
         {rows.map(({ measurement, beside }) => (
@@ -59,36 +64,30 @@ export function LadderStrength({ tier, measured }: { tier: BotTier; measured: re
             <GameThumb variant={measurement.variant} size="small" />
             <GameName variant={measurement.variant} />
             <span className="text-ink-soft">
-              {[sentence(tier, beside.above), sentence(tier, beside.below)].filter((part) => part !== null).join("; ")}
+              {say.joined([sentence(tier, beside.above, say), sentence(tier, beside.below, say)].filter((part): part is string => part !== null))}
             </span>
           </li>
         ))}
       </ul>
       <p className="text-xs text-muted" data-testid="ladder-strength-note">
-        {note(rows.map(({ measurement }) => measurement))}
+        {note(rows.map(({ measurement }) => measurement), say)}
       </p>
     </section>
   );
 }
 
 /** One comparison, in words a player can read without a key. */
-function sentence(tier: BotTier, beside: LadderNeighbour | null): string | null {
+function sentence(tier: BotTier, beside: LadderNeighbour | null, say: Speaker): string | null {
   if (beside === null) return null;
   const them = botName(beside.tier);
   const score = `${beside.wins}–${beside.losses}${beside.draws > 0 ? `–${beside.draws}` : ""}`;
   const me = botName(tier);
-  if (readsAsLevel(beside)) return `level with ${them} (${score})`;
-  return beside.wins > beside.losses ? `${me} beats ${them} (${score})` : `${them} beats ${me} (${score})`;
+  if (readsAsLevel(beside)) return say.say("players.strengthLevel", { them, score });
+  return beside.wins > beside.losses ? say.say("players.strengthBeats", { winner: me, loser: them, score }) : say.say("players.strengthBeats", { winner: them, loser: me, score });
 }
 
-/**
- * Where the numbers came from. It says the sample and the day, because a
- * measurement without either is an assertion — and because these are twenty
- * games, which is enough to see a gap and not enough to rank two players who
- * are close.
- */
-function note(measured: readonly LadderMeasurement[]): string {
+function note(measured: readonly LadderMeasurement[], say: Speaker): string {
   const games = measured[0]?.gamesPerPairing ?? 0;
   const on = measured.map((measurement) => measurement.measuredOn).sort().at(-1);
-  return `Played out here, ${games} games a pairing with the colours alternating, at the same budget a move gets in a real game. Measured ${on}.`;
+  return say.say("players.strengthNote", { games: say.number(games), on: on ?? "" });
 }

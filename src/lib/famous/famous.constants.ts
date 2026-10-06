@@ -15,17 +15,12 @@ export const FAMOUS_NOTATIONS = {
  */
 export const FAMOUS_SOURCES = {
   brouwer: {
-    name: "Andries Brouwer's database of Go games, CWI (public domain)",
+    /** What the credit says, as a phrase: the reader's own language. */
+    nameKey: "chrome.famous.sourceName",
     url: "https://homepages.cwi.nl/~aeb/go/games/",
     openBecause: "I do not claim any rights on this collection. The games here are in the public domain.",
   },
 } as const;
 
-/** The words on the gallery. */
-export const FAMOUS_COPY = {
-  title: "Famous games",
-  kanji: "名局",
-  blurb:
-    "Championship and historic games, replayed move by move through this site's own rules. Each one can be made into a picture of every position — drawn in your browser.",
-  source: "Record:",
-} as const;
+/** The gallery's kanji, drawn beside its title for a reader of English. Its words are `chrome.famous.*`. */
+export const FAMOUS_KANJI = "名局";

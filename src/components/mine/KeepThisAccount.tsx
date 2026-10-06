@@ -7,7 +7,8 @@ import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.con
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import type { KeepThisAccountProps } from "./keepThisAccount.types";
-import { KEEP_ACCOUNT_COPY } from "./mine.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { keepAccountCopy } from "./mine.copy";
 
 /**
  * Where Google's sign-in comes back to: the route that attaches the address it
@@ -26,6 +27,7 @@ const AFTER_GOOGLE = `/api/session/google?next=${encodeURIComponent("/me")}`;
  * words are a link straight to the tab that sets them.
  */
 export function KeepThisAccount({ days, googleReady, place = "welcome" }: KeepThisAccountProps) {
+  const KEEP_ACCOUNT_COPY = keepAccountCopy(useSpeaker());
   const hydrated = useHydrated();
   /*
    * The same control in two places, told apart by its test ids so a spec about

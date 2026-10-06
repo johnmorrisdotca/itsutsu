@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { PlayedMoves } from "@/components/history/PlayedMoves";
@@ -12,6 +13,7 @@ import { famousTimeline } from "@/lib/famous/famous";
 import { famousMoveNames, famousMoves } from "@/lib/famous/famousMoves";
 import type { FamousGame } from "@/lib/famous/famous.types";
 import { FAMOUS_SOURCES } from "@/lib/famous/famous.constants";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardFocus } from "@/components/board/BoardFocus";
 
@@ -28,9 +30,11 @@ import { BoardFocus } from "@/components/board/BoardFocus";
  * reached; an Othello game's moves keep its record's names (`famousMoveNames`).
  */
 export function FamousReplay({ game }: { game: FamousGame }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const [open, setOpen] = useState(false);
   const count = game.moves.split(" ").filter((token) => token !== "").length;
+  const step = say.pair("chrome.famous.step", "棋譜", { count: say.number(count) });
 
   return (
     <div className="flex flex-col gap-3" data-testid="famous-replay" {...readyMark(hydrated)}>
@@ -38,7 +42,8 @@ export function FamousReplay({ game }: { game: FamousGame }) {
         <Opened game={game} onClose={() => setOpen(false)} />
       ) : (
         <Button onClick={() => setOpen(true)} data-testid="famous-replay-open">
-          Step through the {count} moves <span className="font-mincho">棋譜</span>
+          {step.text}
+          {step.kanji === null ? null : <> <span className="font-mincho">{step.kanji}</span></>}
         </Button>
       )}
     </div>
@@ -46,6 +51,7 @@ export function FamousReplay({ game }: { game: FamousGame }) {
 }
 
 function Opened({ game, onClose }: { game: FamousGame; onClose: () => void }) {
+  const say = useSpeaker();
   const timeline = useMemo(() => famousTimeline(game), [game]);
   const moves = useMemo(() => famousMoves(timeline), [timeline]);
   const names = useMemo(() => famousMoveNames(game, moves), [game, moves]);
@@ -59,17 +65,17 @@ function Opened({ game, onClose }: { game: FamousGame; onClose: () => void }) {
     <>
       {/* The board, where it stands, its scrubber and its moves: openable on their own (`BoardFocus`). */}
       <BoardFocus
-        label="this game"
+        label={say.say("chrome.famous.thisGame")}
         story={{
-          kind: "Game review",
-          kanji: "棋譜",
+          kind: say.say("gamepages.gameReview"),
+          kanji: say.pairsWithKanji ? "棋譜" : "",
           title: `${game.black} vs ${game.white} · ${game.event}${game.round === null ? "" : ` · ${game.round}`} · ${game.date}`,
           // Not ours: a famous game is credited to the record it was taken from, never to this site.
           source: (
             <>
-              A famous game, not played on Itsutsu. Record:{" "}
+              {say.say("chrome.famous.notPlayed", { site: SITE_NAME })}{" "}
               <a href={FAMOUS_SOURCES[game.source].url} className="underline underline-offset-2" target="_blank" rel="noreferrer">
-                {FAMOUS_SOURCES[game.source].name}
+                {say.say(FAMOUS_SOURCES[game.source].nameKey)}
               </a>
             </>
           ),
@@ -84,7 +90,7 @@ function Opened({ game, onClose }: { game: FamousGame; onClose: () => void }) {
       </p>
       <ReplayScrubber index={index} last={last} onGo={setIndex} testId="famous" />
       <div className="flex flex-col gap-2">
-        <SectionTitle kanji="棋譜">Moves</SectionTitle>
+        <SectionTitle kanji="棋譜">{say.say("chrome.famous.moves")}</SectionTitle>
         <PlayedMoves
           size={game.size}
           moves={moves}
@@ -96,7 +102,7 @@ function Opened({ game, onClose }: { game: FamousGame; onClose: () => void }) {
       </div>
       </BoardFocus>
       <Button onClick={onClose} data-testid="famous-replay-close">
-        Hide moves
+        {say.say("chrome.famous.hide")}
       </Button>
     </>
   );

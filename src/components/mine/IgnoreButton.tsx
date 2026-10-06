@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -12,6 +13,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
  */
 export function IgnoreButton({ memberId, ignoring }: { memberId: string; ignoring: boolean }) {
   const router = useRouter();
+  const say = useSpeaker();
   const [state, setState] = useState(ignoring);
   const [busy, setBusy] = useState(false);
   const hydrated = useHydrated();
@@ -36,12 +38,12 @@ export function IgnoreButton({ memberId, ignoring }: { memberId: string; ignorin
       onClick={toggle}
       disabled={busy}
       className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs ${state ? "text-shu" : "text-muted"}`}
-      title={state ? "Stop ignoring" : "Ignore: they cannot ask you to play, and their messages are hidden"}
+      title={say.say(state ? "mine.ignoreOff" : "mine.ignoreOn")}
       data-testid="ignore-toggle"
       aria-pressed={state}
       {...readyMark(hydrated)}
     >
-      {state ? "Ignored" : "Ignore"}
+      {say.say(state ? "mine.ignored" : "mine.ignore")}
     </button>
   );
 }

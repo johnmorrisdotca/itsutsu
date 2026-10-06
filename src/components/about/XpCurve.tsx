@@ -1,3 +1,4 @@
+import type { Speaker } from "@/lib/i18n/i18n";
 import { LEVEL_MILESTONES } from "@/lib/xp/levelLadder";
 import { xpLevelName } from "@/lib/xp/levelNames";
 import { XP_LEVELS, xpForLevel } from "@/lib/xp/xpCurve";
@@ -19,7 +20,7 @@ export const LAST_TEN_SHARE = (xpForLevel(XP_LEVELS) - xpForLevel(XP_LEVELS - 10
  * curve is held as a table precisely so it can be retuned, and a picture of
  * last month's curve is the stale-figure fault this page is built to avoid.
  */
-export function XpCurve() {
+export function XpCurve({ say }: { say: Speaker }) {
   const top = xpForLevel(XP_LEVELS);
   const plotW = WIDTH - PAD.left - PAD.right;
   const plotH = HEIGHT - PAD.top - PAD.bottom;
@@ -36,7 +37,7 @@ export function XpCurve() {
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         className="w-full"
         role="img"
-        aria-label={`Total experience needed for each level from 1 to ${XP_LEVELS}: nearly flat for the first twenty levels, then climbing ever more steeply to ${thousands(top)} at the top.`}
+        aria-label={say.say("about.curve.label", { levels: String(XP_LEVELS), top: thousands(top) })}
       >
         {ticks.map((xp) => (
           <g key={xp}>
@@ -74,18 +75,17 @@ export function XpCurve() {
                 fontSize={10}
                 fill="var(--ink)"
               >
-                {level} · {xpLevelName(level)}
+                {level} · {xpLevelName(level, say.locale)}
               </text>
             </g>
           );
         })}
         <text x={WIDTH / 2} y={HEIGHT - 4} textAnchor="middle" fontSize={10} fill="var(--muted)">
-          level
+          {say.say("about.curve.axis")}
         </text>
       </svg>
       <figcaption className="text-center text-xs leading-relaxed text-muted">
-        Total XP to stand on each level, with the milestone rungs named. The shaded band is the last ten levels, which
-        cost {Math.round(LAST_TEN_SHARE * 100)}% of the whole climb to {thousands(top)}.
+        {say.say("about.curve.caption", { share: String(Math.round(LAST_TEN_SHARE * 100)), top: thousands(top) })}
       </figcaption>
     </figure>
   );

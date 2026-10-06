@@ -3,11 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Controls";
-import { MESSAGE_TEXT_MAX } from "@/lib/messages/messages.constants";
+import { MESSAGE_REFUSALS, MESSAGE_TEXT_MAX, type MessageRefusal } from "@/lib/messages/messages.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MESSAGE_COPY } from "./messages.constants";
 
 /**
  * The line to write in, under a conversation. Sends, then asks the page again
@@ -16,10 +16,12 @@ import { MESSAGE_COPY } from "./messages.constants";
  */
 export function MessageForm({ to }: { to: string }) {
   const router = useRouter();
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [trouble, setTrouble] = useState<string | null>(null);
+  const sendLabel = say.pair("messages.send", "送信");
 
   async function send() {
     if (text.trim() === "") return;
@@ -32,8 +34,9 @@ export function MessageForm({ to }: { to: string }) {
     });
     setBusy(false);
     if (!response.ok) {
-      const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setTrouble(body?.error ?? MESSAGE_COPY.failed);
+      const body = (await response.json().catch(() => null)) as { reason?: string } | null;
+      const refusal = body?.reason !== undefined && Object.hasOwn(MESSAGE_REFUSALS, body.reason) ? MESSAGE_REFUSALS[body.reason as MessageRefusal] : null;
+      setTrouble(refusal === null ? say.say("messages.failed") : say.say(refusal));
       return;
     }
     setText("");
@@ -54,7 +57,7 @@ export function MessageForm({ to }: { to: string }) {
         value={text}
         maxLength={MESSAGE_TEXT_MAX}
         rows={3}
-        placeholder={MESSAGE_COPY.placeholder}
+        placeholder={say.say("messages.placeholder")}
         disabled={busy}
         onChange={(event) => setText(event.target.value)}
         className="w-full rounded-lg border border-rule bg-paper px-3 py-2 text-sm"
@@ -67,7 +70,8 @@ export function MessageForm({ to }: { to: string }) {
       ) : null}
       <div className="flex">
         <Button onClick={() => void send()} disabled={busy || text.trim() === ""} strong data-testid="message-send">
-          {MESSAGE_COPY.send}
+          {sendLabel.text}
+          {sendLabel.kanji === null ? null : <> <span className="font-mincho">{sendLabel.kanji}</span></>}
         </Button>
       </div>
     </form>

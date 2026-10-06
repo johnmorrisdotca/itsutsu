@@ -147,6 +147,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
       )}
 
       <LadderSideView
+        say={say}
         standings={standings}
         emptyNote={say.say("gamepages.ladderEmpty", { game: title })}
         invitation={
@@ -186,6 +187,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
             for.
           */}
           <RecordLine
+            say={say}
             record={yours}
             of={{ player: me.name, memberId: myId, variant }}
             streak={yours.streak}

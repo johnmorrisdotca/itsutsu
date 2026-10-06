@@ -6,7 +6,8 @@ import { useState } from "react";
 import { Paired } from "@/components/i18n/Paired";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { OFFER_ACTIONS, type OfferAction } from "@/lib/history/offers.types";
-import { MY_GAMES_COPY } from "./mine.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { myGamesCopy } from "./mine.copy";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /**
@@ -62,13 +63,14 @@ export function OfferButtons({
         return;
       }
       const said = (await response.json().catch(() => null)) as { error?: string } | null;
-      setRefused(said?.error ?? FAILED[action]);
+      setRefused(said?.error ?? myGamesCopy(say).offer[FAILED[action]]);
     } finally {
       setBusy(false);
     }
   }
 
-  const copy = MY_GAMES_COPY.offer;
+  const say = useSpeaker();
+  const copy = myGamesCopy(say).offer;
   return (
     <span className="flex flex-col items-end gap-1" data-testid="offer-buttons" {...readyMark(useHydrated())}>
       {refused === null ? null : (
@@ -114,9 +116,5 @@ export function OfferButtons({
   );
 }
 
-/** What to say when the server said no and gave no words of its own. */
-const FAILED: Record<OfferAction, string> = {
-  accept: MY_GAMES_COPY.offer.acceptFailed,
-  decline: MY_GAMES_COPY.offer.declineFailed,
-  withdraw: MY_GAMES_COPY.offer.withdrawFailed,
-};
+/** What to say when the server said no and gave no words of its own: the copy's name for each. */
+const FAILED = { accept: "acceptFailed", decline: "declineFailed", withdraw: "withdrawFailed" } as const satisfies Record<OfferAction, string>;

@@ -18,7 +18,8 @@ import type { racesWaitingOn } from "@/lib/puzzles/server/puzzleRaces";
 
 import { keptRunDetail } from "@/components/puzzles/keptRunDetail";
 import { GroupHeading } from "./GroupHeading";
-import { MY_GAMES_COPY, MY_PUZZLE_ROW } from "./mine.constants";
+import { MY_PUZZLE_ROW } from "./mine.constants";
+import { myGamesCopy } from "./mine.copy";
 
 /**
  * THE PUZZLES A MEMBER HAS GOING, beside their games.
@@ -36,6 +37,7 @@ import { MY_GAMES_COPY, MY_PUZZLE_ROW } from "./mine.constants";
  */
 export async function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<typeof runsOf>>; races?: Awaited<ReturnType<typeof racesWaitingOn>> }) {
   const say = await currentSpeaker();
+  const MY_GAMES_COPY = myGamesCopy(say);
   const copy = MY_GAMES_COPY.puzzlesGoing;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzles-going">

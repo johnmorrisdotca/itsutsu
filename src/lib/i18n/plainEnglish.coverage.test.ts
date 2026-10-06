@@ -68,12 +68,8 @@ function retiredLabels(): string[] {
  * Keyed "<phrase> @ <file>".
  */
 const STILL_RIGHT: Record<string, string> = {
-  "At the board @ src/app/about/about.play.tsx": "an About chapter's title, prose the passes leave alone",
   "Being worked on @ src/lib/site/maintenance.ts": "the public maintenance page, which the glossary keeps as a sentence beside the gate",
-  "The board @ src/app/about/about.engine.tsx": "a part of the engine named in the About chapter, not a link to the home page",
-  "The record @ src/app/about/about.engine.tsx": "the engine's record-keeping part, named in the About chapter",
   "The record @ src/components/history/RecordPage.tsx": "an error thrown to the log, never shown",
-  "the record @ src/app/about/about.words.tsx": "a gloss of 棋譜 in the About chapter's word list, prose",
   "the record @ src/lib/history/gameHistory.sort.ts": "the sort spec's name for its list in a developer's error, never shown",
 };
 

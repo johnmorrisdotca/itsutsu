@@ -2,8 +2,9 @@
 
 import useSWR from "swr";
 
-import { useLocale } from "@/components/i18n/LocaleProvider";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { Locale } from "@/lib/i18n/i18n.types";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { readerDay } from "@/lib/ui/when";
 
 import type { EmbedSummary } from "@/lib/embed/embedSummary";
@@ -26,11 +27,10 @@ const fetcher = async (url: string): Promise<EmbedSummary> => {
   return response.json() as Promise<EmbedSummary>;
 };
 
-const RESULT_LABEL: Record<string, string> = {
-  black: "Black",
-  white: "White",
-  draw: "Draw",
-  abandoned: "—",
+const RESULT_PHRASE: Record<string, PhraseKey> = {
+  black: "chrome.embed.black",
+  white: "chrome.embed.white",
+  draw: "chrome.embed.draw",
 };
 
 /** The day a game was played, in the reader's zone and language: "6 Oct", "10月6日". */
@@ -49,7 +49,8 @@ export function EmbedStats({
   token: string;
   player: string | null;
 }) {
-  const locale = useLocale();
+  const say = useSpeaker();
+  const locale = say.locale;
   const query = new URLSearchParams({ token });
   if (player !== null) query.set("player", player);
 
@@ -77,7 +78,7 @@ export function EmbedStats({
       <p className="flex items-baseline justify-between gap-2">
         <span className="font-mincho text-sm">棋譜</span>
         <span className="text-muted">
-          {data.totalGames} game{data.totalGames === 1 ? "" : "s"} played
+          {say.count("chrome.embed.played", data.totalGames)}
         </span>
       </p>
 
@@ -91,8 +92,8 @@ export function EmbedStats({
             somebody else's page, and a number that navigates away from it is
             not what the person who embedded it agreed to.
           */}
-          — <RecordFigure record={{ wins: data.player.won, losses: data.player.lost, draws: data.player.drawn }} of={{ here: false }} />{" "}
-          over {data.player.played}
+          — <RecordFigure say={say} record={{ wins: data.player.won, losses: data.player.lost, draws: data.player.drawn }} of={{ here: false }} />{" "}
+          {say.say("chrome.embed.over", { count: say.number(data.player.played) })}
         </p>
       ) : null}
 
@@ -104,10 +105,10 @@ export function EmbedStats({
               className="flex items-baseline justify-between gap-2 text-muted"
             >
               <span className="truncate">
-                {nameOr(game.black, "Black")} v {nameOr(game.white, "White")}
+                {nameOr(game.black, say.say("chrome.embed.black"))} {say.say("chrome.embed.versus")} {nameOr(game.white, say.say("chrome.embed.white"))}
               </span>
               <span className="shrink-0 tabular-nums">
-                {RESULT_LABEL[game.result] ?? game.result} · {game.moveCount} ·{" "}
+                {RESULT_PHRASE[game.result] !== undefined ? say.say(RESULT_PHRASE[game.result]) : game.result === "abandoned" ? "—" : game.result} · {game.moveCount} ·{" "}
                 {playedOn(game.playedAt, locale)}
               </span>
             </li>

@@ -3,9 +3,6 @@ import { version as PACKAGE_VERSION } from "../../package.json";
 /** The site's version, from package.json at build time. */
 export const VERSION: string = PACKAGE_VERSION;
 
-/** Where the site is in its life. The number reads as alpha by the letter of semver; the word is the truth. */
-export const STAGE = "Beta";
-
 const ROMAN: [number, string][] = [
   [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"], [100, "C"], [90, "XC"],
   [50, "L"], [40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"],
@@ -41,7 +38,7 @@ export function toKanji(n: number): string {
   for (const [value, glyph] of KANJI_UNITS) {
     const count = Math.floor(left / value);
     if (count > 0) {
-      out += (count === 1 ? "" : KANJI_DIGITS[count]) + glyph;
+      out += (count > 1 ? KANJI_DIGITS[count] : "") + glyph;
       left -= count * value;
     }
   }

@@ -1,3 +1,5 @@
+import type { PhraseKey } from "../i18n/i18n.constants";
+
 import { AGE_BANDS } from "./ageBand.constants";
 
 /**
@@ -37,8 +39,8 @@ export type ChildWithheldField = (typeof CHILD_WITHHELD_FIELDS)[number];
 /** The same fields, emptied: what the band's write sets on a child's row. */
 export const CHILD_CLEARED: Record<ChildWithheldField, string> = { city: "", country: "", bio: "" };
 
-/** What a child is told when a city, country or bio is sent for them. */
-export const CHILD_PROFILE_REFUSAL = "A member under 13 keeps no city, country or bio here, so nothing says where they are.";
+/** What a child is told when a city, country or bio is sent for them: the phrase the route says in the reader's language. */
+export const CHILD_PROFILE_REFUSAL = "mine.childProfile" as const satisfies PhraseKey;
 
 /** Whether a profile update asks to keep something a child may not have: a withheld field with anything in it. */
 export function asksWithheld(update: Partial<Record<ChildWithheldField, string | undefined>>): boolean {

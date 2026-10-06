@@ -2,11 +2,12 @@
 
 import { useId, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Select, Toggle } from "@/components/ui/Controls";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { DEFAULT_GAME_DEFAULTS, type GameDefaults } from "@/components/game/gameDefaults";
-import { GAME_COPY } from "@/components/game/game.constants";
+import { gameCopy } from "@/components/game/game.constants";
 import { TIME_CONTROLS, TIME_CONTROL_DISPLAY } from "@/lib/clock/clock.constants";
 import { BOARD_SIZES, DRAW_LIMIT_DISPLAY, DRAW_LIMIT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { DrawLimit } from "@/lib/gomoku/gomoku.types";
@@ -25,6 +26,8 @@ import { describeMoveTime } from "@/lib/history/deadline";
  * preference either of them can change from another page.
  */
 export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   /*
    * The ids the two notes below are attached with. Each is its select's
    * DESCRIPTION and not part of its name — see `FieldHint` in `Controls.tsx`,
@@ -54,12 +57,12 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        setError(body?.error ?? "That could not be saved.");
+        setError(body?.error ?? say.say("mine.saveFailed"));
         return;
       }
       setSaved(true);
     } catch {
-      setError("That could not be saved.");
+      setError(say.say("mine.saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -75,7 +78,7 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
     <div className="flex flex-col gap-4" data-testid="game-defaults" {...readyMark(useHydrated())}>
       <div className="flex flex-col gap-1">
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Board</span>
+          <span className="text-sm font-medium">{say.say("mine.gdBoard")}</span>
           <Select
             value={String(fields.size)}
             onChange={(event) => set({ size: Number(event.target.value) })}
@@ -90,12 +93,12 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
           </Select>
         </label>
         <span id={boardHint} className="text-xs text-muted">
-          Games played on a board of their own — Hex, Halma, the small ones — keep theirs.
+          {say.say("mine.gdBoardNote")}
         </span>
       </div>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Clock for games on one device</span>
+        <span className="text-sm font-medium">{say.say("mine.gdClockOne")}</span>
         <Select
           value={fields.timeControl}
           onChange={(event) => set({ timeControl: event.target.value as GameDefaults["timeControl"] })}
@@ -103,14 +106,14 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
         >
           {(Object.keys(TIME_CONTROLS) as (keyof typeof TIME_CONTROLS)[]).map((name) => (
             <option key={name} value={name}>
-              {TIME_CONTROL_DISPLAY[name].label}
+              {say.pairName(TIME_CONTROL_DISPLAY[name].label, TIME_CONTROL_DISPLAY[name].kanji).text}
             </option>
           ))}
         </Select>
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Clock for games on two devices</span>
+        <span className="text-sm font-medium">{say.say("mine.gdClockTwo")}</span>
         <Select
           value={fields.moveTimeMs === null ? "none" : String(fields.moveTimeMs)}
           onChange={(event) =>
@@ -120,7 +123,7 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
         >
           {MOVE_TIME_OPTIONS.map((ms) => (
             <option key={ms === null ? "none" : ms} value={ms === null ? "none" : String(ms)}>
-              {ms === null ? "No clock" : describeMoveTime(ms)}
+              {ms === null ? say.say("mine.gdNoClock") : describeMoveTime(ms, say)}
             </option>
           ))}
         </Select>
@@ -128,7 +131,7 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
 
       <div className="flex flex-col gap-1">
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Length</span>
+          <span className="text-sm font-medium">{say.say("mine.gdLength")}</span>
           <Select
             value={fields.drawLimit}
             onChange={(event) => set({ drawLimit: event.target.value as DrawLimit })}
@@ -137,42 +140,42 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
           >
             {DRAW_LIMIT_LIST.map((limit) => (
               <option key={limit} value={limit}>
-                {DRAW_LIMIT_DISPLAY[limit].label} {DRAW_LIMIT_DISPLAY[limit].kanji}
+                {say.pairName(DRAW_LIMIT_DISPLAY[limit].label, DRAW_LIMIT_DISPLAY[limit].kanji).text}
               </option>
             ))}
           </Select>
         </label>
         <span id={lengthHint} className="text-xs text-muted">
-          Only on a board of nine by nine or larger, and never on a game that cannot be drawn.
+          {say.say("mine.gdLengthNote")}
         </span>
       </div>
 
       <Toggle
-        label="Games on two devices count towards ratings"
+        label={say.say("mine.gdRated")}
         checked={fields.rated}
         onChange={(next) => set({ rated: next })}
-        hint="Off, and a shared game you start is friendly: the result is kept but no rating moves."
+        hint={say.say("mine.gdRatedHint")}
       />
       <Toggle
-        label="Allow taking moves back"
+        label={say.say("mine.gdUndo")}
         checked={fields.allowUndo}
         onChange={(next) => set({ allowUndo: next })}
-        hint="Switch off for a game where every stone is final."
+        hint={say.say("mine.gdUndoHint")}
       />
       <Toggle
-        label="Allow skipping a turn"
+        label={say.say("mine.gdSkip")}
         checked={fields.allowSkip}
         onChange={(next) => set({ allowSkip: next })}
         hint={GAME_COPY.skipHint}
       />
       <Toggle
-        label="Allow swapping colours"
+        label={say.say("mine.gdSwap")}
         checked={fields.allowSwap}
         onChange={(next) => set({ allowSwap: next })}
         hint={GAME_COPY.swapHint}
       />
       <Toggle
-        label="Allow resizing the board"
+        label={say.say("mine.gdResize")}
         checked={fields.allowResize}
         onChange={(next) => set({ allowResize: next })}
         hint={GAME_COPY.resizeHint}
@@ -186,7 +189,7 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
           className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4`}
           data-testid="save-game-defaults"
         >
-          Save these
+          {say.say("mine.gdSave")}
         </button>
         <button
           type="button"
@@ -194,14 +197,13 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
           className={`${BUTTON_BASE} px-3 text-xs`}
           data-testid="reset-game-defaults"
         >
-          Reset to defaults
+          {say.say("mine.gdReset")}
         </button>
-        {saved ? <span className="text-xs text-moss">Saved.</span> : null}
+        {saved ? <span className="text-xs text-moss">{say.say("mine.saved")}</span> : null}
         {error !== null ? <span className="text-xs text-shu">{error}</span> : null}
       </div>
       <p className="text-xs text-muted">
-        These are where a new game starts, and nothing more. A game already under way keeps the settings it was
-        begun with, because those are what both players agreed to — changing anything here will not reach it.
+        {say.say("mine.gdNote")}
       </p>
     </div>
   );

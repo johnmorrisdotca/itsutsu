@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { speaker } from "@/lib/i18n/i18n";
+
 import { playedScopeNote } from "./PlayerRecord";
 
 /**
@@ -16,18 +18,18 @@ import { playedScopeNote } from "./PlayerRecord";
  */
 describe("playedScopeNote says what a table's Played column actually counts", () => {
   it("names the pool and rated-ness the ladder counts", () => {
-    const note = playedScopeNote({ pool: "people", rated: "yes" });
+    const note = playedScopeNote({ pool: "people", rated: "yes" }, speaker("en"));
     expect(note).toMatch(/rated/i);
     expect(note).toMatch(/other people/i);
   });
 
   it("names the computer pool for the Bots tab's scope", () => {
-    const note = playedScopeNote({ pool: "computer", rated: "yes" });
+    const note = playedScopeNote({ pool: "computer", rated: "yes" }, speaker("en"));
     expect(note).toMatch(/the bots/i);
   });
 
   it("says a kept record has nothing here to open, same as the streak cell does", () => {
-    const note = playedScopeNote({ here: false });
+    const note = playedScopeNote({ here: false }, speaker("en"));
     expect(note).toMatch(/another site|no games here/i);
   });
 });

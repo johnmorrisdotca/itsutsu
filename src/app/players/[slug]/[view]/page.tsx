@@ -1,4 +1,4 @@
-import PlayerPage, { metadata as pageMetadata } from "../page";
+import PlayerPage, { generateMetadata as pageMetadata } from "../page";
 import { withTabFromPath } from "@/lib/ui/tabs";
 
 /*
@@ -6,7 +6,7 @@ import { withTabFromPath } from "@/lib/ui/tabs";
  * /players/<id>/xp. The same page, with the segment handed to it; it says not
  * found for a chapter this player does not have.
  */
-export const metadata = pageMetadata;
+export const generateMetadata = pageMetadata;
 
 export default async function PlayerChapter({ params, searchParams }: PageProps<"/players/[slug]/[view]">) {
   const { slug, view } = await params;

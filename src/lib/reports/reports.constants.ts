@@ -25,6 +25,9 @@ export const REPORT_MOVES: Readonly<Record<ReportStatus, readonly ReportStatus[]
   closed: [],
 };
 
+/** The name a report from the signed-in operator is filed under, which the operator reads on the Admin page. */
+export const OPERATOR_REPORTER_NAME = "The operator";
+
 export const REPORT_STATUS_LABEL: Readonly<Record<ReportStatus, string>> = {
   new: "New",
   read: "Read",

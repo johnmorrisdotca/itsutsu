@@ -61,7 +61,7 @@ const TABS: Tab[] = [
    */
   { key: "settings", label: "Settings", kanji: "設定" },
   { key: "members", label: "Members", kanji: "会員" },
-  { key: "bots", label: "Bots", kanji: "機械" },
+  { key: "bots", label: "Bots", kanji: "コンピュータ" },
   { key: "tickets", label: "Tickets", kanji: "課題" },
   /*
    * What members have reported from "Report a problem", beside the work

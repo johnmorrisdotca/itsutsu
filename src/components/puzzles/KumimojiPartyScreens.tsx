@@ -115,11 +115,12 @@ export function KumimojiPartyNames({
       </div>
       {replacing === null ? null : (
         <p className="text-sm text-muted" data-testid="kumimoji-party-replacing">
-          {say.say("pkumi.party.replacing")}{say.locale === "ja" ? "" : " "}
+          {say.say("pkumi.party.replacing")}
+          {say.sentences(["", ""])}
           <Link href={partyAddress(replacing)} className="underline underline-offset-2">
             {say.say("pkumi.party.continueThat")}
           </Link>
-          .
+          {say.sentence("")}
         </p>
       )}
       <p className="min-h-5 text-sm text-muted" data-testid="kumimoji-party-names-note">

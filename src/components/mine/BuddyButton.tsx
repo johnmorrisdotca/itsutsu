@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -15,6 +16,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
  */
 export function BuddyButton({ memberId, isBuddy }: { memberId: string; isBuddy: boolean }) {
   const router = useRouter();
+  const say = useSpeaker();
   const [buddy, setBuddy] = useState(isBuddy);
   const [busy, setBusy] = useState(false);
   const hydrated = useHydrated();
@@ -39,11 +41,11 @@ export function BuddyButton({ memberId, isBuddy }: { memberId: string; isBuddy: 
       onClick={toggle}
       disabled={busy}
       className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 text-xs`}
-      title={buddy ? "Remove from your buddies" : "Add to your buddies"}
+      title={say.say(buddy ? "mine.buddyOff" : "mine.buddyOn")}
       data-testid="buddy-toggle"
       {...readyMark(hydrated)}
     >
-      {buddy ? "★ Buddy" : "☆ Buddy"}
+      {say.say(buddy ? "mine.buddyIs" : "mine.buddyNot")}
     </button>
   );
 }

@@ -8,7 +8,7 @@ import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import type { Asking } from "@/components/ui/ui.types";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { MY_GAMES_COPY } from "./mine.constants";
+import { myGamesCopy } from "./mine.copy";
 
 /**
  * Gives a game up — or calls it off, when there is nothing to give up.
@@ -72,7 +72,7 @@ export function ResignButton({
   const [busy, setBusy] = useState(false);
   const [refused, setRefused] = useState<string | null>(null);
   const nothingPlayed = moves === 0;
-  const copy = nothingPlayed ? MY_GAMES_COPY.cancel : MY_GAMES_COPY.resign;
+  const copy = nothingPlayed ? myGamesCopy(say).cancel : myGamesCopy(say).resign;
   async function resign() {
     setBusy(true);
     try {

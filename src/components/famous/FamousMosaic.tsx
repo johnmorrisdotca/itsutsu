@@ -2,11 +2,12 @@
 
 import type { ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { MosaicDialog } from "@/components/history/MosaicDialog";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { famousFrames } from "@/lib/famous/famous";
-import { FAMOUS_COPY, FAMOUS_SOURCES } from "@/lib/famous/famous.constants";
+import { FAMOUS_SOURCES } from "@/lib/famous/famous.constants";
 import type { FamousGame } from "@/lib/famous/famous.types";
 import { MOSAIC_COPY } from "@/lib/record/mosaic.constants";
 
@@ -20,6 +21,7 @@ import { MOSAIC_COPY } from "@/lib/record/mosaic.constants";
  * one of them is wanted, and nothing on the server ever.
  */
 export function FamousMosaic({ game, thumb }: { game: FamousGame; thumb: ReactNode }) {
+  const say = useSpeaker();
   const count = game.moves.split(" ").filter((token) => token !== "").length;
   return (
     <MosaicDialog
@@ -29,20 +31,20 @@ export function FamousMosaic({ game, thumb }: { game: FamousGame; thumb: ReactNo
       size={game.size}
       grid={VARIANT_SPECS[game.variant].grid}
       title={() => ({
-        name: `${game.black} vs ${game.white}`,
+        name: `${game.black} ${say.say("chrome.famous.versus")} ${game.white}`,
         details: [
           game.date,
           // A bare number is a round; anything else is printed as the source wrote it.
-          game.round === null ? game.event : `${game.event}, ${/^\d+$/.test(game.round) ? `round ${game.round}` : game.round}`,
+          game.round === null ? game.event : `${game.event}, ${/^\d+$/.test(game.round) ? say.say("chrome.famous.round", { round: game.round }) : game.round}`,
           ...(game.place === null ? [] : [game.place]),
           `${RULE_VARIANT_DISPLAY[game.variant].label} ${game.size}×${game.size}`,
           game.result,
-          `${FAMOUS_COPY.source} ${FAMOUS_SOURCES[game.source].name}`,
+          `${say.say("chrome.famous.source")} ${say.say(FAMOUS_SOURCES[game.source].nameKey)}`,
           MOSAIC_COPY.site,
         ],
       })}
       fileName={`itsutsu-famous-${game.id}.png`}
-      alt={`Every position of ${game.black} against ${game.white}, ${game.event}`}
+      alt={say.say("chrome.famous.mosaicAlt", { black: game.black, white: game.white, event: game.event })}
       thumb={thumb}
     />
   );

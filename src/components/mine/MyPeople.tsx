@@ -1,4 +1,7 @@
+import { Paired } from "@/components/i18n/Paired";
 import Link from "@/components/ui/Link";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 
 import { gamesHref } from "@/components/games/GameCount";
 import { PlayerName } from "@/components/players/PlayerName";
@@ -35,6 +38,7 @@ import { mayEmailInvites } from "@/lib/social/childRules";
  * so a buddy's row offers a game only where one can be played.
  */
 export async function MyPeople({ memberId }: { memberId: string }) {
+  const say = await currentSpeaker();
   const [buddies, ignored, age] = await Promise.all([fetchBuddies(memberId), fetchIgnored(memberId), ageBandOf(memberId)]);
   // The flag, badge and level beside each name, as on the members list, in one read for both lists.
   const tags = await nameTagsOf([...buddies, ...ignored].map((one) => one.id));
@@ -43,30 +47,34 @@ export async function MyPeople({ memberId }: { memberId: string }) {
     <div className="flex flex-col gap-4" data-testid="my-people">
       <section className="flex flex-col gap-3" data-testid="buddies">
         <h2 className={SECTION_HEADING}>
-          Buddies <span className="font-mincho text-xs font-normal opacity-70">仲間</span>
+          <Paired en={say.say("mine.buddiesTitle")} kanji="仲間" kanjiClassName="text-xs font-normal opacity-70" />
           <span className="text-xs font-normal text-muted">{buddies.length}</span>
         </h2>
         {buddies.length === 0 ? (
           <p className="text-sm text-muted">
-            Nobody yet. Star people on the{" "}
-            <Link href="/players" className="underline underline-offset-4">players</Link> page and they are listed
-            here, most recently seen first.
+            {weave(say.say("mine.buddiesEmpty"), {
+              link: (
+                <Link href="/players" className="underline underline-offset-4">
+                  {say.say("mine.buddiesPlayers")}
+                </Link>
+              ),
+            })}
           </p>
         ) : (
           <ul className="flex flex-col gap-1 text-sm">
             {buddies.map((buddy) => (
               <li key={buddy.id} className="flex flex-wrap items-center gap-3 border-t border-rule py-1.5 first:border-t-0">
-                <RecencyMark recency={buddy.recency} />
+                <RecencyMark recency={buddy.recency} say={say} />
                 <span>
                   <PlayerName name={buddy.name} memberId={buddy.id} fallback={buddy.name} tag={tags.get(buddy.id)} />
                 </span>
                 <span className="text-xs text-muted">
                   {[buddy.city, buddy.country].filter(Boolean).join(", ")}
-                  {buddy.localTime !== null ? ` · ${buddy.localTime} there` : ""}
+                  {buddy.localTime !== null ? ` · ${say.say("mine.buddyLocal", { time: buddy.localTime })}` : ""}
                 </span>
                 {/* The games the two of you have finished, in the record narrowed to the pair. */}
                 <Link href={gamesHref({ memberId, against: buddy.id })} className="text-xs text-muted underline underline-offset-4" data-testid="buddy-played">
-                  games together
+                  {say.say("mine.buddyGames")}
                 </Link>
                 <span className="ml-auto">
                   <RowActions>
@@ -79,16 +87,16 @@ export async function MyPeople({ memberId }: { memberId: string }) {
           </ul>
         )}
         {/* The legend explains the marks beside names; with no names, nothing. */}
-        {buddies.length > 0 ? <RecencyLegend /> : null}
+        {buddies.length > 0 ? <RecencyLegend say={say} /> : null}
       </section>
 
       {ignored.length > 0 ? (
         <section className="flex flex-col gap-2 border-t border-rule pt-4" data-testid="ignored">
           <h2 className={SECTION_HEADING}>
-            Ignored <span className="font-mincho text-xs font-normal opacity-70">無視</span>
+            <Paired en={say.say("mine.ignoredTitle")} kanji="無視" kanjiClassName="text-xs font-normal opacity-70" />
             <span className="text-xs font-normal text-muted">{ignored.length}</span>
           </h2>
-          <p className="text-xs text-muted">They cannot ask you to play, and their messages in a game are hidden from you.</p>
+          <p className="text-xs text-muted">{say.say("mine.ignoredNote")}</p>
           <ul className="flex flex-col gap-1 text-sm">
             {ignored.map((entry) => (
               <li key={entry.id} className="flex items-center gap-3">

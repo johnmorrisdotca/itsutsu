@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useId, useState, type FormEvent } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import {
   BUTTON_BASE,
   BUTTON_STRONG,
@@ -12,6 +13,7 @@ import {
   PANEL_CLASS,
   TONE_CLASS,
 } from "@/components/ui/ui.constants";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { CODE_WORDS } from "@/lib/invite/inviteCode";
 import type { RegistrationMode } from "@/lib/site/site.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -52,6 +54,7 @@ export function JoinForm({
   notice?: string;
 }) {
   const router = useRouter();
+  const say = useSpeaker();
   const mode: "invite" | "admin" = operator ? "admin" : "invite";
   /*
    * Nobody new, and this visitor is nobody yet. Said plainly rather than by
@@ -99,8 +102,8 @@ export function JoinForm({
           | null;
         setError(
           response.status === 429
-            ? "Too many attempts. Wait a minute and try again."
-            : (body?.error ?? "That was not accepted."),
+            ? say.say("auth.join.tooMany")
+            : (body?.error ?? say.say("auth.join.refused")),
         );
         setBusy(false);
         return;
@@ -116,7 +119,7 @@ export function JoinForm({
       router.replace(landed?.welcome === true ? `/me?welcome=1&next=${encodeURIComponent(next)}` : next);
       router.refresh();
     } catch {
-      setError("Could not reach the server.");
+      setError(say.say("auth.join.unreachable"));
       setBusy(false);
     }
   }
@@ -142,16 +145,16 @@ export function JoinForm({
         </h1>
         <p className="text-sm text-muted">
           {mode === "admin"
-            ? "Sign in as the operator."
+            ? say.say("auth.join.operatorLead")
             : shut
-              ? "Itsutsu is not taking new members just now. If you already have an account, sign in with Google and you are in as usual."
+              ? say.say("auth.join.shutLead", { site: SITE_NAME })
               : pending !== null
                 ? registration === "open"
-                  ? `Welcome, ${pending.name || pending.email}. Press Enter and you are in.`
-                  : `Welcome, ${pending.name || pending.email}. One more thing: the ${CODE_WORDS} words you were given. After this, Google alone lets you in.`
+                  ? say.say("auth.join.pendingOpen", { name: pending.name || pending.email })
+                  : say.say("auth.join.pendingCode", { name: pending.name || pending.email, count: say.number(CODE_WORDS) })
                 : registration === "open"
-                  ? "Sign in with Google and you are in — no code needed."
-                  : "Sign in with Google. No account? The words you were given will let you in instead."}
+                  ? say.say("auth.join.openLead")
+                  : say.say("auth.join.codeLead")}
         </p>
       </div>
 
@@ -174,7 +177,7 @@ export function JoinForm({
             data-testid="google-signin"
             data-next={next}
           >
-            Continue with Google
+            {say.say("auth.join.google")}
           </button>
           {mode === "invite" && !showInviteCode && !shut ? (
             <button
@@ -183,10 +186,10 @@ export function JoinForm({
               className="text-center text-xs text-muted underline underline-offset-4"
               data-testid="show-invite-code"
             >
-              No Google account? Use an invite code instead
+              {say.say("auth.join.useCode")}
             </button>
           ) : mode === "admin" ? (
-            <p className="text-center text-xs text-muted">or, with the operator token</p>
+            <p className="text-center text-xs text-muted">{say.say("auth.join.orOperator")}</p>
           ) : null}
         </>
       ) : null}
@@ -204,7 +207,7 @@ export function JoinForm({
           */
           <div className="flex flex-col gap-1">
             <label className="flex flex-col gap-1">
-              <span className="text-sm">Invite code</span>
+              <span className="text-sm">{say.say("auth.join.codeLabel")}</span>
               <input
                 className={`${INPUT_CLASS} font-mono`}
                 value={code}
@@ -219,14 +222,14 @@ export function JoinForm({
               />
             </label>
             <span id={codeHintId} className="text-xs text-muted">
-              Capitals, spaces or hyphens — any of them work.
+              {say.say("auth.join.codeHint")}
             </span>
           </div>
         )
       ) : (
         <>
           <label className="flex flex-col gap-1">
-            <span className="text-sm">Email</span>
+            <span className="text-sm">{say.say("auth.join.email")}</span>
             <input
               type="email"
               className={INPUT_CLASS}
@@ -237,7 +240,7 @@ export function JoinForm({
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-sm">Operator token</span>
+            <span className="text-sm">{say.say("auth.join.operatorToken")}</span>
             <input
               type="password"
               className={INPUT_CLASS}
@@ -268,11 +271,11 @@ export function JoinForm({
             className={`${BUTTON_BASE} ${BUTTON_STRONG} w-full py-2`}
             data-testid="join-submit"
           >
-            {busy ? "Checking…" : "Enter"}
+            {busy ? say.say("auth.join.checking") : say.say("auth.join.enter")}
           </button>
           {pending !== null ? (
             <Link href="/api/auth/signout" className="text-xs text-muted underline underline-offset-4">
-              Not you? Use another account
+              {say.say("auth.join.notYou")}
             </Link>
           ) : null}
         </div>

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
 import { resolveCountry } from "@/lib/social/countries";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -50,6 +51,7 @@ export function ProfileForm({
   timeZones,
   child = false,
 }: ProfileFormProps) {
+  const say = useSpeaker();
   const [fields, setFields] = useState(initial);
   const { busy, saved, error, save, changed } = useSaveMe();
   const set = (patch: Partial<ProfileFields>) => {
@@ -130,17 +132,16 @@ export function ProfileForm({
         */}
         {child ? (
           <p className="text-sm text-muted" data-testid="child-profile-note">
-            You are under 13, so the site keeps no city, country or line about you: nothing here says where you are.
-            Your time zone only sets your own clock, and nobody else sees it.
+            {say.say("mine.profileChild")}
           </p>
         ) : (
         <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           <label className={`flex flex-1 flex-col gap-1 text-sm ${PROFILE_WIDTH.city}`}>
-            City <span className="sr-only">optional</span>
+            {say.say("mine.city")} <span className="sr-only">{say.say("mine.optional")}</span>
             <input value={fields.city} onChange={(e) => set({ city: e.target.value })} maxLength={60} className={INPUT_CLASS} data-testid="profile-city" />
           </label>
           <label className={`flex flex-1 flex-col gap-1 text-sm ${PROFILE_WIDTH.country}`}>
-            Country
+            {say.say("mine.country")}
             {/*
               A list rather than a box, now that there is a list to offer. It was
               free text because the flag was read from whatever people wrote, and
@@ -159,7 +160,7 @@ export function ProfileForm({
               className={INPUT_CLASS}
               data-testid="profile-country"
             >
-              <option value="">Prefer not to say</option>
+              <option value="">{say.say("mine.noCountry")}</option>
               {unlisted === null ? null : <option value={unlisted}>{unlisted}</option>}
               {countries.map((country) => (
                 <option key={country.code} value={country.code}>
@@ -186,7 +187,7 @@ export function ProfileForm({
             text being shrunk to fit a cap.
           */}
           <label htmlFor="profile-zone" className="text-sm">
-            Time zone
+            {say.say("mine.zone")}
           </label>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <input
@@ -199,7 +200,7 @@ export function ProfileForm({
               data-testid="profile-zone"
             />
             <button type="button" onClick={guessZone} className="shrink-0 text-xs text-muted underline underline-offset-4">
-              use this device&apos;s
+              {say.say("mine.useDevice")}
             </button>
             <datalist id="time-zones">
               {timeZones.map((zone) => (
@@ -211,7 +212,7 @@ export function ProfileForm({
         {/* The one field that is a paragraph, and the only one that keeps the width. */}
         {child ? null : (
           <label className="flex flex-col gap-1 text-sm">
-            About you
+            {say.say("mine.about")}
             <textarea value={fields.bio} onChange={(e) => set({ bio: e.target.value })} maxLength={500} rows={3} className={INPUT_CLASS} />
           </label>
         )}
@@ -222,14 +223,13 @@ export function ProfileForm({
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
           <button type="submit" disabled={busy} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4`}>
-            Save profile
+            {say.say("mine.saveProfile")}
           </button>
-          {saved ? <span className="text-xs text-moss">Saved.</span> : null}
+          {saved ? <span className="text-xs text-moss">{say.say("mine.saved")}</span> : null}
           {error !== null ? <span className="text-xs text-shu">{error}</span> : null}
         </div>
         <p className="text-xs text-muted">
-          Your country shows as a flag beside your name wherever the site lists players; your city and the time
-          where you are show on your own page. Everything is optional, and your address is never shown.
+          {say.say("mine.profileNote")}
         </p>
       </div>
     </form>

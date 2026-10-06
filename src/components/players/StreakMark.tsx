@@ -1,5 +1,5 @@
-import { speaker, type Speaker } from "@/lib/i18n/i18n";
-import { streakLabel, streakText, type Streak } from "@/lib/rating/streak";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { STREAK_DISPLAY, streakLabel, streakText, type Streak } from "@/lib/rating/streak";
 
 import { blankOf, streakCounts } from "./recordScopeWords";
 import type { RecordOf } from "./recordTable.types";
@@ -28,11 +28,11 @@ export function StreakMark({
   of = {},
   played,
   blankBecause,
-  say = speaker("en"),
+  say,
 }: {
   streak: Streak | null;
   /** The reader's language for the hover note; the surrounding table words are still English. */
-  say?: Speaker;
+  say: Speaker;
   of?: RecordOf;
   /** How many games the row counted, which tells "none yet" from "not known". */
   played?: number;
@@ -58,14 +58,15 @@ export function StreakMark({
   const title =
     reason === "" && blankBecause !== undefined
       ? blankBecause
-      : `${reason || blankOf(played)} ${streakCounts(of)}`.trim();
+      : `${reason || blankOf(played, say)} ${streakCounts(of, say)}`.trim();
   return (
     <span
       title={title}
       data-testid="record-streak"
       data-streak={streak === null ? "" : streak.kind}
     >
-      {streakText(streak)}
+      {/* "W3" for a reader of English; "3連勝" for a reader of Japanese, whose word for a run carries the count first. */}
+      {say.pairsWithKanji || streak === null || streak.count <= 0 ? streakText(streak) : `${streak.count}${STREAK_DISPLAY[streak.kind].kanji}`}
     </span>
   );
 }

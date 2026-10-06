@@ -4,7 +4,8 @@ import useSWR from "swr";
 
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MY_GAMES_COPY } from "./mine.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { myGamesCopy } from "./mine.copy";
 import { MINE_KEY } from "./mine.constants";
 
 const fetcher = async (url: string): Promise<{ yourMove: number; offered?: number } | null> => {
@@ -101,6 +102,7 @@ const fetcher = async (url: string): Promise<{ yourMove: number; offered?: numbe
  * for on a bill nobody wants.
  */
 export function YourTurnBadge() {
+  const say = useSpeaker();
   const { data } = useSWR(MINE_KEY, fetcher, {
     refreshInterval: 0,
     // The page's own render hands the count over (`HeaderCountsSeed`): nothing is asked as the page arrives.
@@ -142,8 +144,8 @@ export function YourTurnBadge() {
       {count === 0 ? null : (
         <span
           className="inline-flex min-w-5 items-center justify-center rounded-full bg-moss px-1.5 text-[0.65rem] font-semibold text-paper"
-          title={MY_GAMES_COPY.waitingOn(moves, offers)}
-          aria-label={MY_GAMES_COPY.waitingOn(moves, offers)}
+          title={myGamesCopy(say).waitingOn(moves, offers)}
+          aria-label={myGamesCopy(say).waitingOn(moves, offers)}
           data-testid="your-turn-badge"
         >
           {count}

@@ -8,7 +8,9 @@ import { loadSnapshot, type GameSnapshot } from "@/components/game/gameStorage";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { playPath } from "@/lib/gomoku/slugs";
-import { MY_GAMES_COPY } from "./mine.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { weave } from "@/lib/i18n/weave";
+import { myGamesCopy } from "./mine.copy";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { boardWords } from "@/lib/gomoku/boardWords";
@@ -20,6 +22,8 @@ import { boardWords } from "@/lib/gomoku/boardWords";
  * LocalGameCardClient), so the read happens once, in the initialiser.
  */
 export function LocalGameCard() {
+  const say = useSpeaker();
+  const MY_GAMES_COPY = myGamesCopy(say);
   const [snapshot] = useState<GameSnapshot | null>(() => loadSnapshot());
   if (snapshot === null || snapshot.moves.length === 0) return null;
 
@@ -32,8 +36,11 @@ export function LocalGameCard() {
           <Paired en={MY_GAMES_COPY.localGame.label} kanji={MY_GAMES_COPY.localGame.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         </span>
         <span className="text-sm font-medium">
-          <GameName variant={snapshot.settings.variant} /> · {boardWords(snapshot.settings.variant, snapshot.settings.size)} ·{" "}
-          {snapshot.moves.length} moves · {STONE_DISPLAY[toPlay].label} to play
+          {weave(say.say("mine.cardLocal", {
+            board: boardWords(snapshot.settings.variant, snapshot.settings.size, say),
+            moves: say.count("count.move", snapshot.moves.length),
+            who: say.pairName(STONE_DISPLAY[toPlay].label, STONE_DISPLAY[toPlay].kanji).text,
+          }), { game: <GameName variant={snapshot.settings.variant} /> })}
         </span>
       </div>
       {/*

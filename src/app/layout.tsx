@@ -23,7 +23,8 @@ import "@/lib/history/headerCounts";
 import "@/components/layout/SiteHeader";
 import { TestModeBanner } from "@/components/layout/TestModeBanner";
 import { OfflineKeeper } from "@/components/offline/OfflineKeeper";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { currentLocale, currentSpeaker } from "@/lib/i18n/currentLocale";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { jaText } from "@/lib/i18n/jaText";
 import { LOCALES } from "@/lib/i18n/i18n.constants";
 
@@ -57,30 +58,32 @@ const mincho = Zen_Old_Mincho({
   preload: false,
 });
 
-export const metadata: Metadata = {
-  title: { default: "Itsutsu 五つ", template: "%s · Itsutsu" },
-  description:
-    "Itsutsu: gomoku, renju, connect6 and the family of line-and-grid games. Two players, one browser — or two devices, a code apart.",
-  applicationName: "Itsutsu",
-  /*
-   * Opened from an iPhone's home screen. iOS reads these rather than the
-   * manifest for the name under the icon, the status bar and the launch
-   * screen. The status bar is "default" — dark text on the page's paper, and
-   * the page starts below it — rather than translucent, which would put the
-   * header under the clock and needs every page's top padded for the notch.
-   * The launch images are the paper in both themes, one per screen size.
-   */
-  appleWebApp: {
-    capable: true,
-    title: "Itsutsu",
-    statusBarStyle: "default",
-    startupImage: appleStartupImages(),
-  },
-  // A board full of coordinates is not a list of telephone numbers.
-  formatDetection: { telephone: false },
-  // Older iOS reads only the Apple spelling of "open without the browser".
-  other: { "apple-mobile-web-app-capable": "yes" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const say = await currentSpeaker();
+  return {
+    title: { default: "Itsutsu 五つ", template: "%s · Itsutsu" },
+    description: say.say("chrome.siteDescription", { site: SITE_NAME }),
+    applicationName: "Itsutsu",
+    /*
+     * Opened from an iPhone's home screen. iOS reads these rather than the
+     * manifest for the name under the icon, the status bar and the launch
+     * screen. The status bar is "default" — dark text on the page's paper, and
+     * the page starts below it — rather than translucent, which would put the
+     * header under the clock and needs every page's top padded for the notch.
+     * The launch images are the paper in both themes, one per screen size.
+     */
+    appleWebApp: {
+      capable: true,
+      title: "Itsutsu",
+      statusBarStyle: "default",
+      startupImage: appleStartupImages(),
+    },
+    // A board full of coordinates is not a list of telephone numbers.
+    formatDetection: { telephone: false },
+    // Older iOS reads only the Apple spelling of "open without the browser".
+    other: { "apple-mobile-web-app-capable": "yes" },
+  };
+}
 
 /**
  * The browser's own chrome — Android's status bar, Safari's toolbar tint —

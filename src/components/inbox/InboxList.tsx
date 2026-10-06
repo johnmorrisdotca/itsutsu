@@ -5,13 +5,16 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { LocalTime } from "@/components/ui/LocalTime";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+import { weave } from "@/lib/i18n/weave";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { INBOX_KINDS } from "@/lib/inbox/inbox.constants";
 import { messagesPath } from "@/lib/messages/messages.constants";
 import { tablePath } from "@/lib/party/online/onlinePaths";
 import type { InboxItemShown } from "@/lib/inbox/inbox";
 
-import { INBOX_COPY } from "./inbox.constants";
 
 /**
  * WHAT HAPPENED WHILE YOU WERE AWAY, newest first — one line each, the game's
@@ -20,11 +23,12 @@ import { INBOX_COPY } from "./inbox.constants";
  * An empty inbox shows its shape and says what will arrive here, rather than
  * hiding: an empty table is data.
  */
-export function InboxList({ items }: { items: readonly InboxItemShown[] }) {
+export async function InboxList({ items }: { items: readonly InboxItemShown[] }) {
+  const say = await currentSpeaker();
   if (items.length === 0) {
     return (
       <p className={`${PANEL_CLASS} text-sm text-muted`} data-testid="inbox-empty">
-        {INBOX_COPY.empty}
+        {say.say("inbox.empty")}
       </p>
     );
   }
@@ -40,18 +44,16 @@ export function InboxList({ items }: { items: readonly InboxItemShown[] }) {
         >
           {item.variant !== null ? <GameThumb variant={item.variant} size="small" /> : null}
           <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-sm">
-            <p>
-              <Said item={item} />
-            </p>
+            <p>{said(item, say)}</p>
             <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
               <LocalTime at={item.createdAt} />
               {item.kind === INBOX_KINDS.message && item.fromMemberId !== null ? (
                 <Link href={messagesPath(item.fromMemberId)} className="underline underline-offset-4" data-testid="inbox-open">
-                  {INBOX_COPY.reply}
+                  {say.say("inbox.reply")}
                 </Link>
               ) : item.gameId !== null && item.variant !== null ? (
                 <Link href={atTable(item.kind) ? tablePath(item.variant, item.gameId) : matchPath(item.variant, item.gameId)} className="underline underline-offset-4" data-testid="inbox-open">
-                  {item.kind === INBOX_KINDS.offer || item.kind === INBOX_KINDS.raceOffer ? INBOX_COPY.answer : INBOX_COPY.open}
+                  {item.kind === INBOX_KINDS.offer || item.kind === INBOX_KINDS.raceOffer ? say.say("inbox.answer") : say.say("inbox.open")}
                 </Link>
               ) : null}
             </p>
@@ -62,74 +64,47 @@ export function InboxList({ items }: { items: readonly InboxItemShown[] }) {
   );
 }
 
-/** One item in words: who, what, and which game. */
-function Said({ item }: { item: InboxItemShown }) {
-  const who = <PlayerName name={item.fromName} memberId={item.fromMemberId} fallback={INBOX_COPY.somebody} />;
-  const game = item.variant !== null ? <GameName variant={item.variant} /> : INBOX_COPY.aGame;
+/**
+ * How an offer's `detail` was written before it was a phrase: "a match of 3 games", stored as English by the route
+ * that makes a match. Read back as its number, so that the reader's own language says it.
+ */
+const LEGACY_MATCH = /^a match of (\d+) games$/;
+
+/** The phrase for what a finished game or table came to for the reader. */
+const GAME_OVER: Readonly<Record<string, PhraseKey>> = { won: "inbox.gameWon", lost: "inbox.gameLost", drawn: "inbox.gameDrawn" };
+const TABLE_OVER: Readonly<Record<string, PhraseKey>> = { won: "inbox.tableWon", shared: "inbox.tableShared", lost: "inbox.tableLost" };
+
+/** One item in words: who, what, and which game, as one sentence of the reader's language. */
+function said(item: InboxItemShown, say: Speaker) {
+  const who = <PlayerName name={item.fromName} memberId={item.fromMemberId} fallback={say.say("inbox.somebody")} />;
+  const game = item.variant !== null ? <GameName variant={item.variant} /> : say.say("inbox.aGame");
+  const parts = { who, game, text: item.detail };
   switch (item.kind) {
     case INBOX_KINDS.gameOver:
-      return (
-        <>
-          {INBOX_COPY.gameOver.lead} {game} {INBOX_COPY.gameOver.against} {who} {INBOX_COPY.gameOver.is} {INBOX_COPY.gameOver.result(item.detail)}
-        </>
-      );
-    case INBOX_KINDS.offer:
-      return (
-        <>
-          {who} {INBOX_COPY.offer.asked} {game}
-          {item.detail !== "" ? ` — ${item.detail}` : ""}.
-        </>
-      );
+      return weave(say.say(GAME_OVER[item.detail] ?? "inbox.gameDrawn"), parts);
+    case INBOX_KINDS.offer: {
+      const match = LEGACY_MATCH.exec(item.detail);
+      if (match !== null) return weave(say.say("inbox.offerMatch", { count: say.number(Number(match[1])) }), parts);
+      return weave(say.say(item.detail !== "" ? "inbox.offerDetail" : "inbox.offerAsked", { detail: item.detail }), parts);
+    }
     case INBOX_KINDS.offerDeclined:
-      return (
-        <>
-          {who} {INBOX_COPY.declined} {game}.
-        </>
-      );
+      return weave(say.say("inbox.declined"), parts);
     case INBOX_KINDS.offerWithdrawn:
-      return (
-        <>
-          {who} {INBOX_COPY.withdrawn} {game}.
-        </>
-      );
+      return weave(say.say("inbox.withdrawn"), parts);
     case INBOX_KINDS.seatTaken:
-      return (
-        <>
-          {who} {INBOX_COPY.seatTaken} {game}. {INBOX_COPY.begun}
-        </>
-      );
+      return weave(say.say("inbox.seatTaken"), parts);
     case INBOX_KINDS.tableInvite:
-      return (
-        <>
-          {who} {INBOX_COPY.tableInvite} {game}.
-        </>
-      );
+      return weave(say.say("inbox.tableInvite"), parts);
     case INBOX_KINDS.raceOffer:
-      return (
-        <>
-          {who} {INBOX_COPY.raceOffer} {game}.
-        </>
-      );
+      return weave(say.say("inbox.raceOffer"), parts);
     case INBOX_KINDS.tableOver:
-      return (
-        <>
-          {INBOX_COPY.tableOver.lead} {game} {INBOX_COPY.tableOver.is} {INBOX_COPY.tableOver.result(item.detail)}
-        </>
-      );
+      return weave(say.say(TABLE_OVER[item.detail] ?? "inbox.tableEnded"), parts);
     case INBOX_KINDS.message:
-      return (
-        <>
-          {who} {INBOX_COPY.message}: “{item.detail}”
-        </>
-      );
+      return weave(say.say("inbox.message"), parts);
     case INBOX_KINDS.note:
-      return (
-        <>
-          {who} {INBOX_COPY.note} {game}: “{item.detail}”
-        </>
-      );
+      return weave(say.say("inbox.note"), parts);
     default:
-      return <>{item.detail}</>;
+      return item.detail;
   }
 }
 

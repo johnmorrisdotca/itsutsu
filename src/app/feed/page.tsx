@@ -10,11 +10,14 @@ import { currentMemberRow } from "@/lib/auth/currentSession";
 import { DAY_MS, FEED_PATH, FEED_TABS } from "@/lib/feed/feed.constants";
 import { feedDays } from "@/lib/feed/feed";
 import { readEveryoneFeed, readMineFeed } from "@/lib/feed/feedRead";
+import { titleWithKanji } from "@/components/games/pageTitles";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { openTabOf, type Tab } from "@/lib/ui/tabs";
 import { xpDayKey } from "@/lib/xp/xpDay";
 
-export const metadata = { title: "Feed 近況" };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "feed.title", "近況") };
+}
 
 /* The reader's own stream, read once on each visit: never cached, never polled. */
 export const dynamic = "force-dynamic";

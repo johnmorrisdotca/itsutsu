@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { speaker } from "@/lib/i18n/i18n";
+
 import { BETA_TESTERS, INVITED_COMMUNITIES, communitiesSaid } from "./testers";
 
 describe("the list of beta testers", () => {
@@ -14,7 +16,7 @@ describe("the list of beta testers", () => {
   });
 
   it("says the invited communities as one sentence, every one of them", () => {
-    const said = communitiesSaid();
+    const said = communitiesSaid(speaker("en"));
     for (const community of INVITED_COMMUNITIES) expect(said).toContain(community);
     expect(said).toMatch(/ and [^,]+$/);
   });

@@ -7,6 +7,7 @@ import { AGE_BAND_LIST, AGE_BAND_PROBLEMS, CONSENT_LIMITS } from "@/lib/social/a
 
 import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { fetchProfile, renameMember, updateProfile, type ProfileUpdate } from "@/lib/auth/members";
 import { AWAY_DAYS_A_YEAR, setAway } from "@/lib/social/vacation";
 import { PLAYER_SESSION_DAYS, SESSION_COOKIE, sessionCookieOptions, signSession } from "@/lib/auth/session";
@@ -117,6 +118,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
     }
 
+    const say = await currentSpeaker();
     const body = await readJson(request);
     if (body === undefined) return badRequest("Expected a JSON body.");
     const parsed = nameSchema.safeParse(body);
@@ -127,11 +129,11 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "There is no account behind this session." }, { status: 404, headers: NO_STORE });
     }
     const { name, awayFrom, awayUntil, preferences, timeZoneFrom, ageBand, consent, ...rest } = parsed.data;
-    if (consent !== undefined && ageBand === undefined) return badRequest(AGE_BAND_PROBLEMS.consentAlone);
+    if (consent !== undefined && ageBand === undefined) return badRequest(say.say(AGE_BAND_PROBLEMS.consentAlone));
     if (ageBand !== undefined) {
       const decision = await ageBandGate(mine, ageBand, consent ?? null);
       if (!decision.ok) {
-        return NextResponse.json({ error: decision.problem, needsParent: decision.needsParent }, { status: 422, headers: NO_STORE });
+        return NextResponse.json({ error: say.say(decision.problem), needsParent: decision.needsParent }, { status: 422, headers: NO_STORE });
       }
       await recordAgeBand(mine, ageBand, decision.consent);
     }
@@ -158,7 +160,7 @@ export async function PATCH(request: Request) {
      */
     const bandNow = ageBand ?? (await ageBandOf(mine)).band;
     if (isChild(bandNow) && asksWithheld(profile)) {
-      return NextResponse.json({ error: CHILD_PROFILE_REFUSAL, reason: "child-withheld" }, { status: 422, headers: NO_STORE });
+      return NextResponse.json({ error: say.say(CHILD_PROFILE_REFUSAL), reason: "child-withheld" }, { status: 422, headers: NO_STORE });
     }
     /*
      * The zone, and where it came from, both decided before anything is written:

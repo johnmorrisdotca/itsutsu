@@ -7,7 +7,8 @@ import type { MyGame, MyGameGroup, ShownGroup } from "@/lib/history/myGames";
 import { viewHref, viewOfGroup } from "@/lib/history/myGamesViews";
 import type { NameTag } from "@/lib/xp/nameTagsOf";
 import { playerPath } from "@/lib/rating/playerKey";
-import { MY_GAMES_COPY } from "./mine.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { myGamesCopy } from "./mine.copy";
 import { GroupHeading } from "./GroupHeading";
 import { Row } from "./MyGameRow";
 
@@ -20,7 +21,7 @@ import { Row } from "./MyGameRow";
  * is too subtle. we should probably see a larger (3) somewhere… either a badge
  * or larger number." So it is the largest thing in the heading.
  */
-export function Group({
+export async function Group({
   group,
   bucket,
   memberId,
@@ -67,6 +68,7 @@ export function Group({
   /** Where the first page is, past it, for the list that pages with arrows. */
   newest?: string | null;
 }) {
+  const MY_GAMES_COPY = myGamesCopy(await currentSpeaker());
   const copy = MY_GAMES_COPY.groups[group];
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid={`my-games-${group}`}>

@@ -8,28 +8,8 @@ import { YourTurnBadge } from "@/components/mine/YourTurnBadge";
 import { BUTTON_BASE, BUTTON_STRONG, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 
-/**
- * What each section is called, for a reader who is not reading English.
- *
- * Keyed by address rather than written into `NAV` itself. That was originally
- * to keep out of the way of the change that stripped the kanji from this bar,
- * and it earned its keep — that change rewrote every row of `NAV` and deleted
- * the branch that drew the kanji, and merged against this table without
- * touching it.
- *
- * It is worth keeping for the reason rather than the history: an address with
- * no phrase here keeps its English label, so adding a section can never break
- * the bar. It only leaves that one word untranslated until somebody writes it.
- */
 /** The one screen a game is set up on — see the button after the tabs. */
 const NEW_GAME_HREF = "/games/new";
-
-const NAV_PHRASE: Readonly<Record<string, PhraseKey>> = {
-  "/play": "nav.play",
-  "/games": "nav.games",
-  "/players": "nav.players",
-  "/about": "nav.about",
-};
 
 /*
  * The site's own sections, for everybody who is in. The features board is
@@ -64,8 +44,8 @@ export const NAV = [
    * My Games, Start a Game and the list of games. The tab said Play and the page
    * said My games, and Play was also the word on every button that starts one.
    */
-  { href: "/play", label: "My games" },
-  { href: "/games", label: "Games" },
+  { href: "/play", phrase: "nav.play" },
+  { href: "/games", phrase: "nav.games" },
   /*
    * RULES AND LEARN ARE GONE FROM HERE, AND NEITHER IS GONE FROM THE SITE.
    *
@@ -89,7 +69,7 @@ export const NAV = [
    * disappears, so "it is still reachable" is a test rather than the opinion
    * of whoever did the removing.
    */
-  { href: "/players", label: "Players" },
+  { href: "/players", phrase: "nav.players" },
   /*
    * XP, BESIDE PLAYERS BECAUSE IT IS THE OTHER LADDER.
    *
@@ -104,9 +84,9 @@ export const NAV = [
    * uses for it — 経験値 is paired with the heading on the page itself, where
    * there is room for two scripts and the bar has room for one.
    */
-  { href: "/xp", label: "XP" },
-  { href: "/about", label: "About" },
-] as const;
+  { href: "/xp", phrase: "nav.xp" },
+  { href: "/about", phrase: "nav.about" },
+] as const satisfies readonly { href: string; phrase: PhraseKey }[];
 
 /**
  * WHICH ROW THE READER IS IN, WHERE ONE ADDRESS SITS UNDER ANOTHER.
@@ -183,7 +163,7 @@ export function NavLinks() {
                 decision, not a reversal of it — what he took out of the bar was
                 two scripts at once, and there is still only ever one here.
               */}
-              {NAV_PHRASE[item.href] === undefined ? item.label : say.say(NAV_PHRASE[item.href])}
+              {say.say(item.phrase)}
               {/* The count of games waiting on you belongs beside the page that
                   holds them, not beside the one that starts new ones. */}
               {item.href === "/play" ? <YourTurnBadge /> : null}

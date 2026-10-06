@@ -132,17 +132,12 @@ const NOT_A_LIST: Record<string, { line: string; why: string }[]> = {
   ],
   "src/components/about/GradeLadderGraph.tsx": [
     {
-      line: "{RULE_VARIANT_DISPLAY[game.variant].label}",
-      why: "the heading over a chart's rows, inside an SVG, where a picture cannot be drawn",
+      line: "}), { game: <GameName variant={lowest.variant} /> })}",
+      why: "a sentence in the chart's caption, naming the closest step, in either way the data can come out",
     },
-    {
-      line: "<GameName variant={lowest.variant} /> ({Math.round(lowest.share * 100)}%).",
-      why: "a sentence in the chart's caption, naming the closest step",
-    },
-    {
-      line: "<GameName variant={lowest.variant} />, at {Math.round(lowest.share * 100)}%.",
-      why: "the same sentence, the other way the data can come out",
-    },
+  ],
+  "src/components/inbox/InboxList.tsx": [
+    { line: "const game = item.variant !== null ? <GameName variant={item.variant} /> : say.say(\"inbox.aGame\");", why: "a sentence saying what happened in a game, the name woven into it" },
   ],
   "src/components/game/GameBrowser.tsx": [
     {

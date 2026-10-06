@@ -106,8 +106,9 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
         <p className="text-sm text-muted">{say.say("xp.promotions.intro")}</p>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <WhoFilter who={who} hrefFor={(next) => xpWhoHref(AT, query, next)} label={say.say("xp.promotions.whoLabel")} />
+          <WhoFilter say={say} who={who} hrefFor={(next) => xpWhoHref(AT, query, next)} label={say.say("xp.promotions.whoLabel")} />
           <RecordScopeBar
+            say={say}
             base={AT}
             scope={scope}
             hrefFor={(next) => xpScopeHref(AT, query, next)}

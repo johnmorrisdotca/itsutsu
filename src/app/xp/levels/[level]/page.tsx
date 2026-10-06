@@ -26,7 +26,7 @@ import { countText } from "@/lib/rating/figures";
 import { ladderRung, levelXpRange } from "@/lib/xp/levelLadder";
 import { LEVEL_ROLL, membersAtLevel, type LevelRoll } from "@/lib/xp/levelMembers";
 import { LISTED_ALREADY, ipTotalsOf } from "@/lib/points/ipBoards";
-import { IP_HEAD_TITLE, IpCell } from "@/components/players/recordTrailing";
+import { ipHeadTitle, IpCell } from "@/components/players/recordTrailing";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
 import { nameTagsOf, type NameTag } from "@/lib/xp/nameTagsOf";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
@@ -197,8 +197,9 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
       <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
         <SectionHeading title={say.say("xp.level.players")} kanji="在籍" />
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <WhoFilter who={who} hrefFor={(next) => xpWhoHref(levelPath(level), query, next)} label={say.say("xp.level.whoLabel")} />
+          <WhoFilter say={say} who={who} hrefFor={(next) => xpWhoHref(levelPath(level), query, next)} label={say.say("xp.level.whoLabel")} />
           <RecordScopeBar
+            say={say}
             base={levelPath(level)}
             scope={scope}
             hrefFor={(next) => xpScopeHref(levelPath(level), query, next)}
@@ -291,7 +292,7 @@ function WhoIsHere({
               <th className={HEAD} scope="col">
                 {say.say("xp.unit")}
               </th>
-              <th className={HEAD} scope="col" title={IP_HEAD_TITLE}>
+              <th className={HEAD} scope="col" title={ipHeadTitle(say)}>
                 IP
               </th>
             </tr>
@@ -327,7 +328,7 @@ function WhoIsHere({
                     {notes.get(member.id) ?? null}
                   </td>
                   <td className={CELL}>{countText(member.xp, say.locale)}</td>
-                  <IpCell ip={{ ip: ip.get(member.id) ?? 0, memberId: member.id, game: null }} />
+                  <IpCell say={say} ip={{ ip: ip.get(member.id) ?? 0, memberId: member.id, game: null }} />
                 </tr>
               ))
             )}

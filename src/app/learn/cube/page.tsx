@@ -6,9 +6,12 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { CubeMethodGuide } from "@/components/learn/CubeMethodGuide";
 import Link from "@/components/ui/Link";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { CUBE_GUIDE_COPY } from "@/lib/learn/cubeMethod";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { cubeGuideCopy } from "@/lib/learn/cubeMethod";
 
-export const metadata = { title: "Solve the cube" };
+export async function generateMetadata() {
+  return { title: (await currentSpeaker()).say("learn.cubePageTitle") };
+}
 
 /**
  * THE CUBE'S GUIDE: the beginner's method, told a stage at a time with a
@@ -17,7 +20,9 @@ export const metadata = { title: "Solve the cube" };
  * two players and read from `strategy.ts`. Open to a reader with no invite,
  * as all of Learn is (`OPEN_PATTERNS` in `src/proxy.ts`): it names no member.
  */
-export default function CubeGuidePage() {
+export default async function CubeGuidePage() {
+  const say = await currentSpeaker();
+  const CUBE_GUIDE_COPY = cubeGuideCopy(say);
   return (
     <Page>
       <SiteHeader />
@@ -28,7 +33,7 @@ export default function CubeGuidePage() {
         crumb={
           <>
             <Link href="/learn" className="underline-offset-2 hover:underline">
-              Learn
+              {say.say("learn.crumb")}
             </Link>{" "}
             / {CUBE_GUIDE_COPY.title}
           </>

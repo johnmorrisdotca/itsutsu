@@ -14,7 +14,11 @@ import {
   PARENT_RELATIONSHIP_LIST,
 } from "@/lib/social/ageBand.constants";
 
+import { speaker } from "@/lib/i18n/i18n";
 import { ADMIN_AGE_COPY } from "./admin.constants";
+
+/** The operator reads the Admin page in English, whatever language they chose for the site. */
+const OPERATOR = speaker("en");
 import type { MemberAgeControlProps } from "./admin.types";
 
 /**
@@ -61,7 +65,7 @@ export function MemberAgeControl({ member, busy, onSet }: MemberAgeControlProps)
         </option>
         {AGE_BAND_LIST.map((band) => (
           <option key={band} value={band}>
-            {AGE_BAND_DISPLAY[band].label}
+            {OPERATOR.say(AGE_BAND_DISPLAY[band].label)}
           </option>
         ))}
       </Select>
@@ -83,7 +87,7 @@ export function MemberAgeControl({ member, busy, onSet }: MemberAgeControlProps)
             <Select value={relationship} onChange={(event) => setRelationship(event.target.value)}>
               {PARENT_RELATIONSHIP_LIST.map((option) => (
                 <option key={option} value={option}>
-                  {PARENT_RELATIONSHIP_DISPLAY[option]}
+                  {OPERATOR.say(PARENT_RELATIONSHIP_DISPLAY[option])}
                 </option>
               ))}
             </Select>

@@ -221,11 +221,12 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
         title={<GameName variant={variant} kanji className="no-underline hover:underline" />}
         lead={
           <>
-            {copy.tagline}{" "}
+            {copy.tagline}
+            {say.sentences(["", ""])}
             <Link href={rulesPath(variant)} className="underline underline-offset-4">
               {say.say("gamepages.howToPlay")}
             </Link>
-            .
+            {say.sentence("")}
           </>
         }
       />

@@ -19,6 +19,7 @@ export const PHRASES_SITE = {
   "nav.admin": "Admin",
   "nav.privacy": "Privacy",
   "nav.terms": "Terms",
+  "nav.xp": "XP",
 
   "account.signIn": "Sign in",
   "account.signOut": "Sign out",

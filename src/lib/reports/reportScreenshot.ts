@@ -3,6 +3,9 @@ import { REPORT_IMAGE_LONGEST_SIDE, REPORT_IMAGE_MAX_BYTES, REPORT_IMAGE_TYPES }
 /** A screenshot ready to send: base64 for Sumilabu, its size, and an address the window can preview it from. */
 export type PreparedScreenshot = { base64: string; bytes: number; preview: string };
 
+/** Why a picture was refused, for the window to say in the reader's language (`reports.shotNotPicture`, `reports.shotTooLarge`). */
+export type ScreenshotProblem = "notPicture" | "tooLarge";
+
 /** Qualities a too-large picture is tried at, as a JPEG, largest first. */
 const QUALITIES = [0.85, 0.75, 0.6, 0.45];
 
@@ -17,11 +20,11 @@ const QUALITIES = [0.85, 0.75, 0.6, 0.45];
  * or is not a picture, is refused with a sentence the window shows; the report
  * can go without it.
  */
-export async function prepareScreenshot(file: Blob): Promise<PreparedScreenshot | { problem: string }> {
-  if (!file.type.startsWith("image/")) return { problem: "That is not a picture. A screenshot is a PNG, JPEG or WebP." };
+export async function prepareScreenshot(file: Blob): Promise<PreparedScreenshot | { problem: ScreenshotProblem }> {
+  if (!file.type.startsWith("image/")) return { problem: "notPicture" };
   let blob: Blob | null = (REPORT_IMAGE_TYPES as readonly string[]).includes(file.type) && file.size <= REPORT_IMAGE_MAX_BYTES ? file : null;
   if (blob === null) blob = await shrunk(file);
-  if (blob === null) return { problem: "That picture is too large to send. Try a smaller part of the screen." };
+  if (blob === null) return { problem: "tooLarge" };
   return { base64: await base64Of(blob), bytes: blob.size, preview: URL.createObjectURL(blob) };
 }
 

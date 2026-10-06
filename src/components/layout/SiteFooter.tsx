@@ -5,7 +5,7 @@ import { ReportProblem } from "@/components/reports/ReportProblem";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { languageOptions } from "@/lib/i18n/dictionaries";
 import { LANG_PARAM, type PhraseKey } from "@/lib/i18n/i18n.constants";
-import { STAGE, versionStamps } from "@/lib/version";
+import { versionStamps } from "@/lib/version";
 
 import { LanguagePicker } from "./LanguagePicker";
 
@@ -119,11 +119,11 @@ export async function SiteFooter() {
       <Link
         href="/releases"
         className="flex flex-wrap items-baseline gap-x-3 font-mono tabular-nums underline-offset-4 hover:underline"
-        title={`Version ${stamps.semver} — what has shipped`}
+        title={say.say("chrome.versionTitle", { version: stamps.semver })}
         data-testid="version-link"
         data-quiet-in-play
       >
-        <span className="font-sans font-semibold text-ink-soft">{STAGE}</span>
+        <span className="font-sans font-semibold text-ink-soft">{say.say("chrome.stage")}</span>
         <span data-testid="site-version">{stamps.semver}</span>
         <span className="opacity-70">{stamps.roman}</span>
         <span className="font-mincho opacity-70">{stamps.kanji}</span>

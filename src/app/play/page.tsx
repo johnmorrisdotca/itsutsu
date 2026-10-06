@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { MY_GAMES_VIEWS } from "@/lib/history/myGamesViews";
 import { openTabOf, TAB_FROM_PATH } from "@/lib/ui/tabs";
-import { INBOX_COPY } from "@/components/inbox/inbox.constants";
+import { INBOX_KANJI } from "@/components/inbox/inbox.constants";
+import { titleWithKanji } from "@/components/games/pageTitles";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { unreadInbox } from "@/lib/inbox/inbox";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import Link from "@/components/ui/Link";
@@ -26,7 +28,9 @@ import { myTables } from "@/lib/party/online/server/myTables";
 import { completedBefore } from "@/lib/history/completed";
 import { completedFilter } from "@/lib/history/completedFilter";
 
-export const metadata = { title: "My games 対局" };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "nav.play", "対局") };
+}
 
 // Every section of this reads the database on each visit; none of it is the
 // same twice.
@@ -64,6 +68,7 @@ export const dynamic = "force-dynamic";
  * right rather than forgiving — a bookmark to /my-games is a 404 now.
  */
 export default async function MyGamesPage({ searchParams }: PageProps<"/play">) {
+  const say = await currentSpeaker();
   const asked = await searchParams;
   // A tab is a path (`/play/completed`); one this page does not have is not found.
   if (openTabOf(MY_GAMES_VIEWS.map((key) => ({ key, label: key })), asked) === null) notFound();
@@ -82,7 +87,7 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
       <SiteHeader />
 
       <PageTitle
-        title="My games"
+        title={say.say("nav.play")}
         kanji="対局"
         /*
           John, 2026-09-24: the two links beside this heading were "probably
@@ -99,7 +104,7 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
               data-testid="play-inbox"
               data-unread={unread}
             >
-              {INBOX_COPY.unread(unread)} {INBOX_COPY.kanji} →
+              {say.say("inbox.unread", { count: say.number(unread) })}{say.pairsWithKanji ? ` ${INBOX_KANJI}` : ""} →
             </Link>
           ) : null
         }
@@ -121,10 +126,10 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
       */}
       {withMember !== null ? (
         <p className="flex flex-wrap items-center gap-2 text-xs" data-testid="play-narrowed">
-          <span className="text-muted">Games with</span>
+          <span className="text-muted">{say.say("pages.gamesWith")}</span>
           <span className="rounded-full border border-rule px-2.5 py-1 font-medium">{withMember.name}</span>
           <Link href="/play" className="text-muted underline underline-offset-4" data-testid="play-narrowed-off">
-            every game
+            {say.say("pages.everyGame")}
           </Link>
         </p>
       ) : null}

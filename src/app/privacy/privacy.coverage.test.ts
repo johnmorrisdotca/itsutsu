@@ -228,9 +228,10 @@ describe("removal is described as the control it is", () => {
     expect(keeping).toContain("under Your data");
     expect(keeping).not.toContain("by hand");
     // The control's heading is the words the page points at, and the control draws that heading.
-    expect(read("src/components/mine/mine.constants.ts")).toContain('heading: "Remove this account"');
+    expect(read("src/lib/i18n/phrases.mine.constants.ts")).toContain('"mine.removeHeading": "Remove this account"');
     expect(read("src/components/mine/RemoveAccount.tsx")).toContain("REMOVE_COPY.heading");
-    expect(read("src/components/mine/WhatWeHold.tsx")).toContain("Your data <span");
+    expect(read("src/lib/i18n/phrases.mine.constants.ts")).toContain('"mine.holdTitle": "Your data"');
+    expect(read("src/components/mine/WhatWeHold.tsx")).toContain('"mine.holdTitle"');
   });
 });
 

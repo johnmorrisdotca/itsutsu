@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 
 import { stampIsAPerson } from "@/lib/auth/inviteRequestStamp";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { RATE_LIMITS, checkRateLimit } from "@/lib/api/rateLimit";
 import { MAIL_REFUSAL_TEXT } from "@/lib/mail/mail.constants";
 import { readInviteRequest, sendInviteRequest } from "@/lib/mail/inviteRequest";
@@ -23,12 +24,14 @@ import type { AskForInviteState } from "@/components/auth/askForInvite.types";
  * asking, how often — and says what happened in words the page can show.
  */
 export async function askForInvite(_before: AskForInviteState, form: FormData): Promise<AskForInviteState> {
+  const say = await currentSpeaker();
+  const sent: AskForInviteState = { kind: "sent", message: say.say("auth.ask.sent") };
   /*
    * Only while the door is invite-only. Open, nobody needs to ask; closed,
    * the operator has shut it on purpose and a request would be a way round.
    */
   if ((await fetchSiteSettings()).registration !== "invite-only") {
-    return { kind: "problem", message: "Invitations are not being asked for at the moment." };
+    return { kind: "problem", message: say.say("auth.ask.closed") };
   }
 
   const asked = await headers();
@@ -36,7 +39,7 @@ export async function askForInvite(_before: AskForInviteState, form: FormData): 
 
   const limit = checkRateLimit(`invite-request:${from}`, RATE_LIMITS.inviteRequest);
   if (!limit.allowed) {
-    return { kind: "problem", message: "That is a lot of requests from one place. Please try again in an hour." };
+    return { kind: "problem", message: say.say("auth.ask.tooMany") };
   }
 
   /*
@@ -48,12 +51,12 @@ export async function askForInvite(_before: AskForInviteState, form: FormData): 
   const stamp = form.get("stamp");
   const reading = readInviteRequest(form);
   if (reading.kind === "bot" || !(await stampIsAPerson(typeof stamp === "string" ? stamp : undefined))) {
-    return SENT;
+    return sent;
   }
   if (reading.kind === "problem") return { kind: "problem", message: reading.problem };
 
   const outcome = await sendInviteRequest(reading.request, from);
-  if (outcome.sent) return SENT;
+  if (outcome.sent) return sent;
   /*
    * The refusals a visitor can act on get their own sentence; the rest — the
    * site not sending mail at all here, a provider that failed — are said as
@@ -61,8 +64,3 @@ export async function askForInvite(_before: AskForInviteState, form: FormData): 
    */
   return { kind: "problem", message: MAIL_REFUSAL_TEXT[outcome.refusal] };
 }
-
-const SENT: AskForInviteState = {
-  kind: "sent",
-  message: "Sent. You will hear back at the address you gave.",
-};

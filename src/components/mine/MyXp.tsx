@@ -1,4 +1,5 @@
 import Link from "@/components/ui/Link";
+import { weave } from "@/lib/i18n/weave";
 
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { DayZoneNote } from "./DayZoneNote";
@@ -118,7 +119,7 @@ function Standing({ xp, say }: { xp: number; say: Speaker }) {
     <div className="flex flex-col gap-1.5" data-testid="my-xp-standing">
       <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
         <span className="font-mono text-lg tabular-nums" data-testid="my-xp-total">
-          {say.number(xp)} XP
+          {say.number(xp)} {say.say("xp.unit")}
         </span>
         {/*
           The badge rather than a word: the number, the name, the kanji on hover
@@ -129,10 +130,11 @@ function Standing({ xp, say }: { xp: number; say: Speaker }) {
         <LevelName level={standing.level} className="text-sm font-semibold" testId="my-xp-level" />
         <span className="text-muted" data-testid="my-xp-next">
           {atTheTop ? (
-            "The top of the ladder."
+            say.say("xp.atTheTop")
           ) : (
-            <>
-              {say.number(standing.toNext)} to{" "}
+            weave(say.say("xp.toNext", { count: say.number(standing.toNext) }), {
+              name: (
+                <>
               {/*
                 The rung AHEAD, named and linked — a plain `Link` and not a
                 second `LevelName`, because "215 to Lv 13 · Game Boy" puts two
@@ -148,7 +150,9 @@ function Standing({ xp, say }: { xp: number; say: Speaker }) {
               >
                 {xpLevelName(next, say.locale)}
               </Link>
-            </>
+                </>
+              ),
+            })
           )}
         </span>
       </p>
@@ -169,11 +173,11 @@ function Standing({ xp, say }: { xp: number; say: Speaker }) {
           className="underline underline-offset-4"
           data-testid="my-xp-ladder-link"
         >
-          All 100 levels <span className="font-mincho">百級</span>
+          <Paired en={say.say("mine.xpAllLevels")} kanji="百級" kanjiClassName="" />
         </Link>
         {" · "}
         <Link href="/xp" className="underline underline-offset-4" data-testid="my-xp-leaderboard-link">
-          Where you stand <span className="font-mincho">順位</span>
+          <Paired en={say.say("mine.xpWhere")} kanji="順位" kanjiClassName="" />
         </Link>
       </p>
     </div>
@@ -194,14 +198,14 @@ function Standing({ xp, say }: { xp: number; say: Speaker }) {
  * saying what an award was for is the column a ledger exists for.
  */
 
-function Headings() {
+function Headings({ say }: { say: Speaker }) {
   return (
     <thead className={TABLE_HEAD_CLASS}>
       <tr>
-        <th scope="col" className={HEAD}>Earned</th>
-        <th scope="col" className={HEAD}>XP</th>
-        <th scope="col" className={HEAD}>For</th>
-        <th scope="col" className={`${HEAD} ${ABOUT_ON_A_DESK}`}>About</th>
+        <th scope="col" className={HEAD}>{say.say("mine.xpEarned")}</th>
+        <th scope="col" className={HEAD}>{say.say("xp.unit")}</th>
+        <th scope="col" className={HEAD}>{say.say("xp.history.for")}</th>
+        <th scope="col" className={`${HEAD} ${ABOUT_ON_A_DESK}`}>{say.say("xp.history.about")}</th>
       </tr>
     </thead>
   );
@@ -226,6 +230,7 @@ export async function MyXp({
   /** The page's own search parameters: the cursor, the sort, and the open tab. */
   params: Record<string, string | string[] | undefined>;
 }) {
+  const say = await currentSpeaker();
   // The signed-in member's row, as the session names it — by id, however they came in.
   const row = await currentMemberRow();
   if (row === null) {
@@ -238,21 +243,19 @@ export async function MyXp({
      */
     return (
       <p className="text-sm text-muted" data-testid="my-xp-no-member">
-        XP belongs to a member, and this session is signed in without a member row — so there is
-        nothing here to show rather than nothing earned.
+        {say.say("mine.xpNoMember")}
       </p>
     );
   }
 
-  const say = await currentSpeaker();
   const query = xpParamsFrom(params);
-  const page = await xpLedgerPage({ memberId: row.id, params: query });
+  const page = await xpLedgerPage({ memberId: row.id, params: query, locale: say.locale });
 
   return (
     <div className="flex flex-col gap-4" data-testid="my-xp">
       {/* The badge's total, decided in one place — see `xpForBadge`. */}
       <Standing xp={xpForBadge(row)} say={say} />
-      <DayZoneNote timeZone={row.timeZone} country={row.country} preferences={row.preferences} />
+      <DayZoneNote timeZone={row.timeZone} country={row.country} preferences={row.preferences} say={say} />
 
       {isRefusal(page) ? (
         /*
@@ -264,15 +267,14 @@ export async function MyXp({
         <p className="text-sm text-ink-soft" data-testid="my-xp-refused">
           {page.error}{" "}
           <Link href="/me/xp" className="underline underline-offset-4">
-            Start again
+            {say.say("mine.xpStartAgain")}
           </Link>
-          .
         </p>
       ) : (
         <>
           <div className={TABLE_SCROLL}>
             <table className={TABLE_CLASS} data-testid="my-xp-ledger">
-              <Headings />
+              <Headings say={say} />
               <tbody>
                 {page.items.length === 0 ? (
                   <tr className={ROW_CLASS}>
@@ -284,12 +286,13 @@ export async function MyXp({
                       somebody has not had — counted from `XP_VARIANTS_TO_PLAY`, never typed.
                     */}
                     <td colSpan={4} className="py-3 text-sm text-muted" data-testid="my-xp-empty">
-                      Nothing yet. XP comes from turning up and trying things — every game you
-                      finish, and every one of the {XP_VARIANTS_TO_PLAY} here you try for the first time, each of Gomoji&apos;s languages among them.{" "}
-                      <Link href="/games" className="underline underline-offset-4">
-                        Pick a game and start earning
-                      </Link>
-                      .
+                      {weave(say.say("mine.xpEmpty", { games: say.count("count.gameKind", XP_VARIANTS_TO_PLAY) }), {
+                        link: (
+                          <Link href="/games" className="underline underline-offset-4">
+                            {say.say("mine.xpEmptyLink")}
+                          </Link>
+                        ),
+                      })}
                     </td>
                   </tr>
                 ) : (
@@ -359,7 +362,7 @@ export async function MyXp({
                 className="underline underline-offset-4"
                 data-testid="my-xp-more"
               >
-                Earlier awards
+                {say.say("mine.xpEarlier")}
               </Link>
             </p>
           )}
@@ -372,9 +375,7 @@ export async function MyXp({
              * AGENTS.md is about. It should never appear.
              */
             <p className="text-xs text-muted" data-testid="my-xp-skipped">
-              {page.skipped.unknownType} award{page.skipped.unknownType === 1 ? "" : "s"} on this
-              page were earned under a rule this version of the site cannot explain, and are not
-              shown. Your total still counts them.
+              {say.count("xp.history.skipped", page.skipped.unknownType)}
             </p>
           ) : null}
         </>

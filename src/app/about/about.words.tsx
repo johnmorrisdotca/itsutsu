@@ -1,9 +1,11 @@
 import { FigureTable } from "@/components/about/FigureTable";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 
 import { ABOUT_CHAPTERS } from "./about.chapters";
 import type { AboutSection } from "./about.constants";
-import { Game, Inside } from "./about.links";
+import { Game, Inside, rich } from "./about.links";
+import { GLOSSARY_READINGS } from "./about.names.constants";
 
 /**
  * THE JAPANESE WORDS ON THIS SITE, READ ALOUD.
@@ -15,64 +17,41 @@ import { Game, Inside } from "./about.links";
  * use, with long vowels marked.
  */
 
-/** The go boards on offer, read from the catalogue: "9×9, 13×13 and 19×19". */
-const GO_BOARDS = boardSizesFor("go")
-  .map((size) => `${size}×${size}`)
-  .join(", ")
-  .replace(/, ([^,]+)$/, " and $1");
-
 const M = ({ children }: { children: string }) => <span className="font-mincho text-base">{children}</span>;
 
-const GLOSSARY = (
+const glossary = (say: Speaker) => (
   <FigureTable
-    head={["Word", "Reading", "Meaning", "Where you meet it"]}
+    head={[say.say("about.words.head.word"), say.say("about.words.head.reading"), say.say("about.words.head.meaning"), say.say("about.words.head.where")]}
     rows={[
-      [<M key="1">五つ</M>, "itsutsu", "five (things)", "the name of the site: five stones in a row"],
-      [<M key="2">五目並べ</M>, "gomoku narabe", "five pieces lined up", <Game key="g2" variant="freestyle">Gomoku</Game>],
-      [<M key="3">連珠</M>, "renju", "a string of pearls", <Game key="g3" variant="renju">Renju</Game>],
-      [<M key="4">囲碁</M>, "igo", "the surrounding game", <Game key="g4" variant="go">Go</Game>],
-      [<M key="5">碁盤 · 碁石</M>, "goban · goishi", "a go board · go stones", "the board and stones every game is drawn with"],
-      [<M key="6">星 · 天元</M>, "hoshi · tengen", "star points · the centre point", "the dots on the board, and the one obstacle layout that spares the centre"],
-      [<M key="7">先手 · 後手</M>, "sente · gote", "moving first · moving second", "who opens, and why komi and swaps exist"],
-      [<M key="8">定石</M>, "jōseki", "a settled sequence", "the famous openings"],
-      [<M key="9">劫</M>, "kō", "an eternity; the ko rule", "Go’s rule against retaking at once"],
-      [<M key="10">対局</M>, "taikyoku", "a game between two players", <Inside key="p10" href="/play">My games</Inside>],
-      [<M key="11">棋譜</M>, "kifu", "a written game record", <Inside key="p11" href="/history">the record</Inside>],
-      [<M key="12">名局</M>, "meikyoku", "a celebrated game", <Inside key="p12" href="/famous">famous games</Inside>],
-      [<M key="13">番付</M>, "banzuke", "a ranking list, from sumo", "the ladder"],
-      [<M key="14">級 · 段 · 名人</M>, "kyū · dan · meijin", "student grade · master grade · master", "the bots, gentlest to strongest"],
-      [<M key="15">間</M>, "ma", "the space between things", "how these pages are laid out"],
+      [<M key="1">五つ</M>, GLOSSARY_READINGS[0], say.say("about.words.itsutsuMeaning"), say.say("about.words.itsutsuWhere")],
+      [<M key="2">五目並べ</M>, GLOSSARY_READINGS[1], say.say("about.words.gomoku"), <Game key="g2" variant="freestyle">{say.say("about.words.gomokuGame")}</Game>],
+      [<M key="3">連珠</M>, GLOSSARY_READINGS[2], say.say("about.words.renju"), <Game key="g3" variant="renju">{say.say("about.words.renjuGame")}</Game>],
+      [<M key="4">囲碁</M>, GLOSSARY_READINGS[3], say.say("about.words.igo"), <Game key="g4" variant="go">{say.say("about.words.igoGame")}</Game>],
+      [<M key="5">碁盤 · 碁石</M>, GLOSSARY_READINGS[4], say.say("about.words.goban"), say.say("about.words.gobanWhere")],
+      [<M key="6">星 · 天元</M>, GLOSSARY_READINGS[5], say.say("about.words.hoshi"), say.say("about.words.hoshiWhere")],
+      [<M key="7">先手 · 後手</M>, GLOSSARY_READINGS[6], say.say("about.words.sente"), say.say("about.words.senteWhere")],
+      [<M key="8">定石</M>, GLOSSARY_READINGS[7], say.say("about.words.joseki"), say.say("about.words.josekiWhere")],
+      [<M key="9">劫</M>, GLOSSARY_READINGS[8], say.say("about.words.ko"), say.say("about.words.koWhere")],
+      [<M key="10">対局</M>, GLOSSARY_READINGS[9], say.say("about.words.taikyoku"), <Inside key="p10" href="/play">{say.say("about.words.taikyokuWhere")}</Inside>],
+      [<M key="11">棋譜</M>, GLOSSARY_READINGS[10], say.say("about.words.kifu"), <Inside key="p11" href="/history">{say.say("about.words.kifuWhere")}</Inside>],
+      [<M key="12">名局</M>, GLOSSARY_READINGS[11], say.say("about.words.meikyoku"), <Inside key="p12" href="/famous">{say.say("about.words.meikyokuWhere")}</Inside>],
+      [<M key="13">番付</M>, GLOSSARY_READINGS[12], say.say("about.words.banzuke"), say.say("about.words.banzukeWhere")],
+      [<M key="14">級 · 段 · 名人</M>, GLOSSARY_READINGS[13], say.say("about.words.kyu"), say.say("about.words.kyuWhere")],
+      [<M key="15">間</M>, GLOSSARY_READINGS[14], say.say("about.words.ma"), say.say("about.words.maWhere")],
     ]}
-    caption={
-      <>
-        The Japanese words this site uses, with their readings. Kyū grades count down toward one as a player
-        improves, and dan grades count up from one after that, in go, shogi and the martial arts alike.
-      </>
-    }
+    caption={say.say("about.words.caption")}
   />
 );
 
-export const WORDS_SECTION: AboutSection = {
-  title: "The words on the labels",
+export const wordsSection = (say: Speaker): AboutSection => ({
+  id: "words",
+  title: say.say("about.words.title"),
   chapter: ABOUT_CHAPTERS.japan,
   kanji: "用語",
   paragraphs: [
-    <>
-      Most of the Japanese on these pages comes from go, because go is where the vocabulary of a board and stones
-      was settled. A game record is a <em>kifu</em> whatever game it records; the list that ranks players is a{" "}
-      <em>banzuke</em>, a word borrowed from the sumo tournament sheet; a grade is a <em>kyū</em> or a{" "}
-      <em>dan</em>, and at the top of the old go houses sat the <em>meijin</em>. The table is every one of them a
-      reader meets here, and where.
-    </>,
-    <>
-      If some of these sound familiar from anime, that is not an accident either. <em>Hikaru no Go</em>, written by
-      Yumi Hotta and drawn by Takeshi Obata, ran in Weekly Shōnen Jump from 1998 to 2003 and was made into an anime
-      that followed it: a schoolboy haunted by the ghost of a Heian-era go master, who learns the game from the
-      ghost and slowly becomes a player in his own right. It is widely credited with sending a generation of Japanese children to go
-      clubs, and it is how many readers outside Japan first heard the words <em>sente</em>, <em>jōseki</em> and{" "}
-      <em>meijin</em>. The game the ghost plays is <Game variant="go">on the board here</Game>, on{" "}
-      {GO_BOARDS}.
-    </>,
+    rich(say, "about.words.a"),
+    // The go boards on offer, read from the catalogue: "9×9, 13×13 and 19×19".
+    rich(say, "about.words.b", { boards: say.list(boardSizesFor("go").map((size) => `${size}×${size}`)) }),
   ],
-  figures: { 0: GLOSSARY },
-};
+  figures: { 0: glossary(say) },
+});

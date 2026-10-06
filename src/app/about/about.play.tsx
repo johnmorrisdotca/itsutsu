@@ -2,18 +2,18 @@ import { FigureTable } from "@/components/about/FigureTable";
 import { Screenshot, ScreenshotRow } from "@/components/about/Screenshot";
 import { BOARD_THEMES } from "@/components/board/Board.constants";
 import { themeName } from "@/components/board/boardNames";
-import { speaker } from "@/lib/i18n/i18n";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { MATCH_SIZES } from "@/lib/history/liveMatch";
 import { MESSAGE_MAX } from "@/lib/history/reactions.constants";
 import { INBOX_KEEP_DAYS } from "@/lib/inbox/inbox.constants";
 import { MESSAGE_TEXT_MAX } from "@/lib/messages/messages.constants";
 import { MOSAIC_COPY, MOSAIC_MOST_TILES } from "@/lib/record/mosaic.constants";
-import { shapeWords } from "@/lib/record/mosaicWords";
+import { mosaicWords, shapeWords } from "@/lib/record/mosaicWords";
 
 import { ABOUT_CHAPTERS } from "./about.chapters";
 import type { AboutSection } from "./about.constants";
-import { Game, Inside } from "./about.links";
-import { SHOTS } from "./about.shots";
+import { Inside, rich } from "./about.links";
+import { shot } from "./about.shots";
 
 /**
  * PLAYING HERE: what the site does once a game is under way, shown rather
@@ -28,262 +28,117 @@ import { SHOTS } from "./about.shots";
  * enforces it.
  */
 
-// The About page is written in English, whichever language the reader is in (its copy is a later ticket's).
-const ENGLISH = speaker("en");
-const THEMES = (Object.keys(BOARD_THEMES) as (keyof typeof BOARD_THEMES)[]).map((theme) => themeName(ENGLISH, theme).label);
-const LANDSCAPE = shapeWords(ENGLISH, "landscape");
-const PORTRAIT = shapeWords(ENGLISH, "portrait");
 const PAIRED = MATCH_SIZES.filter((size) => size > 1);
 
-/** "two, four or six", from the sizes a paired match allows. */
-function spoken(sizes: readonly number[]): string {
-  const words: Record<number, string> = { 2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 8: "eight" };
-  const said = sizes.map((size) => words[size] ?? String(size));
-  return said.length < 2 ? said.join("") : `${said.slice(0, -1).join(", ")} or ${said.at(-1)}`;
-}
+/** "two, four or six", from the sizes a paired match allows: words for English, numerals for Japanese. */
+const spoken = (say: Speaker, sizes: readonly number[]): string => say.list(sizes.map((size) => say.words(size)));
 
-/** "Kaya, Shin-kaya and Washi". */
-function listed(items: readonly string[]): string {
-  return items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
-}
-
-export const BOARD_SECTION: AboutSection = {
-  title: "At the board",
+export const boardSection = (say: Speaker): AboutSection => ({
+  id: "board",
+  title: say.say("about.board.title"),
   chapter: ABOUT_CHAPTERS.play,
   kanji: "盤上",
   paragraphs: [
-    <>
-      The board is the same on a desk and on a phone. You put a stone down, look at it, and then send it. On a phone
-      the stone says which point it landed on, four arrows move it one point at a time before you send it, and the
-      Send button stays at the bottom of the screen. Every button and list is big enough for a thumb. Against a
-      bot, a switch on the board lets a touch play the move straight away, and the site remembers
-      your choice.
-    </>,
-    <>
-      The board helps without playing for you. When a capture is forced, or you have only one or two legal moves,
-      it marks them, dims the rest, and says why. When you have no legal move at all, it passes for you and says
-      so on both boards. <Game variant="go">Go</Game> gets extra help for beginners: a cross where a stone may not
-      go, a ring on the point that captures or saves a group in atari, and a warning before a stone fills your own
-      eye. When a game ends, a card over the board says who won and why, what the game paid in experience, and
-      offers a rematch.
-    </>,
-    <>
-      Around a live game: a note to send with your move, either one of the ready-made lines (&ldquo;Hello, good
-      luck&rdquo;, &ldquo;No rush&rdquo;) or your own words with an emoji. There is a notes box that is private and
-      stays in your browser, a button to turn the board round and see it from the other side, and a choice of board
-      size. Resign is there too.
-    </>,
-    <>
-      The <em>practice board</em> is the one you can just start using. You play both sides, take moves back, ask
-      whether either side has a winning line, and paste in a game from ItsYourTurn or GoldToken to step through it.
-      Nothing played there is rated. <em>Just the board</em> opens the board on its own, over the page, with only
-      the controls you need to play, or the slider of a finished game; Esc or Close takes you back, and it stays on from
-      game to game until you do. The wood is your choice too: {listed(THEMES)}.
-    </>,
-    <>
-      Starting a game takes one screen. It shows the game, the board, who you are playing, every rule and which
-      colour you take, and one press begins it. The bots are listed there by name and grade, each
-      with a note saying how it actually did against the grades on either side of it.
-    </>,
+    rich(say, "about.board.a"),
+    rich(say, "about.board.b"),
+    rich(say, "about.board.c", { hello: say.say("played.quickHello"), noRush: say.say("played.quickNoRush") }),
+    rich(say, "about.board.d", { themes: say.list((Object.keys(BOARD_THEMES) as (keyof typeof BOARD_THEMES)[]).map((theme) => themeName(say, theme).label)) }),
+    rich(say, "about.board.e"),
   ],
   figures: {
-    0: (
-      <ScreenshotRow
-        shots={[SHOTS.boardDesk, SHOTS.boardPhone]}
-        caption={
-          <>
-            The practice board at <Game variant="freestyle">Gomoku</Game>, twelve moves in, on a desk and on a
-            phone. The panel beside it has spotted that Black can force a win.
-          </>
-        }
-      />
-    ),
-    2: (
-      <Screenshot
-        {...SHOTS.vsComputer}
-        caption={
-          <>
-            Eight moves into a game of <Game variant="freestyle">Gomoku</Game> against Rafa Duarte, one
-            of the named bots. The notes and emoji under the board go with your next move.
-          </>
-        }
-      />
-    ),
-    4: (
-      <Screenshot
-        {...SHOTS.setUp}
-        caption="Choosing who to play. The named bots have styles as well as grades: attacking, defensive, or changeable."
-      />
-    ),
+    0: <ScreenshotRow shots={[shot(say, "boardDesk"), shot(say, "boardPhone")]} caption={rich(say, "about.board.shotA")} />,
+    2: <Screenshot {...shot(say, "vsComputer")} caption={rich(say, "about.board.shotB")} />,
+    4: <Screenshot {...shot(say, "setUp")} caption={say.say("about.board.shotC")} />,
   },
-};
+});
 
-const CONTROLS = (
+const controls = (say: Speaker) => (
   <FigureTable
-    head={["Control", "What it does"]}
+    head={[say.say("about.replay.headControl"), say.say("about.replay.headDoes")]}
     rows={[
-      ["The slider", "Drag from the first move to the last. The board shows that position, with its move number and the point played."],
-      ["Start · Back · Forward · End", "One move at a time, or straight to either end."],
-      ["The move list", "Every move, numbered. Click one to jump to it."],
-      ["Fork", "Shown once you step back in a game you played: a new game from exactly that position, against the same opponent."],
-      [MOSAIC_COPY.openLabel, "The whole game as one picture, the size of your screen. See the next section."],
-      ["SGF", "Download a finished game as an SGF file, the format game-record programs read, for every game SGF has a number for."],
-      ["Applause", "Five emoji anyone can leave on a finished game, to say it was worth playing."],
+      [say.say("about.replay.slider"), say.say("about.replay.sliderDoes")],
+      [say.say("about.replay.steps"), say.say("about.replay.stepsDoes")],
+      [say.say("about.replay.list"), say.say("about.replay.listDoes")],
+      [say.say("about.replay.fork"), say.say("about.replay.forkDoes")],
+      [mosaicWords(say).openLabel, say.say("about.replay.pictureDoes")],
+      [say.say("about.replay.sgf"), say.say("about.replay.sgfDoes")],
+      [say.say("about.replay.applause"), say.say("about.replay.applauseDoes")],
     ]}
-    caption="The controls under a finished game's board. A game played at one screen has the same slider."
+    caption={say.say("about.replay.controls")}
   />
 );
 
-export const REPLAY_SECTION: AboutSection = {
-  title: "Every move, forwards and back",
+export const replaySection = (say: Speaker): AboutSection => ({
+  id: "replay",
+  title: say.say("about.replay.title"),
   chapter: ABOUT_CHAPTERS.play,
   kanji: "再生",
-  paragraphs: [
-    <>
-      Every game here keeps its moves, and you can go back to any of them. A finished game opens on its final
-      position with a slider beside the board. Drag it, step with the arrows under it, or press Play, and the board
-      shows that position with its move number and where the stone went. The move list beside it jumps to any
-      move you click. A game in play shows its moves in the same panel, and a game played by two people at one
-      screen has the same slider.
-    </>,
-    <>
-      Above a finished game, a head-to-head card counts how the two players stand against each other: wins each,
-      draws, the current streak, and when they last played. In a game you played, step back to an earlier
-      position and <em>Fork</em> appears: a second game starting from exactly that position, against the same
-      opponent. Like any other offer of a game, or a rematch, it waits until they accept it.
-    </>,
-  ],
+  paragraphs: [rich(say, "about.replay.a"), rich(say, "about.replay.b")],
   figures: {
-    0: (
-      <ScreenshotRow
-        shots={[SHOTS.replayDesk, SHOTS.replayPhone]}
-        caption={
-          <>
-            A finished game of <Game variant="reversi">Reversi</Game> between two bots, with the
-            slider dragged back to move 33 of 60. The head-to-head card sits above the board.
-          </>
-        }
-      />
-    ),
-    1: CONTROLS,
+    0: <ScreenshotRow shots={[shot(say, "replayDesk"), shot(say, "replayPhone")]} caption={rich(say, "about.replay.shotA")} />,
+    1: controls(say),
   },
+});
+
+export const pictureSection = (say: Speaker): AboutSection => {
+  const words = mosaicWords(say);
+  const landscape = shapeWords(say, "landscape");
+  const portrait = shapeWords(say, "portrait");
+  // English runs the shape's name into a sentence in lower case; Japanese has no case to change.
+  const inSentence = (label: string) => (say.locale === "en" ? label.toLowerCase() : label);
+  return {
+    id: "picture",
+    title: say.say("about.picture.title"),
+    chapter: ABOUT_CHAPTERS.play,
+    kanji: MOSAIC_COPY.kanji,
+    paragraphs: [
+      rich(say, "about.picture.a", {
+        open: words.openLabel,
+        landscape: inSentence(landscape.label),
+        landscapeNote: landscape.note,
+        portrait: inSentence(portrait.label),
+        portraitNote: portrait.note,
+        download: words.download,
+      }),
+      rich(say, "about.picture.b", { most: MOSAIC_MOST_TILES }),
+      rich(say, "about.picture.c"),
+    ],
+    figures: {
+      0: <Screenshot {...shot(say, "pictureWindow")} caption={rich(say, "about.picture.shotA")} />,
+      1: <ScreenshotRow shots={[shot(say, "wallDesk"), shot(say, "wallPhone")]} caption={rich(say, "about.picture.shotB")} />,
+      2: <ScreenshotRow shots={[shot(say, "gamePage"), shot(say, "famous")]} caption={rich(say, "about.picture.shotC")} />,
+    },
+  };
 };
 
-export const PICTURE_SECTION: AboutSection = {
-  title: "The game as one picture",
-  chapter: ABOUT_CHAPTERS.play,
-  kanji: MOSAIC_COPY.kanji,
-  paragraphs: [
-    <>
-      Beside every game&rsquo;s move list is a quiet button, <em>{MOSAIC_COPY.openLabel}</em>. It opens the game as
-      one picture: every position in order, one small board per move, under a bar naming the game, when it was
-      played and how it ended. It comes in two shapes: {LANDSCAPE.label.toLowerCase()} at{" "}
-      {LANDSCAPE.note}, and {PORTRAIT.label.toLowerCase()} at{" "}
-      {PORTRAIT.note}. It starts on the one your screen is, so the picture fits as a wallpaper.{" "}
-      <em>{MOSAIC_COPY.download}</em> saves it as a PNG. Your own browser draws it from the moves the page
-      already has. Nothing is sent anywhere and nothing is stored, so a refresh simply draws it again.
-    </>,
-    <>
-      The boards always make a full grid, so the picture ends on the last move in its bottom right corner. A long
-      game has more moves than a picture has room for. Past about {MOSAIC_MOST_TILES} boards, each one gets too
-      small to read as a game, so a long game offers a choice: the whole game with moves skipped evenly, or the ending,
-      counted back from the last move. A number of moves that does not make a rectangle skips a few, and the bar
-      says how many positions of how many the picture holds.
-    </>,
-    <>
-      The same picture appears in four more places. A game in play shows every position so far and redraws after
-      each move. A player&rsquo;s own page can put their games of one kind side by side, each as it ended, won,
-      lost or all. Every game&rsquo;s page shows how the most recent games played here ended, and each tile leads
-      to its game. <Inside href="/famous">Famous games</Inside> replays championship and historic games, AlphaGo
-      against Lee Sedol among them, through this site&rsquo;s own rules, and makes a picture of every move from
-      each of them.
-    </>,
-  ],
-  figures: {
-    0: (
-      <Screenshot
-        {...SHOTS.pictureWindow}
-        caption={
-          <>
-            The picture window over AlphaGo against Lee Sedol, a long game of <Game variant="go">Go</Game> on the
-            19×19 board. It has more positions than a picture holds, so it offers the two ways of fitting it, and the
-            bar across the top says how many it shows.
-          </>
-        }
-      />
-    ),
-    1: (
-      <ScreenshotRow
-        shots={[SHOTS.wallDesk, SHOTS.wallPhone]}
-        caption={
-          <>
-            Two downloaded pictures of the same game, exactly as the button saves them: AlphaGo against Lee Sedol,
-            the fourth game of their 2016 match, in <Game variant="go">Go</Game>. On the left, landscape for a 1920×1080
-            screen. On the right, portrait for a phone. Each ends on the last move in its bottom right corner.
-          </>
-        }
-      />
-    ),
-    2: (
-      <ScreenshotRow
-        shots={[SHOTS.gamePage, SHOTS.famous]}
-        caption={
-          <>
-            The <Game variant="go">Go</Game> page, with the final positions of games played here in its side
-            column, and <Inside href="/famous">Famous games</Inside>, opening with the 2016 match between Lee Sedol
-            and AlphaGo.
-          </>
-        }
-      />
-    ),
-  },
-};
-
-const WHERE = (
+const where = (say: Speaker) => (
   <FigureTable
-    head={["What", "Where", "In short"]}
+    head={[say.say("about.people.headWhat"), say.say("about.people.headWhere"), say.say("about.people.headShort")]}
     rows={[
-      ["Play, rematch, fork", "A player's page, a finished game", "An offer until the other player accepts it. Declining costs nothing, and you can withdraw it."],
-      ["Paired games", "Setting up a game", `A match of ${spoken(PAIRED)} games at once against one player, taking each colour in turn.`],
-      ["The waiting room", <Inside key="games" href="/games">Games</Inside>, "Everyone waiting for a game, with rating, time limit and country. Sit down shows you the game before you join."],
-      ["A note with a move", "Beside Send", `An emoji and up to ${MESSAGE_MAX} characters, which arrive with the move.`],
-      ["Messages", "A player's page", `Up to ${MESSAGE_TEXT_MAX} characters, delivered to their inbox. Ignoring somebody stops messages both ways.`],
-      ["Inbox", <Inside key="inbox" href="/inbox">Inbox</Inside>, `What happened while you were away: a game finished, a game offered, a seat taken, a note. Kept ${INBOX_KEEP_DAYS} days.`],
-      ["Buddies", <Inside key="me" href="/me">Your own page</Inside>, "The people you know, whether they are around, the games between you, and Play beside each name."],
-      ["A head start", "Setting up a game", "Free turns for the weaker player, or the traditional handicap in Go, Othello and draughts. It does not count toward ratings."],
-      ["Four words", "Somebody else's device", "Tap your four words to take your own seat on a shared tablet, with nothing to type."],
-      ["A seat link", "Beside the board", "A link or QR code for an empty seat, to hand to whoever should sit in it."],
-      ["Language", "The menu under your name", "English or Japanese, kept on your account so it follows you to every device."],
+      [say.say("about.people.rematch"), say.say("about.people.rematchWhere"), say.say("about.people.rematchShort")],
+      [say.say("about.people.paired"), say.say("about.people.pairedWhere"), say.say("about.people.pairedShort", { sizes: spoken(say, PAIRED) })],
+      [say.say("about.people.waiting"), <Inside key="games" href="/games">{say.say("nav.games")}</Inside>, say.say("about.people.waitingShort")],
+      [say.say("about.people.note"), say.say("about.people.noteWhere"), say.say("about.people.noteShort", { max: String(MESSAGE_MAX) })],
+      [say.say("about.people.messages"), say.say("about.people.messagesWhere"), say.say("about.people.messagesShort", { max: String(MESSAGE_TEXT_MAX) })],
+      [say.say("about.people.inbox"), <Inside key="inbox" href="/inbox">{say.say("about.people.inbox")}</Inside>, say.say("about.people.inboxShort", { days: String(INBOX_KEEP_DAYS) })],
+      [say.say("about.people.buddies"), <Inside key="me" href="/me">{say.say("about.people.buddiesWhere")}</Inside>, say.say("about.people.buddiesShort")],
+      [say.say("about.people.headStart"), say.say("about.people.pairedWhere"), say.say("about.people.headStartShort")],
+      [say.say("about.people.words"), say.say("about.people.wordsWhere"), say.say("about.people.wordsShort")],
+      [say.say("about.people.link"), say.say("about.people.linkWhere"), say.say("about.people.linkShort")],
+      [say.say("about.people.language"), say.say("about.people.languageWhere"), say.say("about.people.languageShort")],
     ]}
-    caption="Where to find the things that happen between players. None of them costs anything."
+    caption={say.say("about.people.where")}
   />
 );
 
-export const PEOPLE_SECTION: AboutSection = {
-  title: "Playing with people",
+export const peopleSection = (say: Speaker): AboutSection => ({
+  id: "people",
+  title: say.say("about.people.title"),
   chapter: ABOUT_CHAPTERS.play,
   kanji: "相手",
-  paragraphs: [
-    <>
-      Most games here are slow. You make a move, and your opponent answers when they get to it. When you send a
-      move, the next game waiting on you opens by itself, oldest first. A note can go with a move: pick an emoji,
-      write a line beside Send, and it arrives with the move. Nothing is bound to another person until they agree
-      to it. A challenge, a rematch or a fork waits in their list with Accept and Decline.
-    </>,
-    <>
-      The table above says where each of these lives. The <Inside href="/players">players</Inside> page lists
-      everyone, sortable by every column, and the bots are listed with everybody else. The{" "}
-      <Inside href="/xp">XP board</Inside> ranks everyone by experience, and can count people, computers or
-      both.
-    </>,
-  ],
+  paragraphs: [rich(say, "about.people.a"), rich(say, "about.people.b")],
   figures: {
-    0: WHERE,
-    1: (
-      <ScreenshotRow
-        shots={[SHOTS.computerPlayer, SHOTS.xpBoard]}
-        caption="A bot's page, showing how it measured against the grades beside it at each game, and the XP board. Both are from the local copy the screenshots were taken on, which held only a handful of players."
-      />
-    ),
+    0: where(say),
+    1: <ScreenshotRow shots={[shot(say, "computerPlayer"), shot(say, "xpBoard")]} caption={say.say("about.people.shotCaption")} />,
   },
-};
+});

@@ -1,6 +1,18 @@
 import type { Locale, LocaleSpec } from "./i18n.types";
 import { PHRASES_SITE } from "./phrases.site.constants";
 import { PHRASES_INSTALL } from "./phrases.install.constants";
+import { PHRASES_COUNTRIES } from "./phrases.countries.constants";
+import { PHRASES_LEARN } from "./phrases.learn.constants";
+import { PHRASES_ABOUT } from "./phrases.about.constants";
+import { PHRASES_MINE } from "./phrases.mine.constants";
+import { PHRASES_PLAYERS } from "./phrases.players.constants";
+import { PHRASES_PAGES } from "./phrases.pages.constants";
+import { PHRASES_HOME } from "./phrases.home.constants";
+import { PHRASES_AUTH } from "./phrases.auth.constants";
+import { PHRASES_MESSAGES } from "./phrases.messages.constants";
+import { PHRASES_INBOX } from "./phrases.inbox.constants";
+import { PHRASES_REPORTS } from "./phrases.reports.constants";
+import { PHRASES_CHROME } from "./phrases.chrome.constants";
 import { PHRASES_FILTER } from "./phrases.filter.constants";
 import { PHRASES_RULES } from "./phrases.rules.constants";
 import { PHRASES_SETUP } from "./phrases.setup.constants";
@@ -134,6 +146,18 @@ export const LANG_CHOSEN_FOR_SECONDS = 60;
 export const PHRASE_AREAS = {
   site: PHRASES_SITE,
   install: PHRASES_INSTALL,
+  countries: PHRASES_COUNTRIES,
+  learn: PHRASES_LEARN,
+  about: PHRASES_ABOUT,
+  mine: PHRASES_MINE,
+  players: PHRASES_PLAYERS,
+  pages: PHRASES_PAGES,
+  home: PHRASES_HOME,
+  auth: PHRASES_AUTH,
+  messages: PHRASES_MESSAGES,
+  inbox: PHRASES_INBOX,
+  reports: PHRASES_REPORTS,
+  chrome: PHRASES_CHROME,
   filter: PHRASES_FILTER,
   rules: PHRASES_RULES,
   setup: PHRASES_SETUP,
@@ -208,6 +232,18 @@ export const PHRASE_AREAS = {
 export const PHRASES = {
   ...PHRASES_SITE,
   ...PHRASES_INSTALL,
+  ...PHRASES_COUNTRIES,
+  ...PHRASES_LEARN,
+  ...PHRASES_ABOUT,
+  ...PHRASES_MINE,
+  ...PHRASES_PLAYERS,
+  ...PHRASES_PAGES,
+  ...PHRASES_HOME,
+  ...PHRASES_AUTH,
+  ...PHRASES_MESSAGES,
+  ...PHRASES_INBOX,
+  ...PHRASES_REPORTS,
+  ...PHRASES_CHROME,
   ...PHRASES_FILTER,
   ...PHRASES_RULES,
   ...PHRASES_SETUP,

@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Select } from "@/components/ui/Controls";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { AFTER_MOVE, MOVE_CONFIRM, type AfterMove, type MoveConfirm } from "@/lib/preferences/turnFlow";
@@ -24,6 +25,7 @@ export function TurnFlowForm({
 }: {
   initial: { moveConfirm: MoveConfirm; moveConfirmComputer: MoveConfirm; afterMove: AfterMove };
 }) {
+  const say = useSpeaker();
   const confirmHint = useId();
   const afterHint = useId();
   const computerHint = useId();
@@ -46,12 +48,12 @@ export function TurnFlowForm({
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        setError(body?.error ?? "That could not be saved.");
+        setError(body?.error ?? say.say("mine.saveFailed"));
         return;
       }
       setSaved(true);
     } catch {
-      setError("That could not be saved.");
+      setError(say.say("mine.saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -65,7 +67,7 @@ export function TurnFlowForm({
   return (
     <div className="flex flex-col gap-4" data-testid="turn-flow" {...readyMark(useHydrated())}>
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Playing a move</span>
+        <span className="text-sm font-medium">{say.say("mine.tfMove")}</span>
         <Select
           value={fields.moveConfirm}
           aria-describedby={confirmHint}
@@ -73,17 +75,16 @@ export function TurnFlowForm({
           onChange={(event) => void save({ moveConfirm: event.target.value as MoveConfirm })}
           data-testid="turn-flow-confirm"
         >
-          <option value={MOVE_CONFIRM.preview}>Show me the move, then I press Submit</option>
-          <option value={MOVE_CONFIRM.straightAway}>Play it as soon as I touch the board</option>
+          <option value={MOVE_CONFIRM.preview}>{say.say("mine.tfPreview")}</option>
+          <option value={MOVE_CONFIRM.straightAway}>{say.say("mine.tfStraight")}</option>
         </Select>
         <span id={confirmHint} className="text-xs text-muted">
-          A game here is played over days and its record is final, so a move cannot be taken back. Showing it first is
-          what stops a misclick on a phone from being a move.
+          {say.say("mine.tfMoveNote")}
         </span>
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Playing a move against a bot</span>
+        <span className="text-sm font-medium">{say.say("mine.tfBot")}</span>
         <Select
           value={fields.moveConfirmComputer}
           aria-describedby={computerHint}
@@ -91,17 +92,16 @@ export function TurnFlowForm({
           onChange={(event) => void save({ moveConfirmComputer: event.target.value as MoveConfirm })}
           data-testid="turn-flow-confirm-computer"
         >
-          <option value={MOVE_CONFIRM.preview}>Show me the move, then I press Submit</option>
-          <option value={MOVE_CONFIRM.straightAway}>Play it as soon as I touch the board</option>
+          <option value={MOVE_CONFIRM.preview}>{say.say("mine.tfPreview")}</option>
+          <option value={MOVE_CONFIRM.straightAway}>{say.say("mine.tfStraight")}</option>
         </Select>
         <span id={computerHint} className="text-xs text-muted">
-          A computer answers in a second, so a game against one can be played as fast as you like. The same switch is on
-          the board in those games.
+          {say.say("mine.tfBotNote")}
         </span>
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">After you submit</span>
+        <span className="text-sm font-medium">{say.say("mine.tfAfter")}</span>
         <Select
           value={fields.afterMove}
           aria-describedby={afterHint}
@@ -109,21 +109,20 @@ export function TurnFlowForm({
           onChange={(event) => void save({ afterMove: event.target.value as AfterMove })}
           data-testid="turn-flow-after"
         >
-          <option value={AFTER_MOVE.nextWaiting}>Go to the next game waiting on me</option>
-          <option value={AFTER_MOVE.sameGame}>Go to the next game of the same kind</option>
-          <option value={AFTER_MOVE.myGames}>Go back to my games</option>
-          <option value={AFTER_MOVE.stay}>Stay on this board</option>
+          <option value={AFTER_MOVE.nextWaiting}>{say.say("mine.tfNext")}</option>
+          <option value={AFTER_MOVE.sameGame}>{say.say("mine.tfSame")}</option>
+          <option value={AFTER_MOVE.myGames}>{say.say("mine.tfMyGames")}</option>
+          <option value={AFTER_MOVE.stay}>{say.say("mine.tfStay")}</option>
         </Select>
         <span id={afterHint} className="text-xs text-muted">
-          You should never have to hunt for the game waiting on you. The same kind keeps one set of rules in your head
-          at a time.
+          {say.say("mine.tfAfterNote")}
         </span>
       </label>
 
       {error !== null ? <p className="text-sm text-clay">{error}</p> : null}
       {saved && error === null ? (
         <p className="text-sm text-muted" data-testid="turn-flow-saved">
-          Saved.
+          {say.say("mine.saved")}
         </p>
       ) : null}
     </div>

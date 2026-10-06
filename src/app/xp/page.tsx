@@ -177,8 +177,9 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
         ) : null}
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <WhoFilter who={who} hrefFor={(next) => xpWhoHref("/xp", query, next)} label={say.say("xp.board.whoLabel")} />
+          <WhoFilter say={say} who={who} hrefFor={(next) => xpWhoHref("/xp", query, next)} label={say.say("xp.board.whoLabel")} />
           <RecordScopeBar
+            say={say}
             base="/xp"
             scope={scope}
             hrefFor={(next) => xpScopeHref("/xp", query, next)}

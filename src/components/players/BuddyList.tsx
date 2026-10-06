@@ -6,6 +6,8 @@ import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { RecencyLegend, RecencyMark } from "@/components/mine/Recency";
 import { PlayerName } from "@/components/players/PlayerName";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { RowActions } from "@/components/ui/Controls";
 import { RAISED_LINK } from "@/components/ui/ui.constants";
@@ -34,6 +36,7 @@ import { gamesWithEach } from "@/lib/social/buddyGames";
  * and both linking to those games rather than printing a number and stopping.
  */
 export async function BuddyList({ memberId }: { memberId: string }) {
+  const say = await currentSpeaker();
   const [buddies, games] = await Promise.all([fetchBuddies(memberId), gamesWithEach(memberId)]);
   // The flag, badge and level beside each name, as on the members list, in one read for the page.
   const tags = await nameTagsOf(buddies.map((buddy) => buddy.id));
@@ -48,12 +51,13 @@ export async function BuddyList({ memberId }: { memberId: string }) {
     return (
       <div className="flex flex-col gap-3" data-testid="buddy-list">
         <p className="text-sm text-muted">
-          Nobody yet. A buddy is somebody you want to find again: star them on the{" "}
-          <Link href="/players" className="underline underline-offset-4">
-            members list
-          </Link>{" "}
-          or on their own page, and they are listed here, most recently seen first — with the games
-          you have going and a game to offer beside each name.
+          {weave(say.say("players.buddyEmpty"), {
+            link: (
+              <Link href="/players" className="underline underline-offset-4">
+                {say.say("players.membersList")}
+              </Link>
+            ),
+          })}
         </p>
       </div>
     );
@@ -61,10 +65,7 @@ export async function BuddyList({ memberId }: { memberId: string }) {
 
   return (
     <div className="flex flex-col gap-3" data-testid="buddy-list">
-      <p className="text-sm text-muted">
-        The people you play, most recently seen first. {buddies.length}{" "}
-        {buddies.length === 1 ? "buddy" : "buddies"}.
-      </p>
+      <p className="text-sm text-muted">{say.count("players.buddyCount", buddies.length)}</p>
       {/*
         The table's size and the table's name: John, 2026-09-26, "Buddies has
         totally different name formatting. Larger font and no flags etc..."
@@ -79,13 +80,13 @@ export async function BuddyList({ memberId }: { memberId: string }) {
               data-testid="buddy-row"
               data-member={buddy.id}
             >
-              <RecencyMark recency={buddy.recency} />
+              <RecencyMark recency={buddy.recency} say={say} />
               <span>
                 <PlayerName name={buddy.name} memberId={buddy.id} fallback={buddy.name} tag={tags.get(buddy.id) ?? { country: buddy.country, kind: MEMBER_KINDS.member, level: null }} />
               </span>
               <span className="text-xs text-muted">
                 {buddy.city}
-                {buddy.localTime !== null ? `${buddy.city ? " · " : ""}${buddy.localTime} there` : ""}
+                {buddy.localTime !== null ? `${buddy.city ? " · " : ""}${say.say("players.localThere", { time: buddy.localTime })}` : ""}
               </span>
               {/*
                 A NUMBER ABOUT GAMES LEADS TO EXACTLY THOSE GAMES. The figure
@@ -97,14 +98,14 @@ export async function BuddyList({ memberId }: { memberId: string }) {
               */}
               <span className="text-xs text-muted" data-testid="buddy-going">
                 {with_.going === 0 ? (
-                  "no games in progress"
+                  say.say("players.noGoing")
                 ) : (
                   <Link
                     href={`/play?with=${encodeURIComponent(buddy.id)}`}
                     className={`${RAISED_LINK} underline underline-offset-4`}
                     data-testid="buddy-going-link"
                   >
-                    {with_.going} in progress{with_.yours > 0 ? `, ${with_.yours} on you` : ""}
+                    {with_.yours > 0 ? say.say("players.goingYours", { going: say.number(with_.going), yours: say.number(with_.yours) }) : say.say("players.going", { going: say.number(with_.going) })}
                   </Link>
                 )}
               </span>
@@ -114,7 +115,7 @@ export async function BuddyList({ memberId }: { memberId: string }) {
                 className={`${RAISED_LINK} text-xs text-muted underline underline-offset-4`}
                 data-testid="buddy-played"
               >
-                games together
+                {say.say("players.gamesTogether")}
               </Link>
               <span className="ml-auto">
                 <RowActions>
@@ -127,7 +128,7 @@ export async function BuddyList({ memberId }: { memberId: string }) {
           );
         })}
       </ul>
-      <RecencyLegend />
+      <RecencyLegend say={say} />
     </div>
   );
 }

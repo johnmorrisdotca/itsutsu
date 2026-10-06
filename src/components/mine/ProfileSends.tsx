@@ -1,5 +1,6 @@
 import { useId } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Toggle } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
 import { KEEP_FINISHED_DAYS, KEEP_FINISHED_DISPLAY } from "@/lib/history/retention";
@@ -19,6 +20,7 @@ import type { ProfileSectionProps } from "./profileForm.types";
 export function ProfileSends({ fields, set, child = false, mailSending = false }: ProfileSectionProps) {
   /** The id the retention select is described by — see where it is used. */
   const keepHint = useId();
+  const say = useSpeaker();
 
   return (
     <>
@@ -33,15 +35,15 @@ export function ProfileSends({ fields, set, child = false, mailSending = false }
       <div className="flex flex-col gap-3">
         {child ? (
           <p className="text-sm text-muted" data-testid="child-settings-note">
-            You are under 13, so nobody is shown when you are here, and the site never sends you an email.
+            {say.say("mine.sendsChild")}
           </p>
         ) : (
           <>
             <Toggle
-              label="Show when I'm online"
+              label={say.say("mine.showOnline")}
               checked={fields.showOnline}
               onChange={(next) => set({ showOnline: next })}
-              hint="Listed on the players page while you are on the site. Off, and nobody sees you come and go."
+              hint={say.say("mine.showOnlineHint")}
             />
             <MailChoices
               all={fields.emailNotify}
@@ -66,7 +68,7 @@ export function ProfileSends({ fields, set, child = false, mailSending = false }
         */}
         <div className="flex flex-col gap-1">
           <label className="flex flex-col gap-1">
-            <span className="text-sm">Keep finished games in my list for</span>
+            <span className="text-sm">{say.say("mine.keepFinished")}</span>
             <select
               className={`${INPUT_CLASS} ${PROFILE_WIDTH.keep}`}
               value={fields.keepFinishedDays}
@@ -76,14 +78,13 @@ export function ProfileSends({ fields, set, child = false, mailSending = false }
             >
               {KEEP_FINISHED_DAYS.map((days) => (
                 <option key={days} value={days}>
-                  {KEEP_FINISHED_DISPLAY[days].label} {KEEP_FINISHED_DISPLAY[days].kanji}
+                  {say.pairName(KEEP_FINISHED_DISPLAY[days].label, KEEP_FINISHED_DISPLAY[days].kanji).text}
                 </option>
               ))}
             </select>
           </label>
           <span id={keepHint} className="text-xs text-muted">
-            The record keeps every game whatever this says, and each one stays at its own address. This is only
-            about how long they sit in your queue.
+            {say.say("mine.keepNote")}
           </span>
         </div>
       </div>

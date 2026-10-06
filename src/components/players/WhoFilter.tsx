@@ -1,9 +1,10 @@
 import { Paired } from "@/components/i18n/Paired";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { ViewTabs } from "@/components/ui/ViewTabs";
 import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, type DirectoryWho } from "@/lib/rating/directoryFilter";
 
 /**
- * Everyone 全員 · People 人 · Computers 機械: the one set of tabs for the one
+ * Everyone 全員 · People 人 · Computers コンピュータ: the one set of tabs for the one
  * three-way question the site asks about players — on the members list, on
  * the XP board and on the level pages. The tabs are LINKS, so a choice is an
  * address a reader can share and the page renders it on the server; which
@@ -13,7 +14,7 @@ import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, type DirectoryWho } from "@/lib/rati
  */
 export const WHO_DISPLAY: Record<DirectoryWho, { label: string; kanji: string }> = {
   [DIRECTORY_WHO.people]: { label: "People", kanji: "人" },
-  [DIRECTORY_WHO.computers]: { label: "Bots", kanji: "機械" },
+  [DIRECTORY_WHO.computers]: { label: "Bots", kanji: "コンピュータ" },
   [DIRECTORY_WHO.everyone]: { label: "Everyone", kanji: "全員" },
 };
 
@@ -22,10 +23,12 @@ export const FILTER_CHIP =
 export const FILTER_CHIP_OFF = "border-rule bg-ivory/70 hover:border-rule-strong";
 
 export function WhoFilter({
+  say,
   who,
   hrefFor,
-  label = "Which players to list",
+  label = say.say("players.whoLabel"),
 }: {
+  say: Speaker;
   who: DirectoryWho;
   hrefFor: (who: DirectoryWho) => string;
   label?: string;

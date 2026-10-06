@@ -1,5 +1,6 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Controls";
@@ -122,7 +123,7 @@ export function EndPositions({
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="end-positions" {...readyMark(hydrated)}>
       <h2 className={SECTION_TITLE}>
-        {ENDINGS_COPY.heading} <span className="font-mincho normal-case tracking-normal">{ENDINGS_COPY.kanji}</span>
+        <Paired en={ENDINGS_COPY.heading} kanji={ENDINGS_COPY.kanji} kanjiClassName="normal-case tracking-normal" inReadersLanguage />
       </h2>
       <p className="text-sm text-ink-soft">{ENDINGS_COPY.blurb}</p>
       <span className="flex flex-wrap items-end gap-3">
@@ -159,7 +160,7 @@ export function EndPositions({
       {made !== null && made.left > 0 ? <p className="text-xs text-muted">{ENDINGS_COPY.otherSizes(made.left)}</p> : null}
       {made !== null ? (
         // eslint-disable-next-line @next/next/no-img-element -- a picture made in this browser a moment ago; there is nothing to optimise
-        <img src={made.url} alt={`How ${say.count("count.gamePlayed", made.count)} ended`} className="w-full rounded-lg border border-rule" data-testid="endings-picture" />
+        <img src={made.url} alt={say.say("players.endsAlt", { games: say.count("count.gamePlayed", made.count) })} className="w-full rounded-lg border border-rule" data-testid="endings-picture" />
       ) : null}
     </section>
   );

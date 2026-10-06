@@ -6,7 +6,7 @@ import { GameTrailNav } from "@/components/games/GameTrail";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { MY_GAMES_COPY } from "@/components/mine/mine.constants";
+import { myGamesCopy } from "@/components/mine/mine.copy";
 import { KeptOpen } from "@/components/party/KeptOpen";
 import { keptWords } from "@/components/party/partyWords";
 import { PlayerName } from "@/components/players/PlayerName";
@@ -50,6 +50,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function KeptGamePage({ params }: PageProps<"/games/[slug]/kept/[id]">) {
   const { slug, id } = await params;
+  const MY_GAMES_COPY = myGamesCopy(await currentSpeaker());
   const key: GameKey | null = partyKindFor(slug) ?? variantFor(slug);
   const memberId = await currentMemberId();
   if (key === null || memberId === null || !KEPT_GAME_KEYS.includes(key)) notFound();

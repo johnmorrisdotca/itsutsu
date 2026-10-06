@@ -1,3 +1,5 @@
+import type { Speaker } from "@/lib/i18n/i18n";
+
 import type { TimelineEvent, TimelineProps, Verdict } from "./about.types";
 
 const WIDTH = 600;
@@ -11,7 +13,7 @@ const DOT = 6;
  * follows the page's type and colours; the lanes are set by hand in the data
  * because a chart with six labels does not need a layout engine.
  */
-export function Timeline({ from, to, step, events, caption, label, verdicts = false }: TimelineProps) {
+export function Timeline({ say, from, to, step, events, caption, label, verdicts = false }: TimelineProps & { say: Speaker }) {
   const deepest = Math.max(...events.map((e) => Math.abs(e.lane)));
   const height = AXIS_Y + LANE * deepest + 40 + (verdicts ? 18 : 0);
   const x = (year: number) => PAD + ((year - from) / (to - from)) * (WIDTH - PAD * 2);
@@ -33,7 +35,7 @@ export function Timeline({ from, to, step, events, caption, label, verdicts = fa
         {events.map((event) => (
           <Event key={`${event.year}-${event.name}`} event={event} cx={x(event.year)} />
         ))}
-        {verdicts ? <Legend y={height - 10} /> : null}
+        {verdicts ? <Legend y={height - 10} say={say} /> : null}
       </svg>
       <figcaption className="text-center text-xs leading-relaxed text-muted">{caption}</figcaption>
     </figure>
@@ -84,11 +86,11 @@ function Dot({ cx, cy, verdict }: { cx: number; cy: number; verdict?: Verdict })
   );
 }
 
-function Legend({ y }: { y: number }) {
+function Legend({ y, say }: { y: number; say: Speaker }) {
   const items: { verdict: Verdict; text: string }[] = [
-    { verdict: "first", text: "first player wins" },
-    { verdict: "second", text: "second player wins" },
-    { verdict: "draw", text: "a draw" },
+    { verdict: "first", text: say.say("about.legendFirst") },
+    { verdict: "second", text: say.say("about.legendSecond") },
+    { verdict: "draw", text: say.say("about.legendDraw") },
   ];
   return (
     <g>

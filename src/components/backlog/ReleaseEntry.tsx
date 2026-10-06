@@ -2,7 +2,9 @@
 
 import { useId, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { LocalTime } from "@/components/ui/LocalTime";
+import { weave } from "@/lib/i18n/weave";
 
 import type { Release } from "@/lib/backlog/releases";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -43,10 +45,12 @@ export function ReleaseEntry({
   current: boolean;
   running: string;
 }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const whenId = useId();
   const [open, setOpen] = useState(false);
   const [title = "", ...more] = release.notes;
+  const edition = say.pair("pages.thisEdition", "現行");
   const titleLine = (
     <span className="text-sm font-medium" data-testid="release-title">
       {title}
@@ -62,12 +66,13 @@ export function ReleaseEntry({
         <span className="font-mono text-sm font-semibold tabular-nums">{release.version}</span>
         {current ? (
           <span className="min-w-0 truncate rounded-full bg-moss-soft px-2 py-0.5 text-[0.65rem] font-semibold text-moss">
-            This edition 現行
+            {edition.text}
+            {edition.kanji === null ? null : <> {edition.kanji}</>}
           </span>
         ) : null}
         {current && running !== release.version ? (
           <span className="min-w-0 truncate font-mono text-xs text-muted" data-testid="running-version">
-            running {running}
+            {say.say("pages.running", { version: running })}
           </span>
         ) : null}
         {release.date === null ? null : release.at === null ? (
@@ -81,7 +86,7 @@ export function ReleaseEntry({
             data-testid="release-date"
             aria-expanded={open}
             aria-controls={whenId}
-            title={open ? "Hide the time" : "Show the time"}
+            title={say.say(open ? "pages.hideTime" : "pages.showTime")}
             onClick={() => setOpen(!open)}
             {...readyMark(hydrated)}
           >
@@ -91,7 +96,7 @@ export function ReleaseEntry({
       </span>
       {open && release.at !== null ? (
         <span id={whenId} className="text-xs text-muted" data-testid="release-when">
-          Released <LocalTime at={release.at} style="full" />
+          {weave(say.say("pages.released"), { when: <LocalTime at={release.at} style="full" /> })}
         </span>
       ) : null}
       {more.length === 0 ? (

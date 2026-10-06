@@ -15,7 +15,7 @@ import { ready } from "./support";
 const CHAPTERS: Record<string, readonly string[]> = {
   story: ["Where this comes from", "Sites worth knowing"],
   start: ["How a game goes here", "In beta, free, and by invitation"],
-  play: ["At the board", "Every move, forwards and back", "The game as one picture", "Playing with people"],
+  play: ["On the board", "Every move, forwards and back", "The game as one picture", "Playing with people"],
   games: ["What is on the board here", "The catalogue in charts"],
   roots: ["Five stones, and where they came from", "Othello", "Famous openings"],
   japan: ["The Japanese thread", "Go, the board underneath", "The words on the labels"],

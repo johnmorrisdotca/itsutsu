@@ -465,6 +465,18 @@ const PHRASE_EXCEPTIONS: Record<string, string> = {
   "catalogue.familyPlayed.one": "a family's matches: /history filters by one game, so no page can show the set this counts",
   "catalogue.familyPlayed.other": "a family's matches: /history filters by one game, so no page can show the set this counts",
   "gamepages.listIntro": "a count of the catalogue's rule sets, not of games anybody played: there is no set of finished games for it to open",
+  // The About page and the pages of ENJA-10: counts that are not a set of games anybody played.
+  "about.bots.a": "the number of rule sets the computer players can play: the catalogue's size, which /games lists, not a set of finished games",
+  "about.bots.measured": "games between two programs in a measurement, which are not kept as games: there is no set of them to open",
+  "about.bots.graphLabel": "an accessible description of a chart of measured pairings; the games it counts were played between programs and are not kept",
+  "about.catalogue.a": "the size of the catalogue, counted from the catalogue itself: the games it counts are the rule sets /games lists",
+  "about.charts.wonCaption": "the size of the catalogue again, sorted by how each rule set is won: a count of rule sets, not of played games",
+  "about.sites.caption": "the size of the catalogue in a caption beside other sites' catalogues, not a count of games anybody played",
+  "about.how.chooseBody": "the size of the catalogue, said in the first step of a game's six: a count of rule sets, not of played games",
+  "players.legacyOpen": "the games a kept record lists one by one: they were played on another site and there is no game here to open",
+  "players.strengthNote": "games between two programs in a measurement, which are not kept as games: there is no set of them to open",
+  "inbox.offerMatch": "the size of a match somebody asked for, not a count of games played: nothing has been played yet",
+  "chrome.embed.over": "a figure in a strip that sits on another site's page, where a link into this site would be a link out of somebody else's page",
   "gamepages.realLead": "the number of tiles drawn just below it, each of which leads to its own game; the games it counts are the tiles",
 };
 

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { badRequest, readJson, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { sendMessage } from "@/lib/messages/messages";
 import { MESSAGE_REFUSALS, MESSAGE_TEXT_MAX } from "@/lib/messages/messages.constants";
 
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
     const sent = await sendMessage(me, parsed.data.to, parsed.data.text);
     if (!sent.ok) {
       const status = sent.reason === "no-such-member" ? 404 : sent.reason === "not-taking-messages" || sent.reason === "child-buddies-only" ? 403 : 422;
-      return NextResponse.json({ error: MESSAGE_REFUSALS[sent.reason], reason: sent.reason }, { status, headers: NO_STORE });
+      return NextResponse.json({ error: (await currentSpeaker()).say(MESSAGE_REFUSALS[sent.reason]), reason: sent.reason }, { status, headers: NO_STORE });
     }
     return NextResponse.json({ ok: true }, { status: 201, headers: NO_STORE });
   } catch (error) {

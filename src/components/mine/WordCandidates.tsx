@@ -1,6 +1,7 @@
 "use client";
 
-import { WORDS_COPY } from "./mine.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { wordsCopy } from "./mine.copy";
 import type { WordCandidatesProps } from "./words.types";
 
 /*
@@ -28,6 +29,7 @@ const REFRESH =
   "flex size-14 shrink-0 items-center justify-center self-center rounded-full border-2 border-rule-strong bg-ivory text-ink-soft transition-colors outline-none hover:border-moss hover:text-moss focus-visible:ring-4 focus-visible:ring-moss focus-visible:ring-offset-2 focus-visible:ring-offset-paper disabled:cursor-wait disabled:opacity-40 sm:size-16";
 
 export function WordCandidates({ offered, busy, remaining, onKeep, onRefresh }: WordCandidatesProps) {
+  const WORDS_COPY = wordsCopy(useSpeaker());
   return (
     <div className="flex flex-col gap-2">
       <p className="text-sm text-ink-soft">

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
 import { Select, Toggle } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, INPUT_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
@@ -19,7 +20,7 @@ import {
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import type { AgeBandFormProps } from "./ageBandForm.types";
-import { AGE_COPY } from "./mine.constants";
+import { ageCopy } from "./mine.copy";
 
 /**
  * The age question: three tiles, and under 13 the parent's or guardian's
@@ -33,6 +34,8 @@ import { AGE_COPY } from "./mine.constants";
  */
 export function AgeBandForm({ band, consented, place }: AgeBandFormProps) {
   const router = useRouter();
+  const say = useSpeaker();
+  const AGE_COPY = ageCopy(say);
   const hydrated = useHydrated();
   const [editing, setEditing] = useState(band === null);
   const [chosen, setChosen] = useState<AgeBand | null>(band);
@@ -59,7 +62,7 @@ export function AgeBandForm({ band, consented, place }: AgeBandFormProps) {
     setBusy(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? "That could not be saved.");
+      setError(payload?.error ?? say.say("mine.saveFailed"));
       return;
     }
     setSaved(true);
@@ -73,9 +76,9 @@ export function AgeBandForm({ band, consented, place }: AgeBandFormProps) {
     return (
       <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm" data-testid="age-band-form" {...readyMark(hydrated)}>
         <span data-testid="age-band-shown">
-          {AGE_COPY.shown}:{" "}
+          {AGE_COPY.shown}{say.sentences(["", ""])}
           <span className="font-medium">
-            {shown === null ? AGE_COPY.unsaid : <Paired en={shown.label} kanji={shown.kanji} kanjiClassName="opacity-70" />}
+            {shown === null ? AGE_COPY.unsaid : <Paired en={say.say(shown.label)} kanji={shown.kanji} kanjiClassName="opacity-70" />}
           </span>
           {consented ? <span className="text-muted"> · {AGE_COPY.consented}</span> : null}
           {saved ? <span className="text-moss"> · {AGE_COPY.saved}</span> : null}
@@ -114,7 +117,7 @@ export function AgeBandForm({ band, consented, place }: AgeBandFormProps) {
                 data-testid="age-band-option"
                 data-band={option}
               >
-                <Paired en={AGE_BAND_DISPLAY[option].label} kanji={AGE_BAND_DISPLAY[option].kanji} kanjiClassName="text-xs opacity-70" />
+                <Paired en={say.say(AGE_BAND_DISPLAY[option].label)} kanji={AGE_BAND_DISPLAY[option].kanji} kanjiClassName="text-xs opacity-70" />
               </button>
             );
           })}
@@ -141,7 +144,7 @@ export function AgeBandForm({ band, consented, place }: AgeBandFormProps) {
             <Select value={relationship} onChange={(event) => setRelationship(event.target.value)} data-testid="age-consent-relationship">
               {PARENT_RELATIONSHIP_LIST.map((option) => (
                 <option key={option} value={option}>
-                  {PARENT_RELATIONSHIP_DISPLAY[option]}
+                  {say.say(PARENT_RELATIONSHIP_DISPLAY[option])}
                 </option>
               ))}
             </Select>
@@ -177,7 +180,7 @@ export function AgeBandForm({ band, consented, place }: AgeBandFormProps) {
             }}
             className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3 py-2`}
           >
-            Cancel
+            {say.say("mine.cancel")}
           </button>
         ) : null}
       </div>

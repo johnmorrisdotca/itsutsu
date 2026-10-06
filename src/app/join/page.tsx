@@ -1,11 +1,16 @@
 import { getServerSession } from "next-auth";
 import Link from "@/components/ui/Link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { AskForInvite } from "@/components/auth/AskForInvite";
 import { JoinForm } from "@/components/auth/JoinForm";
 import { stampInviteRequestForm } from "@/lib/auth/inviteRequestStamp";
-import { STAGE, versionStamps } from "@/lib/version";
+import { LanguagePicker } from "@/components/layout/LanguagePicker";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { languageOptions } from "@/lib/i18n/dictionaries";
+import { LANG_PARAM } from "@/lib/i18n/i18n.constants";
+import { versionStamps } from "@/lib/version";
 import { BrandAvatar, BrandWordmark } from "@/components/layout/BrandMarks";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { currentSession } from "@/lib/auth/currentSession";
@@ -14,10 +19,9 @@ import { findMember } from "@/lib/auth/members";
 import { safeDestination } from "@/lib/auth/redirect";
 import { fetchSiteSettings } from "@/lib/site/siteStore";
 
-export const metadata = {
-  title: "Join",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata() {
+  return { title: (await currentSpeaker()).say("auth.join.title"), robots: { index: false, follow: false } };
+}
 
 /**
  * The door. Google is the front of it; an invite code is the side of it.
@@ -28,6 +32,7 @@ export const metadata = {
  */
 export default async function JoinPage({ searchParams }: PageProps<"/join">) {
   const params = await searchParams;
+  const say = await currentSpeaker();
   const stamps = versionStamps();
   const next = safeDestination(typeof params.next === "string" ? params.next : null);
 
@@ -55,7 +60,7 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
       </header>
       {typeof params.error === "string" ? (
         <p className="max-w-sm text-center text-sm text-shu" data-testid="join-error" data-width-reason="a short notice centred on the doorstep, which has no page frame">
-          Google sign-in did not complete ({params.error}). Try again, or use an invite code.
+          {say.say("auth.join.googleFailed", { error: params.error })}
         </p>
       ) : null}
       <JoinForm
@@ -78,7 +83,7 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
         <AskForInvite stamp={await stampInviteRequestForm()} open={params.ask === "1"} />
       ) : null}
       <p className="flex items-baseline gap-3 font-mono text-xs text-muted tabular-nums" data-testid="join-version">
-        <span className="font-sans font-semibold text-ink-soft">{STAGE}</span>
+        <span className="font-sans font-semibold text-ink-soft">{say.say("chrome.stage")}</span>
         <span>{stamps.semver}</span>
         <span className="opacity-70">{stamps.roman}</span>
         <span className="font-mincho opacity-70">{stamps.kanji}</span>
@@ -86,12 +91,18 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
       {/* The doorstep has no footer, so the two pages a stranger should read before asking are here. */}
       <span className="flex gap-3">
         <Link href="/privacy" className="text-xs text-muted underline underline-offset-4" data-testid="join-privacy">
-          Privacy
+          {say.say("nav.privacy")}
         </Link>
         <Link href="/terms" className="text-xs text-muted underline underline-offset-4" data-testid="join-terms">
-          Terms of play
+          {say.say("auth.join.terms")}
         </Link>
       </span>
+      {/* The doorstep has no footer either, so the picker is here: a visitor who is not reading English can choose the language before they sign in. */}
+      <div className="text-xs text-muted" data-testid="join-language">
+        <Suspense fallback={null}>
+          <LanguagePicker options={languageOptions()} current={say.locale} param={LANG_PARAM} label={say.say("site.language")} />
+        </Suspense>
+      </div>
     </div>
   );
 }

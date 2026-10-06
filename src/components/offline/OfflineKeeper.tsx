@@ -2,7 +2,9 @@
 
 import { useEffect } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
+import { phraseWith } from "@/components/i18n/phraseWith";
 import { KEEPER_SCRIPT, canKeep } from "@/lib/offline/offlineKeeper";
 
 import { useOnline } from "./keptGames";
@@ -46,13 +48,16 @@ export function OfflineKeeper() {
 }
 
 function OfflineLine() {
+  const say = useSpeaker();
   return (
     <div role="status" data-testid="offline-line" className="w-full bg-ink px-4 py-1.5 text-center text-xs font-medium text-paper">
-      You&apos;re offline. Games marked Ready offline on the{" "}
-      <Link href="/games" className="underline underline-offset-2">
-        games list
-      </Link>{" "}
-      still play here; live games, races and records wait for a connection.
+      {phraseWith(say.say("chrome.offline.notice"), {
+        link: (
+          <Link href="/games" className="underline underline-offset-2">
+            {say.say("chrome.offline.gamesList")}
+          </Link>
+        ),
+      })}
     </div>
   );
 }

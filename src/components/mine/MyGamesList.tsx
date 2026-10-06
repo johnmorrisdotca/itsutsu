@@ -18,7 +18,8 @@ import type { Tab } from "@/lib/ui/tabs";
 import { gamesGoing } from "@/lib/history/gamesGoing";
 import { seatClaims } from "@/lib/history/seatCookie";
 import { BotCatchUp } from "./BotCatchUp";
-import { MY_GAMES_COPY } from "./mine.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { myGamesCopy } from "./mine.copy";
 import { FavouritesPanel } from "./FavouritesPanel";
 import { Group } from "./MyGamesGroup";
 import { MyPuzzleRuns } from "./MyPuzzleRuns";
@@ -179,6 +180,8 @@ export async function MyGamesList({
   /** Where the History tab was paged to (`?before=`, an ISO time), or null for the newest. */
   historyBefore?: string | null;
 } = {}) {
+  const say = await currentSpeaker();
+  const MY_GAMES_COPY = myGamesCopy(say);
   const claims = seatClaims((await cookies()).getAll());
   // The member, by id — however they came in. Null for a browser holding only seat cookies.
   const memberId = await currentMemberId();
@@ -368,7 +371,7 @@ export async function MyGamesList({
       <BotCatchUp games={stuck} />
       {/* The count of games going is on the Going tab now, and the strip reads the same number. */}
       <span hidden data-testid="my-games-heading" data-going={going} />
-      <Tabs tabs={tabs} active={view} base="/play" label="Which of your games" />
+      <Tabs tabs={tabs} active={view} base="/play" label={say.say("mine.myGamesTabs")} />
 
       {view === "going" ? (
         goingShown === 0 && opened === null ? (
@@ -378,9 +381,9 @@ export async function MyGamesList({
               nothing going is shown the door to one, not told about it.
             */}
             <p className="text-sm text-muted">
-              No games in progress.{" "}
+              {say.say("mine.noneGoing")}{" "}
               <Link href="/games/new" className="font-medium text-ink underline underline-offset-4" data-testid="empty-new-game">
-                New game →
+                {say.say("mine.newGameArrow")}
               </Link>
             </p>
           </div>

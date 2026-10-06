@@ -1,18 +1,17 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { checkRateLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { currentMemberRow, currentSession } from "@/lib/auth/currentSession";
-import { currentAdmin } from "@/lib/auth/requireAdmin";
-import { fileReport, moveReport, reportsHealthy, sendReport } from "@/lib/sumilabu/reportsClient";
-import type { ReportChanged, ReportSent, ReportStatus } from "@/lib/sumilabu/reportsClient.types";
+import { reportsHealthy, sendReport } from "@/lib/sumilabu/reportsClient";
+import type { ReportSent } from "@/lib/sumilabu/reportsClient.types";
 import { sumilabuTarget } from "@/lib/sumilabu/sumilabuProject";
 import type { SumilabuTarget } from "@/lib/sumilabu/sumilabuProject.types";
 import { VERSION } from "@/lib/version";
 
-import { REPORT_HEALTH_CACHE_MS, REPORT_IMAGE_MAX_BYTES, REPORT_LIMITS, REPORT_MOVES } from "./reports.constants";
+import { OPERATOR_REPORTER_NAME, REPORT_HEALTH_CACHE_MS, REPORT_IMAGE_MAX_BYTES, REPORT_LIMITS } from "./reports.constants";
 import { cleanReportPath } from "./reportDraft";
 
 /**
@@ -69,7 +68,7 @@ async function reporterName(): Promise<string | null> {
   const session = await currentSession();
   if (session === null) return null;
   const row = await currentMemberRow();
-  const name = (row?.name ?? (session.kind === "admin" ? "The operator" : null))?.trim();
+  const name = (row?.name ?? (session.kind === "admin" ? OPERATOR_REPORTER_NAME : null))?.trim();
   return name ? name.slice(0, REPORT_LIMITS.nameMax) : null;
 }
 
@@ -82,15 +81,16 @@ function decodedBytes(base64: string): number {
 }
 
 export async function submitReport(asked: { body: string; path: string; reporterRef: string; image?: string | null }): Promise<ReportSent> {
+  const say = await currentSpeaker();
   const body = asked.body.trim();
-  if (body.length < REPORT_LIMITS.bodyMin) return { ok: false, reason: "invalid", problem: "Say a little more about what went wrong." };
-  if (body.length > REPORT_LIMITS.bodyMax) return { ok: false, reason: "invalid", problem: `Keep it under ${REPORT_LIMITS.bodyMax} characters.` };
+  if (body.length < REPORT_LIMITS.bodyMin) return { ok: false, reason: "invalid", problem: say.say("reports.tooShort") };
+  if (body.length > REPORT_LIMITS.bodyMax) return { ok: false, reason: "invalid", problem: say.say("reports.tooLong", { max: say.number(REPORT_LIMITS.bodyMax) }) };
   const image = asked.image?.trim() || null;
   if (image !== null && (!BASE64.test(image) || decodedBytes(image) > REPORT_IMAGE_MAX_BYTES)) {
-    return { ok: false, reason: "invalid", problem: "That picture could not be sent. Try a smaller one, or send the report without it." };
+    return { ok: false, reason: "invalid", problem: say.say("reports.shotUnsendable") };
   }
   const reporterRef = asked.reporterRef.trim().slice(0, REPORT_LIMITS.refMax);
-  if (reporterRef === "") return { ok: false, reason: "invalid", problem: "This browser could not be told apart; reload and try again." };
+  if (reporterRef === "") return { ok: false, reason: "invalid", problem: say.say("reports.noReporter") };
 
   // Our own function calls are paid for, whatever Sumilabu's limit says: five a
   // reader's address per ten minutes, the same as Sumilabu's per reporter.
@@ -107,35 +107,4 @@ export async function submitReport(asked: { body: string; path: string; reporter
     reporterName: await reporterName(),
     ...(image === null ? {} : { image }),
   });
-}
-
-const NOT_YOURS: ReportChanged = { ok: false, problem: "No such thing." };
-
-async function operatorName(): Promise<string | null> {
-  const me = await currentAdmin();
-  if (me === null) return null;
-  return (me.name ?? me.email ?? "operator").trim() || "operator";
-}
-
-/** Read or closed, along the contract's table. Anybody but the operator is answered as a stranger is. */
-export async function markReport(id: string, from: ReportStatus, to: "read" | "closed"): Promise<ReportChanged> {
-  const actor = await operatorName();
-  if (actor === null) return NOT_YOURS;
-  if (!REPORT_MOVES[from].includes(to)) return { ok: false, problem: "That report cannot move there." };
-  const reports = target("reports");
-  if (reports === null) return { ok: false, problem: "Reports are not connected here." };
-  const outcome = await moveReport(reports, id, to, actor);
-  if (outcome.ok) revalidatePath("/admin");
-  return outcome;
-}
-
-/** A ticket on this site's board, made from the report and linked to it. The board's token, not the reports'. */
-export async function fileReportAsTicket(id: string): Promise<ReportChanged> {
-  const actor = await operatorName();
-  if (actor === null) return NOT_YOURS;
-  const board = target("board");
-  if (board === null) return { ok: false, problem: "The board is not connected here." };
-  const outcome = await fileReport(board, id, actor);
-  if (outcome.ok) revalidatePath("/admin");
-  return outcome;
 }

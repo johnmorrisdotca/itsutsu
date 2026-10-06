@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import type { Speaker } from "@/lib/i18n/i18n";
 import { AWAY_AFTER_DAYS, filterBarHref, type DirectoryFilter } from "@/lib/rating/directoryFilter";
 
 import { ToggleLink } from "@/components/ui/ViewTabs";
@@ -19,12 +20,14 @@ import { WhoFilter } from "./WhoFilter";
  * without saying so reads as a broken page rather than as an answer.
  */
 export function DirectoryFilters({
+  say,
   filter,
   query,
   shown,
   total,
   worldwide,
 }: {
+  say: Speaker;
   filter: DirectoryFilter;
   /**
    * The address as it stands, so narrowing keeps whatever else is on it.
@@ -57,31 +60,31 @@ export function DirectoryFilters({
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2" data-testid="directory-filters">
-      <WhoFilter who={filter.who} hrefFor={(who) => to({ ...filter, who })} />
+      <WhoFilter say={say} who={filter.who} hrefFor={(who) => to({ ...filter, who })} />
 
       {/* Switches, each on or off over the list: ticked boxes, not tabs (`ToggleLink`). */}
-      <nav className="flex flex-wrap items-center gap-x-3 gap-y-1" aria-label="Which of them to leave out">
+      <nav className="flex flex-wrap items-center gap-x-3 gap-y-1" aria-label={say.say("players.filterLabel")}>
         <ToggleLink
           href={to({ ...filter, settled: !filter.settled })}
           on={filter.settled}
           testId="only-settled"
-          title="A rating is unrated for the first few games and provisional while it settles."
+          title={say.say("players.filterEstablishedTitle")}
         >
-          Established ratings
+          {say.say("players.chipEstablished")}
         </ToggleLink>
         <ToggleLink
           href={to({ ...filter, active: !filter.active })}
           on={filter.active}
           testId="only-active"
-          title={`Seen in the last ${AWAY_AFTER_DAYS} days. A bot is always about.`}
+          title={say.say("players.filterActiveTitle", { days: say.number(AWAY_AFTER_DAYS) })}
         >
-          Recently active
+          {say.say("players.chipActive")}
         </ToggleLink>
         {worldwide}
       </nav>
 
       <p className="text-xs text-muted" data-testid="directory-count">
-        {shown === total ? `${total} listed` : `${shown} of ${total} listed`}
+        {shown === total ? say.say("players.listedAll", { total: say.number(total) }) : say.say("players.listedSome", { shown: say.number(shown), total: say.number(total) })}
       </p>
     </div>
   );

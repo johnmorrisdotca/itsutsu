@@ -5,10 +5,11 @@ import { RowMenu } from "@/components/ui/RowMenu";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
 import { STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { seatName } from "@/lib/gomoku/seatWords";
-import { speaker } from "@/lib/i18n/i18n";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { STALE_AFTER_DAYS, type MyGame } from "@/lib/history/myGames";
-import { MY_GAMES_COPY } from "./mine.constants";
+import { myGamesCopy } from "./mine.copy";
 import { FavouriteStar } from "./FavouriteStar";
 import { OfferButtons } from "./OfferButtons";
 import { ResignButton } from "./ResignButton";
@@ -16,7 +17,6 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import type { NameTag } from "@/lib/xp/nameTagsOf";
-import { countText } from "@/lib/rating/figures";
 import { ResultMark } from "@/components/game/ResultMark";
 import { seatResult } from "@/components/game/resultMarks";
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
@@ -34,13 +34,13 @@ import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
  */
 
 /** A rating change as a figure with its sign and its word, green for up and red for down. */
-function RatingChange({ change }: { change: number }) {
+function RatingChange({ change, say }: { change: number; say: Speaker }) {
   return (
     <span className="text-right leading-tight" data-testid="game-rating-change" data-change={change}>
       <span className={`block font-mono text-base font-semibold tabular-nums ${change > 0 ? "text-moss" : change < 0 ? "text-shu" : ""}`}>
         {change > 0 ? `+${change}` : change < 0 ? `−${-change}` : "±0"}
       </span>
-      <span className="block text-[0.6rem] tracking-wide text-muted uppercase">Rating</span>
+      <span className="block text-[0.6rem] tracking-wide text-muted uppercase">{say.say("players.colRating")}</span>
     </span>
   );
 }
@@ -51,20 +51,23 @@ function tagOf(tags: ReadonlyMap<string, NameTag>, memberId: string | null): Nam
 }
 
 /** "3 days ago", the way a list of games reads it, and a list of puzzles solved. */
-export function ago(iso: string, now: Date): string {
-  const minutes = Math.max(0, Math.round((now.getTime() - new Date(iso).getTime()) / 60_000));
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} h ago`;
-  const days = Math.round(hours / 24);
-  return days === 1 ? "yesterday" : `${days} days ago`;
+/** A colour as the reader's language says it, with the kanji beside it for a reader of English: "Black 黒", "黒". */
+function colourWords(seat: "black" | "white", say: Speaker): string {
+  const shown = say.pairName(STONE_DISPLAY[seat].label, STONE_DISPLAY[seat].kanji);
+  return shown.kanji === null ? shown.text : `${shown.text} ${shown.kanji}`;
 }
 
-/** This page is not yet read in two languages (the My games ticket), so its fallback names are English. */
-const ENGLISH = speaker("en");
+export function ago(iso: string, now: Date, say: Speaker): string {
+  const minutes = Math.max(0, Math.round((now.getTime() - new Date(iso).getTime()) / 60_000));
+  if (minutes < 1) return say.say("mine.agoNow");
+  if (minutes < 60) return say.say("mine.agoMinutes", { count: say.number(minutes) });
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return say.say("mine.agoHours", { count: say.number(hours) });
+  const days = Math.round(hours / 24);
+  return days === 1 ? say.say("mine.agoYesterday") : say.say("mine.agoDays", { count: say.number(days) });
+}
 
-export function Row({
+export async function Row({
   item,
   now,
   tags,
@@ -78,16 +81,18 @@ export function Row({
   /** Whether the reader has starred this finished game (`favourites.ts`); null where no star is offered. */
   starred?: boolean | null;
 }) {
+  const say = await currentSpeaker();
+  const MY_GAMES_COPY = myGamesCopy(say);
   const { game, seat, group, offer, offerSide } = item;
-  const black = game.blackName.trim() || seatName(ENGLISH, "one");
-  const white = game.whiteName.trim() || seatName(ENGLISH, "two");
+  const black = game.blackName.trim() || seatName(say, "one");
+  const white = game.whiteName.trim() || seatName(say, "two");
   /*
    * The other person's name, for the sentences an offer's row says. Read off
    * the seat this reader is NOT in, which on an offer is the other person
    * whichever colour they hold — a rematch swaps them, so "white" would be
    * wrong about half of them.
    */
-  const them = (seat === STONES.black ? white : black).trim() || seatName(ENGLISH, "two");
+  const them = (seat === STONES.black ? white : black).trim() || seatName(say, "two");
   /*
    * One address either way. A match kept its identity when it finished and the
    * link to it did not: a finished game went to /history/<slug>/<id> and a
@@ -105,7 +110,7 @@ export function Row({
    * it, so it would also be a button that does nothing.
    */
   const running = group !== "finished" && offer === null;
-  const finished = group === "finished" ? seatResult(game.result, named ? seat : null, GAME_RESULT_DISPLAY[game.result].label) : null;
+  const finished = group === "finished" ? seatResult(game.result, named ? seat : null, say.pairName(GAME_RESULT_DISPLAY[game.result].label, GAME_RESULT_DISPLAY[game.result].kanji).text, say) : null;
   return (
     <li
       /*
@@ -138,7 +143,7 @@ export function Row({
         says so in words — Your move, or Open: John's "you play your move, then
         the next game opens up" starts with seeing which rows are doors.
       */}
-      <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={`${black} vs ${white}`} />
+      <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={say.say("mine.rowAria", { black, white })} />
       {/*
         The board, so the queue can be scanned rather than read. John: "it's
         all just text. very ugly and hard to scan." A Reversi board and a
@@ -159,9 +164,9 @@ export function Row({
         */}
         {named ? (
           <span className="truncate font-medium">
-            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={seatName(ENGLISH, "one")} linkable={named} className={RAISED_LINK} tag={tagOf(tags, game.blackMemberId)} />
-            <span className="px-1 text-muted">vs</span>
-            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={seatName(ENGLISH, "two")} linkable={named} className={RAISED_LINK} tag={tagOf(tags, game.whiteMemberId)} />
+            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={seatName(say, "one")} linkable={named} className={RAISED_LINK} tag={tagOf(tags, game.blackMemberId)} />
+            <span className="px-1 text-muted">{say.say("players.versus")}</span>
+            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={seatName(say, "two")} linkable={named} className={RAISED_LINK} tag={tagOf(tags, game.whiteMemberId)} />
           </span>
         ) : (
           <span className="truncate font-medium">
@@ -189,7 +194,7 @@ export function Row({
               <GameName variant={game.variant} raised /> ·{" "}
             </>
           ) : null}
-          {boardWords(game.variant, game.size)} · {game.moveCount} {game.moveCount === 1 ? "move" : "moves"} ·{" "}
+          {boardWords(game.variant, game.size, say)} · {say.count("count.move", game.moveCount)} ·{" "}
           {/*
             "you WOULD be white" on an offer, because you are not in it yet.
             The colour is the fact a reader most wants before answering — a
@@ -198,11 +203,10 @@ export function Row({
           */}
           {named ? (
             <>
-              {offer === "offered" && offerSide === "to-me" ? "you would be " : group === "finished" ? "you were " : "you are "}
-              {STONE_DISPLAY[seat].label} {STONE_DISPLAY[seat].kanji} ·{" "}
+              {say.say(offer === "offered" && offerSide === "to-me" ? "mine.rowWould" : group === "finished" ? "mine.rowWere" : "mine.rowAre", { colour: colourWords(seat, say) })} ·{" "}
             </>
           ) : null}
-          {ago(item.since, now)}
+          {ago(item.since, now, say)}
         </span>
         {/*
           WHAT AN OFFER IS DOING, in a sentence, on the row. A declined offer is
@@ -239,7 +243,7 @@ export function Row({
           that 1600 thingy like +10, -10"). Nothing where it moved none.
         */}
         {group === "finished" && (seat === STONES.black ? game.blackRatingChange : game.whiteRatingChange) !== null ? (
-          <RatingChange change={(seat === STONES.black ? game.blackRatingChange : game.whiteRatingChange) as number} />
+          <RatingChange say={say} change={(seat === STONES.black ? game.blackRatingChange : game.whiteRatingChange) as number} />
         ) : null}
         {/*
           AND THE IP IT WON: Itsutsu Points, results only (`gamePoints`), beside
@@ -249,15 +253,15 @@ export function Row({
         {group === "finished" && ((seat === STONES.black ? game.blackPoints : game.whitePoints) ?? 0) > 0 ? (
           <span className="text-right leading-tight" data-testid="game-ip-won" data-ip={seat === STONES.black ? game.blackPoints : game.whitePoints}>
             <span className="block font-mono text-base font-semibold tabular-nums">
-              +{countText((seat === STONES.black ? game.blackPoints : game.whitePoints) as number)}
+              +{say.number((seat === STONES.black ? game.blackPoints : game.whitePoints) as number)}
             </span>
             <span className="block text-[0.6rem] tracking-wide text-muted uppercase">IP</span>
           </span>
         ) : null}
         {earned !== undefined ? (
           <span className="text-right leading-tight" data-testid="game-xp-earned" data-xp={earned}>
-            <span className="block font-mono text-base font-semibold tabular-nums">+{countText(earned)}</span>
-            <span className="block text-[0.6rem] tracking-wide text-muted uppercase">XP</span>
+            <span className="block font-mono text-base font-semibold tabular-nums">+{say.number(earned)}</span>
+            <span className="block text-[0.6rem] tracking-wide text-muted uppercase">{say.say("players.colXp")}</span>
           </span>
         ) : null}
         {item.stale ? (

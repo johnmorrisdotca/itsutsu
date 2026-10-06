@@ -12,6 +12,8 @@ import { listable } from "@/lib/social/listable";
 import { playerKey } from "@/lib/rating/playerKey";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { matchPath } from "@/lib/gomoku/slugs";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import type { PlayerRecord } from "@/lib/history/playerRecord";
 import type { TimeGiftRecord } from "@/lib/history/timeGifts";
 
@@ -23,7 +25,7 @@ import type { TimeGiftRecord } from "@/lib/history/timeGifts";
  * from before this site gets a tab per site beside it, and the same figures
  * are worked out the same way in every one of them.
  */
-export function ItsutsuRecord({
+export async function ItsutsuRecord({
   name,
   memberId,
   record,
@@ -69,17 +71,18 @@ export function ItsutsuRecord({
    */
   emptyNote?: string;
 }) {
+  const say = await currentSpeaker();
   if (record.games === 0) {
     return (
       <p className={`${PANEL_CLASS} text-sm text-muted`} data-testid="player-no-games">
-        {emptyNote ?? "No finished games yet. A rating appears after the first one against another member."}
+        {emptyNote ?? say.say("players.emptyNote")}
       </p>
     );
   }
   return (
     <div className="flex flex-col gap-6">
       <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-        <h3 className={SECTION_TITLE}>By game</h3>
+        <h3 className={SECTION_TITLE}>{say.say("players.byGame")}</h3>
         {/*
           THE SAME TABLE AS EVERY OTHER RECORD ON THE SITE, which is what
           changed here. This had its own headings — "Won · Lost · Drawn" as ONE
@@ -98,7 +101,8 @@ export function ItsutsuRecord({
           here would say nothing while looking like an answer.
         */}
         <RecordTable
-          subject="Game"
+          say={say}
+          subject={say.say("players.colGame")}
           rows={record.byVariant.map((row) => ({
             key: row.variant,
             /*
@@ -138,40 +142,42 @@ export function ItsutsuRecord({
           */
           columns={{ rating: false, xp: false, ip: false }}
           testId="player-by-variant"
-          empty={<>No finished games here yet.</>}
+          empty={<>{say.say("players.noGamesHere")}</>}
         />
       </section>
 
       {record.recent.length > 0 ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-          <h3 className={SECTION_TITLE}>Recent games</h3>
+          <h3 className={SECTION_TITLE}>{say.say("players.recentGames")}</h3>
           <ul className="flex flex-col divide-y divide-rule text-sm">
             {record.recent.map((game) => (
               <li key={game.id} className="flex items-center justify-between gap-3 py-1.5" data-testid="player-recent-game">
                 <span className="flex min-w-0 items-center gap-2">
                   <GameThumb variant={game.variant} size="small" />
                   <span>
-                  <GameName variant={game.variant} /> · vs{" "}
-                  {game.opponent ? (
-                    <PlayerName
-                      name={game.opponent}
-                      memberId={opponents?.members.get(playerKey(game.opponent))?.id}
-                      fallback="anonymous"
-                      testId="player-opponent"
-                      tag={opponents?.tags?.get(opponents.members.get(playerKey(game.opponent))?.id ?? "")}
-                    />
-                  ) : (
-                    "anonymous"
-                  )}
+                  {weave(say.say("players.versusLine"), {
+                    game: <GameName variant={game.variant} />,
+                    other: game.opponent ? (
+                      <PlayerName
+                        name={game.opponent}
+                        memberId={opponents?.members.get(playerKey(game.opponent))?.id}
+                        fallback={say.say("players.anonymous")}
+                        testId="player-opponent"
+                        tag={opponents?.tags?.get(opponents.members.get(playerKey(game.opponent))?.id ?? "")}
+                      />
+                    ) : (
+                      say.say("players.anonymous")
+                    ),
+                  })}
                   </span>
                 </span>
                 <span className="flex flex-wrap items-center justify-end gap-3">
                   <span className="inline-flex items-center gap-1 font-mono text-xs tabular-nums" data-testid="player-recent-outcome">
                     <ResultMark kind={markOfOutcome(game.outcome === "drew" ? "draw" : game.outcome)} />
-                    {game.outcome}
+                    {say.say(game.outcome === "won" ? "players.outcomeWon" : game.outcome === "lost" ? "players.outcomeLost" : "players.outcomeDrawn")}
                   </span>
                   <Link href={matchPath(game.variant, game.id)} className="text-xs underline-offset-2 hover:underline">
-                    replay
+                    {say.say("players.replay")}
                   </Link>
                   {/*
                     And what to do about the person, beside the game they were
@@ -189,14 +195,20 @@ export function ItsutsuRecord({
 
       {gifts.gaveIn > 0 || gifts.receivedIn > 0 ? (
         <p className="text-xs text-muted" data-testid="time-gifts">
-          With the clock:{" "}
-          {gifts.gaveIn > 0
-            ? `gave the other side more time in ${gifts.gaveIn} game${gifts.gaveIn === 1 ? "" : "s"}`
-            : "never needed to give time"}
-          {gifts.receivedIn > 0
-            ? `; was given time in ${gifts.receivedIn}, and went on to win ${gifts.wonAfterReceiving} and lose ${gifts.lostAfterReceiving} of those`
-            : ""}
-          .
+          {say.say("players.giftsLine", {
+            text: say.joined([
+              gifts.gaveIn > 0 ? say.count("players.giftsGave", gifts.gaveIn) : say.say("players.giftsNone"),
+              ...(gifts.receivedIn > 0
+                ? [
+                    say.say("players.giftsReceived", {
+                      count: say.number(gifts.receivedIn),
+                      won: say.number(gifts.wonAfterReceiving),
+                      lost: say.number(gifts.lostAfterReceiving),
+                    }),
+                  ]
+                : []),
+            ]),
+          })}
         </p>
       ) : null}
     </div>

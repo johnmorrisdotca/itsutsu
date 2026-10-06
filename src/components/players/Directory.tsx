@@ -6,8 +6,10 @@ import { memberKind } from "@/lib/auth/memberKind";
 import { DirectoryFilters } from "@/components/players/DirectoryFilters";
 import { RecencyMark } from "@/components/mine/Recency";
 import { buddyMemberIds } from "@/lib/social/buddies";
-import { currentLocale } from "@/lib/i18n/currentLocale";
-import { countText } from "@/lib/rating/figures";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { SITE_NAME } from "@/lib/i18n/siteName";
+import { weave } from "@/lib/i18n/weave";
 import { currentReader } from "@/lib/auth/currentReader";
 import { DIRECTORY_SORT_SPEC } from "@/lib/rating/directory.sort";
 import {
@@ -67,6 +69,7 @@ function directoryRow(
   scope: RecordScope,
   actions: ReturnType<typeof directoryActions>,
   ip: ReadonlyMap<string, number>,
+  say: Speaker,
 ): RecordTableRow {
   /*
    * EVERY GAME PLAYED HERE, off the member's own row. It was 0.147.1's fix that
@@ -102,7 +105,7 @@ function directoryRow(
     key: entry.id,
     subject: (
       <span className="flex items-center gap-2">
-        <RecencyMark recency={actions.recency(entry)} />
+        <RecencyMark recency={actions.recency(entry)} say={say} />
         {/*
           No picture before the name. It was drawn on this tab alone, and only
           for members who had signed in with one, so the names did not line up
@@ -140,8 +143,8 @@ function directoryRow(
         {entry.isNew ? (
           <span
             className="text-[0.7rem] font-semibold text-moss"
-            title="New here, joined in the last two weeks"
-            aria-label="new member"
+            title={say.say("players.dirNew")}
+            aria-label={say.say("players.dirNewAria")}
             data-testid="record-new"
           >
             新
@@ -204,7 +207,7 @@ function directoryRow(
        */
       <span
         className="ml-0.5 align-super text-[0.6rem] text-muted"
-        title="Includes games from another site, copied down once and not updated since."
+        title={say.say("players.dirKeptMark")}
         data-testid="record-kept-mark"
       >
         ※
@@ -262,7 +265,7 @@ export async function Directory({
   query: string;
   now: Date;
 }) {
-  const locale = await currentLocale();
+  const say = await currentSpeaker();
   const params = new URLSearchParams(query);
   const asked = readDirectoryPaging(params);
   /*
@@ -330,15 +333,13 @@ export async function Directory({
   return (
     <div className="flex flex-col gap-4" data-testid="directory-section">
       <p className="text-sm text-muted">
-        The members, most recently seen first, with the record their name has earned. Press a
-        heading to sort by it. The number beside a name is the level each one stands on, and XP{" "}
-        <span className="font-mincho">経験</span> is the experience that got them there — follow it to
-        the{" "}
-        <Link href="/xp" className="underline underline-offset-4" data-testid="directory-xp-board">
-          board
-        </Link>{" "}
-        that ranks everybody by it. New members are marked for two weeks; press Play beside one, and the game
-        is in their list the moment you start it.
+        {weave(say.say("players.dirLead"), {
+          board: (
+            <Link href="/xp" className="underline underline-offset-4" data-testid="directory-xp-board">
+              {say.say("players.dirBoard")}
+            </Link>
+          ),
+        })}
       </p>
       {/*
         `shown` is how many members MATCH the narrowing and not how many are on
@@ -351,6 +352,7 @@ export async function Directory({
         just pressed for.
       */}
       <DirectoryFilters
+        say={say}
         filter={filter}
         query={query}
         shown={page.matching}
@@ -364,19 +366,20 @@ export async function Directory({
         */
         worldwide={
           scopeWorthAsking(anyKept ? 2 : 1) ? (
-            <RecordScopeBar base="/players" query={query} scope={scope} label="How much of these records to count" />
+            <RecordScopeBar say={say} base="/players" query={query} scope={scope} label={say.say("players.dirScope")} />
           ) : null
         }
       />
-      <DirectoryNarrowed filter={filter} query={query} rememberedWho={rememberedWho} />
+      <DirectoryNarrowed say={say} filter={filter} query={query} rememberedWho={rememberedWho} />
       {refused ? (
         <p className="text-sm text-muted" data-testid="directory-sort-refused">
-          That was not an order the members list has, so this is the list by who was seen last.
+          {say.say("players.dirSortRefused")}
         </p>
       ) : null}
       <RecordTable
-        subject="Member"
-        rows={people.map((entry) => directoryRow(entry, scope, actions, ip))}
+        say={say}
+        subject={say.say("players.colMember")}
+        rows={people.map((entry) => directoryRow(entry, scope, actions, ip, say))}
         // XP is on by default on every table of people; only `joined` and the
         // controls are this table's own.
         columns={{ joined: true, actions: "" }}
@@ -388,7 +391,7 @@ export async function Directory({
          * who nobody here is, with each narrowing's way off — see
          * `DirectoryNarrowing.tsx`.
          */
-        empty={<DirectoryEmpty filter={filter} query={query} />}
+        empty={<DirectoryEmpty say={say} filter={filter} query={query} />}
         /*
           What the mark means, said once under the table rather than repeated
           in every row that carries it. Drawn only when a row on this screen
@@ -397,17 +400,15 @@ export async function Directory({
         caption={
           anyKept ? (
             <p className="text-xs leading-snug text-muted" data-testid="directory-kept-note">
-              <span className="align-super text-[0.6rem]">※</span> Counts games from before Itsutsu, on
-              the sites named on that player&rsquo;s own page.{" "}
-              <span className="font-medium text-ink-soft">Those figures do not update</span> — they were
-              copied down by hand once and are a snapshot of that day. Only what happens here is counted
-              as it happens; the rating and the streak are always Itsutsu&rsquo;s alone.
+              {weave(say.say("players.dirKeptNote", { site: SITE_NAME }), {
+                mark: <span className="align-super text-[0.6rem]">※</span>,
+                bold: <span className="font-medium text-ink-soft">{say.say("players.dirNoUpdate")}</span>,
+              })}
               {tallySorted ? (
                 <>
                   {" "}
                   <span data-testid="directory-sort-here-note">
-                    This order is by games played HERE, so a row with the mark sits by its Itsutsu
-                    figure rather than by the total shown.
+                    {say.say("players.dirSortHere", { site: SITE_NAME })}
                   </span>
                 </>
               ) : null}
@@ -418,7 +419,7 @@ export async function Directory({
 
       <div className="flex flex-wrap items-center gap-3">
         <p className="text-sm text-muted" data-testid="directory-page-count">
-          {countText(people.length, locale)} of {countText(page.matching, locale)} shown
+          {say.say("players.dirCount", { shown: say.number(people.length), total: say.number(page.matching) })}
         </p>
         {page.next === null ? null : (
           <Link
@@ -426,7 +427,7 @@ export async function Directory({
             className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
             data-testid="directory-next"
           >
-            Show the next {countText(Math.min(paging.limit, page.matching - people.length), locale)}
+            {say.say("players.showNext", { count: say.number(Math.min(paging.limit, page.matching - people.length)) })}
           </Link>
         )}
         {/*
@@ -444,7 +445,7 @@ export async function Directory({
             className="text-sm underline underline-offset-4"
             data-testid="directory-top"
           >
-            Back to the first page
+            {say.say("players.dirTop")}
           </Link>
         )}
         {paging.sort.asked ? (
@@ -453,7 +454,7 @@ export async function Directory({
             className="text-sm underline underline-offset-4"
             data-testid="directory-own-order"
           >
-            Most recently seen first
+            {say.say("players.dirOwnOrder")}
           </Link>
         ) : null}
       </div>

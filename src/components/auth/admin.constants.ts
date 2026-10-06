@@ -172,3 +172,9 @@ export const ADMIN_REMOVE_COPY = {
   done: (name: string) => `${name === "" ? "The account" : name} is removed.`,
   failed: "The account was not removed.",
 } as const;
+
+/** The operator's two shortcuts in the account menu, to the Admin tabs they use most. English by decision, like the Admin page. */
+export const ADMIN_SHORTCUTS = [
+  { href: "/admin/tickets", label: "Tickets", testId: "admin-tickets-link" },
+  { href: "/admin/members", label: "Members", testId: "admin-members-link" },
+] as const;

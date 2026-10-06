@@ -12,6 +12,8 @@ import { gamesPlayed, ratingShown, tierShown } from "@/lib/rating/shownRecord";
 import { fetchPlayedTallies } from "@/lib/history/playerRecord";
 import type { DirectoryEntry } from "@/lib/rating/directoryRows";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 
 /**
  * The players that are programs.
@@ -41,6 +43,7 @@ import { MEMBER_KINDS } from "@/lib/auth/memberKind";
  * printing that would be worse than printing nothing.
  */
 export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }) {
+  const say = await currentSpeaker();
   /*
    * Easiest first, so the ladder reads itself. The directory hands them over
    * in the order they were last seen, which for players who are always
@@ -185,32 +188,27 @@ export async function ComputerPlayers({ entries }: { entries: DirectoryEntry[] }
         cannot say either.
       */}
       <p className="text-xs text-muted">
-        {graded.length} opponents that will play any game on this board, from the gentlest to the strongest
-        {experts.length > 0 ? (
-          <>
-            , and {experts.length} that play one game each and are the strongest thing here at it
-          </>
-        ) : null}
-        . They hold a seat like anybody else and their games count: beating one moves your rating, and losing to one
-        moves it the other way. They keep a rating of their own, earned against each other and against the people who
-        play them — kept apart from the ladder, so a game against a program never changes where you stand among the
-        people.
+        {experts.length > 0
+          ? say.say("players.botsLeadExperts", { graded: say.number(graded.length), experts: say.number(experts.length) })
+          : say.say("players.botsLead", { graded: say.number(graded.length) })}
       </p>
       <RecordTable
-        subject="Player"
+        say={say}
+        subject={say.say("players.colPlayer")}
         rows={rows}
-        columns={{ tier: true, actions: "Play" }}
+        columns={{ tier: true, actions: say.say("players.colPlay") }}
         testId="computer-players-table"
         rowTestId="computer-player"
-        empty={<>No bots are set up on this site yet.</>}
+        empty={<>{say.say("players.botsEmpty")}</>}
         caption={
           <p className="text-xs text-muted">
-            Each of them has a page of their own, the same as anybody else: follow a name to see what
-            they have played, or the{" "}
-            <Link href="/players" className="underline underline-offset-4">
-              players
-            </Link>{" "}
-            page for everybody.
+            {weave(say.say("players.botsCaption"), {
+              link: (
+                <Link href="/players" className="underline underline-offset-4">
+                  {say.say("players.playersLink")}
+                </Link>
+              ),
+            })}
           </p>
         }
       />

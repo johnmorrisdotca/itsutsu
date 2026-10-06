@@ -54,7 +54,7 @@ export async function PuzzleSolveRow({ solve, now }: { solve: MySolve; now: Date
         href={mySolvePath(solve.kind, solve.id)}
         data-card-link=""
         className="absolute inset-0 rounded-lg"
-        aria-label={say.say("pset.mine.openSolve", { name: puzzleName(solve.kind, say.locale), ago: ago(solve.finishedAt.toISOString(), now) })}
+        aria-label={say.say("pset.mine.openSolve", { name: puzzleName(solve.kind, say.locale), ago: ago(solve.finishedAt.toISOString(), now, say) })}
         data-testid="puzzle-solved-open"
       />
       <GameThumb variant={solve.kind} size="small" />
@@ -70,7 +70,7 @@ export async function PuzzleSolveRow({ solve, now }: { solve: MySolve; now: Date
           {solve.guesses === null || !solve.solved ? "" : ` · ${guessesText(solve.guesses)} ${say.say(TAKEN_UNIT[solve.guesses.unit ?? "guesses"])}`}
           {help === null ? "" : ` · ${help}`}
           {clockWord(solve.clock, say) === "" ? "" : ` · ${clockWord(solve.clock, say)}`}
-          {solve.raceId === null ? "" : ` · ${say.say("pset.rec.race")}`} · {ago(solve.finishedAt.toISOString(), now)}
+          {solve.raceId === null ? "" : ` · ${say.say("pset.rec.race")}`} · {ago(solve.finishedAt.toISOString(), now, say)}
         </span>
       </span>
       <span className="ml-auto flex shrink-0 items-center gap-2">

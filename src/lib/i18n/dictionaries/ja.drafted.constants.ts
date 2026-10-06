@@ -34,6 +34,18 @@ import { JA_DRAFTED_CASUAL } from "./ja.drafted.casual.constants";
 import { JA_DRAFTED_CTABLE } from "./ja.drafted.ctable.constants";
 
 import { JA_DRAFTED_XP } from "./ja.drafted.xp.constants";
+import { JA_DRAFTED_COUNTRIES } from "./ja.drafted.countries.constants";
+import { JA_DRAFTED_LEARN } from "./ja.drafted.learn.constants";
+import { JA_DRAFTED_ABOUT } from "./ja.drafted.about.constants";
+import { JA_DRAFTED_MINE } from "./ja.drafted.mine.constants";
+import { JA_DRAFTED_PLAYERS } from "./ja.drafted.players.constants";
+import { JA_DRAFTED_PAGES } from "./ja.drafted.pages.constants";
+import { JA_DRAFTED_HOME } from "./ja.drafted.home.constants";
+import { JA_DRAFTED_AUTH } from "./ja.drafted.auth.constants";
+import { JA_DRAFTED_MESSAGES } from "./ja.drafted.messages.constants";
+import { JA_DRAFTED_INBOX } from "./ja.drafted.inbox.constants";
+import { JA_DRAFTED_REPORTS } from "./ja.drafted.reports.constants";
+import { JA_DRAFTED_CHROME } from "./ja.drafted.chrome.constants";
 
 /**
  * Japanese written here, by a machine, and read since by `japanese-reviewer`
@@ -1023,6 +1035,18 @@ const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
 export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
   ...JA_DRAFTED_BASE,
   ...JA_DRAFTED_XP,
+  ...JA_DRAFTED_COUNTRIES,
+  ...JA_DRAFTED_LEARN,
+  ...JA_DRAFTED_ABOUT,
+  ...JA_DRAFTED_MINE,
+  ...JA_DRAFTED_PLAYERS,
+  ...JA_DRAFTED_PAGES,
+  ...JA_DRAFTED_HOME,
+  ...JA_DRAFTED_AUTH,
+  ...JA_DRAFTED_MESSAGES,
+  ...JA_DRAFTED_INBOX,
+  ...JA_DRAFTED_REPORTS,
+  ...JA_DRAFTED_CHROME,
   ...JA_DRAFTED_PUZZLE,
   ...JA_DRAFTED_HOUSEKI,
   ...JA_DRAFTED_PSET,

@@ -1,6 +1,9 @@
+"use client";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
 
-import { MY_GAMES_COPY } from "./mine.constants";
+import { myGamesCopy } from "./mine.copy";
 
 /**
  * A MY GAMES PANEL'S HEADING: its name, and its count large beside it —
@@ -27,6 +30,7 @@ export function GroupHeading({
   /** The panel's own id; the count is `${testId}-count`. */
   testId: string;
 }) {
+  const say = useSpeaker();
   return (
     <h3 className="flex items-center gap-2 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
       <Paired en={label} kanji={kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
@@ -39,7 +43,7 @@ export function GroupHeading({
         >
           {total}
         </span>
-        {showing !== null ? <> {MY_GAMES_COPY.showing(showing)}</> : null}
+        {showing !== null ? <> {myGamesCopy(say).showing(showing)}</> : null}
       </span>
     </h3>
   );

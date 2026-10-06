@@ -1,7 +1,8 @@
 import Link from "@/components/ui/Link";
 
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { MY_GAMES_COPY } from "./mine.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { myGamesCopy } from "./mine.copy";
 
 /**
  * What `/play?all=seated` was narrowed to, and the way back off it.
@@ -14,8 +15,8 @@ import { MY_GAMES_COPY } from "./mine.constants";
  * Drawn even at nought: an empty narrowing is an answer, and the way back has to
  * be there either way.
  */
-export function SeatedNarrowing({ total }: { total: number }) {
-  const copy = MY_GAMES_COPY.seated;
+export async function SeatedNarrowing({ total }: { total: number }) {
+  const copy = myGamesCopy(await currentSpeaker()).seated;
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-1`} data-testid="my-games-seated">
       <p className="flex flex-wrap items-baseline gap-2 text-sm font-medium">

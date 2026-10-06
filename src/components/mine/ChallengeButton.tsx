@@ -1,9 +1,10 @@
+"use client";
+
 import Link from "@/components/ui/Link";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { setUpLink } from "@/lib/gomoku/slugs";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
-
-import { PLAY } from "./mine.constants";
 
 /**
  * OFFERING SOMEBODY A GAME — WHICH MEANS GOING TO SETTLE ONE, NOT STARTING ONE.
@@ -45,7 +46,7 @@ import { PLAY } from "./mine.constants";
  */
 export function ChallengeButton({
   memberId,
-  label = PLAY,
+  label,
   strong = false,
   from,
   rematch,
@@ -88,6 +89,7 @@ export function ChallengeButton({
    */
   variant?: string;
 }) {
+  const say = useSpeaker();
   return (
     <Link
       href={setUpLink({
@@ -99,7 +101,7 @@ export function ChallengeButton({
       className={`${BUTTON_BASE} ${strong ? BUTTON_STRONG : BUTTON_QUIET} px-3 py-1 text-xs`}
       data-testid="challenge"
     >
-      {label}
+      {label ?? say.say("mine.play")}
     </Link>
   );
 }

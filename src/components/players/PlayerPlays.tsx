@@ -4,6 +4,8 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { gamesHref } from "@/components/games/GameCount";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { NOT_A_REFUSED_OFFER } from "@/lib/history/offers";
 import { prisma } from "@/lib/prisma";
@@ -35,7 +37,10 @@ const GOING_SHOWN = 10;
  * puzzle. Nothing per row.
  */
 export async function PlayerPlays({ memberId, readerId }: { memberId: string; readerId: string | null }) {
+  const say = await currentSpeaker();
   const you = memberId === readerId;
+  const playingNow = say.pair("players.playingNow", "対局中");
+  const puzzlesTitle = say.pair("players.puzzlesTitle", "解");
   const [going, puzzles] = await Promise.all([
     prisma.game.findMany({
       where: {
@@ -59,22 +64,23 @@ export async function PlayerPlays({ memberId, readerId }: { memberId: string; re
     <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="player-plays">
       <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
         <Link href={gamesHref({ memberId })} className="font-semibold underline-offset-2 hover:underline" data-testid="player-all-games">
-          {you ? "Your" : "Their"} games, every one finished →
+          {say.say(you ? "players.allGamesYours" : "players.allGamesTheirs")}
         </Link>
         {readerId !== null && !you ? (
           <Link href={gamesHref({ memberId: readerId, against: memberId })} className="underline-offset-2 hover:underline" data-testid="player-games-together">
-            Your games together →
+            {say.say("players.yourGamesTogether")}
           </Link>
         ) : null}
       </p>
 
       <div className="flex flex-col gap-1.5" data-testid="player-going">
         <h3 className={SECTION_TITLE}>
-          Playing now <span className="font-mincho normal-case tracking-normal">対局中</span>
+          {playingNow.text}
+          {playingNow.kanji === null ? null : <> <span className="font-mincho normal-case tracking-normal">{playingNow.kanji}</span></>}
         </h3>
         {going.length === 0 ? (
           <p className="text-sm text-muted" data-testid="player-going-none">
-            No games in progress.
+            {say.say("players.noGoingYet")}
           </p>
         ) : (
           <ul className="flex flex-col divide-y divide-rule text-sm">
@@ -86,11 +92,14 @@ export async function PlayerPlays({ memberId, readerId }: { memberId: string; re
                   <span className="flex min-w-0 items-center gap-2">
                     <GameThumb variant={game.variant} size="small" />
                     <span>
-                      <GameName variant={game.variant} /> · vs <PlayerName name={other.name} memberId={other.id} fallback="somebody" tag={other.id === null ? undefined : tags.get(other.id)} />
+                      {weave(say.say("players.versusLine"), {
+                        game: <GameName variant={game.variant} />,
+                        other: <PlayerName name={other.name} memberId={other.id} fallback={say.say("players.somebody")} tag={other.id === null ? undefined : tags.get(other.id)} />,
+                      })}
                     </span>
                   </span>
                   <Link href={matchPath(game.variant, game.id)} className="text-xs underline-offset-2 hover:underline" data-testid="player-going-watch">
-                    watch
+                    {say.say("players.watch")}
                   </Link>
                 </li>
               );
@@ -101,11 +110,12 @@ export async function PlayerPlays({ memberId, readerId }: { memberId: string; re
 
       <div className="flex flex-col gap-1.5" data-testid="player-puzzles">
         <h3 className={SECTION_TITLE}>
-          Puzzles <span className="font-mincho normal-case tracking-normal">解</span>
+          {puzzlesTitle.text}
+          {puzzlesTitle.kanji === null ? null : <> <span className="font-mincho normal-case tracking-normal">{puzzlesTitle.kanji}</span></>}
         </h3>
         {puzzles.length === 0 ? (
           <p className="text-sm text-muted" data-testid="player-puzzles-none">
-            No puzzles finished here yet.
+            {say.say("players.noPuzzles")}
           </p>
         ) : (
           <ul className="flex flex-col divide-y divide-rule text-sm">
@@ -117,7 +127,7 @@ export async function PlayerPlays({ memberId, readerId }: { memberId: string; re
                 </span>
                 {/* How many, leading to exactly those: this puzzle's record, narrowed to them. */}
                 <Link href={puzzleRecordHref(row.kind, { member: memberId })} className="text-xs tabular-nums underline-offset-2 hover:underline" data-testid="player-puzzle-solves">
-                  {row.solves} finished →
+                  {say.say("players.puzzleSolves", { count: say.number(row.solves) })}
                 </Link>
               </li>
             ))}

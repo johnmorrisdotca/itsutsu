@@ -128,6 +128,8 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
   if (variant === null) notFound();
   const say = await currentSpeaker();
   const page = rulesPageFor(variant, say);
+  /* The game's name as this reader says it: the kanji alone for Japanese, so a sentence about it reads in one language. */
+  const gameName = say.pairName(page.title, page.kanji).text;
 
   return (
     <Page>
@@ -151,7 +153,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             Games / name / …; this is the first step of that trail.
           */}
           <p className="text-xs text-muted" data-testid="game-crumb">
-            <GameTrail game={{ label: page.title }} />
+            <GameTrail game={{ label: gameName }} />
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door">
             {/*
@@ -165,7 +167,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
               {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
               <img
                 src={page.image}
-                alt={say.say("gamepages.pictureAlt", { game: page.title })}
+                alt={say.say("gamepages.pictureAlt", { game: gameName })}
                 className="w-full rounded-xl border border-rule"
                 data-testid="game-picture"
               />
@@ -249,7 +251,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             </ul>
             <p className="pt-1 text-sm">
               <Link href={rulesPath(variant)} className="font-semibold underline-offset-2 hover:underline" data-testid="game-rules-link">
-                {say.say("gamepages.fullRules", { game: page.title })}{say.pairsWithKanji ? <span className="font-mincho"> 規則</span> : null} →
+                {say.say("gamepages.fullRules", { game: gameName })}{say.pairsWithKanji ? <span className="font-mincho"> 規則</span> : null} →
               </Link>
             </p>
           </section>
@@ -260,7 +262,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             reader with no session.
           */}
           <Suspense fallback={null}>
-            <PlayedHere variant={variant} title={page.title} />
+            <PlayedHere variant={variant} title={gameName} />
           </Suspense>
 
           </div>
@@ -280,7 +282,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             table is one link away.
           */}
           <Suspense fallback={null}>
-            <GameLadder variant={variant} title={page.title} />
+            <GameLadder variant={variant} title={gameName} />
           </Suspense>
 
           {/*
@@ -290,7 +292,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             is who has won most, and the two need not agree.
           */}
           <Suspense fallback={null}>
-            <IpBoard scope={scopeOfGame(variant)} title={page.title} playHref={setUpPath(variant)} stacked />
+            <IpBoard scope={scopeOfGame(variant)} title={gameName} playHref={setUpPath(variant)} stacked />
           </Suspense>
 
           {/* The game made of its own games: see `RealGamesMosaic`. A panel of its own, holding its own `connection()`. */}
@@ -349,7 +351,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
                 className="underline-offset-2 hover:underline"
                 data-testid="wikipedia-link"
               >
-                {say.say("gamepages.wikipedia", { game: page.title })}
+                {say.say("gamepages.wikipedia", { game: gameName })}
               </a>
             </p>
           ) : null}

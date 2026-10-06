@@ -1,4 +1,4 @@
-import PlayersPage, { metadata as pageMetadata } from "../page";
+import PlayersPage, { generateMetadata as pageMetadata } from "../page";
 import { withTabFromPath } from "@/lib/ui/tabs";
 
 /*
@@ -6,7 +6,7 @@ import { withTabFromPath } from "@/lib/ui/tabs";
  * `[view]` segment, because /players/[slug] already holds that level: this
  * name wins over a slug, and a member's address is their id, which never is it.
  */
-export const metadata = pageMetadata;
+export const generateMetadata = pageMetadata;
 export const dynamic = "force-dynamic";
 
 export default async function PlayersTab({ searchParams }: PageProps<"/players/ladder">) {

@@ -5,10 +5,15 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { titleWithKanji } from "@/components/games/pageTitles";
 import { readReleases } from "@/lib/backlog/releasesFile";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import { VERSION } from "@/lib/version";
 
-export const metadata = { title: "What's new" };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "pages.releasesTitle", "更新履歴") };
+}
 
 // Read from the changelog on every request, never at build time.
 export const dynamic = "force-dynamic";
@@ -27,24 +32,23 @@ export const dynamic = "force-dynamic";
  * was never anything here to keep back, only somewhere better to put it.
  */
 export default async function ReleasesPage() {
+  const say = await currentSpeaker();
   const releases = await readReleases();
 
   return (
     <Page>
       <SiteHeader />
-      <PageTitle
-        title="What's new"
-        kanji="更新履歴"
-        lead="Newest first, in a player’s words. Read from the changelog itself, which is written in the same commit as the work, so this list cannot fall behind the site it describes. The edition you are being served is marked."
-      />
+      <PageTitle title={say.say("pages.releasesTitle")} kanji="更新履歴" lead={say.say("pages.releasesLead")} />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="release-history">
         <Releases releases={releases} current={VERSION} />
         <p className="text-xs text-muted">
-          Every game is on{" "}
-          <Link href="/games" className="underline underline-offset-4">
-            one page
-          </Link>
-          , and how each is played is under the game itself.
+          {weave(say.say("pages.releasesNote"), {
+            link: (
+              <Link href="/games" className="underline underline-offset-4">
+                {say.say("pages.releasesOnePage")}
+              </Link>
+            ),
+          })}
         </p>
       </section>
     </Page>

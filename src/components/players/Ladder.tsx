@@ -1,5 +1,7 @@
 import Link from "@/components/ui/Link";
 
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import { LadderMore } from "./LadderMore";
 import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
 import { fetchLadderPage, readLadderPaging } from "@/lib/rating/ladder";
@@ -42,6 +44,7 @@ export async function Ladder({
 }: {
   query: string;
 }) {
+  const say = await currentSpeaker();
   const params = new URLSearchParams(query);
   const asked = readLadderPaging(params);
   /*
@@ -75,17 +78,25 @@ export async function Ladder({
   return (
     <div className="flex flex-col gap-4" data-testid="ladder-section">
       <p className="text-sm text-muted">
-        Ratings are Elo, starting at 1600. A player is unrated for the first few games,
-        provisional while the rating settles, and established after twenty. Press a heading to
-        sort by it. Each game keeps a ladder of its own too: see the{" "}
-        <Link href="/champions" className="underline underline-offset-4" data-testid="champions-link">
-          champions <span className="font-mincho">名人</span>
-        </Link>
-        .
+        {weave(say.say("players.ladderLead"), {
+          link: (
+            <Link href="/champions" className="underline underline-offset-4" data-testid="champions-link">
+              {(() => {
+                const champions = say.pair("players.champions", "名人");
+                return (
+                  <>
+                    {champions.text}
+                    {champions.kanji === null ? null : <> <span className="font-mincho">{champions.kanji}</span></>}
+                  </>
+                );
+              })()}
+            </Link>
+          ),
+        })}
       </p>
       {refused ? (
         <p className="text-sm text-muted" data-testid="ladder-sort-refused">
-          That was not an order the ladder has, so this is the ladder by rating.
+          {say.say("players.ladderSortRefused")}
         </p>
       ) : null}
       <LadderMore

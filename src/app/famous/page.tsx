@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { titleWithKanji } from "@/components/games/pageTitles";
 import { FamousMosaic } from "@/components/famous/FamousMosaic";
 import { FamousReplay } from "@/components/famous/FamousReplay";
 import { GameName } from "@/components/games/GameName";
@@ -13,11 +13,13 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { famousTimeline } from "@/lib/famous/famous";
-import { FAMOUS_COPY, FAMOUS_SOURCES } from "@/lib/famous/famous.constants";
+import { FAMOUS_KANJI, FAMOUS_SOURCES } from "@/lib/famous/famous.constants";
 import { FAMOUS_GAMES } from "@/lib/famous/famousGames.data";
 import { frameOf } from "@/lib/record/mosaic";
 
-export const metadata: Metadata = { title: `${FAMOUS_COPY.title} ${FAMOUS_COPY.kanji}` };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "chrome.famous.title", FAMOUS_KANJI) };
+}
 
 /**
  * FAMOUS GAMES: championship and historic games from published records,
@@ -31,14 +33,15 @@ export const metadata: Metadata = { title: `${FAMOUS_COPY.title} ${FAMOUS_COPY.k
  * their own, with a finished game's scrubber. Each game names the collection
  * its record came from.
  */
-export default function FamousGamesPage() {
+export default async function FamousGamesPage() {
+  const say = await currentSpeaker();
   return (
     <Page board>
       <SiteHeader />
       {/* A tab of Games, drawn as one: the Games heading and strip with Famous games open (`GAMES_TABS`). */}
-      <PageTitle title="Games" kanji="種目" />
-      <Tabs tabs={GAMES_TABS} active="famous" base="/games" label="How to show the games" />
-      <p className="text-sm text-muted">{FAMOUS_COPY.blurb}</p>
+      <PageTitle title={say.say("nav.games")} kanji="種目" />
+      <Tabs tabs={GAMES_TABS} active="famous" base="/games" label={say.say("gamepages.catalogueTabs")} />
+      <p className="text-sm text-muted">{say.say("chrome.famous.blurb")}</p>
       <div className="grid gap-4 md:grid-cols-2" data-testid="famous-games">
         {FAMOUS_GAMES.map((game) => {
           const last = famousTimeline(game).at(-1)!;
@@ -53,7 +56,7 @@ export default function FamousGamesPage() {
                 />
                 <div className="flex min-w-0 flex-col gap-1 text-sm">
                   <p className="font-semibold">
-                    {game.black} <span className="text-muted">vs</span> {game.white}
+                    {game.black} <span className="text-muted">{say.say("chrome.famous.versus")}</span> {game.white}
                   </p>
                   <p>
                     {game.event}
@@ -65,9 +68,9 @@ export default function FamousGamesPage() {
                     {game.place === null ? null : <> · {game.place}</>}
                   </p>
                   <p className="text-xs text-muted">
-                    {FAMOUS_COPY.source}{" "}
+                    {say.say("chrome.famous.source")}{" "}
                     <a href={source.url} target="_blank" rel="noreferrer noopener" className="underline underline-offset-2">
-                      {source.name}
+                      {say.say(source.nameKey)}
                     </a>
                   </p>
                 </div>

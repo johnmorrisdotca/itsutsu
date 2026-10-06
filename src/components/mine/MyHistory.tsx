@@ -14,14 +14,15 @@ import type { ResultMarkKind } from "@/components/game/resultMark.types";
 
 import { GroupHeading } from "./GroupHeading";
 import { ago } from "./MyGameRow";
-import { MY_GAMES_COPY, MY_PUZZLE_ROW } from "./mine.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { MY_PUZZLE_ROW } from "./mine.constants";
+import { myGamesCopy } from "./mine.copy";
 
 /** The states a game is still going in: its row carries on with it rather than looking back. */
 const GOING: readonly HistoryState[] = ["yourMove", "theirMove", "going"];
 
 /** Who else was in it, each leading to their page where they have one; nobody for a game on one screen or a puzzle. */
-function Others({ entry, tags }: { entry: HistoryEntry; tags: ReadonlyMap<string, NameTag> }) {
-  const copy = MY_GAMES_COPY.history;
+function Others({ entry, tags, copy }: { entry: HistoryEntry; tags: ReadonlyMap<string, NameTag>; copy: ReturnType<typeof myGamesCopy>["history"] }) {
   if (entry.others.length === 0) return entry.source === "solve" || entry.source === "run" ? null : <span>{copy.alone}</span>;
   return (
     <>
@@ -62,7 +63,7 @@ const HISTORY_MARKS: Partial<Record<HistoryState, ResultMarkKind>> = {
   left: RESULT_MARKS.other,
 };
 
-export function MyHistory({
+export async function MyHistory({
   page,
   total,
   now,
@@ -80,7 +81,7 @@ export function MyHistory({
   /** Somebody else's history, read by the reader (`PlayerHistory`): their side's words, and watching rather than carrying on. */
   theirs?: boolean;
 }) {
-  const copy = MY_GAMES_COPY.history;
+  const copy = myGamesCopy(await currentSpeaker()).history;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="history">
       <GroupHeading label={copy.label} kanji={copy.kanji} total={total} showing={page.entries.length < total ? page.entries.length : null} testId="history" />
@@ -117,8 +118,9 @@ export function MyHistory({
 }
 
 /** One game of the history: its picture and name, who else was in it, how it stands and when, opening to carry on or look back. */
-export function HistoryRow({ entry, now, tags, theirs = false }: { entry: HistoryEntry; now: Date; tags: ReadonlyMap<string, NameTag>; theirs?: boolean }) {
-  const copy = MY_GAMES_COPY.history;
+export async function HistoryRow({ entry, now, tags, theirs = false }: { entry: HistoryEntry; now: Date; tags: ReadonlyMap<string, NameTag>; theirs?: boolean }) {
+  const say = await currentSpeaker();
+  const copy = myGamesCopy(say).history;
   // Somebody else's game reads from their side, and a game still going is watched rather than carried on with.
   const words = theirs ? { state: { ...copy.state, ...copy.theirs.state }, open: copy.theirs.open } : copy;
   const going = GOING.includes(entry.state);
@@ -137,14 +139,14 @@ export function HistoryRow({ entry, now, tags, theirs = false }: { entry: Histor
           <GameName variant={entry.game} raised />
         </span>
         <span className="flex flex-wrap gap-x-1 text-xs text-muted">
-          <Others entry={entry} tags={tags} />
+          <Others entry={entry} tags={tags} copy={copy} />
         </span>
         <span className="text-xs">
           <span className="font-semibold" data-testid="history-state">
             {HISTORY_MARKS[entry.state] === undefined ? null : <ResultMark kind={HISTORY_MARKS[entry.state]!} className="mr-1" />}
             {words.state[entry.state]}
           </span>
-          <span className="text-muted"> · {ago(entry.at, now)}</span>
+          <span className="text-muted"> · {ago(entry.at, now, say)}</span>
         </span>
       </span>
       <span className="ml-auto flex shrink-0 items-center gap-2">

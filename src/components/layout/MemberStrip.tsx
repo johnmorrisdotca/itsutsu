@@ -30,7 +30,7 @@ export async function MemberStrip() {
   const level = levelShown({ xp });
   return (
     <nav
-      aria-label="Your games and standing"
+      aria-label={say.say("chrome.strip.label")}
       data-chrome
       data-quiet-in-play
       className="flex flex-wrap items-baseline justify-end gap-x-4 gap-y-1 text-[0.7rem] font-semibold tracking-[0.12em] text-muted uppercase select-none"
@@ -39,11 +39,11 @@ export async function MemberStrip() {
       <StripGames memberId={member.id} />
       {level === null ? null : (
         <Link href={levelPath(level)} className="whitespace-nowrap underline-offset-4 hover:text-ink hover:underline" data-testid="strip-level">
-          Lv {level} · {xpLevelName(level, say.locale)}
+          {say.say("chrome.strip.level", { level: String(level), name: xpLevelName(level, say.locale) })}
         </Link>
       )}
       <Link href="/xp" className="whitespace-nowrap underline-offset-4 hover:text-ink hover:underline" data-testid="strip-xp">
-        {say.number(xp)} XP
+        {say.say("xp.amount", { count: say.number(xp) })}
       </Link>
       <StripIp />
     </nav>

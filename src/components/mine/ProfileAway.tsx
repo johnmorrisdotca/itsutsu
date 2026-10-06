@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
 import { MOST_DAYS_OFF, WEEKDAYS, weekdayWords } from "@/lib/social/daysOff";
@@ -27,7 +28,7 @@ export function ProfileAway({ fields, set }: ProfileSectionProps) {
       <div className="flex flex-col gap-4">
         <fieldset className="flex min-w-0 flex-col gap-1">
           <legend className="text-sm">
-            Away <span className="font-mincho text-xs opacity-70">休暇</span>
+            <Paired en={say.say("mine.awayTitle")} kanji="休暇" kanjiClassName="text-xs opacity-70" />
           </legend>
           {/*
             Two dates and the word between them on ONE row, each sized to a
@@ -54,7 +55,7 @@ export function ProfileAway({ fields, set }: ProfileSectionProps) {
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="flex w-full min-w-0 max-w-[20rem] items-center gap-2">
               <label htmlFor="away-from" className="sr-only">
-                Away from
+                {say.say("mine.awayFrom")}
               </label>
               <input
                 id="away-from"
@@ -65,10 +66,10 @@ export function ProfileAway({ fields, set }: ProfileSectionProps) {
                 data-testid="away-from"
               />
               <span aria-hidden="true" className="shrink-0 text-xs text-muted">
-                to
+                {say.say("mine.awayTo")}
               </span>
               <label htmlFor="away-until" className="sr-only">
-                Away until
+                {say.say("mine.awayUntil")}
               </label>
               <input
                 id="away-until"
@@ -81,13 +82,12 @@ export function ProfileAway({ fields, set }: ProfileSectionProps) {
             </span>
             {away ? (
               <button type="button" onClick={() => set({ awayFrom: "", awayUntil: "" })} className="text-xs text-muted underline underline-offset-4">
-                clear
+                {say.say("mine.awayClear")}
               </button>
             ) : null}
           </div>
           <span className="text-xs text-muted">
-            While you are away, deadlines in your games wait, except in games set up to ignore vacation days. Three days a
-            year, whole days.
+            {say.say("mine.awayNote")}
           </span>
         </fieldset>
         {/*
@@ -95,7 +95,7 @@ export function ProfileAway({ fields, set }: ProfileSectionProps) {
           yearly allowance and hold every week, for ever.
         */}
         <fieldset className="flex min-w-0 flex-col gap-1">
-          <legend className="text-sm">Days I do not play</legend>
+          <legend className="text-sm">{say.say("mine.daysOffTitle")}</legend>
           <div className="mt-1 flex flex-wrap gap-1.5" data-testid="days-off">
             {WEEKDAYS.map((day) => {
               const chosen = fields.daysOff.includes(day);
@@ -132,8 +132,7 @@ export function ProfileAway({ fields, set }: ProfileSectionProps) {
             })}
           </div>
           <span className="text-xs text-muted">
-            Deadlines in games that honour vacation step over these every week, and they cost nothing from your
-            away days. Somebody has to play on some day, so six is the most you can take.
+            {say.say("mine.daysOffNote")}
           </span>
         </fieldset>
       </div>

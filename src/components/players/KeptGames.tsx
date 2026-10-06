@@ -13,6 +13,9 @@ import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { keptGameDetail, keptGameName, keptGamesFor } from "@/lib/legacy/legacyGames.data";
 import type { LegacyGame } from "@/lib/legacy/legacyPlayers.types";
 import { boardWords } from "@/lib/gomoku/boardWords";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { weave } from "@/lib/i18n/weave";
 
 /**
  * The games kept in full — a board a reader can step through, not just a
@@ -32,12 +35,13 @@ export async function KeptGames({ slug, site }: { slug: string; site?: string })
    * a board looks. Of all the boards on this site these are the ones most
    * likely to be sat with: they are the games that were kept.
    */
+  const say = await currentSpeaker();
   const appearance = appearanceFrom(await appearanceFor(await currentMemberId()));
   return (
     <section className="flex flex-col gap-4" data-testid="kept-games">
-      <h3 className={SECTION_TITLE}>Saved games</h3>
+      <h3 className={SECTION_TITLE}>{say.say("players.keptTitle")}</h3>
       {games.map((game) => (
-        <KeptGame key={game.id} game={game} viewedAs={slug} appearance={appearance} />
+        <KeptGame key={game.id} game={game} viewedAs={slug} appearance={appearance} say={say} />
       ))}
     </section>
   );
@@ -47,7 +51,9 @@ function KeptGame({
   game,
   viewedAs,
   appearance,
+  say,
 }: {
+  say: Speaker;
   game: LegacyGame;
   viewedAs: string;
   appearance: Appearance;
@@ -67,16 +73,24 @@ function KeptGame({
       <p className="flex items-center gap-3 text-sm text-muted">
         <GameThumb variant={game.variant} size="small" />
         <span>
-          {game.playedAt} · <GameName variant={game.variant} />, {boardWords(game.variant, game.size)} · vs{" "}
-          <Link href={`/players/${opponentSlug}`} className="font-medium text-ink-soft underline-offset-2 hover:underline">
-            {opponentName}
-          </Link>{" "}
-          · played <span className="font-medium text-ink-soft">{colour}</span> ·{" "}
-          <span className="inline-flex items-center gap-1 font-medium text-ink-soft" data-testid="kept-game-result">
-            <ResultMark kind={markOfOutcome(result === "drew" ? "draw" : result)} />
-            {result}
-          </span>{" "}
-          · {game.source}
+          {weave(say.say("players.keptLine"), {
+            date: game.playedAt,
+            game: <GameName variant={game.variant} />,
+            board: boardWords(game.variant, game.size, say),
+            opponent: (
+              <Link href={`/players/${opponentSlug}`} className="font-medium text-ink-soft underline-offset-2 hover:underline">
+                {opponentName}
+              </Link>
+            ),
+            colour: <span className="font-medium text-ink-soft">{say.say(colour === "black" ? "players.colourBlack" : "players.colourWhite")}</span>,
+            result: (
+              <span className="inline-flex items-center gap-1 font-medium text-ink-soft" data-testid="kept-game-result">
+                <ResultMark kind={markOfOutcome(result === "drew" ? "draw" : result)} />
+                {say.say(result === "won" ? "players.outcomeWon" : result === "lost" ? "players.outcomeLost" : "players.outcomeDrawn")}
+              </span>
+            ),
+            source: game.source,
+          })}
         </span>
       </p>
       <GameReplay
@@ -84,10 +98,10 @@ function KeptGame({
         appearance={appearance}
         // Not ours: a kept record is credited to the site it was played on.
         story={{
-          kind: "Game review",
-          kanji: "棋譜",
-          title: `${game.playedAt} · vs ${opponentName}`,
-          source: `Played on ${game.source}, kept here as a record`,
+          kind: say.say("gamepages.gameReview"),
+          kanji: say.pairsWithKanji ? "棋譜" : "",
+          title: say.say("players.keptStoryTitle", { date: game.playedAt, opponent: opponentName }),
+          source: say.say("players.keptStorySource", { site: game.source }),
         }}
       />
     </div>

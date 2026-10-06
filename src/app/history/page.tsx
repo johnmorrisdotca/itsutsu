@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
 
 import { RecordPage } from "@/components/history/RecordPage";
+import { titleWithKanji } from "@/components/games/pageTitles";
 import { recordGameRedirect } from "@/lib/history/recordAddress";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
-export const metadata = {
-  title: "Game history 棋譜",
-  description: "Every game played, with the stones in the order they were laid.",
-};
+export async function generateMetadata() {
+  const say = await currentSpeaker();
+  return { title: titleWithKanji(say, "nav.record", "棋譜"), description: say.say("pages.historyDescription") };
+}
 
 /** The whole record. */
 export default async function HistoryPage({ searchParams }: PageProps<"/history">) {

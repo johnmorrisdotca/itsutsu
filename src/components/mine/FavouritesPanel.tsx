@@ -2,7 +2,8 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { MyGame } from "@/lib/history/myGames";
 import type { NameTag } from "@/lib/xp/nameTagsOf";
 import { GroupHeading } from "./GroupHeading";
-import { MY_GAMES_COPY } from "./mine.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { myGamesCopy } from "./mine.copy";
 import { Row } from "./MyGameRow";
 
 /**
@@ -11,7 +12,7 @@ import { Row } from "./MyGameRow";
  * own (`Row`), each with its star lit, newest star first (`favouriteGamesOf`).
  * Drawn empty too, saying how a game gets here: an empty table is data.
  */
-export function FavouritesPanel({
+export async function FavouritesPanel({
   rows,
   total,
   now,
@@ -25,7 +26,7 @@ export function FavouritesPanel({
   tags: ReadonlyMap<string, NameTag>;
   earned: ReadonlyMap<string, number>;
 }) {
-  const copy = MY_GAMES_COPY.favourites;
+  const copy = myGamesCopy(await currentSpeaker()).favourites;
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-favourites">
       <GroupHeading

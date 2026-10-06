@@ -8,6 +8,8 @@ import {
   type DirectoryFilter,
   type DirectoryWho,
 } from "@/lib/rating/directoryFilter";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { SHOW_EVERYBODY_HREF } from "@/lib/rating/rememberedFilter";
 
 import { NARROWING_WORDS } from "./players.constants";
@@ -45,26 +47,29 @@ function without(filter: DirectoryFilter, one: Narrowing): DirectoryFilter {
   return one === "settled" ? { ...filter, settled: false } : { ...filter, active: false };
 }
 
-function chipName(filter: DirectoryFilter, one: Narrowing): string {
-  return one === "who" ? WHO_DISPLAY[filter.who].label : NARROWING_WORDS[one].chip;
+function chipName(filter: DirectoryFilter, one: Narrowing, say: Speaker): string {
+  return one === "who" ? WHO_DISPLAY[filter.who].label : say.say(NARROWING_WORDS[one].chip);
 }
 
 /** The sentence an empty list prints: who nobody here is. */
-function nobodyWho(filter: DirectoryFilter): string {
-  const subject =
-    filter.who === DIRECTORY_WHO.people
-      ? "No person here"
-      : filter.who === DIRECTORY_WHO.computers
-        ? "No bot here"
-        : "Nobody here";
+/** What a list with nobody on it says, by who it was narrowed to: bare, and with the narrowings that emptied it. */
+const NOBODY = {
+  [DIRECTORY_WHO.people]: { bare: "players.nobodyPerson", where: "players.nobodyPersonWhere" },
+  [DIRECTORY_WHO.computers]: { bare: "players.nobodyComputer", where: "players.nobodyComputerWhere" },
+  [DIRECTORY_WHO.everyone]: { bare: "players.nobodyAny", where: "players.nobodyAnyWhere" },
+} as const satisfies Record<DirectoryWho, { bare: PhraseKey; where: PhraseKey }>;
+
+function nobodyWho(filter: DirectoryFilter, say: Speaker): string {
   const clauses = [
-    ...(filter.settled ? [NARROWING_WORDS.settled.clause] : []),
-    ...(filter.active ? [NARROWING_WORDS.active.clause(AWAY_AFTER_DAYS)] : []),
+    ...(filter.settled ? [say.say(NARROWING_WORDS.settled.clause)] : []),
+    ...(filter.active ? [say.say(NARROWING_WORDS.active.clause, { days: say.number(AWAY_AFTER_DAYS) })] : []),
   ];
-  return clauses.length === 0 ? `${subject} yet.` : `${subject} ${clauses.join(" and ")}.`;
+  const words = NOBODY[filter.who];
+  return clauses.length === 0 ? say.say(words.bare) : say.say(words.where, { clauses: say.list(clauses) });
 }
 
 type NarrowingProps = {
+  say: Speaker;
   filter: DirectoryFilter;
   /** The address as it stands, so taking one narrowing off keeps the rest. */
   query: string;
@@ -73,21 +78,21 @@ type NarrowingProps = {
 };
 
 /** The line above the table: "Filtered by" and a chip per narrowing, each with its ×. */
-export function DirectoryNarrowed({ filter, query, rememberedWho }: NarrowingProps) {
+export function DirectoryNarrowed({ say, filter, query, rememberedWho }: NarrowingProps) {
   const on = narrowingsIn(filter);
   if (on.length === 0) return null;
   return (
     <p className="flex flex-wrap items-center gap-2 text-xs text-muted" data-testid="directory-narrowed">
-      <span>Filtered by</span>
+      <span>{say.say("players.filteredBy")}</span>
       {on.map((one) => (
         <span key={one} className={`${FILTER_CHIP} ${FILTER_CHIP_OFF} inline-flex items-center gap-1.5`}>
-          <span className="text-ink">{chipName(filter, one)}</span>
+          <span className="text-ink">{chipName(filter, one, say)}</span>
           {one === "who" && rememberedWho !== null ? (
-            <span data-testid="narrowed-remembered">({NARROWING_WORDS.remembered})</span>
+            <span data-testid="narrowed-remembered">({say.say(NARROWING_WORDS.remembered)})</span>
           ) : null}
           <Link
             href={filterBarHref(without(filter, one), query)}
-            aria-label={`Remove ${chipName(filter, one)}`}
+            aria-label={say.say("players.removeChip", { name: chipName(filter, one, say) })}
             className="px-0.5 text-ink hover:text-ink-soft"
             data-testid={`narrowed-off-${one}`}
           >
@@ -104,11 +109,11 @@ export function DirectoryNarrowed({ filter, query, rememberedWho }: NarrowingPro
  * drawn: who nobody here is, a way to take off each narrowing, and a way to
  * take off all of them.
  */
-export function DirectoryEmpty({ filter, query }: Omit<NarrowingProps, "rememberedWho">) {
+export function DirectoryEmpty({ say, filter, query }: Omit<NarrowingProps, "rememberedWho">) {
   const on = narrowingsIn(filter);
   return (
     <span className="flex flex-col gap-2">
-      <span>{nobodyWho(filter)}</span>
+      <span>{nobodyWho(filter, say)}</span>
       {on.length === 0 ? null : (
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {on.map((one) => (
@@ -118,7 +123,7 @@ export function DirectoryEmpty({ filter, query }: Omit<NarrowingProps, "remember
               className="underline underline-offset-4"
               data-testid={`narrowed-off-${one}`}
             >
-              Remove {chipName(filter, one)}
+              {say.say("players.removeChip", { name: chipName(filter, one, say) })}
             </Link>
           ))}
           {/*
@@ -128,7 +133,7 @@ export function DirectoryEmpty({ filter, query }: Omit<NarrowingProps, "remember
             to remove, and appear to do nothing at all.
           */}
           <Link href={SHOW_EVERYBODY_HREF} className="underline underline-offset-4" data-testid="directory-clear">
-            Show everyone
+            {say.say("players.showEveryone")}
           </Link>
         </span>
       )}

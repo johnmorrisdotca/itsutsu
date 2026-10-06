@@ -1,6 +1,8 @@
 import { FigureTable } from "@/components/about/FigureTable";
 import { RatingTiers } from "@/components/about/RatingTiers";
 import { LAST_TEN_SHARE, XpCurve } from "@/components/about/XpCurve";
+import { Paired } from "@/components/i18n/Paired";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { thousands } from "@/lib/ui/thousands";
 import { XP_EVENT_SPECS } from "@/lib/xp/xp.constants";
 import { xpEventCopy } from "@/lib/xp/xpAwardCopy";
@@ -10,7 +12,7 @@ import { xpLevelName } from "@/lib/xp/levelNames";
 
 import { ABOUT_CHAPTERS } from "./about.chapters";
 import type { AboutSection } from "./about.constants";
-import { Inside } from "./about.links";
+import { rich } from "./about.links";
 
 /**
  * THE SECOND LADDER: experience, and how it differs from a rating.
@@ -41,16 +43,15 @@ const SAMPLES: readonly XpEventType[] = [
   "yearHere",
 ];
 
-const PRICES = (
+const prices = (say: Speaker) => (
   <FigureTable
-    head={["Award", "XP", "A day at most", "For"]}
+    head={[say.say("about.xp.headAward"), say.say("about.xp.headPoints"), say.say("about.xp.headCap"), say.say("about.xp.headFor")]}
     rows={SAMPLES.map((type) => {
       const spec = XP_EVENT_SPECS[type];
-      /* English until the About page is converted (ENJA-10): this table is built once, not per reader. */
-      const copy = xpEventCopy(type);
+      const copy = xpEventCopy(type, say.locale);
       return [
         <span key={type} className="whitespace-nowrap">
-          {copy.label} <span className="font-mincho text-xs opacity-70">{spec.kanji}</span>
+          <Paired en={copy.label} kanji={spec.kanji} kanjiClassName="text-xs opacity-70" />
         </span>,
         spec.points,
         spec.cap ?? "–",
@@ -59,41 +60,26 @@ const PRICES = (
         </span>,
       ];
     })}
-    caption={
-      <>
-        A few of the awards and what they pay, read from the table that pays them. A dash means no daily limit,
-        which is right for anything that can only happen once.
-      </>
-    }
+    caption={say.say("about.xp.prices")}
   />
 );
 
-export const XP_SECTION: AboutSection = {
-  title: "Experience and levels",
+export const xpSection = (say: Speaker): AboutSection => ({
+  id: "xp",
+  title: say.say("about.xp.title"),
   chapter: ABOUT_CHAPTERS.numbers,
   kanji: "経験値",
   paragraphs: [
-    <>
-      There are two ladders here, and they measure different things. A <em>rating</em> says how well you play: it
-      moves only with rated games, one number per game and one across all of them, and it goes down as readily as
-      up. <em>Experience</em> says you turned up and tried things: every finished game pays some, a loss included,
-      and it never goes down. Neither can be bought with the other.
-    </>,
-    <>
-      Experience is spent on levels, {XP_LEVELS} of them, and every one has a name taken from the history of games:
-      level 1 is {xpLevelName(1)}, level 10 is {xpLevelName(10)}, and the top is {xpLevelName(XP_LEVELS)}, at{" "}
-      {thousands(xpForLevel(XP_LEVELS))} XP. The first ten come quickly, so a new member has something to
-      hold on to; the climb hardens after ten and again after twenty, and the last ten levels alone cost{" "}
-      {Math.round(LAST_TEN_SHARE * 100)}% of the whole ladder. It is meant to be a lifetime’s standing. The
-      bots climb it on the same terms as people, from the games they finish, and are held back only
-      from the awards a program cannot earn, like making a buddy or setting a profile.
-    </>,
-    <>
-      The awards are small for turning up and larger for doing something new: a game you have never played, a
-      family you have never met, a win over somebody rated well above you. Most have a daily limit, so a hundred
-      quick games against the easiest program are worth no more than a handful. Every rung has its own page under{" "}
-      <Inside href="/xp">XP</Inside>, with who is standing on it.
-    </>,
+    rich(say, "about.xp.a"),
+    rich(say, "about.xp.b", {
+      levels: XP_LEVELS,
+      first: xpLevelName(1, say.locale),
+      tenth: xpLevelName(10, say.locale),
+      last: xpLevelName(XP_LEVELS, say.locale),
+      top: thousands(xpForLevel(XP_LEVELS)),
+      share: Math.round(LAST_TEN_SHARE * 100),
+    }),
+    rich(say, "about.xp.c"),
   ],
-  figures: { 0: <RatingTiers />, 1: <XpCurve />, 2: PRICES },
-};
+  figures: { 0: <RatingTiers say={say} />, 1: <XpCurve say={say} />, 2: prices(say) },
+});

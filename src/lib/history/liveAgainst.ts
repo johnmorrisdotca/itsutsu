@@ -82,7 +82,7 @@ import {
  * The screens in front of it said something else. `personNamed` answers with the
  * program (its null address is the one exception it makes), so `fork.alone` was
  * false, the setup screen said "Against the same opponent", the doorstep said
- * "Against Hidemasa Tamenoki 機械, who plays white" and offered a rating — which
+ * "Against Hidemasa Tamenoki コンピュータ, who plays white" and offered a rating — which
  * `ratedAtCreation` then refused, because a hot-seat game can never move one.
  * Three screens describing three games, and the one a person got was the one
  * nobody had been shown.

@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
+import { PHRASES } from "@/lib/i18n/i18n.constants";
+
 /**
  * The home page must not hardcode a count the code already knows.
  *
@@ -33,10 +35,11 @@ describe("the home page computes its own game count rather than writing it down"
   });
 
   it("interpolates the count into the sentence rather than typing a number", () => {
-    // Not merely importing the list — actually reading `.length` into the
-    // words "board games", so the sentence tracks the catalogue rather than
-    // agreeing with it by coincidence on the day this was written.
-    expect(SOURCE).toMatch(/\$\{RULE_VARIANT_LIST\.length\}\s*board games/);
+    // Not merely importing the list: the sentence is a phrase with a `{count}` in front of "board games" (so
+    // the Japanese puts it where its own word order does), and the page fills it from `.length` of the list,
+    // so the sentence tracks the catalogue rather than agreeing with it by coincidence on the day this was written.
+    expect(PHRASES["home.fiveBody"]).toMatch(/\{count\}\s*board games/);
+    expect(SOURCE).toMatch(/"home\.fiveBody"[\s\S]{0,120}count:\s*say\.number\(RULE_VARIANT_LIST\.length\)/);
   });
 
   it("counts the whole catalogue in the hero, board games, puzzles and party games alike", () => {

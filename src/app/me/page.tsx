@@ -8,7 +8,8 @@ import { MyRecord } from "@/components/mine/MyRecord";
 import { MyXp } from "@/components/mine/MyXp";
 import { NameForm } from "@/components/mine/NameForm";
 import { AgeBandForm } from "@/components/mine/AgeBandForm";
-import { AGE_COPY } from "@/components/mine/mine.constants";
+import { ageCopy } from "@/components/mine/mine.copy";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { ageBandOf } from "@/lib/auth/ageBandStore";
 import { isAgeBand } from "@/lib/social/ageBand";
 import { isChild } from "@/lib/social/childRules";
@@ -31,7 +32,8 @@ import { PLAYER_SESSION_DAYS } from "@/lib/auth/session";
 import { gameDefaultsFrom } from "@/components/game/gameDefaults";
 import { phraseStatus } from "@/lib/phrase/phraseStore";
 import { safeDestination } from "@/lib/auth/redirect";
-import { openTabOf, type Tab } from "@/lib/ui/tabs";
+import { ME_TABS as TABS } from "./me.tabs";
+import { openTabOf } from "@/lib/ui/tabs";
 import { allCountries } from "@/lib/social/countries";
 import { TurnFlowForm } from "@/components/mine/TurnFlowForm";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
@@ -39,7 +41,9 @@ import { gameEmailsOn } from "@/lib/site/gameEmails";
 import { mailKindsFrom } from "@/lib/mail/mailStop";
 import { WelcomeMail } from "@/components/mine/WelcomeMail";
 
-export const metadata = { title: "Your account" };
+export async function generateMetadata() {
+  return { title: (await currentSpeaker()).say("mine.accountTitle") };
+}
 export const dynamic = "force-dynamic";
 
 /**
@@ -61,55 +65,6 @@ function supportedTimeZones(): string[] {
   }
 }
 
-/*
- * Six things a member comes here for, so the page shows one at a time. They
- * were six panels stacked down one page, and the record — the part somebody
- * comes back to look at rather than sets once — was at the bottom of it.
- *
- * The record is first, because it is the one that is read rather than filled
- * in. The buddies and the ignored share a tab: both are lists of people this
- * member has said something about, the ignored roll is hidden entirely when
- * it is empty, and a tab that comes and goes with a list is a worse page than
- * one tab named for both.
- */
-const TABS: Tab[] = [
-  { key: "record", label: "Record", kanji: "戦績" },
-  /*
-   * The XP ledger, second: the other thing on this page that is READ rather
-   * than filled in, and the only one of the two that grows every day. 経験 is
-   * experience — the word the toasts and the leaderboard use for the same
-   * ladder — and it is deliberately not 戦績 beside it, because a record says
-   * how well you play and XP says you turned up and tried things. Two ladders,
-   * kept apart on purpose; naming them the same thing would undo that.
-   */
-  { key: "xp", label: "XP", kanji: "経験" },
-  { key: "profile", label: "Profile", kanji: "自己紹介" },
-  /*
-   * The four words, on a tab of their own. They sat at the very bottom of the
-   * Profile, under the city and the time zone and the days off — a credential
-   * among things other people see about you, and John called it ugly. 合言葉
-   * (aikotoba) is a watchword: the words by which somebody else's device
-   * recognises you as you, which is exactly what these are for. Third, and
-   * not last, so it is still on screen where the strip scrolls on a phone.
-   */
-  { key: "words", label: "Words", kanji: "合言葉" },
-  /*
-   * HOW THE SITE BEHAVES FOR YOU, where Profile is who you are: the pair the
-   * account menu on both sites names (the privacy plan's menu contract). It
-   * took in the "New games" tab — a board's defaults and how a turn works are
-   * settings too — and the holiday, days off, email and retention that sat at
-   * the foot of the Profile form.
-   */
-  { key: "settings", label: "Settings", kanji: "設定" },
-  /*
-   * 人 rather than 仲間 for the tab: 仲間 is buddies specifically, and this tab
-   * holds the buddies, the people shut out, and the way to bring somebody new
-   * in — and the buddy roll inside it keeps 仲間 for itself. The directory's
-   * own filter says "People 人" for the same set.
-   */
-  { key: "people", label: "People", kanji: "人" },
-];
-
 /**
  * The member's own page: the name others see, the record it has earned, game
  * by game, and the way to bring a friend in. A new member lands here first,
@@ -121,6 +76,7 @@ const TABS: Tab[] = [
  */
 export default async function MePage({ searchParams }: PageProps<"/me">) {
   const params = await searchParams;
+  const say = await currentSpeaker();
   const [me, row, mailSending] = await Promise.all([currentSession(), currentMemberRow(), gameEmailsOn()]);
   if (me === null || row === null) redirect("/join?next=%2Fme");
 
@@ -197,7 +153,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
               // eslint-disable-next-line @next/next/no-img-element -- a Google avatar
               <img src={member.picture} alt="" className="size-8 self-center rounded-full" referrerPolicy="no-referrer" />
             ) : null}
-            {name || "Unnamed"}
+            {name || say.say("mine.unnamed")}
           </>
         }
         lead={member?.email ? member.email : undefined}
@@ -205,20 +161,17 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
 
       {askAge ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-3 border-moss/50 bg-moss-soft`} data-testid="welcome">
-          <SectionHeading title="Welcome" kanji="ようこそ" />
-          <p className="text-sm text-ink-soft">{AGE_COPY.welcomeLead}</p>
+          <SectionHeading title={say.say("mine.welcome")} kanji="ようこそ" />
+          <p className="text-sm text-ink-soft">{ageCopy(say).welcomeLead}</p>
           <AgeBandForm band={null} consented={false} place="welcome" />
         </section>
       ) : null}
 
       {welcome && !askAge ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-2 border-moss/50 bg-moss-soft`} data-testid="welcome">
-          <SectionHeading title="Welcome" kanji="ようこそ" />
+          <SectionHeading title={say.say("mine.welcome")} kanji="ようこそ" />
           <p className="text-sm text-ink-soft">
-            You are in. One question before the board: what should the other players call you?{" "}
-            {addressless
-              ? "Your account has a name to be going on with; change it to the one you want."
-              : "Google’s name is filled in; change it if you like."}
+            {say.sentences([say.say("mine.welcomeName"), say.say(addressless ? "mine.welcomeNoAddress" : "mine.welcomeGoogle")])}
           </p>
           {addressless ? (
             /*
@@ -269,7 +222,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
       {welcome ? null : (
         <>
           {/* Bare, under the title, as every page's tabs are; the open tab's content is the panel. */}
-          <Tabs tabs={TABS} active={open} base="/me" label="Which part of your account" />
+          <Tabs tabs={TABS} active={open} base="/me" label={say.say("mine.tabsAria")} />
           <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
             {open === "record" ? <MyRecord name={name} /> : null}
 
@@ -293,11 +246,12 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                   timeZone={member?.timeZone ?? ""}
                   country={member?.country ?? ""}
                   preferences={member?.preferences ?? null}
+                  say={say}
                 />
                 <ProfileForm
                   initial={profileFields}
                   child={isChild(band)}
-                  countries={allCountries()}
+                  countries={allCountries(say.locale)}
                   timeZones={supportedTimeZones()}
                 />
                 {/* What we keep, then the way to have none of it kept: the privacy page's promise, as two panels (PRIV-04). */}
@@ -312,7 +266,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
               <div className="flex flex-col gap-3" data-testid="game-defaults-panel">
                 <SettingsForm initial={profileFields} child={isChild(band)} mailSending={mailSending} />
                 <p className="border-t border-rule pt-4 text-sm text-muted">
-                  What a new board is set out with, here and on every device you sign in on.
+                  {say.say("mine.newBoardNote")}
                 </p>
                 <GameDefaultsForm initial={gameDefaultsFrom(member?.gameDefaults)} />
 
@@ -320,7 +274,7 @@ export default async function MePage({ searchParams }: PageProps<"/me">) {
                   How a turn works, beside what a board is set out with: both are
                   answers somebody gives once and finds on every device.
                 */}
-                <p className="text-sm text-muted">How a turn works, on every board you play.</p>
+                <p className="text-sm text-muted">{say.say("mine.turnNote")}</p>
                 <TurnFlowForm
                   initial={{
                     moveConfirm: preferences.moveConfirm,

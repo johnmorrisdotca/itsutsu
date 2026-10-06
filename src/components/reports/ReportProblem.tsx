@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, INPUT_CLASS, SECTION_HEADING, TAP_HEIGHT, TONE_CLASS } from "@/components/ui/ui.constants";
 import { newReporterRef } from "@/lib/reports/reportDraft";
@@ -53,6 +54,7 @@ function reporterRef(): string {
  */
 export function ReportProblem({ version }: { version: string }) {
   const pathname = usePathname();
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const dialog = useRef<HTMLDialogElement>(null);
   const [phase, setPhase] = useState<Phase>("checking");
@@ -69,7 +71,7 @@ export function ReportProblem({ version }: { version: string }) {
     setShotProblem(null);
     const prepared = await prepareScreenshot(file);
     if ("problem" in prepared) {
-      setShotProblem(prepared.problem);
+      setShotProblem(say.say(prepared.problem === "notPicture" ? "reports.shotNotPicture" : "reports.shotTooLarge"));
       return;
     }
     if (shot) URL.revokeObjectURL(shot.preview);
@@ -104,11 +106,12 @@ export function ReportProblem({ version }: { version: string }) {
     }
     setPhase("writing");
     if (sent.reason === "invalid") setProblem(sent.problem);
-    else if (sent.reason === "rateLimited") setProblem(`That is a lot of reports at once. Try again in ${Math.ceil(sent.retryAfterSeconds / 60)} minutes; your words are still here.`);
-    else setProblem("Could not send it just now. Your words are still here; try again in a moment.");
+    else if (sent.reason === "rateLimited") setProblem(say.say("reports.rateLimited", { minutes: say.number(Math.ceil(sent.retryAfterSeconds / 60)) }));
+    else setProblem(say.say("reports.failed"));
   }
 
   const length = text.trim().length;
+  const title = say.pair("reports.title", "不具合の報告");
   return (
     <>
       {/* A word in the colophon's row, and still a fingertip tall on a phone: see `TAP_HEIGHT`. */}
@@ -119,7 +122,7 @@ export function ReportProblem({ version }: { version: string }) {
         data-testid="report-problem"
         {...readyMark(hydrated)}
       >
-        Report a problem
+        {say.say("reports.open")}
       </button>
       <dialog
         ref={dialog}
@@ -130,26 +133,26 @@ export function ReportProblem({ version }: { version: string }) {
       >
         <header className="border-b border-rule bg-ivory/70 px-5 pt-4 pb-3">
           <h2 id="report-problem-title" className={SECTION_HEADING}>
-            Report a problem <span className="font-mincho text-sm font-normal opacity-70">不具合の報告</span>
+            {title.text}
+            {title.kanji === null ? null : <> <span className="font-mincho text-sm font-normal opacity-70">{title.kanji}</span></>}
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Tell us what went wrong and what you were doing. With it we keep the page you were on, the version, the date
-            and a screenshot if you add one, and nothing else.
+            {say.say("reports.intro")}
           </p>
         </header>
 
         <div className="flex flex-col gap-3 px-5 pt-4 pb-5">
-          {phase === "checking" ? <p className="text-sm text-muted">One moment…</p> : null}
+          {phase === "checking" ? <p className="text-sm text-muted">{say.say("reports.checking")}</p> : null}
 
           {phase === "paused" ? (
             <p className="text-sm text-muted" data-testid="report-paused">
-              Reporting is paused for a moment. Please try again a little later.
+              {say.say("reports.paused")}
             </p>
           ) : null}
 
           {phase === "sent" ? (
             <p className={`rounded-xl border px-3 py-2 text-sm ${TONE_CLASS.good}`} data-testid="report-sent">
-              Thank you. It has reached us, with the page you were on.
+              {say.say("reports.sent")}
             </p>
           ) : null}
 
@@ -163,7 +166,7 @@ export function ReportProblem({ version }: { version: string }) {
               }}
             >
               <label htmlFor="report-body" className="text-sm font-medium">
-                What happened?
+                {say.say("reports.question")}
               </label>
               <textarea
                 id="report-body"
@@ -171,7 +174,7 @@ export function ReportProblem({ version }: { version: string }) {
                 onChange={(event) => setText(event.target.value)}
                 maxLength={REPORT_LIMITS.bodyMax}
                 rows={5}
-                placeholder="The move I made went on the wrong point, on a phone, after I pressed Undo."
+                placeholder={say.say("reports.placeholder")}
                 className={`${INPUT_CLASS} h-auto`}
                 data-testid="report-body"
                 autoFocus
@@ -187,17 +190,17 @@ export function ReportProblem({ version }: { version: string }) {
                 {shot ? (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element -- a picture made in this browser, not a page asset */}
-                    <img src={shot.preview} alt="The screenshot that will go with the report" className="h-16 w-auto rounded-md border border-rule" data-testid="report-shot-preview" />
+                    <img src={shot.preview} alt={say.say("reports.shotAlt")} className="h-16 w-auto rounded-md border border-rule" data-testid="report-shot-preview" />
                     <button type="button" onClick={detach} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="report-shot-remove">
-                      Remove the screenshot
+                      {say.say("reports.removeShot")}
                     </button>
                   </>
                 ) : (
                   <>
                     <button type="button" onClick={() => picker.current?.click()} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="report-shot-add">
-                      Add a screenshot
+                      {say.say("reports.addShot")}
                     </button>
-                    <span className="text-xs text-muted">or paste one into the box</span>
+                    <span className="text-xs text-muted">{say.say("reports.pasteShot")}</span>
                   </>
                 )}
                 <input
@@ -224,21 +227,21 @@ export function ReportProblem({ version }: { version: string }) {
                 </p>
               ) : null}
               <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs text-muted" data-testid="report-carries">
-                <dt>Page</dt>
+                <dt>{say.say("reports.carriesPage")}</dt>
                 <dd className="min-w-0 truncate font-mono text-ink-soft" data-testid="report-page">
                   {pathname}
                 </dd>
-                <dt>Version</dt>
+                <dt>{say.say("reports.carriesVersion")}</dt>
                 <dd className="font-mono text-ink-soft">{version}</dd>
                 {shot ? (
                   <>
-                    <dt>Screenshot</dt>
+                    <dt>{say.say("reports.carriesShot")}</dt>
                     <dd className="text-ink-soft" data-testid="report-shot-size">
                       {Math.max(1, Math.round(shot.bytes / 1024))} KB
                     </dd>
                   </>
                 ) : null}
-                <dt>Date</dt>
+                <dt>{say.say("reports.carriesDate")}</dt>
                 <dd className="text-ink-soft" data-testid="report-date">
                   {openedAt ? <LocalTime at={openedAt} style="dateTime" /> : null}
                 </dd>
@@ -253,7 +256,7 @@ export function ReportProblem({ version }: { version: string }) {
               className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
               data-testid="report-close"
             >
-              Close
+              {say.say("reports.close")}
             </button>
             {phase === "writing" || phase === "sending" ? (
               <button
@@ -263,7 +266,7 @@ export function ReportProblem({ version }: { version: string }) {
                 className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
                 data-testid="report-send"
               >
-                {phase === "sending" ? "Sending…" : "Send it"}
+                {phase === "sending" ? say.say("reports.sending") : say.say("reports.send")}
               </button>
             ) : null}
           </div>

@@ -3,8 +3,8 @@
 import Link from "@/components/ui/Link";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
-import { useLocale } from "@/components/i18n/LocaleProvider";
-import { countText } from "@/lib/rating/figures";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { weave } from "@/lib/i18n/weave";
 import type { LadderEntry } from "@/lib/rating/ladder";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { useLiveScroll } from "@/lib/ui/useLiveScroll";
@@ -115,7 +115,7 @@ export function LadderMore({
   sort: RecordSort;
 }) {
   const hydrated = useHydrated();
-  const locale = useLocale();
+  const say = useSpeaker();
   const { more, next, loading, failed, sentinel } = useLiveScroll<LadderEntry>({
     endpoint,
     from,
@@ -141,7 +141,8 @@ export function LadderMore({
   return (
     <div className="flex flex-col gap-3" data-testid="ladder-live" {...readyMark(hydrated)}>
       <RecordTable
-        subject="Player"
+        say={say}
+        subject={say.say("players.colPlayer")}
         rows={rows.map(ladderRow)}
         columns={{ tier: true }}
         sort={sort}
@@ -163,13 +164,13 @@ export function LadderMore({
           Not The Way To It.
         */
         empty={
-          <>
-            Nobody has a rated game yet. Rated games are shared games between two members —{" "}
-            <Link href="/players" className="underline underline-offset-4">
-              find somebody to play
-            </Link>{" "}
-            and be the first onto the ladder.
-          </>
+          weave(say.say("players.ladderEmpty"), {
+            link: (
+              <Link href="/players" className="underline underline-offset-4">
+                {say.say("players.ladderFind")}
+              </Link>
+            ),
+          })
         }
       />
 
@@ -180,23 +181,23 @@ export function LadderMore({
           <div ref={sentinel} className="h-8" aria-hidden data-testid="ladder-sentinel" />
           <p className="text-sm text-muted" aria-live="polite" data-testid="ladder-progress">
             {next === null
-              ? `All ${countText(total, locale)} on the ladder shown.`
-              : `${countText(rows.length, locale)} of ${countText(total, locale)} shown${loading ? " — reading more…" : ". Keep scrolling for more."}`}
+              ? say.say("players.ladderAll", { total: say.number(total) })
+              : say.say(loading ? "players.ladderLoading" : "players.ladderScroll", { shown: say.number(rows.length), total: say.number(total) })}
           </p>
         </>
       ) : (
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm text-muted" data-testid="ladder-count">
-            {countText(rows.length, locale)} of {countText(total, locale)} on the ladder
+            {say.say("players.ladderCount", { shown: say.number(rows.length), total: say.number(total) })}
           </p>
           {failed ? (
             <span className="text-sm text-muted" data-testid="ladder-scroll-failed">
-              More could not be loaded just now — the link still works.
+              {say.say("players.ladderFailed")}
             </span>
           ) : null}
           {from === null ? null : (
             <Link href={link(from)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="ladder-next">
-              Show the next {countText(Math.min(first.length, total - rows.length), locale)}
+              {say.say("players.showNext", { count: say.number(Math.min(first.length, total - rows.length)) })}
             </Link>
           )}
           {/*
@@ -207,7 +208,7 @@ export function LadderMore({
           */}
           {new URLSearchParams(sort.query).get("cursor") === null ? null : (
             <Link href={link(null)} className="text-sm underline underline-offset-4" data-testid="ladder-top">
-              Back to the top of the ladder
+              {say.say("players.ladderTop")}
             </Link>
           )}
         </div>

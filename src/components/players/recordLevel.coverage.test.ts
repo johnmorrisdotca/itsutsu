@@ -317,9 +317,9 @@ describe("the XP total is one column, drawn by recordTrailing", () => {
      * because the runner has no DOM.
      */
     const source = read(TRAILING);
-    expect(source).toMatch(/<XpCell xp=\{row\.xp \?\? null\} blankBecause=\{row\.xpBlankBecause\} \/>/);
+    expect(source).toMatch(/<XpCell say=\{say\} xp=\{row\.xp \?\? null\} blankBecause=\{row\.xpBlankBecause\} \/>/);
     expect(source).toMatch(/href="\/xp"/);
-    expect(source).toMatch(/countText\(xp\)/);
+    expect(source).toMatch(/say\.number\(xp\)/);
   });
 
   it("is on unless a caller switches it off, and sorts only through the declared slot", () => {

@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 /**
  * Saving part of one's own account with `PATCH /api/me`, which takes any
  * subset of its fields: the Profile form sends who you are, the Settings form
@@ -10,6 +12,7 @@ import { useState } from "react";
  * words. One hook so the two forms cannot come to save differently.
  */
 export function useSaveMe() {
+  const say = useSpeaker();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -26,7 +29,7 @@ export function useSaveMe() {
     setBusy(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? "That could not be saved.");
+      setError(payload?.error ?? say.say("mine.saveFailed"));
       return false;
     }
     setSaved(true);

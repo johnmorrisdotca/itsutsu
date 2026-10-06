@@ -128,6 +128,9 @@ export const SELECT_CLASS =
 export const INPUT_CLASS =
   `w-full rounded-lg border border-rule-strong/80 bg-ivory/80 px-2.5 py-1.5 text-sm text-ink outline-none placeholder:text-muted/80 focus-visible:ring-2 focus-visible:ring-moss ${TAP_HEIGHT}`;
 
+/** Why a row's own controls may wrap, for the page-width gate to read off the element (`data-width-reason`); never drawn as text. */
+export const ROW_ACTIONS_WRAP_REASON = "a row's own controls; max-w-full only lets them wrap under the name on a phone";
+
 export const PANEL_CLASS =
   "rounded-2xl border border-rule bg-ivory/60 p-4 backdrop-blur-sm";
 

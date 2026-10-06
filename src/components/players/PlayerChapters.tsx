@@ -6,6 +6,8 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { mosaicDraws } from "@/lib/record/mosaic";
 import { XP_HISTORY_TAB } from "@/lib/xp/xpHistoryDays";
 
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { EndPositions } from "./EndPositions";
 import { ItsutsuRecord } from "./ItsutsuRecord";
 import { KEPT_RECORD_COPY } from "./LegacyRecord";
@@ -25,7 +27,7 @@ import type { PlayerChaptersProps } from "./playerPage.types";
  * `recordLevel.coverage.test.ts` read it; this is the part of the page that
  * reads down from there, and every decision it draws was made by the page.
  */
-export function PlayerChapters({
+export async function PlayerChapters({
   slug,
   whole,
   showWholeFigures,
@@ -43,6 +45,7 @@ export function PlayerChapters({
   keptRecord,
   askable,
 }: PlayerChaptersProps) {
+  const say = await currentSpeaker();
   return (
     <>
       {/*
@@ -61,7 +64,7 @@ export function PlayerChapters({
         </section>
       ) : null}
 
-      <Tabs tabs={tabs} active={open} base={`/players/${slug}`} label="Where this player's record was kept, and how their XP was earned" />
+      <Tabs tabs={tabs} active={open} base={`/players/${slug}`} label={say.say("players.chaptersLabel")} />
 
       {earner !== null && open === XP_HISTORY_TAB ? (
         <PlayerXpHistory memberId={earner} isYou={earner === reader.memberId} asked={asked} at={`/players/${slug}`} />
@@ -78,7 +81,7 @@ export function PlayerChapters({
              * in the one place it would be noticed. Their own wording says
              * this record was made elsewhere and is kept rather than added to.
              */
-            emptyNote={keptRecord === null ? undefined : KEPT_RECORD_COPY[keptRecord.kind]?.here}
+            emptyNote={keptRecord === null || KEPT_RECORD_COPY[keptRecord.kind] === undefined ? undefined : say.say(KEPT_RECORD_COPY[keptRecord.kind]!.here, { site: SITE_NAME })}
           />
           {/*
             Every game they have finished, the ones they have going, the games
@@ -127,7 +130,7 @@ export function PlayerChapters({
           */}
           {askable && record.games > 0 ? (
             <p className="flex flex-wrap items-center gap-3 text-sm text-muted" data-testid="ask-after-record">
-              Seen enough?{" "}
+              {say.say("players.seenEnough")}{" "}
               {/*
                 ONE OFFER, TWO WORDINGS. It was two components because a game
                 against a program had to be asked for by id and a game against a

@@ -215,7 +215,7 @@ const HAND_BUILT_WITHOUT_XP: Record<string, string> = {
 describe("a table built by hand with a person's rating on it has XP after the rating", () => {
   /** Files with a `<table>` whose `<th>` headings include a Rating. */
   const rated = FILES.filter(
-    (file) => /<table\b/.test(file.source) && /<th\b[^>]*>\s*Rating\s*</.test(file.source),
+    (file) => /<table\b/.test(file.source) && /<th\b[^>]*>\s*(?:Rating|\{say\.say\("players\.colRating"\)\})\s*</.test(file.source),
   );
 
   it("finds such tables at all, so the check below is not vacuous", () => {
@@ -230,7 +230,7 @@ describe("a table built by hand with a person's rating on it has XP after the ra
 
   it("names XP in a heading, or is named here with the reason it does not", () => {
     const offenders = rated
-      .filter((file) => !/<th\b[^>]*>\s*XP\s*</.test(file.source))
+      .filter((file) => !/<th\b[^>]*>\s*(?:XP|\{say\.say\("players\.colXp"\)\})\s*</.test(file.source))
       .map((file) => file.path)
       .filter((path) => HAND_BUILT_WITHOUT_XP[path] === undefined);
     expect(offenders, "draw XpCell from recordTrailing.tsx after the rating — or say here why not").toEqual([]);

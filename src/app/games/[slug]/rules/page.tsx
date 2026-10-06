@@ -23,8 +23,8 @@ import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Paired } from "@/lib/i18n/i18n.types";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
-import { CUBE_GUIDE_COPY } from "@/lib/learn/cubeMethod";
-import { guidesFor } from "@/lib/learn/strategy";
+import { cubeGuideCopy } from "@/lib/learn/cubeMethod";
+import { guidesFor, guideWords } from "@/lib/learn/strategy";
 import { GameTrail } from "@/components/games/GameTrail";
 import { titleWithKanji } from "@/components/games/pageTitles";
 
@@ -107,9 +107,9 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
   // A game's strategy guides; the cube's method, which is a guide of its own (`/learn/cube`).
   const guides =
     variant !== null
-      ? guidesFor(variant).map((guide) => ({ href: `/learn/${guide.slug}`, title: guide.title, summary: guide.summary }))
+      ? guidesFor(variant).map((guide) => ({ href: `/learn/${guide.slug}`, title: guideWords(guide, say).title, summary: guideWords(guide, say).summary }))
       : puzzle === "cube"
-        ? [{ href: "/learn/cube", title: CUBE_GUIDE_COPY.title, summary: CUBE_GUIDE_COPY.lead }]
+        ? [{ href: "/learn/cube", title: cubeGuideCopy(say).title, summary: cubeGuideCopy(say).lead }]
         : [];
   /*
    * The game's own name. It has no dictionary entry and wants none — a name

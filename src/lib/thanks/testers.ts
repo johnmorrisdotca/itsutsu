@@ -1,3 +1,5 @@
+import type { Speaker } from "@/lib/i18n/i18n";
+
 /**
  * THE PEOPLE HELPING TEST ITSUTSU, THANKED BY NAME.
  *
@@ -36,8 +38,7 @@ export const BETA_TESTERS: readonly BetaTester[] = [];
 export const INVITED_COMMUNITIES = ["ItsYourTurn", "GoldToken", "Pente.org", "Othello.com"] as const;
 
 /** The communities named as a sentence: "A, B, C and D". */
-export function communitiesSaid(): string {
-  const names = [...INVITED_COMMUNITIES];
-  const last = names.pop();
-  return names.length === 0 ? (last ?? "") : `${names.join(", ")} and ${last}`;
+/** The communities named in a sentence, joined the way the reader's language joins a list ("a, b and c", "a、b、c"). */
+export function communitiesSaid(say: Speaker): string {
+  return say.list(INVITED_COMMUNITIES);
 }

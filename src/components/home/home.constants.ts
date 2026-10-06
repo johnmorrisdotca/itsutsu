@@ -1,4 +1,5 @@
 import { ABOUT_CHAPTERS } from "@/app/about/about.chapters";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 
 /**
  * WHERE THE FRONT PAGE SENDS PEOPLE, written once for its sections.
@@ -13,35 +14,40 @@ import { ABOUT_CHAPTERS } from "@/app/about/about.chapters";
 /** A line of "where to start", for one kind of visitor. */
 export type StartLink = {
   href: string;
-  label: string;
-  note: string;
+  /** A phrase: what the way in is called, which is the link's text. */
+  label: PhraseKey;
+  /** A phrase: the whole line, with `{label}` where the link stands and what the way in offers after it. */
+  line: PhraseKey;
+  /** The line said to somebody with no invite, where the way in is behind it (`membersOnly`). */
+  lineInvite?: PhraseKey;
   /** Behind the invite: a stranger is told so beside the link rather than finding the door. */
   membersOnly?: boolean;
 };
 
 /** Somebody meeting these games, or this kind of site, for the first time. */
 export const START_NEW: readonly StartLink[] = [
-  { href: "/games", label: "Browse the games", note: "every game with its rules, a picture of its board, and where it came from" },
-  { href: "/learn", label: "Read a guide", note: "the shapes that win and the mistakes everybody makes once" },
-  { href: "/about", label: "Read the story", note: "why the site exists, and how it counts" },
+  { href: "/games", label: "home.start.browse", line: "home.start.browseLine" },
+  { href: "/learn", label: "home.start.guide", line: "home.start.guideLine" },
+  { href: "/about", label: "home.start.story", line: "home.start.storyLine" },
 ];
 
 /** Somebody who has played these games before, here or on the older sites. */
 export const START_RETURNING: readonly StartLink[] = [
   {
     href: "/games/new",
-    label: "Start a game",
-    note: "pick the game, the board and the opponent: a person or a program",
+    label: "home.start.begin",
+    line: "home.start.beginLine",
+    lineInvite: "home.start.beginLineInvite",
     membersOnly: true,
   },
   {
     href: `/about/${ABOUT_CHAPTERS.roots}`,
-    label: "Where the games came from",
-    note: "a thousand years of five in a row, Othello, and the famous openings",
+    label: "home.start.roots",
+    line: "home.start.rootsLine",
   },
   {
     href: `/about/${ABOUT_CHAPTERS.programs}`,
-    label: "Meet the bots",
-    note: "five graded bots and two specialists, and how they were measured",
+    label: "home.start.bots",
+    line: "home.start.botsLine",
   },
 ];

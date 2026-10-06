@@ -1,3 +1,5 @@
+import { Paired } from "@/components/i18n/Paired";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { K_ESTABLISHED, K_PROVISIONAL, PROVISIONAL_BELOW, RATING_START, UNRATED_BELOW } from "@/lib/rating/elo";
 
 /** How far the strip runs past the last boundary, so "established" has room to be read. */
@@ -9,15 +11,15 @@ const SHOWN_GAMES = PROVISIONAL_BELOW + 10;
  * them, so the picture moves when the rule does, and so are the K figures in
  * the caption.
  */
-export function RatingTiers() {
+export function RatingTiers({ say }: { say: Speaker }) {
   const bands = [
-    { name: "Unrated", kanji: "未定", from: 0, to: UNRATED_BELOW, tone: "var(--rule)", note: "a dash, not a number" },
-    { name: "Provisional", kanji: "仮", from: UNRATED_BELOW, to: PROVISIONAL_BELOW, tone: "var(--ochre-soft)", note: "moves fast" },
-    { name: "Established", kanji: "確定", from: PROVISIONAL_BELOW, to: SHOWN_GAMES, tone: "var(--moss-soft)", note: "moves slowly" },
+    { name: say.say("about.tiers.unrated"), kanji: "未定", from: 0, to: UNRATED_BELOW, tone: "var(--rule)", note: say.say("about.tiers.unratedNote") },
+    { name: say.say("about.tiers.provisional"), kanji: "仮", from: UNRATED_BELOW, to: PROVISIONAL_BELOW, tone: "var(--ochre-soft)", note: say.say("about.tiers.provisionalNote") },
+    { name: say.say("about.tiers.established"), kanji: "確定", from: PROVISIONAL_BELOW, to: SHOWN_GAMES, tone: "var(--moss-soft)", note: say.say("about.tiers.establishedNote") },
   ];
   return (
     <figure className="flex flex-col gap-2" data-testid="about-rating-tiers">
-      <div className="flex overflow-hidden rounded-lg border border-rule text-xs" role="img" aria-label={`A rating is unrated for its first ${UNRATED_BELOW} rated games, provisional until ${PROVISIONAL_BELOW}, and established after that.`}>
+      <div className="flex overflow-hidden rounded-lg border border-rule text-xs" role="img" aria-label={say.say("about.tiers.label", { unrated: String(UNRATED_BELOW), provisional: String(PROVISIONAL_BELOW) })}>
         {bands.map((band) => (
           <div
             key={band.name}
@@ -25,20 +27,17 @@ export function RatingTiers() {
             style={{ flexGrow: band.to - band.from, flexBasis: 0, background: band.tone }}
           >
             <span className="font-semibold">
-              {band.name} <span className="font-mincho font-normal opacity-70">{band.kanji}</span>
+              <Paired en={band.name} kanji={band.kanji} kanjiClassName="font-normal opacity-70" />
             </span>
             <span className="text-muted">
-              games {band.from}
-              {band.to === SHOWN_GAMES ? "+" : `–${band.to - 1}`}
+              {say.say("about.tiers.games", { range: `${band.from}${band.to === SHOWN_GAMES ? "+" : `–${band.to - 1}`}` })}
             </span>
             <span className="text-muted">{band.note}</span>
           </div>
         ))}
       </div>
       <figcaption className="text-xs leading-relaxed text-muted">
-        A rating’s three stages, by the number of rated games behind it. Everybody starts at {RATING_START}; the
-        number moves by up to {K_PROVISIONAL} a game while provisional and up to {K_ESTABLISHED} once
-        established.
+        {say.say("about.tiers.caption", { start: String(RATING_START), provisionalK: String(K_PROVISIONAL), establishedK: String(K_ESTABLISHED) })}
       </figcaption>
     </figure>
   );

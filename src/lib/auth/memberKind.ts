@@ -1,3 +1,5 @@
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+
 import { UNCLAIMABLE_REASONS } from "./memberId";
 
 /**
@@ -34,15 +36,15 @@ export const MEMBER_KINDS = {
 
 export type MemberKind = (typeof MEMBER_KINDS)[keyof typeof MEMBER_KINDS];
 
-export const MEMBER_KIND_DISPLAY: Record<MemberKind, { label: string; kanji: string; note: string }> = {
-  operator: { label: "Operator", kanji: "管理", note: "Runs the site. Named in the deployment, not in the members table." },
-  robot: { label: "Bot", kanji: "機械", note: "A program that plays, rated like anybody else." },
-  remembered: { label: "Remembered", kanji: "偲ぶ", note: "Their record is kept here; they are not." },
-  honorary: { label: "Honorary", kanji: "名誉", note: "Never played here, kept in their own right." },
-  "kept-record": { label: "Kept record", kanji: "記録", note: "A record from before this site, with no account behind it." },
-  seed: { label: "Seeded", kanji: "種", note: "Written when the site was set up, not by anybody joining." },
-  test: { label: "Test", kanji: "試験", note: "A simulated player, shown only to the operator in Test mode." },
-  member: { label: "Member", kanji: "会員", note: "An ordinary account." },
+export const MEMBER_KIND_DISPLAY: Record<MemberKind, { label: PhraseKey; kanji: string; note: PhraseKey }> = {
+  operator: { label: "players.kindOperator", kanji: "管理", note: "players.kindOperatorNote" },
+  robot: { label: "players.kindRobot", kanji: "コンピュータ", note: "players.kindRobotNote" },
+  remembered: { label: "players.kindRemembered", kanji: "偲ぶ", note: "players.kindRememberedNote" },
+  honorary: { label: "players.kindHonorary", kanji: "名誉", note: "players.kindHonoraryNote" },
+  "kept-record": { label: "players.kindKeptRecord", kanji: "記録", note: "players.kindKeptRecordNote" },
+  seed: { label: "players.kindSeed", kanji: "種", note: "players.kindSeedNote" },
+  test: { label: "players.kindTest", kanji: "試験", note: "players.kindTestNote" },
+  member: { label: "players.kindMember", kanji: "会員", note: "players.kindMemberNote" },
 };
 
 /**

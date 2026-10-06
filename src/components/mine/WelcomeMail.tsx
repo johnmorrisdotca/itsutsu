@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { MAIL_KINDS, type MailKindsWanted, type StopKind } from "@/lib/mail/mailStop";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -19,6 +20,7 @@ import { MailChoices } from "./MailChoices";
  * leaves this out for both.
  */
 export function WelcomeMail({ all: initialAll, kinds: initialKinds, sending }: { all: boolean; kinds: MailKindsWanted; sending: boolean }) {
+  const say = useSpeaker();
   const [all, setAll] = useState(initialAll);
   const [kinds, setKinds] = useState(initialKinds);
 
@@ -27,7 +29,7 @@ export function WelcomeMail({ all: initialAll, kinds: initialKinds, sending }: {
 
   return (
     <div className="flex max-w-[29rem] flex-col gap-2" data-testid="welcome-mail" {...readyMark(useHydrated())}>
-      <p className="text-sm text-ink-soft">And what should we email you about? Change it any time in Settings.</p>
+      <p className="text-sm text-ink-soft">{say.say("mine.welcomeMail")}</p>
       <MailChoices
         all={all}
         kinds={kinds}

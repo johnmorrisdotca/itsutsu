@@ -5,7 +5,9 @@ import { RowActions } from "@/components/ui/Controls";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import type { HereNow } from "@/lib/social/presence";
 import { ChallengeButton } from "./ChallengeButton";
-import { START_COPY } from "./mine.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { startCopy } from "./mine.copy";
 import { RecencyLegend, RecencyMark } from "./Recency";
 
 /**
@@ -13,7 +15,7 @@ import { RecencyLegend, RecencyMark } from "./Recency";
  * carries the same list; here it sits next to the board because on a small
  * site the answer to "who can I play" is usually "whoever is about".
  */
-export function HereNowPanel({
+export async function HereNowPanel({
   here,
   me,
 }: {
@@ -30,6 +32,8 @@ export function HereNowPanel({
    */
   me: string | null;
 }) {
+  const say = await currentSpeaker();
+  const START_COPY = startCopy(say);
   const others = here.filter((entry) => entry.id !== me);
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="here-panel">
@@ -45,7 +49,7 @@ export function HereNowPanel({
         <>
           <ul className="flex flex-col gap-1">
             {others.slice(0, HERE_SHOWN).map((entry) => (
-              <HereRow key={entry.id} entry={entry} me={me} />
+              <HereRow key={entry.id} entry={entry} me={me} say={say} />
             ))}
           </ul>
           {/*
@@ -64,14 +68,14 @@ export function HereNowPanel({
               </summary>
               <ul className="mt-1 flex flex-col gap-1">
                 {others.slice(HERE_SHOWN).map((entry) => (
-                  <HereRow key={entry.id} entry={entry} me={me} />
+                  <HereRow key={entry.id} entry={entry} me={me} say={say} />
                 ))}
               </ul>
             </details>
           ) : null}
         </>
       )}
-      <RecencyLegend />
+      <RecencyLegend say={say} />
     </section>
   );
 }
@@ -79,17 +83,17 @@ export function HereNowPanel({
 /** How many are shown before the rest fold: enough to answer "is anybody about", on one phone screen. */
 const HERE_SHOWN = 6;
 
-function HereRow({ entry, me }: { entry: HereNow; me: string | null }) {
+function HereRow({ entry, me, say }: { entry: HereNow; me: string | null; say: Speaker }) {
   return (
     <li className="flex items-center gap-2 py-0.5 text-sm">
-      <RecencyMark recency={entry.recency} />
+      <RecencyMark recency={entry.recency} say={say} />
       <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2">
         {entry.name.trim() !== "" ? (
           <PlayerName name={entry.name} memberId={entry.id} fallback="" tag={entry.tag} />
         ) : (
           entry.email
         )}
-        {entry.localTime !== null ? <span className="text-xs text-muted">{entry.localTime} there</span> : null}
+        {entry.localTime !== null ? <span className="text-xs text-muted">{say.say("players.localThere", { time: entry.localTime })}</span> : null}
       </span>
       <RowActions>
         {/* Everybody here is a member seen lately — a person, with or without an address. */}

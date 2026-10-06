@@ -1,3 +1,7 @@
+import { Fragment } from "react";
+
+import type { Speaker } from "@/lib/i18n/i18n";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { FigureTable as Table } from "@/components/about/FigureTable";
 import { GAME_FAMILIES, familyPagePath } from "@/lib/gomoku/families";
@@ -5,14 +9,15 @@ import { familyCountWords } from "@/lib/gomoku/familyWords";
 import { RULE_VARIANT_LIST, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { isSettingKind } from "@/lib/catalogue/gameSettings";
-import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_KIND_LIST, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { puzzleCopy, puzzleName } from "@/lib/puzzles/puzzleCopy";
 
 /** The puzzles as the catalogue lists them: a Gomoji's languages and word lists are settings of the one Gomoji, not puzzles of their own. */
 const LISTED_PUZZLES = PUZZLE_KIND_LIST.filter((kind) => !isSettingKind(kind));
 import { isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import Link from "@/components/ui/Link";
 
-import { Game, Inside } from "./about.links";
+import { Game, rich, richCount } from "./about.links";
 import type { AboutSection } from "./about.constants";
 import { ABOUT_CHAPTERS } from "./about.chapters";
 
@@ -48,83 +53,60 @@ const NOT_A_LINE = RULE_VARIANT_LIST.filter((variant) => {
   return spec.flips || spec.camps || spec.connects || spec.checkers || spec.go || spec.chineseCheckers;
 }).length;
 
-const FAMILIES = (
+const families = (say: Speaker) => (
   <Table
-    head={["Family", "Games", "What decides it"]}
+    head={[say.say("about.catalogue.headFamily"), say.say("about.catalogue.headGames"), say.say("about.catalogue.headDecides")]}
     rows={GAME_FAMILIES.map((family) => [
       <span key={family.key} className="flex items-center gap-2">
         <FamilyMark family={family.title} size="small" />
         <Link href={familyPagePath(family)} className="underline decoration-rule underline-offset-2">
-          {family.title}
+          {say.pairName(family.title, family.kanji).text}
         </Link>
-        <span className="font-mincho text-xs opacity-70">{family.kanji}</span>
+        {say.pairsWithKanji ? <span className="font-mincho text-xs opacity-70">{family.kanji}</span> : null}
       </span>,
-      familyCountWords(family),
+      familyCountWords(family, say),
       <span key={`${family.key}-blurb`} className="text-muted">
-        {family.blurb}
+        {familyBlurb(family, say.locale)}
       </span>,
     ])}
-    caption={
-      <>
-        The {GAME_FAMILIES.length} families, with the number of games each holds, read from the catalogue itself.
-        A family is a way of finding a game rather than a filing cabinet: a game lives in one of them and may be
-        shown on another’s shelf where somebody looking there would want to find it.
-      </>
-    }
+    caption={say.say("about.catalogue.families", { families: String(GAME_FAMILIES.length) })}
   />
 );
 
-export const CATALOGUE_SECTION: AboutSection = {
-  title: "What is on the board here",
+/** The sizes a puzzle is offered at: "5×5 up to 9×9", or "4×4, 6×6, 8×8". */
+function puzzleSizes(say: Speaker, sizes: readonly number[]): string {
+  return sizes.length > 3
+    ? say.say("about.catalogue.sizesRange", { from: String(sizes[0]!), to: String(sizes.at(-1)!) })
+    : say.list(sizes.map((side) => `${side}×${side}`));
+}
+
+export const catalogueSection = (say: Speaker): AboutSection => ({
+  id: "catalogue",
+  title: say.say("about.catalogue.title"),
   chapter: ABOUT_CHAPTERS.games,
   kanji: "目録",
   paragraphs: [
-    <>
-      There are {RULE_VARIANT_LIST.length} games here, in {GAME_FAMILIES.length} families, and those numbers are
-      counted from the catalogue every time this page is drawn rather than written down in this sentence — a page
-      that tells you how big a site is should not be able to be wrong about it. A game means a rule set with a page
-      of its own: its rules, its record, its standings and a board. Counting the boards each is played on, there
-      are {SET_UPS} different games you can sit down to, and {CHOICE_OF_BOARD} of them let you choose how big the
-      board is before you start.
-    </>,
-    <>
-      Most of them descend from <Game variant="freestyle">five in a row</Game>, which is what the site is named
-      for, and {NOT_A_LINE} of them are decided by something else entirely: discs that turn over, pieces that are
-      jumped off the board, a race from one corner to the other, a chain joining two sides, territory surrounded
-      and counted. That was not the plan at the start. It happened because the two households this site is a
-      tribute to did not play one game either — the evening moved from Othello to Pente to something nobody could
-      remember the name of, and a site that only did lines would have been a smaller room than the one it is
-      remembering.
-    </>,
-    <>
-      {OURS.length} of the {RULE_VARIANT_LIST.length} are ours: rule sets that exist here and, as far as we know,
-      nowhere else — the drop game played on a board whose edges join, the one where a full bottom row disappears,
-      the five-in-a-row played with dominoes out of a shared queue, the board that turns a quarter of itself after
-      every stone. The other {RULE_VARIANT_LIST.length - OURS.length} are our version of a game somebody else
-      published, and each of those says so on its own rules page, with the name it is properly called and who
-      made it. Borrowing a game and not saying whose it is would be the one thing a site built out of other
-      people’s evenings has no excuse for.
-    </>,
-    <>
-      Of the families, {PUZZLE_FAMILIES.length} are not board games at all:{" "}
-      {PUZZLE_FAMILIES.map((family, index) => `${index > 0 ? (index === PUZZLE_FAMILIES.length - 1 ? " and " : ", ") : ""}${family.title}`).join("")} hold{" "}
-      {LISTED_PUZZLES.length === 1 ? "a puzzle" : "puzzles"} for one person:{" "}
-      {LISTED_PUZZLES.map((kind, index) => (
-        <span key={kind}>
-          {index > 0 ? (index === LISTED_PUZZLES.length - 1 ? " and " : ", ") : ""}
-          <Game variant={kind}>{PUZZLE_DISPLAY[kind].label}</Game>, our version of {PUZZLE_DISPLAY[kind].inspiredBy}, at{" "}
-          {PUZZLE_SPECS[kind].sizes.length > 3
-            ? `${PUZZLE_SPECS[kind].sizes[0]}×${PUZZLE_SPECS[kind].sizes[0]} up to ${PUZZLE_SPECS[kind].sizes.at(-1)}×${PUZZLE_SPECS[kind].sizes.at(-1)}`
-            : PUZZLE_SPECS[kind].sizes.map((side) => `${side}×${side}`).join(", ")}
-        </span>
-      ))}
-      . Each is made in your own browser from a number, with exactly one answer, and timed from your first entry.
-      The site checks a finished grid and pays a member XP for it, and nothing about a puzzle costs a server anything.
-    </>,
-    <>
-      The whole catalogue is <Inside href="/games">here</Inside>, and it is open to read without an account —
-      the rules of every one of them, whether or not you ever play a move.
-    </>,
+    rich(say, "about.catalogue.a", { games: RULE_VARIANT_LIST.length, families: GAME_FAMILIES.length, setups: SET_UPS, choice: CHOICE_OF_BOARD }),
+    rich(say, "about.catalogue.b", { notLine: NOT_A_LINE }),
+    rich(say, "about.catalogue.c", { games: RULE_VARIANT_LIST.length, ours: OURS.length, others: RULE_VARIANT_LIST.length - OURS.length }),
+    richCount(
+      say,
+      "about.catalogue.d",
+      LISTED_PUZZLES.length,
+      { groups: PUZZLE_FAMILIES.length, families: say.list(PUZZLE_FAMILIES.map((family) => say.pairName(family.title, family.kanji).text)) },
+      {
+        puzzles: say.listPieces(
+          LISTED_PUZZLES.map((kind) => (
+            <span key={kind}>
+              {rich(say, "about.catalogue.puzzle", { inspired: puzzleCopy(kind, say.locale).inspiredBy ?? "", sizes: puzzleSizes(say, PUZZLE_SPECS[kind].sizes) }, {
+                game: <Game variant={kind}>{puzzleName(kind, say.locale)}</Game>,
+              })}
+            </span>
+          )),
+        ).map((piece, at) => <Fragment key={at}>{piece}</Fragment>),
+      },
+    ),
+    rich(say, "about.catalogue.e"),
   ],
-  figures: { 0: FAMILIES },
-};
+  figures: { 0: families(say) },
+});

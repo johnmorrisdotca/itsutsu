@@ -193,7 +193,6 @@ export const JA_DRAFTED_GAMEPAGES: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "発祥：{country}",
     back: "Origin: {country}",
     review: AGENT_READ,
-    ask: "The country is printed as the data holds it, in English (\"発祥：Japan\"). Localising country names needs a table of its own; John to decide whether to add one.",
   },
   "gamepages.alsoKnownAs": {
     text: "別名：{names}。",

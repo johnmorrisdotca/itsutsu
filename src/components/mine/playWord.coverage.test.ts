@@ -5,10 +5,8 @@ import { describe, expect, it } from "vitest";
 
 import { PHRASES, type PhraseKey } from "@/lib/i18n/i18n.constants";
 
-import { PLAY } from "./mine.constants";
-
 /**
- * ONE WORD FOR OFFERING SOMEBODY A GAME: PLAY.
+ * ONE WORD FOR OFFERING SOMEBODY A GAME: PLAY (`mine.play`).
  *
  * The same link, to the same set-up screen against the same person, was
  * "Challenge" on the members list and the people here now, "Ask for a game" on
@@ -43,6 +41,8 @@ const EXCEPTIONS: readonly { file: string; text: string; why: string }[] = [
   { file: "src/components/party/party.constants.ts", text: "so ${challenger} takes a letter.", why: GHOST_MOVE },
   { file: "src/lib/party/party.constants.ts", text: "you may challenge the player who added the last one", why: `${GHOST_MOVE}, in its rules` },
   { file: "src/lib/party/party.constants.ts", text: "the challenger loses the round", why: `${GHOST_MOVE}, in its rules` },
+  { file: "src/lib/i18n/phrases.about.constants.ts", text: "DeepMind Challenge Match", why: "the name of the 2016 match between Lee Sedol and AlphaGo, in the About page's picture description" },
+  { file: "src/lib/i18n/dictionaries/ja.drafted.about.constants.ts", text: "DeepMind Challenge Match", why: "the same picture description's back-translation, which quotes the match's own name" },
   { file: "src/lib/party/partyRulesPage.ts", text: "or press Challenge. When challenged,", why: `${GHOST_MOVE}, on its rules page` },
   { file: "src/components/party/hitotsu/hitotsu.constants.ts", text: "May be challenged", why: `${FOUR_MOVE}: the house rule's tile` },
   { file: "src/components/party/hitotsu/hitotsu.constants.ts", text: "the next player may challenge.", why: FOUR_MOVE },
@@ -136,9 +136,9 @@ const FILES = filesUnder("src").map((path) => ({ path, source: readFileSync(path
 
 describe("the word for offering a game", () => {
   it("is Play, the default label of the one button that offers one", () => {
-    expect(PLAY).toBe("Play");
+    expect(PHRASES["mine.play"]).toBe("Play");
     const button = FILES.find(({ path }) => path.endsWith(join("mine", "ChallengeButton.tsx")));
-    expect(button?.source).toMatch(/label = PLAY,/);
+    expect(button?.source).toMatch(/label \?\? say\.say\("mine\.play"\)/);
   });
 
   it("is never Challenge in anything a reader is shown", () => {
@@ -157,7 +157,7 @@ describe("the word for offering a game", () => {
     }
     expect(
       found,
-      'Challenge and Play are the same act here, and the site says Play (PLAY in src/components/mine/mine.constants.ts). ' +
+      'Challenge and Play are the same act here, and the site says Play ("mine.play" in src/lib/i18n/phrases.mine.constants.ts). ' +
         "Reword each of these; if one truly is not about offering a game, add it to EXCEPTIONS with the reason.",
     ).toEqual([]);
   });

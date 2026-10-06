@@ -1,4 +1,8 @@
+import { speaker, type Speaker } from "../i18n/i18n";
+import type { Locale } from "../i18n/i18n.types";
+
 import { COUNTRY_ALIASES, COUNTRY_CODES, type MemberCountryCode } from "./countries.constants";
+import { COUNTRY_PHRASE } from "./countryPhrases.constants";
 
 /**
  * The flag beside somebody's name.
@@ -33,50 +37,70 @@ function fold(text: string): string {
     .normalize("NFD")
     // Accents off, so "cote divoire" finds Côte d'Ivoire.
     .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
+    // Kana and kanji stay, so 日本 finds Japan the way "japan" does.
+    .replace(/[^a-z0-9぀-ヿ一-鿿]+/g, " ")
     .trim();
 }
 
 export type MemberCountry = { code: MemberCountryCode; name: string; flag: string };
 
+const speakers = new Map<Locale, Speaker>();
+
+/** The name of a country as this reader's language says it (`countries.*` in the phrase table): English for every language with no words. */
+export function countryNameIn(code: MemberCountryCode, locale: Locale): string {
+  let said = speakers.get(locale);
+  if (said === undefined) {
+    said = speaker(locale);
+    speakers.set(locale, said);
+  }
+  return said.say(COUNTRY_PHRASE[code]);
+}
+
 /**
- * Every country the site will offer, in alphabetical order.
+ * Every country the site will offer, in alphabetical order of the reader's own language.
  *
  * For the profile form's select. The stored field is free text and stays free
  * text — this is a list to choose from, not a new rule about what may be in
  * that column, and `countryFrom` still has to read whatever is already there.
  *
- * Built once. `Intl.DisplayNames` is not free to construct, there are two
- * hundred and forty-nine of these, and — since this is the only place that
- * constructs one — it is also the only place anything else in this file has
- * to agree with.
+ * Built once for each language. The names are phrases (`countries.*`), never `Intl.DisplayNames`, so
+ * the list is the same in Node and in a browser; the sort is the only thing that asks the platform, and it is run on
+ * the server (`MePage` hands the list to the form as a prop).
  */
-let sorted: MemberCountry[] | null = null;
+const sorted = new Map<Locale, MemberCountry[]>();
 
-export function allCountries(): MemberCountry[] {
-  if (sorted !== null) return sorted;
-  const display = new Intl.DisplayNames(["en"], { type: "region" });
-  sorted = COUNTRY_CODES.map((code) => ({ code, name: display.of(code) ?? code, flag: flagOf(code) }))
+export function allCountries(locale: Locale = "en"): MemberCountry[] {
+  const kept = sorted.get(locale);
+  if (kept !== undefined) return kept;
+  const built = COUNTRY_CODES.map((code) => ({ code, name: countryNameIn(code, locale), flag: flagOf(code) }))
     // By name rather than by code, because the list is read as names.
-    .sort((a, b) => a.name.localeCompare(b.name));
-  return sorted;
+    .sort((a, b) => a.name.localeCompare(b.name, locale === "ja" ? "ja" : "en"));
+  sorted.set(locale, built);
+  return built;
 }
 
 /** fold(name) -> code, for a given list of countries, plus every alias. */
 function foldedLookup(countries: MemberCountry[]): Map<string, MemberCountryCode> {
   const built = new Map<string, MemberCountryCode>();
-  for (const country of countries) built.set(fold(country.name), country.code);
+  // The name in the list's own language, and in English, which is what most of what is stored says.
+  for (const country of countries) {
+    built.set(fold(country.name), country.code);
+    built.set(fold(countryNameIn(country.code, "en")), country.code);
+  }
   for (const [alias, code] of Object.entries(COUNTRY_ALIASES)) built.set(fold(alias), code);
   return built;
 }
 
-/** Built once, from `allCountries()`, for the same reason that is. */
-let byName: Map<string, MemberCountryCode> | null = null;
+/** Built once for each language, from its `allCountries()`, for the same reason that is. */
+const byName = new Map<Locale, Map<string, MemberCountryCode>>();
 
-function names(): Map<string, MemberCountryCode> {
-  if (byName !== null) return byName;
-  byName = foldedLookup(allCountries());
-  return byName;
+function names(locale: Locale): Map<string, MemberCountryCode> {
+  let kept = byName.get(locale);
+  if (kept === undefined) {
+    kept = foldedLookup(allCountries(locale));
+    byName.set(locale, kept);
+  }
+  return kept;
 }
 
 function resolveAgainst(
@@ -106,8 +130,8 @@ function resolveAgainst(
  * Takes a code as readily as a name, since "JP" is a perfectly reasonable
  * thing to have typed into a box labelled country.
  */
-export function countryFrom(written: string): MemberCountry | null {
-  return resolveAgainst(written, allCountries(), names());
+export function countryFrom(written: string, locale: Locale = "en"): MemberCountry | null {
+  return resolveAgainst(written, allCountries(locale), names(locale));
 }
 
 /**

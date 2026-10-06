@@ -2,6 +2,8 @@ import { BuddyButton } from "@/components/mine/BuddyButton";
 import { Paired } from "@/components/i18n/Paired";
 import Link from "@/components/ui/Link";
 
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import { LEGACY_PLAYERS } from "@/lib/legacy/legacyPlayers.data";
 import type { LegacyKind } from "@/lib/legacy/legacyPlayers.types";
 import type { KeptRecordStar } from "@/lib/social/keptRecordStars";
@@ -12,7 +14,7 @@ import type { KeptRecordStar } from "@/lib/social/keptRecordStars";
  * so they are named on the site the way anybody else is — and, like anybody
  * else, can be kept as a buddy (`keptRecordStars`).
  */
-export function LegacyRoll({
+export async function LegacyRoll({
   kind,
   label,
   kanji,
@@ -24,6 +26,7 @@ export function LegacyRoll({
   /** The star beside each name, by slug; none for a reader with no account. */
   stars: ReadonlyMap<string, KeptRecordStar>;
 }) {
+  const say = await currentSpeaker();
   const players = LEGACY_PLAYERS.filter((legacy) => legacy.kind === kind);
   if (players.length === 0) return null;
   return (
@@ -44,9 +47,10 @@ export function LegacyRoll({
               {legacy.name}
             </Link>
             <span className="text-muted">
-              {" "}
-              — never played here, but {legacy.possessive ?? "their"} record from{" "}
-              {legacy.sources.map((source) => source.site).join(" and ")} is kept.
+              {say.say("players.rollLine", {
+                possessive: say.locale === "ja" ? "" : (legacy.possessive ?? "their"),
+                sites: say.list(legacy.sources.map((source) => source.site)),
+              })}
             </span>
             </span>
             {star === undefined ? null : (

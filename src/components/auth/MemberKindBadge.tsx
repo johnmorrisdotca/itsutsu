@@ -1,3 +1,6 @@
+"use client";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
 import { MEMBER_KINDS, MEMBER_KIND_DISPLAY, worthShowing, type MemberKind } from "@/lib/auth/memberKind";
 
@@ -29,19 +32,20 @@ const TONE: Record<MemberKind, string> = {
 };
 
 export function MemberKindBadge({ kind }: { kind: MemberKind }) {
+  const say = useSpeaker();
   if (!worthShowing(kind)) return null;
   const copy = MEMBER_KIND_DISPLAY[kind];
   return (
     <span
-      title={copy.note}
+      title={say.say(copy.note)}
       data-testid="member-kind"
       data-kind={kind}
       className={`inline-flex shrink-0 items-baseline gap-1 rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold tracking-[0.06em] uppercase ${TONE[kind]}`}
     >
       {kind === MEMBER_KINDS.robot ? (
-        copy.label
+        say.say(copy.label)
       ) : (
-        <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-[0.7rem] font-normal normal-case tracking-normal opacity-70" />
+        <Paired en={say.say(copy.label)} kanji={copy.kanji} kanjiClassName="text-[0.7rem] font-normal normal-case tracking-normal opacity-70" />
       )}
     </span>
   );

@@ -2,7 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 
-import { WORDS_COPY } from "./mine.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { wordsCopy } from "./mine.copy";
 import { useTileDrag } from "./useTileDrag";
 import type { WordTilesProps } from "./words.types";
 
@@ -60,6 +61,7 @@ function keyMove(key: string, index: number, count: number): number | null {
 
 /** A box with nothing in it yet: numbered, and dashed the way a code box is before it is filled. */
 function EmptyTile({ index, next, target }: { index: number; next: boolean; target: boolean }) {
+  const WORDS_COPY = wordsCopy(useSpeaker());
   return (
     <div
       className={`${BOX} border-dashed ${
@@ -76,6 +78,7 @@ function EmptyTile({ index, next, target }: { index: number; next: boolean; targ
 
 /** A word that is set. It cannot be shown, so the box says only that it is there. */
 function MaskedTile({ index }: { index: number }) {
+  const WORDS_COPY = wordsCopy(useSpeaker());
   return (
     <div
       role="img"
@@ -92,6 +95,7 @@ function MaskedTile({ index }: { index: number }) {
 }
 
 export function WordTiles({ words, mode, busy = false, onTakeOut, onMove }: WordTilesProps) {
+  const WORDS_COPY = wordsCopy(useSpeaker());
   const count = words.length;
   const hintId = useId();
   const [said, setSaid] = useState("");

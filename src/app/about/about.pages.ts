@@ -1,3 +1,5 @@
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+
 /**
  * THE MAP OF THE SITE the About page prints, as data.
  *
@@ -9,22 +11,23 @@
  */
 export type SitePage = {
   path: string;
-  name: string;
+  /** The page's name and what it is for, as phrases: each is a word the reader meets in their own language. */
+  name: PhraseKey;
   kanji: string;
-  what: string;
+  what: PhraseKey;
   open: boolean;
 };
 
 export const SITE_PAGES: readonly SitePage[] = [
-  { path: "/games", name: "Games", kanji: "種目", what: "Every game here, by family, with its rules, its board and its background.", open: true },
-  { path: "/learn", name: "Learn", kanji: "学び", what: "Strategy guides: the shapes that win, the moves that force, the mistakes everyone makes once.", open: true },
-  { path: "/about", name: "About", kanji: "五つについて", what: "This page: where the site and its games came from.", open: true },
-  { path: "/join", name: "Join", kanji: "入会", what: "Use an invite code, or ask for one.", open: true },
-  { path: "/play", name: "My games", kanji: "対局", what: "Your games: your move beside theirs, and open games to take; completed games, pass and play, and puzzles each on a tab.", open: false },
-  { path: "/history", name: "Game history", kanji: "棋譜", what: "Every finished game, replayable move by move.", open: false },
-  { path: "/players", name: "Players", kanji: "対局者", what: "Everybody who plays, the ladder, and the bots.", open: false },
-  { path: "/champions", name: "Champions", kanji: "名人", what: "Who stands at the top of each game.", open: false },
-  { path: "/famous", name: "Famous games", kanji: "名局", what: "Championship and historic games, replayed through this site's own rules.", open: false },
-  { path: "/xp", name: "XP", kanji: "経験値", what: "Experience and levels: everybody by what they have earned.", open: false },
-  { path: "/inbox", name: "Inbox", kanji: "受信", what: "What happened in your games while you were away.", open: false },
+  { path: "/games", name: "about.page.games", kanji: "種目", what: "about.page.gamesWhat", open: true },
+  { path: "/learn", name: "about.page.learn", kanji: "学び", what: "about.page.learnWhat", open: true },
+  { path: "/about", name: "about.page.about", kanji: "五つについて", what: "about.page.aboutWhat", open: true },
+  { path: "/join", name: "about.page.join", kanji: "入会", what: "about.page.joinWhat", open: true },
+  { path: "/play", name: "about.page.play", kanji: "対局", what: "about.page.playWhat", open: false },
+  { path: "/history", name: "about.page.history", kanji: "棋譜", what: "about.page.historyWhat", open: false },
+  { path: "/players", name: "about.page.players", kanji: "対局者", what: "about.page.playersWhat", open: false },
+  { path: "/champions", name: "about.page.champions", kanji: "名人", what: "about.page.championsWhat", open: false },
+  { path: "/famous", name: "about.page.famous", kanji: "名局", what: "about.page.famousWhat", open: false },
+  { path: "/xp", name: "about.page.xp", kanji: "経験値", what: "about.page.xpWhat", open: false },
+  { path: "/inbox", name: "about.page.inbox", kanji: "受信", what: "about.page.inboxWhat", open: false },
 ];

@@ -1,4 +1,6 @@
 import { ViewTabs } from "@/components/ui/ViewTabs";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 import { penaltyName } from "@/components/live/penalty";
 import { describeMoveTime } from "@/lib/history/deadline";
@@ -12,32 +14,19 @@ import {
   type SeatPenaltyFilter,
   type SeatRatingBand,
 } from "@/lib/history/openSeatsFilter";
-import { OPEN_SEATS_FILTER_COPY } from "./mine.constants";
+import { openSeatsFilterCopy } from "./mine.copy";
 
 
-const RATING_DISPLAY: Record<SeatRatingBand, string> = {
-  [SEAT_RATING.any]: OPEN_SEATS_FILTER_COPY.anyRating,
-  [SEAT_RATING.under]: OPEN_SEATS_FILTER_COPY.under,
-  [SEAT_RATING.over]: OPEN_SEATS_FILTER_COPY.over,
-  [SEAT_RATING.unrated]: OPEN_SEATS_FILTER_COPY.unrated,
+const ratingDisplay = (say: Speaker): Record<SeatRatingBand, string> => {
+  const copy = openSeatsFilterCopy(say);
+  return { [SEAT_RATING.any]: copy.anyRating, [SEAT_RATING.under]: copy.under, [SEAT_RATING.over]: copy.over, [SEAT_RATING.unrated]: copy.unrated };
 };
 
-function penaltyLabel(penalty: SeatPenaltyFilter): string {
-  return penalty === "any" ? OPEN_SEATS_FILTER_COPY.anyPenalty : penaltyName(penalty);
+function penaltyLabel(penalty: SeatPenaltyFilter, say: Speaker): string {
+  return penalty === "any" ? openSeatsFilterCopy(say).anyPenalty : penaltyName(penalty, say);
 }
 
-/**
- * The three questions a reader asks of the noticeboard: how fast, against
- * whom, and what losing the clock costs. The players page settled on the
- * shape for this — links rather than buttons, so every narrowing is an
- * address somebody can bookmark or send on, and the board needs no script to
- * work at all.
- *
- * The count is printed beside them for the same reason it is on the players
- * page: a filter that empties the board without saying so reads as a broken
- * page rather than as an honest answer.
- */
-export function OpenSeatsFilters({
+export async function OpenSeatsFilters({
   filter,
   shown,
   total,
@@ -46,6 +35,9 @@ export function OpenSeatsFilters({
   shown: number;
   total: number;
 }) {
+  const say = await currentSpeaker();
+  const OPEN_SEATS_FILTER_COPY = openSeatsFilterCopy(say);
+  const RATING_DISPLAY = ratingDisplay(say);
   const to = (next: OpenSeatFilter) => {
     const query = openSeatQuery(next);
     // Back to the board itself, not to the top of the page — a reader who
@@ -66,7 +58,7 @@ export function OpenSeatsFilters({
             href: to({ ...filter, pace: ms }),
             current: filter.pace === ms,
             testId: `seat-pace-${ms ?? "none"}`,
-            label: describeMoveTime(ms),
+            label: describeMoveTime(ms, say),
           })),
         ]}
       />
@@ -88,12 +80,12 @@ export function OpenSeatsFilters({
           href: to({ ...filter, penalty }),
           current: filter.penalty === penalty,
           testId: `seat-penalty-${penalty}`,
-          label: penaltyLabel(penalty),
+          label: penaltyLabel(penalty, say),
         }))}
       />
 
       <p className="text-xs text-muted" data-testid="open-seats-count">
-        {shown === total ? `${total} waiting` : `${shown} of ${total} waiting`}
+        {shown === total ? say.say("mine.waitingAll", { total: say.number(total) }) : say.say("mine.waitingSome", { shown: say.number(shown), total: say.number(total) })}
       </p>
     </div>
   );

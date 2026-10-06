@@ -8,13 +8,14 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
 import { openTabOf } from "@/lib/ui/tabs";
 import { ABOUT_TABS } from "./about.chapters";
-import { ABOUT_SECTIONS } from "./about.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { SITE_NAME } from "@/lib/i18n/siteName";
+import { aboutSections } from "./about.constants";
 
-export const metadata = {
-  title: "About",
-  description:
-    "Where Itsutsu comes from, how a game here goes and how to get an invite, its games in charts, and the Japanese thread through all of it.",
-};
+export async function generateMetadata() {
+  const say = await currentSpeaker();
+  return { title: say.say("about.page.title"), description: say.say("about.page.description", { site: SITE_NAME }) };
+}
 
 /**
  * The story of the site, a chapter at a time. Open to anyone, like the rules.
@@ -30,23 +31,20 @@ export const metadata = {
  */
 export default async function AboutPage({ searchParams }: PageProps<"/about">) {
   const asked = await searchParams;
+  const say = await currentSpeaker();
   const open = openTabOf(ABOUT_TABS, asked);
   if (open === null) notFound();
-  const shown = ABOUT_SECTIONS.filter((section) => section.chapter === open);
+  const shown = aboutSections(say).filter((section) => section.chapter === open);
   return (
     <Page>
       <SiteHeader />
 
-      <PageTitle
-        title="About"
-        kanji="五つについて"
-        lead="A tribute to the sites a family played on, and to a game a thousand years old."
-      />
+      <PageTitle title={say.say("about.page.title")} kanji="五つについて" lead={say.say("about.page.lead")} />
 
-      <Tabs tabs={ABOUT_TABS} active={open} base="/about" label="Which part of the story to read" />
+      <Tabs tabs={ABOUT_TABS} active={open} base="/about" label={say.say("about.page.tabs")} />
 
       {shown.map((section, index) => (
-        <section key={section.title} className="flex flex-col gap-4" data-testid="about-section">
+        <section key={section.id} className="flex flex-col gap-4" data-testid="about-section">
           {index > 0 ? <BrandStones className="mb-2 opacity-70" /> : null}
           <SectionHeading title={section.title} kanji={section.kanji} />
           {section.paragraphs.map((paragraph, i) => (

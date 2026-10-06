@@ -145,7 +145,7 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
           yet... and that's a change to have a link saying - be the first to
           play!" See Show The Data, Not The Way To It in AGENTS.md.
         */}
-        <StandingsTable standings={standings} game={variant} ip={ip} actions={reader.hasAccount ? actionsFor : undefined} actionsLabel={say.say("gamepages.ask")} />
+        <StandingsTable say={say} standings={standings} game={variant} ip={ip} actions={reader.hasAccount ? actionsFor : undefined} actionsLabel={say.say("gamepages.ask")} />
         {standings.length === 0 ? (
           <p className="flex flex-wrap items-baseline gap-x-2 text-sm" data-testid="standings-empty">
             <span className="text-muted">
@@ -175,7 +175,7 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
         <section className="flex flex-col gap-3" data-testid="computer-standings">
             <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
               {say.say("gamepages.againstBots")}
-              {say.pairsWithKanji ? <span className="font-mincho text-[0.8rem] font-normal tracking-normal"> 機械</span> : null}
+              {say.pairsWithKanji ? <span className="font-mincho text-[0.8rem] font-normal tracking-normal"> コンピュータ</span> : null}
             </h2>
             <p className="text-xs text-muted">
               {/*
@@ -189,6 +189,7 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
               {say.say("gamepages.botLadderNote")}
             </p>
           <StandingsTable
+            say={say}
             standings={againstComputers}
             game={variant}
             ip={ip}

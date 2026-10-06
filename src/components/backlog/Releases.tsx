@@ -1,16 +1,18 @@
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import { currentRelease, type Release } from "@/lib/backlog/releases";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 import { ReleaseEntry } from "./ReleaseEntry";
 
 /** How many releases stand open before the rest are folded away. */
 const SHOWN = 12;
 
-export function Releases({ releases, current }: { releases: Release[]; current: string }) {
+export async function Releases({ releases, current }: { releases: Release[]; current: string }) {
+  const say = await currentSpeaker();
   if (releases.length === 0) {
     return (
       <p className="text-sm text-muted" data-testid="releases-empty">
-        The release history could not be read.
+        {say.say("pages.releasesUnreadable")}
       </p>
     );
   }
@@ -22,7 +24,7 @@ export function Releases({ releases, current }: { releases: Release[]; current: 
 
   return (
     <div className="flex flex-col gap-2" data-testid="releases">
-      <span className={SECTION_TITLE}>{releases.length} releases</span>
+      <span className={SECTION_TITLE}>{say.count("pages.releases", releases.length)}</span>
       <ul className="flex flex-col">
         {recent.map((release) => (
           <ReleaseEntry
@@ -35,7 +37,7 @@ export function Releases({ releases, current }: { releases: Release[]; current: 
       </ul>
       {older.length === 0 ? null : (
         <details data-testid="older-releases">
-          <summary className="cursor-pointer text-sm font-medium">Older releases ({older.length})</summary>
+          <summary className="cursor-pointer text-sm font-medium">{say.say("pages.releasesOlder", { count: say.number(older.length) })}</summary>
           <ul className="flex flex-col pt-2">
             {older.map((release) => (
               <ReleaseEntry

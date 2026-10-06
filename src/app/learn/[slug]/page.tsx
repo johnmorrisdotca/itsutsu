@@ -9,9 +9,12 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { GUIDES, guideBySlug } from "@/lib/learn/strategy";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { GUIDES, guideBySlug, guideWords } from "@/lib/learn/strategy";
 
-export const metadata = { title: "Learn" };
+export async function generateMetadata() {
+  return { title: (await currentSpeaker()).say("learn.pageTitle") };
+}
 
 export function generateStaticParams() {
   return GUIDES.map((guide) => ({ slug: guide.slug }));
@@ -22,20 +25,22 @@ export default async function GuidePage({ params }: PageProps<"/learn/[slug]">) 
   const { slug } = await params;
   const guide = guideBySlug(slug);
   if (guide === null) notFound();
+  const say = await currentSpeaker();
+  const words = guideWords(guide, say);
 
   return (
     <Page>
       <SiteHeader />
       <PageTitle
-        title={guide.title}
+        title={words.title}
         kanji={guide.kanji}
-        lead={guide.summary}
+        lead={words.summary}
         crumb={
           <>
             <Link href="/learn" className="underline-offset-2 hover:underline">
-              Learn
+              {say.say("learn.crumb")}
             </Link>{" "}
-            / {guide.title}
+            / {words.title}
           </>
         }
       >
@@ -51,13 +56,13 @@ export default async function GuidePage({ params }: PageProps<"/learn/[slug]">) 
                 className="inline-flex items-center gap-2 rounded-lg border border-rule p-1 pr-3 underline-offset-2 hover:underline"
               >
                 <GameThumb variant={variant} size="small" />
-                {RULE_VARIANT_DISPLAY[variant].label}
+                {say.pairName(RULE_VARIANT_DISPLAY[variant].label, RULE_VARIANT_DISPLAY[variant].kanji).text}
               </Link>
             ))}
           </p>
       </PageTitle>
       <article className={`${PANEL_CLASS} flex flex-col gap-6`} data-testid="guide-page">
-        {guide.sections.map((section) => (
+        {words.sections.map((section) => (
           <section key={section.heading} className="flex flex-col gap-2">
             <SectionHeading title={section.heading} />
             {section.paragraphs?.map((paragraph) => (

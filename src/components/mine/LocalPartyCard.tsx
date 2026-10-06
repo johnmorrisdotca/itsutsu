@@ -9,7 +9,8 @@ import { partyAddress } from "@/components/puzzles/KumimojiPartyScreens";
 import { useKeptParty } from "@/components/puzzles/kumimojiPartyKept";
 import { nameOf } from "@/lib/puzzles/kumimoji/party";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
-import { MY_GAMES_COPY } from "./mine.constants";
+import { weave } from "@/lib/i18n/weave";
+import { myGamesCopy } from "./mine.copy";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
@@ -20,6 +21,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  */
 export function LocalPartyCard() {
   const say = useSpeaker();
+  const MY_GAMES_COPY = myGamesCopy(say);
   const game = useKeptParty();
   if (game === null || game.ending !== null) return null;
   return (
@@ -30,7 +32,7 @@ export function LocalPartyCard() {
           <Paired en={MY_GAMES_COPY.localParty.label} kanji={MY_GAMES_COPY.localParty.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         </span>
         <span className="text-sm font-medium">
-          <GameName variant="kumimoji" /> · {say.count("count.player", game.players.length)} · {nameOf(game, game.turn)} to play
+          {weave(say.say("mine.cardParty", { players: say.count("count.player", game.players.length), who: nameOf(game, game.turn) }), { game: <GameName variant="kumimoji" /> })}
         </span>
       </div>
       <Link href={partyAddress(game)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="local-party-continue">

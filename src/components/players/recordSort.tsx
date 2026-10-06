@@ -2,6 +2,7 @@ import Link from "@/components/ui/Link";
 
 import { ariaSort, sortHref } from "@/lib/api/paging";
 import type { SortChoice, SortColumn, SortSpec } from "@/lib/api/paging.types";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 import { HEAD } from "./PlayerRecord";
 
@@ -130,11 +131,13 @@ function columnFor(sort: RecordSort, word: string): SortColumn<string> {
  * arrow is not the only place it is said.
  */
 export function SortableHead({
+  say,
   sort,
   slot,
   children,
   title,
 }: {
+  say: Speaker;
   sort: RecordSort | undefined;
   slot: RecordSortSlot;
   children: React.ReactNode;
@@ -150,6 +153,8 @@ export function SortableHead({
   }
 
   const column = columnFor(sort, word);
+  // The heading is how the reader names the column; the spec's own label is English and only checked non-empty.
+  const name = typeof children === "string" ? children : column.label;
   const way = ariaSort(sort.current, column);
   const inForce = way !== "none";
 
@@ -167,8 +172,8 @@ export function SortableHead({
          */
         aria-label={
           inForce
-            ? `${column.label}, sorted ${way}. Press to reverse.`
-            : `Sort by ${column.label}`
+            ? say.say("players.sortedBy", { label: name, way: say.say(way === "ascending" ? "players.ascending" : "players.descending") })
+            : say.say("players.sortBy", { label: name })
         }
       >
         {children}

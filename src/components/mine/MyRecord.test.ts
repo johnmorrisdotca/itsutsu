@@ -1,3 +1,4 @@
+import { speaker } from "@/lib/i18n/i18n";
 import { describe, expect, it } from "vitest";
 
 import { playedScopeNote } from "@/components/players/PlayerRecord";
@@ -49,7 +50,7 @@ describe("hasPlayedAnyGames", () => {
  */
 describe("MY_STANDINGS_SCOPE", () => {
   it("says Played here counts rated games, not every finished game", () => {
-    const note = playedScopeNote(MY_STANDINGS_SCOPE);
+    const note = playedScopeNote(MY_STANDINGS_SCOPE, speaker("en"));
     expect(note).toContain("rated");
   });
 
@@ -58,6 +59,6 @@ describe("MY_STANDINGS_SCOPE", () => {
     // against the computer for the same game; each row already marks
     // which is which beside its name, so the table-wide note must not
     // claim a single pool the rows themselves do not all share.
-    expect(playedScopeNote(MY_STANDINGS_SCOPE)).not.toMatch(/computer|people/);
+    expect(playedScopeNote(MY_STANDINGS_SCOPE, speaker("en"))).not.toMatch(/computer|people/);
   });
 });

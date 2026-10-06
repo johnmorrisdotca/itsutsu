@@ -1,12 +1,22 @@
+import { titleWithKanji } from "@/components/games/pageTitles";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
-import { MAIL_KINDS, STOP_API_PATH, verifyStopToken } from "@/lib/mail/mailStop";
+import { STOP_API_PATH, verifyStopToken, type StopKind } from "@/lib/mail/mailStop";
 import { stopStateOf } from "@/lib/mail/mailStopWrite";
 
-export const metadata = { title: "Stop emails", robots: { index: false } };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "auth.stop.title", "配信停止"), robots: { index: false } };
+}
+
+/** What each kind of email is called in a sentence, as a phrase: the reader's language says it, not the mail module. */
+const KIND_WORDS: Readonly<Record<StopKind, PhraseKey>> = { "your-turn": "auth.stop.wordsYourTurn", "game-over": "auth.stop.wordsGameOver" };
 
 /**
  * WHERE AN EMAIL'S "HOW TO STOP GETTING IT" LEADS. No sign-in: the token in
@@ -25,18 +35,20 @@ export const metadata = { title: "Stop emails", robots: { index: false } };
 export default async function StopPage({ params, searchParams }: PageProps<"/stop/[token]">) {
   const { token } = await params;
   const { done } = await searchParams;
+  const say = await currentSpeaker();
   const stop = await verifyStopToken(token);
   const state = stop === null ? null : await stopStateOf(stop.member, stop.mail);
-  const said = stop === null || typeof done !== "string" ? null : doneWords(done, MAIL_KINDS[stop.mail].words);
+  const words = stop === null ? "" : say.say(KIND_WORDS[stop.mail]);
+  const said = stop === null || typeof done !== "string" ? null : doneWords(done, words, say);
 
   return (
     <Page>
       <SiteHeader />
-      <PageTitle title="Stop emails" kanji="配信停止" lead="Choose which emails from Itsutsu you get. You do not need to sign in." />
+      <PageTitle title={say.say("auth.stop.title")} kanji="配信停止" lead={say.say("auth.stop.lead", { site: SITE_NAME })} />
 
       {stop === null || state === null ? (
         <p className="text-sm" data-testid="stop-unknown">
-          This link does not stop anything: it may have been copied only in part. Write to {CONTACT_ADDRESS} and your email will be stopped by hand.
+          {say.say("auth.stop.unknown", { address: CONTACT_ADDRESS })}
         </p>
       ) : (
         <section className="flex flex-col gap-5" data-testid="stop-page" data-kind={stop.mail} data-kind-on={state.kindOn} data-all-on={state.allOn}>
@@ -50,20 +62,22 @@ export default async function StopPage({ params, searchParams }: PageProps<"/sto
             token={token}
             what={stop.mail}
             on={state.kindOn}
-            now={state.kindOn ? `You get ${MAIL_KINDS[stop.mail].words}.` : `You do not get ${MAIL_KINDS[stop.mail].words}.`}
-            stopLabel={`Stop ${MAIL_KINDS[stop.mail].words}`}
+            now={say.say(state.kindOn ? "auth.stop.youGet" : "auth.stop.youDoNotGet", { words })}
+            stopLabel={say.say("auth.stop.stopKind", { words })}
+            turnOn={say.say("auth.stop.turnOn")}
             testId="stop-kind"
           />
           <StopChoice
             token={token}
             what="all"
             on={state.allOn}
-            now={state.allOn ? "Itsutsu may email you about your games." : "Itsutsu sends you no email at all."}
-            stopLabel="Stop all email from Itsutsu"
+            now={say.say(state.allOn ? "auth.stop.allOn" : "auth.stop.allOff", { site: SITE_NAME })}
+            stopLabel={say.say("auth.stop.stopAll", { site: SITE_NAME })}
+            turnOn={say.say("auth.stop.turnOn")}
             testId="stop-all"
           />
           <p className="text-xs text-muted">
-            Signed in, the switch for all email is also in Settings. Questions? Write to {CONTACT_ADDRESS}.
+            {say.say("auth.stop.signedInNote", { address: CONTACT_ADDRESS })}
           </p>
         </section>
       )}
@@ -72,24 +86,24 @@ export default async function StopPage({ params, searchParams }: PageProps<"/sto
 }
 
 /** One answer: what is true now, and the one press that changes it. */
-function StopChoice({ token, what, on, now, stopLabel, testId }: { token: string; what: string; on: boolean; now: string; stopLabel: string; testId: string }) {
+function StopChoice({ token, what, on, now, stopLabel, turnOn, testId }: { token: string; what: string; on: boolean; now: string; stopLabel: string; turnOn: string; testId: string }) {
   return (
     <form method="post" action={`${STOP_API_PATH}?token=${encodeURIComponent(token)}`} className="flex flex-col gap-2" data-testid={testId} data-on={on}>
       <p className="text-sm">{now}</p>
       <input type="hidden" name="what" value={what} />
       <input type="hidden" name="on" value={on ? "0" : "1"} />
       <button type="submit" className={`${BUTTON_BASE} ${on ? BUTTON_STRONG : BUTTON_QUIET} self-start`} data-testid={`${testId}-press`}>
-        {on ? stopLabel : "Turn them back on"}
+        {on ? stopLabel : turnOn}
       </button>
     </form>
   );
 }
 
 /** What the press just did, in a sentence; null for anything else in the address. */
-function doneWords(done: string, kind: string): string | null {
-  if (done === "all-off") return "Done: Itsutsu will not email you again.";
-  if (done === "all-on") return "Done: Itsutsu may email you about your games again.";
-  if (done.endsWith("-off")) return `Done: no more ${kind}.`;
-  if (done.endsWith("-on")) return `Done: you will get ${kind} again.`;
+function doneWords(done: string, words: string, say: Speaker): string | null {
+  if (done === "all-off") return say.say("auth.stop.doneAllOff", { site: SITE_NAME });
+  if (done === "all-on") return say.say("auth.stop.doneAllOn", { site: SITE_NAME });
+  if (done.endsWith("-off")) return say.say("auth.stop.doneOff", { words });
+  if (done.endsWith("-on")) return say.say("auth.stop.doneOn", { words });
   return null;
 }

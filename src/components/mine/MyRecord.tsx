@@ -1,6 +1,8 @@
 import { RecordLine, type RecordOf, type WonLostDrawn } from "@/components/players/PlayerRecord";
 import { RecordTable } from "@/components/players/RecordTable";
 import Link from "@/components/ui/Link";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 
 import { EMPTY_VERDICTS, fetchVerdictTally } from "@/lib/history/verdicts";
 import { GameCount } from "@/components/games/GameCount";
@@ -59,6 +61,7 @@ export const MY_STANDINGS_SCOPE: RecordOf = { rated: "yes" };
  * time zone.
  */
 export async function MyRecord({ name }: { name: string }) {
+  const say = await currentSpeaker();
   const mineId = await currentMemberId();
   const [profile, standings, tally, played] = await Promise.all([
     // By id where there is one: a rating is keyed by the name it was earned
@@ -95,8 +98,13 @@ export async function MyRecord({ name }: { name: string }) {
     <div className="flex flex-col gap-3" data-testid="my-record">
       {!hasPlayed ? (
         <p className="text-sm text-muted">
-          No games yet. Rated games are shared games between two members: press Play beside someone on the{" "}
-          <Link href="/players" className="underline underline-offset-4">players</Link> page.
+          {weave(say.say("mine.recEmpty"), {
+            link: (
+              <Link href="/players" className="underline underline-offset-4">
+                {say.say("mine.recPlayers")}
+              </Link>
+            ),
+          })}
         </p>
       ) : (
         <p className="text-sm">
@@ -113,27 +121,28 @@ export async function MyRecord({ name }: { name: string }) {
             both pools, and they link to all their rated games rather than to
             one pool's, because that is the number they are under.
           */}
-          Overall:{" "}
+          {say.say("mine.recOverall")}{say.sentences(["", ""])}
           <span className="font-mono tabular-nums" data-testid="my-rating">
             {shown === null ? "–" : shown.rating}
             {shown?.pool === RATING_POOLS.computer ? (
               <span
                 className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                title="Earned against the bots, which are rated in a pool of their own."
+                title={say.say("players.botsPool")}
                 data-testid="my-rating-computer"
               >
-                機械
+                {say.say("players.botsMark")}
               </span>
             ) : null}
           </span>{" "}
           <span className="text-muted">
-            {TIER_DISPLAY[shown?.tier ?? "unrated"].label} ·{" "}
+            {say.pairName(TIER_DISPLAY[shown?.tier ?? "unrated"].label, TIER_DISPLAY[shown?.tier ?? "unrated"].kanji).text} ·{" "}
             {/*
               The run across every finished game here, rated or not and
               whichever pool scored it — the same set of games the counts on
               this line are counting, read from the same pass over them.
             */}
             <RecordLine
+              say={say}
               record={here}
               of={{ player: name, memberId: mineId }}
               /*
@@ -165,7 +174,8 @@ export async function MyRecord({ name }: { name: string }) {
         chooses only which optional columns it wants.
       */}
       <RecordTable
-        subject="Game"
+        say={say}
+        subject={say.say("players.colGame")}
         playedScope={MY_STANDINGS_SCOPE}
         rows={standings.map((row) => ({
           key: `${row.variant}-${row.pool}`,
@@ -187,10 +197,10 @@ export async function MyRecord({ name }: { name: string }) {
               {row.pool === RATING_POOLS.computer ? (
                 <span
                   className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                  title="Against the bots, rated in a pool of their own."
+                  title={say.say("mine.recStandingPool")}
                   data-testid="standing-pool-computer"
                 >
-                  機械
+                  {say.say("players.botsMark")}
                 </span>
               ) : null}
             </>
@@ -215,14 +225,13 @@ export async function MyRecord({ name }: { name: string }) {
         columns={{ tier: true, xp: false, ip: false }}
         testId="me-standings"
         empty={
-          <>
-            No rated game of any one game yet. Rated games are shared games between two
-            members, or a game against one of the{" "}
-            <Link href="/players/bots" className="underline underline-offset-4">
-              bots
-            </Link>
-            .
-          </>
+          weave(say.say("mine.recEmptyTable"), {
+            link: (
+              <Link href="/players/bots" className="underline underline-offset-4">
+                {say.say("mine.recBots")}
+              </Link>
+            ),
+          })
         }
       />
       {tally.answered > 0 ? (
@@ -240,22 +249,31 @@ export async function MyRecord({ name }: { name: string }) {
             in the same breath, because winning is read from your side and
             already spoken for by `outcome`.
           */}
-          Your own read: you thought you played well in{" "}
-          <GameCount count={tally.up} player={name} memberId={mineId} verdict="up" title="The games you thought you played well" /> of
-          the{" "}
-          <GameCount count={tally.answered} player={name} memberId={mineId} verdict="judged" title="Every game you judged" /> games you judged
-          {tally.upWins > 0 || tally.downWins > 0
-            ? `, and won ${tally.upWins} of the ${tally.up} you felt good about and ${tally.downWins} of the ${tally.down} you did not`
-            : ""}
-          . Only you see this.
+          {weave(
+            say.say("mine.recVerdict", {
+              tail:
+                tally.upWins > 0 || tally.downWins > 0
+                  ? say.say("mine.recVerdictTail", {
+                      upWins: say.number(tally.upWins),
+                      up: say.number(tally.up),
+                      downWins: say.number(tally.downWins),
+                      down: say.number(tally.down),
+                    })
+                  : "",
+            }),
+            {
+              up: <GameCount count={tally.up} player={name} memberId={mineId} verdict="up" title={say.say("mine.recUpTitle")} />,
+              judged: <GameCount count={tally.answered} player={name} memberId={mineId} verdict="judged" title={say.say("mine.recJudgedTitle")} />,
+            },
+          )}
         </p>
       ) : null}
       {name !== "" ? (
         <p className="text-xs">
           <Link href={playerPath(name, mineId)} className="underline underline-offset-4">
-            Your public page
+            {say.say("mine.recPublic")}
           </Link>{" "}
-          · <Link href="/play" className="underline underline-offset-4">Your games</Link>
+          · <Link href="/play" className="underline underline-offset-4">{say.say("mine.myTitle")}</Link>
         </p>
       ) : null}
     </div>

@@ -6,7 +6,8 @@ import { PANEL_CLASS, SECTION_HEADING, STRETCHED_CARD } from "@/components/ui/ui
 import { GAME_FAMILIES, familyPagePath } from "@/lib/gomoku/families";
 import { familyCountWords } from "@/lib/gomoku/familyWords";
 import { familyBlurb } from "@/lib/gomoku/familyCopy";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 /**
  * THE FAMILIES, ON THE FRONT PAGE, SO A VISITOR SEES THE SHAPE OF THE
@@ -22,17 +23,17 @@ import { currentLocale } from "@/lib/i18n/currentLocale";
  * which is open to anyone and shows exactly the games the card counted.
  */
 export async function HomeFamilies() {
-  const locale = await currentLocale();
+  const say = await currentSpeaker();
+  const title = say.pair("home.families.title", "種目", { count: say.number(GAME_FAMILIES.length) });
   return (
     <section className="flex flex-col gap-4" data-testid="front-families">
       <div className="flex flex-col gap-1">
         <h2 className={SECTION_HEADING}>
-          {GAME_FAMILIES.length} families of games
-          <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">種目</span>
+          {title.text}
+          {title.kanji === null ? null : <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">{title.kanji}</span>}
         </h2>
         <p className="text-sm text-muted">
-          Five in a row is where it started; the other families are the games that grew up beside it, from Reversi and
-          checkers to go and hex. Open one to see its games, their rules, and a picture of each board.
+          {say.say("home.families.lead")}
         </p>
       </div>
       <ul className="grid gap-3 sm:grid-cols-2">
@@ -48,11 +49,10 @@ export async function HomeFamilies() {
                 <FamilyMark family={family.title} size="regular" />
                 <span className="flex min-w-0 flex-col gap-1">
                   <span className="flex flex-wrap items-baseline gap-x-2 font-semibold">
-                    {family.title}
-                    <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
-                    <span className="text-xs font-normal text-muted">{familyCountWords(family)}</span>
+                    <Paired en={family.title} kanji={family.kanji} className="whitespace-nowrap" kanjiClassName="whitespace-nowrap text-xs font-normal opacity-70" />
+                    <span className="text-xs font-normal text-muted">{familyCountWords(family, say)}</span>
                   </span>
-                  <span className="text-xs text-muted">{familyBlurb(family, locale)}</span>
+                  <span className="text-xs text-muted">{familyBlurb(family, say.locale)}</span>
                 </span>
               </span>
               <CardArrow />

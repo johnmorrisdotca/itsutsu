@@ -1,5 +1,7 @@
 import type { SolveAlgorithm, SolveStage } from "@johnmorrisdotca/kyuubu";
 
+import type { Speaker } from "@/lib/i18n/i18n";
+
 /**
  * THE METHOD IN WORDS: the layer-by-layer solve Kyuubu works out
  * (`solveSteps`), as a person is taught it. Read by the cube's "Show me how"
@@ -18,64 +20,33 @@ export type CubeStageWords = {
   how: string;
 };
 
-export const CUBE_STAGE_WORDS: Record<SolveStage, CubeStageWords> = {
-  hold: {
-    title: "Hold it white side down",
-    aim: "Turn the whole cube so white is underneath. Every step after this is written for the cube held this way.",
-    how: "On a 3×3 the white centre goes on the bottom; the centres never move, so they say which colour each face will be. A 2×2 has no centres: hold it with a white sticker underneath its back-left corner, and build round that corner.",
-  },
-  whiteCross: {
-    title: "The white cross",
-    aim: "Put the four white edges round the white centre, each with its other colour matching the centre beside it.",
-    how: "One edge at a time, turn faces to bring it down under its own centre. There is no algorithm to learn here: it is worked out by eye, and the turns shown are one way to do it.",
-  },
-  whiteCorners: {
-    title: "The white corners",
-    aim: "Put the four white corners in, finishing the whole white layer.",
-    how: "Turn the top until a corner sits above the place it belongs, then repeat R U R' U' from that side until it drops in, white facing down. Each repeat moves it one twist, so it takes one, three or five.",
-  },
-  whiteLayer: {
-    title: "The first layer",
-    aim: "Put the other three white corners in round the one you are holding, each matching its neighbours.",
-    how: "A 2×2's first layer is its whole bottom. Turn the top, the right and the front, one face at a time, to bring each corner down beside the ones already home.",
-  },
-  middleLayer: {
-    title: "The middle layer",
-    aim: "Put the four middle edges in, finishing the first two layers.",
-    how: "Find an edge on top with no yellow, turn the top so its front colour matches the centre below, then send it right or left with the algorithm for that side.",
-  },
-  yellowCross: {
-    title: "The yellow cross",
-    aim: "Make a yellow cross on top. The edges need not match their sides yet.",
-    how: "Hold a yellow line running left to right, or a corner shape pointing to the back left, and do F R U R' U' F'. A dot takes it three times, a corner shape twice, a line once.",
-  },
-  yellowFace: {
-    title: "The yellow face",
-    aim: "Turn every yellow sticker to face up.",
-    how: "Do the Sune, R U R' U R U2 R', with the top turned first. When one yellow corner is already up, hold it at the front left. Repeat until the whole top is yellow.",
-  },
-  yellowCorners: {
-    title: "The yellow corners",
-    aim: "Move the yellow corners round until each sits between its own colours.",
-    how: "Find a corner already sitting between its own colours and hold it at the front left. The corner cycle, R' F R' B2 R F' R' B2 R2, moves the other three round it; once or twice puts them home.",
-  },
-  yellowEdges: {
-    title: "The yellow edges",
-    aim: "Cycle the last edges into place, and the cube is solved.",
-    how: "Hold a finished side at the back, if there is one, and do the edge cycle, R U' R U R U R U' R' U' R2. Once or twice finishes it.",
-  },
-};
+/** Each stage's words in the reader's language (`learn.cube.*`). The turns inside them (R U R' U') are the same in every language. */
+export function cubeStageWords(say: Speaker): Record<SolveStage, CubeStageWords> {
+  return {
+    hold: { title: say.say("learn.cube.holdTitle"), aim: say.say("learn.cube.holdAim"), how: say.say("learn.cube.holdHow") },
+    whiteCross: { title: say.say("learn.cube.crossTitle"), aim: say.say("learn.cube.crossAim"), how: say.say("learn.cube.crossHow") },
+    whiteCorners: { title: say.say("learn.cube.cornersTitle"), aim: say.say("learn.cube.cornersAim"), how: say.say("learn.cube.cornersHow") },
+    whiteLayer: { title: say.say("learn.cube.layerTitle"), aim: say.say("learn.cube.layerAim"), how: say.say("learn.cube.layerHow") },
+    middleLayer: { title: say.say("learn.cube.middleTitle"), aim: say.say("learn.cube.middleAim"), how: say.say("learn.cube.middleHow") },
+    yellowCross: { title: say.say("learn.cube.yCrossTitle"), aim: say.say("learn.cube.yCrossAim"), how: say.say("learn.cube.yCrossHow") },
+    yellowFace: { title: say.say("learn.cube.yFaceTitle"), aim: say.say("learn.cube.yFaceAim"), how: say.say("learn.cube.yFaceHow") },
+    yellowCorners: { title: say.say("learn.cube.yCornersTitle"), aim: say.say("learn.cube.yCornersAim"), how: say.say("learn.cube.yCornersHow") },
+    yellowEdges: { title: say.say("learn.cube.yEdgesTitle"), aim: say.say("learn.cube.yEdgesAim"), how: say.say("learn.cube.yEdgesHow") },
+  };
+}
 
 /** The method's algorithms by the names people give them. */
-export const CUBE_ALGORITHM_NAMES: Record<SolveAlgorithm, string> = {
-  cornerIn: "Corner in",
-  edgeRight: "Edge to the right",
-  edgeLeft: "Edge to the left",
-  yellowCross: "Yellow cross",
-  sune: "Sune",
-  cornerCycle: "Corner cycle",
-  edgeCycle: "Edge cycle",
-};
+export function cubeAlgorithmNames(say: Speaker): Record<SolveAlgorithm, string> {
+  return {
+    cornerIn: say.say("learn.cube.algCornerIn"),
+    edgeRight: say.say("learn.cube.algEdgeRight"),
+    edgeLeft: say.say("learn.cube.algEdgeLeft"),
+    yellowCross: say.say("learn.cube.algYellowCross"),
+    sune: say.say("learn.cube.algSune"),
+    cornerCycle: say.say("learn.cube.algCornerCycle"),
+    edgeCycle: say.say("learn.cube.algEdgeCycle"),
+  };
+}
 
 /** The stages in the order they are done, for each size the method is written for. */
 export const CUBE_STAGES_BY_SIZE: Record<2 | 3, readonly SolveStage[]> = {
@@ -83,28 +54,26 @@ export const CUBE_STAGES_BY_SIZE: Record<2 | 3, readonly SolveStage[]> = {
   3: ["hold", "whiteCross", "whiteCorners", "middleLayer", "yellowCross", "yellowFace", "yellowCorners", "yellowEdges"],
 };
 
-/** The guide's own words (`/learn/cube`). */
-export const CUBE_GUIDE_COPY = {
-  title: "Solve the cube",
-  kanji: "解法",
-  lead: "The layer-by-layer method most people learn first: white on the bottom, then the middle, then yellow on top. Seven algorithms, each short, and a cube to practise every step on.",
-  notationHeading: "Reading the turns",
-  notation: [
-    "Each letter is a face, seen from the front: R right, L left, U up, D down, F front, B back. A letter alone turns that face clockwise, as you look at it.",
-    "A mark after it, R', turns it anticlockwise. A 2 after it, R2, turns it halfway round.",
-    "x, y and z turn the whole cube the way R, U and F turn it: x brings the front up to the top, y spins it on the table, z tips the top over to the right. Turning the whole cube never counts as a move.",
-  ],
-  sizeLabel: "Which cube",
-  sizes: { 3: "3×3", 2: "2×2" } as Record<2 | 3, string>,
-  twoByTwo: "A 2×2 has no middle layer and no edges, so it takes four of the steps: hold it, build the first layer, then the yellow face and the yellow corners with the 3×3's own algorithms.",
-  practise: "Practise this step",
-  practising: "Turn the cube until the step is done: drag a sticker to turn its layer, drag around the cube to look at it, or type the turns (x, y and z turn the whole cube).",
-  lineUp: "Line it up",
-  showTurns: "Show the turns",
-  turnFor: "Turn it for me",
-  another: "Another cube",
-  again: "Start again",
-  done: "Done: that step is finished.",
-  playHeading: "Then time yourself",
-  play: "Once the steps come without looking, scramble one for real. On the play page, Show me how gives the next step whenever you are stuck; a solve that uses it scores no points.",
-} as const;
+/** The guide's own words (`/learn/cube`), in the reader's language. */
+export function cubeGuideCopy(say: Speaker) {
+  return {
+    title: say.say("learn.cubePageTitle"),
+    kanji: "解法",
+    lead: say.say("learn.cube.guideLead"),
+    notationHeading: say.say("learn.cube.notationHeading"),
+    notation: [say.say("learn.cube.notationA"), say.say("learn.cube.notationB"), say.say("learn.cube.notationC")],
+    sizeLabel: say.say("learn.cube.sizeLabel"),
+    sizes: { 3: "3×3", 2: "2×2" } as Record<2 | 3, string>,
+    twoByTwo: say.say("learn.cube.twoByTwo"),
+    practise: say.say("learn.cube.practise"),
+    practising: say.say("learn.cube.practising"),
+    lineUp: say.say("learn.cube.lineUp"),
+    showTurns: say.say("learn.cube.showTurns"),
+    turnFor: say.say("learn.cube.turnFor"),
+    another: say.say("learn.cube.another"),
+    again: say.say("learn.cube.again"),
+    done: say.say("learn.cube.done"),
+    playHeading: say.say("learn.cube.playHeading"),
+    play: say.say("learn.cube.play"),
+  };
+}

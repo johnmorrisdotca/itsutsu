@@ -89,11 +89,13 @@ export async function PuzzleSetUpPage({
         crumb={<GameTrail game={{ label: say.pairName(copy.label, copy.kanji).text, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: say.say("pset.crumb.setUp") }]} />}
         lead={
           <>
-            {copy.tagline}{" "}
+            {/* The gap and the stop are the language's own: a space and "." in English, nothing and "。" in Japanese (a half-width stop after 手順 was the fault). */}
+            {copy.tagline}
+            {say.sentences(["", ""])}
             <Link href={rulesPath(kind)} className="underline underline-offset-4">
               {say.say("rules.play")}
             </Link>
-            .
+            {say.sentence("")}
           </>
         }
       />

@@ -308,7 +308,7 @@ test.describe("the ladder against the computer players", () => {
      * earned took a computer-only player from one FALSE line to no line at
      * all, which is a page going silent about somebody who plays here every
      * day. John's ruling is the same as for their overall figure: show it, and
-     * mark it 機械.
+     * mark it コンピュータ.
      *
      * The mark is what stops two lines for one game reading as the same game
      * listed twice with different numbers — and adding the two together is the
@@ -340,7 +340,7 @@ test.describe("the ladder against the computer players", () => {
   test("shows one game played in both pools as two lines, marked once", async ({ page }) => {
     /*
      * THE CASE TWO PEOPLE'S WORK CROSSED ON, and neither had a test for it.
-     * A merge put a second 機械 in the rating cell beside the one on the name,
+     * A merge put a second コンピュータ mark in the rating cell beside the one on the name,
      * carrying copy that read "no games against people at this yet" — which
      * stopped being true the moment a game could hold two lines. Contradictory
      * text, shipped by a clean merge of two correct changes.

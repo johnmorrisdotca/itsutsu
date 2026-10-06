@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { mailKindsPatch } from "@/lib/mail/mailStop";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -22,6 +23,7 @@ import { useSaveMe } from "./useSaveMe";
  * the same sections (`ProfileAway`, `ProfileSends`), saved on their own.
  */
 export function SettingsForm({ initial, child = false, mailSending = false }: { initial: ProfileFields; child?: boolean; mailSending?: boolean }) {
+  const say = useSpeaker();
   const [fields, setFields] = useState(initial);
   const { busy, saved, error, save, changed } = useSaveMe();
   const set = (patch: Partial<ProfileFields>) => {
@@ -49,9 +51,9 @@ export function SettingsForm({ initial, child = false, mailSending = false }: { 
       <ProfileSends fields={fields} set={set} child={child} mailSending={mailSending} />
       <div className="flex items-center gap-3">
         <button type="submit" disabled={busy} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4`}>
-          Save settings
+          {say.say("mine.saveSettings")}
         </button>
-        {saved ? <span className="text-xs text-moss">Saved.</span> : null}
+        {saved ? <span className="text-xs text-moss">{say.say("mine.saved")}</span> : null}
         {error !== null ? <span className="text-xs text-shu">{error}</span> : null}
       </div>
     </form>

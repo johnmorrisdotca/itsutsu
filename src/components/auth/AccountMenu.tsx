@@ -11,6 +11,7 @@ import { TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { LanguagePicker } from "@/components/layout/LanguagePicker";
 import { FEED_PATH } from "@/lib/feed/feed.constants";
 
+import { ADMIN_SHORTCUTS } from "./admin.constants";
 import type { MenuLanguages, MenuVersion } from "./accountMenu.types";
 
 export type Who = { signedIn: boolean; admin: boolean; email: string | null; name: string | null; picture: string | null; member: boolean };
@@ -24,10 +25,6 @@ const fetcher = async (url: string): Promise<Who | null> => {
  * The operator's corners of the Admin page, one click nearer. Tabs of the one
  * page rather than pages of their own, so they are its tab paths (/admin/tickets, /admin/members).
  */
-const ADMIN_SHORTCUTS = [
-  { href: "/admin/tickets", label: "Tickets", testId: "admin-tickets-link" },
-  { href: "/admin/members", label: "Members", testId: "admin-members-link" },
-] as const;
 
 /** The popup's width, and what it needs to its left before it may open leftward. */
 const MENU_WIDTH_PX = 256;
@@ -180,7 +177,7 @@ export function AccountMenu({
   }
 
   const named = data.member || data.admin;
-  const label = data.name || data.email || "Account";
+  const label = data.name || data.email || say.say("chrome.menu.account");
 
   return (
     <span ref={box} className="relative" data-testid="account-menu" data-open={open} {...readyMark(hydrated)}>
@@ -240,7 +237,7 @@ export function AccountMenu({
           {data.member ? (
             // What happened while they were away. The count is on /play, not here on every page.
             <Link href="/inbox" className={ITEM} data-testid="inbox-link">
-              Inbox
+              {say.say("chrome.menu.inbox")}
             </Link>
           ) : null}
           {data.member ? (
@@ -253,11 +250,11 @@ export function AccountMenu({
             <>
               {/* Who you are and what others see: the Profile tab. The name above opens the whole page. */}
               <Link href="/me/profile" className={ITEM} data-testid="profile-link">
-                Profile
+                {say.say("chrome.menu.profile")}
               </Link>
               {/* How the site behaves for you: the Settings tab. The pair both sites' menus name. */}
               <Link href="/me/settings" className={ITEM} data-testid="settings-link">
-                Settings
+                {say.say("chrome.menu.settings")}
               </Link>
             </>
           ) : null}
@@ -291,7 +288,7 @@ export function AccountMenu({
             <span>
               {version.stage} · v{version.semver}
             </span>
-            <span>What&apos;s new →</span>
+            <span>{say.say("chrome.menu.whatsNew")}</span>
           </Link>
           <hr className={DIVIDER} />
           <button type="button" onClick={signOut} className={`${ITEM} w-full text-left`} data-testid="sign-out">

@@ -16,7 +16,26 @@ import type {
   LegacyPlayer,
   LegacySource,
 } from "@/lib/legacy/legacyPlayers.types";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+import { formatSpecFor } from "@/lib/i18n/format";
+import { weave } from "@/lib/i18n/weave";
+import { weekdayWords } from "@/lib/social/daysOff";
 import { KeptGames } from "./KeptGames";
+
+/**
+ * The days a kept record's player took off, as the record wrote them in English ("Saturday and Sunday"), said as the
+ * reader's language says its weekdays. A phrase that is not a list of weekday names is a note somebody wrote, and is shown as written.
+ */
+function daysOffWords(written: string, say: Speaker): string {
+  const english = formatSpecFor("en").weekdays;
+  const days = written.split(/,\s*|\s+and\s+/).map((name) => english.indexOf(name.trim()));
+  return days.length > 0 && days.every((day) => day >= 0) ? say.list(days.map((day) => weekdayWords(say, day).label)) : written;
+}
+
+/** A logged result in a word, in the reader's language. */
+const RESULT_WORD: Readonly<Record<"won" | "lost" | "drawn", PhraseKey>> = { won: "players.outcomeWon", lost: "players.outcomeLost", drawn: "players.outcomeDrawn" };
 
 /**
  * Everything one site holds about one person.
@@ -45,12 +64,12 @@ import { KeptGames } from "./KeptGames";
  */
 
 /** One game's individual results, where the source site logged them one by one rather than only a total. */
-function GameLog({ game }: { game: LegacyGameRecord }) {
+function GameLog({ game, say }: { game: LegacyGameRecord; say: Speaker }) {
   if (game.log === undefined || game.log.length === 0) return null;
   return (
     <details className="ml-0">
       <summary className="cursor-pointer text-xs text-muted underline-offset-2 hover:underline">
-        {game.log.length} games, one by one
+        {say.say("players.legacyOpen", { count: say.number(game.log.length) })}
       </summary>
       <ul className="mt-1.5 flex flex-col divide-y divide-rule text-xs" data-testid="legacy-log">
         {game.log.map((entry, index) => (
@@ -59,7 +78,7 @@ function GameLog({ game }: { game: LegacyGameRecord }) {
             <span className="flex-1 truncate px-2">{entry.opponent}</span>
             <span className="inline-flex items-center gap-1 font-mono">
               <ResultMark kind={markOfOutcome(entry.result === "drawn" ? "draw" : entry.result)} />
-              {entry.result}
+              {say.say(RESULT_WORD[entry.result])}
             </span>
           </li>
         ))}
@@ -82,15 +101,15 @@ const ELSEWHERE = { here: false } as const;
 const HEADING = "pb-1.5 text-[0.68rem] font-semibold tracking-[0.1em] text-muted uppercase";
 
 /** Won, lost and drawn, and what falls out of them, for one row of a table. */
-function ResultCells({ record }: { record: { won: number; lost: number; drawn: number } }) {
+function ResultCells({ record, say }: { record: { won: number; lost: number; drawn: number }; say: Speaker }) {
   const figures = figuresOf(record);
   return (
     <>
       <td className={NUMERIC}>
-        <PlayedFigure record={{ wins: record.won, losses: record.lost, draws: record.drawn }} of={ELSEWHERE} />
+        <PlayedFigure say={say} record={{ wins: record.won, losses: record.lost, draws: record.drawn }} of={ELSEWHERE} />
       </td>
       <td className={NUMERIC}>
-        <RecordFigure record={{ wins: record.won, losses: record.lost, draws: record.drawn }} of={ELSEWHERE} />
+        <RecordFigure say={say} record={{ wins: record.won, losses: record.lost, draws: record.drawn }} of={ELSEWHERE} />
       </td>
       <td className={NUMERIC} data-testid="legacy-win-rate">
         {winRateText(figures.winRate)}
@@ -104,7 +123,7 @@ function ResultCells({ record }: { record: { won: number; lost: number; drawn: n
  * play, tournaments, the ladder — with its total and its by-game breakdown in
  * the same columns, so the eye reads down a column rather than across a line.
  */
-function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
+function LegacyClassTable({ row, say }: { row: LegacyClassRecord; say: Speaker }) {
   const detail = row.detail ?? [];
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
@@ -113,10 +132,10 @@ function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
         <table className="w-full text-sm" data-testid={detail.length > 0 ? "legacy-detail" : "legacy-class"}>
           <thead>
             <tr className="text-left">
-              <th className={HEADING}>Game</th>
-              <th className={`${HEADING} text-right`}>Played</th>
-              <th className={`${HEADING} text-right`}>Won · Lost · Drawn</th>
-              <th className={`${HEADING} text-right`}>Win rate</th>
+              <th className={HEADING}>{say.say("players.legacyGame")}</th>
+              <th className={`${HEADING} text-right`}>{say.say("players.colPlayed")}</th>
+              <th className={`${HEADING} text-right`}>{say.say("players.wld")}</th>
+              <th className={`${HEADING} text-right`}>{say.say("players.colWinRate")}</th>
             </tr>
           </thead>
           <tbody>
@@ -132,26 +151,25 @@ function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
                     <GameThumb name={game.game} size="small" />
                     <GameName name={game.game} />
                   </span>
-                  <GameLog game={game} />
+                  <GameLog game={game} say={say} />
                 </td>
-                <ResultCells record={game} />
+                <ResultCells record={game} say={say} />
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="border-t-2 border-rule-strong font-medium">
               <td className="py-1.5 pr-3" data-testid="legacy-class-total">
-                {detail.length > 0 ? "Total" : row.class}
+                {detail.length > 0 ? say.say("players.legacyTotal") : row.class}
               </td>
-              <ResultCells record={row.record} />
+              <ResultCells record={row.record} say={say} />
             </tr>
           </tfoot>
         </table>
       </div>
       {detail.length > 0 && !row.detailComplete ? (
         <p className="text-xs text-muted">
-          The breakdown is as far as it was recorded — the source site may hold more than what is copied down here. The
-          total above it is the site&rsquo;s own.
+          {say.say("players.legacyBreakdown")}
         </p>
       ) : null}
     </section>
@@ -159,11 +177,11 @@ function LegacyClassTable({ row }: { row: LegacyClassRecord }) {
 }
 
 /** Remarks left on something posted at one site — kept exactly as found. */
-function LegacyComments({ source }: { source: LegacySource }) {
+function LegacyComments({ source, say }: { source: LegacySource; say: Speaker }) {
   if (source.comments === undefined || source.comments.length === 0) return null;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="legacy-comments">
-      <h3 className={SECTION_TITLE}>Comments</h3>
+      <h3 className={SECTION_TITLE}>{say.say("players.legacyComments")}</h3>
       <ul className="flex flex-col gap-3">
         {source.comments.map((comment, index) => (
           <li
@@ -182,7 +200,7 @@ function LegacyComments({ source }: { source: LegacySource }) {
 }
 
 /** This person's own record against one other legacy player, game by game. */
-function HeadToHead({ source }: { source: LegacySource }) {
+function HeadToHead({ source, say }: { source: LegacySource; say: Speaker }) {
   if (source.headToHead === undefined || source.headToHead.length === 0) return null;
   return (
     <>
@@ -196,7 +214,7 @@ function HeadToHead({ source }: { source: LegacySource }) {
         return (
           <section key={entry.opponent} className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="legacy-head-to-head">
             <h3 className="flex items-baseline justify-between gap-3 text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-              Against{" "}
+              {say.say("players.legacyAgainst")}{" "}
               {opponent !== null ? (
                 <Link
                   href={`/players/${opponent.slug}`}
@@ -215,6 +233,7 @@ function HeadToHead({ source }: { source: LegacySource }) {
               */}
               <span className="font-mono normal-case tracking-normal text-ink-soft">
                 <RecordFigure
+                  say={say}
                   record={{ wins: figures.won, losses: figures.lost, draws: figures.drawn }}
                   of={ELSEWHERE}
                 />{" "}
@@ -236,7 +255,7 @@ function HeadToHead({ source }: { source: LegacySource }) {
                       <td className="py-1.5 pr-3 font-mono">
                         <span className="inline-flex items-center gap-1">
                           <ResultMark kind={markOfOutcome(game.result === "drawn" ? "draw" : game.result)} />
-                          {game.result}
+                          {say.say(RESULT_WORD[game.result])}
                         </span>
                       </td>
                     </tr>
@@ -255,18 +274,20 @@ function HeadToHead({ source }: { source: LegacySource }) {
  * What one site says about the person, above their figures: the handle they
  * used, the years, the days they set aside, and any line of context.
  */
-function SourceHeading({ legacy, source }: { legacy: LegacyPlayer; source: LegacySource }) {
-  const years =
-    source.joined !== undefined && source.lastActive !== undefined ? `${source.joined} to ${source.lastActive}` : null;
+function SourceHeading({ legacy, source, say }: { legacy: LegacyPlayer; source: LegacySource; say: Speaker }) {
+  const handle = <span className="font-medium text-ink-soft">{source.handle ?? legacy.name}</span>;
   return (
     <div className="flex flex-col gap-1.5">
       <p className="text-sm text-muted">
-        Played as <span className="font-medium text-ink-soft">{source.handle ?? legacy.name}</span>
-        {years !== null ? <>, {years}</> : null}
-        {source.daysOff !== undefined ? <>. Took {source.daysOff} off</> : null}.{" "}
+        {weave(say.say("players.legacyPlayedAs"), { handle })}
+        {source.joined !== undefined && source.lastActive !== undefined
+          ? say.say("players.legacyYears", { from: source.joined, to: source.lastActive })
+          : null}
+        {source.daysOff !== undefined ? say.say("players.legacyDaysOff", { days: daysOffWords(source.daysOff, say) }) : null}
+        {say.sentence("")}{" "}
         {source.siteUrl !== undefined ? (
           <Link href={source.siteUrl} className="underline-offset-2 hover:underline">
-            Their profile on {source.site}
+            {say.say("players.legacyProfile", { site: source.site })}
           </Link>
         ) : null}
       </p>
@@ -278,7 +299,7 @@ function SourceHeading({ legacy, source }: { legacy: LegacyPlayer; source: Legac
 }
 
 /** Everything one site holds about this person — one tab's worth. */
-export function LegacySourcePanel({
+export async function LegacySourcePanel({
   legacy,
   source,
   keptFor,
@@ -288,33 +309,36 @@ export function LegacySourcePanel({
   /** The slug whose kept games belong to this record, when there are any. */
   keptFor?: string;
 }) {
+  const say = await currentSpeaker();
   const figures = figuresForSource(source);
   return (
     <div className="flex flex-col gap-6" data-testid="legacy-source" data-site={source.site}>
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-        <SourceHeading legacy={legacy} source={source} />
+        <SourceHeading legacy={legacy} source={source} say={say} />
         <Figures
           testId="legacy-figures"
           figures={[
             {
-              label: "Played",
+              label: say.say("players.colPlayed"),
               value: (
                 <PlayedFigure
+                  say={say}
                   record={{ wins: figures.won, losses: figures.lost, draws: figures.drawn }}
                   of={ELSEWHERE}
                 />
               ),
             },
             {
-              label: "Won · Lost · Drawn",
+              label: say.say("players.wld"),
               value: (
                 <RecordFigure
+                  say={say}
                   record={{ wins: figures.won, losses: figures.lost, draws: figures.drawn }}
                   of={ELSEWHERE}
                 />
               ),
             },
-            { label: "Win rate", value: winRateText(figures.winRate) },
+            { label: say.say("players.colWinRate"), value: winRateText(figures.winRate) },
           ]}
         />
         {/*
@@ -324,15 +348,14 @@ export function LegacySourcePanel({
           beside it — which is the fourth figure this row is waiting for.
         */}
         <p className="text-xs text-muted">
-          Every figure here is worked out from the record and none of it is stored, so it cannot disagree with the
-          totals below. A win rate counts a draw as half a game won, the way the ratings on this site score one.
+          {say.say("players.legacyFigures")}
         </p>
       </section>
-      <HeadToHead source={source} />
+      <HeadToHead source={source} say={say} />
       {source.summary.map((row) => (
-        <LegacyClassTable key={`${source.site}-${row.class}`} row={row} />
+        <LegacyClassTable key={`${source.site}-${row.class}`} row={row} say={say} />
       ))}
-      <LegacyComments source={source} />
+      <LegacyComments source={source} say={say} />
       {keptFor !== undefined ? <KeptGames slug={keptFor} site={source.site} /> : null}
     </div>
   );

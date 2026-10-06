@@ -2,6 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { keepEveryGame, type KeepProgress } from "@/lib/offline/keepAll";
 import { offlineGameAddresses } from "@/lib/offline/offlineGames";
@@ -51,6 +52,7 @@ export function megabytes(bytes: number): string {
  * can), since a button that keeps nothing is a promise it cannot keep.
  */
 export function KeepAllOffline() {
+  const say = useSpeaker();
   const running = useKeeperRunning();
   const [progress, setProgress] = useState<KeepProgress | null>(null);
   const [kept, setKept] = useState<Kept | null | undefined>(undefined);
@@ -85,25 +87,25 @@ export function KeepAllOffline() {
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted" data-testid="keep-all-offline">
       {progress !== null ? (
         <span role="status" data-testid="keep-all-progress">
-          Keeping every game on this device: {progress.done} of {progress.total} pages, {megabytes(progress.bytes)} so far…
+          {say.say("chrome.offline.keeping", { done: say.number(progress.done), total: say.number(progress.total), size: megabytes(progress.bytes) })}
         </span>
       ) : shown !== null ? (
         <>
           <span data-testid="keep-all-done">
-            Every game is kept on this device ({megabytes(shown.bytes)}), so each one plays with no connection.
+            {say.say("chrome.offline.done", { size: megabytes(shown.bytes) })}
           </span>
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT}`} onClick={() => void keepAll()}>
-            Keep again
+            {say.say("chrome.offline.again")}
           </button>
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT}`} onClick={() => void removeAll()} data-testid="keep-all-remove">
-            Remove
+            {say.say("chrome.offline.remove")}
           </button>
         </>
       ) : (
         <>
-          <span>A game you open is kept on this device to play offline. Or keep them all now, before you lose the signal.</span>
+          <span>{say.say("chrome.offline.intro")}</span>
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT}`} onClick={() => void keepAll()} data-testid="keep-all-button">
-            Keep every game offline
+            {say.say("chrome.offline.keepAll")}
           </button>
         </>
       )}

@@ -1,6 +1,12 @@
 import Link from "@/components/ui/Link";
 import type { ReactNode } from "react";
 
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { CountKey } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+import { markup, type MarkupRenderer } from "@/lib/i18n/markup";
+import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { gamePath } from "@/lib/gomoku/slugs";
 
 /**
@@ -55,4 +61,39 @@ export function Out({ href, children }: { href: string; children: ReactNode }) {
       {children}
     </a>
   );
+}
+
+/**
+ * The tags a paragraph's phrase may carry (`markup`): a game, a page of this site, another site, italics, and the
+ * mincho face a Japanese word sits in. A phrase says which kind of link it means and nothing about how it is drawn.
+ */
+const RENDERERS: Record<string, MarkupRenderer> = {
+  game: (content, argument) => <Game variant={argument ?? ""}>{content}</Game>,
+  in: (content, argument) => <Inside href={argument ?? "/"}>{content}</Inside>,
+  out: (content, argument) => <Out href={argument ?? ""}>{content}</Out>,
+  ask: (content) => <Inside href={ASK_FOR_INVITE_PATH}>{content}</Inside>,
+  em: (content) => <em>{content}</em>,
+  jp: (content) => <span className="font-mincho">{content}</span>,
+  mono: (content) => <span className="font-mono">{content}</span>,
+};
+
+/** One paragraph of the About page: the reader's phrase, its tags drawn as links and italics, its `{names}` filled. */
+export function rich(
+  say: Speaker,
+  key: PhraseKey,
+  vars: Readonly<Record<string, string | number>> = {},
+  parts: Readonly<Record<string, ReactNode>> = {},
+): ReactNode {
+  return markup(say.say(key, { ...vars, site: SITE_NAME }), RENDERERS, parts);
+}
+
+/** The same, for a paragraph whose wording follows a count (`say.count`): one phrase for one, another for the rest. */
+export function richCount(
+  say: Speaker,
+  key: CountKey,
+  count: number,
+  vars: Readonly<Record<string, string | number>> = {},
+  parts: Readonly<Record<string, ReactNode>> = {},
+): ReactNode {
+  return markup(say.count(key, count, { ...vars, site: SITE_NAME }), RENDERERS, parts);
 }

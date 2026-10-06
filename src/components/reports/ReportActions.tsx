@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
-import { fileReportAsTicket, markReport } from "@/lib/reports/reports.actions";
+import { fileReportAsTicket, markReport } from "@/lib/reports/reportsOperator.actions";
 import { REPORT_MOVES, REPORT_STATUSES } from "@/lib/reports/reports.constants";
 import type { ReportChanged, ReportStatus } from "@/lib/sumilabu/reportsClient.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";

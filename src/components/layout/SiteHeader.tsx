@@ -7,7 +7,8 @@ import { memberKeyOf } from "@/lib/auth/memberKey";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { languageOptions } from "@/lib/i18n/dictionaries";
 import { LANG_PARAM } from "@/lib/i18n/i18n.constants";
-import { STAGE, versionStamps } from "@/lib/version";
+import { versionStamps } from "@/lib/version";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { xpFlashFor, type XpToastHold } from "@/lib/xp/xpFlash";
 
 import { BetaMark } from "./BetaMark";
@@ -99,7 +100,7 @@ async function Account({ className }: { className: string }) {
         initial={who}
         admit={admit}
         languages={{ options: languageOptions(), current: say.locale, param: LANG_PARAM, label: say.say("site.language") }}
-        version={{ stage: STAGE, semver }}
+        version={{ stage: say.say("chrome.stage"), semver }}
       />
     </span>
   );
@@ -143,6 +144,7 @@ export async function SiteHeader({
   /** A game-end batch of toasts the page's result card is saying instead — see `XpToasts`. */
   xpHeldBy?: XpToastHold;
 }) {
+  const say = await currentSpeaker();
   if (hero) {
     return (
       <>
@@ -152,11 +154,11 @@ export async function SiteHeader({
             corner to the account, which is pinned there: centred at full
             width, the wordmark ran under the account's face.
           */}
-          <Link href="/" aria-label="Itsutsu home" className="block w-[calc(100%-4rem)] max-w-2xl self-start select-none sm:w-full sm:self-auto">
+          <Link href="/" aria-label={say.say("chrome.homeLink", { site: SITE_NAME })} className="block w-[calc(100%-4rem)] max-w-2xl self-start select-none sm:w-full sm:self-auto">
             <BrandHero className="w-full" />
           </Link>
           <p className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted">
-            Five in a row, and the games that grew from it.
+            {say.say("chrome.tagline")}
             <BetaMark />
           </p>
           <Bar hero />
@@ -185,7 +187,7 @@ export async function SiteHeader({
             header spec measures that it never lands on the bar.
           */}
           <span className="order-1 flex items-center gap-2 sm:order-none">
-            <Link href="/" aria-label="Itsutsu home" className="block select-none">
+            <Link href="/" aria-label={say.say("chrome.homeLink", { site: SITE_NAME })} className="block select-none">
               <BrandWordmark className="h-9 w-auto sm:h-10" />
             </Link>
             <BetaMark />

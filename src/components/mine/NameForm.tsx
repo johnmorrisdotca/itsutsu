@@ -3,10 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
 
 /** The one thing a new member is asked: the name other players will see. */
 export function NameForm({ initial, next }: { initial: string; next: string | null }) {
+  const say = useSpeaker();
   const router = useRouter();
   const [name, setName] = useState(initial);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +28,7 @@ export function NameForm({ initial, next }: { initial: string; next: string | nu
     setBusy(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? "That name could not be saved.");
+      setError(payload?.error ?? say.say("mine.nameFailed"));
       return;
     }
     setSaved(true);
@@ -36,7 +39,7 @@ export function NameForm({ initial, next }: { initial: string; next: string | nu
   return (
     <form onSubmit={submit} className="flex flex-col gap-2" data-testid="name-form">
       <label className="text-sm font-medium" htmlFor="display-name">
-        Your name here <span className="font-mincho text-xs font-normal opacity-70">名前</span>
+        <Paired en={say.say("mine.nameLabel")} kanji="名前" kanjiClassName="text-xs font-normal opacity-70" inReadersLanguage />
       </label>
       <div className="flex flex-wrap gap-2">
         <input
@@ -49,15 +52,14 @@ export function NameForm({ initial, next }: { initial: string; next: string | nu
           data-testid="display-name"
         />
         <button type="submit" disabled={busy || name.trim().length < 2} className={`${BUTTON_BASE} ${BUTTON_STRONG} px-4`}>
-          {next !== null ? "Save and continue" : "Save"}
+          {say.say(next !== null ? "mine.nameSaveNext" : "mine.nameSave")}
         </button>
       </div>
       <p className="text-xs text-muted">
-        What other players see in their lists and on the players page; your record is kept under it. Two to forty
-        characters, and nobody else here may have it.
+        {say.say("mine.nameHint")}
       </p>
       {error !== null ? <p className="text-xs text-shu" data-testid="name-error">{error}</p> : null}
-      {saved && next === null ? <p className="text-xs text-moss">Saved.</p> : null}
+      {saved && next === null ? <p className="text-xs text-moss">{say.say("mine.saved")}</p> : null}
     </form>
   );
 }

@@ -28,7 +28,7 @@ export const PLAYERS_TABS: Tab[] = [
    */
   // Short, so the strip fits a phone (John, 2026-09-26: "Champs, Bots, HONORS… use shorter names where possible"); each page keeps its full heading.
   { key: "champions", label: "Champs", kanji: "名人", href: "/champions" },
-  { key: "bots", label: "Bots", kanji: "機械" },
+  { key: "bots", label: "Bots", kanji: "コンピュータ" },
   { key: "honors", label: "Honors", kanji: "偲ぶ" },
 ];
 

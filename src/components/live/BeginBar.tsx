@@ -7,7 +7,7 @@ import type { PieceColour } from "@/lib/pieces/pieceColours";
 import { TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { COLOUR_CHOICES, type ColourChoice } from "./colourChoice";
 import { MATCH_SIZES, type MatchSize } from "@/lib/history/liveMatch";
-import { START_COPY } from "@/components/mine/mine.constants";
+import { startCopy } from "@/components/mine/mine.copy";
 
 import { PressLabel } from "@/components/ui/PressLabel";
 
@@ -232,7 +232,7 @@ export function BeginBar({
       ) : null}
       {waiting !== undefined ? (
         <p className="text-xs text-muted" data-testid="set-up-match">
-          {START_COPY.matchHint(waiting.who)}
+          {startCopy(say).matchHint(waiting.who)}
         </p>
       ) : null}
       {!signedIn ? <p className="text-xs text-muted">{signInToPlay(say)}</p> : null}

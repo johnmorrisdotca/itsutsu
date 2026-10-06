@@ -3,7 +3,6 @@
 import Link from "@/components/ui/Link";
 import useSWR from "swr";
 
-import { thousands } from "@/lib/ui/thousands";
 import { GameCount } from "@/components/games/GameCount";
 import { MINE_KEY } from "@/components/mine/mine.constants";
 import type { RatedRecord } from "@/lib/rating/ratedRecord";
@@ -47,13 +46,13 @@ export function StripGames({ memberId }: { memberId: string }) {
       */}
       {data === undefined ? null : going + moves + offers === 0 ? (
         <Link href="/play" className={ITEM} data-testid="strip-waiting">
-          No games in progress
+          {say.say("chrome.strip.noGames")}
         </Link>
       ) : (
         <>
           {moves > 0 ? (
             <Link href="/play" className={`${ITEM} text-ink`} data-testid="strip-your-move">
-              {moves} your move
+              {say.say("chrome.strip.yourMove", { count: say.number(moves) })}
             </Link>
           ) : null}
           {offers > 0 ? (
@@ -63,16 +62,16 @@ export function StripGames({ memberId }: { memberId: string }) {
           ) : null}
           {going > 0 ? (
             <Link href="/play" className={ITEM} data-testid="strip-going" data-going={going}>
-              {going} in progress
+              {say.say("chrome.strip.going", { count: say.number(going) })}
             </Link>
           ) : null}
         </>
       )}
       {record === null ? null : (
-        <span className="whitespace-nowrap" data-testid="strip-record" title="Rated games, against people and bots">
-          <GameCount count={record.won} memberId={memberId} rated="yes" outcome="won" className={ITEM} testId="strip-won" />W{" · "}
-          <GameCount count={record.lost} memberId={memberId} rated="yes" outcome="lost" className={ITEM} testId="strip-lost" />L{" · "}
-          <GameCount count={record.drawn} memberId={memberId} rated="yes" outcome="drawn" className={ITEM} testId="strip-drawn" />D
+        <span className="whitespace-nowrap" data-testid="strip-record" title={say.say("chrome.strip.recordTitle")}>
+          <GameCount count={record.won} memberId={memberId} rated="yes" outcome="won" className={ITEM} testId="strip-won" />{say.say("chrome.strip.won")}{" · "}
+          <GameCount count={record.lost} memberId={memberId} rated="yes" outcome="lost" className={ITEM} testId="strip-lost" />{say.say("chrome.strip.lost")}{" · "}
+          <GameCount count={record.drawn} memberId={memberId} rated="yes" outcome="drawn" className={ITEM} testId="strip-drawn" />{say.say("chrome.strip.drawn")}
         </span>
       )}
     </span>
@@ -90,12 +89,13 @@ export function StripGames({ memberId }: { memberId: string }) {
  * for a browser with no member behind it.
  */
 export function StripIp() {
+  const say = useSpeaker();
   const { data } = useSWR(MINE_KEY, fetcher, { refreshInterval: 0, revalidateOnMount: false, revalidateOnFocus: true, dedupingInterval: 2_000 });
   const ip = data?.ip;
   if (ip === undefined || ip === null) return null;
   return (
     <Link href="/points" className={ITEM} data-testid="strip-ip" data-ip={ip}>
-      {thousands(ip)} IP
+      {say.number(ip)} IP
     </Link>
   );
 }

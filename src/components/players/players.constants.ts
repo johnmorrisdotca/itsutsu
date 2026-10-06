@@ -1,3 +1,5 @@
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+
 /**
  * The words the tables of records share, kept where both a server component
  * and a client one can read them.
@@ -20,8 +22,8 @@
  * standings — can hold.
  */
 export const XP_BLANK_BECAUSE = {
-  unclaimedName: "A name nobody has claimed: there is no member behind it to have earned anything.",
-} as const;
+  unclaimedName: "players.unclaimedName",
+} as const satisfies Record<string, PhraseKey>;
 
 /**
  * What the members list says about each way it can be narrowed: the chip's
@@ -29,10 +31,10 @@ export const XP_BLANK_BECAUSE = {
  * an empty list prints. `who` is named from `WHO_DISPLAY`, the chips' own words.
  */
 export const NARROWING_WORDS = {
-  settled: { chip: "Established ratings", clause: "has an established rating" },
-  active: { chip: "Recently active", clause: (days: number) => `has been seen in the last ${days} days` },
-  remembered: "as you chose last time",
-} as const;
+  settled: { chip: "players.chipEstablished", clause: "players.clauseEstablished" },
+  active: { chip: "players.chipActive", clause: "players.clauseActive" },
+  remembered: "players.remembered",
+} as const satisfies Record<string, PhraseKey | Record<string, PhraseKey>>;
 
 /**
  * The cell classes, here rather than in each table, so columns line up between
@@ -68,3 +70,6 @@ export const TABLE_CLASS = "w-full text-sm";
 
 /** The line between rows. */
 export const ROW_CLASS = "border-t border-rule";
+
+/** A row's actions held to the right edge of the table's own scroll box, over the paper the row is on. */
+export const STICKY_ACTIONS = "sticky right-0 bg-[color-mix(in_srgb,var(--color-ivory)_60%,var(--color-paper))]";

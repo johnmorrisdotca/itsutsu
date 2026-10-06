@@ -3,7 +3,11 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { MY_GAME_GROUPS, shownGroup } from "@/lib/history/myGames";
-import { MY_GAMES_COPY } from "./mine.constants";
+import { speaker } from "@/lib/i18n/i18n";
+
+import { myGamesCopy } from "./mine.copy";
+
+const MY_GAMES_COPY = myGamesCopy(speaker("en"));
 
 /**
  * "14 · SHOWING 5" HAS TO LEAD TO THE OTHER NINE.

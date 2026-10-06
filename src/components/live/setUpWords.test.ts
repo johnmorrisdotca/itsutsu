@@ -35,7 +35,7 @@ describe("what the set-up screen's own fields say", () => {
    */
   it("marks a computer player as one, as the doorstep does", () => {
     expect(texts(recapWords({ say, game: even, opponent: machine, fork: null, handicap: NO_HANDICAP }))).toEqual([
-      "Against Hidemasa Tamenoki 機械",
+      "Against Hidemasa Tamenoki コンピュータ",
     ]);
   });
 
@@ -63,7 +63,7 @@ describe("what the set-up screen's own fields say", () => {
 
   it("names a computer player a position was played against", () => {
     expect(texts(recapWords({ say, game: even, opponent: machine, fork, handicap: NO_HANDICAP }))).toEqual([
-      "Against Hidemasa Tamenoki 機械",
+      "Against Hidemasa Tamenoki コンピュータ",
     ]);
   });
 

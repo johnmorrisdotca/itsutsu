@@ -5,7 +5,10 @@ import { describe, expect, it } from "vitest";
 import { APPLE_LAUNCH_SCREENS, LAUNCH_THEMES, appleStartupImages, launchImagePath } from "@/lib/app/appleLaunch";
 import { wouldBeOpen } from "@/proxy";
 
-import manifest from "./manifest";
+import { appManifest } from "@/lib/app/appManifest";
+import { speaker } from "@/lib/i18n/i18n";
+
+const manifest = () => appManifest(speaker("en"));
 
 /**
  * The home-screen app's pictures. A manifest naming a file that is missing,

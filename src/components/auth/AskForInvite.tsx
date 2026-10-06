@@ -3,6 +3,8 @@
 import { useActionState, useId } from "react";
 
 import { askForInvite } from "@/app/join/askForInvite.actions";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS, PANEL_CLASS, TONE_CLASS } from "@/components/ui/ui.constants";
 import { INVITE_REQUEST_FIELDS } from "./askForInvite.constants";
 import type { AskForInviteState } from "./askForInvite.types";
@@ -24,6 +26,7 @@ const IDLE: AskForInviteState = { kind: "idle" };
  * whose every submission would be read as a bot is a form that lies.
  */
 export function AskForInvite({ stamp, open = false }: { stamp: string | null; open?: boolean }) {
+  const say = useSpeaker();
   const [state, send, sending] = useActionState(askForInvite, IDLE);
   const aboutHint = useId();
   if (stamp === null) return null;
@@ -31,7 +34,7 @@ export function AskForInvite({ stamp, open = false }: { stamp: string | null; op
   return (
     <details className={`${PANEL_CLASS} w-full max-w-md`} open={open} data-testid="ask-for-invite">
       <summary className="cursor-pointer text-sm font-medium" data-testid="ask-for-invite-open">
-        No invite? Ask for one.
+        {say.say("auth.ask.open")}
       </summary>
       {state.kind === "sent" ? (
         <p className={`mt-3 rounded-xl border px-3 py-2 text-sm ${TONE_CLASS.good}`} role="status" data-testid="ask-for-invite-sent">
@@ -40,7 +43,7 @@ export function AskForInvite({ stamp, open = false }: { stamp: string | null; op
       ) : (
         <form action={send} className="mt-3 flex flex-col gap-3" data-testid="ask-for-invite-form">
           <p className="text-sm text-muted">
-            Itsutsu is invitation-only while it is small. Say who you are and somebody will write back.
+            {say.say("auth.ask.lead", { site: SITE_NAME })}
           </p>
           <input type="hidden" name="stamp" value={stamp} />
           {/*
@@ -51,12 +54,12 @@ export function AskForInvite({ stamp, open = false }: { stamp: string | null; op
           */}
           <div className="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
             <label>
-              Website
+              {say.say("auth.ask.website")}
               <input type="text" name={INVITE_REQUEST_FIELDS.trap} tabIndex={-1} autoComplete="off" defaultValue="" />
             </label>
           </div>
           <label className="flex flex-col gap-1">
-            <span className="text-sm">Your email</span>
+            <span className="text-sm">{say.say("auth.ask.email")}</span>
             <input
               type="email"
               name="email"
@@ -69,7 +72,7 @@ export function AskForInvite({ stamp, open = false }: { stamp: string | null; op
           </label>
           <label className="flex flex-col gap-1">
             <span className="text-sm">
-              Your name <span className="text-muted">(optional)</span>
+              {say.say("auth.ask.name")} <span className="text-muted">{say.say("auth.ask.optional")}</span>
             </span>
             <input
               type="text"
@@ -83,7 +86,7 @@ export function AskForInvite({ stamp, open = false }: { stamp: string | null; op
           <div className="flex flex-col gap-1">
             <label className="flex flex-col gap-1">
               <span className="text-sm">
-                Who you are <span className="text-muted">(optional)</span>
+                {say.say("auth.ask.about")} <span className="text-muted">{say.say("auth.ask.optional")}</span>
               </span>
               <textarea
                 name="about"
@@ -95,7 +98,7 @@ export function AskForInvite({ stamp, open = false }: { stamp: string | null; op
               />
             </label>
             <span id={aboutHint} className="text-xs text-muted">
-              Where you played before, or who sent you. No links, please.
+              {say.say("auth.ask.aboutHint")}
             </span>
           </div>
           {state.kind === "problem" ? (
@@ -109,7 +112,7 @@ export function AskForInvite({ stamp, open = false }: { stamp: string | null; op
             className={`${BUTTON_BASE} ${BUTTON_STRONG} w-full py-2`}
             data-testid="ask-for-invite-send"
           >
-            {sending ? "Sending…" : "Ask for an invite"}
+            {sending ? say.say("auth.ask.sending") : say.say("auth.ask.send")}
           </button>
         </form>
       )}

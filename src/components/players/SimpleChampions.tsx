@@ -5,7 +5,9 @@ import { Paired } from "@/components/i18n/Paired";
 import { PlayerLink } from "@/components/players/Standings";
 import { withoutLevel } from "@/lib/xp/nameTag.types";
 import { XP_BLANK_BECAUSE } from "@/components/players/players.constants";
-import { IP_HEAD_TITLE, IpCell, XpCell, championIp } from "@/components/players/recordTrailing";
+import { IpCell, XpCell, championIp, ipHeadTitle } from "@/components/players/recordTrailing";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { LevelName } from "@/components/xp/LevelName";
 import { levelShown } from "@/lib/xp/levelShown";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
@@ -24,21 +26,22 @@ const HEAD_CLASS = "text-left text-[0.7rem] font-semibold tracking-[0.14em] text
  * drill-down: rank, player, rating, XP and the record, every count a link to
  * its games. A game nobody has played rated says so on its line.
  */
-export function SimpleChampions({ champions }: { champions: ReadonlyMap<string, VariantChampion> }) {
+export async function SimpleChampions({ champions }: { champions: ReadonlyMap<string, VariantChampion> }) {
+  const say = await currentSpeaker();
   const games = [...new Set(GAME_FAMILIES.flatMap((family) => boardGamesOf(family)))];
   return (
     <div className={TABLE_SCROLL}>
       <table className="w-full text-sm" data-testid="champions-simple">
         <thead className={HEAD_CLASS}>
           <tr>
-            <th className="py-1 pr-3">Game</th>
-            <th className="py-1 pr-3">Leader</th>
-            <th className="py-1 pr-3">Rating</th>
+            <th className="py-1 pr-3">{say.say("players.colGame")}</th>
+            <th className="py-1 pr-3">{say.say("players.colLeader")}</th>
+            <th className="py-1 pr-3">{say.say("players.colRating")}</th>
             {/* Directly after Rating, where John put it on every stats table. */}
-            <th className="py-1 pr-3" title="Experience 経験 — what this member has earned on Itsutsu">
-              XP
+            <th className="py-1 pr-3" title={say.say("points.board.xpTitle", { site: SITE_NAME })}>
+              {say.say("players.colXp")}
             </th>
-            <th className="py-1 pr-3" title={IP_HEAD_TITLE}>
+            <th className="py-1 pr-3" title={ipHeadTitle(say)}>
               IP
             </th>
           </tr>
@@ -59,7 +62,7 @@ export function SimpleChampions({ champions }: { champions: ReadonlyMap<string, 
                 </td>
                 {champion === undefined ? (
                   <td className="py-1.5 pr-3 text-xs text-muted" colSpan={4}>
-                    No rated games yet
+                    {say.say("players.champEmpty")}
                   </td>
                 ) : (
                   <>
@@ -74,10 +77,11 @@ export function SimpleChampions({ champions }: { champions: ReadonlyMap<string, 
                     </td>
                     <td className="py-1.5 pr-3 font-mono tabular-nums">{champion.leader.rating}</td>
                     <XpCell
+                      say={say}
                       xp={champion.leader.xp}
                       blankBecause={champion.leader.memberId === null ? XP_BLANK_BECAUSE.unclaimedName : undefined}
                     />
-                    <IpCell ip={championIp(champion)} />
+                    <IpCell say={say} ip={championIp(champion)} />
                   </>
                 )}
               </tr>

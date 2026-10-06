@@ -6,12 +6,12 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Tabs } from "@/components/ui/Tabs";
 import { GAMES_TABS } from "@/lib/catalogue/gamesTabs";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 
-export const metadata = {
-  title: "Dice roller",
-  description:
-    "Tap to roll one to five dice, d4 to d100, with a bonus, advantage or disadvantage: the total, the exact odds, your roll history and your stats.",
-};
+export async function generateMetadata() {
+  const say = await currentSpeaker();
+  return { title: say.say("pages.diceTitle"), description: say.say("pages.diceDescription") };
+}
 
 /**
  * THE DICE ROLLER, a tab of Games like Learning and Famous.
@@ -33,20 +33,18 @@ export default async function DicePage() {
     <Page>
       <SiteHeader />
       <PageTitle title={say.say("nav.games")} kanji="種目" />
-      <Tabs tabs={GAMES_TABS} active="dice" base="/games" label="How to show the games" />
-      <p className="text-sm text-muted">
-        Korokoro コロコロ, the sound of dice tumbling: tap the felt to roll one to ten dice, from a d4 to a d100, and read
-        the odds of what you threw. Your rolls stay on this device.
-      </p>
+      <Tabs tabs={GAMES_TABS} active="dice" base="/games" label={say.say("gamepages.catalogueTabs")} />
+      <p className="text-sm text-muted">{weave(say.say("pages.diceIntro"), { kanji: <span className="font-mincho">コロコロ</span> })}</p>
       <DiceRollerClient locale={say.tag} />
       <p className="text-xs text-muted" data-testid="dice-about">
-        Every roll comes from your device&apos;s cryptographic generator, so nobody, this site included, can predict or
-        steer it; choose a seed under Randomness when a table wants to check a roll. Korokoro is open source under the MIT
-        licence, on{" "}
-        <a href="https://github.com/johnmorrisdotca/korokoro" className="underline underline-offset-2 hover:text-ink">
-          GitHub
-        </a>{" "}
-        and npm as <code>@johnmorrisdotca/korokoro</code>, for any site or game that wants dice.
+        {weave(say.say("pages.diceAbout"), {
+          github: (
+            <a href="https://github.com/johnmorrisdotca/korokoro" className="underline underline-offset-2 hover:text-ink">
+              GitHub
+            </a>
+          ),
+          package: <code>@johnmorrisdotca/korokoro</code>,
+        })}
       </p>
       <OpenSourceCredit pkg="korokoro" />
     </Page>

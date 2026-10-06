@@ -51,6 +51,7 @@ const READERS_A_PAGE_USES: ReadonlyMap<string, string> = new Map([
  */
 const BIG_FILE_BYTES = 64 * 1024;
 const BIG_FILES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map([
+  ["src/lib/i18n/phrases.about.constants.ts", "Every paragraph, table and caption of the About page in English (ENJA-10), as phrases: the page is one server component that prints them, and the Japanese is read from the packed file."],
   ["src/lib/puzzles/puzzles.constants.ts", "Every puzzle's name, rules and sizes, printed by its page, its rules page and every list of games."],
 ]);
 

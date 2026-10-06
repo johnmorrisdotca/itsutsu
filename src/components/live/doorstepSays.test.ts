@@ -186,7 +186,7 @@ describe("who plays which colour, said on the doorstep", () => {
   });
 
   it("marks a computer player as one", () => {
-    expect(describeSeating(draft, { ...who, opponent: "Kyu", computer: true }, say)).toContain("Kyu 機械");
+    expect(describeSeating(draft, { ...who, opponent: "Kyu", computer: true }, say)).toContain("Kyu コンピュータ");
   });
 
   it("says a seat posted for anyone is posted, and where", () => {

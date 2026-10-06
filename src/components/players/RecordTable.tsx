@@ -10,6 +10,7 @@ import {
   type RecordOf,
 } from "./PlayerRecord";
 import { LevelName } from "@/components/xp/LevelName";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { SortableHead, type RecordSort } from "./recordSort";
 import { TrailingCells, trailingHeadings, trailingWidth } from "./recordTrailing";
 /*
@@ -282,6 +283,7 @@ import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 
 export function RecordTable({
+  say,
   subject,
   rows,
   columns = {},
@@ -292,6 +294,8 @@ export function RecordTable({
   caption,
   sort,
 }: {
+  /** The reader's language: a table is drawn by server pages and by the ladder's client list alike, so it is handed one. */
+  say: Speaker;
   /** The heading over the subject column — "Member", "Game", "Player". */
   subject: string;
   rows: readonly RecordTableRow[];
@@ -370,13 +374,14 @@ export function RecordTable({
                 arrow, the `aria-sort` and the "press to reverse" label are the
                 one implementation rather than a second one for this column.
               */}
-              <SortableHead sort={sort} slot="subject">
+              <SortableHead say={say} sort={sort} slot="subject">
                 {subject}
               </SortableHead>
               <RecordHeadings
-                playedTitle={playedScope === undefined ? undefined : playedScopeNote(playedScope)}
+                say={say}
+                playedTitle={playedScope === undefined ? undefined : playedScopeNote(playedScope, say)}
                 sort={sort}
-                trailing={trailingHeadings({ columns, sort })}
+                trailing={trailingHeadings({ say, columns, sort })}
               />
             </tr>
           </thead>
@@ -423,12 +428,13 @@ export function RecordTable({
                   )}
                 </td>
                 <RecordCells
+                  say={say}
                   record={row.record}
                   of={row.of}
                   streak={row.streak}
                   streakBlankBecause={row.streakBlankBecause}
                   note={row.note}
-                  trailing={<TrailingCells row={row} columns={columns} />}
+                  trailing={<TrailingCells say={say} row={row} columns={columns} />}
                 />
               </tr>
             ))}

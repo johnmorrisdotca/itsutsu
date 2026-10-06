@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 import type { GamePoolFilter, GameRatedFilter } from "@/lib/history/gameHistory.types";
@@ -165,7 +166,7 @@ export type RecordTableRow = {
    * says it by default; the field stays so a table that knows a reason can
    * say it on the row rather than trust the default.
    */
-  xpBlankBecause?: string;
+  xpBlankBecause?: PhraseKey;
   /**
    * What this member has WON, for the IP column: the total, whose it is, and
    * the one game it was counted over, or null for the whole site. A game's

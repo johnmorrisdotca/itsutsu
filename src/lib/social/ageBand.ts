@@ -1,3 +1,5 @@
+import type { PhraseKey } from "../i18n/i18n.constants";
+
 import {
   AGE_BANDS,
   AGE_BAND_DISPLAY,
@@ -41,7 +43,7 @@ export type Consent = { name: string; relationship: ParentRelationship };
 
 export type ConsentDecision =
   | { ok: true; consent: Consent | null }
-  | { ok: false; needsParent: boolean; problem: string };
+  | { ok: false; needsParent: boolean; problem: PhraseKey };
 
 /**
  * Whether a band may be recorded with what came with it.
@@ -73,6 +75,6 @@ export function consentDecision(band: AgeBand, offer: ConsentOffer | null, alrea
 }
 
 /** The band as a reader sees it, or null for a member never asked. */
-export function ageBandLabel(band: string | null | undefined): { label: string; kanji: string } | null {
+export function ageBandLabel(band: string | null | undefined): { label: PhraseKey; kanji: string } | null {
   return isAgeBand(band) ? AGE_BAND_DISPLAY[band] : null;
 }

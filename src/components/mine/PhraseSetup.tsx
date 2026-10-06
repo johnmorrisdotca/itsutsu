@@ -10,7 +10,7 @@ import { readerDay } from "@/lib/ui/when";
 import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
 import type { PhraseDrawFields, PhraseStatusFields } from "@/lib/phrase/phraseSetup.types";
 
-import { WORDS_COPY } from "./mine.constants";
+import { wordsCopy } from "./mine.copy";
 import { emptyArrangement, reconcileArrangement, swapBoxes, type Arrangement } from "./phraseArrangement";
 import { WordCandidates } from "./WordCandidates";
 import { WordTiles } from "./WordTiles";
@@ -47,6 +47,7 @@ export function PhraseSetup({ initial }: { initial: PhraseStatusFields }) {
   const hydrated = useHydrated();
   // The date the words were set is written in the reader's own zone and language, which only the browser knows: it is drawn once `hydrated`, never by the server.
   const say = useSpeaker();
+  const WORDS_COPY = wordsCopy(say);
   const [status, setStatus] = useState(initial);
   const [picking, setPicking] = useState(false);
   const [ticket, setTicket] = useState<string | null>(null);
@@ -174,7 +175,7 @@ export function PhraseSetup({ initial }: { initial: PhraseStatusFields }) {
             {status.set ? (
               <>
                 {WORDS_COPY.setStatus}
-                {hydrated && status.setAt ? WORDS_COPY.since(readerDay(say.locale, status.setAt, "long") ?? "") : ""}.
+                {hydrated && status.setAt ? WORDS_COPY.since(readerDay(say.locale, status.setAt, "long") ?? "") : ""}{say.sentence("")}
               </>
             ) : (
               WORDS_COPY.unsetStatus

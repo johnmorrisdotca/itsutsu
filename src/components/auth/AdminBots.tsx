@@ -1,4 +1,5 @@
 import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { PlayerName } from "@/components/players/PlayerName";
 import { RecordTable, type RecordTableRow } from "@/components/players/RecordTable";
 import { BOT_ALL_TIERS, BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
@@ -44,6 +45,7 @@ import { BOT_NAME_COUNTRIES } from "@/lib/bots/botNames";
  * the same five figures. An operator's page is not a reason to invent a sixth.
  */
 export async function AdminBots() {
+  const say = await currentSpeaker();
   const entries = await fetchComputerPlayers();
   /*
    * Easiest first, so the ladder reads itself — the order `BOT_ALL_TIERS` is
@@ -172,6 +174,7 @@ export async function AdminBots() {
     <section className="flex flex-col gap-3" data-testid="admin-bots">
       <p className="text-xs text-muted">{ADMIN_BOTS_COPY.lead}</p>
       <RecordTable
+        say={say}
         subject={ADMIN_BOTS_COPY.player}
         rows={rows}
         columns={{ tier: true }}

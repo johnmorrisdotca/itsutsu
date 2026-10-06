@@ -1,4 +1,7 @@
-import { countryFrom } from "@/lib/social/countries";
+"use client";
+
+import { useLocale } from "@/components/i18n/LocaleProvider";
+import { countryFrom, countryNameIn } from "@/lib/social/countries";
 
 /**
  * Where somebody is, beside their name.
@@ -25,9 +28,10 @@ export function CountryMark({
   /** Say the country in words as well, where there is room for it. */
   showName?: boolean;
 }) {
+  const locale = useLocale();
   const written = (country ?? "").trim();
   if (written === "") return null;
-  const found = countryFrom(written);
+  const found = countryFrom(written, locale);
 
   if (found === null) {
     return (
@@ -44,7 +48,7 @@ export function CountryMark({
         cannot see it: the country's name is the label either way.
       */}
       <span aria-hidden="true">{found.flag}</span>
-      <span className={showName ? "ml-1" : "sr-only"}>{found.name}</span>
+      <span className={showName ? "ml-1" : "sr-only"}>{countryNameIn(found.code, locale)}</span>
     </span>
   );
 }

@@ -1,4 +1,6 @@
 import { GameCount } from "@/components/games/GameCount";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import type { PlayerProfile } from "@/lib/rating/players";
 import { RATING_POOLS } from "@/lib/rating/pools";
 
@@ -18,44 +20,45 @@ import { RATING_POOLS } from "@/lib/rating/pools";
  * would print a count of games into an attribute with nothing behind it at that
  * spot — which `gameLinks.coverage.test.ts` rightly refused.
  */
-export function TwoPools({
+
+export async function TwoPools({
   name,
   memberId,
   profile,
 }: {
-  /** The name the record is counted under — the page's `wholeName`. */
   name: string;
-  /** Their id, which is what the links carry. See `gamesHref`. */
   memberId?: string | null;
-  /** The rating row both pools' counts come from. */
   profile: PlayerProfile;
 }) {
+  const say = await currentSpeaker();
   return (
     <p className="text-xs text-muted" data-testid="two-pools">
-      Played and the record beside it count every finished game. The ratings are kept in two:{" "}
-      <GameCount
-        count={profile.ratedGames}
-        player={name}
-        memberId={memberId}
-        pool={RATING_POOLS.people}
-        rated="yes"
-        className="font-medium text-ink-soft"
-        title="Rated games against other people"
-        testId="player-rated-people"
-      />{" "}
-      against people, and{" "}
-      <GameCount
-        count={profile.computer.ratedGames}
-        player={name}
-        memberId={memberId}
-        pool={RATING_POOLS.computer}
-        rated="yes"
-        className="font-medium text-ink-soft"
-        title="Rated games against the bots"
-        testId="player-rated-computer"
-      />{" "}
-      against the bots. A game against a program never moves where you stand among the people, and a
-      game against yourself counts as neither.
+      {weave(say.say("players.twoPools"), {
+        people: (
+          <GameCount
+            count={profile.ratedGames}
+            player={name}
+            memberId={memberId}
+            pool={RATING_POOLS.people}
+            rated="yes"
+            className="font-medium text-ink-soft"
+            title={say.say("players.titleRatedPeople")}
+            testId="player-rated-people"
+          />
+        ),
+        bots: (
+          <GameCount
+            count={profile.computer.ratedGames}
+            player={name}
+            memberId={memberId}
+            pool={RATING_POOLS.computer}
+            rated="yes"
+            className="font-medium text-ink-soft"
+            title={say.say("players.titleRatedBots")}
+            testId="player-rated-computer"
+          />
+        ),
+      })}
     </p>
   );
 }

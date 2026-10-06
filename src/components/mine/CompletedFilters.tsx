@@ -8,7 +8,8 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { completedHref } from "@/lib/history/completedFilter";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MY_GAMES_COPY } from "./mine.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { myGamesCopy } from "./mine.copy";
 
 /** What the choices are, read once on the server (`completedChoices`). */
 type Choices = { families: { key: string; title: string }[]; games: { slug: string; label: string }[] };
@@ -21,7 +22,8 @@ type Choices = { families: { key: string; title: string }[]; games: { slug: stri
  */
 export function CompletedFilters({ choices, family, game }: { choices: Choices; family: { key: string; title: string } | null; game: { slug: string; label: string } | null }) {
   const router = useRouter();
-  const copy = MY_GAMES_COPY.completedFilters;
+  const say = useSpeaker();
+  const copy = myGamesCopy(say).completedFilters;
   const go = (next: { family: string | null; game: string | null }) => router.push(completedHref(next));
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="completed-filters" {...readyMark(useHydrated())}>

@@ -3,12 +3,14 @@ import Link from "@/components/ui/Link";
 
 import { CountryMark } from "@/components/players/CountryMark";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
-import { IP_HEAD_TITLE, IpCell, XpCell } from "@/components/players/recordTrailing";
+import { IpCell, XpCell, ipHeadTitle } from "@/components/players/recordTrailing";
 import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { LevelName } from "@/components/xp/LevelName";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { seatName } from "@/lib/gomoku/seatWords";
-import { speaker } from "@/lib/i18n/i18n";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { weave } from "@/lib/i18n/weave";
 import { rulesPath } from "@/lib/gomoku/slugs";
 import { describeClock } from "@/lib/history/deadline";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
@@ -17,7 +19,7 @@ import { posterKeyOf } from "@/lib/history/posterStanding";
 import type { PosterStanding } from "@/lib/history/posterStanding.types";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
 import { RATING_POOLS } from "@/lib/rating/pools";
-import { MY_GAMES_COPY, OPEN_SEATS_FILTER_COPY } from "./mine.constants";
+import { myGamesCopy, openSeatsFilterCopy } from "./mine.copy";
 import { OpenSeatsFilters } from "./OpenSeatsFilters";
 import { PlayerName } from "@/components/players/PlayerName";
 import { GameName } from "@/components/games/GameName";
@@ -52,7 +54,7 @@ const COLUMNS = 8;
  * only drawn for somebody signed in — a stranger's /games shows the catalogue —
  * so its invitation is the signed-in one.
  */
-export function OpenGamesBoard({
+export async function OpenGamesBoard({
   games,
   shown,
   filter,
@@ -67,7 +69,9 @@ export function OpenGamesBoard({
   /** Each poster's rating, level, XP and country, by `posterKeyOf`. */
   standings: ReadonlyMap<string, PosterStanding>;
 }) {
-  const copy = MY_GAMES_COPY.openBoard;
+  const say = await currentSpeaker();
+  const copy = myGamesCopy(say).openBoard;
+  const OPEN_SEATS_FILTER_COPY = openSeatsFilterCopy(say);
   const says = waitingRoomSays({ total, shown });
 
   return (
@@ -84,25 +88,25 @@ export function OpenGamesBoard({
           <thead className={TABLE_HEAD_CLASS}>
             <tr>
               <th className={HEAD} scope="col">
-                Game
+                {say.say("players.colGame")}
               </th>
               <th className={HEAD} scope="col">
-                Time limit
+                {say.say("mine.colTimeLimit")}
               </th>
               <th className={HEAD} scope="col">
-                Player
+                {say.say("players.colPlayer")}
               </th>
               <th className={HEAD} scope="col">
-                Rating
+                {say.say("players.colRating")}
               </th>
               <th className={HEAD} scope="col">
-                XP
+                {say.say("players.colXp")}
               </th>
-              <th className={HEAD} scope="col" title={IP_HEAD_TITLE}>
+              <th className={HEAD} scope="col" title={ipHeadTitle(say)}>
                 IP
               </th>
               <th className={HEAD} scope="col">
-                Location
+                {say.say("mine.colLocation")}
               </th>
               <th className={HEAD} scope="col">
                 <span className="sr-only">{copy.sitDown}</span>
@@ -116,25 +120,29 @@ export function OpenGamesBoard({
                   {says === "nobody-waiting" ? (
                     <>
                       {copy.nobodyWaiting}{" "}
-                      <Link href="/games/new" className="underline underline-offset-4" data-testid="waiting-room-post-first">
-                        {copy.postFirst}
-                      </Link>{" "}
-                      {copy.postFirstAfter}
+                      {weave(copy.postFirstSentence, {
+                        link: (
+                          <Link href="/games/new" className="underline underline-offset-4" data-testid="waiting-room-post-first">
+                            {copy.postFirst}
+                          </Link>
+                        ),
+                      })}
                     </>
                   ) : (
                     <>
-                      {OPEN_SEATS_FILTER_COPY.empty}{" "}
+                      {OPEN_SEATS_FILTER_COPY.empty}
+                      {say.sentences(["", ""])}
                       <Link href="/play#open-seats" className="underline underline-offset-4" data-testid="open-seats-clear">
                         {OPEN_SEATS_FILTER_COPY.clear}
                       </Link>
-                      .
+                      {say.sentence("")}
                     </>
                   )}
                 </td>
               </tr>
             ) : (
               byGameName(games).map((game) => (
-                <SeatRow key={game.id} game={game} standing={standings.get(posterKeyOf(posterOf(game))) ?? null} />
+                <SeatRow key={game.id} game={game} standing={standings.get(posterKeyOf(posterOf(game))) ?? null} say={say} />
               ))
             )}
           </tbody>
@@ -145,8 +153,8 @@ export function OpenGamesBoard({
 }
 
 /** One person waiting, and the way to sit down with them. */
-function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStanding | null }) {
-  const copy = MY_GAMES_COPY.openBoard;
+function SeatRow({ game, standing, say }: { game: GameSummary; standing: PosterStanding | null; say: Speaker }) {
+  const copy = myGamesCopy(say).openBoard;
   const poster = posterOf(game);
   const rating = standing?.rating ?? null;
   return (
@@ -170,10 +178,10 @@ function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStandi
         </span>
       </td>
       <td className="py-1.5 pr-3 text-xs whitespace-nowrap" data-testid="open-game-clock">
-        {describeClock(game.clockMode, game.moveTimeMs)}
+        {describeClock(game.clockMode, game.moveTimeMs, say)}
         <span className="block text-muted">
-          {boardWords(game.variant as RuleVariant, game.size)}
-          {game.allowResign ? "" : " · no resigning"}
+          {boardWords(game.variant as RuleVariant, game.size, say)}
+          {game.allowResign ? "" : ` · ${say.say("mine.noResigning")}`}
         </span>
       </td>
       <td className="py-1.5 pr-3">
@@ -181,7 +189,7 @@ function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStandi
         <PlayerName
           name={poster.name}
           memberId={poster.memberId}
-          fallback={game.openSeat === "black" ? seatName(speaker("en"), "two") : seatName(speaker("en"), "one")}
+          fallback={game.openSeat === "black" ? seatName(say, "two") : seatName(say, "one")}
           // Flag beside the name as on every list; the level is drawn after it, below, as it always was here.
           tag={standing === null || poster.memberId === null ? undefined : { country: standing.country, kind: MEMBER_KINDS.member, level: null }}
         />
@@ -189,19 +197,19 @@ function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStandi
           <LevelName level={standing.level} compact className="ml-2 text-muted" testId="open-game-level" />
         ) : null}
         <span className="block text-xs text-muted">
-          {copy.youPlay(game.openSeat === "black" ? STONE_DISPLAY.black.label : STONE_DISPLAY.white.label)}
+          {copy.youPlay(say.pairName(STONE_DISPLAY[game.openSeat === "black" ? "black" : "white"].label, STONE_DISPLAY[game.openSeat === "black" ? "black" : "white"].kanji).text)}
         </span>
       </td>
       <td className={CELL} data-testid="open-game-rating">
-        {rating === null ? TIER_DISPLAY.unrated.label : `${rating.rating} · ${TIER_DISPLAY[rating.tier].label}`}
+        {rating === null ? say.pairName(TIER_DISPLAY.unrated.label, TIER_DISPLAY.unrated.kanji).text : `${rating.rating} · ${say.pairName(TIER_DISPLAY[rating.tier].label, TIER_DISPLAY[rating.tier].kanji).text}`}
         {rating !== null && rating.pool === RATING_POOLS.computer ? (
           <span className="ml-1 font-mincho" title={copy.computerPool} data-testid="rating-pool-computer">
-            機械
+            {say.say("players.botsMark")}
           </span>
         ) : null}
       </td>
-      <XpCell xp={standing?.xp ?? null} />
-      <IpCell ip={standing?.ip == null || poster.memberId === null ? null : { ip: standing.ip, memberId: poster.memberId, game: null }} />
+      <XpCell say={say} xp={standing?.xp ?? null} />
+      <IpCell say={say} ip={standing?.ip == null || poster.memberId === null ? null : { ip: standing.ip, memberId: poster.memberId, game: null }} />
       <td className="py-1.5 pr-3 text-xs" data-testid="open-game-location">
         {standing?.country != null ? <CountryMark country={standing.country} showName /> : <span className="text-muted">—</span>}
       </td>

@@ -1,4 +1,5 @@
 import { Figures } from "@/components/ui/Figures";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { winRateText, type RecordFigures } from "@/lib/rating/figures";
 
@@ -20,7 +21,7 @@ import type { ShownRating } from "./recordTable.types";
  * somebody has earned against people; the computer one is earned against the
  * programs and never touches it, which is the whole point of keeping them
  * apart. `rating` arrives already decided by `ratingShown` — silence where
- * nothing has been earned, the computer rating marked 機械 where that is the
+ * nothing has been earned, the computer rating marked コンピュータ where that is the
  * only one there is — and this draws it without deciding anything.
  *
  * Played and the record beside it count whatever the page says they count:
@@ -30,11 +31,13 @@ import type { ShownRating } from "./recordTable.types";
  * the games behind it.
  */
 export function PlayerFigures({
+  say,
   rating,
   computer,
   counted,
   of,
 }: {
+  say: Speaker;
   /** The rating worth showing, with the pool that earned it, or null for none. */
   rating: ShownRating | null;
   /** The computer-pool rating, drawn only where there are rated games behind it. */
@@ -50,17 +53,17 @@ export function PlayerFigures({
       testId="player-figures"
       figures={[
         {
-          label: "Rating",
+          label: say.say("players.colRating"),
           value: (
             <>
               {rating === null ? "—" : rating.rating}
               {rating?.pool === RATING_POOLS.computer ? (
                 <span
                   className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                  title="Earned against the bots, which are rated in a pool of their own."
+                  title={say.say("players.botsPool")}
                   data-testid="player-rating-computer"
                 >
-                  機械
+                  {say.say("players.botsMark")}
                 </span>
               ) : null}
             </>
@@ -68,19 +71,19 @@ export function PlayerFigures({
           testId: "player-rating",
         },
         ...(computer !== null && computer.ratedGames > 0
-          ? [{ label: "Vs bots", value: computer.rating, testId: "player-computer-rating" }]
+          ? [{ label: say.say("players.vsBots"), value: computer.rating, testId: "player-computer-rating" }]
           : []),
         {
-          label: "Played",
-          value: <PlayedFigure record={record} of={of} />,
+          label: say.say("players.colPlayed"),
+          value: <PlayedFigure say={say} record={record} of={of} />,
           testId: "player-played",
         },
         {
-          label: "Won · Lost · Drawn",
-          value: <RecordFigure record={record} of={of} />,
+          label: say.say("players.wld"),
+          value: <RecordFigure say={say} record={record} of={of} />,
           testId: "player-record",
         },
-        { label: "Win rate", value: winRateText(counted.winRate) },
+        { label: say.say("players.colWinRate"), value: winRateText(counted.winRate) },
       ]}
     />
   );

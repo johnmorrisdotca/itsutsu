@@ -7,13 +7,15 @@ import { RowActions } from "@/components/ui/Controls";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { SortableHead, type RecordSort } from "./recordSort";
 import { TIER_DISPLAY } from "@/lib/rating/elo";
-import { countText } from "@/lib/rating/figures";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 
 import { IpFigure } from "@/components/points/IpFigure";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { SITE_SCOPE, scopeOfGame } from "@/lib/points/ipScope";
 
-import { XP_BLANK_BECAUSE } from "./players.constants";
+import { STICKY_ACTIONS, XP_BLANK_BECAUSE } from "./players.constants";
 import type { IpShown, RecordColumns, RecordTableRow, ShownRating } from "./recordTable.types";
 
 /**
@@ -70,7 +72,7 @@ import type { IpShown, RecordColumns, RecordTableRow, ShownRating } from "./reco
  * programs it is not one. Two pages drew this mark for themselves and a third
  * did not draw it at all.
  */
-function RatingCell({ rating }: { rating: ShownRating | null }) {
+function RatingCell({ rating, say }: { rating: ShownRating | null; say: Speaker }) {
   if (rating === null) return <td className={CELL} data-testid="record-rating">–</td>;
   return (
     <td className={CELL} data-testid="record-rating">
@@ -78,10 +80,10 @@ function RatingCell({ rating }: { rating: ShownRating | null }) {
       {rating.pool === RATING_POOLS.computer ? (
         <span
           className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-          title="Earned against the bots, which are rated in a pool of their own."
+          title={say.say("players.botsPool")}
           data-testid="rating-pool-computer"
         >
-          機械
+          {say.say("players.botsMark")}
         </span>
       ) : null}
     </td>
@@ -150,10 +152,10 @@ function RatingCell({ rating }: { rating: ShownRating | null }) {
  * carries the same columns as the table of people beside it is one table, which
  * is the whole reason `RecordTable` exists.
  */
-export function XpCell({ xp, blankBecause }: { xp: number | null; blankBecause?: string }) {
+export function XpCell({ say, xp, blankBecause }: { say: Speaker; xp: number | null; blankBecause?: PhraseKey }) {
   if (xp === null) {
     return (
-      <td className={CELL} title={blankBecause ?? XP_BLANK_BECAUSE.unclaimedName} data-testid="record-xp">
+      <td className={CELL} title={say.say(blankBecause ?? XP_BLANK_BECAUSE.unclaimedName)} data-testid="record-xp">
         –
       </td>
     );
@@ -163,10 +165,10 @@ export function XpCell({ xp, blankBecause }: { xp: number | null; blankBecause?:
       <Link
         href="/xp"
         className="underline-offset-2 hover:underline"
-        title="Experience earned on Itsutsu, with credit for games on other sites where a record of them is kept here. Opens the board that ranks everybody by it."
+        title={say.say("players.xpLinkTitle", { site: SITE_NAME })}
         data-testid="record-xp-link"
       >
-        {countText(xp)}
+        {say.number(xp)}
       </Link>
     </td>
   );
@@ -183,10 +185,10 @@ export function XpCell({ xp, blankBecause }: { xp: number | null; blankBecause?:
  * together, which no one page lists, so it is printed plain and says so on
  * hover (`IpFigure`). A dash is a name nobody has claimed, as in the XP cell.
  */
-export function IpCell({ ip }: { ip: IpShown | null }) {
+export function IpCell({ say, ip }: { say: Speaker; ip: IpShown | null }) {
   if (ip === null) {
     return (
-      <td className={CELL} title={XP_BLANK_BECAUSE.unclaimedName} data-testid="record-ip">
+      <td className={CELL} title={say.say(XP_BLANK_BECAUSE.unclaimedName)} data-testid="record-ip">
         –
       </td>
     );
@@ -205,7 +207,7 @@ export function championIp(champion: { variant: string; ip: number | null; leade
 }
 
 /** The IP heading, for a table built by hand as for this one: the same words everywhere. */
-export const IP_HEAD_TITLE = "Itsutsu Points — what this member has won: the site's, or on one game's table that game's";
+export const ipHeadTitle = (say: Speaker): string => say.say("players.ipHeadTitle", { site: SITE_NAME });
 
 /**
  * How many columns these switches come to, for the span of the empty row.
@@ -233,17 +235,19 @@ export function trailingWidth(columns: RecordColumns): number {
  * another module opened.
  */
 export function trailingHeadings({
+  say,
   columns,
   sort,
 }: {
+  say: Speaker;
   columns: RecordColumns;
   sort: RecordSort | undefined;
 }) {
   return (
     <>
       {columns.rating !== false ? (
-        <SortableHead sort={sort} slot="rating">
-          Rating
+        <SortableHead say={say} sort={sort} slot="rating">
+          {say.say("players.colRating")}
         </SortableHead>
       ) : null}
       {columns.xp !== false ? (
@@ -261,27 +265,28 @@ export function trailingHeadings({
          * table pairs it, as does the XP tab it belongs to.
          */
         <SortableHead
+          say={say}
           sort={sort}
           slot="xp"
-          title="Experience 経験 — what this member has earned on Itsutsu"
+          title={say.say("points.board.xpTitle", { site: SITE_NAME })}
         >
-          XP
+          {say.say("players.colXp")}
         </SortableHead>
       ) : null}
       {columns.ip !== false ? (
         /* Directly after XP, and not sortable: see `IpCell`. */
-        <th className={HEAD} scope="col" title={IP_HEAD_TITLE}>
+        <th className={HEAD} scope="col" title={ipHeadTitle(say)}>
           IP
         </th>
       ) : null}
       {columns.tier === true ? (
-        <SortableHead sort={sort} slot="tier">
-          Tier
+        <SortableHead say={say} sort={sort} slot="tier">
+          {say.say("players.colTier")}
         </SortableHead>
       ) : null}
       {columns.joined === true ? (
-        <SortableHead sort={sort} slot="joined">
-          Joined
+        <SortableHead say={say} sort={sort} slot="joined">
+          {say.say("players.colJoined")}
         </SortableHead>
       ) : null}
       {/*
@@ -323,21 +328,23 @@ export function trailingHeadings({
  * while the row is hovered or holds the focus, which a tap gives it
  * (`[data-row-actions]` in globals.css).
  */
-const ACTIONS_CELL = "sticky right-0 bg-[color-mix(in_srgb,var(--color-ivory)_60%,var(--color-paper))]";
+const ACTIONS_CELL = STICKY_ACTIONS;
 
 /** The cells for those same columns, in that same order, for one row. */
 export function TrailingCells({
+  say,
   row,
   columns,
 }: {
+  say: Speaker;
   row: RecordTableRow;
   columns: RecordColumns;
 }) {
   return (
     <>
-      {columns.rating !== false ? <RatingCell rating={row.rating ?? null} /> : null}
-      {columns.xp !== false ? <XpCell xp={row.xp ?? null} blankBecause={row.xpBlankBecause} /> : null}
-      {columns.ip !== false ? <IpCell ip={row.ip ?? null} /> : null}
+      {columns.rating !== false ? <RatingCell say={say} rating={row.rating ?? null} /> : null}
+      {columns.xp !== false ? <XpCell say={say} xp={row.xp ?? null} blankBecause={row.xpBlankBecause} /> : null}
+      {columns.ip !== false ? <IpCell say={say} ip={row.ip ?? null} /> : null}
       {columns.tier === true ? (
         <td className="py-1.5 pr-3" data-testid="record-tier">
           {row.tier === undefined ? (

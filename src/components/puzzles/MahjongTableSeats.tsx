@@ -67,11 +67,12 @@ export function MahjongTableNames({ players, replacing, onBegin }: { players: nu
       </div>
       {replacing === null ? null : (
         <p className="text-sm text-muted" data-testid="mahjong-table-replacing">
-          {say.say("pcard.mj.replacing")}{say.locale === "ja" ? "" : " "}
+          {say.say("pcard.mj.replacing")}
+          {say.sentences(["", ""])}
           <Link href={tableAddress(replacing)} className="underline underline-offset-2">
             {say.say("pkumi.party.continueThat")}
           </Link>
-          .
+          {say.sentence("")}
         </p>
       )}
       <p className="min-h-5 text-sm text-muted">{nobody ? say.say("pcard.mj.nobody") : ""}</p>

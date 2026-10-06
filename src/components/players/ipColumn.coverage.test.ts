@@ -81,9 +81,9 @@ describe("every RecordTable shows IP wherever it shows XP", () => {
   it("draws the heading directly after XP, and the cell after the XP cell", () => {
     const trailing = code(readFileSync("src/components/players/recordTrailing.tsx", "utf8"));
     expect(trailing).toMatch(/columns\.ip !== false \? <IpCell/);
-    expect(trailing.indexOf("<IpCell ip={row.ip")).toBeGreaterThan(trailing.indexOf("<XpCell xp={row.xp"));
+    expect(trailing.indexOf("<IpCell say={say} ip={row.ip")).toBeGreaterThan(trailing.indexOf("<XpCell say={say} xp={row.xp"));
     const heads = trailing.slice(trailing.indexOf("export function trailingHeadings"));
-    expect(heads.indexOf(">\n          IP\n")).toBeGreaterThan(heads.indexOf(">\n          XP\n"));
+    expect(heads.indexOf(">\n          IP\n")).toBeGreaterThan(heads.indexOf('{say.say("players.colXp")}'));
   });
 });
 
@@ -114,7 +114,7 @@ const IP_LEADS: Record<string, string> = {
  * the phrase that says it (`xp.unit`, "XP" in English and 経験値 in Japanese).
  */
 const WITH_XP = FILES.filter(
-  (file) => /<table\b/.test(file.source) && /<th\b[^>]*>\s*(?:XP|\{say\.say\("xp\.unit"\)\})\s*</.test(file.source),
+  (file) => /<table\b/.test(file.source) && /<th\b[^>]*>\s*(?:XP|\{say\.say\("(?:xp\.unit|players\.colXp)"\)\})\s*</.test(file.source),
 );
 
 describe("a table built by hand with an XP heading has IP after it", () => {
@@ -131,7 +131,7 @@ describe("a table built by hand with an XP heading has IP after it", () => {
   it("names IP in a heading after XP, and draws the shared cell", () => {
     for (const file of WITH_XP) {
       if (HAND_BUILT_WITHOUT_IP[file.path] !== undefined) continue;
-      const xp = file.source.search(/<th\b[^>]*>\s*XP\s*</);
+      const xp = file.source.search(/<th\b[^>]*>\s*(?:XP|\{say\.say\("(?:xp\.unit|players\.colXp)"\)\})\s*</);
       const ip = file.source.search(/<th\b[^>]*>\s*IP\s*</);
       if (IP_LEADS[file.path] !== undefined) {
         expect(ip, `${file.path} is an IP board with no IP heading`).toBeGreaterThan(-1);
