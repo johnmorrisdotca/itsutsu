@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { ReadyOffline } from "@/components/offline/ReadyOffline";
 import Link from "@/components/ui/Link";
 
@@ -61,7 +62,7 @@ export async function GameList({ stats, signedIn }: { stats: CatalogueStats; sig
       {HOME_FAMILIES.map((family) => (
         <section key={family.title} className="flex flex-col gap-3" data-testid="every-game-family">
           <h2 className={`${SECTION_HEADING} border-b border-rule pb-1`}>
-            {family.title} <span className="font-mincho text-sm font-normal opacity-70">{family.kanji}</span>
+            <Paired en={family.title} kanji={family.kanji} kanjiClassName="text-sm font-normal opacity-70" />
             <span className="ml-auto text-xs font-normal text-muted">
               {say.count("count.gameKind", family.games.length)}
             </span>

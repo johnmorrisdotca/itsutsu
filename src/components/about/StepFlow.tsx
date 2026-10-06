@@ -1,3 +1,5 @@
+import { Paired } from "@/components/i18n/Paired";
+
 import type { FlowProps } from "./about.types";
 
 /**
@@ -22,8 +24,9 @@ export function StepFlow({ steps, caption, label }: FlowProps) {
               >
                 {i + 1}
               </span>
-              <span className="text-sm font-semibold">{step.title}</span>
-              <span className="font-mincho text-xs opacity-70">{step.kanji}</span>
+              <span className="text-sm font-semibold">
+                <Paired en={step.title} kanji={step.kanji} kanjiClassName="text-xs font-normal opacity-70" inReadersLanguage />
+              </span>
             </span>
             <span className="text-xs leading-relaxed text-ink-soft">{step.body}</span>
           </li>

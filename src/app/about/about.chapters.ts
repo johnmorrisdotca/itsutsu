@@ -57,5 +57,5 @@ export const ABOUT_TABS: Tab[] = [
   { key: ABOUT_CHAPTERS.roots, label: "Origins", kanji: "来歴" },
   { key: ABOUT_CHAPTERS.japan, label: "Japan", kanji: "和" },
   { key: ABOUT_CHAPTERS.numbers, label: "Numbers", kanji: "番付" },
-  { key: ABOUT_CHAPTERS.programs, label: "Bots", kanji: "棋士" },
+  { key: ABOUT_CHAPTERS.programs, label: "Bots", kanji: "コンピュータ" },
 ];

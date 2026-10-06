@@ -209,7 +209,12 @@ export function HousekiSetUp({ kind, appearance }: { kind: HousekiKind; appearan
               {say.say("houseki.setup.continue", { what: requestWords(say, waiting.request) })}
             </Link>
           )}
-          <span>{save === undefined ? "" : say.say("houseki.card.wonOf", { won: say.number(wonCount(save, kind)), levels: say.number(levelsOf(kind)) })}. {say.say("houseki.setup.points")}</span>
+          <span>
+            {say.sentences([
+              ...(save === undefined ? [] : [say.sentence(say.say("houseki.card.wonOf", { won: say.number(wonCount(save, kind)), levels: say.number(levelsOf(kind)) }))]),
+              say.say("houseki.setup.points"),
+            ])}
+          </span>
         </div>
       </div>
     </div>

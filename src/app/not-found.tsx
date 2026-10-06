@@ -14,8 +14,15 @@ export default async function NotFound() {
     <div className="paper flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
       <BrandAvatar className="size-20 opacity-90" />
       <div className="flex flex-col gap-2">
+        {/* 何もない is "nothing here": the English reader's heading, with the plain words beside it. A Japanese reader has the plain words, once. */}
         <h1 className="font-mincho text-3xl font-bold">
-          何もない <span className="text-base font-normal text-muted">{say.say("chrome.notFound.title")}</span>
+          {say.pairsWithKanji ? (
+            <>
+              何もない <span className="text-base font-normal text-muted">{say.say("chrome.notFound.title")}</span>
+            </>
+          ) : (
+            say.say("chrome.notFound.title")
+          )}
         </h1>
         <p className="max-w-sm text-sm text-muted" data-width-reason="a short notice centred on a page with no frame">
           {say.say("chrome.notFound.body")}

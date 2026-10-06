@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -88,7 +89,7 @@ export function MosaicWindow({
           data-testid={testId}
           {...readyMark(hydrated)}
         >
-          {label} <span className="font-mincho">{kanji}</span> ⤢
+          <Paired en={label} kanji={kanji} kanjiClassName="" inReadersLanguage /> ⤢
         </button>
       ) : (
         <button
@@ -119,7 +120,7 @@ export function MosaicWindow({
                 <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <BrandWordmark className="h-5 w-auto" />
                   <h2 id={`mosaic-title-${id}`} className={SECTION_TITLE}>
-                    {heading} <span className="font-mincho normal-case tracking-normal">{kanji}</span>
+                    <Paired en={heading} kanji={kanji} kanjiClassName="normal-case tracking-normal" inReadersLanguage />
                   </h2>
                 </span>
                 <p className="truncate text-base font-semibold" data-testid="mosaic-game-name">

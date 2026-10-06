@@ -1,3 +1,4 @@
+import { Paired } from "@/components/i18n/Paired";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Speaker } from "@/lib/i18n/i18n";
 import { commaOf } from "@/lib/puzzles/puzzleText";
@@ -59,14 +60,14 @@ export async function WordHistory({ words, total, kind = "gomoji" }: { words: re
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="word-history">
       <h2 className={SECTION_TITLE}>
-        Your words <span className="font-mincho normal-case tracking-normal">言葉</span>
+        <Paired en={say.say("pset.front.yourWords")} kanji="言葉" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
         {total > 0 ? <span className="ml-2 normal-case tracking-normal text-muted">{total}</span> : null}
       </h2>
       {words.length === 0 ? (
         <p className="text-sm text-muted">
-          None yet.{" "}
+          {say.say("pset.me.none")}{" "}
           <Link href={setUpPath(kind)} className="font-semibold text-ink underline-offset-2 hover:underline">
-            Play one →
+            {say.say("pset.me.playOne")}
           </Link>
         </p>
       ) : (

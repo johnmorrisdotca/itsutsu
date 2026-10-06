@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { FamilyShelf } from "@/components/games/FamilyShelf";
 import { GameTrail } from "@/components/games/GameTrail";
+import { Paired } from "@/components/i18n/Paired";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -45,7 +46,7 @@ export async function HousekiFamilyPage() {
       <div className="flex items-center gap-4" data-testid="houseki-family">
         <FamilyMark family={HOUSEKI.title} size="regular" />
         <p className="text-sm text-muted" data-testid="family-guest-count">
-          {familyCountWords(HOUSEKI, say)}. {say.say("houseki.family.note")}
+          {say.sentences([say.sentence(familyCountWords(HOUSEKI, say)), say.say("houseki.family.note")])}
         </p>
       </div>
 
@@ -59,7 +60,7 @@ export async function HousekiFamilyPage() {
 
       <p className="text-sm">
         <Link href="/games" className="underline underline-offset-4" data-testid="family-all-games">
-          {say.say("gamepages.everyFamily")} <span className="font-mincho">全種目</span> →
+          <Paired en={say.say("gamepages.everyFamily")} kanji="全種目" kanjiClassName="" inReadersLanguage /> →
         </Link>
       </p>
     </Page>

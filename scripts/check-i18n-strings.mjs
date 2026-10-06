@@ -320,7 +320,7 @@ export const ALLOWED_FILES = new Map([
   ["src/components/players/players.constants.ts", "Tailwind class lists the scanner reads as words; no sentence is in it (the table's own words are `players.*` phrases)"],
   ["src/components/players/WhoFilter.tsx", "the three kinds of player a list can be narrowed to, each an English label beside its own kanji (人, コンピュータ, 全員) that a Japanese reader is shown instead (Paired)"],
   ["src/app/me/me.tabs.ts", "the My account page's tabs, each an English label beside its own kanji (戦績, 経験, 自己紹介, 合言葉, 設定, 人) that a Japanese reader is shown instead (Tabs)"],
-  ["src/app/about/about.chapters.ts", "the About page's tabs, each an English label beside its own kanji (由来, 入門, 対局, 種目, 来歴, 和, 番付, 棋士) that a Japanese reader is shown instead (Tabs)"],
+  ["src/app/about/about.chapters.ts", "the About page's tabs, each an English label beside its own kanji (由来, 入門, 対局, 種目, 来歴, 和, 番付, コンピュータ) that a Japanese reader is shown instead (Tabs)"],
   ["src/app/about/about.names.constants.ts", "Romanised readings of Japanese words and the made-up players of an example ladder: names, the same whoever is reading, not sentences"],
   ["src/app/players/players.tabs.ts", "the Players page's tabs, each an English label beside its own kanji (会員, 仲間, 番付, 名人, コンピュータ, 偲ぶ) that a Japanese reader is shown instead (Tabs)"],
   ["src/lib/ui/keyNames.constants.ts", "the names `KeyboardEvent.key` reports for Enter, Delete and Space, compared and never drawn"],

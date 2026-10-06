@@ -162,7 +162,7 @@ export async function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
             </ul>
             <p className="pt-1 text-sm">
               <Link href={rulesPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="game-rules-link">
-                {say.say("pset.front.fullRules", { title: page.title })} <span className="font-mincho">規則</span> →
+                <Paired en={say.say("pset.front.fullRules", { title: page.title })} kanji="規則" kanjiClassName="" inReadersLanguage /> →
               </Link>
             </p>
           </section>

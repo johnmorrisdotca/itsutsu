@@ -234,7 +234,7 @@ ongoing game." One set of words, from `GAME_ENDING_COPY`
 | Now | Was | Kanji | Where | Why |
 |---|---|---|---|---|
 | Meet the bots | Meet the programs | — | `home.constants.ts` | the site calls them bots |
-| Bots | Programs | 棋士 (unchanged) | `about.chapters.ts` | same |
+| Bots | Programs | コンピュータ (was 棋士, John 2026-10-06: one word for bots) | `about.chapters.ts`, `about.engine.tsx` | same |
 | How strong the bots are | The players that are not people | 棋力 (unchanged) | `about.bots.tsx` | plain; "The bots" was already a heading in the engine chapter |
 
 ## Admin (the operator only)

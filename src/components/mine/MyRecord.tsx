@@ -1,3 +1,4 @@
+import { ComputerPoolMark } from "@/components/players/ComputerPoolMark";
 import { RecordLine, type RecordOf, type WonLostDrawn } from "@/components/players/PlayerRecord";
 import { RecordTable } from "@/components/players/RecordTable";
 import Link from "@/components/ui/Link";
@@ -125,13 +126,7 @@ export async function MyRecord({ name }: { name: string }) {
           <span className="font-mono tabular-nums" data-testid="my-rating">
             {shown === null ? "–" : shown.rating}
             {shown?.pool === RATING_POOLS.computer ? (
-              <span
-                className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                title={say.say("players.botsPool")}
-                data-testid="my-rating-computer"
-              >
-                {say.say("players.botsMark")}
-              </span>
+              <ComputerPoolMark say={say} title={say.say("players.botsPool")} testId="my-rating-computer" />
             ) : null}
           </span>{" "}
           <span className="text-muted">
@@ -195,13 +190,7 @@ export async function MyRecord({ name }: { name: string }) {
                 while, once here and once on the rating.
               */}
               {row.pool === RATING_POOLS.computer ? (
-                <span
-                  className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                  title={say.say("mine.recStandingPool")}
-                  data-testid="standing-pool-computer"
-                >
-                  {say.say("players.botsMark")}
-                </span>
+                <ComputerPoolMark say={say} title={say.say("mine.recStandingPool")} testId="standing-pool-computer" />
               ) : null}
             </>
           ),

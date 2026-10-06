@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from "react";
 import type { Appearance } from "@/components/board/board.types";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { Paired } from "@/components/i18n/Paired";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 import { EndGameButton, GameEnding, NewGameLink } from "@/components/play/GameEnding";
 import { ENDINGS } from "@/components/play/gameEnding.constants";
@@ -195,7 +196,7 @@ export function HousekiPlay({ kind, request, appearance }: { kind: HousekiKind; 
       <aside className="flex min-w-0 flex-col gap-4">
         <section className={`${PANEL_CLASS} flex flex-col gap-1.5`} data-chrome data-testid="houseki-progress">
           <h2 className={SECTION_TITLE}>
-            {label} <span className="font-mincho normal-case tracking-normal">{HOUSEKI_KANJI[kind]}</span>
+            <Paired en={label} kanji={HOUSEKI_KANJI[kind]} kanjiClassName="normal-case tracking-normal" />
           </h2>
           <p className="text-sm">{save === undefined ? "" : say.say("houseki.card.wonOf", { won: say.number(won), levels: say.number(levelsOf(kind)) })}</p>
           <p className="text-xs text-muted">{say.say("houseki.play.kept")}</p>

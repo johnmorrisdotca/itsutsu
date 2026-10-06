@@ -3,6 +3,7 @@ import type { Speaker } from "@/lib/i18n/i18n";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { winRateText, type RecordFigures } from "@/lib/rating/figures";
 
+import { ComputerPoolMark } from "./ComputerPoolMark";
 import { PlayedFigure, RecordFigure, type RecordOf } from "./PlayerRecord";
 import type { ShownRating } from "./recordTable.types";
 
@@ -58,13 +59,7 @@ export function PlayerFigures({
             <>
               {rating === null ? "—" : rating.rating}
               {rating?.pool === RATING_POOLS.computer ? (
-                <span
-                  className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-                  title={say.say("players.botsPool")}
-                  data-testid="player-rating-computer"
-                >
-                  {say.say("players.botsMark")}
-                </span>
+                <ComputerPoolMark say={say} title={say.say("players.botsPool")} testId="player-rating-computer" />
               ) : null}
             </>
           ),

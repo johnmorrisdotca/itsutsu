@@ -31,7 +31,8 @@ export async function KumimojiShots() {
                 <img src={shot.src} alt={shot.alt} width={shot.width} height={shot.height} loading="lazy" decoding="async" className="h-auto w-full" />
               </a>
               <figcaption className="text-xs leading-snug text-muted">
-                <span className="font-mincho text-ink">{shot.kanji}</span> {shot.caption}
+                {say.pairsWithKanji ? <><span className="font-mincho text-ink">{shot.kanji}</span>{" "}</> : null}
+                {shot.caption}
               </figcaption>
             </figure>
           );

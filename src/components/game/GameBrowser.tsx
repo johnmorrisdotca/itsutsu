@@ -84,10 +84,7 @@ function GameBrowser({
         <header className="flex items-start justify-between gap-4 border-b border-rule px-6 py-4">
           <div className="flex flex-col gap-1">
             <h2 id="game-browser-title" className={SECTION_HEADING}>
-              {GAME_COPY.browserTitle}
-              <span className="font-mincho text-sm font-normal opacity-70">
-                {GAME_COPY.browser.kanji}
-              </span>
+              <Paired en={GAME_COPY.browserTitle} kanji={GAME_COPY.browser.kanji} kanjiClassName="text-sm font-normal opacity-70" inReadersLanguage />
             </h2>
             <p className="text-xs text-muted">
               {GAME_COPY.browserIntro}

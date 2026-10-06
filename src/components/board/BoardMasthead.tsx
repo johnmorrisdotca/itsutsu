@@ -21,7 +21,8 @@ export function BoardMasthead({ story }: { story: BoardStory }) {
       <span className="h-8 w-px shrink-0 bg-rule-strong" aria-hidden="true" />
       <div className="min-w-0 leading-tight">
         <p className="text-[0.65rem] font-semibold tracking-[0.16em] text-muted uppercase">
-          {story.kind} <span className="font-mincho tracking-normal normal-case">{story.kanji}</span>
+          {story.kind}
+          {story.kanji === "" ? null : <> <span className="font-mincho tracking-normal normal-case">{story.kanji}</span></>}
         </p>
         <p className="truncate text-sm font-medium text-ink" data-testid="board-masthead-title">
           {story.title}

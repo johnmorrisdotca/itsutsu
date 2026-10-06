@@ -1,6 +1,7 @@
 import Link from "@/components/ui/Link";
 
 import { CELL, HEAD } from "./PlayerRecord";
+import { ComputerPoolMark } from "./ComputerPoolMark";
 import { Paired } from "@/components/i18n/Paired";
 import { RATING_POOLS } from "@/lib/rating/pools";
 import { RowActions } from "@/components/ui/Controls";
@@ -78,13 +79,7 @@ function RatingCell({ rating, say }: { rating: ShownRating | null; say: Speaker 
     <td className={CELL} data-testid="record-rating">
       {rating.rating}
       {rating.pool === RATING_POOLS.computer ? (
-        <span
-          className="ml-1 font-mincho text-[0.68rem] font-normal opacity-70"
-          title={say.say("players.botsPool")}
-          data-testid="rating-pool-computer"
-        >
-          {say.say("players.botsMark")}
-        </span>
+        <ComputerPoolMark say={say} title={say.say("players.botsPool")} testId="rating-pool-computer" />
       ) : null}
     </td>
   );

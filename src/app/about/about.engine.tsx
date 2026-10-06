@@ -25,7 +25,7 @@ const KANJI = "text-xs font-normal opacity-70";
 const askers = (say: Speaker) => [
   { title: say.say("about.engine.askBoard"), kanji: "盤", body: say.say("about.engine.askBoardBody") },
   { title: say.say("about.engine.askServer"), kanji: "記録係", body: say.say("about.engine.askServerBody") },
-  { title: say.say("about.engine.askBots"), kanji: "棋士", body: say.say("about.engine.askBotsBody") },
+  { title: say.say("about.engine.askBots"), kanji: "コンピュータ", body: say.say("about.engine.askBotsBody") },
   { title: say.say("about.engine.askRecord"), kanji: "棋譜", body: say.say("about.engine.askRecordBody") },
 ];
 

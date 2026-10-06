@@ -1,6 +1,7 @@
 import { Paired } from "@/components/i18n/Paired";
 import Link from "@/components/ui/Link";
 
+import { ComputerPoolMark } from "@/components/players/ComputerPoolMark";
 import { CountryMark } from "@/components/players/CountryMark";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { IpCell, XpCell, ipHeadTitle } from "@/components/players/recordTrailing";
@@ -203,9 +204,7 @@ function SeatRow({ game, standing, say }: { game: GameSummary; standing: PosterS
       <td className={CELL} data-testid="open-game-rating">
         {rating === null ? say.pairName(TIER_DISPLAY.unrated.label, TIER_DISPLAY.unrated.kanji).text : `${rating.rating} · ${say.pairName(TIER_DISPLAY[rating.tier].label, TIER_DISPLAY[rating.tier].kanji).text}`}
         {rating !== null && rating.pool === RATING_POOLS.computer ? (
-          <span className="ml-1 font-mincho" title={copy.computerPool} data-testid="rating-pool-computer">
-            {say.say("players.botsMark")}
-          </span>
+          <ComputerPoolMark say={say} title={copy.computerPool} testId="rating-pool-computer" />
         ) : null}
       </td>
       <XpCell say={say} xp={standing?.xp ?? null} />
