@@ -109,7 +109,7 @@ test.describe("the XP toast speaks the reader's language", () => {
     expect(seen.level).toContain("昇級");
     expect(seen.level).toContain(xpLevelName(2));
     // What a screen reader is told: the stack's name, and the announcement.
-    expect(seen.hostLabel).toBe("獲得ポイント");
+    expect(seen.hostLabel).toBe("獲得経験値");
     expect(seen.announcer).toContain("経験値");
     expect(seen.announcer).toContain("昇級");
     // And none of the five in English.
