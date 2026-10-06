@@ -17,13 +17,6 @@ import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import { GUIDES } from "@/lib/learn/strategy";
 import { EVERY_KIND_KEY } from "@/lib/catalogue/gameKeys";
 
-/** "1 player", "3 players": a count said in words. */
-function plural(count: number, noun: string): string {
-  // Commas by hand: a locale's formatter can differ between the server and the browser.
-  const grouped = String(count).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return `${grouped} ${noun}${count === 1 ? "" : "s"}`;
-}
-
 /** What the site offers, a card each: the games, how they are played, and what is kept. */
 const PITCH = [
   {
@@ -98,7 +91,7 @@ export default async function Home() {
         */}
         <p className="text-sm text-muted sm:text-base" data-testid="front-catalogue">
           <Link href="/games/list" className="underline underline-offset-4" data-testid="front-catalogue-count">
-            {plural(EVERY_KIND_KEY.length, "game")}
+            {say.count("count.gameKind", EVERY_KIND_KEY.length)}
           </Link>{" "}
           from five in a row to Reversi, go, Solitaire and Mahjong, puzzles for one, and party games round one phone.
           Play across the table or across the world, learn the shapes that win, and keep every game you finish.
@@ -113,10 +106,10 @@ export default async function Home() {
         <p className="text-xs text-muted" data-testid="site-numbers">
           Itsutsu is in early release, by invitation only — so far{" "}
           <Link href="/players" className="underline underline-offset-4" data-testid="site-numbers-players">
-            {plural(numbers.players, "player")}
+            {say.count("count.player", numbers.players)}
           </Link>
           ,{" "}
-          <GameCount count={plural(numbers.games, "game")} pool="people" testId="site-numbers-games" /> between people, and{" "}
+          <GameCount count={say.count("count.gamePlayed", numbers.games)} pool="people" testId="site-numbers-games" /> between people, and{" "}
           {numbers.hereNow} here now.
           {!reader.signedIn && (
             <>

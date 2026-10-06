@@ -27,6 +27,7 @@ import { PAIR_GO_COPY } from "./pairGo.constants";
 import { useKeptPairGo } from "./pairGoStore";
 import type { PartyTableGameProps } from "./party.types";
 import { PlayingNow } from "@/components/layout/PlayingNow";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * PAIR GO, PASSED ROUND THE TABLE: two teams of two on one device.
@@ -40,6 +41,7 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
  * rated, never on an account, never sent to a server.
  */
 export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const [game, keep] = useKeptPairGo();
   const teams = useLocalSeatColours("pairgo");
@@ -145,8 +147,7 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
             ))}
           </ol>
           <p className="text-xs text-muted">
-            {boardWords(game.state.settings.variant, game.state.settings.size)} · {game.state.moves.length}{" "}
-            {game.state.moves.length === 1 ? "move" : "moves"} · captured: Black {game.state.captures.black}, White{" "}
+            {boardWords(game.state.settings.variant, game.state.settings.size)} · {say.count("count.move", game.state.moves.length)} · captured: Black {game.state.captures.black}, White{" "}
             {game.state.captures.white}. {PAIR_GO_COPY.kept}
           </p>
         </section>

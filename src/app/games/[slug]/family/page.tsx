@@ -11,6 +11,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { IpBoard } from "@/components/points/IpBoard";
 import { EVERY_GAME_KEY, gameCopyFor, isCasualKind, isPartyKind } from "@/lib/catalogue/gameKeys";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { familyOf, gamesShownIn } from "@/lib/gomoku/families";
 import { gameKeyFor, gamePath, setUpPath, slugFor } from "@/lib/gomoku/slugs";
 import { scopeOfFamily } from "@/lib/points/ipBoards";
@@ -50,6 +51,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
   if (variant === null || isPartyKind(variant) || isCasualKind(variant)) notFound();
   const family = familyOf(variant);
   const copy = gameCopyFor(variant);
+  const say = await currentSpeaker();
   // A game in no family is a gap the New Game Gate refuses, but a page must
   // not pretend to an answer it has not got.
   if (family === null) notFound();
@@ -74,14 +76,14 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
       <div className="flex items-center gap-4">
         <FamilyMark family={family.title} size="regular" />
         <p className="text-sm text-muted">
-          {family.games.length} {family.games.length === 1 ? "game" : "games"} in this family, including{" "}
+          {say.count("count.gameKind", family.games.length)} in this family, including{" "}
           {/* The game you came from, named and still clickable — it is a game like the rest. */}
           <GameName variant={variant} />.
         </p>
       </div>
       {guests > 0 ? (
         <p className="-mt-3 text-sm text-muted" data-testid="family-guest-count">
-          And {guests} {guests === 1 ? "game" : "games"} from other families, listed here too.
+          And {say.count("count.gameKind", guests)} from other families, listed here too.
         </p>
       ) : null}
 

@@ -16,6 +16,7 @@ import { MOSAIC_COPY, MOSAIC_PICKS, MOSAIC_SHAPES } from "@/lib/record/mosaic.co
 import type { MosaicFrame } from "@/lib/record/mosaic.types";
 import { nextPaint, pngOf, shapeForScreen } from "@/lib/record/mosaicImage";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** The board size most of these games were played on: a picture has one size, and the rest are said to be left out. */
 function commonSize(games: readonly GameDetail[]): number {
@@ -44,6 +45,7 @@ export function EndPositions({
   /** The games this player has finished here, most played first — see `ItsutsuRecord`'s breakdown. */
   variants: readonly RuleVariant[];
 }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const [variant, setVariant] = useState<RuleVariant>(variants[0]);
   const [outcome, setOutcome] = useState<EndingsOutcome>(ENDINGS_OUTCOMES.won);
@@ -95,7 +97,7 @@ export function EndPositions({
           name,
           details: [
             `${RULE_VARIANT_DISPLAY[variant].label} ${size}×${size}`,
-            `${ENDINGS_COPY.outcomes[outcome]}, ${frames.length} ${frames.length === 1 ? "game" : "games"}`,
+            `${ENDINGS_COPY.outcomes[outcome]}, ${say.count("count.gamePlayed", frames.length)}`,
             MOSAIC_COPY.site,
           ],
         },
@@ -156,7 +158,7 @@ export function EndPositions({
       {made !== null && made.left > 0 ? <p className="text-xs text-muted">{ENDINGS_COPY.otherSizes(made.left)}</p> : null}
       {made !== null ? (
         // eslint-disable-next-line @next/next/no-img-element -- a picture made in this browser a moment ago; there is nothing to optimise
-        <img src={made.url} alt={`How ${made.count} ${made.count === 1 ? "game" : "games"} ended`} className="w-full rounded-lg border border-rule" data-testid="endings-picture" />
+        <img src={made.url} alt={`How ${say.count("count.gamePlayed", made.count)} ended`} className="w-full rounded-lg border border-rule" data-testid="endings-picture" />
       ) : null}
     </section>
   );

@@ -24,6 +24,7 @@ import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
 
 import { CATALOGUE_LINK_CLASS } from "./games.constants";
 import { SECTION_HEADING } from "@/components/ui/ui.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 /**
  * Every game on the site, as plain text: the name, its name in its own script,
@@ -38,7 +39,8 @@ import { SECTION_HEADING } from "@/components/ui/ui.constants";
  * way of looking at them — two indexes to keep in step, and a footer link as
  * the only way to the second. It is a view now, at /games/list.
  */
-export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn: boolean }) {
+export async function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn: boolean }) {
+  const say = await currentSpeaker();
   return (
     <div className="flex flex-col gap-8" data-testid="every-game">
       <p className="text-sm text-muted">
@@ -59,7 +61,7 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
           <h2 className={`${SECTION_HEADING} border-b border-rule pb-1`}>
             {family.title} <span className="font-mincho text-sm font-normal opacity-70">{family.kanji}</span>
             <span className="ml-auto text-xs font-normal text-muted">
-              {family.games.length} {family.games.length === 1 ? "game" : "games"}
+              {say.count("count.gameKind", family.games.length)}
             </span>
           </h2>
           <p className="text-sm text-muted">{family.blurb}</p>

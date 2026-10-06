@@ -6,6 +6,7 @@ import { SectionTitle } from "@/components/ui/Controls";
 import { GAME_COPY } from "./game.constants";
 import type { GameSession } from "./game.types";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** The rows shown for each player, in the order a post-game glance wants them. */
 const ROWS = [
@@ -26,6 +27,7 @@ const ROWS = [
  * well someone played.
  */
 export function GameStatsPanel({ session }: { session: GameSession }) {
+  const say = useSpeaker();
   const { stats } = session;
   /*
    * The sum of both players' thinking time rather than the wall clock. It is
@@ -43,7 +45,7 @@ export function GameStatsPanel({ session }: { session: GameSession }) {
       </SectionTitle>
 
       <p className="text-xs text-muted">
-        {session.state.moves.length} {session.state.moves.length === 1 ? "move" : "moves"} · {formatDuration(totalThinking)} at
+        {say.count("count.move", session.state.moves.length)} · {formatDuration(totalThinking)} at
         the board
       </p>
 

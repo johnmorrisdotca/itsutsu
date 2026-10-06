@@ -10,6 +10,7 @@ import { useKeptParty } from "@/components/puzzles/kumimojiPartyKept";
 import { nameOf } from "@/lib/puzzles/kumimoji/party";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { MY_GAMES_COPY } from "./mine.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE PASS-AND-PLAY KUMIMOJI KEPT IN THIS BROWSER, beside the hot-seat board
@@ -18,6 +19,7 @@ import { MY_GAMES_COPY } from "./mine.constants";
  * the server, so it waits here, read from the browser, until it is finished.
  */
 export function LocalPartyCard() {
+  const say = useSpeaker();
   const game = useKeptParty();
   if (game === null || game.ending !== null) return null;
   return (
@@ -28,7 +30,7 @@ export function LocalPartyCard() {
           <Paired en={MY_GAMES_COPY.localParty.label} kanji={MY_GAMES_COPY.localParty.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         </span>
         <span className="text-sm font-medium">
-          <GameName variant="kumimoji" /> · {game.players.length} {game.players.length === 1 ? "player" : "players"} · {nameOf(game, game.turn)} to play
+          <GameName variant="kumimoji" /> · {say.count("count.player", game.players.length)} · {nameOf(game, game.turn)} to play
         </span>
       </div>
       <Link href={partyAddress(game)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="local-party-continue">

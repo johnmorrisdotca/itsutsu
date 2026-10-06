@@ -14,8 +14,8 @@ export const PHRASES_CATALOGUE = {
    * "last played" needs no singular: `sinceLastPlayed` says one day as
    * "yesterday" and never counts a single month or year.
    */
-  "catalogue.playedOne": "{count} game played",
-  "catalogue.playedMany": "{count} games played",
+  "catalogue.played.one": "{count} game played",
+  "catalogue.played.other": "{count} games played",
   "catalogue.nobodyYet": "Nobody has played this yet",
   "catalogue.beFirst": "Be the first to play →",
   "catalogue.beFirstStranger": "Reading is free — join to be the first to play it →",
@@ -39,8 +39,8 @@ export const PHRASES_CATALOGUE = {
   "catalogue.lastDays": "Last played {count} days ago",
   "catalogue.lastMonths": "Last played {count} months ago",
   "catalogue.lastYears": "Last played {count} years ago",
-  "catalogue.familyPlayedOne": "{count} game played across the family",
-  "catalogue.familyPlayedMany": "{count} games played across the family",
+  "catalogue.familyPlayed.one": "{count} game played across the family",
+  "catalogue.familyPlayed.other": "{count} games played across the family",
   "catalogue.familyTried": "{played} of {total} tried here",
   "catalogue.crownsHeld": "Most crowns",
   "catalogue.crownCount": "{count} of {total}",

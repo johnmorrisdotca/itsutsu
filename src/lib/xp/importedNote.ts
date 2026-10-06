@@ -31,8 +31,7 @@ export type ImportedNote = { text: string; games: number | null };
  * note under a total, and on a promotion that credit paid.
  */
 export function importedSitesSaid(say: Speaker, sites: readonly string[]): string {
-  if (sites.length <= 1) return sites[0] ?? "";
-  return say.say("xp.imported.listLast", { list: sites.slice(0, -1).join(", "), last: sites[sites.length - 1] });
+  return say.list(sites);
 }
 
 export function importedNoteText(say: Speaker, facts: ImportedFacts): ImportedNote {

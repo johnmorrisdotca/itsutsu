@@ -2,6 +2,7 @@ import Link from "@/components/ui/Link";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import type { Pagination } from "@/lib/history/gameHistory.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** Previous/next links that keep every other filter in the URL intact. */
 export function Pager({
@@ -24,11 +25,12 @@ export function Pager({
   };
 
   const { page, totalPages, total } = pagination;
+  const say = useSpeaker();
 
   return (
     <nav className="flex items-center justify-between gap-4" aria-label="Pagination">
       <p className="text-sm text-muted">
-        Page {page} of {totalPages} · {total} game{total === 1 ? "" : "s"}
+        Page {page} of {totalPages} · {say.count("count.gamePlayed", total)}
       </p>
       <div className="flex gap-2">
         {page > 1 ? (

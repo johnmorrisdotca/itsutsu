@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 
 import type { PlayerSuggestion } from "@/lib/history/gameHistory.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** Long enough that typing does not fire a request per keystroke. */
 const DEBOUNCE_MS = 180;
@@ -31,6 +32,7 @@ export function PlayerNameInput({
   className: string;
   onChange: (name: string) => void;
 }) {
+  const say = useSpeaker();
   const listId = useId();
   const [suggestions, setSuggestions] = useState<PlayerSuggestion[]>([]);
 
@@ -83,7 +85,7 @@ export function PlayerNameInput({
       <datalist id={listId}>
         {visible.map((suggestion) => (
           <option key={suggestion.name} value={suggestion.name}>
-            {suggestion.games} game{suggestion.games === 1 ? "" : "s"}
+            {say.count("count.gamePlayed", suggestion.games)}
           </option>
         ))}
       </datalist>

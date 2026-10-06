@@ -8,6 +8,7 @@ import { GameCount } from "@/components/games/GameCount";
 import { MINE_KEY } from "@/components/mine/mine.constants";
 import type { RatedRecord } from "@/lib/rating/ratedRecord";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 type Mine = { yourMove: number; going?: number; offered?: number; record?: RatedRecord | null; ip?: number | null };
 
@@ -29,6 +30,7 @@ const ITEM = "whitespace-nowrap underline-offset-4 hover:text-ink hover:underlin
  */
 export function StripGames({ memberId }: { memberId: string }) {
   const hydrated = useHydrated();
+  const say = useSpeaker();
   // Seeded by the page's own render (`HeaderCountsSeed`), so nothing is asked as the page arrives; a tab coming back into focus asks.
   const { data } = useSWR(MINE_KEY, fetcher, { refreshInterval: 0, revalidateOnMount: false, revalidateOnFocus: true, dedupingInterval: 2_000 });
   const moves = data?.yourMove ?? 0;
@@ -56,7 +58,7 @@ export function StripGames({ memberId }: { memberId: string }) {
           ) : null}
           {offers > 0 ? (
             <Link href="/play" className={`${ITEM} text-ink`} data-testid="strip-offers">
-              {offers} {offers === 1 ? "offer" : "offers"}
+              {say.count("count.offer", offers)}
             </Link>
           ) : null}
           {going > 0 ? (

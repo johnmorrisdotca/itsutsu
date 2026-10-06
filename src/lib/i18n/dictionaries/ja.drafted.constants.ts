@@ -390,11 +390,6 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Includes {xp} experience points as credit for games played on other sites.",
     review: AGENT_READ,
   },
-  "xp.imported.listLast": {
-    text: "{list}と{last}",
-    back: "{list} and {last}",
-    review: AGENT_READ,
-  },
   "xp.scope.everywhere": {
     text: "通算で集計：ここで得た経験値に、他のサイトでの対局分を加えています。",
     back: "Counting in total: the credit for games on other sites is added to the experience points earned here.",
@@ -531,12 +526,12 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
    * twice. 首位 (first place) is the word for a ladder's top; 系統 is the
    * word the Families view already uses in its own switch.
    */
-  "catalogue.playedOne": {
+  "catalogue.played.one": {
     text: "対局数 {count}",
     back: "Games played: {count}",
     review: AGENT_READ,
   },
-  "catalogue.playedMany": {
+  "catalogue.played.other": {
     text: "対局数 {count}",
     back: "Games played: {count}",
     review: AGENT_READ,
@@ -641,12 +636,12 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Last game: {count} years ago.",
     review: AGENT_READ,
   },
-  "catalogue.familyPlayedOne": {
+  "catalogue.familyPlayed.one": {
     text: "この系統で{count}局",
     back: "{count} games in this family.",
     review: AGENT_READ,
   },
-  "catalogue.familyPlayedMany": {
+  "catalogue.familyPlayed.other": {
     text: "この系統で{count}局",
     back: "{count} games in this family.",
     review: AGENT_READ,
@@ -935,4 +930,20 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Find buddies.",
     review: AGENT_READ,
   },
+  "count.gameKind.one": { text: "{count}ゲーム", back: "{count} game." },
+  "count.gameKind.other": { text: "{count}ゲーム", back: "{count} games." },
+  "count.gamePlayed.one": { text: "{count}局", back: "{count} game." },
+  "count.gamePlayed.other": { text: "{count}局", back: "{count} games." },
+  "count.move.one": { text: "{count}手", back: "{count} move." },
+  "count.move.other": { text: "{count}手", back: "{count} moves." },
+  "count.offer.one": { text: "{count}件の対局申し込み", back: "{count} request to play a game." },
+  "count.offer.other": { text: "{count}件の対局申し込み", back: "{count} requests to play a game." },
+  "count.player.one": { text: "{count}人", back: "{count} person." },
+  "count.player.other": { text: "{count}人", back: "{count} people." },
+  "count.puzzle.one": { text: "{count}問", back: "{count} puzzle." },
+  "count.puzzle.other": { text: "{count}問", back: "{count} puzzles." },
+  "count.step.one": { text: "{count}手順", back: "{count} step." },
+  "count.step.other": { text: "{count}手順", back: "{count} steps." },
+  "count.pair.one": { text: "{count}組", back: "{count} pair." },
+  "count.pair.other": { text: "{count}組", back: "{count} pairs." },
 };

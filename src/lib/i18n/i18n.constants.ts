@@ -9,6 +9,7 @@ import { PHRASES_RECORD } from "./phrases.record.constants";
 import { PHRASES_RIVALRY } from "./phrases.rivalry.constants";
 import { PHRASES_CATALOGUE } from "./phrases.catalogue.constants";
 import { PHRASES_FEED } from "./phrases.feed.constants";
+import { PHRASES_COUNT } from "./phrases.count.constants";
 
 /**
  * The languages the site knows about, and the English it speaks in by default.
@@ -107,6 +108,7 @@ export const PHRASE_AREAS = {
   rivalry: PHRASES_RIVALRY,
   catalogue: PHRASES_CATALOGUE,
   feed: PHRASES_FEED,
+  count: PHRASES_COUNT,
 } as const;
 
 /**
@@ -146,6 +148,7 @@ export const PHRASES = {
   ...PHRASES_RIVALRY,
   ...PHRASES_CATALOGUE,
   ...PHRASES_FEED,
+  ...PHRASES_COUNT,
 } as const;
 
 /** A phrase the site can say. */

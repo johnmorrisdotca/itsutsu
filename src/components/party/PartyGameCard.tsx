@@ -11,6 +11,7 @@ import { passAndPlayPath } from "@/lib/gomoku/slugs";
 import { MarbleChip } from "./MarbleChip";
 import { PARTY_COPY } from "./party.constants";
 import type { PartyRaceKind } from "./party.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A TABLE'S GAME, WAITING IN MY GAMES. "Anything a person plays is kept until
@@ -21,6 +22,7 @@ import type { PartyRaceKind } from "./party.types";
  * one has nothing left to come back to.
  */
 export function PartyGameCard<S extends PartyRaceState, C extends number>({ kind }: { kind: PartyRaceKind<S, C> }) {
+  const say = useSpeaker();
   const [game] = kind.useKept();
   if (game === undefined || game === null || game.status !== PARTY_STATUS.playing) return null;
   const variant = kind.rules.variant;
@@ -30,8 +32,7 @@ export function PartyGameCard<S extends PartyRaceState, C extends number>({ kind
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · {game.players.length} players · {game.moves.length}{" "}
-          {game.moves.length === 1 ? "move" : "moves"} ·
+          <GameName variant={variant} /> · {game.players.length} players · {say.count("count.move", game.moves.length)} ·
           <MarbleChip player={game.toPlay} />
           {partyPlayerName(game.players, game.toPlay)} to play
         </span>

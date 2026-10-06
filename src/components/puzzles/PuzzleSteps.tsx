@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
 
 /** The change of each step already worked out, so a long list of steps on a big grid is read once and not again at every move. */
@@ -50,6 +51,7 @@ export function PuzzleSteps<V>({
   /** Where a mark place is, where it is not a cell of a grid `size` across: a Slitherlink's edges. Row and column by default. */
   where?: (index: number) => string;
 }) {
+  const reader = useSpeaker();
   // Drawn from the start, at zero steps, so it never arrives and pushes the page down at the first entry.
   const last = steps.length - 1;
   return (
@@ -57,7 +59,7 @@ export function PuzzleSteps<V>({
       <ReplayScrubber index={viewing} last={last} onGo={go} testId="puzzle-steps" />
       <details className="text-sm" data-testid="puzzle-steps-list">
         <summary className="cursor-pointer text-xs text-muted">
-          {last} {last === 1 ? "step" : "steps"}
+          {reader.count("count.step", last)}
         </summary>
         <ol className="mt-1 max-h-48 overflow-y-auto rounded-lg border border-rule">
           {steps.slice(1).map((step, at) => {

@@ -147,7 +147,15 @@ describe("the English catalogue", () => {
    */
   it("says nothing the site never says", () => {
     const source = renderedSource();
-    const unused = PHRASE_KEYS.filter((key) => !source.includes(`"${key}"`));
+    /*
+     * A counted noun is a pair, `count.move.one` and `count.move.other`, and a
+     * page names its base — `say.count("count.move", n)` or `say.form(...)` —
+     * so either the pair's base or the whole key is a way to say it.
+     */
+    const unused = PHRASE_KEYS.filter((key) => {
+      const base = /^(.*)\.(?:one|other)$/.exec(key)?.[1];
+      return !source.includes(`"${key}"`) && !(base !== undefined && source.includes(`"${base}"`));
+    });
     expect(unused, "these phrases are in the catalogue and on no page").toEqual([]);
   });
 

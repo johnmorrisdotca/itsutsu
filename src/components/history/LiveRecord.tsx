@@ -2,7 +2,7 @@
 
 import { HistoryTable } from "./HistoryTable";
 import { Pager } from "./Pager";
-import { useLocale } from "@/components/i18n/LocaleProvider";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { countText } from "@/lib/rating/figures";
 import type { GameSummary, Pagination } from "@/lib/history/gameHistory.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -59,7 +59,8 @@ export function LiveRecord({
   params: Record<string, string>;
 }) {
   const hydrated = useHydrated();
-  const locale = useLocale();
+  const say = useSpeaker();
+  const locale = say.locale;
   const { more, next, loading, failed, sentinel } = useLiveScroll<GameSummary>({
     endpoint,
     from,
@@ -89,7 +90,7 @@ export function LiveRecord({
           <p className="text-sm text-muted" aria-live="polite" data-testid="record-progress">
             {next === null ? (
               <>
-                All {countText(pagination.total, locale)} game{pagination.total === 1 ? "" : "s"} shown.
+                All {say.count("count.gamePlayed", pagination.total)} shown.
               </>
             ) : (
               <>

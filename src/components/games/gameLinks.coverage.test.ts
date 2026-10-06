@@ -437,7 +437,7 @@ describe("a count of games is the way into those games", () => {
  *
  * Every check above reads JSX for a number printed beside the word "games" or
  * "played". Since the site speaks two languages, those words live in PHRASES
- * and the page holds only a key — `say.say("catalogue.playedMany")` — so a
+ * and the page holds only a key — `say.say("catalogue.played.other")` — so a
  * count worded "{count} games played" and filled with plain text would pass
  * every one of them while leading nowhere. The games index was the first page
  * to say a count this way, and the gate had to learn to read it before it
@@ -462,8 +462,8 @@ const PHRASE_EXCEPTIONS: Record<string, string> = {
    * reason this file has always given the family line, moved with the line
    * from JSX into a phrase.
    */
-  "catalogue.familyPlayedOne": "a family's matches: /history filters by one game, so no page can show the set this counts",
-  "catalogue.familyPlayedMany": "a family's matches: /history filters by one game, so no page can show the set this counts",
+  "catalogue.familyPlayed.one": "a family's matches: /history filters by one game, so no page can show the set this counts",
+  "catalogue.familyPlayed.other": "a family's matches: /history filters by one game, so no page can show the set this counts",
 };
 
 describe("a count of games said through a phrase is still the way into those games", () => {

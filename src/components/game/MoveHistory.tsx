@@ -21,6 +21,7 @@ import type { GamePanelProps } from "./game.types";
 import { useMoveFormat } from "./MoveFormatContext";
 import { MoveFormatPicker } from "./MoveFormatPicker";
 import { SELECTABLE } from "@/components/ui/ui.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * The game record (棋譜). Every entry is a position to jump to, which is what
@@ -28,6 +29,7 @@ import { SELECTABLE } from "@/components/ui/ui.constants";
  * back here is the same mechanism as undo.
  */
 export function MoveHistory({ session, actions }: GamePanelProps) {
+  const say = useSpeaker();
   const { state, fatalMoves, moveIndex, record } = session;
   // Each capture's squares so far, for a draughts jump's colon (`capturePaths`).
   const paths = capturePaths(record);
@@ -69,7 +71,7 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
         <details className="group" open data-testid="move-history-fold">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs text-muted">
             <span>
-              {record.length} {record.length === 1 ? "move" : "moves"}
+              {say.count("count.move", record.length)}
             </span>
             <span className="group-open:hidden">show</span>
             <span className="hidden group-open:inline">hide</span>
@@ -196,7 +198,7 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
             name: `${session.names.one || "Player 1"} vs ${session.names.two || "Player 2"}`,
             details: [
               `${RULE_VARIANT_DISPLAY[state.settings.variant].label} ${state.settings.size}×${state.settings.size}`,
-              `${record.length} ${record.length === 1 ? "move" : "moves"}`,
+              say.count("count.move", record.length),
               MOSAIC_COPY.site,
             ],
           })}

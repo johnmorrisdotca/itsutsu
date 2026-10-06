@@ -11,6 +11,7 @@ import { passAndPlayPath } from "@/lib/gomoku/slugs";
 
 import { PAIR_GO_COPY } from "./pairGo.constants";
 import { useKeptPairGo } from "./pairGoStore";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * PAIR GO, WAITING IN MY GAMES. "Anything a person plays is kept until it is
@@ -19,6 +20,7 @@ import { useKeptPairGo } from "./pairGoStore";
  * the board for two and the Chinese Checkers table. Only while it is going.
  */
 export function PairGoCard() {
+  const say = useSpeaker();
   const [game] = useKeptPairGo();
   if (game === undefined || game === null || game.state.status !== GAME_STATUS.playing) return null;
   const toMove = pairPlayerToMove(game);
@@ -29,8 +31,7 @@ export function PairGoCard() {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PAIR_GO_COPY.card}</span>
         <span className="text-sm font-medium">
-          <GameName variant={PAIR_GO_VARIANT} />, two teams of two · {boardWords(settings.variant, settings.size)} · {moves.length}{" "}
-          {moves.length === 1 ? "move" : "moves"}
+          <GameName variant={PAIR_GO_VARIANT} />, two teams of two · {boardWords(settings.variant, settings.size)} · {say.count("count.move", moves.length)}
           {toMove !== null ? ` · ${toMove.name} (${STONE_DISPLAY[toMove.stone].label}) to play` : ""}
         </span>
       </div>

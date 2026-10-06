@@ -25,6 +25,7 @@ import { SolitaireTable } from "./SolitaireTable";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { useKlondikeGame } from "./useKlondikeGame";
 import { useSolitaireScoring } from "./useSolitaireScoring";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * PLAYING SOLITAIRE: Klondike on the site's table, with the site's deck.
@@ -54,6 +55,7 @@ export function SolitaireSolve({
   resumed?: ResumedRun | null;
   appearance?: Appearance;
 }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const rules = useMemo(() => solitaireRules(puzzle.size, puzzle.level), [puzzle.size, puzzle.level]);
   const game = useKlondikeGame(puzzle.givens, rules, resumed?.progress ?? null);
@@ -150,7 +152,7 @@ export function SolitaireSolve({
           Undo
         </button>
         <p className="text-sm tabular-nums" data-testid="solitaire-move-count">
-          {moves.length} {moves.length === 1 ? "move" : "moves"}
+          {say.count("count.move", moves.length)}
         </p>
         {score === null ? null : (
           <p className="text-sm tabular-nums" data-testid="solitaire-score" data-scoring={scoring}>

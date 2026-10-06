@@ -113,7 +113,7 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
         {record.tally !== null ? (
           <p className="text-sm" data-testid="record-tally" data-points={record.tally.points}>
             <span className="font-semibold tabular-nums">{thousands(record.tally.points)} points</span> from{" "}
-            {record.tally.puzzles} {record.tally.puzzles === 1 ? "puzzle" : "puzzles"}
+            {say.count("count.puzzle", record.tally.puzzles)}
             {asked.month === null ? "" : ` in ${monthWords(asked.month, say)}`}
             {asked.week === null ? "" : ` in ${weekWords(asked.week, say)}`}: each puzzle counts once, at its best, and the
             rows marked <span aria-hidden>★</span><span className="sr-only">with a star</span> are the ones counted.

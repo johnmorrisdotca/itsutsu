@@ -76,6 +76,13 @@ export type Speaker = {
    * fills the rest of the phrase.
    */
   count(key: CountKey, count: number, vars?: Vars): string;
+  /**
+   * The phrase a counted noun takes for this number in this reader's language:
+   * `count.move.one` for 1 in English, `count.move.other` for everything else
+   * and for every number in Japanese. For a phrase whose `{count}` is not a
+   * string, a link or a picture, which `count` cannot fill.
+   */
+  form(key: CountKey, count: number): PhraseKey;
   /** A number with its thousands marked in this reader's marks: 12,345. */
   number(value: number): string;
   /** A small count in words where the language spells it ("sixty-four"), in digits where it does not. */
@@ -133,9 +140,9 @@ export function speaker(locale: Locale): Speaker {
       if (spec.kanjiReadsAsOwn && kanji !== "") return { text: kanji, kanji: null };
       return { text: english, kanji: tail(kanji) };
     },
+    form: (key, count) => `${key}.${pluralFormIn(locale, count)}` as PhraseKey,
     count(key, count, vars) {
-      const form = pluralFormIn(locale, count);
-      const phrase = `${key}.${form}` as PhraseKey;
+      const phrase = `${key}.${pluralFormIn(locale, count)}` as PhraseKey;
       return fill(dictionary[phrase] ?? PHRASES[phrase], { ...vars, count: numberIn(locale, count) });
     },
     number: (value) => numberIn(locale, value),

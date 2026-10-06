@@ -10,6 +10,7 @@ import type { AwaseSeat, AwaseTable, AwaseTableState } from "@johnmorrisdotca/ja
 
 import { ComputerMark } from "./KumimojiDeskParts";
 import { tableAddress, useKeptMahjongTable } from "./mahjongTableKept";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * WHO SITS AT THE TABLE, before the first pair: a seat for each player the
@@ -81,6 +82,7 @@ export function MahjongTableNames({ players, replacing, onBegin }: { players: nu
 
 /** Every seat's points and pairs, the seat to move marked, and the winners once it is over. */
 export function MahjongScores({ table, state }: { table: AwaseTable; state: AwaseTableState }) {
+  const say = useSpeaker();
   return (
     <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4" data-testid="mahjong-scores" aria-label="Points">
       {table.seats.map((seat, at) => {
@@ -105,7 +107,7 @@ export function MahjongScores({ table, state }: { table: AwaseTable; state: Awas
                 {seat.computer === true ? <ComputerMark /> : null}
               </span>
               <span className="text-xs text-muted">
-                {state.pairs[at]} {state.pairs[at] === 1 ? "pair" : "pairs"}
+                {say.count("count.pair", state.pairs[at])}
               </span>
             </span>
             <span className="text-lg font-semibold tabular-nums">{state.scores[at]}</span>

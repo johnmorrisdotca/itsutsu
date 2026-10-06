@@ -92,7 +92,7 @@ export function GameStatsStrip({ stats, signedIn, compact = false, standings = t
   return (
     <div {...strip}>
       <span className={STAT_CHIP} data-testid="game-stats-played">
-        {phraseWith(say.say(stats.played === 1 ? "catalogue.playedOne" : "catalogue.playedMany"), {
+        {phraseWith(say.say(say.form("catalogue.played", stats.played)), {
           count: (
             <GameCount
               count={countText(stats.played, say.locale)}
@@ -295,9 +295,7 @@ export function FamilyStatsLine({ stats }: FamilyStatsLineProps) {
   return (
     <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs font-normal text-muted" data-testid="family-stats">
       <span data-testid="family-stats-played">
-        {say.say(stats.played === 1 ? "catalogue.familyPlayedOne" : "catalogue.familyPlayedMany", {
-          count: countText(stats.played, say.locale),
-        })}
+        {say.count("catalogue.familyPlayed", stats.played)}
       </span>
       <span aria-hidden>·</span>
       <span data-testid="family-stats-tried">

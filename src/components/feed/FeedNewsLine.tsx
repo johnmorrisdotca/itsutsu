@@ -88,15 +88,14 @@ function boardWords(entry: FeedNewsEntry): string {
 
 /**
  * A day's games, each with its picture and its name, joined as the reader's
- * language joins a list ("A, B and C"). `Intl` here is safe: this is drawn on
- * the server only, and nothing draws it a second time in the browser.
+ * language joins a list ("A, B and C", "A、B、C"). The joins come from the
+ * language's own table (`Speaker.listPieces`), the same on the server and in
+ * the browser, so nothing here asks `Intl`.
  */
 function gamesList(variants: readonly string[], say: Speaker): ReactNode {
-  const marks = variants.map((_, index) => `\u0000${index}\u0000`);
-  const pieces = new Intl.ListFormat(say.tag, { style: "long", type: "conjunction" }).formatToParts(marks);
-  return pieces.map((piece, index) => {
-    if (piece.type === "literal") return <span key={index}>{piece.value}</span>;
-    const variant = variants[Number(piece.value.replaceAll("\u0000", ""))] as string;
+  return say.listPieces(variants.map((_, index) => index)).map((piece, index) => {
+    if (typeof piece === "string") return <span key={index}>{piece}</span>;
+    const variant = variants[piece] as string;
     return (
       <span key={index} className="inline-flex items-center gap-1 align-middle" data-testid="feed-added-game" data-variant={variant}>
         <GameThumb variant={variant} size="small" />

@@ -3,6 +3,7 @@
 import { useRef, type ReactNode } from "react";
 
 import { SectionTitle } from "@/components/ui/Controls";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** Whether a finished game's moves are open or folded, as the account keeps it (`movesShown`). */
 export type MovesShown = "open" | "folded";
@@ -28,6 +29,7 @@ export function MovesFold({
   saves: boolean;
   children: ReactNode;
 }) {
+  const say = useSpeaker();
   const kept = useRef<MovesShown>(initial);
   function toggled(open: boolean) {
     const now: MovesShown = open ? "open" : "folded";
@@ -50,7 +52,7 @@ export function MovesFold({
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
         <SectionTitle kanji="棋譜">Moves</SectionTitle>
         <span className="text-xs text-muted">
-          {count} {count === 1 ? "move" : "moves"} · <span className="group-open:hidden">show</span>
+          {say.count("count.move", count)} · <span className="group-open:hidden">show</span>
           <span className="hidden group-open:inline">hide</span>
         </span>
       </summary>

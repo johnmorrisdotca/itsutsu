@@ -27,6 +27,7 @@ import { PartySetUp } from "./PartySetUp";
 import { PARTY_COPY } from "./party.constants";
 import type { PartyRaceKind, PartyTableGameProps } from "./party.types";
 import { PlayingNow } from "@/components/layout/PlayingNow";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A RACE PASSED ROUND THE TABLE: Chinese Checkers on the star, or Halma on
@@ -45,6 +46,7 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
  * the answer to the kind's board to draw.
  */
 export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind, appearance, gameHref, online }: PartyTableGameProps & { kind: PartyRaceKind<S, C> }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const [game, keep] = kind.useKept();
   const [selected, setSelected] = useState<Point | null>(null);
@@ -145,7 +147,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
             ))}
           </ol>
           <p className="text-xs text-muted">
-            {game.moves.length} {game.moves.length === 1 ? "move" : "moves"} played. {PARTY_COPY.kept}
+            {say.count("count.move", game.moves.length)} played. {PARTY_COPY.kept}
           </p>
         </section>
 

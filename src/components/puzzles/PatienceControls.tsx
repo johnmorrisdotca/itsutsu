@@ -7,6 +7,7 @@ import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.consta
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 
 import { SolveDone, type Done, type SolveRace } from "./solveShared";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * UNDER A PATIENCE TABLE (FreeCell, Spider), as under Solitaire's: Undo, the
@@ -39,6 +40,7 @@ export function PatienceControls({
   /** A line of the game's own beside the count (Spider's deals left). */
   extra?: string | null;
 }) {
+  const say = useSpeaker();
   return (
     <>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -46,7 +48,7 @@ export function PatienceControls({
           Undo
         </button>
         <p className="text-sm tabular-nums" data-testid="patience-move-count">
-          {moves} {moves === 1 ? "move" : "moves"}
+          {say.count("count.move", moves)}
         </p>
         {extra === null ? null : (
           <p className="text-sm text-muted" data-testid="patience-extra">

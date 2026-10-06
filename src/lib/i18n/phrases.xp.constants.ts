@@ -34,11 +34,10 @@ export const PHRASES_XP = {
    * counting. John: "we will show filters, that show worldwide XP with a
    * justification that they have put in their time or mileage on other sites)
    * and the Itsutsu only XP as well". `{games}` is drawn as a count that says it
-   * was counted elsewhere; `{sites}` is a list the next phrase joins.
+   * was counted elsewhere; `{sites}` is a list the speaker joins (`Speaker.list`: "a, b and c", "a、b、c").
    */
   "xp.imported.includes": "Includes {xp} XP for {games} games played on {sites}.",
   "xp.imported.includesElsewhere": "Includes {xp} XP credited for games played on other sites.",
-  "xp.imported.listLast": "{list} and {last}",
   "xp.scope.everywhere": "Counting everywhere: experience earned here, plus credit for games played on other sites.",
   "xp.scope.here": "Counting this site only: experience earned here, and nothing credited from elsewhere.",
   "xp.scope.countEverywhere": "Include worldwide",
