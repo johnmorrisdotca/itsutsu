@@ -2,6 +2,8 @@
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 
+import type { TsunagiSet } from "@/lib/puzzles/tsunagi/levels";
+
 import type { TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 
 const CHOICES: readonly { marks: TsunagiMarks; label: string; kanji: string }[] = [
@@ -48,6 +50,32 @@ export function TsunagiFillPicker({ fill, onChoose }: { fill: TsunagiFill; onCho
           className={`${PICK_WORD_CHIP} ${fill === each.fill ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
           onClick={() => onChoose(each.fill)}
           data-testid={`tsunagi-fill-${each.fill}`}
+        >
+          {each.label} <span className="font-mincho opacity-70">{each.kanji}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const SETS: readonly { set: TsunagiSet; label: string; kanji: string }[] = [
+  { set: "classic", label: "Classic", kanji: "定番" },
+  { set: "portals", label: "Portals", kanji: "跳" },
+];
+
+/** Which levels: the classic ones from 4×4 up, or the ones with portals. Two chips, on the set-up screen. */
+export function TsunagiSetPicker({ set, onChoose }: { set: TsunagiSet; onChoose: (next: TsunagiSet) => void }) {
+  return (
+    <div className="flex gap-1.5" role="radiogroup" aria-label="Levels" data-testid="tsunagi-set">
+      {SETS.map((each) => (
+        <button
+          key={each.set}
+          type="button"
+          role="radio"
+          aria-checked={set === each.set}
+          className={`${PICK_WORD_CHIP} ${set === each.set ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+          onClick={() => onChoose(each.set)}
+          data-testid={`tsunagi-set-${each.set}`}
         >
           {each.label} <span className="font-mincho opacity-70">{each.kanji}</span>
         </button>

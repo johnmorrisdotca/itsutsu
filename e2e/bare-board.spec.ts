@@ -502,9 +502,13 @@ const SURVEY: Survey[] = [
     await page.goto("/games/tsunagi/play?size=15&seed=1");
     await ready(page, "puzzle-play");
   } },
-  // And its biggest, 30×30 (Tsunagi 1.5.0), whose seventy or so lines must fit the modal at both desk sizes.
+  // And the three boards of Tsunagi 1.5.0: 30×30, whose forty or more lines must fit the modal at both desk sizes, and a board with portals, whose rings and link are drawn inside it.
   { name: "/games/tsunagi/play at 30×30", open: async (page) => {
     await page.goto("/games/tsunagi/play?size=30&seed=1");
+    await ready(page, "puzzle-play");
+  } },
+  { name: "/games/tsunagi/play with portals", open: async (page) => {
+    await page.goto("/games/tsunagi/play?size=8&seed=1001");
     await ready(page, "puzzle-play");
   } },
   // Meikyuu's levels are fixed mazes: a small one, as a new player meets it, and a huge one, the biggest it comes in, which the modal has to hold with nothing to scroll.

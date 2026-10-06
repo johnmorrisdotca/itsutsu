@@ -128,6 +128,7 @@ export async function PuzzleSetUpPage({
           {...(memberId === null ? { solved: {}, closed: {}, bestSolves: {} } : setUpSolves(await tsunagiSolvedBy(memberId)))}
           attempts={memberId === null ? {} : await tsunagiAttemptsBy(memberId)}
           initialSize={sizeAsked(kind, query)}
+          initialSet={(Array.isArray(query.set) ? query.set[0] : query.set) === "portals" ? "portals" : "classic"}
           resumeHref={resumeHref}
         />
       ) : (

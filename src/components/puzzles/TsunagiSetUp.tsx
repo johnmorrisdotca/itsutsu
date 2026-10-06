@@ -27,7 +27,7 @@ import { TsunagiLevelPicker, tsunagiLevelPath } from "./TsunagiLevelPicker";
 import { TsunagiLevelPreview } from "./TsunagiLevelPreview";
 import { SetUpResume } from "./SetUpResume";
 import { useSizeShelves } from "./sizeShelves";
-import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
+import { TsunagiFillPicker, TsunagiMarksPicker, TsunagiSetPicker } from "./TsunagiMarksPicker";
 import { keptAttempts, keptSolves, keptSolvesOff } from "./tsunagiKept";
 import { inSet, inSetBySize, seedIn } from "./tsunagiSets";
 import { useTsunagiCheats, useTsunagiExplosions, useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
@@ -205,6 +205,7 @@ function TsunagiSetUpFor({
           <p className="text-xs text-muted" data-testid="puzzle-size-note">
             {copy.board}
           </p>
+          <TsunagiSetPicker set={set} onChoose={onSet} />
           <TsunagiMarksPicker marks={marks} onChoose={chooseMarks} />
           <TsunagiFillPicker fill={fill} onChoose={chooseFill} />
           <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />

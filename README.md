@@ -335,7 +335,12 @@ biggest (1.5.0, 2026-10-05) have 20 to 80 lines, are made by taking clues away, 
 looked at through the same box: its pad, the wheel, the edge nudge as a line is dragged near it,
 and two fingers pinching and dragging (`TsunagiViewport`); a finger moving through a cell redraws
 the cells that changed and each pair's own line, and nothing else (`TsunagiGrid`).
-Each size's levels are a file a browser fetches only when a board of that size
+A second set of **levels with portals** sits beside the first (5×5 to 10×10, 12×12 and
+15×15, thirty-two each, chosen by "Portals" in the set-up's options): a portal is two rings
+alike, and a line that goes into one comes out of the other going the same way. A record
+keeps a level by one number, its seed, so a portal level's seed is 1,000 and its number
+(`levelSeed`, `setOfSeed`), and every page that shows a level shows its number in its set
+(`fixedLevelName`). Each size's levels are a file a browser fetches only when a board of that size
 opens; a server reads only their boards, never the answers (the package's
 `layouts` entry, `tsunagi/layoutsModule.ts`), to name which level a kept solve was
 and to check a solve against the level it names: with the three biggest sizes the answers

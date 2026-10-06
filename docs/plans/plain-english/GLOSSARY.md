@@ -200,6 +200,7 @@ something uses the word already chosen for it.
 | Standard | Usual | 定番 (kept) | `lib/puzzles/puzzles.constants.ts` (the middle board size on the set-up tiles of Hidden Stones, More or less, Jigsaw, Towers and others) | the ordinary size is "Standard"; John, 2026-09-29: "Standard OK" |
 | Sort: | Order: | — | `PuzzleRecordPage.tsx` | the usual word |
 | Normal | As made | 爆 (unchanged) | `TsunagiHelpPickers.tsx` | plain; "Softer" beside it reads fine and stays |
+| Portals · Classic | — (new, 2026-10-05) | 跳 · 定番 | `TsunagiMarksPicker.tsx`, `puzzles.constants.ts` (`TSUNAGI_CHIPS`) | a pair of linked rings in Tsunagi is a **Portal**, never a warp, teleporter or wormhole; the two sets of levels are Classic and Portals |
 
 ## Party games
 
