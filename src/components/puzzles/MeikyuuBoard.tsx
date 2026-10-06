@@ -10,6 +10,7 @@ import { MEIKYUU_GUTTER_LEAST } from "@/lib/puzzles/meikyuu/turn";
 import { encodeCells } from "@/lib/puzzles/meikyuu/steps";
 import { stoneOptionOf, type StoneLimit } from "@/lib/puzzles/meikyuu/stones";
 
+import { shutUndo } from "./meikyuuLocked";
 import { useEdgePan } from "./meikyuuEdgeStore";
 import { MeikyuuFrame } from "./MeikyuuFrame";
 import { MeikyuuSlot, useStand } from "./MeikyuuStand";
@@ -93,7 +94,7 @@ export function MeikyuuBoard({
   tall?: boolean;
   /** The line to start with. */
   way?: string;
-  /** Looked at and not drawn on: a finished level. */
+  /** Finished: looked at and not drawn on. The view is still the reader's, so it zooms and moves as it did (a finished maze is a map to read, not a picture); only the line is shut, and the keys that would take it back (`shutUndo`). */
   locked?: boolean;
   /** How many stones may lie at once: a few by the maze's size (`limited`), or as many as the reader likes. */
   stones?: StoneLimit;
@@ -188,6 +189,9 @@ export function MeikyuuBoard({
     };
   }, [code, tall]);
 
+  // A finished maze takes no line back: the package's own undo keys are stopped before the board hears them.
+  useEffect(() => (locked ? shutUndo(column.current) : undefined), [locked, column]);
+
   // The wood changes shape with the way up; the board inside it is told, so its box follows.
   useEffect(() => {
     if (tall) mount.current?.orientation(turned ? "landscape" : "portrait");
@@ -201,7 +205,7 @@ export function MeikyuuBoard({
           <MeikyuuFrame size={INSET_SIZE} stand={stand}>
             <div
               ref={host}
-              className={`h-full w-full ${locked ? "pointer-events-none" : ""} [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full`}
+              className="h-full w-full [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full"
               data-testid="meikyuu-board"
             />
           </MeikyuuFrame>

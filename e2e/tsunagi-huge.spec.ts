@@ -7,6 +7,7 @@ import { TSUNAGI_25 } from "@johnmorrisdotca/tsunagi/levels-25";
 import { TSUNAGI_30 } from "@johnmorrisdotca/tsunagi/levels-30";
 import { suiteOperator } from "./operator";
 import { ready } from "./support";
+import { viewStillMovesAfterSolve } from "./viewAfterSolve";
 import { drawWithMouse, drawWithTouch, strokesOf } from "./tsunagiFinger";
 
 /*
@@ -180,6 +181,7 @@ test.describe("the biggest boards on a desk", () => {
     await drawWithMouse(page, whereOn(page, 20), level.lines.flatMap((line) => strokesOf(level.layout, line)));
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
     await expect(page.getByTestId("puzzle-next-level")).toBeVisible();
+    await viewStillMovesAfterSolve(page, "tsunagi");
   });
 
   test("30×30 is solved by dragging along its answer", async ({ page }) => {
@@ -188,5 +190,6 @@ test.describe("the biggest boards on a desk", () => {
     await openLevel(page, 30, 1);
     await drawWithMouse(page, whereOn(page, 30), level.lines.flatMap((line) => strokesOf(level.layout, line)));
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+    await viewStillMovesAfterSolve(page, "tsunagi");
   });
 });

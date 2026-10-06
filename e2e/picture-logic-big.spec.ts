@@ -5,6 +5,7 @@ import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodePicture } from "../src/lib/puzzles/pictureLogic/code";
 import type { PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { freshPuzzleSeed, ready } from "./support";
+import { viewStillMovesAfterSolve } from "./viewAfterSolve";
 
 /**
  * PICTURE LOGIC AT 40×40 AND 50×50: a hundred lines of clues, two and a half
@@ -172,6 +173,7 @@ test.describe("the two biggest Picture logic boards", () => {
       const picture = pictureOf(40, "easy", seed);
       await page.goto(`${AT}/play?size=40&level=easy&seed=${seed}`);
       await solveByDragging(page, 40, picture);
+      await viewStillMovesAfterSolve(page, "picture", { pinch: true });
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
       await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
     });
@@ -186,6 +188,7 @@ test.describe("the two biggest Picture logic boards", () => {
       const picture = pictureOf(50, "medium", seed);
       await page.goto(`${AT}/play?size=50&level=medium&seed=${seed}`);
       await solveByDragging(page, 50, picture);
+      await viewStillMovesAfterSolve(page, "picture");
       await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
       // Kept: its own page draws the finished picture, and the fastest table has it.
       await page.getByTestId("puzzle-see-solve").click();

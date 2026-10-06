@@ -5,6 +5,7 @@ import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { JIRAI_SEED_BLOCK } from "../src/lib/puzzles/random";
 import { freshJiraiSeed } from "../src/lib/puzzles/jirai/variants";
 import { freshPuzzleSeed, ready } from "./support";
+import { viewStillMovesAfterSolve } from "./viewAfterSolve";
 
 /**
  * JIRAI AT 32×32, THE HUGE FIELD: 1,024 squares, four times the 16×16, dealt and proved to need no guess.
@@ -124,6 +125,7 @@ test.describe("the 32×32 Jirai", () => {
         await expect.poll(async () => (await codeOf(page))[safe]).toMatch(/[0-8]/);
       }
       await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+      await viewStillMovesAfterSolve(page, "jirai");
       await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
     });
 

@@ -8,6 +8,7 @@ import { loadSolidPackage, MEIKYUU_LOOK } from "@/lib/puzzles/meikyuu/browser";
 import { encodeCells } from "@/lib/puzzles/meikyuu/steps";
 import { stoneOptionOf, type StoneLimit } from "@/lib/puzzles/meikyuu/stones";
 
+import { shutUndo } from "./meikyuuLocked";
 import { MeikyuuFrame } from "./MeikyuuFrame";
 import type { MeikyuuHandle, MeikyuuReading } from "./MeikyuuBoard";
 
@@ -36,13 +37,14 @@ export function SolidBoard({
   code: string;
   /** The run to start with: the line, and after a `~` the stones. */
   way?: string;
-  /** Looked at and not drawn on: a finished level. */
+  /** Finished: looked at and not drawn on. The solid still turns and zooms, as a map is read; only the line is shut (`shutUndo`). */
   locked?: boolean;
   stones?: StoneLimit;
   onChange?: (reading: MeikyuuReading) => void;
   handle?: Ref<MeikyuuHandle>;
 }) {
   const host = useRef<HTMLDivElement>(null);
+  const column = useRef<HTMLDivElement>(null);
   const mount = useRef<SolidMount | null>(null);
   const told = useRef(onChange);
   useEffect(() => {
@@ -109,10 +111,13 @@ export function SolidBoard({
     };
   }, [code]);
 
+  // A finished solid takes no line back: the package's own undo keys are stopped before the board hears them.
+  useEffect(() => (locked ? shutUndo(column.current) : undefined), [locked]);
+
   return (
-    <div className="w-full select-none" data-testid="puzzle-grid" data-kind="meikyuu" data-solid="true" data-locked={locked ? "true" : "false"} data-wallpaper-focus="">
+    <div ref={column} className="w-full select-none" data-testid="puzzle-grid" data-kind="meikyuu" data-solid="true" data-locked={locked ? "true" : "false"} data-wallpaper-focus="">
       <MeikyuuFrame size={INSET_SIZE}>
-        <div ref={host} className={`h-full w-full ${locked ? "pointer-events-none" : ""} [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full`} data-testid="meikyuu-board" data-solid-board="true" />
+        <div ref={host} className="h-full w-full [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full" data-testid="meikyuu-board" data-solid-board="true" />
       </MeikyuuFrame>
     </div>
   );

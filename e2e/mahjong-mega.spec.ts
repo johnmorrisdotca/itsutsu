@@ -4,6 +4,7 @@ import { PUZZLE_SLUGS } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { decodeMoves } from "@johnmorrisdotca/jarajara";
 import { freshPuzzleSeed, ready } from "./support";
+import { viewStillMovesAfterSolve } from "./viewAfterSolve";
 
 /**
  * THE MEGA LAYOUTS, THE WALL (20 ACROSS, 288 TILES, A DOUBLE SET) AND THE PALACE
@@ -78,6 +79,7 @@ test.describe("Mahjong's mega layouts", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1280);
     await clearByTapping(page, moves.flatMap((move) => ("pair" in move ? [move.pair] : [])));
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved", { timeout: 60_000 });
+    await viewStillMovesAfterSolve(page, "mahjong");
     await expect(page.getByTestId("puzzle-paid")).toContainText(/IP|XP|Already paid|allowance/);
   });
 
@@ -91,6 +93,7 @@ test.describe("Mahjong's mega layouts", () => {
     await expect(board(page)).toHaveAttribute("data-cells", puzzle.givens);
     await clearByTapping(page, moves.flatMap((move) => ("pair" in move ? [move.pair] : [])));
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved", { timeout: 60_000 });
+    await viewStillMovesAfterSolve(page, "mahjong");
   });
 
   test("left half way, the Palace waits in My games and opens where it was left", async ({ page }) => {

@@ -6,6 +6,7 @@ import { boardOf, decodeBridges } from "../src/lib/puzzles/bridges/code";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import type { PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { freshPuzzleSeed, ready } from "./support";
+import { viewStillMovesAfterSolve } from "./viewAfterSolve";
 
 /**
  * BRIDGES AT 17×17, 21×21 AND 25×25: islands in the hundred and more, read and
@@ -147,6 +148,7 @@ test.describe("the three biggest Bridges boards", () => {
       const seed = freshPuzzleSeed();
       await page.goto(`${AT}/play?size=17&level=medium&seed=${seed}`);
       await solveByDragging(page, 17, answerOf(17, "medium", seed));
+      await viewStillMovesAfterSolve(page, "bridges", { pinch: true });
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
       await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
     });
@@ -160,6 +162,7 @@ test.describe("the three biggest Bridges boards", () => {
       const seed = freshPuzzleSeed();
       await page.goto(`${AT}/play?size=25&level=medium&seed=${seed}`);
       await solveByDragging(page, 25, answerOf(25, "medium", seed));
+      await viewStillMovesAfterSolve(page, "bridges");
       await expect(page.getByTestId("puzzle-paid")).toContainText(/XP|Already paid|allowance/);
       await page.getByTestId("puzzle-see-solve").click();
       await expect(page.getByTestId("solve-board")).toHaveAttribute("data-state", /replay|finished/);

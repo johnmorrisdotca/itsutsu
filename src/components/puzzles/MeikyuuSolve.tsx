@@ -123,6 +123,11 @@ export function MeikyuuSolve({
     }
   };
 
+  // The last stroke of a big maze is drawn zoomed in on the goal. Once it is solved the whole maze comes back into view with its line, so a finished maze is read as a map and not left in a corner of it.
+  useEffect(() => {
+    if (done !== null) handle.current?.fit();
+  }, [done]);
+
   // Kept in this browser as soon as a level is solved, so the board of levels shows it with or without an account.
   useEffect(() => {
     if (done !== null && race === null && !done.outOfTime) keepSolveHere(puzzle.givens, done.elapsedMs);
@@ -185,6 +190,48 @@ export function MeikyuuSolve({
   const stoning = reading?.stoneMode === true;
   /* "Stones left: 3", or, with no limit, how many are laid: the one line a Stone press keeps beside it, in the room it always has. */
   const stonesLine = reading === null ? STONE_COPY.left(0) : reading.stonesLeft === null ? STONE_COPY.laid(reading.stones) : STONE_COPY.left(reading.stonesLeft);
+  /* The view is the reader's for as long as the board is on show, a finished maze included (a map to be read, not a picture): only a paused board, which is hidden, turns the pad off. */
+  const viewable = done !== null || live;
+  const viewPad = (
+    <>
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Zoom" data-testid="meikyuu-zoom">
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.zoomOut()} disabled={!viewable} aria-label="Zoom out" data-testid="meikyuu-zoom-out">
+          −
+        </button>
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.zoomIn()} disabled={!viewable} aria-label="Zoom in" data-testid="meikyuu-zoom-in">
+          +
+        </button>
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.fit()} disabled={!viewable} data-testid="meikyuu-fit">
+          Fit
+        </button>
+        <button
+          type="button"
+          className={`${BUTTON_BASE} ${moving ? BUTTON_STRONG : BUTTON_QUIET} ${TAP_HEIGHT} ${press}`}
+          onClick={() => setMoving(handle.current?.pan(!moving) ?? false)}
+          disabled={!viewable}
+          aria-pressed={moving}
+          title={solid ? TURN_COPY.onlySays : MOVE_COPY.says}
+          data-testid={solid ? "meikyuu-turn-only" : "meikyuu-move"}
+          data-moving={moving ? "true" : "false"}
+        >
+          {solid ? TURN_COPY.only : MOVE_COPY.press}
+        </button>
+      </div>
+      {/* A solid is turned as well as zoomed: the four turns and Face me, in a row of their own that a flat maze does not have. */}
+      {solid ? (
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label={TURN_COPY.legend} data-testid="meikyuu-turn">
+          {([["left", "◀", TURN_COPY.left], ["up", "▲", TURN_COPY.up], ["down", "▼", TURN_COPY.down], ["right", "▶", TURN_COPY.right]] as const).map(([by, mark, words]) => (
+            <button key={by} type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.turn?.(by)} disabled={!viewable} aria-label={words} title={words} data-testid={`meikyuu-turn-${by}`}>
+              {mark}
+            </button>
+          ))}
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.faceMe?.()} disabled={!viewable} title={TURN_COPY.faceMeSays} data-testid="meikyuu-face-me">
+            {TURN_COPY.faceMe}
+          </button>
+        </div>
+      ) : null}
+    </>
+  );
   return (
     <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={level} data-level={level} data-maze={puzzle.givens} data-cells={cells} data-solved={reading?.solved === true ? "true" : "false"} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
@@ -223,42 +270,7 @@ export function MeikyuuSolve({
                 {stonesLine}
               </span>
             </div>
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Zoom" data-testid="meikyuu-zoom">
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.zoomOut()} disabled={!live} aria-label="Zoom out" data-testid="meikyuu-zoom-out">
-                −
-              </button>
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.zoomIn()} disabled={!live} aria-label="Zoom in" data-testid="meikyuu-zoom-in">
-                +
-              </button>
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.fit()} disabled={!live} data-testid="meikyuu-fit">
-                Fit
-              </button>
-              <button
-                type="button"
-                className={`${BUTTON_BASE} ${moving ? BUTTON_STRONG : BUTTON_QUIET} ${TAP_HEIGHT} ${press}`}
-                onClick={() => setMoving(handle.current?.pan(!moving) ?? false)}
-                disabled={!live}
-                aria-pressed={moving}
-                title={solid ? TURN_COPY.onlySays : MOVE_COPY.says}
-                data-testid={solid ? "meikyuu-turn-only" : "meikyuu-move"}
-                data-moving={moving ? "true" : "false"}
-              >
-                {solid ? TURN_COPY.only : MOVE_COPY.press}
-              </button>
-            </div>
-            {/* A solid is turned as well as zoomed: the four turns and Face me, in a row of their own that a flat maze does not have. */}
-            {solid ? (
-              <div className="flex flex-wrap gap-1.5" role="group" aria-label={TURN_COPY.legend} data-testid="meikyuu-turn">
-                {([["left", "◀", TURN_COPY.left], ["up", "▲", TURN_COPY.up], ["down", "▼", TURN_COPY.down], ["right", "▶", TURN_COPY.right]] as const).map(([by, mark, words]) => (
-                  <button key={by} type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.turn?.(by)} disabled={!live} aria-label={words} title={words} data-testid={`meikyuu-turn-${by}`}>
-                    {mark}
-                  </button>
-                ))}
-                <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.faceMe?.()} disabled={!live} title={TURN_COPY.faceMeSays} data-testid="meikyuu-face-me">
-                  {TURN_COPY.faceMe}
-                </button>
-              </div>
-            ) : null}
+            {viewPad}
             {/* In the row of presses under the board, so it takes no row of its own and Just the board still fits a desk. */}
             <MeikyuuColours />
             {/* A tall maze can lie on its side: which way up is the reader's to choose, beside the colours. */}
@@ -270,6 +282,10 @@ export function MeikyuuSolve({
         </div>
       ) : (
         <>
+          {/* Zoom, Fit and Move (and a solid's turns) stay: the finished maze is a map, and a phone has no other way to move it. */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2" data-testid="meikyuu-controls" data-finished="true">
+            {viewPad}
+          </div>
           <MeikyuuColours className="self-start" />
           {tall ? <MeikyuuWayUp className="self-start" /> : null}
           {/* A size finished is cheered in a line, never a window (John, 2026-10-02: "encouraging people to finish them all"). */}
