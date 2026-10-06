@@ -131,7 +131,7 @@ export function GunjinBoard({
               disabled={onSquare === undefined}
               onFocus={() => setCursor(square)}
               onClick={() => onSquare?.(square)}
-              className={`min-h-0 min-w-0 touch-manipulation p-0 ${lake ? "bg-[#4f86b8]/60" : "bg-transparent"} focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-[#c4972e] ${ringed ? "outline-2 -outline-offset-2 outline-[#c4972e]/80" : ""}`}
+              className={`min-h-0 min-w-0 touch-manipulation p-0 bg-transparent focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-[#c4972e] ${ringed ? "outline-2 -outline-offset-2 outline-[#c4972e]/80" : ""}`}
             />
           );
         })}

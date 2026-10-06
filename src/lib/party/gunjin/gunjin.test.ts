@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { boardFeatures } from "@johnmorrisdotca/gunjin/views";
 import { GUNJIN_BOARDS, GUNJIN_DEFAULT_SIZE, GUNJIN_LAKES, GUNJIN_SIZES } from "./gunjin.constants";
 import { arrangementIsValid, gunjinMoves, matchSeenBy, gunjinOver, gunjinToPlay, gunjinWinners, homeSquares, playGunjin, randomArrangement, replayGunjin, resignGunjin, seededRandom, startGunjin } from "./gunjin";
 import { decodeGunjin, decodeGunjinSeen, encodeGunjin, encodeGunjinSeen } from "./gunjinCodec";
@@ -260,7 +261,12 @@ describe("Gunjin played at random", () => {
 });
 
 describe("Capture Flag's lakes", () => {
-  it("are the squares the engine never lets a piece enter or cross, so the board may shade them", () => {
+  it("are the squares the package draws as water, and the engine never lets a piece enter or cross", () => {
+    for (const board of Object.values(GUNJIN_BOARDS)) {
+      const drawn = boardFeatures(board.mode, board.width, board.height).lakes.map(({ x, y }) => `${x},${y}`).sort();
+      const named = (GUNJIN_LAKES[board.mode] ?? []).map(([x, y]) => `${x},${y}`).sort();
+      expect(named, `${board.name}: the lakes the site names are the lakes the package draws`).toEqual(drawn);
+    }
     const lakes = new Set((GUNJIN_LAKES["stratego-lite"] ?? []).map(([x, y]) => `${x},${y}`));
     expect(lakes.size).toBe(8);
     let game = begun(100);

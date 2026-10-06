@@ -5,6 +5,7 @@
  * from each mode's, and its API notes say `/trusted` does, which it still does not
  * (checked at 0.1.2; its `decodeTrustedMatch` reads all four modes now, but the
  * site keeps a game as its moves and does not use it). The rest of the site imports them from here, so when the
- * package moves them, one line changes.
+ * package moves them, one line changes. From 0.2.0 the same entry points export the calls that end a match
+ * without a capture (resign, and offering, accepting and declining a draw), for a match of any mode.
  */
-export { acknowledgePass, createMatch, playMove, rosterForSetup, submitSetup } from "@johnmorrisdotca/gunjin/gunjin-shogi";
+export { acceptDraw, acknowledgePass, createMatch, declineDraw, offerDraw, playMove, resignMatch, rosterForSetup, submitSetup } from "@johnmorrisdotca/gunjin/gunjin-shogi";

@@ -2,6 +2,7 @@ import { expect, test, type BrowserContext, type Page, type Response } from "@pl
 
 import { PrismaClient } from "@prisma/client";
 
+import { gunjinMoves, playGunjin, startGunjin } from "../src/lib/party/gunjin/gunjin";
 import { flagWithinReach } from "../src/lib/party/gunjin/gunjinFlag";
 import { encodeGunjin } from "../src/lib/party/gunjin/gunjinCodec";
 import { memberContext, memberIdFor, removeMember } from "./members";
@@ -210,6 +211,102 @@ test.describe("Gunjin on several devices", () => {
         // Nothing is hidden once it is over: both sides' ranks are on both phones.
         await expect(page.getByTestId("gunjin-board-drawing").locator("[data-hidden='true']")).toHaveCount(0);
       }
+    } finally {
+      await prisma.$disconnect();
+      await a.context.close();
+      await b.context.close();
+    }
+  });
+  /** A table written straight to the database with both sides arranged and the first move to the host: what the presses under test start from. */
+  async function arrangedTable(prisma: PrismaClient, id: string) {
+    let game = startGunjin(81, ["", ""])!;
+    for (let step = 0; step < 4; step += 1) game = playGunjin(game, gunjinMoves(game)[0]!)!;
+    const [hostId, guestId] = [await memberIdFor(host.email), await memberIdFor(guest.email)];
+    await prisma.partyTable.create({
+      data: {
+        id,
+        game: "gunjin",
+        size: 81,
+        state: encodeGunjin(game),
+        status: "playing",
+        toPlay: 0,
+        moveCount: game.moves.length,
+        hostMemberId: hostId,
+        seats: {
+          create: [
+            { seat: 0, kind: "member", memberId: hostId, name: host.name },
+            { seat: 1, kind: "member", memberId: guestId, name: guest.name },
+          ],
+        },
+      },
+    });
+  }
+
+  test("a draw is offered, declined, offered back and agreed, and a resignation gives the table away, on both phones", async ({ browser, baseURL }) => {
+    test.setTimeout(150_000);
+    process.loadEnvFile(".env");
+    const prisma = new PrismaClient();
+    const a = await phone(browser, baseURL!, host);
+    const b = await phone(browser, baseURL!, guest);
+    const drawId = `drw-${stamp.slice(-4).padStart(4, "0")}`;
+    const resignId = `rsn-${stamp.slice(-4).padStart(4, "0")}`;
+    made.push(drawId, resignId);
+    try {
+      await arrangedTable(prisma, drawId);
+      await arrangedTable(prisma, resignId);
+      await a.page.goto(`${AT}/tables/${drawId}`);
+      await b.page.goto(`${AT}/tables/${drawId}`);
+      await ready(a.page, "online-table");
+      await ready(b.page, "online-table");
+      await expect(a.page.getByTestId("gunjin-moving")).toHaveAttribute("data-active", "true");
+
+      // Only the seat to move has the presses; the other, who waits, has none.
+      await expect(a.page.getByTestId("gunjin-draw-offer")).toBeVisible();
+      await expect(a.page.getByTestId("gunjin-resign")).toBeVisible();
+      await expect(b.page.getByTestId("gunjin-draw-offer")).toHaveCount(0);
+      await expect(b.page.getByTestId("gunjin-resign")).toHaveCount(0);
+
+      // The host offers: asked first, and then the guest is asked on the guest's own phone while the host is told it waits.
+      await a.page.getByTestId("gunjin-draw-offer").click();
+      await a.page.getByTestId("gunjin-draw-offer-yes").click();
+      await expect(a.page.getByTestId("gunjin-draw-waiting")).toContainText(guest.name.split("-")[0]!);
+      await expect(a.page.getByTestId("gunjin-draw-offer")).toHaveCount(0);
+      await expect(b.page.getByTestId("gunjin-draw-answer")).toBeVisible({ timeout: 30_000 });
+      await expect(b.page.getByTestId("gunjin-draw-offer")).toHaveCount(0);
+
+      // The guest declines and goes on: the offer is gone from both phones, and it is the guest's move.
+      await b.page.getByTestId("gunjin-draw-decline").click();
+      await expect(b.page.getByTestId("gunjin-draw-answer")).toHaveCount(0);
+      await expect(b.page.getByTestId("gunjin-moving")).toHaveAttribute("data-active", "true");
+      await expect(a.page.getByTestId("gunjin-draw-waiting")).toHaveCount(0, { timeout: 30_000 });
+
+      // The guest offers one back, and the host agrees: both phones show it drawn, with nobody the winner.
+      await b.page.getByTestId("gunjin-draw-offer").click();
+      await b.page.getByTestId("gunjin-draw-offer-yes").click();
+      await expect(a.page.getByTestId("gunjin-draw-answer")).toBeVisible({ timeout: 30_000 });
+      await a.page.getByTestId("gunjin-draw-accept").click();
+      for (const page of [a.page, b.page]) {
+        await expect(page.getByTestId("online-table")).toHaveAttribute("data-state", "finished", { timeout: 30_000 });
+        await expect(page.getByTestId("gunjin-result")).toContainText("Drawn: a draw was agreed");
+        await expect(page.getByTestId("gunjin-board-drawing").locator("[data-hidden='true']")).toHaveCount(0);
+      }
+
+      // A resignation, on another table: the seat to move gives up, and the other wins, said on both phones.
+      await a.page.goto(`${AT}/tables/${resignId}`);
+      await b.page.goto(`${AT}/tables/${resignId}`);
+      await ready(a.page, "online-table");
+      await ready(b.page, "online-table");
+      await a.page.getByTestId("gunjin-resign").click();
+      await a.page.getByTestId("gunjin-resign-yes").click();
+      for (const page of [a.page, b.page]) {
+        await expect(page.getByTestId("online-table")).toHaveAttribute("data-state", "finished", { timeout: 30_000 });
+        await expect(page.getByTestId("gunjin-result")).toContainText(`${host.name} resigned. ${guest.name} wins.`);
+      }
+      await expect(b.page.getByTestId("win-cover")).toContainText("You");
+
+      // The sideways check, at 390px, on the table with the offer panels' words in it.
+      const wide = await a.page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(wide, "the page scrolls sideways at 390px").toBeLessThanOrEqual(0);
     } finally {
       await prisma.$disconnect();
       await a.context.close();

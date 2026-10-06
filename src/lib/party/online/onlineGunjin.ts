@@ -23,9 +23,12 @@ import type { OnlineRules } from "./online.types";
  * sends is only ever an arrangement or a piece moved. Each side arranges when
  * it is its turn to, the other waiting on it, as the seats are told.
  *
- * ENDING IT is the table's own End, as every table on several devices has; there
- * is no Resign at a table on two devices (the engine's resignation is a move a
- * person at one phone makes for whoever holds it).
+ * ENDING IT: the table's own End, as every table on several devices has, and
+ * from the package's 0.2.0 the seat to move may also Resign or offer a draw, and
+ * the other seat accept or decline it on its own turn. Those are moves like any
+ * other (`resign`, `offer-draw`, `accept-draw`, `decline-draw`), played in the
+ * game, so the table's result says how it ended; the offer's hand-over is taken
+ * at once like every other (`handedOn`), so the answer waits on the other seat.
  */
 
 /** After a move the engine asks for the device to be passed on; nobody passes a phone here, so it is passed at once. */
@@ -42,6 +45,8 @@ function isSquare(value: unknown): value is GunjinSquare {
 function readMove(sent: unknown): GunjinMove | null {
   if (typeof sent !== "object" || sent === null) return null;
   const move = sent as { kind?: unknown; placements?: unknown; from?: unknown; to?: unknown };
+  // The presses that end the game or answer an offer carry nothing else.
+  if (move.kind === "resign" || move.kind === "offer-draw" || move.kind === "accept-draw" || move.kind === "decline-draw") return { kind: move.kind };
   if (move.kind === "move") return isSquare(move.from) && isSquare(move.to) ? { kind: "move", from: { x: move.from.x, y: move.from.y }, to: { x: move.to.x, y: move.to.y } } : null;
   if (move.kind !== "setup" || !Array.isArray(move.placements) || move.placements.length > 40) return null;
   const placements: GunjinPlacement[] = [];

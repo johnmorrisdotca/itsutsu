@@ -15,10 +15,24 @@ export type GunjinSquare = { x: number; y: number };
  * - `setup`: one side's secret arrangement, every piece of its roster placed.
  * - `hand`: the device has been handed to the player named, who has said so.
  * - `move`: one piece to one square, which may hold an enemy piece.
+ * - `resign`, `offer-draw`, `accept-draw`, `decline-draw`: the side to move
+ *   ends the game by giving it up, offers the other a draw, or answers an offer
+ *   the other made (the package's `resignMatch`, `offerDraw`, `acceptDraw` and
+ *   `declineDraw`). Only while the game is being played, never while arranging.
  *
  * A game is its board, its two names and these, in order.
  */
-export type GunjinMove = { kind: "setup"; placements: readonly GunjinPlacement[] } | { kind: "hand" } | { kind: "move"; from: GunjinSquare; to: GunjinSquare };
+export type GunjinMove =
+  | { kind: "setup"; placements: readonly GunjinPlacement[] }
+  | { kind: "hand" }
+  | { kind: "move"; from: GunjinSquare; to: GunjinSquare }
+  | { kind: "resign" }
+  | { kind: "offer-draw" }
+  | { kind: "accept-draw" }
+  | { kind: "decline-draw" };
+
+/** The moves that end a game or answer one's end, which a table offers as presses of their own. */
+export type GunjinEndingMove = Extract<GunjinMove, { kind: "resign" | "offer-draw" | "accept-draw" | "decline-draw" }>;
 
 /**
  * A game of Gunjin, as its rules module (`gunjin.ts`) speaks of it.

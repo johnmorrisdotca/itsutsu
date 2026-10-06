@@ -564,17 +564,26 @@ Checkers as a guest make eight.
 - **The board** is the package's drawing (`drawGunjinBoard`, SVG text) inside `BoardFrame`, in the reader's
   own board theme, with one real button over each square (`GunjinBoard`) so a finger, a pointer and the
   keyboard (arrow keys, one tab stop) choose the same square. Red sits at the foot and Blue at the head
-  whoever holds the phone: the drawing cannot be turned. Capture Flag's lakes are shaded by the site
-  (`GUNJIN_LAKES`) because 0.1.0 draws none; the unit test fails if the engine ever offers a move onto one.
+  whoever holds the phone: the drawing cannot be turned. Capture Flag's two 2×2 lakes are drawn by the
+  package as water from 0.2.0; the site names each lake square to a screen reader from its own list
+  (`GUNJIN_LAKES`, so a page that only names the game does not carry the engine), and the unit test holds
+  that list to the package's `boardFeatures` and fails if the engine ever offers a move onto one.
   Ranks are the package's letters (Maj, LGen, 2L); the arranging screen lists them in full, and a square's
   name is read aloud in full.
 - **No computer player.** The package has none, so both seats are people; the ticket asked for one only
   if the package had it.
-- **No draw offer, no repetition rule.** The engine has both; neither is offered, since none of the four
-  boards can end level, and a game ends by a flag, by a side with no move, or by Resign (`resignGunjin`, an
-  ending in the engine's own terms from any phase).
+- **Resign and an agreed draw (package 0.2.0).** A game ends by a flag, by a side with no move, by Resign, or
+  by a draw both sides agree. At a table round one device Resign is the shared row's (`resignGunjin`, an ending
+  in the engine's own terms from any phase, and the mark that every table keeps). A draw is the package's
+  `offerDraw`, `acceptDraw` and `declineDraw`, kept as moves (`offer-draw`, `accept-draw`, `decline-draw`; `D`,
+  `A`, `N` in the kept text, with `resign` as `R`): the side to move offers after a question, the device
+  goes to the other side on the cover ("Ann has offered a draw"), who answers before the board
+  (`GunjinDrawAnswer`: accept, decline, or a move, which declines), and an accepted one ends level with
+  nobody the winner ("Drawn: a draw was agreed", and the win cover says Draw). The engine takes an ending only
+  while the game is played, so none is offered while arranging or on the cover. There is still no repetition
+  rule: the four boards have none.
 - **Taking the flag** wins for the capturer from 0.1.2 (0.1.0 removed both pieces and went on). Pinned at
-  0.1.2; `flagWithinReach` (`gunjinFlag.ts`) sets up an aircraft and a flag for the unit tests and for the
+  0.1.2 (0.2.0 is pinned now, for Resign and the draw offer, and the lakes the package draws); `flagWithinReach` (`gunjinFlag.ts`) sets up an aircraft and a flag for the unit tests and for the
   specs that take it on one device and at a table on two, where both phones are sent the finished game whole.
 - **Several devices** (`onlineGunjin.ts`, `GunjinOnline.tsx`, `e2e/party-online-gunjin.spec.ts`), with no
   migration: a table's state is text. The server holds both arrangements and a seat is never sent that text.
@@ -586,14 +595,17 @@ Checkers as a guest make eight.
   Once the game is over nothing is hidden and the match is sent whole. The stored moves
   (`PartyAction.move`, which holds each arrangement) are written and never read back to a browser. The
   device pass is taken at once by the table (`handedOn`) since nobody shares a phone, a move a browser sends
-  is only an arrangement or a piece moved, and the other side's arranging is waited on (their own
+  is an arrangement, a piece moved, or (0.2.0) Resign, a draw offered, or an offer accepted or declined
+  (`GunjinOnline` draws them: the shared Resign and "Offer a draw" for the seat to move, the answer for the seat
+  asked, "You offered … it waits" for the seat that offered, and the way it ended in words, `GunjinResult`,
+  since a draw is no winner and has no cover), and the other side's arranging is waited on (their own
   arrangement shown to the waiting seat as the draft). Reading a table's state for a seat replays the
   game (`decodeGunjin`) once per change a reader fetches, where the other games hand the stored text over; a
   304 still answers a poll that has nothing new.
 
 Decisions to review: four boards rather than five (no Hidden Hasami); the names Luzhanqi Mini, Salpakan,
 Gunjin Shogi and Capture Flag, and the kanji 軍人 for the game, 陸戦棋, 星, 軍人将棋 and 旗取り for the boards;
-Gunjin Shogi as the default; the board's size as its squares; no computer, no draw offer; the red side at
+Gunjin Shogi as the default; the board's size as its squares; no computer; a draw offer that ends the game level (0.2.0), with the other side asked on its own turn; the red side at
 the foot for both players; a cover on every reload; a new shared `PartyHandOver` rather than a fifth copy
 of the hand-over, left to the others to adopt; `seatState` as a general hook; the game kept as moves and not
 as the package's trusted text.

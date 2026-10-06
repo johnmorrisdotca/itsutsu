@@ -10,7 +10,7 @@ import { resultLine, tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import type { Appearance } from "@/components/board/board.types";
-import { gunjinOver, gunjinToPlay, gunjinWinners, playGunjin, resignGunjin, startGunjin } from "@/lib/party/gunjin/gunjin";
+import { gunjinDrawn, gunjinOver, gunjinToPlay, gunjinWinners, playGunjin, resignGunjin, startGunjin } from "@/lib/party/gunjin/gunjin";
 import { GUNJIN_BOARDS } from "@/lib/party/gunjin/gunjin.constants";
 import type { GunjinGame } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinNews, gunjinReason } from "@/lib/party/gunjin/gunjinNews";
@@ -22,6 +22,7 @@ import { PartyHandOver } from "../PartyHandOver";
 import { TableWallpaper } from "../TableWallpaper";
 import { GunjinArrange } from "./GunjinArrange";
 import { GunjinBoard } from "./GunjinBoard";
+import { GunjinDrawAnswer, GunjinDrawOffer } from "./GunjinDraw";
 import { GunjinMoving, MovesPanel } from "./GunjinMoving";
 import { GunjinSide } from "./GunjinSide";
 import { GUNJIN_COPY } from "./gunjin.constants";
@@ -54,6 +55,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
   const names = [partyPlayerName(game, 0), partyPlayerName(game, 1)];
   const board = GUNJIN_BOARDS[game.size]!;
   const winners = gunjinWinners(game);
+  const drawn = gunjinDrawn(game);
   const resigned = resignedBy(game);
   const moment = useWinMoment(over ? "ended" : "playing");
   const toPlay = gunjinToPlay(game);
@@ -64,6 +66,11 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
       if (next !== null) keep(next);
     }
     setHandedFor(key);
+  };
+  // The side to move offers a draw, or answers the one it was offered, and the engine's own word for it is the move kept.
+  const say = (kind: "offer-draw" | "accept-draw" | "decline-draw") => {
+    const next = playGunjin(game, { kind });
+    if (next !== null) keep(next);
   };
   const again = () => {
     const fresh = startGunjin(game.size, game.players);
@@ -92,7 +99,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
           {over ? (
             <>
               {GUNJIN_COPY.gameOver}:{" "}
-              {resigned !== null ? GAME_ENDING_COPY.resignedResult(names[resigned]!, winners.map((one) => names[one]!)) : winners.length === 0 ? "" : GUNJIN_COPY.wins(names[winners[0]!]!, gunjinReason(game))}
+              {resigned !== null ? GAME_ENDING_COPY.resignedResult(names[resigned]!, winners.map((one) => names[one]!)) : drawn ? GUNJIN_COPY.drawn(gunjinReason(game)) : winners.length === 0 ? "" : GUNJIN_COPY.wins(names[winners[0]!]!, gunjinReason(game))}
             </>
           ) : covered ? (
             GUNJIN_COPY.hiddenBoard
@@ -114,7 +121,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start" data-scale-desk>
           <div className="min-w-0" data-scale-board data-bare-board>
             <WinCoverOver
-              news={moment.open ? tableNews({ names, winners, you: null, detail: resigned === null ? gunjinReason(game) : null, next: { label: GUNJIN_COPY.again, onPress: again } }) : null}
+              news={moment.open ? tableNews({ names, winners, you: null, draw: drawn, detail: resigned === null ? gunjinReason(game) : null, next: { label: GUNJIN_COPY.again, onPress: again } }) : null}
               onClose={moment.close}
             >
               <GunjinBoard
@@ -142,7 +149,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
           >
             {!arranging ? (
               <p className="text-sm font-medium" data-testid="gunjin-pass-news">
-                {match.turn === 0 ? GUNJIN_COPY.newsFirst : news}
+                {match.passPurpose === "draw" && match.drawOffer !== undefined ? GUNJIN_COPY.drawOffered(names[match.drawOffer]!) : match.turn === 0 ? GUNJIN_COPY.newsFirst : news}
               </p>
             ) : null}
             {arranging && !first ? <p className="text-sm font-medium">{GUNJIN_COPY.passSetUp(names[seat]!)}</p> : null}
@@ -159,17 +166,21 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
           }}
         />
       ) : (
-        <GunjinMoving
-          key={key}
-          game={game}
-          seat={seat}
-          names={names}
-          appearance={appearance}
-          onMove={(from, to) => {
-            const next = playGunjin(game, { kind: "move", from, to });
-            if (next !== null) keep(next);
-          }}
-        />
+        <>
+          {/* A draw offered to this side, answered before the board: accept it, decline it, or move (which declines). */}
+          <GunjinDrawAnswer game={game} names={names} onAccept={() => say("accept-draw")} onDecline={() => say("decline-draw")} />
+          <GunjinMoving
+            key={key}
+            game={game}
+            seat={seat}
+            names={names}
+            appearance={appearance}
+            onMove={(from, to) => {
+              const next = playGunjin(game, { kind: "move", from, to });
+              if (next !== null) keep(next);
+            }}
+          />
+        </>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
@@ -183,13 +194,18 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
           onResign={(one) => keep(resignGunjin(game, one))}
           onNewGame={() => keep(null)}
         />
+        {!over && !covered ? (
+          <div data-chrome>
+            <GunjinDrawOffer game={game} names={names} onOffer={() => say("offer-draw")} />
+          </div>
+        ) : null}
         {over ? (
           <button type="button" onClick={again} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="gunjin-again">
             {GUNJIN_COPY.again}
           </button>
         ) : null}
       </div>
-      {over ? <TableWallpaper game="gunjin" result={resultLine(names, winners)} /> : null}
+      {over ? <TableWallpaper game="gunjin" result={resultLine(names, winners, drawn)} /> : null}
       <p className="text-xs text-muted" data-chrome>
         {GUNJIN_COPY.kept}
       </p>

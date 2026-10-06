@@ -13,7 +13,8 @@ import type { GunjinGame, GunjinMatch, GunjinMove, GunjinPlacement } from "./gun
  * digits is a piece moved from a square to a square, each a column then a
  * row. `S` and then, for each kind of piece in the arrangement, its name, `@`
  * and its squares as two digits each, kinds separated by `;`
- * (`S mine@35,45;flag@41`). The text holds both sides' secret arrangements,
+ * (`S mine@35,45;flag@41`). `R` is the side to move resigning, `D` it offering a
+ * draw, `A` the other side accepting one and `N` declining it. The text holds both sides' secret arrangements,
  * which is what a table round one device must keep to be a game at all:
  * docs/plans/party-games/README.md (Gunjin) says who can read it, and where it is never sent.
  */
@@ -27,6 +28,10 @@ function placementsText(placements: readonly GunjinPlacement[]): string {
 
 function moveText(move: GunjinMove): string {
   if (move.kind === "hand") return "H";
+  if (move.kind === "resign") return "R";
+  if (move.kind === "offer-draw") return "D";
+  if (move.kind === "accept-draw") return "A";
+  if (move.kind === "decline-draw") return "N";
   if (move.kind === "move") return `M${move.from.x}${move.from.y}${move.to.x}${move.to.y}`;
   return `S${placementsText(move.placements)}`;
 }
@@ -49,6 +54,10 @@ function placementsOf(text: string): GunjinPlacement[] | null {
 
 function moveOf(text: string): GunjinMove | null {
   if (text === "H") return { kind: "hand" };
+  if (text === "R") return { kind: "resign" };
+  if (text === "D") return { kind: "offer-draw" };
+  if (text === "A") return { kind: "accept-draw" };
+  if (text === "N") return { kind: "decline-draw" };
   if (text.startsWith("M")) {
     const digits = /^M(\d)(\d)(\d)(\d)$/.exec(text);
     return digits === null ? null : { kind: "move", from: { x: Number(digits[1]), y: Number(digits[2]) }, to: { x: Number(digits[3]), y: Number(digits[4]) } };

@@ -45,10 +45,11 @@ export const GUNJIN_BOARDS: Record<number, GunjinBoardSpec> = {
 
 /**
  * THE LAKES OF CAPTURE FLAG, as columns and rows from the top left: eight
- * squares nothing may enter or cross. The package's engine knows them and its
- * drawing (0.1.0) does not paint them, so the board shades them here from the
- * engine's own list; `gunjin.test.ts` plays games and fails if the engine ever
- * offers a move onto one, which is how a change on its side is noticed.
+ * squares nothing may enter or cross. The package draws them as water from
+ * 0.2.0 (`boardFeatures(...).lakes`); this list is only what the site names
+ * to a screen reader ("lake"), kept here so a page that only names the game
+ * never carries the engine. `gunjin.test.ts` holds it to the package's own
+ * list and fails if the engine ever offers a move onto one.
  */
 export const GUNJIN_LAKES: Partial<Record<GunjinMode, readonly (readonly [number, number])[]>> = {
   "stratego-lite": [

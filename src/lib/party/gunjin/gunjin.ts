@@ -1,5 +1,5 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
-import { acknowledgePass, createMatch, playMove, rosterForSetup, submitSetup } from "./gunjinEngine";
+import { acceptDraw, acknowledgePass, createMatch, declineDraw, offerDraw, playMove, resignMatch, rosterForSetup, submitSetup } from "./gunjinEngine";
 import { legalMovesForCurrentPlayer } from "@johnmorrisdotca/gunjin/views";
 
 import { resigning } from "../resign";
@@ -28,6 +28,11 @@ function applied(match: GunjinMatch, move: GunjinMove): GunjinMatch | null {
       return match.phase !== "setup" ? null : submitSetup(match, match.currentPlayer, move.placements, match.setupStep);
     }
     if (move.kind === "hand") return match.phase !== "pass" ? null : acknowledgePass(match, match.currentPlayer, match.turn);
+    // The package refuses each of these outside play, for the wrong side or after a stale turn; here that is a null as every refusal is.
+    if (move.kind === "resign") return resignMatch(match, match.currentPlayer, match.turn);
+    if (move.kind === "offer-draw") return offerDraw(match, match.currentPlayer, match.turn);
+    if (move.kind === "accept-draw") return acceptDraw(match, match.currentPlayer, match.turn);
+    if (move.kind === "decline-draw") return declineDraw(match, match.currentPlayer, match.turn);
     return playMove(match, match.currentPlayer, { from: move.from, to: move.to, expectedTurn: match.turn });
   } catch {
     // The engine refuses with a thrown RangeError; here a refusal is a null, as every rule of the site answers.
@@ -76,10 +81,31 @@ export function gunjinOver(game: GunjinGame): boolean {
   return game.match.phase === "finished";
 }
 
-/** Every seat that won: the winner, or nobody for a game the engine ends level (none of the four boards can). */
+/** Every seat that won: the winner, or nobody for a game that ended level (a draw agreed). */
 export function gunjinWinners(game: GunjinGame): readonly number[] {
   const winner = game.match.result?.winner;
   return gunjinOver(game) && winner !== undefined && winner !== null ? [winner] : [];
+}
+
+/** Whether the game ended level, with nobody the winner: a draw the sides agreed. */
+export function gunjinDrawn(game: GunjinGame): boolean {
+  return gunjinOver(game) && game.match.result?.winner === null;
+}
+
+/**
+ * The seat that has a draw offered it and has yet to answer, or null: the offer
+ * stands while the other side's turn is in play, and a move, or an answer,
+ * takes it off. Never while the device is still being handed on.
+ */
+export function gunjinDrawOfferedTo(game: GunjinGame): number | null {
+  const { match } = game;
+  return match.phase === "play" && match.drawOffer !== undefined && match.drawOffer !== match.currentPlayer ? match.currentPlayer : null;
+}
+
+/** The seat that has offered a draw nobody has answered yet, or null; the device on its way to the other side counts. */
+export function gunjinDrawOfferedBy(game: GunjinGame): number | null {
+  const { match } = game;
+  return (match.phase === "play" || match.phase === "pass") && match.drawOffer !== undefined ? match.drawOffer : null;
 }
 
 /** The seat the device or the turn is waiting on, or null once the game is over. */

@@ -297,6 +297,79 @@ test.describe("Gunjin, pass and play", () => {
     }
   });
 
+  test("a draw is offered on the cover, answered by the other side, and agreed or declined", async ({ page }) => {
+    await keepGame(page, arranged(SHOGI));
+    await page.goto(`${AT}/pass-and-play`);
+    await ready(page, "gunjin-game");
+    const game = page.getByTestId("gunjin-game");
+    await page.getByTestId("gunjin-pass-ready").click();
+    await expect(page.getByTestId("gunjin-moving")).toHaveAttribute("data-seat", "0");
+    // No offer to answer on one's own turn, and the press asks first.
+    await expect(page.getByTestId("gunjin-draw-answer")).toHaveCount(0);
+    await page.getByTestId("gunjin-draw-offer").click();
+    await expect(page.getByTestId("gunjin-draw-offer-confirm")).toContainText("Offer Ben a draw");
+    await page.getByTestId("gunjin-draw-offer-no").click();
+    await expect(game).toHaveAttribute("data-state", "playing");
+    await page.getByTestId("gunjin-draw-offer").click();
+    await page.getByTestId("gunjin-draw-offer-yes").click();
+
+    // The device goes to Ben on the cover, which says only that the offer was made, and shows nothing of the board.
+    await expect(page.getByTestId("gunjin-pass-to")).toContainText("Pass to Ben");
+    await expect(page.getByTestId("gunjin-pass-news")).toContainText("Ann has offered a draw");
+    await expect(game.locator("[data-kind]")).toHaveCount(0);
+    await page.getByTestId("gunjin-pass-ready").click();
+    await expect(page.getByTestId("gunjin-draw-answer")).toContainText("Ann offers a draw");
+    // He may not offer one back before he has answered; declining leaves the game his to play.
+    await expect(page.getByTestId("gunjin-draw-offer")).toHaveCount(0);
+    await page.getByTestId("gunjin-draw-decline").click();
+    await expect(page.getByTestId("gunjin-draw-answer")).toHaveCount(0);
+    await expect(game).toHaveAttribute("data-state", "playing");
+    await expect(game).toHaveAttribute("data-to-play", "1");
+
+    // Ben offers one back, and Ann agrees: it ends level, with nobody the winner, and says why.
+    await page.getByTestId("gunjin-draw-offer").click();
+    await page.getByTestId("gunjin-draw-offer-yes").click();
+    await expect(page.getByTestId("gunjin-pass-to")).toContainText("Pass to Ann");
+    await expect(page.getByTestId("gunjin-pass-news")).toContainText("Ben has offered a draw");
+    await page.getByTestId("gunjin-pass-ready").click();
+    await page.getByTestId("gunjin-draw-accept").click();
+    await expect(game).toHaveAttribute("data-state", "finished");
+    await expect(page.getByTestId("gunjin-status")).toContainText("Drawn: a draw was agreed");
+    await expect(page.getByTestId("win-cover")).toContainText(/draw/i);
+    await page.getByTestId("win-cover-see-board").click();
+    await expect(drawing(page).locator("[data-hidden='true']")).toHaveCount(0);
+    // Kept as it ended: a reload shows the same ending.
+    await page.reload();
+    await ready(page, "gunjin-game");
+    await expect(game).toHaveAttribute("data-state", "finished");
+    await expect(page.getByTestId("gunjin-status")).toContainText("Drawn: a draw was agreed");
+  });
+
+  test("a move instead of an answer declines a draw", async ({ page }) => {
+    const offered = playGunjin(playGunjin(arranged(SHOGI), { kind: "hand" })!, { kind: "offer-draw" })!;
+    await keepGame(page, offered);
+    await page.goto(`${AT}/pass-and-play`);
+    await ready(page, "gunjin-game");
+    await page.getByTestId("gunjin-pass-ready").click();
+    await expect(page.getByTestId("gunjin-draw-answer")).toBeVisible();
+    let moved = false;
+    for (let x = 0; x < 9 && !moved; x += 1) {
+      if (((await square(page, x, 3).getAttribute("aria-label")) ?? "").endsWith(", Aircraft")) continue;
+      await square(page, x, 3).click();
+      const lit = (await board(page).getAttribute("data-targets")) ?? "";
+      if (lit !== "") {
+        const [tx, ty] = lit.split(" ")[0]!.split(",").map(Number);
+        await square(page, tx!, ty!).click();
+        moved = true;
+      }
+    }
+    expect(moved).toBe(true);
+    await expect(page.getByTestId("gunjin-pass-to")).toContainText("Pass to Ann");
+    await page.getByTestId("gunjin-pass-ready").click();
+    await expect(page.getByTestId("gunjin-draw-answer")).toHaveCount(0);
+    await expect(page.getByTestId("gunjin-game")).toHaveAttribute("data-state", "playing");
+  });
+
   test("Capture Flag shades its lakes and no piece is offered a move onto one", async ({ page }) => {
     await keepGame(page, arranged(CAPTURE_FLAG));
     await page.goto(`${AT}/pass-and-play`);
@@ -304,6 +377,9 @@ test.describe("Gunjin, pass and play", () => {
     await page.getByTestId("gunjin-pass-ready").click();
     await expect(board(page).locator('[data-lake="true"]')).toHaveCount(8);
     await expect(square(page, 2, 4)).toHaveAttribute("aria-label", /lake/);
+    // And the package draws them: two pieces of water, a 2 x 2 each, in the picture under the squares (the other boards have none).
+    await expect(drawing(page).locator('g[data-lake="true"]')).toHaveCount(2);
+    await expect(board(page).locator('[data-lake="true"]').first()).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
   });
 
   test("taking the flag in Gunjin Shogi ends the game with the capturer the winner", async ({ page }) => {

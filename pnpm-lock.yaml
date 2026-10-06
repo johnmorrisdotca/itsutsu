@@ -18,8 +18,8 @@ importers:
         specifier: 1.1.1
         version: 1.1.1
       '@johnmorrisdotca/gunjin':
-        specifier: 0.1.3
-        version: 0.1.3
+        specifier: 0.2.0
+        version: 0.2.0
       '@johnmorrisdotca/hitotsu':
         specifier: 1.3.1
         version: 1.3.1(react@19.2.8)
@@ -443,8 +443,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@johnmorrisdotca/gunjin@0.1.3':
-    resolution: {integrity: sha512-rpG/CNQCx25DnAX3/AGAQ8rqkuYtMIP83VM9RgFkef8byecRnj1oYKcWSqd1biGPFJ5YH4tulvCG7dtAmuuWNg==}
+  '@johnmorrisdotca/gunjin@0.2.0':
+    resolution: {integrity: sha512-qz2h+Q7v+m5NRBpvAVdQty9f/u7aN6bC6yv5VJhZzlm7NuGx5EAYgLeyKJtQSY4oNny1+4L0gD3sfUSfC8HIiQ==}
     engines: {node: '>=22'}
 
   '@johnmorrisdotca/hitotsu@1.3.1':
@@ -3170,7 +3170,7 @@ snapshots:
 
   '@johnmorrisdotca/domino@1.1.1': {}
 
-  '@johnmorrisdotca/gunjin@0.1.3': {}
+  '@johnmorrisdotca/gunjin@0.2.0': {}
 
   '@johnmorrisdotca/hitotsu@1.3.1(react@19.2.8)':
     optionalDependencies:
