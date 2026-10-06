@@ -1,7 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 
+import { RESULT_CARD_RETRY_MS } from "@/lib/history/gameResult.constants";
 import type { XpToastHold } from "@/lib/xp/xpFlash";
 
 /** Where this browser remembers a result card was closed, one entry per game. */
@@ -146,4 +148,30 @@ export function useResultCard(
   }, [open, close, dialog]);
 
   return { open, close, seen };
+}
+
+/**
+ * Ask the server again while the card has drawn before its XP was written.
+ *
+ * `settling` is the server's own word that the card has no XP only because the
+ * game ended a moment ago (`xpMaySettle`). Each ask is one render of the page, at
+ * most `RESULT_CARD_RETRY_MS.length` of them, and it ends at the first one that
+ * brings the XP, since `settling` is then false. Not from a tab nobody is looking
+ * at, and not once the card has been closed.
+ */
+export function useCardCatchesUp(settling: boolean, open: boolean): void {
+  const router = useRouter();
+  const [asked, setAsked] = useState(0);
+
+  useEffect(() => {
+    if (!settling || !open) return;
+    const wait = RESULT_CARD_RETRY_MS[asked];
+    if (wait === undefined) return;
+    const timer = window.setTimeout(() => {
+      if (document.visibilityState === "hidden") return;
+      router.refresh();
+      setAsked((count) => count + 1);
+    }, wait);
+    return () => window.clearTimeout(timer);
+  }, [settling, open, asked, router]);
 }

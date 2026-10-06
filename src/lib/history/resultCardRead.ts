@@ -11,6 +11,7 @@ import { fetchRivalryView } from "@/lib/record/rivalryRead";
 import { flashAboutGame, xpFlashFor } from "@/lib/xp/xpFlash";
 
 import { gameResultFacts } from "./gameResult";
+import { xpMaySettle } from "./resultCardSettling";
 import { DAY_MS, RESULT_CARD_FRESH_DAYS } from "./gameResult.constants";
 import type { ResultCardData } from "./gameResult.types";
 import type { GameDetail } from "./gameHistory.types";
@@ -82,6 +83,7 @@ export async function resultCardFor(input: {
   const earned = paid?._sum.points ?? 0;
   const waiting = queue.groups.yourMove.filter((one) => one.game.id !== game.id);
   const next = nextWaiting(waiting);
+  const xp = flashAboutGame(flash, game.id) ?? (earned > 0 ? { points: earned, level: null, heldFlashAt: null } : null);
 
   return {
     gameId: game.id,
@@ -93,7 +95,8 @@ export async function resultCardFor(input: {
      * toasts it stands in for are one announcement; the ledger rows keyed to this
      * game where the batch was already shown on another page.
      */
-    xp: flashAboutGame(flash, game.id) ?? (earned > 0 ? { points: earned, level: null, heldFlashAt: null } : null),
+    xp,
+    settling: xpMaySettle({ viewerId: input.viewerId, xp, lastMoveAt: game.lastMoveAt, now }),
     rating:
       game.blackRatingChange === null || game.whiteRatingChange === null
         ? null

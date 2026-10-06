@@ -14,7 +14,7 @@ import { markOfOutcome } from "@/components/game/resultMarks";
 
 import { headlineOf, reasonOf, scoreWords } from "./resultWords";
 import { lineWords } from "./rivalryWords";
-import { useResultCard } from "./useResultCard";
+import { useCardCatchesUp, useResultCard } from "./useResultCard";
 
 /**
  * THE RESULT, OVER THE BOARD IT WAS PLAYED ON.
@@ -37,9 +37,10 @@ import { useResultCard } from "./useResultCard";
  * A dialog that does not trap: the page behind it stays usable, so it is labelled
  * and takes focus rather than claiming `aria-modal`. Escape closes it.
  */
-export function ResultCard({ gameId, facts, names, headStart, xp, rating, rivalry, rematch, newGame, waiting }: ResultCardData) {
+export function ResultCard({ gameId, facts, names, headStart, xp, settling, rating, rivalry, rematch, newGame, waiting }: ResultCardData) {
   const dialog = useRef<HTMLDivElement | null>(null);
   const { open, close, seen } = useResultCard(gameId, dialog);
+  useCardCatchesUp(settling, open);
   const say = useSpeaker();
   const heading = useId();
   const described = useId();
