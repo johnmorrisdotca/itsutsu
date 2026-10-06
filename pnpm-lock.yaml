@@ -45,8 +45,8 @@ importers:
         specifier: 1.2.1
         version: 1.2.1(react@19.2.8)
       '@johnmorrisdotca/kyuubu':
-        specifier: 1.8.1
-        version: 1.8.1(react@19.2.8)
+        specifier: 1.11.0
+        version: 1.11.0(react@19.2.8)
       '@johnmorrisdotca/meikyuu':
         specifier: 2.2.1
         version: 2.2.1
@@ -506,8 +506,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/kyuubu@1.8.1':
-    resolution: {integrity: sha512-o9dekL3zDfmR09leMlpbOTSN5SBv/nJWeJYR8UfXptCEPc3BQaeKZIZeWu8jebMHz9vO8MB74o6MWG4pCt/Q8g==}
+  '@johnmorrisdotca/kyuubu@1.11.0':
+    resolution: {integrity: sha512-gXby9XGQABN6+BdVNYfSmnLracGt8JNhm9QFRkcpg4D06Y5aVLfG4Nn1JszpojyHNEc+XEYZwlz1/G/+YeRF5w==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -3196,7 +3196,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/kyuubu@1.8.1(react@19.2.8)':
+  '@johnmorrisdotca/kyuubu@1.11.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 

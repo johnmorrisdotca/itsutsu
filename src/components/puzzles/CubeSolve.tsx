@@ -4,7 +4,7 @@ import { setUpPath } from "@/lib/gomoku/slugs";
 import { EndGameButton, GameEnding, NewGameLink } from "@/components/play/GameEnding";
 import { ENDINGS } from "@/components/play/gameEnding.constants";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { countsAsMove, cubeSolved, decodeCubeMoves, encodeCubeMoves, movesNotation, turnAll, turnCube, undoAll, undoOf, type CubeMove } from "@johnmorrisdotca/kyuubu";
+import { countsAsMove, cubeSolved, decodeCubeMoves, encodeCubeMoves, movesNotation, solvedCube, turnAll, turnCube, undoAll, undoOf, type CubeMove } from "@johnmorrisdotca/kyuubu";
 import type { KyuubuHandle } from "@johnmorrisdotca/kyuubu/react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -38,12 +38,19 @@ export function CubeSolve({
   race = null,
   resumed = null,
   appearance = DEFAULT_APPEARANCE,
+  animateScramble = true,
 }: {
   puzzle: Puzzle;
   hasAccount: boolean;
   race?: SolveRace | null;
   resumed?: ResumedRun | null;
   appearance?: Appearance;
+  /**
+   * Whether a cube dealt fresh is seen being scrambled: its last ten turns turn, quickly, and the rest are made at once
+   * (Kyuubu's `scramble`). On unless a consumer turns it off, the way a word's replay's motion is (`WordReplay`); a cube
+   * opened again, a race, and a device that asks for less motion never see it.
+   */
+  animateScramble?: boolean;
 }) {
   const hydrated = useHydrated();
   const n = puzzle.size;
@@ -86,6 +93,18 @@ export function CubeSolve({
     }, 250);
     return () => window.clearInterval(timer);
   }, [inspects, startedAt, hydrated, begin]);
+
+  /* THE SCRAMBLE, seen: a cube dealt fresh turns into its scramble as the look begins, then waits for the reader. */
+  const dealt = useRef(false);
+  useEffect(() => {
+    if (!animateScramble || !hydrated || dealt.current || !inspects || moves.length > 0 || startedAt !== null) return;
+    dealt.current = true;
+    const turns = undoAll(decodeCubeMoves(puzzle.solution) ?? []);
+    // Only a scramble that really makes this cube is turned: anything else is left as dealt.
+    if (turns.length === 0 || cube.current === null || turnAll(solvedCube(n), n, turns) !== puzzle.givens) return;
+    cube.current.setState(solvedCube(n));
+    cube.current.scramble(turns);
+  }, [animateScramble, hydrated, inspects, moves.length, startedAt, puzzle.solution, puzzle.givens, n]);
 
   /* Solved: handed in once, with every turn that got it there. */
   const handedIn = useRef(false);

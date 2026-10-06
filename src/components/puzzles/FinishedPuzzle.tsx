@@ -129,7 +129,7 @@ export function FinishedPuzzle({
   if (kind === "cube") {
     return (
       <Focused story={story} hydrated={hydrated} testId="solve-board" state={answer === null ? "dealt" : "replay"}>
-        <CubeReplay size={size} givens={givens} moves={answer ?? ""} at={wordAt} go={setWordAt} />
+        <CubeReplay size={size} givens={givens} moves={answer ?? ""} at={wordAt} go={setWordAt} animate />
       </Focused>
     );
   }

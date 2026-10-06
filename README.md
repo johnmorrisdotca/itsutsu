@@ -416,6 +416,17 @@ layer, drag around the cube to look, wheel over a sticker to turn its row
 seed's random turns, fifteen seconds' look comes before the clock, and the
 answer and a kept run are the turns, which the server makes again from the
 scramble (`cube/check.ts`). Whole-cube turns are looks and are not counted.
+A cube dealt fresh is seen scrambling as the look begins (its last ten turns
+turn, quickly, the rest are made at once: Kyuubu's `scramble`), and a kept
+solve's replay says the move it stands at, in large type and in words in the
+reader's language (`moveName`), lists the moves as buttons that follow it and
+take it anywhere (arrow keys, Home and End), and turns the layers as the
+scrubber moves, going on and each undone going back, a long jump catching up on
+its last few moves (`scrubPath`). Both are props, `animateScramble` and
+`animate`, on unless a consumer turns them off, the way a word's replay's motion
+is; a device that asks for less motion sees neither. A drag that begins on the
+seam between two layers turns both, and so do two fingers on two neighbouring
+layers (a wide turn, told to `onTurn` one layer after the other).
 On a 2×2 or 3×3, **Show me how** gives the next step of the beginner's method
 (Kyuubu's `solveSteps`) and turns it on request; a solve that used it is kept
 as `guided` (`solveHelp.ts`): solved, no points, off the fastest tables. The
