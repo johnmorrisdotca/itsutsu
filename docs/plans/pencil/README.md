@@ -6,20 +6,20 @@
 `pencil-puzzles-ships-four-rectangles-cross-sums-regions-and-jirai`,
 `kazu-harder-akari-slitherlink-and-hitori-and-easy-medium-hard-and-extra-hard-for` and
 `pencil-puzzles-an-extra-hard-level-on-the-site-and-akari-slitherlink-and-hitori`).
-Source package: `@johnmorrisdotca/kazu` 1.4.0, pinned exactly in `package.json`
+Source package: `@johnmorrisdotca/kazu` 2.0.0, pinned exactly in `package.json`
 (github.com/johnmorrisdotca/kazu, MIT, no dependencies). 1.3.0 (2026-10-05) made the six grid generators
 random instead of a few layouts, gave each four levels (easy, medium, hard, extra hard, rated by solving the board
 the way a person does) and more sizes; **a seed makes a different board from 1.2.0's**, which the site takes as it
 comes (a beta: no compatibility layer, a kept run of the old boards may not fit its seed's new board). 1.4.0 (2026-10-05) stopped
-returning 1.2.0's fixed Akari lattice for any seed (see "Kazu 1.3.0's last resort" below).
+returning 1.2.0's fixed Akari lattice for any seed (see "Kazu 1.3.0's last resort" below). 2.0.0 (2026-10-06) renamed Slitherlink, Kakuro and Fillomino to **Loop**, **Cross Sums** and **Regions** in every entry (`@johnmorrisdotca/kazu/loop`, `/cross-sums`, `/regions`) and export (`generateLoop`, `checkCrossSums`, `RegionsBoard`), the names the site already used; the puzzles are unchanged, so the same seed makes the same board.
 
 Kazu 1.2.0 added twelve grid-puzzle engines beside the six number puzzles the site
 already played from 1.0.0. The six are unchanged: 8,280 puzzles (every kind, size and
 level, sixty-nine seeds, today's daily seed and the largest a seed can be) were made,
 checked, solved, hinted and drawn on 1.0.0 and 1.2.0 and compared, and none differed;
 `kazu.test.ts` still pins them. Six of the twelve are on the site, with Jirai, in a family
-of their own, **Pencil puzzles** (key `pencil`): **Shikaku**, **Akari**, **Loop** (Kazu's Slitherlink), **Hitori**,
-**Cross Sums** (Kazu's Kakuro) and **Regions** (Kazu's Fillomino). Plain names for coined ones, and ordinary Japanese
+of their own, **Pencil puzzles** (key `pencil`): **Shikaku**, **Akari**, **Loop** (known elsewhere as Slitherlink), **Hitori**,
+**Cross Sums** (Kakuro) and **Regions** (Fillomino). Plain names for coined ones, and ordinary Japanese
 words stay (John, 2026-10-05: "it's weird that we can't have a game called Shikaku? that is a basic Japanese
 word"); each of the three coined says what it is known as elsewhere on its rules page, and nowhere else.
 A puzzle here is a `PuzzleKind` (`src/lib/puzzles/pencil/`), never a row in
@@ -44,9 +44,9 @@ log and a replay need the board as a string. The site draws Kazu's SVG in its bo
 | A board is a string of marks | A code is one character a mark place: a cell for most, an edge for Loop (`2 × n × (n + 1)`), `progressLength`. So a kept run, a step log, the scrubber and a finished page's replay work unchanged | `codes.ts`, `puzzleProgress.ts` (`progressLength`, `progressFits`) |
 | Shikaku's rectangles | A letter a rectangle, touching rectangles never alike, so a run of one letter is one rectangle | `shikaku.ts` |
 | Givens | A character a cell: Shikaku's areas (base 36), Regions' numbers; Cross Sums' are longer than its cells (`#` and two two-digit sums for a black one), so its black cells are read off the code | each kind's file |
-| The answer is the code | Handed in as it stands; the check restates the rules through Kazu (`checkShikaku`, `checkKakuro`, `checkFillomino`), never the solver that made the board | `puzzleCheck.ts` |
+| The answer is the code | Handed in as it stands; the check restates the rules through Kazu (`checkShikaku`, `checkCrossSums`, `checkRegions`), never the solver that made the board | `puzzleCheck.ts` |
 | A seed with no puzzle | Kazu 1.3.0 never throws for one (1.2.0's Cross Sums seed 97 did, one in a hundred; if a level cannot be made it makes the next level down, rated on the board it returns). The way out stays, for a package that does: the seed names the next that has one, as a winnable Solitaire's does, and the page puts the address right | `generate.ts` |
-| Sizes and levels | Four levels at every size, from easy (the rules alone, most numbers printed) to **extra hard** (the site's first: it needs the most supposing, the fewest numbers). Shikaku 5, 7, 10, 14; Cross Sums and Regions 6, 8, 10, 12 (Kazu's `SHIKAKU_SIZES`, `KAKURO_SIZES`, `FILLOMINO_SIZES`, which `pencil.test.ts` holds the site to). Measured on a Mac in node over eight seeds a kind, size and level, the slowest board took 0.54 s (Cross Sums 12, extra hard) and every other under 0.35 s | `pencil.constants.ts` |
+| Sizes and levels | Four levels at every size, from easy (the rules alone, most numbers printed) to **extra hard** (the site's first: it needs the most supposing, the fewest numbers). Shikaku 5, 7, 10, 14; Cross Sums and Regions 6, 8, 10, 12 (Kazu's `SHIKAKU_SIZES`, `CROSS_SUMS_SIZES`, `REGIONS_SIZES`, which `pencil.test.ts` holds the site to). Measured on a Mac in node over eight seeds a kind, size and level, the slowest board took 0.54 s (Cross Sums 12, extra hard) and every other under 0.35 s | `pencil.constants.ts` |
 | Points | A puzzle's own score is five a cell the answer decides (`work`), less fifty a help; its IP is its price on the ladder (`ladder.constants.ts`, PTS-05): Shikaku and Akari 50, 70, 95, 125 at 5, 7, 10, 14; Loop 50, 85, 125 at 5, 7, 10; Hitori 50, 70, 90, 125 at 5, 7, 9, 12; Regions 50, 75, 100, 125 at 6, 8, 10, 12; Cross Sums 50, 75, 100, 125 at 6, 8, 10, 12; Jirai 50, 65, 95, 110, 125 at 7, 9, 12, 16, 32; a level adds 0, 10, 25 or, for extra hard, 40, never past the ceiling of 150, so the biggest size's Hard and Extra hard are both 150. Rungs are spaced by the work in a size | `ladder.constants.ts`, `puzzlePoints.ts` |
 | Hints, Check and Show | As a Number Place's: against the answer this tab holds; Show is paid for from the Check allowance; Hint is chosen on the set-up | `PencilSolve.tsx` |
 
@@ -73,7 +73,7 @@ one character a square, kept runs, steps, Check, Show, Hint, the clock.
 They were held back on 1.2.0 (John, 2026-10-05: "ship four now"), because that Kazu's generators for them were small
 families of layouts: an Akari 7×7 always had ten white squares, a Slitherlink clued every cell and mostly with 0, a Hitori
 shaded three or four squares. 1.3.0 makes them from scratch at four levels, and they came back the same day. Their
-names: **Akari** 明かり (slug `akari`), **Loop** 輪 (Kazu's Slitherlink, kind key and slug `loop`) and **Hitori** 一人
+names: **Akari** 明かり (slug `akari`), **Loop** 輪 (Slitherlink elsewhere, kind key and slug `loop`) and **Hitori** 一人
 (slug `hitori`). Loop is drawn on its edges, so a press means the edge nearest (`edgeAt`), a code has a character an edge
 (`2 × n × (n + 1)`), and its steps are said as lines and columns (`edgeWords`). Akari 5, 7, 10, 14; Loop 5, 7, 10;
 Hitori 5, 7, 9, 12 (Kazu makes any side from 4 to 12, and offers 5 to 10 and 12). Hitori's numbers past nine are letters.

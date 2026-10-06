@@ -1,5 +1,5 @@
 import { BLANK, BULB, EDGE, SHADE, symbolFor } from "./codes";
-import { BLACK } from "./kakuro";
+import { BLACK } from "./crossSums";
 import { shikakuPlace, shikakuRemove } from "./shikaku";
 import type { PencilKind } from "./pencil.types";
 

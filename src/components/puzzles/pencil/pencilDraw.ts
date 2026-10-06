@@ -1,17 +1,17 @@
 import { drawAkari } from "@johnmorrisdotca/kazu/akari/draw";
-import { drawFillomino } from "@johnmorrisdotca/kazu/fillomino/draw";
+import { drawRegions } from "@johnmorrisdotca/kazu/regions/draw";
 import { drawHitori } from "@johnmorrisdotca/kazu/hitori/draw";
-import { drawKakuro } from "@johnmorrisdotca/kazu/kakuro/draw";
+import { drawCrossSums } from "@johnmorrisdotca/kazu/cross-sums/draw";
 import { drawShikaku } from "@johnmorrisdotca/kazu/shikaku/draw";
-import { drawSlitherlink } from "@johnmorrisdotca/kazu/slitherlink/draw";
+import { drawLoop } from "@johnmorrisdotca/kazu/loop/draw";
 
 import { akariBoardOf, akariBulbsOf } from "@/lib/puzzles/pencil/akari";
-import { fillominoBoardOf, fillominoEntriesOf } from "@/lib/puzzles/pencil/fillomino";
+import { regionsBoardOf, regionsEntriesOf } from "@/lib/puzzles/pencil/regions";
 import { hitoriBoardOf, hitoriShadedOf } from "@/lib/puzzles/pencil/hitori";
-import { kakuroBoardOf, kakuroValuesOf } from "@/lib/puzzles/pencil/kakuro";
+import { crossSumsBoardOf, crossSumsValuesOf } from "@/lib/puzzles/pencil/crossSums";
 import type { PencilKind } from "@/lib/puzzles/pencil/pencil.types";
 import { shikakuBoardOf, shikakuRectsOf } from "@/lib/puzzles/pencil/shikaku";
-import { slitherlinkBoardOf, slitherlinkEdgesOf } from "@/lib/puzzles/pencil/slitherlink";
+import { loopBoardOf, loopEdgesOf } from "@/lib/puzzles/pencil/loop";
 
 /**
  * What a board shows besides what is written on it: the cell or edge chosen,
@@ -54,9 +54,9 @@ export function pencilSvg(kind: PencilKind, size: number, givens: string, code: 
       return board === null || bulbs === null ? null : drawAkari(board, { bulbs, selected, errors: wrong, material });
     }
     case "loop": {
-      const board = slitherlinkBoardOf(size, givens);
-      const edges = slitherlinkEdgesOf(size, code);
-      return board === null || edges === null ? null : drawSlitherlink(board, { edges, selected, errors: wrong, material });
+      const board = loopBoardOf(size, givens);
+      const edges = loopEdgesOf(size, code);
+      return board === null || edges === null ? null : drawLoop(board, { edges, selected, errors: wrong, material });
     }
     case "hitori": {
       const board = hitoriBoardOf(size, givens);
@@ -70,14 +70,14 @@ export function pencilSvg(kind: PencilKind, size: number, givens: string, code: 
       return drawHitori(board, { shaded, selected, errors: wrong, material }).replace(/<\/svg>$/, `${outlines}</svg>`);
     }
     case "regions": {
-      const board = fillominoBoardOf(size, givens);
-      const entries = fillominoEntriesOf(size, code);
-      return board === null || entries === null ? null : drawFillomino(board, { entries, selected, errors: wrong, material });
+      const board = regionsBoardOf(size, givens);
+      const entries = regionsEntriesOf(size, code);
+      return board === null || entries === null ? null : drawRegions(board, { entries, selected, errors: wrong, material });
     }
     case "crossSums": {
-      const board = kakuroBoardOf(size, givens);
-      const values = board === null ? null : kakuroValuesOf(board, code);
-      return board === null || values === null ? null : drawKakuro(board, { values, selected: selected ?? undefined, errors: wrong, material });
+      const board = crossSumsBoardOf(size, givens);
+      const values = board === null ? null : crossSumsValuesOf(board, code);
+      return board === null || values === null ? null : drawCrossSums(board, { values, selected: selected ?? undefined, errors: wrong, material });
     }
   }
 }

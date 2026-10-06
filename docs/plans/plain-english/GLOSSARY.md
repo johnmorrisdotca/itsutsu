@@ -390,10 +390,10 @@ them (`points/ladder.ts`, `points/gamePoints.ts`).
 | Pencil puzzles 鉛筆 | the family's title | the plain word for the thing every one of them is solved with |
 | Extra hard 超級 | a level's chip (the fourth after Easy 初級, Medium 中級 and Hard 上級), the line over the board, My games, the fastest tables | the site's first fourth level (2026-10-05): sentence case and two words, "extra hard" in a line of facts ("8×8, extra hard"). Not "Expert", "Insane" or "Hardest"; its address and Kazu's and Jirai's own spelling is `extra-hard` |
 | Remove | under a Shikaku board | the usual word; a press then takes a rectangle off. Not "Erase" or "Clear" (a Gomoji's Clear is its row) |
-| Cross Sums · Regions | the games' names | plain English for what Kazu calls Kakuro and Fillomino; each says "known elsewhere as ..." on its rules page and nowhere else. Shikaku stays: an ordinary Japanese word (John, 2026-10-05) |
+| Cross Sums · Regions | the games' names | plain English for Kakuro and Fillomino, and since Kazu 2.0.0 Kazu's own names too; each says "known elsewhere as ..." on its rules page and nowhere else. Shikaku stays: an ordinary Japanese word (John, 2026-10-05) |
 | rectangle · cell | what Check counts ("2 rectangles are wrong, 1 still to draw") | each puzzle's own noun, so a Shikaku never counts "cells" |
 | draw · fill | "still to ..." | the verb of the thing: a rectangle is drawn, a cell filled |
-| Akari · Loop · Hitori | the games' names | Akari and Hitori are the puzzles' own names; Loop is plain English for Kazu's Slitherlink and says "known elsewhere as ..." on its rules page and nowhere else (`loop` is its address) |
+| Akari · Loop · Hitori | the games' names | Akari and Hitori are the puzzles' own names; Loop is plain English for Slitherlink, and since Kazu 2.0.0 Kazu's own name, and says "known elsewhere as ..." on its rules page and nowhere else (`loop` is its address) |
 | bulb · line · square | what Check counts on Akari, Loop and Hitori | each puzzle's own noun: "2 bulbs are wrong, 1 still to place", "3 lines ...  still to draw", "1 square ... still to shade" |
 | Flag | under a Jirai board | the usual word; pressed, a tap flags. Not "Mark" (the package's word), which a Check also uses |
 | mines left · mistake | the line under a Jirai board | "13 mines left · 1 mistake": the mines not yet flagged, and the mines uncovered by slip |

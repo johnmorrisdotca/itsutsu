@@ -33,8 +33,8 @@ importers:
         specifier: 0.1.0
         version: 0.1.0
       '@johnmorrisdotca/kazu':
-        specifier: 1.4.1
-        version: 1.4.1
+        specifier: 2.0.0
+        version: 2.0.0
       '@johnmorrisdotca/korokoro':
         specifier: 1.15.1
         version: 1.15.1(react@19.2.8)
@@ -475,8 +475,8 @@ packages:
     resolution: {integrity: sha512-s8SI718nDivgpnQyrdivwq07+IhlOFyIHk0IPhcVhoR/Pu6pmx0GnYGxpyD+UmQ7Ad9nK0LaRxnH3+H13RA/Ig==}
     engines: {node: '>=22'}
 
-  '@johnmorrisdotca/kazu@1.4.1':
-    resolution: {integrity: sha512-OgNTicD7kJAnahr/HCd4QUS7Ko2ZoPpwrCaXse/ERBkZSiDPEw/+FboKtRUi/NqbPW5rz/EeVVS8aj8APT45XQ==}
+  '@johnmorrisdotca/kazu@2.0.0':
+    resolution: {integrity: sha512-zjHDbWZ8kA4H7y2tDWQJRLXsC0/Qw+x0IedipKwhT/gATU9ZihKw8Z9TEdkMWgEQQ+K+uRHL9vrQGdLoWqkEQg==}
     engines: {node: '>=22'}
 
   '@johnmorrisdotca/korokoro@1.15.1':
@@ -3184,7 +3184,7 @@ snapshots:
 
   '@johnmorrisdotca/karakuri@0.1.0': {}
 
-  '@johnmorrisdotca/kazu@1.4.1': {}
+  '@johnmorrisdotca/kazu@2.0.0': {}
 
   '@johnmorrisdotca/korokoro@1.15.1(react@19.2.8)':
     optionalDependencies:

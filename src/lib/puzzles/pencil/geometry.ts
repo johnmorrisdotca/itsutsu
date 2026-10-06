@@ -35,7 +35,7 @@ export function cellAt(kind: PencilKind, size: number, point: Fraction): number 
  * The edge a press means on a Slitherlink board: of the cell under it, the side
  * it is nearest, so every press lands on an edge and there is no dead place to
  * miss in. Horizontal edges are numbered first and then vertical ones, each in
- * reading order, as Kazu numbers them (`slitherlinkCellEdges`).
+ * reading order, as Kazu numbers them (`loopCellEdges`).
  */
 export function edgeAt(size: number, point: Fraction): number | null {
   const { unit, pad } = PENCIL_GEOMETRY.loop;

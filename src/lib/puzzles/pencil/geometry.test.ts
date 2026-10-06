@@ -1,20 +1,20 @@
 import { drawAkari } from "@johnmorrisdotca/kazu/akari/draw";
-import { drawFillomino } from "@johnmorrisdotca/kazu/fillomino/draw";
+import { drawRegions } from "@johnmorrisdotca/kazu/regions/draw";
 import { drawHitori } from "@johnmorrisdotca/kazu/hitori/draw";
-import { drawKakuro } from "@johnmorrisdotca/kazu/kakuro/draw";
+import { drawCrossSums } from "@johnmorrisdotca/kazu/cross-sums/draw";
 import { drawShikaku } from "@johnmorrisdotca/kazu/shikaku/draw";
-import { drawSlitherlink } from "@johnmorrisdotca/kazu/slitherlink/draw";
-import { slitherlinkCellEdges } from "@johnmorrisdotca/kazu/slitherlink";
+import { drawLoop } from "@johnmorrisdotca/kazu/loop/draw";
+import { loopCellEdges } from "@johnmorrisdotca/kazu/loop";
 import { describe, expect, it } from "vitest";
 
 import { akariBoardOf } from "./akari";
 import { cellAt, edgeAt, PENCIL_GEOMETRY } from "./geometry";
-import { fillominoBoardOf } from "./fillomino";
+import { regionsBoardOf } from "./regions";
 import { hitoriBoardOf } from "./hitori";
-import { kakuroBoardOf } from "./kakuro";
+import { crossSumsBoardOf } from "./crossSums";
 import { pencilEngine } from "./engines";
 import { shikakuBoardOf } from "./shikaku";
-import { slitherlinkBoardOf } from "./slitherlink";
+import { loopBoardOf } from "./loop";
 import type { PencilKind } from "./pencil.types";
 
 /** The viewBox a drawing says it has, and the side of a cell as the package draws it. */
@@ -30,10 +30,10 @@ describe("the geometry is the package's drawing's", () => {
     switch (kind) {
       case "shikaku": return drawShikaku(shikakuBoardOf(size, givens)!);
       case "akari": return drawAkari(akariBoardOf(size, givens)!);
-      case "loop": return drawSlitherlink(slitherlinkBoardOf(size, givens)!);
+      case "loop": return drawLoop(loopBoardOf(size, givens)!);
       case "hitori": return drawHitori(hitoriBoardOf(size, givens)!);
-      case "regions": return drawFillomino(fillominoBoardOf(size, givens)!);
-      case "crossSums": return drawKakuro(kakuroBoardOf(size, givens)!);
+      case "regions": return drawRegions(regionsBoardOf(size, givens)!);
+      case "crossSums": return drawCrossSums(crossSumsBoardOf(size, givens)!);
     }
   };
 
@@ -67,11 +67,11 @@ describe("a press on a Loop (Slitherlink) board is an edge", () => {
   const at = (column: number, row: number, lu: number, lv: number) => ({ x: (pad + (column + lu) * unit) / whole, y: (pad + (row + lv) * unit) / whole });
 
   it("is the side of the cell it is nearest, and Kazu's own number for that side", () => {
-    const board = slitherlinkBoardOf(size, ".".repeat(size * size))!;
+    const board = loopBoardOf(size, ".".repeat(size * size))!;
     for (let cell = 0; cell < size * size; cell += 1) {
       const column = cell % size;
       const row = Math.floor(cell / size);
-      const [top, right, bottom, left] = slitherlinkCellEdges(board, cell)!;
+      const [top, right, bottom, left] = loopCellEdges(board, cell)!;
       expect(edgeAt(size, at(column, row, 0.5, 0.1))).toBe(top);
       expect(edgeAt(size, at(column, row, 0.9, 0.5))).toBe(right);
       expect(edgeAt(size, at(column, row, 0.5, 0.9))).toBe(bottom);

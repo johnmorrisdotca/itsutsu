@@ -1,11 +1,11 @@
-import { checkFillomino, generateFillomino, isFillominoBoard, solveFillomino, type FillominoBoard } from "@johnmorrisdotca/kazu/fillomino";
+import { checkRegions, generateRegions, isRegionsBoard, solveRegions, type RegionsBoard } from "@johnmorrisdotca/kazu/regions";
 
 import type { PuzzleCheck } from "../puzzles.types";
 import { BLANK, charFix, charMissing, charWrong, symbolFor, valueOf } from "./codes";
 import type { PencilEngine } from "./pencil.types";
 
 /**
- * FILLOMINO, number the regions by their size: Kazu's (`@johnmorrisdotca/kazu/fillomino`).
+ * REGIONS, number the regions by their size: Kazu's (`@johnmorrisdotca/kazu/regions`).
  *
  * The givens, and the code a reader writes, are a character a cell: `.` for
  * an empty cell, else the number in it, one character (1 to 9 and then
@@ -14,15 +14,15 @@ import type { PencilEngine } from "./pencil.types";
  */
 
 /** The board the givens are, or null for givens that are not one. */
-export function fillominoBoardOf(size: number, givens: string): FillominoBoard | null {
-  const entries = fillominoEntriesOf(size, givens);
+export function regionsBoardOf(size: number, givens: string): RegionsBoard | null {
+  const entries = regionsEntriesOf(size, givens);
   if (entries === null) return null;
   const board = { width: size, height: size, givens: entries };
-  return isFillominoBoard(board) ? board : null;
+  return isRegionsBoard(board) ? board : null;
 }
 
 /** The numbers a code writes (0 for an empty cell), or null for a code that is not a grid of them. */
-export function fillominoEntriesOf(size: number, code: string): number[] | null {
+export function regionsEntriesOf(size: number, code: string): number[] | null {
   if (code.length !== size * size) return null;
   const entries: number[] = [];
   for (const character of code) {
@@ -35,29 +35,29 @@ export function fillominoEntriesOf(size: number, code: string): number[] | null 
 
 const codeOf = (entries: readonly number[]): string => entries.map((value) => (value === 0 ? BLANK : (symbolFor(value) ?? "?"))).join("");
 
-export const fillomino: PencilEngine = {
+export const regions: PencilEngine = {
   codeLength: (size) => size * size,
   make(size, level, seed) {
-    const made = generateFillomino(size, size, level, seed);
+    const made = generateRegions(size, size, level, seed);
     return { givens: codeOf(made.givens), solution: codeOf(made.solution) };
   },
-  reads: (size, givens) => fillominoBoardOf(size, givens) !== null,
+  reads: (size, givens) => regionsBoardOf(size, givens) !== null,
   blank: (_size, givens) => givens,
-  fits: (size, code) => fillominoEntriesOf(size, code) !== null,
+  fits: (size, code) => regionsEntriesOf(size, code) !== null,
   check(size, givens, answer): PuzzleCheck {
-    const board = fillominoBoardOf(size, givens);
-    if (board === null) return { ok: false, reason: "the givens are not a Fillomino board" };
-    const entries = fillominoEntriesOf(size, answer);
+    const board = regionsBoardOf(size, givens);
+    if (board === null) return { ok: false, reason: "the givens are not a Regions board" };
+    const entries = regionsEntriesOf(size, answer);
     if (entries === null) return { ok: false, reason: "the answer is not a grid of numbers" };
     if (board.givens.some((given, at) => given !== 0 && given !== entries[at])) return { ok: false, reason: "a printed number was changed" };
-    const verdict = checkFillomino(board, entries);
+    const verdict = checkRegions(board, entries);
     if (verdict.ok && verdict.complete) return { ok: true };
     return { ok: false, reason: verdict.complete ? "a region is not as big as its number, or two regions of one size touch" : "some cells are empty" };
   },
   solve(size, givens) {
-    const board = fillominoBoardOf(size, givens);
+    const board = regionsBoardOf(size, givens);
     if (board === null) return null;
-    const found = solveFillomino(board, undefined, { limit: 2 });
+    const found = solveRegions(board, undefined, { limit: 2 });
     return found.complete && found.count === 1 && found.solution !== null ? codeOf(found.solution) : null;
   },
   wrong: (_size, code, solution) => charWrong(code, solution),

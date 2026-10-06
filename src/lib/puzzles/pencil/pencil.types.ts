@@ -3,7 +3,7 @@ import type { PuzzleCheck, PuzzleLevel } from "../puzzles.types";
 /**
  * THE PENCIL PUZZLES: grid puzzles drawn and written on in pencil, made,
  * solved and checked by Kazu (`@johnmorrisdotca/kazu`, github.com/johnmorrisdotca/kazu).
- * Kazu's Slitherlink is the site's Loop (`loop`); each is a `PuzzleKind` of its own; this is the one shape they all share, so
+ * Kazu's Loop, Cross Sums and Regions are the site's `loop`, `crossSums` and `regions` (Kazu 2.0.0 took the plain names); each is a `PuzzleKind` of its own; this is the one shape they all share, so
  * the solve screen, the server's check and the finished page are written once.
  */
 export type PencilKind = "shikaku" | "akari" | "loop" | "hitori" | "crossSums" | "regions";

@@ -1,9 +1,9 @@
 import { AKARI_SIZES, generateAkari, type AkariLevel } from "@johnmorrisdotca/kazu/akari";
-import { FILLOMINO_SIZES, generateFillomino, type FillominoLevel } from "@johnmorrisdotca/kazu/fillomino";
+import { REGIONS_SIZES, generateRegions, type RegionsLevel } from "@johnmorrisdotca/kazu/regions";
 import { generateHitori, HITORI_SIZES, type HitoriLevel } from "@johnmorrisdotca/kazu/hitori";
-import { generateKakuro, KAKURO_SIZES, type KakuroLevel } from "@johnmorrisdotca/kazu/kakuro";
+import { generateCrossSums, CROSS_SUMS_SIZES, type CrossSumsLevel } from "@johnmorrisdotca/kazu/cross-sums";
 import { generateShikaku, SHIKAKU_SIZES, type ShikakuLevel } from "@johnmorrisdotca/kazu/shikaku";
-import { generateSlitherlink, SLITHERLINK_SIZES, type SlitherlinkLevel } from "@johnmorrisdotca/kazu/slitherlink";
+import { generateLoop, LOOP_SIZES, type LoopLevel } from "@johnmorrisdotca/kazu/loop";
 import { describe, expect, it, vi } from "vitest";
 
 import type { PuzzleLevel } from "../puzzles.types";
@@ -12,7 +12,7 @@ import { generatePencil } from "./generate";
 import { entered, FRESH_UI, moved, pressed, type PencilPress, type PencilUi } from "./input";
 import { isPencilKind, PENCIL_KIND_LIST, PENCIL_SPECS } from "./pencil.constants";
 import { shikakuCodeOf, shikakuPlace, shikakuRectsOf, shikakuRemove } from "./shikaku";
-import { slitherlinkEdgesOf } from "./slitherlink";
+import { loopEdgesOf } from "./loop";
 import type { PencilKind } from "./pencil.types";
 
 const engineOf = (kind: PencilKind) => pencilEngine(kind);
@@ -148,7 +148,7 @@ describe("Slitherlink's code", () => {
     for (const size of PENCIL_SPECS.loop.sizes) {
       const made = engineOf("loop").make(size, "medium", 1);
       expect(made.solution).toHaveLength(2 * size * (size + 1));
-      expect(slitherlinkEdgesOf(size, made.solution)!.length).toBeGreaterThan(4);
+      expect(loopEdgesOf(size, made.solution)!.length).toBeGreaterThan(4);
     }
   });
 });
@@ -237,8 +237,8 @@ describe("what a press does", () => {
     expect(entered("regions", "1...", "1...", { ...FRESH_UI, selected: 0 }, 3).code).toBe("1...");
     // A Cross Sums's givens are longer than its cells; its black cells are read off the code.
     const longGivens = "#0405#0506...";
-    const kakuro = pressed("crossSums", 2, longGivens, "#...", FRESH_UI, { cell: 0 });
-    expect(kakuro.ui.selected).toBeNull();
+    const crossSumsPress = pressed("crossSums", 2, longGivens, "#...", FRESH_UI, { cell: 0 });
+    expect(crossSumsPress.ui.selected).toBeNull();
     expect(pressed("crossSums", 2, longGivens, "#...", FRESH_UI, { cell: 1 }).ui.selected).toBe(1);
     expect(entered("crossSums", longGivens, "#...", { ...FRESH_UI, selected: 2 }, 9).code).toBe("#.9.");
     expect(entered("crossSums", longGivens, "#...", { ...FRESH_UI, selected: 0 }, 9).code).toBe("#...");
@@ -263,10 +263,10 @@ describe("the sizes and levels are Kazu's", () => {
   const OFFERED_BY_KAZU: Record<PencilKind, readonly number[]> = {
     shikaku: SHIKAKU_SIZES,
     akari: AKARI_SIZES,
-    loop: SLITHERLINK_SIZES,
+    loop: LOOP_SIZES,
     hitori: HITORI_SIZES,
-    crossSums: KAKURO_SIZES,
-    regions: FILLOMINO_SIZES,
+    crossSums: CROSS_SUMS_SIZES,
+    regions: REGIONS_SIZES,
   };
 
   it("offers only sizes Kazu says it offers, four boards a puzzle at the most, and every level it makes", () => {
@@ -283,10 +283,10 @@ describe("the sizes and levels are Kazu's", () => {
     const MADE: Record<PencilKind, (size: number, level: PuzzleLevel, seed: number) => { level: string }> = {
       shikaku: (size, level, seed) => generateShikaku(size, size, level as ShikakuLevel, seed),
       akari: (size, level, seed) => generateAkari(size, size, seed, level as AkariLevel),
-      loop: (size, level, seed) => generateSlitherlink(size, size, seed, level as SlitherlinkLevel),
+      loop: (size, level, seed) => generateLoop(size, size, seed, level as LoopLevel),
       hitori: (size, level, seed) => generateHitori(size, seed, level as HitoriLevel),
-      crossSums: (size, level, seed) => generateKakuro(seed, level as KakuroLevel, size),
-      regions: (size, level, seed) => generateFillomino(size, size, level as FillominoLevel, seed),
+      crossSums: (size, level, seed) => generateCrossSums(seed, level as CrossSumsLevel, size),
+      regions: (size, level, seed) => generateRegions(size, size, level as RegionsLevel, seed),
     };
     for (const kind of PENCIL_KIND_LIST) {
       for (const size of PENCIL_SPECS[kind].offered) {
