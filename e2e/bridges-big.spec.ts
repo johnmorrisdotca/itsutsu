@@ -20,6 +20,14 @@ import { freshPuzzleSeed, ready } from "./support";
 const KIND = "bridges";
 const AT = `/games/${PUZZLE_SLUGS[KIND]}`;
 
+/**
+ * A 25×25 BOARD WITH A BRIDGE LEAVING THE PHONE'S VIEW. The page opens a 25×25 zoomed in, so only a part of the board is on the screen, and the
+ * drag test below needs a bridge from an island well inside the box to one past its right edge. Which islands those are depends on the board,
+ * so a random seed could (rarely) make a board with none and fail by chance. This seed was chosen by opening it at the phone's size and
+ * finding such a bridge, and it makes the same board every time, so the test cannot fail by luck; it still looks for the island on the page.
+ */
+const OFF_SCREEN_SEED = 1;
+
 type Laid = { board: BridgesBoard; answer: number[] };
 
 function answerOf(size: number, level: PuzzleLevel, seed: number): Laid {
@@ -99,7 +107,7 @@ test.describe("the three biggest Bridges boards", () => {
     });
 
     test("a finger drags a bridge toward an island out of sight, and lifting lays it, the page where it was", async ({ page }) => {
-      const seed = freshPuzzleSeed();
+      const seed = OFF_SCREEN_SEED;
       const { board, answer } = answerOf(25, "medium", seed);
       await page.goto(`${AT}/play?size=25&level=medium&seed=${seed}`);
       await ready(page, "puzzle-play");
