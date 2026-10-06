@@ -56,6 +56,7 @@ const READERS_A_PAGE_USES: ReadonlyMap<string, string> = new Map([
 const BIG_FILE_BYTES = 64 * 1024;
 const BIG_FILES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map([
   ["src/lib/puzzles/puzzles.constants.ts", "Every puzzle's name, rules and sizes, printed by its page, its rules page and every list of games."],
+  ["src/lib/puzzles/suido/levelBoards.data.ts", "The hash and the first characters of every Suido level's board, 100 KB for the 4,000 levels of sixteen sizes where the boards themselves are a megabyte and a quarter: which level a solve was, on a solve's page, a member's page and a level's fastest times (suido/levels.ts, suidoRecords.ts)."],
 ]);
 
 /*
@@ -172,11 +173,8 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   /* Tobiishi, built (0.2.1): the engine, the boards and the named challenges are 17 KB of source, the drawing 2.5 KB (the player and the custom element, 18 KB beyond them, are not imported anywhere). A page's server build reaches both: a kept or finished level's jumps replayed and checked on the server before it pays (tobiishi/check.ts, way.ts), which level a solve was (tobiishi/levels.ts) and a finished level's board drawn on its page (TobiishiStill.tsx). A level is made again from its name in a fraction of a millisecond, so there is no list to read. */
   ["@johnmorrisdotca/tobiishi", "Tobiishi's levels: a level's board made again from its name, its jumps replayed and checked on the server before it pays (tobiishi/check.ts, way.ts), and which level a solve was (tobiishi/levels.ts)."],
   ["@johnmorrisdotca/tobiishi/draw", "A finished Tobiishi level's board drawn on its page, and a level's preview (TobiishiStill.tsx): pure SVG text, with no DOM."],
-  /* Suido's levels (1.1.0): each size is a data file of its own (25 to 109 KB, 800 KB the thirteen). The server reads the thirteen it always has, each by its own entry (suido/levels.ts), to name which level a member's solves were (suidoRecords.ts), a level's fastest times, and a finished solve's own page which level it was (PuzzleSolvePage.tsx); the counts, blocks and marks are read without loading one, from the entry that has no board in it (`levels-info`). The three huge sizes (130 KB the 20×50) are the browser's alone, by the package's loader inside `typeof window`, and the server knows them by a hash of the board (suido/hugeLevels.data.ts): the package's `levels` entry, which names all sixteen, is in no function. */
+  /* Suido's levels (1.1.0): each size is a data file of its own (25 to 109 KB, a megabyte the thirteen ordinary sizes and 280 KB the huge three), and NONE is a server's. The browser reads them through the package's loader inside `typeof window` (suido/levels.ts), a test or a spec through suido/levelsModule.ts, and the server names which level a board is by a hash of it (suido/levelBoards.data.ts, 100 KB for all sixteen sizes): the package's `levels` entry and every `levels-<size>` are in no function (`carries no Suido level file` below). The counts, blocks and marks are read without loading one, from the entry that has no board in it (`levels-info`). */
   ["@johnmorrisdotca/suido/levels-info", "Suido's levels without their boards: how many each size has, which are open, each one's marks, lessons and twists (suido/levels.ts)."],
-  ...["5x5", "6x6", "7x7", "8x8", "9x9", "10x10", "11x11", "12x12", "13x13", "14x14", "5x7", "6x10", "8x14"].map(
-    (size) => [`@johnmorrisdotca/suido/levels-${size}`, `Suido's ${size} boards, read once on the server to name which level a solve was and who is fastest (suido/levels.ts, suidoRecords.ts).`] as const,
-  ),
   ["@johnmorrisdotca/tsunagi", "Tsunagi's rules: a kept or finished level replayed and checked on the server, and a level's board drawn in its set-up preview and on its finished page."],
   ["@johnmorrisdotca/tsunagi/renumbered", "Where each old level went (2 KB), for a browser's own record of its solves moved to the new numbers (`tsunagiKept.ts`), reached through the set-up screen."],
   ["@johnmorrisdotca/tsunagi/layouts", "Every Tsunagi level's board without its answer (0.36 MB for all 2,624 levels, where the levels are 1 MB): read by layoutsModule.ts so that the server can check a solve against the level it names and list who solved which level. The levels themselves (answers too) are fetched in the browser alone, and by a unit test or a spec through levelsModule.ts."],
@@ -225,7 +223,7 @@ const TABLES_DRAWN_ON_THE_SERVER: ReadonlySet<string> = new Set([
 const TABLE_FILES = ["src/components/party/partyKindTables.ts", "src/components/party/partyTables.ts"];
 
 // A word list is a `.data` file of ours, or one of Kotoba's lists, each an entry point of its own (`@johnmorrisdotca/kotoba/kana-5`), and so is each size of Tsunagi's levels (`@johnmorrisdotca/tsunagi/levels-7`) and its boards without their answers (`@johnmorrisdotca/tsunagi/layouts`).
-const isData = (spec: string) => /\.data$/.test(spec) || /^@johnmorrisdotca\/kotoba\/(words|kana|pop)-/.test(spec) || /^@johnmorrisdotca\/tsunagi\/(levels-|layouts$)/.test(spec);
+const isData = (spec: string) => /\.data$/.test(spec) || /^@johnmorrisdotca\/kotoba\/(words|kana|pop)-/.test(spec) || /^@johnmorrisdotca\/tsunagi\/(levels-|layouts$)/.test(spec) || /^@johnmorrisdotca\/suido\/levels(-\d|$)/.test(spec);
 
 describe("the pages' server function", () => {
   it("fetches a list in the browser only, or reads it in a module of its own", () => {
@@ -240,6 +238,16 @@ describe("the pages' server function", () => {
     const unexpected = readers.filter((path) => !READERS_A_PAGE_USES.has(path)).map((path) => chainTo(reach, path));
     expect(unexpected, "a page reaches a module that reads a list on the server, so every page's function carries the list").toEqual([]);
     for (const path of READERS_A_PAGE_USES.keys()) expect(readers, `${path} is no longer reached by a page; take it off the list`).toContain(path);
+  });
+
+  it("carries no Suido level file: a server names a level by its hash, and the boards are the browser's", () => {
+    // A level's board is read by the package's loader in the browser (`typeof window`), or by `levelsModule.ts` in a test: never by anything a page reaches.
+    const offenders = reached.flatMap((path) => {
+      const file = files.get(path);
+      const levelFiles = [...(file?.packages ?? []), ...(file?.serverDynamic ?? [])].filter((spec) => /^@johnmorrisdotca\/suido\/levels(-\d|$)/.test(spec));
+      return [...levelFiles.map((spec) => `${spec}  ${chainTo(reach, path)}`), ...(path === "src/lib/puzzles/suido/levelsModule.ts" ? [`${path}  ${chainTo(reach, path)}`] : [])];
+    });
+    expect(offenders, "a page's server build reaches Suido's level data, which is 1.3 MB in every function").toEqual([]);
   });
 
   it("carries no big file nobody wrote down", () => {

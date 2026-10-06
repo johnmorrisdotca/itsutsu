@@ -35,8 +35,8 @@ import { ResultMark } from "@/components/game/ResultMark";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { puzzleOutcome, puzzleSizeLabel, type PuzzleOutcome } from "@/lib/puzzles/puzzleOutcome";
 
-import { suidoLevelOfBoard, loadSuidoLevelsAt } from "@/lib/puzzles/suido/levels";
-import { isSuidoHugeSize, isSuidoLevelSize } from "@/lib/puzzles/suido/sizes";
+import { suidoLevelOfBoard } from "@/lib/puzzles/suido/levels";
+import { isSuidoLevelSize } from "@/lib/puzzles/suido/sizes";
 import { meikyuuLevelOfSolve } from "@/lib/puzzles/server/meikyuuRecords";
 import { tobiishiLevelOfSolve } from "@/lib/puzzles/server/tobiishiRecords";
 import { FinishedPuzzle } from "./FinishedPuzzle";
@@ -102,8 +102,8 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
    * for good, so it stays kept back until the reader has solved that level
    * themselves (John, 2026-09-26: "How is this a solved puzzle?").
    */
-  // A Suido solve is of a LEVEL when its board is one of its size's levels (read here, once, from that size): the same board for good, like a Tsunagi level.
-  const suidoLevel = kind === "suido" && isSuidoLevelSize(found.size) ? await suidoLevelOfSolve(found.size, found.givens) : null;
+  // A Suido solve is of a LEVEL when its board is one of its size's levels (named by its hash): the same board for good, like a Tsunagi level.
+  const suidoLevel = kind === "suido" && isSuidoLevelSize(found.size) ? suidoLevelOfBoard(found.size, found.givens) : null;
   // And a Meikyuu solve is of a LEVEL whenever its maze is one of the list's: the same maze for good.
   const meikyuuLevel = kind === "meikyuu" ? await meikyuuLevelOfSolve(found.size, found.givens) : null;
   // And a Tobiishi solve is of a LEVEL whenever its code is one of the package's: the same board for good.
@@ -279,11 +279,4 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
       </div>
     </Page>
   );
-}
-
-/** The level a Suido solve's board is, at its size, or null for a board made from a seed: the size's levels are read once, here, and nowhere a page does not ask. */
-async function suidoLevelOfSolve(size: number, givens: string): Promise<number | null> {
-  // A huge size is known by a hash of its board, and its levels are never loaded on a server.
-  if (!isSuidoHugeSize(size)) await loadSuidoLevelsAt(size);
-  return suidoLevelOfBoard(size, givens);
 }

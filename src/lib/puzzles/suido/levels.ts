@@ -12,11 +12,11 @@ import {
 } from "@johnmorrisdotca/suido/levels-info";
 
 import type { Puzzle } from "../puzzles.types";
-import { suidoBoardHash } from "./boardHash";
-import { SUIDO_HUGE_BOARDS } from "./hugeLevels.data";
+import { HASH_LENGTH, suidoBoardHash } from "./boardHash";
+import { SUIDO_LEVEL_BOARDS } from "./levelBoards.data";
 import { isSuidoLevelAt, suidoLevelBand } from "./levelCounts";
 import { suidoLevelSeed } from "./seed";
-import { isSuidoHugeSize, suidoSizeKey } from "./sizes";
+import { suidoSizeKey } from "./sizes";
 
 export { nextLevelLabel } from "../fixedLevel";
 export { isSuidoLevelAt, suidoLevelBand, suidoLevelCount } from "./levelCounts";
@@ -40,32 +40,26 @@ export type { LevelRow };
  * are open and which comes next are the package's too, read without loading a
  * size (`levels-info`, which carries no board).
  *
- * THE SERVER READS THIRTEEN SIZES AND THE BROWSER SIXTEEN. A function's size is
- * what the account pays for and the huge sizes' boards are the biggest data the
- * package has, so the server's own copy of this module reads the thirteen it
- * always has, each by its own entry, and never names the huge three: it knows one
- * by its hash (`boardHash.ts`, `hugeLevels.data.ts`), which is all a check or a
- * list of solves needs. The browser, where `typeof window` is defined and the
- * server's branch is cut away by the build, uses the package's loader for all sixteen.
+ * THE BOARDS ARE THE BROWSER'S, AND A SERVER KNOWS A LEVEL BY ITS HASH. The levels are the biggest data the package has
+ * (a megabyte for the thirteen ordinary sizes and 280 KB more for the huge three), and a function's size is what the account
+ * pays for, so no server reads one: the browser, where `typeof window` is defined and the server's branch is cut away by the
+ * build, uses the package's loader for all sixteen, and the server names which level a board is by a hash of it
+ * (`boardHash.ts`, `levelBoards.data.ts`), which is all a check or a list of solves needs. A unit test or a spec with no
+ * browser reads the boards through `levelsModule.ts`.
  */
 const loaded = new Map<number, readonly LevelRow[]>();
 
-/** The thirteen sizes a server reads, each by its own entry, so nothing a huge size owns is in a function. */
-async function readOnServer(key: string): Promise<readonly LevelRow[]> {
-  if (key === "5x5") return (await import("@johnmorrisdotca/suido/levels-5x5")).SUIDO_5X5;
-  if (key === "6x6") return (await import("@johnmorrisdotca/suido/levels-6x6")).SUIDO_6X6;
-  if (key === "7x7") return (await import("@johnmorrisdotca/suido/levels-7x7")).SUIDO_7X7;
-  if (key === "8x8") return (await import("@johnmorrisdotca/suido/levels-8x8")).SUIDO_8X8;
-  if (key === "9x9") return (await import("@johnmorrisdotca/suido/levels-9x9")).SUIDO_9X9;
-  if (key === "10x10") return (await import("@johnmorrisdotca/suido/levels-10x10")).SUIDO_10X10;
-  if (key === "11x11") return (await import("@johnmorrisdotca/suido/levels-11x11")).SUIDO_11X11;
-  if (key === "12x12") return (await import("@johnmorrisdotca/suido/levels-12x12")).SUIDO_12X12;
-  if (key === "13x13") return (await import("@johnmorrisdotca/suido/levels-13x13")).SUIDO_13X13;
-  if (key === "14x14") return (await import("@johnmorrisdotca/suido/levels-14x14")).SUIDO_14X14;
-  if (key === "5x7") return (await import("@johnmorrisdotca/suido/levels-5x7")).SUIDO_5X7;
-  if (key === "6x10") return (await import("@johnmorrisdotca/suido/levels-6x10")).SUIDO_6X10;
-  if (key === "8x14") return (await import("@johnmorrisdotca/suido/levels-8x14")).SUIDO_8X14;
-  throw new Error(`The ${key} levels are read in the browser only: a server knows a huge level by its hash (suido/levels.ts).`);
+/** How a caller with no browser reads a size's levels; set by `levelsModule.ts`, which no page imports. */
+let readWithoutBrowser: ((key: string) => Promise<readonly LevelRow[]>) | null = null;
+
+/** Lets `loadSuidoLevelsAt` answer where there is no browser (`levelsModule.ts`). */
+export function readSuidoLevelsWith(reader: (key: string) => Promise<readonly LevelRow[]>): void {
+  readWithoutBrowser = reader;
+}
+
+/** Whether a size's levels can be read here: in a browser, or where a test or a spec has said how (`levelsModule.ts`). A server cannot, and does not need to. */
+export function suidoLevelsReadable(): boolean {
+  return typeof window !== "undefined" || readWithoutBrowser !== null;
 }
 
 async function readLevels(key: string): Promise<readonly LevelRow[]> {
@@ -73,10 +67,11 @@ async function readLevels(key: string): Promise<readonly LevelRow[]> {
     const { loadSuidoLevels } = await import("@johnmorrisdotca/suido/levels");
     return loadSuidoLevels(key);
   }
-  return readOnServer(key);
+  if (readWithoutBrowser === null) throw new Error(`The ${key} levels are read in the browser only: a server knows a level by its hash (suido/levels.ts).`);
+  return readWithoutBrowser(key);
 }
 
-/** A size's levels, fetched once and kept. Throws for a size the levels do not come in, and for a huge one where there is no browser. */
+/** A size's levels, fetched once and kept. Throws for a size the levels do not come in, and where there is no browser (a server names a level by its hash). */
 export async function loadSuidoLevelsAt(size: number): Promise<readonly LevelRow[]> {
   const already = loaded.get(size);
   if (already !== undefined) return already;
@@ -103,9 +98,26 @@ export function suidoLevelsLoaded(size: number): boolean {
   return loaded.has(size);
 }
 
-/** The hash and the first characters of level `level` of a huge size, which is how a server names the board; undefined for a size or a level that has none. */
-export function suidoHugeBoardOf(size: number, level: number): { prefix: string; hash: string } | undefined {
-  return SUIDO_HUGE_BOARDS[size]?.[level - 1];
+/** The hash and the first characters of level `level`, which is how a server names the board; undefined for a size or a level that has none. */
+export function suidoBoardOf(size: number, level: number): { prefix: string; hash: string } | undefined {
+  const known = SUIDO_LEVEL_BOARDS[size];
+  if (known === undefined || !isSuidoLevelAt(size, level)) return undefined;
+  const at = level - 1;
+  return { prefix: known.prefixes.slice(at * known.prefixLength, (at + 1) * known.prefixLength), hash: known.hashes.slice(at * HASH_LENGTH, (at + 1) * HASH_LENGTH) };
+}
+
+/** Every size's hashes, found once and kept: a level number by the hash of its board. */
+const numbersByHash = new Map<number, ReadonlyMap<string, number>>();
+
+function levelNumbersOf(size: number): ReadonlyMap<string, number> | undefined {
+  const already = numbersByHash.get(size);
+  if (already !== undefined) return already;
+  const known = SUIDO_LEVEL_BOARDS[size];
+  if (known === undefined) return undefined;
+  const numbers = new Map<string, number>();
+  for (let at = 0; at * HASH_LENGTH < known.hashes.length; at += 1) numbers.set(known.hashes.slice(at * HASH_LENGTH, (at + 1) * HASH_LENGTH), at + 1);
+  numbersByHash.set(size, numbers);
+  return numbers;
 }
 
 /** Levels 1 up to this many are open, given the ones solved. */
@@ -138,18 +150,9 @@ export function suidoLevelPuzzle(size: number, level: number): Puzzle {
 }
 
 /**
- * The level a board is, at a loaded size, or null for a board no level has — and for a size not loaded, which is never a
- * level: nothing here says "yes" to what it cannot look up. A huge size is looked up by its hash, loaded or not, since a
- * server has none of it loaded and still has to say which level a solve was.
+ * The level a board is at a size, or null for a board no level of it is, found by its hash whether the size's levels are loaded or
+ * not: a server has none of them loaded and still has to say which level a solve was.
  */
 export function suidoLevelOfBoard(size: number, board: string): number | null {
-  if (isSuidoHugeSize(size)) {
-    const hash = suidoBoardHash(board);
-    const at = SUIDO_HUGE_BOARDS[size]?.findIndex((one) => one.hash === hash) ?? -1;
-    return at === -1 ? null : at + 1;
-  }
-  const rows = loaded.get(size);
-  if (rows === undefined) return null;
-  const at = rows.findIndex(([code]) => code === board);
-  return at === -1 ? null : at + 1;
+  return levelNumbersOf(size)?.get(suidoBoardHash(board)) ?? null;
 }

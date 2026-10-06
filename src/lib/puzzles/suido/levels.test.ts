@@ -4,6 +4,7 @@ import { decodeLayout, gameCode, isGameSolved, makeSuido, newGame, turnAt, type 
 import {
   blockOf as packageBlockOf,
   firstUnsolvedSuidoLevel,
+  levelAnswer as levelAnswerOf,
   levelSolution,
   nextSuidoLevel,
   openSuidoLevels,
@@ -32,6 +33,7 @@ import {
   suidoLevelsAt,
   suidoLevelsLoaded,
 } from "./levels";
+import "./levelsModule";
 import { suidoModeOf } from "./mode";
 import { suidoLevelOfSeed, suidoLevelSeed } from "./seed";
 import { SUIDO_LEVEL_SIZES, isSuidoHugeSize, isSuidoLevelSize, pipeSize, suidoShapeOf, suidoSizeFromAddress, suidoSizeInAddress, suidoSizeKey, suidoSizeOfKey, suidoSizeWord } from "./sizes";
@@ -48,13 +50,17 @@ import { SUIDO_LEVEL_SIZES, isSuidoHugeSize, isSuidoLevelSize, pipeSize, suidoSh
 const NEVER_LOADED = 14;
 
 describe("a level the site has not loaded", () => {
-  it("is no level of any board, and so a solve of one is refused rather than guessed at", async () => {
-    const [board] = (await import("@johnmorrisdotca/suido/levels-14x14")).SUIDO_14X14[0]!;
+  it("is still named by its board's hash, and a twisted one is a board of its size, since a server loads no level at all", async () => {
+    const rows = (await import("@johnmorrisdotca/suido/levels-14x14")).SUIDO_14X14;
     expect(suidoLevelsLoaded(NEVER_LOADED)).toBe(false);
-    expect(suidoLevelOfBoard(NEVER_LOADED, board)).toBeNull();
-    // A plain 14×14 level is also a board of the shape the site makes from a seed, so it is that which passes here: one with a twist the seeded boards lack has no such door.
-    const twisted = (await import("@johnmorrisdotca/suido/levels-14x14")).SUIDO_14X14.find((row) => /locked|walls|wrap|pumps|inlet/.test(row[2]))!;
-    expect(checkSuido(NEVER_LOADED, twisted[0], twisted[0])).toEqual({ ok: false, reason: "the givens are not a board of that size" });
+    expect(suidoLevelOfBoard(NEVER_LOADED, rows[0]![0])).toBe(1);
+    expect(suidoLevelOfBoard(NEVER_LOADED, rows[255]![0])).toBe(256);
+    // A board of another size, or one made from a seed, is no level of this one.
+    expect(suidoLevelOfBoard(NEVER_LOADED, makeSuido({ width: 14, height: 14, kind: "network", seed: 3 }).code)).toBeNull();
+    // A twisted level passes the givens check (it is a level), and the answer check then refuses its board as its own answer.
+    const twisted = rows.find((row) => /locked|walls|wrap|pumps|inlet/.test(row[2]))!;
+    expect(checkSuido(NEVER_LOADED, twisted[0], twisted[0])).not.toEqual({ ok: false, reason: "the givens are not a board of that size" });
+    expect(checkSuido(NEVER_LOADED, twisted[0], levelAnswerOf(twisted)!).ok).toBe(true);
   });
 });
 

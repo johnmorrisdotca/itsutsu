@@ -10,11 +10,10 @@ import { generateMahjong } from "./mahjong/generate";
 import { generateCube } from "./cube/generate";
 import { generateDiagonal, generateJigsaw, generateMoreOrLess, generateNumberPlace, generateSumCages, generateTowers } from "./kazu";
 import { generateSuido } from "./suido/generate";
-import { loadSuidoLevelsAt, suidoLevelPuzzle } from "./suido/levels";
+import { loadSuidoLevelsAt, suidoLevelPuzzle, suidoLevelsReadable } from "./suido/levels";
 import { loadMeikyuuLevelsFor, meikyuuLevelPuzzle } from "./meikyuu/levels";
 import { tobiishiLevelPuzzle } from "./tobiishi/levels";
 import { suidoLevelOfSeed } from "./suido/seed";
-import { isSuidoHugeSize } from "./suido/sizes";
 import { loadWordData } from "./gomoji/wordData";
 import { generateBlackAndWhite } from "./blackAndWhite/generate";
 import { generateGomoji } from "./gomoji/generate";
@@ -145,8 +144,8 @@ export async function preparePuzzle(kind: PuzzleKind, size: number, language: Ku
   // A level of the first set, and the set a portal level's seed names (`tsunagi/levels.ts`).
   if (kind === "tsunagi") await Promise.all([loadTsunagiLevels(size), loadTsunagiLevelsOfSeed(size, seed ?? 1)]);
   if (kind === "meikyuu") await loadMeikyuuLevelsFor(size);
-  // A huge size's boards are the browser's to load: a server (no window) knows them by a hash (`suido/levels.ts`).
-  if (kind === "suido" && puzzleLoads(kind, seed) && (typeof window !== "undefined" || !isSuidoHugeSize(size))) await loadSuidoLevelsAt(size);
+  // Suido's boards are the browser's to load: a server (no window) knows a level by a hash (`suido/levels.ts`). A test or a spec with no browser loads them through `suido/levelsModule.ts`.
+  if (kind === "suido" && puzzleLoads(kind, seed) && suidoLevelsReadable()) await loadSuidoLevelsAt(size);
   if (kind === "kumimoji") await loadTileWords(language);
   // Pop Gomoji's dictionary guesses at three and seven letters (`popWords.ts`).
   if (kind === "gomojiPop") await loadPopGuesses(size);

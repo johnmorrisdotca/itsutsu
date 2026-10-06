@@ -12,9 +12,8 @@ import { suidoShapeOf } from "./sizes";
  *
  *  - A LEVEL (`levels.ts`): one of the package's fixed boards, of any twist it
  *    declares (several pumps, locked pieces, walls, edges that join, an inlet
- *    and an outlet). It is a level when its code is exactly a row of the size's
- *    levels, which must have been loaded first (`preparePuzzle`); a size not
- *    loaded has no levels to be one of, so nothing here says yes to it.
+ *    and an outlet). It is a level when its hash is a level's of the size
+ *    (`suidoLevelOfBoard`), which needs no level loaded: a server has none.
  *  - A BOARD made from a seed (`generate.ts`): of the shape the size says, one
  *    pump, edges that do not join, and none of the twists.
  */

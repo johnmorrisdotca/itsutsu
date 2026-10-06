@@ -1,6 +1,8 @@
 import "./everyListModule";
 // The whole levels, answers too: a test or a spec plays a level, which a server only checks (`tsunagi/layoutsModule.ts`).
 import "./tsunagi/levelsModule";
+// Suido's boards too: a test or a spec plays a level, which a server only names by its hash (`suido/levelsModule.ts`).
+import "./suido/levelsModule";
 import { loadWordData } from "./gomoji/wordData";
 import { POP_OWN_GUESS_LENGTHS, loadPopGuesses } from "./gomoji/popWords";
 import { KANA_SIZES, loadKanaWords } from "./gomojiKana/kanaWords";

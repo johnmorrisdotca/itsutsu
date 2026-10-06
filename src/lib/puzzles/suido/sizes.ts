@@ -27,7 +27,7 @@ export const SUIDO_PIPE_SHAPES: readonly (readonly [number, number])[] = [
 /**
  * THE HUGE SIZES: 20×20, 28×28 and the long 20×50, each with sixty-four levels (the others have 256). Their level data is the
  * package's biggest, and a function that carries it is a function over its ceiling (`functions:size`), so it is read in the browser
- * only and a server knows a huge level by a hash of its board (`hugeLevels.data.ts`).
+ * only and a server knows a level by a hash of its board (`levelBoards.data.ts`).
  */
 export const SUIDO_HUGE_SIZES: readonly number[] = [20, 28, 2050];
 
