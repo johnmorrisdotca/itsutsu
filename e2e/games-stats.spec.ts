@@ -35,6 +35,8 @@ import { removeGames } from "./tidy";
  */
 
 const STAMP = Date.now().toString(36);
+/** When the seeded game was last played, so the strip's "today" or "yesterday" can be read against the day the page was asked for. */
+let seededLastAt = 0;
 const WINNER = { email: `gstats-${STAMP}-kaede@example.test`, name: `Kaede ${STAMP}` };
 const LOSER = { email: `gstats-${STAMP}-ren@example.test`, name: `Ren ${STAMP}` };
 
@@ -105,6 +107,7 @@ test.beforeAll(async () => {
     for (const [index, result] of results.entries()) {
       const id = `gst-${STAMP}-${index}`;
       const at = new Date(now - (results.length - index) * 60_000);
+      seededLastAt = Math.max(seededLastAt, at.getTime());
       await prisma.game.create({
         data: {
           id,
@@ -279,11 +282,16 @@ test.describe("a member reading the games index", () => {
     await saysNobodyHasAStanding(await stripOf(page, unrated));
 
     // PLAIN LIST, by its chip.
+    const askedAt = Date.now();
     await page.getByTestId("tabs").locator('[data-testid="tab"][data-tab="list"]').click();
     await expect(page).toHaveURL(/\/list(\?|$)/);
     strip = await stripOf(page, seeded);
     await showsTheSeededGame(strip, true);
-    await expect(strip.getByTestId("game-stats-last")).toHaveText("Last played today");
+    // The server says "today" by the UTC calendar day, so a run that crosses midnight after seeding reads "yesterday", and nothing else.
+    const day = (moment: number) => Math.floor(moment / 86_400_000);
+    await expect(strip.getByTestId("game-stats-last")).toHaveText(
+      day(askedAt) > day(seededLastAt) ? "Last played yesterday" : "Last played today",
+    );
     // One leaderboard link per game: the row's own, and not a second one in the strip.
     const row = page.getByTestId(`every-game-${seeded}`);
     await expect(row.getByRole("link", { name: "leaderboard", exact: true })).toHaveAttribute(
