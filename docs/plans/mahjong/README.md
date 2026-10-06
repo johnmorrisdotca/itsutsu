@@ -144,12 +144,16 @@ ordinary tiles each. A solve is at most 288 pairs and as many shuffles, so
 **Drawing them fast.** Every tile is a memoized component and none is ever
 added to or taken out of the page: a tile that is taken is hidden (`display`),
 and its marks (chosen, hinted, found, the wash on a blocked tile) are the
-attributes of one ring over the face. The page's stylesheet has `:has(...)`
-rules whose subject is any element under `[data-strippable]`, so a tile that
-came or went, or an attribute named in one of them (`data-testid`, `data-bare-*`,
-`data-scale-*`) that changed, styled all of the ten thousand elements of a
-Palace again, 65 ms on a phone's processor, every move. Done this way a tap
-costs about two frames at four times slowdown (measured on a production
+attributes of one ring over the face. The page's stylesheet used to have
+`:has(...)` rules shaped so that a tile that came or went, or an attribute named
+in one of them (`data-testid`, `data-bare-*`, `data-scale-*`) that changed,
+styled all of the ten thousand elements of a Palace again: 180 ms on a laptop
+at four times slowdown, 530 in just the board, every move. The rules were
+reshaped (see "HOW THESE RULES ASK FOR THEIR NEIGHBOURS" in `globals.css`;
+`MahjongBoard.tsx`'s note on a tile's cost still quotes the old figure), and
+taking a tile out now restyles about sixty elements, 6 ms. Hiding a tile stays,
+since an attribute that changes costs less still. Done this way a tap costs about two frames at
+four times slowdown (measured on a production
 build); the Turtle, one. The zoom (`TsunagiViewport`) works from the board's
 own box, not the window's height, and knows the board is wider than it is
 tall, so a view stops at the board's foot.

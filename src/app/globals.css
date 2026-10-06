@@ -98,6 +98,31 @@
     @slot;
   }
 }
+/*
+ * What sits INSIDE a card answers to that card's own link, the way Tailwind's
+ * named `group-*` variants would, but written as the plain descendant selector
+ * the browser can follow cheaply. Tailwind's form is `:is(:where(.group\/card):is(A, :has(B)) *)`,
+ * which the browser reads as "any element under any card" and so styles every
+ * descendant again whenever anything on the page is added or removed.
+ */
+@custom-variant inside-card-hover {
+  @media (hover: hover) {
+    .group\/card[data-card-link]:hover & {
+      @slot;
+    }
+    .group\/card:has([data-card-link]:hover) & {
+      @slot;
+    }
+  }
+}
+@custom-variant inside-card-focus {
+  .group\/card[data-card-link]:focus-visible & {
+    @slot;
+  }
+  .group\/card:has([data-card-link]:focus-visible) & {
+    @slot;
+  }
+}
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -283,6 +308,34 @@ body {
  * whole browser, so without that scope a reader who turned it on and then
  * wandered onto a page that does not offer the switch would have lost the
  * navigation with no way to get it back.
+ */
+/*
+ * HOW THESE RULES ASK FOR THEIR NEIGHBOURS, AND WHY (measured 2026-10-05, a
+ * Mahjong Palace of ten thousand elements at a quarter of a laptop's speed):
+ * taking one tile out of the page restyled the whole table, 180 milliseconds
+ * on the page and 530 in just the board, and every move did it. The browser
+ * works out a `:has()` again for the page whenever anything is added, removed
+ * or has an attribute changed, and it was the SHAPE of a rule that made that
+ * restyle everything, three ways:
+ *
+ * - `:has(...)` followed by a combinator and anything — `:has(> a) > :not(a)`,
+ *   `:has(> a) > *` — styles every child under it again. A child that must sit
+ *   beside a board is therefore found as that board's sibling instead, after it
+ *   (`board ~ :not(board)`) or before it (`:has(~ board)`, which asks about the
+ *   sibling and nothing below it), and a board is styled by its own attributes
+ *   rather than as "the child of whatever has a board".
+ * - `[data-testid=…]` in the reach of a `:has()` or a sibling combinator styles
+ *   everything that has a `data-testid`, which is every tile of a table. The
+ *   card table's rules name its own table (`cards-game`) and its direct
+ *   children, and ask no neighbour.
+ * - Tailwind's `group-*` variants are written `:is(… :has(…) *)`, which is the
+ *   first shape under any card; `inside-card-hover` and `inside-card-focus`
+ *   above say the same thing as one descendant selector.
+ *
+ * A new rule that has to look at a neighbour follows the same shapes, and is
+ * measured on a Palace (/games/mahjong/play?size=26) with the CPU throttled
+ * before it ships: a tile taken out of the page must restyle a few dozen
+ * elements, not thousands.
  */
 html[data-bare="true"] [data-strippable] [data-chrome],
 html[data-bare="true"] [data-strippable] aside:not([data-bare-keep]) {
@@ -554,12 +607,13 @@ html[data-bare="true"] [data-strippable] [data-board-scale-chooser] {
     column-gap: 1.5rem;
     align-items: start;
   }
-  html[data-bare="true"] [data-strippable] :has(> [data-scale-board][data-scale-stack]) > [data-scale-board][data-bare-board] {
+  html[data-bare="true"] [data-strippable] [data-scale-board][data-scale-stack][data-bare-board] {
     grid-column: 1;
     grid-row: 1 / -1;
     width: 100%;
   }
-  html[data-bare="true"] [data-strippable] :has(> [data-scale-board][data-scale-stack]) > :not([data-scale-board]) {
+  html[data-bare="true"] [data-strippable] [data-scale-board][data-scale-stack] ~ :not([data-scale-board]),
+  html[data-bare="true"] [data-strippable] :has(~ [data-scale-board][data-scale-stack]):not([data-scale-board]) {
     grid-column: 2;
   }
   html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-scale-stack][data-bare-board]) {
@@ -602,7 +656,8 @@ html[data-bare="true"] [data-strippable] [data-board-scale-chooser] {
     align-items: flex-start;
     gap: 1.5rem;
   }
-  html[data-bare="true"] [data-strippable] :has(> [data-bare-keep]) > :not([data-bare-keep]) {
+  html[data-bare="true"] [data-strippable] [data-bare-keep] ~ :not([data-bare-keep]),
+  html[data-bare="true"] [data-strippable] :has(~ [data-bare-keep]):not([data-bare-keep]) {
     flex: 1 1 0;
     min-width: 0;
   }
@@ -626,7 +681,8 @@ html[data-bare="true"] [data-strippable] [data-board-scale-chooser] {
     align-items: start;
     width: 100%;
   }
-  html[data-bare="true"] [data-strippable] [data-bare-board]:has(> [data-bare-beside]) > * {
+  html[data-bare="true"] [data-strippable] [data-bare-board] > [data-bare-beside] ~ :not([data-bare-beside]),
+  html[data-bare="true"] [data-strippable] [data-bare-board] > :has(~ [data-bare-beside]):not([data-bare-beside]) {
     grid-column: 1;
   }
   html[data-bare="true"] [data-strippable] [data-bare-board]:has(> [data-bare-beside]) > [data-bare-beside] {
@@ -650,23 +706,23 @@ html[data-bare="true"] [data-strippable] [data-board-scale-chooser] {
    * leaves it, and whose turn and the other seats in a column beside it, one
    * seat to a line.
    */
-  html[data-bare="true"] [data-strippable] :has(> [data-testid="cards-board"]) {
+  html[data-bare="true"] [data-strippable] [data-testid="cards-game"] {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 20rem;
     grid-template-rows: repeat(8, auto) minmax(0, 1fr);
     column-gap: 1.5rem;
     align-items: start;
   }
-  html[data-bare="true"] [data-strippable] :has(> [data-testid="cards-board"]) > [data-testid="cards-board"] {
+  html[data-bare="true"] [data-strippable] [data-testid="cards-game"] > [data-testid="cards-board"] {
     grid-column: 1;
     grid-row: 1 / -1;
     width: 100%;
     max-width: none;
   }
-  html[data-bare="true"] [data-strippable] :has(> [data-testid="cards-board"]) > :not([data-testid="cards-board"]) {
+  html[data-bare="true"] [data-strippable] [data-testid="cards-game"] > :not([data-testid="cards-board"]) {
     grid-column: 2;
   }
-  html[data-bare="true"] [data-strippable] :has(> [data-testid="cards-board"]) [data-testid="cards-seats"] {
+  html[data-bare="true"] [data-strippable] [data-testid="cards-game"] [data-testid="cards-seats"] {
     grid-template-columns: minmax(0, 1fr);
   }
   html[data-bare="true"] [data-bare-frame] > [data-strippable]:has([data-testid="cards-board"]) {
@@ -743,11 +799,12 @@ html[data-bare="true"] [data-strippable] [data-board-column] {
     column-gap: 2rem;
     align-items: start;
   }
-  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) :has(> [data-scale-board][data-scale-stack]) > [data-scale-board] {
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) [data-scale-board][data-scale-stack] {
     grid-column: 1;
     grid-row: 1 / -1;
   }
-  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) :has(> [data-scale-board][data-scale-stack]) > :not([data-scale-board]) {
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) [data-scale-board][data-scale-stack] ~ :not([data-scale-board]),
+  html:not([data-bare="true"]) [data-board-scaling]:is([data-board-scale="large"], [data-board-scale="full"]) :has(~ [data-scale-board][data-scale-stack]):not([data-scale-board]) {
     grid-column: 2;
   }
   /*

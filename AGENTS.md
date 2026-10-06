@@ -555,6 +555,15 @@ foot goes beside it inside the modal — a puzzle's controls in the column they
 take at Large and Full, the practice board's and Block Five's side column, a
 live game's whose turn and move being made, Mexican Train's hand
 (`data-bare-beside`), a card table's seats.
+**The stylesheet's `:has()` rules have a shape, because the wrong shape styles
+the whole page again.** The browser re-checks every `:has()` whenever anything is
+added, removed or has an attribute changed, and a rule that reads `:has(…) > *`,
+`:has(…) > :not(…)`, or names `[data-testid=…]` beside a `:has()` or a sibling
+combinator restyles every element it could match: 180 ms a move on a Mahjong
+Palace at four times slowdown, 530 in just the board, until 2026-10-05. A
+neighbour is found as a sibling (`board ~ :not(board)`, `:has(~ board)`), never as
+"the child of whatever has a board"; `globals.css` says why above the first of
+them, and a new rule is measured on `/games/mahjong/play?size=26` before it ships.
 Held by `boardScale.coverage.test.ts`, `e2e/wide-mode.spec.ts`, and the survey
 in `e2e/bare-board.spec.ts`, which opens every play at 1280×800 and 1920×1080
 and fails on a scroll or an empty column; `bareSurvey.coverage.test.ts` holds

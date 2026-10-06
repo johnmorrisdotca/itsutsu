@@ -196,11 +196,11 @@ export const STRETCHED_ROW = `${STRETCHED_HOST} card-hover:bg-shade`;
 
 /*
  * The round chevron on a card that opens — see CardArrow.tsx for what it is
- * for and why it is drawn at rest. Named-group variants, so it answers to the
- * card it sits in and to nothing around it.
+ * for and why it is drawn at rest. `inside-card-*` variants (globals.css), so it
+ * answers to the card it sits in and to nothing around it.
  */
 export const CARD_ARROW_CLASS =
-  "pointer-events-none inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-rule-strong text-ink-soft opacity-50 transition group-card-hover/card:border-ink group-card-hover/card:bg-ink group-card-hover/card:text-paper group-card-hover/card:opacity-100 group-card-focus/card:border-ink group-card-focus/card:bg-ink group-card-focus/card:text-paper group-card-focus/card:opacity-100";
+  "pointer-events-none inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-rule-strong text-ink-soft opacity-50 transition inside-card-hover:border-ink inside-card-hover:bg-ink inside-card-hover:text-paper inside-card-hover:opacity-100 inside-card-focus:border-ink inside-card-focus:bg-ink inside-card-focus:text-paper inside-card-focus:opacity-100";
 
 /*
  * ONE PAGE SHAPE, ONE HEADING SCALE. John, 2026-09-24, with /players, /about,
