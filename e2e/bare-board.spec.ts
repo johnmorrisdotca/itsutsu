@@ -494,6 +494,9 @@ const SURVEY: Survey[] = [
   },
   // The Cube's biggest, the 7×7 (2026-10-05): 294 stickers a cube's face-on drawing has to hold with nothing to scroll and no empty column.
   puzzle("cube", "size=7&level=medium"),
+  // Mahjong's mega layouts (Jarajara 1.6.0, 2026-10-05): the Wall's 288 tiles and the Palace's 576, wider than tall and looked at through the zoom, so the modal has to hold them with nothing to scroll and no empty column.
+  puzzle("mahjong", "size=20&level=medium"),
+  puzzle("mahjong", "size=26&level=medium"),
   // Tsunagi's levels are fixed boards: its first, as a new player meets it.
   { name: "/games/tsunagi/play", open: async (page) => {
     await page.goto("/games/tsunagi/play?size=4&level=easy&seed=6");

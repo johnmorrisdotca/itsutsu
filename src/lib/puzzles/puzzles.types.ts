@@ -128,6 +128,11 @@ export type PuzzleSpec = {
    */
   shelves?: true;
   /**
+   * Sizes a kind makes and checks like any other but never puts on the set-up screen, for a kind whose sizes are
+   * shelves: Mahjong's square of eight tiles, the browser tests' own. `sizesOffered` leaves them out.
+   */
+  unlisted?: readonly number[];
+  /**
    * Whether a countdown is offered (`PuzzleClock`). Absent is yes. A puzzle
    * with its own measure of a player (Tsunagi's fixed levels, each with its
    * own table; Kumimoji, which already scores its speed) keeps its own.

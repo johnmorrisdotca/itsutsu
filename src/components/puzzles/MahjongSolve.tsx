@@ -15,16 +15,13 @@ import { encodeMahjongProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MahjongBoard, mahjongAspect } from "./MahjongBoard";
+import { MahjongBoard, mahjongAspect, mahjongMaxWidth } from "./MahjongBoard";
 import { MahjongFindToggle, MahjongFreeToggle } from "./MahjongFreeToggle";
-import { MAHJONG_COPY } from "./mahjong.constants";
+import { MAHJONG_COPY, MAHJONG_ZOOM_FROM, mahjongMostZoom } from "./mahjong.constants";
 import { useMahjongFind, useMahjongFree } from "./mahjongFree";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
 import { TsunagiViewport } from "./TsunagiViewport";
-
-/** The one layout too wide for a phone's tiles to be tapped whole: the Turtle, looked at through the zoom Bridges and Tsunagi use. */
-const ZOOM_FROM = 15;
 
 /**
  * SOLVING MAHJONG: tap a free tile and then its match, or drag one onto the
@@ -171,7 +168,7 @@ export function MahjongSolve({
     >
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <TsunagiViewport size={size} name="mahjong" zoomFrom={ZOOM_FROM} aspect={mahjongAspect(size)}>
+        <TsunagiViewport size={size} name="mahjong" zoomFrom={MAHJONG_ZOOM_FROM} mostZoom={mahjongMostZoom(size)} aspect={mahjongAspect(size)} maxWidth={mahjongMaxWidth(size)}>
           <MahjongBoard
             size={size}
             cells={cells}
@@ -180,6 +177,7 @@ export function MahjongSolve({
             hinted={[...hinting.marked]}
             found={live ? found : null}
             showFree={showFree}
+            capped={size < MAHJONG_ZOOM_FROM}
             readOnly={!live}
             onTap={tap}
             onPair={pair}

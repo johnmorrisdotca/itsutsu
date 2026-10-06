@@ -394,21 +394,26 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     cards: true,
   },
   /*
-   * A size is a layout, named by its width in tiles (`mahjong/layouts.ts`):
-   * Torii 8, Fuji 9, Castle 10 and the Turtle's 15. The square of eight, 4
-   * across, is the browser tests' own, made and checked like any other and
-   * never offered. An answer is its moves, four characters a pair and one a
-   * shuffle: the Turtle's 72 pairs and a shuffle each at the very most is 360.
+   * A size is a layout, named by its width in tiles (Jarajara's layouts):
+   * Torii 8, Fuji 9, Castle 10 and the Turtle's 15, then the two mega layouts
+   * of more than one set of tiles, the Wall's 20 and the Palace's 26, which
+   * are a second shelf (`shelves`) of four: Castle to Palace. The square of
+   * eight, 4 across, is the browser tests' own, made and checked like any
+   * other and never offered (`unlisted`). An answer is its moves, four
+   * characters a pair and one a shuffle: the Palace's 288 pairs and a shuffle
+   * each at the very most is 1,440.
    */
   mahjong: {
-    sizes: [4, 8, 9, 10, 15],
+    sizes: [4, 8, 9, 10, 15, 20, 26],
     offered: [8, 9, 10, 15],
     defaultSize: 9,
     levels: PUZZLE_LEVEL_LIST,
     defaultLevel: "medium",
-    mostCells: 360,
+    mostCells: 1440,
     layouts: true,
     checks: false,
+    shelves: true,
+    unlisted: [4],
   },
   /*
    * THE CUBE, turned in three dimensions (`cube/`): its size is its side, 2×2
@@ -529,7 +534,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
  */
 export function sizesOffered(kind: PuzzleKind): readonly number[] {
   const spec = PUZZLE_SPECS[kind];
-  return spec.shelves === true ? spec.sizes : spec.offered;
+  return spec.shelves === true ? spec.sizes.filter((size) => spec.unlisted?.includes(size) !== true) : spec.offered;
 }
 
 export function drawnOnBoard(kind: PuzzleKind): boolean {
@@ -720,6 +725,8 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     9: { label: "Fuji", kanji: "富士" },
     10: { label: "Castle", kanji: "城" },
     15: { label: "Turtle", kanji: "亀" },
+    20: { label: "Wall", kanji: "長城" },
+    26: { label: "Palace", kanji: "宮殿" },
   },
   // A Suido board by its side, the big number on the tile: how long the pipes take to follow. The three long boards are 507, 610 and 814 (`suido/sizes.ts`), drawn at their own shape.
   suido: {
@@ -1361,10 +1368,10 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     inspiredBy: "mahjong solitaire, first made by Brodie Lockard as Mah-Jongg in 1981",
     alsoKnownAs: ["Mah-Jongg", "The Turtle"],
     origin:
-      "The patience game played with a mahjong set: the tiles are stacked into a shape and taken off two at a time. Brodie Lockard first made it as a computer game on the PLATO system in 1981, and it has been played on every kind of screen since. The tiles here are a full set of 144 in the Japanese style, drawn for this site; the deals and the layouts are our own.",
+      "The patience game played with a mahjong set: the tiles are stacked into a shape and taken off two at a time. Brodie Lockard first made it as a computer game on the PLATO system in 1981, and it has been played on every kind of screen since. The tiles here are a full set of 144 in the Japanese style, drawn for this site, and the two mega layouts use two and four sets; the deals and the layouts are our own.",
     wikipedia: "Mahjong solitaire",
     rules: [
-      "The tiles are stacked in a layout of up to five layers. Take them off two at a time, in matching pairs, until none are left.",
+      "The tiles are stacked in a layout of up to six layers. Take them off two at a time, in matching pairs, until none are left.",
       "Only a free tile can be taken: nothing lying on it, not even half a tile, and its left side or its right side open. A tile covered, or held on both sides, waits until the tiles around it are gone.",
       "Two tiles match when they are the same: the same number of the same suit, the same wind or the same dragon. Any flower matches any flower and any season any season, or, with Identical chosen on the set-up screen, only the same one.",
       "Tap a free tile and then its match, or drag one onto the other. Double-tap a free tile to take it with its match, when it has one free. A blocked tile shakes and stays where it is.",
@@ -1374,7 +1381,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "For a table: choose two, three or four players on the set-up screen and pass one device round. Each turn takes one pair, scored to whoever took it: a plain suit tile 1, a one or a nine 2, a wind 3, a dragon 4, and a flower or season 2 and another turn. With no pair to take, the tiles are shuffled and the same player goes on. When the table is clear, or no shuffle can free what is left, the most points wins, and a tie shares it. Any seat can be a computer. Nothing is secret, so nobody hides the screen.",
     ],
     board:
-      `Four layouts. Torii 鳥居 (${mahjongTiles(8)} tiles, eight across) and Fuji 富士 (${mahjongTiles(9)}, nine across) are quick and fit a phone; Castle 城 (${mahjongTiles(10)}, ten across) is longer; the Turtle 亀 is the classic ${mahjongTiles(15)}, fifteen across, and on a phone it zooms, with Fit and the arrows under the board. A smaller layout uses pairs drawn from the full set of 144.`,
+      `Six layouts. Torii 鳥居 (${mahjongTiles(8)} tiles, eight across) and Fuji 富士 (${mahjongTiles(9)}, nine across) are quick and fit a phone; Castle 城 (${mahjongTiles(10)}, ten across) is longer; the Turtle 亀 is the classic ${mahjongTiles(15)}, fifteen across, and on a phone it zooms, with Fit and the arrows under the board. Two are mega layouts dealt from more than one set of tiles, a double set and a quadruple set: the Great Wall 長城 (${mahjongTiles(20)} tiles, twenty across) and the Palace 宮殿 (${mahjongTiles(26)} tiles, twenty-six across), which also zoom on a phone, as far as four times. A smaller layout uses pairs drawn from the full set of 144.`,
   },  /*
    * THE CUBE, by the plain word: the puzzle Ernő Rubik made is sold under his
    * name, which belongs to its owners and is not used here. 立方体, "a cube",

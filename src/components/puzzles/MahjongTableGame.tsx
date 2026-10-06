@@ -24,11 +24,11 @@ import { ordinaryLevel } from "@/lib/puzzles/ordinaryLevel";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MahjongBoard, mahjongAspect } from "./MahjongBoard";
+import { MahjongBoard, mahjongAspect, mahjongMaxWidth } from "./MahjongBoard";
 import { MahjongFreeToggle } from "./MahjongFreeToggle";
 import { MahjongTileFace } from "./MahjongTileFace";
 import { MahjongScores, MahjongTableNames } from "./MahjongTableSeats";
-import { MAHJONG_COMPUTER_PAUSE_MS, MAHJONG_COPY } from "./mahjong.constants";
+import { MAHJONG_COMPUTER_PAUSE_MS, MAHJONG_COPY, MAHJONG_ZOOM_FROM, mahjongMostZoom } from "./mahjong.constants";
 import { useMahjongFree } from "./mahjongFree";
 import { useKeptMahjongTable } from "./mahjongTableKept";
 import { TsunagiViewport } from "./TsunagiViewport";
@@ -182,13 +182,14 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
         }
         onClose={moment.close}
       >
-        <TsunagiViewport size={table.size} name="mahjong" zoomFrom={15} aspect={mahjongAspect(table.size)}>
+        <TsunagiViewport size={table.size} name="mahjong" zoomFrom={MAHJONG_ZOOM_FROM} mostZoom={mahjongMostZoom(table.size)} aspect={mahjongAspect(table.size)} maxWidth={mahjongMaxWidth(table.size)}>
           <MahjongBoard
             size={table.size}
             cells={state.cells}
             theme={BOARD_THEMES[appearance.boardTheme]}
             chosen={human ? chosen : null}
             showFree={showFree}
+            capped={table.size < MAHJONG_ZOOM_FROM}
             readOnly={!human}
             onTap={tap}
             onPair={(a, b) => human && !take(a, b) && setSaid(MAHJONG_COPY.noMatch)}

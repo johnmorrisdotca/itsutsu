@@ -113,10 +113,46 @@ on its board tile (`BoardSizeMark` draws a lattice at that density):
 | 9 | Fuji 富士 | 100 | 5 | about 36 px |
 | 10 | Castle 城 | 120 | 5 | about 33 px |
 | 15 | Turtle 亀 | 144 | 5 | about 23 px; zooms (`TsunagiViewport`) |
+| 20 | Wall 長城 | 288 | 5 | about 17 px; zooms, to four times |
+| 26 | Palace 宮殿 | 576 | 6 | about 13 px; zooms, to four times |
 | 4 | a square of eight | 8 | 3 | the browser tests' own, never offered |
 
 A smaller layout uses pairs drawn at random from the full set of 144. Slots
 are half-tile units, so a tile may sit half over two below it.
+
+**The two mega layouts (Jarajara 1.6.0, 2026-10-05; board row
+`mahjong-solitaire-mega-layouts-of-288-and-576-tiles`)** are laid with more
+than one set: the Wall with two (a double set, 288 tiles), the Palace with four
+(576). The Wall is a stretch of the Great Wall (a walkway along a wall four
+tiles thick, a watchtower at each end, a gate tower rising in the middle); the
+Palace is a wall round a courtyard with a gate, towers at the corners and
+either side of the gate, and a great hall climbing in six steps. Both are drawn
+from scratch, mirror-symmetrical, and counted by tests. They are the set-up's
+second shelf: the Torii to the Turtle are the first four, and Castle to Palace
+the last four (`shelves`, the way Bridges and Picture logic do it); the square
+of eight is `unlisted`. Each is dealt in reverse like any other, so every deal
+can be cleared, and in the browser the Palace takes about 35 ms on a laptop and
+140 ms with the processor slowed fourfold, so there is no worker. A deal of
+more than one set is ranked into its levels by how far a random player gets
+(`clearShare`), not by how often one clears it, because a random player
+almost never clears a mega layout. Under the usual rule a flower or season is
+dealt once, however many sets there are, so a deal still says its rule; the
+eight bonus tiles the further sets would have had are four more pairs of
+ordinary tiles each. A solve is at most 288 pairs and as many shuffles, so
+`mostCells` is 1,440.
+
+**Drawing them fast.** Every tile is a memoized component and none is ever
+added to or taken out of the page: a tile that is taken is hidden (`display`),
+and its marks (chosen, hinted, found, the wash on a blocked tile) are the
+attributes of one ring over the face. The page's stylesheet has `:has(...)`
+rules whose subject is any element under `[data-strippable]`, so a tile that
+came or went, or an attribute named in one of them (`data-testid`, `data-bare-*`,
+`data-scale-*`) that changed, styled all of the ten thousand elements of a
+Palace again, 65 ms on a phone's processor, every move. Done this way a tap
+costs about two frames at four times slowdown (measured on a production
+build); the Turtle, one. The zoom (`TsunagiViewport`) works from the board's
+own box, not the window's height, and knows the board is wider than it is
+tall, so a view stops at the board's foot.
 
 ## The tiles
 
@@ -167,9 +203,14 @@ Sensible, and the family was named for it. What it would take:
   was "Mahjong" 麻雀 until 2026-10-01, when it became Tiles 牌 with Mexican
   Train and the cube, and then, the same day, Logic puzzles with the cube
   (`FAMILY_ABSORBED` keeps the key `mahjong` leading there).
-- Four layouts (Torii, Fuji, Castle, Turtle) of our own design besides the
-  classic Turtle; Fuji is the default because it fits a phone.
-- Size = the layout's width in tiles, so the board tiles read 8, 9, 10, 15.
+- Six layouts (Torii, Fuji, Castle, Turtle, Wall, Palace) of our own design
+  besides the classic Turtle; Fuji is the default because it fits a phone. The
+  Wall and Palace are Jarajara's mega layouts and are offered to everyone.
+- Size = the layout's width in tiles, so the board tiles read 8, 9, 10, 15, 20, 26.
+- The mega layouts are priced by the log of their tiles on the points ladder:
+  the Torii 50, Fuji 65, Castle 70, Turtle 80, Wall 100, Palace 125 (the Turtle
+  was 125 and Fuji 90, Castle 110: the ladder runs 50 to 125 over what is
+  offered, so the new top took the Turtle's place and the rest were respread).
 - Level = the most / middling / least forgiving of five deals.
 - Table scoring 1/2/3/4, bonus pair 2 and another turn; automatic shuffle when
   stuck with the same player to move; up to four players, wind-named seats, one

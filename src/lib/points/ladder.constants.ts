@@ -103,8 +103,8 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   bridges: { how: "size", rungs: { 7: 50, 9: 65, 11: 75, 13: 85, 17: 100, 21: 115, 25: 125 } },
   // Rungs by the log of the cells to decide (25 to 2,500), 50 at 5×5 and 125 at 50×50; 40×40 and 50×50 come at easy and medium only, so 135 at most.
   pictureLogic: { how: "size", rungs: { 5: 50, 10: 75, 15: 85, 20: 95, 40: 120, 50: 125 } },
-  // The square of four tiles across is the browser tests' own, never offered.
-  mahjong: { how: "size", rungs: { 4: 50, 8: 50, 9: 90, 10: 110, 15: 125 } },
+  // The square of four tiles across is the browser tests' own, never offered. Rungs by the log of the tiles (64 to 576): 50 at the Torii and 125 at the Palace.
+  mahjong: { how: "size", rungs: { 4: 50, 8: 50, 9: 65, 10: 70, 15: 80, 20: 100, 26: 125 } },
   // Rungs by the log of the stickers (24 on the 2×2 to 294 on the 7×7): 50 at the 2×2 and 125 at the 7×7.
   cube: { how: "size", rungs: { 2: 50, 3: 75, 4: 90, 5: 105, 6: 115, 7: 125 } },
   // A word is as long as its size: four to six letters (Kana three to five; Pop three to seven).

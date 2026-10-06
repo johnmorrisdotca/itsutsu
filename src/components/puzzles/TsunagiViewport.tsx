@@ -15,17 +15,24 @@ const EDGE = 36;
 const EDGE_STEP = 6;
 
 type View = { zoom: number; x: number; y: number };
+/** The box looked through, and how tall the board is when it fills the box's width (the whole board fitted), which can be less than the box. */
+type Box = { width: number; height: number; content: number };
 const FITTED: View = { zoom: 1, x: 0, y: 0 };
 
-/** A view kept inside the board: never a gap between the board's edge and the box's. */
-function kept(view: View, box: number, most: number): View {
+/**
+ * A view kept inside the board: never a gap between the board's edge and the box's. The box is its width and its
+ * height, which differ for a board that is not square (a Mahjong layout is wider than it is tall), and the board
+ * itself may be a little shorter than its box (a frame's slack), so a view can be moved no further down than the
+ * board's own foot.
+ */
+function kept(view: View, box: Box, most: number): View {
   const zoom = Math.min(most, Math.max(1, view.zoom));
-  const least = box - box * zoom;
-  return { zoom, x: Math.min(0, Math.max(least, view.x)), y: Math.min(0, Math.max(least, view.y)) };
+  const tall = box.content > 0 ? box.content : box.height;
+  return { zoom, x: Math.min(0, Math.max(box.width - box.width * zoom, view.x)), y: Math.min(0, Math.max(Math.min(0, box.height - tall * zoom), view.y)) };
 }
 
 /** Zoomed by `factor` about the point (px, py) of the box, which stays over the same spot of the board. */
-function zoomedAbout(view: View, factor: number, px: number, py: number, box: number, most: number): View {
+function zoomedAbout(view: View, factor: number, px: number, py: number, box: Box, most: number): View {
   const zoom = Math.min(most, Math.max(1, view.zoom * factor));
   const scale = zoom / view.zoom;
   return kept({ zoom, x: px - (px - view.x) * scale, y: py - (py - view.y) * scale }, box, most);
@@ -81,6 +88,7 @@ export function TsunagiViewport({
   name = "tsunagi",
   zoomFrom = TSUNAGI_ZOOM_FROM,
   aspect = "1 / 1",
+  maxWidth,
   mostZoom = MOST_ZOOM,
   startZoom = 1,
   startAt,
@@ -94,6 +102,8 @@ export function TsunagiViewport({
   zoomFrom?: number;
   /** The box's width to height, where the board is not square: a Mahjong layout is wider than it is tall. */
   aspect?: string;
+  /** The widest the box is, where the board is not to be taller than the window (Mahjong's): it is centred when narrower than its column. */
+  maxWidth?: string;
   /** How far the board may be zoomed, where a cell of the whole board is too small for far more than three times (a 50×50 picture). */
   mostZoom?: number;
   /** The zoom the board opens at: a board with a hundred lines is not read whole, so it opens near. Fit still shows the whole. */
@@ -106,7 +116,10 @@ export function TsunagiViewport({
 }) {
   const enabled = size >= zoomFrom;
   const box = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
+  const inner = useRef<HTMLDivElement>(null);
+  const [measured, setBox] = useState<Box>({ width: 0, height: 0, content: 0 });
+  const measuredNow = useRef(measured);
+  const width = measured.width;
   const [view, setView] = useState<View>(FITTED);
   const [frame, setFrame] = useState<PinFrame | null>(null);
   const opened = useRef(false);
@@ -124,25 +137,30 @@ export function TsunagiViewport({
     const element = box.current;
     if (!enabled || element === null) return;
     const measure = () => {
-      const side = element.getBoundingClientRect().width;
-      setWidth(side);
+      const { width: side, height } = element.getBoundingClientRect();
+      // The board's height at the box's width: its own height over its own width, whatever the zoom is now.
+      const board = inner.current;
+      const content = board !== null && board.offsetWidth > 0 ? Math.round(((board.offsetHeight * side) / board.offsetWidth) * 100) / 100 : height;
+      measuredNow.current = { width: side, height, content };
+      setBox((now) => (now.width === side && now.height === height && now.content === content ? now : { width: side, height, content }));
       // A board that opens zoomed does so once, as the box first has its width.
       if (!opened.current && side > 0) {
         opened.current = true;
         if (startZoom > 1) {
           const zoom = Math.min(mostZoom, Math.max(1, startZoom));
           // The point asked for in the middle of the box, when the board is big enough to put it there (`kept` holds the edges).
-          setView(kept({ zoom, x: openAt.current === undefined ? 0 : side / 2 - openAt.current.x * side * zoom, y: openAt.current === undefined ? 0 : side / 2 - openAt.current.y * side * zoom }, side, mostZoom));
+          setView(kept({ zoom, x: openAt.current === undefined ? 0 : side / 2 - openAt.current.x * side * zoom, y: openAt.current === undefined ? 0 : side / 2 - openAt.current.y * side * zoom }, measuredNow.current, mostZoom));
         }
       }
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
+    if (inner.current !== null) observer.observe(inner.current);
     return () => observer.disconnect();
   }, [enabled, startZoom, mostZoom]);
 
-  const change = useCallback((next: (view: View) => View) => setView((now) => kept(next(now), width, mostZoom)), [width, mostZoom]);
+  const change = useCallback((next: (view: View) => View) => setView((now) => kept(next(now), measured, mostZoom)), [measured, mostZoom]);
 
   /* The wheel, or a trackpad's pinch, zooms about the pointer; never the page. */
   useEffect(() => {
@@ -152,7 +170,7 @@ export function TsunagiViewport({
       event.preventDefault();
       const rect = element.getBoundingClientRect();
       const factor = Math.exp(-event.deltaY * (event.ctrlKey ? 0.01 : 0.002));
-      setView((now) => zoomedAbout(now, factor, event.clientX - rect.left, event.clientY - rect.top, rect.width, mostZoom));
+      setView((now) => zoomedAbout(now, factor, event.clientX - rect.left, event.clientY - rect.top, { ...measuredNow.current, width: rect.width, height: rect.height }, mostZoom));
     };
     element.addEventListener("wheel", wheel, { passive: false });
     return () => element.removeEventListener("wheel", wheel);
@@ -173,7 +191,7 @@ export function TsunagiViewport({
       const dx = finger.x - rect.left < EDGE + band ? EDGE_STEP : rect.right - finger.x < EDGE ? -EDGE_STEP : 0;
       const dy = finger.y - rect.top < EDGE + band ? EDGE_STEP : rect.bottom - finger.y < EDGE ? -EDGE_STEP : 0;
       if (dx === 0 && dy === 0) return;
-      setView((now) => kept({ ...now, x: now.x + dx, y: now.y + dy }, rect.width, mostZoom));
+      setView((now) => kept({ ...now, x: now.x + dx, y: now.y + dy }, { ...measuredNow.current, width: rect.width, height: rect.height }, mostZoom));
       // The board moved under a finger that did not: tell the board the finger is over another cell now.
       finger.target?.dispatchEvent(new window.PointerEvent("pointermove", { bubbles: true, clientX: finger.x, clientY: finger.y, pointerId: finger.pointer }));
     };
@@ -198,12 +216,12 @@ export function TsunagiViewport({
 
   const press = (key: PadKey) => {
     const step = Math.round(width / 4);
-    const middle = width / 2;
+    const stepDown = Math.round(measured.height / 4);
     const moves: Record<PadKey, (view: View) => View> = {
-      in: (now) => zoomedAbout(now, 1.5, middle, middle, width, mostZoom),
-      out: (now) => zoomedAbout(now, 1 / 1.5, middle, middle, width, mostZoom),
-      up: (now) => ({ ...now, y: now.y + step }),
-      down: (now) => ({ ...now, y: now.y - step }),
+      in: (now) => zoomedAbout(now, 1.5, width / 2, measured.height / 2, measured, mostZoom),
+      out: (now) => zoomedAbout(now, 1 / 1.5, width / 2, measured.height / 2, measured, mostZoom),
+      up: (now) => ({ ...now, y: now.y + stepDown }),
+      down: (now) => ({ ...now, y: now.y - stepDown }),
       left: (now) => ({ ...now, x: now.x + step }),
       right: (now) => ({ ...now, x: now.x - step }),
     };
@@ -242,8 +260,8 @@ export function TsunagiViewport({
     gesture.current = now;
     // Pinched about the middle between them, and carried along as the middle moves.
     setView((each) => {
-      const zoomed = before.distance > 0 && now.distance > 0 ? zoomedAbout(each, now.distance / before.distance, before.x - rect.left, before.y - rect.top, rect.width, mostZoom) : each;
-      return kept({ ...zoomed, x: zoomed.x + (now.x - before.x), y: zoomed.y + (now.y - before.y) }, rect.width, mostZoom);
+      const zoomed = before.distance > 0 && now.distance > 0 ? zoomedAbout(each, now.distance / before.distance, before.x - rect.left, before.y - rect.top, { ...measuredNow.current, width: rect.width, height: rect.height }, mostZoom) : each;
+      return kept({ ...zoomed, x: zoomed.x + (now.x - before.x), y: zoomed.y + (now.y - before.y) }, { ...measuredNow.current, width: rect.width, height: rect.height }, mostZoom);
     });
   };
   const touchUp = (event: PointerEvent<HTMLDivElement>) => {
@@ -265,8 +283,8 @@ export function TsunagiViewport({
     <div className="flex flex-col gap-2">
       <div
         ref={box}
-        className="relative w-full overflow-hidden"
-        style={{ touchAction: "none", aspectRatio: aspect }}
+        className="relative mx-auto w-full overflow-hidden"
+        style={{ touchAction: "none", aspectRatio: aspect, maxWidth }}
         onPointerDownCapture={touchDown}
         onPointerMoveCapture={touchMove}
         onPointerUpCapture={touchUp}
@@ -280,7 +298,7 @@ export function TsunagiViewport({
         // The board as it is framed, without the pad under it, is what a finished game's wallpaper is taken of (`BoardWallpaper`).
         data-wallpaper-focus
       >
-        <div className="absolute top-0 left-0" style={{ width: width * view.zoom || "100%", transform: `translate(${view.x}px, ${view.y}px)` }}>
+        <div ref={inner} className="absolute top-0 left-0" style={{ width: width * view.zoom || "100%", transform: `translate(${view.x}px, ${view.y}px)` }}>
           {children}
         </div>
         {pinned !== undefined && view.zoom > 1 && frame !== null ? (

@@ -44,6 +44,22 @@ export const MAHJONG_TILE = {
   shadow: "#2a1d0e",
 } as const;
 
+/**
+ * THE LAYOUTS TOO WIDE FOR A PHONE'S TILES TO BE TAPPED WHOLE are looked at through the zoom Bridges and Tsunagi use
+ * (`TsunagiViewport`): from the Turtle's fifteen tiles across up, and the mega layouts (the Wall's twenty, the Palace's
+ * twenty-six) as far as `MAHJONG_MOST_ZOOM_MEGA` times, since a tile of the whole Palace fitted to 390 pixels is thirteen
+ * across and three times that is still only 39.
+ */
+export const MAHJONG_ZOOM_FROM = 15;
+export const MAHJONG_MEGA_FROM = 20;
+export const MAHJONG_MOST_ZOOM = 3;
+export const MAHJONG_MOST_ZOOM_MEGA = 4;
+
+/** How far a layout of this width may be zoomed in. */
+export function mahjongMostZoom(size: number): number {
+  return size >= MAHJONG_MEGA_FROM ? MAHJONG_MOST_ZOOM_MEGA : MAHJONG_MOST_ZOOM;
+}
+
 /** How long two taps on one tile may be apart and still be a double-tap, in milliseconds. */
 export const MAHJONG_DOUBLE_TAP_MS = 350;
 

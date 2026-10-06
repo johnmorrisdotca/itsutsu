@@ -397,8 +397,9 @@ and `cubes` are `FAMILY_ABSORBED` into `logic` and `dominoes` into `party`, so a
 member paid a first game under any of those keys keeps it.
 
 **Mahjong Solitaire** 牌合わせ (2026-09-29, `src/lib/puzzles/mahjong/`):
-take matching pairs of free tiles off a stacked layout — Torii, Fuji, Castle or
-the classic 144-tile Turtle — alone against the clock, or two to four taking a
+take matching pairs of free tiles off a stacked layout — Torii, Fuji, Castle,
+the classic 144-tile Turtle, or the 288-tile Wall and 576-tile Palace of two
+and four sets — alone against the clock, or two to four taking a
 pair a turn round one device, with computers for empty seats. Every deal is
 laid pair by pair in reverse, so it can be cleared; the answer and a kept run
 are the moves, which the server plays through to check. The tiles are our own
