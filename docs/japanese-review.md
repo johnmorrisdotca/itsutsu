@@ -6,8 +6,8 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 2757. Drafted and unread: 0. Read by the reviewer agent: 2757.
-Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 5
+Phrases: 2768. Drafted and unread: 11. Read by the reviewer agent: 2757.
+Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 16
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
 
@@ -20,7 +20,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Waiting for a decision or a native read — start here (5)
+## 1. Waiting for a decision or a native read — start here (16)
 
 A **question** is a wording only the site's owner can choose between. A line the
 agent has read but marked for a native read is high-stakes text (children,
@@ -31,6 +31,17 @@ consent, brands, legal): the agent's pass is not enough for it.
 | 39 rules pages — one per game | Inspired by {name}. The name belongs to its owner; this is our own version of the rules. | **{name}に着想を得た版です。名称は権利者に帰属し、ここに記すのは当サイト独自の規則です。** | This is a version inspired by {name}. The name belongs to its rights holder; what is set down here is this site's own rules. | Agent 2026-10-06, native read wanted | A trademark notice (the name belongs to its owner): a native read is recommended. |  |
 | The feed, /feed — its heading, tabs, every line of activity and its empty states | Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only bots and members who have said they are 18 or over are named. | **最近ここで終わった対局、新しく加わったゲーム、そしてサイトのニュース（初めての出来事、新しい首位、最速記録）です。名前を表示するのは、コンピュータと18歳以上と答えた会員だけです。** | Games that ended here recently, games newly added, and the site's news (first events, new leaders, fastest records). Names are shown only for computers and members who answered that they are 18 or over. | Agent 2026-10-06, native read wanted | Says who is named by age (18 or over): about children, so a native read is recommended. |  |
 | — — — | Slate & shell | **那智黒と蛤** | Slate and clam shell | Agent 2026-10-06, native read wanted | The five stone-set names are renderings of English names (那智黒と蛤, 翡翠と骨, 梅と桜, 藍と米, ネオン). A Go player should confirm they read as the stones' materials and colours. |  |
+| — — — | The step begins here | **この手順のはじめ** | The start of this step | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
+| — — — | Hide the turns | **回転の表示を閉じる** | Close the display of the turns | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
+| — — — | Done: that step is finished, and the cube is as it should be. Go back over any turn, replay it from the start, or turn the cube yourself. | **完了です。この手順は終わり、キューブは正しい状態になりました。好きな手に戻って見直したり、最初から再生したり、自分で回したりできます。** | Done. This step is finished and the cube is now as it should be. You can go back to any move to look again, play it again from the start, or turn it yourself. | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
+| — — — | Turn this one for me | **この1手を代わりに回す** | Turn this one move for me | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
+| — — — | Replay the step | **この手順を最初から** | This step from the start | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
+| — — — | Fast | **速め** | Faster | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
+| — — — | How fast | **再生の速さ** | Playback speed | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
+| — — — | Normal | **ふつうの速さ** | Ordinary speed | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
+| — — — | Slow | **遅め** | Slower | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
+| — — — | The turns of this step | **この手順の回転** | The turns of this step | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
+| — — — | Watch the turns one at a time. Pause to look closer, step back and on to go over one again, or drag the bar to jump. Turn the cube yourself to carry on by hand from there. | **回転を1手ずつ見ます。一時停止してよく見たり、戻る・進むで1手ずつ見直したり、バーをドラッグして好きな手に飛んだりできます。キューブを自分で回すと、そこから手で続けられます。** | Watch the turns one move at a time. You can pause to look closely, go back and forward one move at a time to look again, or drag the bar to jump to any move. If you turn the cube yourself, you carry on by hand from there. | Question, unread | Drafted without a reader of Japanese. The cube words follow Kyuubu's own Japanese; a native read of how a cuber would say it is recommended. |  |
 | — — — | From {country} | **発祥：{country}** | Origin: {country} | Agent 2026-10-06, native read wanted | The country is printed as the data holds it, in English ("発祥：Japan"). Localising country names needs a table of its own; John to decide whether to add one. |  |
 | — — — | Sit in with your four words | **4つの合言葉で着席する** | Sit in with my four words | Agent 2026-10-06, native read wanted | The "four words" a member chooses to sit in as themselves are 合言葉 here. The account pages that set them must use the same word; John to confirm 合言葉 is the one he wants. |  |
 

@@ -19,6 +19,7 @@ import { JA_DRAFTED_ADVANTAGE } from "./ja.drafted.advantage.constants";
 import { JA_DRAFTED_GOMOKU } from "./ja.drafted.gomoku.constants";
 import { JA_DRAFTED_RATING } from "./ja.drafted.rating.constants";
 import { JA_DRAFTED_CLOCK } from "./ja.drafted.clock.constants";
+import { JA_DRAFTED_CUBEMETHOD } from "./ja.drafted.cubemethod.constants";
 import { JA_DRAFTED_RULESPAGE } from "./ja.drafted.rulespage.constants";
 import { JA_DRAFTED_PCARD } from "./ja.drafted.pcard.constants";
 import { JA_DRAFTED_PKUMI } from "./ja.drafted.pkumi.constants";
@@ -1001,6 +1002,7 @@ const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   ...JA_DRAFTED_ADVANTAGE,
   ...JA_DRAFTED_GOMOKU,
   ...JA_DRAFTED_CLOCK,
+  ...JA_DRAFTED_CUBEMETHOD,
   ...JA_DRAFTED_RATING,
 };
 

@@ -32,6 +32,7 @@ export function CubeBoard({
   cube,
   hint = null,
   zoomable = false,
+  turnMs,
 }: {
   size: number;
   state: string;
@@ -45,6 +46,8 @@ export function CubeBoard({
   hint?: readonly CubeMove[] | null;
   /** Offer to zoom the cube in and out inside its board (the solve and the replay do; a preview does not). */
   zoomable?: boolean;
+  /** How long a quarter turn takes to show, in milliseconds, when it is made from code (a replay's own turns); Kyuubu's own pace when left out. None for a device that asks for reduced motion, whatever this says. */
+  turnMs?: number;
 }) {
   const say = useSpeaker();
   const kyuubu = (
@@ -58,6 +61,7 @@ export function CubeBoard({
         label={cubeCopy(say.locale).label(size)}
         onTurn={onTurn}
         hint={hint}
+        turnMs={turnMs}
         className="absolute inset-0"
         data-testid="cube"
         data-size={String(size)}

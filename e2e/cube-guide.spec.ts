@@ -35,8 +35,10 @@ test.describe("the cube's guide, for a reader with no account", () => {
     await expect(practice).toHaveAttribute("data-done", "false");
     await practice.getByTestId("cube-practice-show").click();
     await expect(practice.getByTestId("cube-practice-turns")).toContainText("Sune");
+    // Turned for the reader, a turn at a time (the replay has its own spec, `cube-method-replay`): fast, so this one waits less.
     await practice.getByTestId("cube-practice-turn").click();
-    await expect(practice).toHaveAttribute("data-done", "true");
+    await practice.getByTestId("cube-step-speed-fast").click();
+    await expect(practice).toHaveAttribute("data-done", "true", { timeout: 40_000 });
     await expect(practice.getByTestId("cube-practice-said")).toContainText("Done");
     await settledCube(page);
 

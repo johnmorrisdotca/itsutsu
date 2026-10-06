@@ -39,6 +39,7 @@ import { PHRASES_PGRID } from "./phrases.pgrid.constants";
 import { PHRASES_PWORD } from "./phrases.pword.constants";
 import { PHRASES_PSET } from "./phrases.pset.constants";
 import { PHRASES_PUZZLE } from "./phrases.puzzle.constants";
+import { PHRASES_CUBEMETHOD } from "./phrases.cubemethod.constants";
 
 /**
  * The languages the site knows about, and the English it speaks in by default.
@@ -159,6 +160,7 @@ export const PHRASE_AREAS = {
   advantage: PHRASES_ADVANTAGE,
   gomoku: PHRASES_GOMOKU,
   clock: PHRASES_CLOCK,
+  cubemethod: PHRASES_CUBEMETHOD,
   rating: PHRASES_RATING,
   puzzle: PHRASES_PUZZLE,
   pset: PHRASES_PSET,
@@ -228,6 +230,7 @@ export const PHRASES = {
   ...PHRASES_ADVANTAGE,
   ...PHRASES_GOMOKU,
   ...PHRASES_CLOCK,
+  ...PHRASES_CUBEMETHOD,
   ...PHRASES_RATING,
   ...PHRASES_PUZZLE,
   ...PHRASES_PSET,

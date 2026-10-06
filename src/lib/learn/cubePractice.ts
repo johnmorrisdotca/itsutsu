@@ -1,4 +1,4 @@
-import { solveSteps, turnAll, type SolveStage } from "@johnmorrisdotca/kyuubu";
+import { solveSteps, turnAll, type SolveStage, type SolveStep } from "@johnmorrisdotca/kyuubu";
 
 import { cubeOfSeed } from "@/lib/puzzles/cube/generate";
 
@@ -34,4 +34,19 @@ export function stageDone(state: string, n: TaughtSize, stage: SolveStage): bool
   if (steps.length === 0) return true;
   const order = CUBE_STAGES_BY_SIZE[n];
   return order.indexOf(steps[0].stage) > order.indexOf(stage);
+}
+
+/**
+ * The method's steps from this cube, as far as the stage it is at: every step of that stage still to do, and none of the next. That is the stage asked for,
+ * unless the reader has undone an earlier one (turned a finished layer back), when the method's next step is
+ * that earlier stage's and it is what is shown: the turns that win it back. Nothing once the stage is done.
+ */
+export function stageRest(state: string, n: TaughtSize, stage: SolveStage): SolveStep[] {
+  const steps = solveSteps(state, n) ?? [];
+  if (steps.length === 0) return [];
+  const order = CUBE_STAGES_BY_SIZE[n];
+  const first = steps[0].stage;
+  if (order.indexOf(first) > order.indexOf(stage)) return [];
+  const through = steps.findIndex((step) => step.stage !== first);
+  return steps.slice(0, through < 0 ? steps.length : through);
 }
