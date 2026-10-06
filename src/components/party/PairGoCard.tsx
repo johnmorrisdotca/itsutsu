@@ -33,7 +33,7 @@ export function PairGoCard() {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PAIR_GO_COPY.card}</span>
         <span className="text-sm font-medium">
-          <GameName variant={PAIR_GO_VARIANT} />{say.say("party.pairgo.cardTeams")} · {boardWords(settings.variant, settings.size)} · {say.count("count.move", moves.length)}
+          <GameName variant={PAIR_GO_VARIANT} />{say.say("party.pairgo.cardTeams")} · {boardWords(settings.variant, settings.size, say)} · {say.count("count.move", moves.length)}
           {toMove !== null ? say.say("party.pairgo.cardToPlay", { name: toMove.name, colour: stoneName(say, toMove.stone) }) : ""}
         </span>
       </div>

@@ -289,13 +289,13 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "party.dots.wins": {
-    text: "{name}の勝ちです。箱は{boxes}です。",
-    back: "{name} wins. The boxes are {boxes}.",
+    text: "{name}の勝ちです。{boxes}を取りました。",
+    back: "{name} wins. They took {boxes}.",
     review: AGENT_READ,
   },
   "party.dots.share": {
-    text: "{names}が勝ちを分け合いました。それぞれ{boxes}です。",
-    back: "{names} share the win, with {boxes} each.",
+    text: "{names}が勝ちを分け合いました。それぞれ{boxes}を取りました。",
+    back: "{names} share the win. Each took {boxes}.",
     review: AGENT_READ,
   },
   "party.dots.aboutBoard": {
@@ -1461,6 +1461,32 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "party.blocks.pieceAria": {
     text: "{size}マスのピース",
     back: "a piece of {size} squares",
+    review: AGENT_READ,
+  },
+  // Lines found in the walk
+  "party.pairgo.captured": {
+    text: "取った石：黒{black}、白{white}",
+    back: "stones taken: black {black}, white {white}",
+    review: AGENT_READ,
+  },
+  "party.race.played": {
+    text: "{moves}が進みました。",
+    back: "{moves} have been played.",
+    review: AGENT_READ,
+  },
+  "party.race.wins": {
+    text: "{name}の勝ちです。{camp}を最初に埋めました。",
+    back: "{name} wins, having filled {camp} first.",
+    review: AGENT_READ,
+  },
+  "party.default": {
+    text: "（既定）",
+    back: "(default)",
+    review: AGENT_READ,
+  },
+  "party.online.loadingWords": {
+    text: "単語リストを読み込んでいます…",
+    back: "Loading the word list…",
     review: AGENT_READ,
   },
 };

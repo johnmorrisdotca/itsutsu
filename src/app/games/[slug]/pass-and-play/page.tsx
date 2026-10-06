@@ -14,7 +14,7 @@ import { partyTableFor } from "@/components/party/partyTables";
 import type { PartyTable } from "@/components/party/party.types";
 import { appearanceFor } from "@/lib/auth/members";
 import { currentReader } from "@/lib/auth/currentReader";
-import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { gameNameFor } from "@/lib/catalogue/gameKeys";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Speaker } from "@/lib/i18n/i18n";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
@@ -37,7 +37,7 @@ function tableAt(slug: string): { key: GameKey; table: PartyTable } | null {
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/pass-and-play">): Promise<Metadata> {
   const found = tableAt((await params).slug);
   const say = await currentSpeaker();
-  return { title: found === null ? say.say("gamepages.games") : headingOf(gameCopyFor(found.key, say.locale).label, found.table.words(say.locale).title, say) };
+  return { title: found === null ? say.say("gamepages.games") : headingOf(gameNameFor(found.key, say), found.table.words(say.locale).title, say) };
 }
 
 /** "Chinese Checkers, pass and play"; "Pair Go" and "Block Five for four", which name their game already. */
@@ -72,7 +72,6 @@ export default async function PassAndPlayPage({ params }: PageProps<"/games/[slu
   if (found === null) notFound();
   const { key, table } = found;
   const say = await currentSpeaker();
-  const copy = gameCopyFor(key, say.locale);
   const words = table.words(say.locale);
   const reader = await currentReader();
   // And, where the game can be played on several devices, what its set-up offers for that (`onlineOfferFor`).
@@ -83,11 +82,11 @@ export default async function PassAndPlayPage({ params }: PageProps<"/games/[slu
   return (
     <Page board="play">
       <SiteHeader />
-      <GameTrailNav game={{ label: copy.label, href: gamePath(key) }} steps={[{ label: words.title }]} />
+      <GameTrailNav game={{ label: gameNameFor(key, say), href: gamePath(key) }} steps={[{ label: words.title }]} />
       {/* Furniture, for just the board: the table and what plays it stay. Quiet while a game is played on it (`PlayingNow`). */}
       <div data-chrome data-quiet-in-play>
         <PageTitle
-          title={headingOf(copy.label, words.title, say)}
+          title={headingOf(gameNameFor(key, say), words.title, say)}
           kanji={say.locale === "ja" ? "" : words.kanji}
           lead={words.lead}
         />

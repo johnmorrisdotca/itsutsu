@@ -12,7 +12,8 @@ import { MancalaCard } from "./MancalaCard";
 import { MancalaGame } from "./MancalaGame";
 import { MancalaOffer } from "./MancalaOffer";
 import { dotsWords, ghostWords, mancalaWords, onlineWords, partyScreenWords, cardTableWords, sugorokuScreenWords, yachtWords, pachisiWords, diceWarScreenWords, gunjinWords, hitotsuScreenWords } from "./partyWords";
-import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { gameNameFor } from "@/lib/catalogue/gameKeys";
+import { speaker } from "@/lib/i18n/i18n";
 import type { Locale } from "@/lib/i18n/i18n.types";
 import type { PartyTable, PartyTableGameProps } from "./party.types";
 import { TenkaCard } from "./tenka/TenkaCard";
@@ -117,7 +118,7 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
   ...(Object.fromEntries(
     SUGOROKU_KIND_LIST.map((kind) => [
       kind,
-      { words: (locale: Locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: sugorokuScreenWords(locale).lead(gameCopyFor(kind, locale).label) }), ...SUGOROKU_COMPONENTS[kind] },
+      { words: (locale: Locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: sugorokuScreenWords(locale).lead(gameNameFor(kind, speaker(locale))) }), ...SUGOROKU_COMPONENTS[kind] },
     ]),
   ) as Record<SugorokuKind, PartyTable & { Card: ComponentType }>),
   spades: cardTable("spades", SpadesTable, SpadesOffer, SpadesCard),
@@ -130,5 +131,5 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
 
 /** A card game's row: the pass-and-play title every table shares, its own lead, and its three components. */
 function cardTable(kind: CardGameKind, Game: ComponentType<PartyTableGameProps>, Offer: ComponentType<{ href: string }>, Card: ComponentType): PartyTable & { Card: ComponentType } {
-  return { words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: cardTableWords(locale).lead(gameCopyFor(kind, locale).label) }), Game, Offer, Card };
+  return { words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: cardTableWords(locale).lead(gameNameFor(kind, speaker(locale))) }), Game, Offer, Card };
 }

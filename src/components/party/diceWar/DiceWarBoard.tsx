@@ -74,7 +74,7 @@ export function DiceWarBoard({ game }: { game: DiceWarGame }) {
                 )}
               </span>
             </div>
-            <span className="flex flex-col items-end leading-none" aria-label={`${name}: ${game.scores[seat]} points`}>
+            <span className="flex flex-col items-end leading-none" aria-label={`${name}: ${DICE_WAR_COPY.points(game.scores[seat])}`}>
               <span className="text-2xl font-semibold tabular-nums" data-testid="dicewar-score">
                 {game.scores[seat]}
               </span>

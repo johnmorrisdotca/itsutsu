@@ -173,7 +173,7 @@ export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearanc
               >
                 <span className="text-sm font-semibold">
                   {option === "classic" ? HITOTSU_COPY.classic : HITOTSU_COPY.party}
-                  {option === "classic" ? <span className="ml-1 text-xs font-normal text-muted">(default)</span> : null}
+                  {option === "classic" ? <span className="ml-1 text-xs font-normal text-muted">{say.say("party.default")}</span> : null}
                 </span>
                 <span className="text-xs leading-snug text-muted">{option === "classic" ? HITOTSU_COPY.classicLine : HITOTSU_COPY.partyLine}</span>
               </button>

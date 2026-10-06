@@ -6,7 +6,7 @@ import { SeatColourButton } from "./SeatColourButton";
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT } from "@/components/live/picker.constants";
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { TRAIN_DEFAULT_OPTIONS, startTrain, trainSetName } from "@johnmorrisdotca/domino";
+import { TRAIN_DEFAULT_OPTIONS, startTrain } from "@johnmorrisdotca/domino";
 import type { TrainOptions } from "@johnmorrisdotca/domino";
 import { PARTY_NAME_MOST, computerNumberName } from "@/lib/party/partyNames";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
@@ -16,7 +16,7 @@ import { TrainTable } from "./TrainTable";
 import type { TrainSetUpProps } from "./train.types";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
 import type { SeatChoice } from "./online/online.types";
-import { onlineWords, partyScreenWords, seatColourName, trainWords } from "@/components/party/partyWords";
+import { onlineWords, partyScreenWords, seatColourName, trainSetShown, trainWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { playerNumberName } from "@/lib/gomoku/seatWords";
 
@@ -41,6 +41,7 @@ function Choice<K extends string>({
   testId: string;
   onChange: (value: K) => void;
 }) {
+  const say = useSpeaker();
   return (
     <div className="flex flex-col gap-1">
       <span className="text-xs text-muted">{legend}</span>
@@ -60,7 +61,7 @@ function Choice<K extends string>({
           >
             <span className="text-sm font-semibold">
               {names[option]}
-              {at === 0 ? <span className="ml-1 text-xs font-normal text-muted">(default)</span> : null}
+              {at === 0 ? <span className="ml-1 text-xs font-normal text-muted">{say.say("party.default")}</span> : null}
             </span>
             <span className="text-xs leading-snug text-muted">{lines[option]}</span>
           </button>
@@ -144,7 +145,7 @@ export function TrainSetUp({ appearance, onStart, ready, online }: TrainSetUpPro
                   option === set ? "border-ink bg-rule/70" : "border-rule-strong bg-ivory hover:bg-rule/60"
                 }`}
               >
-                <span className="text-sm font-semibold">{trainSetName(option)}</span>
+                <span className="text-sm font-semibold">{trainSetShown(option, say.locale)}</span>
                 <span className="text-xs leading-snug text-muted">{TRAIN_COPY.setLine[option]}</span>
               </button>
             ))}

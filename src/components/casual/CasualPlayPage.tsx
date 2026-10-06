@@ -12,7 +12,7 @@ import { gamePath, setUpPath } from "@/lib/gomoku/slugs";
 
 import { CasualPlay } from "./CasualPlay";
 import { casualWords } from "@/components/casual/casualWords";
-import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 /** The level a play address asks for (`?level=3`), held to the game's levels; the first when it asks for none or nonsense. */
 export function casualLevelAsked(kind: CasualKind, query: Record<string, string | string[] | undefined>): number {
@@ -28,18 +28,19 @@ export function casualLevelAsked(kind: CasualKind, query: Record<string, string 
  * nothing else; the board and everything it remembers are the browser's
  * (`CasualPlay`).
  */
-export function CasualPlayPage({ kind, level }: { kind: CasualKind; level: number }) {
-  const say = useSpeaker();
+export async function CasualPlayPage({ kind, level }: { kind: CasualKind; level: number }) {
+  const say = await currentSpeaker();
   const CASUAL_COPY = casualWords(say.locale);
   const copy = casualCopy(kind, say.locale);
+  const name = say.pairName(copy.label, copy.kanji).text;
   return (
     <Page board="play">
       <SiteHeader />
       {/* Just the board's header (`BoardMasthead`), drawn only in that mode. */}
       <div data-bare-only>
-        <BoardMasthead story={{ kind: CASUAL_COPY.card, kanji: copy.kanji, title: copy.label, source: say.say("casual.source", { site: SITE_NAME }) }} />
+        <BoardMasthead story={{ kind: CASUAL_COPY.card, kanji: copy.kanji, title: name, source: say.say("casual.source", { site: SITE_NAME }) }} />
       </div>
-      <GameTrailNav game={{ label: copy.label, href: gamePath(kind), testId: "play-up" }} steps={[{ label: say.say("gamescreen.setUpTitle"), href: setUpPath(kind) }, { label: `${CASUAL_COPY.levelWord(kind === "choiceStory")}${say.locale === "ja" ? "" : " "}${level}` }]} />
+      <GameTrailNav game={{ label: name, href: gamePath(kind), testId: "play-up" }} steps={[{ label: say.say("gamescreen.setUpTitle"), href: setUpPath(kind) }, { label: `${CASUAL_COPY.levelWord(kind === "choiceStory")}${say.locale === "ja" ? "" : " "}${level}` }]} />
       <BoardScaled>
         <CasualPlay key={level} kind={kind} level={level} />
       </BoardScaled>

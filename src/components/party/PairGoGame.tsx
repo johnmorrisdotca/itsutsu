@@ -150,8 +150,7 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
             ))}
           </ol>
           <p className="text-xs text-muted">
-            {boardWords(game.state.settings.variant, game.state.settings.size)} · {say.count("count.move", game.state.moves.length)} · captured: Black {game.state.captures.black}, White{" "}
-            {game.state.captures.white}. {PAIR_GO_COPY.kept}
+            {boardWords(game.state.settings.variant, game.state.settings.size, say)} · {say.count("count.move", game.state.moves.length)} · {say.say("party.pairgo.captured", { black: String(game.state.captures.black), white: String(game.state.captures.white) })}. {PAIR_GO_COPY.kept}
           </p>
         </section>
 

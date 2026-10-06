@@ -314,4 +314,10 @@ export const PHRASES_PARTY = {
   "party.train.laneEmptyTitle": "{owner}: empty, starts with {engine}",
   "party.train.laneOpenTitle": "{owner}: open end {end}",
   "party.blocks.pieceAria": "{size}-square piece",
+  // Lines found in the walk
+  "party.pairgo.captured": "captured: Black {black}, White {white}",
+  "party.race.played": "{moves} played.",
+  "party.race.wins": "{name} wins, the first to fill {camp}.",
+  "party.default": "(default)",
+  "party.online.loadingWords": "Loading the word list…",
 } as const;

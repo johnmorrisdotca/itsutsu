@@ -14,7 +14,7 @@ import { tablePath } from "@/lib/party/online/onlinePaths";
 import type { MyTable } from "@/lib/party/online/server/myTables";
 import type { NameTag } from "@/lib/xp/nameTag.types";
 import { onlineWords } from "@/components/party/partyWords";
-import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { onlineSeatName } from "./onlineSeatName";
 
@@ -31,8 +31,8 @@ import { onlineSeatName } from "./onlineSeatName";
  * goes round several people, which "Your move" and "Their move" do not say.
  * An empty panel keeps its heading and says so.
  */
-export function MyTables({ tables, finished, tags }: { tables: readonly MyTable[]; finished: boolean; tags: ReadonlyMap<string, NameTag> }) {
-  const say = useSpeaker();
+export async function MyTables({ tables, finished, tags }: { tables: readonly MyTable[]; finished: boolean; tags: ReadonlyMap<string, NameTag> }) {
+  const say = await currentSpeaker();
   const ONLINE_COPY = onlineWords(say.locale);
   const heading = finished ? ONLINE_COPY.myFinishedHeading : ONLINE_COPY.myHeading;
   return (
@@ -57,8 +57,8 @@ export function MyTables({ tables, finished, tags }: { tables: readonly MyTable[
 }
 
 /** One table on My games: under Going, how it stands; on Completed, among every other kind of finished game (`completed.ts`), how it went. */
-export function TableRow({ table, finished, tags }: { table: MyTable; finished: boolean; tags: ReadonlyMap<string, NameTag> }) {
-  const say = useSpeaker();
+export async function TableRow({ table, finished, tags }: { table: MyTable; finished: boolean; tags: ReadonlyMap<string, NameTag> }) {
+  const say = await currentSpeaker();
   const ONLINE_COPY = onlineWords(say.locale);
   const href = tablePath(table.game, table.id);
   const toPlay = table.toPlay === null ? undefined : table.seats[table.toPlay];

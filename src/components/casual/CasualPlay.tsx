@@ -134,7 +134,7 @@ export function CasualPlay({ kind, level }: { kind: CasualKind; level: number })
       <aside className="flex min-w-0 flex-col gap-4">
         <section className={`${PANEL_CLASS} flex flex-col gap-1.5`} data-chrome data-testid="casual-progress">
           <h2 className={SECTION_TITLE}>
-            {copy.label} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span> : null}
+            {say.pairsWithKanji ? copy.label : copy.kanji} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span> : null}
           </h2>
           <p className="text-sm">{save === undefined ? "" : CASUAL_COPY.wonOf(won, spec.levels, story)}</p>
           <p className="text-xs text-muted">{CASUAL_COPY.never}</p>

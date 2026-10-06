@@ -39,7 +39,7 @@ export function partyRulesPage(kind: PartyKind, say: Speaker): RulesPage {
     origin: copy.origin,
     inspiredBy: copy.inspiredBy,
     alsoKnownAs: [...(copy.alsoKnownAs ?? [])],
-    from: originFor(copy.country),
+    from: originFor(copy.country, say.locale),
     wikipedia: copy.wikipedia === undefined ? null : wikipediaUrl(copy.wikipedia),
     object,
     board,

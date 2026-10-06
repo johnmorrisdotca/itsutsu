@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useEffect, useMemo, useState } from "react";
 
 import { KumimojiPartyAll } from "@/components/puzzles/KumimojiPartyBoards";
@@ -26,6 +27,7 @@ import type { Speaker } from "@/lib/i18n/i18n";
  * tiles are real (`onlineKumimoji.ts`).
  */
 export function KumimojiOnline({ game, appearance, canMove, onMove }: OnlineBoardProps<PartyGame, KumimojiMove>) {
+  const say = useSpeaker();
   const language = game.settings.language;
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
@@ -62,7 +64,7 @@ export function KumimojiOnline({ game, appearance, canMove, onMove }: OnlineBoar
     <div className="flex min-w-0 flex-col gap-3" data-testid="kumimoji-online" data-turn={game.turn} data-turns={game.turns} data-position={position} data-ready={ready ? "true" : "false"}>
       {!ready ? (
         <p className="min-h-[20rem] text-sm text-muted" aria-busy="true">
-          Loading the word list…
+          {say.say("party.online.loadingWords")}
         </p>
       ) : game.ending !== null ? (
         <KumimojiPartyFinish game={game} theme={theme} />
@@ -71,7 +73,7 @@ export function KumimojiOnline({ game, appearance, canMove, onMove }: OnlineBoar
       ) : (
         <>
           <p className="text-base font-semibold" data-testid="kumimoji-party-whose">
-            {nameOf(game, game.turn)}&rsquo;s turn
+            {say.say("pkumi.turn.whose", { name: nameOf(game, game.turn) })}
           </p>
           <KumimojiPartyAll game={game} theme={theme} />
         </>

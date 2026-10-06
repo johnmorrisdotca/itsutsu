@@ -27,7 +27,8 @@ import { PartySetUp } from "./PartySetUp";
 import type { PartyRaceKind, PartyTableGameProps } from "./party.types";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { partyScreenWords } from "@/components/party/partyWords";
+import type { RaceVariant } from "@/lib/gomoku/party/partyRace.types";
+import { marbleLabel, partyScreenWords, raceWords } from "@/components/party/partyWords";
 
 /**
  * A RACE PASSED ROUND THE TABLE: Chinese Checkers on the star, or Halma on
@@ -99,7 +100,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
       {...readyMark(hydrated)}
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
-        <RaceTurnLine game={game} farCamp={kind.copy.farCamp} />
+        <RaceTurnLine game={game} farCamp={raceWords(say.locale)[kind.variant as RaceVariant].farCamp} />
         {/* Quiet around the game while it is played (`PlayingNow`). */}
         <PlayingNow on={moment.playing} />
         <WinCoverOver
@@ -148,7 +149,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
             ))}
           </ol>
           <p className="text-xs text-muted">
-            {say.count("count.move", game.moves.length)} played. {PARTY_COPY.kept}
+            {say.say("party.race.played", { moves: say.count("count.move", game.moves.length) })} {PARTY_COPY.kept}
           </p>
         </section>
 
@@ -177,7 +178,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
         ) : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
-            {kind.copy.about} →
+            {raceWords(say.locale)[kind.variant as RaceVariant].about} →
           </Link>
         </p>
       </aside>
@@ -204,7 +205,7 @@ export function RaceTurnLine({ game, farCamp }: { game: PartyRaceState; farCamp:
         <ResultMark kind={RESULT_MARKS.success} />
         <MarbleChip player={game.winner} />
         <span>
-          {partyPlayerName(game.players, game.winner, say)} wins, the first to fill {farCamp}.
+          {say.say("party.race.wins", { name: partyPlayerName(game.players, game.winner, say), camp: farCamp })}
         </span>
       </p>
     );
@@ -225,7 +226,7 @@ export function RaceTurnLine({ game, farCamp }: { game: PartyRaceState; farCamp:
           {partyPlayerName(game.players, game.toPlay, say)}
         </span>
         <span className="text-muted">
-          {"’s turn"} · {marble.label} ({marble.letter})
+          {say.say("party.turnSuffix")} · {say.say("party.turnTrail", { colour: marbleLabel(marble, say.locale), letter: marble.letter })}
         </span>
       </span>
     </p>

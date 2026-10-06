@@ -45,7 +45,7 @@ export async function PartyFrontDoor({ kind }: { kind: PartyKind }) {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <p className="text-xs text-muted" data-testid="game-crumb">
-            <GameTrail game={{ label: page.title }} />
+            <GameTrail game={{ label: name }} />
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="party">
             <div className={`${GAME_PICTURE_BOX} flex flex-col gap-2`}>

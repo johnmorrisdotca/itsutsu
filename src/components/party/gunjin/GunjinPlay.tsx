@@ -11,7 +11,6 @@ import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { gunjinDrawn, gunjinOver, gunjinToPlay, gunjinWinners, playGunjin, resignGunjin, startGunjin } from "@/lib/party/gunjin/gunjin";
-import { GUNJIN_BOARDS } from "@/lib/party/gunjin/gunjin.constants";
 import type { GunjinGame } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinNews, gunjinReason } from "@/lib/party/gunjin/gunjinNews";
 import { gunjinFinalView } from "@/lib/party/gunjin/gunjinView";
@@ -26,7 +25,7 @@ import { GunjinBoard } from "./GunjinBoard";
 import { GunjinDrawAnswer, GunjinDrawOffer } from "./GunjinDraw";
 import { GunjinMoving, MovesPanel } from "./GunjinMoving";
 import { GunjinSide } from "./GunjinSide";
-import { gunjinWords } from "@/components/party/partyWords";
+import { gunjinBoardWords, gunjinWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** The device is handed on once for each of these: the setup's step, the turn and the side to act. A pass confirmed does not change it, so the cover stays down for it. */
@@ -58,7 +57,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
   const key = turnKey(game);
   const covered = !over && (match.phase === "pass" || handedFor !== key);
   const names = [partyPlayerName(game, 0, say), partyPlayerName(game, 1, say)];
-  const board = GUNJIN_BOARDS[game.size]!;
+  const board = gunjinBoardWords(say.locale)[game.size]!;
   const winners = gunjinWinners(game);
   const drawn = gunjinDrawn(game);
   const resigned = resignedBy(game);

@@ -4,13 +4,12 @@ import { useMemo, useState } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { GUNJIN_BOARDS } from "@/lib/party/gunjin/gunjin.constants";
 import type { GunjinGame, GunjinSquare } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinNewsLines } from "@/lib/party/gunjin/gunjinNews";
 import { gunjinSeatView } from "@/lib/party/gunjin/gunjinView";
 
 import { GunjinBoard } from "./GunjinBoard";
-import { gunjinWords } from "@/components/party/partyWords";
+import { gunjinBoardWords, gunjinWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const sameSquare = (a: GunjinSquare | null, b: GunjinSquare) => a !== null && a.x === b.x && a.y === b.y;
@@ -67,7 +66,7 @@ export function GunjinMoving({
   const GUNJIN_COPY = gunjinWords(say.locale);
   const [picked, setPicked] = useState<GunjinSquare | null>(null);
   const { view, legal } = useMemo(() => gunjinSeatView(game, seat), [game, seat]);
-  const board = GUNJIN_BOARDS[game.size]!;
+  const board = gunjinBoardWords(say.locale)[game.size]!;
   const targets = useMemo(() => (picked === null ? [] : legal.filter((move) => sameSquare(picked, move.from)).map((move) => move.to)), [legal, picked]);
   const last = game.match.log.at(-1);
   const onSquare = (square: GunjinSquare) => {

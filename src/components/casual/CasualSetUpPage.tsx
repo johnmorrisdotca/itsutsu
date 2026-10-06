@@ -26,7 +26,7 @@ export async function CasualSetUpPage({ kind }: { kind: CasualKind }) {
       <PageTitle
         title={copy.label}
         kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: say.say("gamescreen.setUpTitle") }]} />}
+        crumb={<GameTrail game={{ label: say.pairName(copy.label, copy.kanji).text, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: say.say("gamescreen.setUpTitle") }]} />}
         lead={
           <>
             {copy.tagline}{" "}

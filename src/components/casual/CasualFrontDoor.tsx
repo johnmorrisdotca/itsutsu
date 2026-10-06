@@ -17,7 +17,7 @@ import { backgroundPath, rulesPath } from "@/lib/gomoku/slugs";
 import { CasualOffer } from "./CasualOffer";
 import { casualWords } from "@/components/casual/casualWords";
 import { Paired } from "@/components/i18n/Paired";
-import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 /**
  * A casual game's front door, at /games/<slug>: what every casual game's name
@@ -32,8 +32,8 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  * everybody, and nothing read from the database. Open to anybody, as every
  * game's page is: reading is open, and a casual game names nobody.
  */
-export function CasualFrontDoor({ kind }: { kind: CasualKind }) {
-  const say = useSpeaker();
+export async function CasualFrontDoor({ kind }: { kind: CasualKind }) {
+  const say = await currentSpeaker();
   const CASUAL_COPY = casualWords(say.locale);
   const page = casualRulesPage(kind, say);
   const name = say.pairName(page.title, page.kanji).text;
@@ -45,7 +45,7 @@ export function CasualFrontDoor({ kind }: { kind: CasualKind }) {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <p className="text-xs text-muted" data-testid="game-crumb">
-            <GameTrail game={{ label: page.title }} />
+            <GameTrail game={{ label: name }} />
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="casual">
             <div className={`${GAME_PICTURE_BOX} flex flex-col gap-2`}>

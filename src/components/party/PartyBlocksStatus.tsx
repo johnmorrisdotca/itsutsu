@@ -11,7 +11,7 @@ import type { PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 import { partyPlayerName } from "@/lib/gomoku/party/partyRace";
 
 import { MarbleChip } from "./MarbleChip";
-import { blocksWords, partyScreenWords } from "@/components/party/partyWords";
+import { blocksWords, marbleLabel, partyScreenWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { Speaker } from "@/lib/i18n/i18n";
 
@@ -60,7 +60,7 @@ export function PartyBlocksTurnLine({ game }: { game: PartyBlocksState }) {
             {partyPlayerName(game.players, game.toPlay, say)}
           </span>
           <span className="text-muted">
-            {"’s turn"} · {marble.label} ({marble.letter})
+            {say.say("party.turnSuffix")} · {say.say("party.turnTrail", { colour: marbleLabel(marble, say.locale), letter: marble.letter })}
           </span>
         </span>
       </p>

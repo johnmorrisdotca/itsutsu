@@ -1,7 +1,7 @@
 "use client";
 
 import { usePartyMarbles } from "./partyMarbles";
-import { GAME_COPY } from "@/components/game/game.constants";
+import { gameCopy } from "@/components/game/game.constants";
 import { PieceGlyph } from "@/components/game/PieceTray";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -23,6 +23,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  */
 export function PartyBlocksTray({ game, hold, onHold, onRotate, onFlip, refusal }: PartyBlocksTrayProps) {
   const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const PARTY_BLOCKS_COPY = blocksWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();

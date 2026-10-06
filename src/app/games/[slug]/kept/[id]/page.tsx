@@ -13,7 +13,7 @@ import { PlayerName } from "@/components/players/PlayerName";
 import Link from "@/components/ui/Link";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { gameCopyFor, type GameKey } from "@/lib/catalogue/gameKeys";
+import { gameNameFor, type GameKey } from "@/lib/catalogue/gameKeys";
 import { titleWithKanji } from "@/components/games/pageTitles";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { gamePath, partyKindFor, variantFor } from "@/lib/gomoku/slugs";
@@ -60,7 +60,6 @@ export default async function KeptGamePage({ params }: PageProps<"/games/[slug]/
 
   const say = await currentSpeaker();
   const KEPT_COPY = keptWords(say.locale);
-  const copy = gameCopyFor(key, say.locale);
   const tags = await nameTagsOf(row.seats.map((seat) => seat.memberId));
   // How it stands for whoever filed it: the reader when it is theirs, the player whose history it is from when not.
   const mine = owner?.seat ?? 0;
@@ -73,7 +72,7 @@ export default async function KeptGamePage({ params }: PageProps<"/games/[slug]/
   return (
     <Page>
       <SiteHeader />
-      <GameTrailNav game={{ label: copy.label, href: gamePath(key) }} steps={[{ label: KEPT_COPY.title }]} />
+      <GameTrailNav game={{ label: gameNameFor(key, say), href: gamePath(key) }} steps={[{ label: KEPT_COPY.title }]} />
       <PageTitle title={own ? KEPT_COPY.title : KEPT_COPY.theirs.title} kanji={say.locale === "ja" ? "" : KEPT_COPY.kanji} lead={own ? lead : KEPT_COPY.theirs.lead} />
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="kept-game" data-state={state} data-game={key}>
         <div className="flex items-center gap-3">

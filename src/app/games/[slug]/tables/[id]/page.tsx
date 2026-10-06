@@ -12,7 +12,7 @@ import type { Speaker } from "@/lib/i18n/i18n";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { appearanceFor } from "@/lib/auth/members";
 import { currentMemberId } from "@/lib/auth/currentSession";
-import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { gameCopyFor, gameNameFor } from "@/lib/catalogue/gameKeys";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { gamePath, partyKindFor, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { isOnlineGame } from "@/lib/party/online/onlineGames";
@@ -80,10 +80,10 @@ export default async function TablePage({ params, searchParams }: PageProps<"/ga
     // A board page whose play draws "Just the board" beside its size (`BoardScale`).
     <Page board="play">
       <SiteHeader />
-      <GameTrailNav game={{ label: copy.label, href: gamePath(view.game) }} steps={[{ label: ONLINE_COPY.title }]} />
+      <GameTrailNav game={{ label: gameNameFor(view.game, say), href: gamePath(view.game) }} steps={[{ label: ONLINE_COPY.title }]} />
       {/* Furniture, for just the board, and quiet while a game is played on it (`PlayingNow`). */}
       <div data-chrome data-quiet-in-play>
-        <PageTitle title={say.say("party.onlineTableTitle", { game: copy.label })} kanji={say.locale === "ja" ? "" : ONLINE_COPY.kanji} lead={ONLINE_COPY.lead} />
+        <PageTitle title={say.say("party.onlineTableTitle", { game: gameNameFor(view.game, say) })} kanji={say.locale === "ja" ? "" : ONLINE_COPY.kanji} lead={ONLINE_COPY.lead} />
       </div>
       {notice !== null ? (
         <p className={`${PANEL_CLASS} text-sm`} data-testid="online-seat-notice">
@@ -97,7 +97,7 @@ export default async function TablePage({ params, searchParams }: PageProps<"/ga
           appearance={appearance ?? DEFAULT_APPEARANCE}
           intervals={intervals}
           gameHref={gamePath(view.game)}
-          gameLabel={copy.label}
+          gameLabel={say.pairName(copy.label, copy.kanji).text}
           tags={tags}
         />
       </BoardScaled>

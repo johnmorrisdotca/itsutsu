@@ -5,7 +5,6 @@ import { useMemo } from "react";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { EndGameButton, GameEnding } from "@/components/play/GameEnding";
 import { gunjinDrawOfferedTo, gunjinOver } from "@/lib/party/gunjin/gunjin";
-import { GUNJIN_BOARDS } from "@/lib/party/gunjin/gunjin.constants";
 import type { GunjinGame, GunjinMove } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinFinalView, gunjinSeatView } from "@/lib/party/gunjin/gunjinView";
 import { partyPlayerName } from "@/lib/party/partyNames";
@@ -15,7 +14,7 @@ import { GunjinBoard } from "../gunjin/GunjinBoard";
 import { GunjinDrawAnswer, GunjinDrawOffer, GunjinDrawWaiting, GunjinResult } from "../gunjin/GunjinDraw";
 import { GunjinMoving, MovesPanel } from "../gunjin/GunjinMoving";
 import type { OnlineBoardProps } from "./online.types";
-import { gunjinWords, onlineWords } from "@/components/party/partyWords";
+import { gunjinBoardWords, gunjinWords, onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
@@ -34,7 +33,7 @@ export function GunjinOnline({ game, appearance, canMove, onMove, mySeat }: Onli
   const { match } = game;
   const over = gunjinOver(game);
   const names = [partyPlayerName(game, 0, say), partyPlayerName(game, 1, say)];
-  const board = GUNJIN_BOARDS[game.size]!;
+  const board = gunjinBoardWords(say.locale)[game.size]!;
   // A side that has arranged and waits for the other: its own arrangement, drawn as the draft, and nothing else.
   const waitingView = useMemo(() => gunjinSeatView(game, seat).view, [game, seat]);
   return (

@@ -11,8 +11,9 @@ import type { RaceMove } from "@/lib/party/online/onlineGames";
 import { RaceTurnLine } from "../PartyRaceGame";
 import type { PartyRaceKind } from "../party.types";
 import type { OnlineBoardProps } from "./online.types";
-import { onlineWords, partyScreenWords } from "@/components/party/partyWords";
+import { onlineWords, partyScreenWords, raceWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { RaceVariant } from "@/lib/gomoku/party/partyRace.types";
 
 /**
  * A RACE AT A TABLE ON SEVERAL DEVICES — Chinese Checkers round the star,
@@ -49,7 +50,7 @@ export function RaceOnline<S extends PartyRaceState, C extends number>({
 
   return (
     <div className="flex min-w-0 flex-col gap-3" data-testid={kind.testId} data-state={game.status} data-moves={game.moves.length}>
-      <RaceTurnLine game={game} farCamp={kind.copy.farCamp} />
+      <RaceTurnLine game={game} farCamp={raceWords(say.locale)[kind.variant as RaceVariant].farCamp} />
       <Board game={game} appearance={appearance} selected={picked} targets={targets} onHole={onHole} readOnly={!canMove} />
       {canMove && game.status === PARTY_STATUS.playing ? <p className="text-xs text-muted">{PARTY_COPY.pick}</p> : null}
       {/* "ARE YOU STILL THERE?" on the reader's own turn, as every board a person plays on asks (`idleWatch.coverage.test.ts`). */}

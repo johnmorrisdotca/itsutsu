@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import type { Appearance } from "@/components/board/board.types";
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { startGunjin } from "@/lib/party/gunjin/gunjin";
-import { GUNJIN_BOARDS, GUNJIN_DEFAULT_SIZE, GUNJIN_SIZES } from "@/lib/party/gunjin/gunjin.constants";
+import { GUNJIN_DEFAULT_SIZE, GUNJIN_SIZES } from "@/lib/party/gunjin/gunjin.constants";
 import type { GunjinGame } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinSeatView } from "@/lib/party/gunjin/gunjinView";
 import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
@@ -15,7 +15,7 @@ import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTab
 import type { OnlineOffer, SeatChoice } from "../online/online.types";
 import { GunjinBoard } from "./GunjinBoard";
 import { GunjinSide } from "./GunjinSide";
-import { gunjinWords, onlineWords } from "@/components/party/partyWords";
+import { gunjinBoardWords, gunjinWords, onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
@@ -40,7 +40,7 @@ export function GunjinSetUp({ appearance, onStart, ready, online }: { appearance
   const severalOffer = several ? online : undefined;
   const onChoose = (seat: number, choice: SeatChoice) => setChoices((was) => was.map((one, at) => (at === seat ? choice : one)));
   const preview = useMemo(() => gunjinSeatView(startGunjin(size, ["", ""])!, 0).view, [size]);
-  const spec = GUNJIN_BOARDS[size]!;
+  const spec = gunjinBoardWords(say.locale)[size]!;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start">
@@ -72,7 +72,7 @@ export function GunjinSetUp({ appearance, onStart, ready, online }: { appearance
           <legend className={SECTION_TITLE}>{GUNJIN_COPY.which}</legend>
           <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={GUNJIN_COPY.which}>
             {GUNJIN_SIZES.map((option) => {
-              const board = GUNJIN_BOARDS[option]!;
+              const board = gunjinBoardWords(say.locale)[option]!;
               return (
                 <button
                   key={option}

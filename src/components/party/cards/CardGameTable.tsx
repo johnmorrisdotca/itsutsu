@@ -3,6 +3,7 @@
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { CARD_GAME_DISPLAY } from "@/lib/cardGames/cardGames.copy";
 import { CARD_GAME_RULES } from "@/lib/cardGames/cardGameRules";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -22,6 +23,7 @@ import { CARD_TABLE_STORES } from "./cardTableStores";
  * games; what each plays is its adapter (`cardAdapters.ts`) and its rules.
  */
 export function CardGameTable({ kind, appearance, gameHref }: PartyTableGameProps & { kind: CardGameKind }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const [game, keep] = CARD_TABLE_STORES[kind].useKept();
   if (game === undefined) return <section className="min-h-[36rem]" data-testid="cards-game" {...readyMark(false)} aria-busy="true" />;
@@ -44,7 +46,7 @@ export function CardGameTable({ kind, appearance, gameHref }: PartyTableGameProp
     <>
       {/* Quiet around the table while a hand is being played (`PlayingNow`); here rather than in CardPlay, whose every edit asks for the card pictures to be re-taken. */}
       <PlayingNow on={!CARD_ADAPTERS[kind].rules.over(game)} />
-      <CardPlay adapter={CARD_ADAPTERS[kind]} game={game} keep={keep} appearance={appearance} gameHref={gameHref} gameName={CARD_GAME_DISPLAY[kind].label} ready={readyMark(hydrated)} />
+      <CardPlay adapter={CARD_ADAPTERS[kind]} game={game} keep={keep} appearance={appearance} gameHref={gameHref} gameName={say.pairName(CARD_GAME_DISPLAY[kind].label, CARD_GAME_DISPLAY[kind].kanji).text} ready={readyMark(hydrated)} />
     </>
   );
 }

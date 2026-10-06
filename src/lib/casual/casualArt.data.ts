@@ -7,4 +7,4 @@
  *
  *   pnpm screenshots:casual
  */
-export const CASUAL_ART_FINGERPRINT = "2239f5b99d6a7c37";
+export const CASUAL_ART_FINGERPRINT = "c88f800a65276402";

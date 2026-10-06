@@ -8,14 +8,13 @@ import { rosterForSetup } from "@/lib/party/gunjin/gunjinEngine";
 import type { Appearance } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_LEAD, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { arrangementIsValid, homeSquares, randomArrangement } from "@/lib/party/gunjin/gunjin";
-import { GUNJIN_BOARDS } from "@/lib/party/gunjin/gunjin.constants";
 import type { GunjinGame, GunjinPlacement, GunjinSquare } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinSeatView } from "@/lib/party/gunjin/gunjinView";
 import { freshSeed } from "@/lib/puzzles/random";
 import { seededRandom } from "@/lib/party/gunjin/gunjin";
 
 import { GunjinBoard } from "./GunjinBoard";
-import { gunjinPlacingWords, gunjinWords } from "@/components/party/partyWords";
+import { gunjinBoardWords, gunjinPlacingWords, gunjinWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** The pieces of a roster as "General ×1, Colonel ×2": each kind once with how many. */
@@ -57,7 +56,7 @@ export function GunjinArrange({
   const GUNJIN_COPY = gunjinWords(say.locale);
   const GUNJIN_PLACING_RULES = gunjinPlacingWords(say.locale);
   const seat = game.match.currentPlayer;
-  const board = GUNJIN_BOARDS[game.size]!;
+  const board = gunjinBoardWords(say.locale)[game.size]!;
   const [draft, setDraft] = useState<GunjinPlacement[]>(() => randomArrangement(game, seededRandom(freshSeed())));
   const [picked, setPicked] = useState<GunjinSquare | null>(null);
   const [refused, setRefused] = useState(false);
