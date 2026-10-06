@@ -5,8 +5,18 @@ import { expect, type Page } from "@playwright/test";
  * boards looked at through the shared box (`TsunagiViewport`) must keep their pad, the wheel and two fingers once the puzzle says
  * "Solved". `name` is the box's name (`tsunagi`, `mahjong`, `picture`, `bridges`, `jirai`, `numbers`); the box's own `data-zoom` is what
  * is read, so it is the view and not a picture of it that is checked.
+ *
+ * THE WIN'S COVER COMES FIRST. A solve made on the page lays its cover over the board and the pad under it (`WinCover`): a flash that
+ * takes no press for 700 ms, then a card that takes every one, the wheel included. A reader presses See the board before moving the
+ * map, so this does too (as `meikyuu-after-solve` does). Left out, the helper passed or failed on how long its own first steps took:
+ * Fit was pressed under the flash and the wheel under the card, or on a slow runner Fit was met by the card, 300 s at a desk's 1,024
+ * squares (CI run 37461308079, `jirai-huge`).
  */
 export async function viewStillMovesAfterSolve(page: Page, name: string, { pinch = false }: { pinch?: boolean } = {}) {
+  await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
+  // The card comes up when the flash is over; See the board is the reader's way to the map under it.
+  await page.getByTestId("win-cover-see-board").click();
+  await expect(page.getByTestId("win-cover-layer"), "the win's cover did not close").toHaveCount(0);
   const box = page.getByTestId(`${name}-viewport`);
   const zoom = async () => Number((await box.getAttribute("data-zoom")) ?? "0");
   await box.scrollIntoViewIfNeeded();
