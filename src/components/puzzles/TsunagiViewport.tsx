@@ -141,7 +141,10 @@ export function TsunagiViewport({
       // The board's height at the box's width: its own height over its own width, whatever the zoom is now.
       const board = inner.current;
       const content = board !== null && board.offsetWidth > 0 ? Math.round(((board.offsetHeight * side) / board.offsetWidth) * 100) / 100 : height;
+      const before = measuredNow.current.width;
       measuredNow.current = { width: side, height, content };
+      // A box that changes width after the board has opened (a font arriving, a phone turned) keeps the same part of the board in view, as a map does.
+      if (opened.current && before > 0 && side > 0 && side !== before) setView((now) => kept({ zoom: now.zoom, x: (now.x * side) / before, y: (now.y * side) / before }, measuredNow.current, mostZoom));
       setBox((now) => (now.width === side && now.height === height && now.content === content ? now : { width: side, height, content }));
       // A board that opens zoomed does so once, as the box first has its width.
       if (!opened.current && side > 0) {
