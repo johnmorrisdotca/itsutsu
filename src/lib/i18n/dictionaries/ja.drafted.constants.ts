@@ -1,4 +1,6 @@
 import type { PhraseKey } from "../i18n.constants";
+import { JA_DRAFTED_PIECES } from "./ja.drafted.pieces.constants";
+import { JA_DRAFTED_RULESPAGE } from "./ja.drafted.rulespage.constants";
 
 import { JA_DRAFTED_XP } from "./ja.drafted.xp.constants";
 
@@ -952,6 +954,9 @@ const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "count.level.other": { text: "{count}レベル", back: "{count} levels.", review: AGENT_READ },
   "count.pair.one": { text: "{count}組", back: "{count} pair.", review: AGENT_READ },
   "count.pair.other": { text: "{count}組", back: "{count} pairs.", review: AGENT_READ },
+  // Phrases kept in files of their own, so this one is not where every ticket edits (ENJA-05).
+  ...JA_DRAFTED_RULESPAGE,
+  ...JA_DRAFTED_PIECES,
 };
 
 /**

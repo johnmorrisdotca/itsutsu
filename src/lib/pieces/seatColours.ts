@@ -1,6 +1,8 @@
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 
-import { PIECE_COLOURS, isPieceColour, nextFreeColour, tooAlike, type PieceColour } from "./pieceColours";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import { PIECE_COLOURS, isPieceColour, nextFreeColour, offerWords, tooAlike, type PieceColour } from "./pieceColours";
 
 /**
  * WHICH COLOUR EACH SEAT OF A TWO-SIDED GAME HAS CHOSEN FOR ITS PIECES.
@@ -50,9 +52,7 @@ export function seatColourRefusal(side: Stone, wanted: PieceColour | null, colou
 }
 
 /** What a refusal says, for a notice beside the chooser or an API's answer. */
-export function refusalWords(refusal: SeatColourRefusal): string {
-  const offer = refusal.offer === null ? "" : ` ${PIECE_COLOURS[refusal.offer].label} is free.`;
-  return refusal.reason === "same"
-    ? `The other side already plays in that colour.${offer}`
-    : `That colour is too like the other side's pieces to tell apart.${offer}`;
+export function refusalWords(refusal: SeatColourRefusal, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  const said = say.say(refusal.reason === "same" ? "pieces.seat.same" : "pieces.seat.alike");
+  return refusal.offer === null ? said : `${said}${offerWords(refusal.offer, say)}`;
 }

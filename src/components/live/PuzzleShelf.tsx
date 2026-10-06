@@ -1,7 +1,9 @@
 import { listedGameOf } from "@/lib/catalogue/gameSettings";
 import { GameThumb } from "@/components/games/GameThumb";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import { OneName } from "@/components/i18n/OneName";
 import { gameCopyFor, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import type { Family } from "./picker";
@@ -35,10 +37,11 @@ export function PuzzleShelf({
   onChoose: (kind: PuzzleKind) => void;
   disabled: boolean;
 }) {
+  const locale = useLocale();
   return (
     <>
       <span className="text-xs leading-snug text-muted" data-testid="set-up-family-blurb">
-        {family.blurb}
+        {familyBlurb(family, locale)}
       </span>
       <div className={PICK_TILE_GRID} role="radiogroup" aria-label={family.title}>
         {/* The puzzles alone: a party game on the same shelf (Cards' family games) is set up at its own table, from its own page. */}

@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { BOT_PROFILES, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
+import { botProfile } from "@/lib/gomoku/botCopy";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import { SEAT_DISPLAY, SEATS } from "@/lib/gomoku/gomoku.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
@@ -33,6 +35,7 @@ export function ComputerOpponentPanel({
   /** The seat the computer holds, kept by the board above so its win cover can say "you" to the person (`GameView`); here when nobody keeps it. */
   computer?: { seat: Seat | null; choose: (seat: Seat | null) => void };
 }) {
+  const locale = useLocale();
   const [own, setOwn] = useState<Seat | null>(null);
   const seat = computer === undefined ? own : computer.seat;
   const setSeat = computer === undefined ? setOwn : computer.choose;
@@ -94,7 +97,7 @@ export function ComputerOpponentPanel({
         >
           {BOT_TIER_LIST.map((one) => (
             <option key={one} value={one}>
-              {BOT_PROFILES[one].name} {BOT_PROFILES[one].native} — {BOT_PROFILES[one].strength}
+              {BOT_PROFILES[one].name} {BOT_PROFILES[one].native} — {botProfile(one, locale).strength}
             </option>
           ))}
         </select>

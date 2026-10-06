@@ -13,6 +13,7 @@ import { IpBoard } from "@/components/points/IpBoard";
 import { EVERY_GAME_KEY, gameCopyFor, isCasualKind, isPartyKind } from "@/lib/catalogue/gameKeys";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { familyOf, gamesShownIn } from "@/lib/gomoku/families";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
 import { gameKeyFor, gamePath, setUpPath, slugFor } from "@/lib/gomoku/slugs";
 import { scopeOfFamily } from "@/lib/points/ipBoards";
 import { GameTrail } from "@/components/games/GameTrail";
@@ -50,8 +51,9 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
    */
   if (variant === null || isPartyKind(variant) || isCasualKind(variant)) notFound();
   const family = familyOf(variant);
-  const copy = gameCopyFor(variant);
   const say = await currentSpeaker();
+  const locale = say.locale;
+  const copy = gameCopyFor(variant, locale);
   // A game in no family is a gap the New Game Gate refuses, but a page must
   // not pretend to an answer it has not got.
   if (family === null) notFound();
@@ -69,7 +71,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
       <PageTitle
         title={family.title}
         kanji={family.kanji}
-        lead={family.blurb}
+        lead={familyBlurb(family, locale)}
         crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant), testId: "family-up" }} steps={[{ label: "Family" }]} />}
       />
 

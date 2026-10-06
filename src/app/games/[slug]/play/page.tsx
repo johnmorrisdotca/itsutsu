@@ -18,7 +18,9 @@ import { CasualPlayPage, casualLevelAsked } from "@/components/casual/CasualPlay
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { casualKindFor, gamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantCopy } from "@/lib/gomoku/variantCopy";
+import { currentLocale } from "@/lib/i18n/currentLocale";
+import { speaker } from "@/lib/i18n/i18n";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { BoardMasthead } from "@/components/board/BoardMasthead";
 import { GameTrailNav } from "@/components/games/GameTrail";
@@ -51,8 +53,9 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
   if (casual !== null) return <CasualPlayPage kind={casual} level={casualLevelAsked(casual, query)} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
-  const copy = RULE_VARIANT_DISPLAY[variant];
-  const rules = rulesPageFor(variant);
+  const locale = await currentLocale();
+  const copy = variantCopy(variant, locale);
+  const rules = rulesPageFor(variant, speaker(locale));
   const siblings = siblingsOf(variant);
   // The member's own board, so a phone and a laptop set out the same one.
   const reader = await currentReader();

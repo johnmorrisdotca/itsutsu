@@ -1,8 +1,8 @@
 "use client";
 
-import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { useLocale, useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
-import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { openingCopy } from "@/lib/gomoku/openingCopy";
 import type { OpeningRule } from "@/lib/gomoku/gomoku.types";
 
 import { OpeningMark } from "./OpeningMark";
@@ -34,7 +34,8 @@ import { openingsOffered } from "./rulesDraft";
  * the game somebody is about to play.
  */
 export function OpeningPicker({ value, variant, size, onChange, disabled = false }: OpeningPickerProps) {
-  const say = useSpeaker().say;
+  const speaker = useSpeaker();
+  const say = speaker.say;
   const offered = openingsOffered(variant);
   const only = offered.length === 1;
 
@@ -103,7 +104,7 @@ export function OpeningPicker({ value, variant, size, onChange, disabled = false
    * unsettled choice stays open, which is this fold's own rule.
    */
   if (chosen === null) return tiles;
-  const copy = OPENING_DISPLAY[chosen];
+  const copy = openingCopy(chosen, speaker.locale);
   return (
     <SetUpFold
       title={say("setup.opening")}
@@ -123,7 +124,8 @@ export function OpeningPicker({ value, variant, size, onChange, disabled = false
 
 /** The name and what it means, which is also what the radio is named by. */
 function OpeningWords({ opening }: { opening: OpeningRule }) {
-  const copy = OPENING_DISPLAY[opening];
+  const locale = useLocale();
+  const copy = openingCopy(opening, locale);
   return (
     <span className="flex min-w-0 flex-col gap-0.5">
       <span className="text-sm font-medium">

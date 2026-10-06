@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { PieceColourPicker } from "@/components/board/PieceColourPicker";
 import { FOCUS_RING } from "@/components/ui/ui.constants";
 import { tableColourRefusal, tableRefusalWords } from "@/lib/pieces/tableColours";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { MarbleChip } from "./MarbleChip";
 import { PARTY_MARBLES, marbleFace } from "./party.constants";
@@ -45,6 +46,7 @@ export function PartySeatColour({
   /** Which edge of the control the picker opens from: its start, or its end where the control sits at the right of a line. */
   align?: "start" | "end";
 }) {
+  const say = useSpeaker();
   const marbles = usePartyMarbles();
   const { colours, choose } = usePartyTable();
   const [open, setOpen] = useState(false);
@@ -112,7 +114,7 @@ export function PartySeatColour({
             label={whose}
             unavailable={(colour) => {
               const refusal = tableColourRefusal(seat, colour, marbles, playing);
-              return refusal === null ? null : tableRefusalWords(refusal);
+              return refusal === null ? null : tableRefusalWords(refusal, say);
             }}
             testId="party-seat-colour-picker"
           />

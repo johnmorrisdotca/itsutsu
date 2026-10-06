@@ -1,4 +1,6 @@
-import { PIECE_COLOURS, TOO_ALIKE, isPieceColour, nextFreeColour, type PieceColour } from "./pieceColours";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import { PIECE_COLOURS, TOO_ALIKE, isPieceColour, nextFreeColour, offerWords, type PieceColour } from "./pieceColours";
 import { distance } from "./colourMath";
 
 /**
@@ -67,9 +69,9 @@ export function tableColourRefusal(
 }
 
 /** What a table's refusal says, beside the chooser. */
-export function tableRefusalWords(refusal: TableColourRefusal): string {
-  const offer = refusal.offer === null ? "" : ` ${PIECE_COLOURS[refusal.offer].label} is free.`;
-  if (refusal.reason === "same") return `Another player at the table has that colour.${offer}`;
-  if (refusal.reason === "letter") return `Another player's marble carries that colour's letter.${offer}`;
-  return `That colour is too like another player's marbles to tell apart.${offer}`;
+export function tableRefusalWords(refusal: TableColourRefusal, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  const said = say.say(
+    refusal.reason === "same" ? "pieces.table.same" : refusal.reason === "letter" ? "pieces.table.letter" : "pieces.table.alike",
+  );
+  return refusal.offer === null ? said : `${said}${offerWords(refusal.offer, say)}`;
 }

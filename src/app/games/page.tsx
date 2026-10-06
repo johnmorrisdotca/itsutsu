@@ -81,7 +81,7 @@ export default async function GamesPage({ searchParams }: PageProps<"/games">) {
       {/* Every game kept for offline at once, like a region saved in a maps app (`KeepAllOffline`); drawn only where the keeper runs. */}
       <KeepAllOffline />
       <section className="flex flex-col gap-4">
-        <GameCatalogue view={view} families={catalogueFamilies()} stats={forReader(stats, true)} signedIn={reader.signedIn} folds={folds} keepsFolds={reader.hasAccount} />
+        <GameCatalogue view={view} families={catalogueFamilies(say.locale)} stats={forReader(stats, true)} signedIn={reader.signedIn} folds={folds} keepsFolds={reader.hasAccount} locale={say.locale} />
       </section>
       {/*
         The learning shelf and the famous games were two panels down here; they

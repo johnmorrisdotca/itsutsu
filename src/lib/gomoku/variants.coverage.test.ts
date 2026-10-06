@@ -10,6 +10,11 @@ import { GAME_SLUGS } from "./slugs";
 import { measureHeadStart } from "@johnmorrisdotca/narabe/simulation/headStartDecides";
 import type { RuleVariant } from "./gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "./variants.constants";
+import { VARIANT_COPY_JA } from "../i18n/dictionaries/variants.ja.constants";
+import { OPENING_COPY_JA } from "../i18n/dictionaries/openings.ja.constants";
+import { OPENING_DISPLAY } from "./openings.constants";
+import { variantCopy } from "./variantCopy";
+import { speaker } from "@/lib/i18n/i18n";
 import { hasGameImage, hasGameThumb } from "@/lib/learn/images";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 
@@ -28,6 +33,13 @@ import { rulesPageFor } from "@/lib/learn/rulesPage";
  */
 
 const VARIANTS = Object.values(RULE_VARIANTS) as RuleVariant[];
+
+/** Kana or kanji: the text is Japanese and not an English line left in the row. */
+const JAPANESE = /[ぁ-ヿ一-鿿]/;
+/** An English back-translation carries no Japanese sentence marks, though it may name a Japanese term it translates. */
+const JAPANESE_MARKS = /[。、「」（）]/;
+/** A half-width bracket, colon or comma pressed against Japanese: the width a Japanese sentence does not use. */
+const HALF_WIDTH_BESIDE_JAPANESE = /[ぁ-ヿ一-鿿][,:;()]|[,:;()][ぁ-ヿ一-鿿]/;
 
 /** Every unit test under the engine and its package, Narabe, except this one — which names them all. */
 function engineTestSources(): string {
@@ -115,6 +127,59 @@ describe("every game is finished, not just playable", () => {
     expect(page.board.length).toBeGreaterThan(0);
     expect(page.play.length).toBeGreaterThan(0);
     expect(page.house.length).toBeGreaterThan(0);
+  });
+
+  /*
+   * IN JAPANESE TOO. John, 2026-10-06: every word on the site in English and
+   * Japanese. A game's own words (tagline, origin, every rule bullet, the board
+   * advice) are `VARIANT_COPY_JA`, a sibling row typed `Record<RuleVariant, …>`,
+   * so a game with none does not compile; this holds what the type cannot see:
+   * a Japanese line for each English one, a literal English back-translation for
+   * each (so a reader who cannot read Japanese can see what ships), a stamp for
+   * who read it, and a rules page that reads in Japanese from top to bottom.
+   */
+  it.each(VARIANTS)("%s has full Japanese copy, read and back-translated", (variant) => {
+    const english = RULE_VARIANT_DISPLAY[variant];
+    const ja = VARIANT_COPY_JA[variant];
+    expect(ja.rules.length, `${variant}: the Japanese has a different number of rule bullets from the English`).toBe(english.rules.length);
+    const lines = [ja.tagline, ja.origin, ja.board, ...ja.rules];
+    for (const [text, back] of lines) {
+      expect(text, `${variant}: "${back}" is not in Japanese`).toMatch(JAPANESE);
+      expect(text, `${variant}: a half-width mark beside Japanese in "${text}"`).not.toMatch(HALF_WIDTH_BESIDE_JAPANESE);
+      expect(back.trim().length, `${variant}: "${text}" has no back-translation`).toBeGreaterThan(0);
+      expect(back, `${variant}: the back-translation of "${text}" is not English`).not.toMatch(JAPANESE_MARKS);
+    }
+    expect(ja.review, `${variant}: nobody has read its Japanese`).toBeDefined();
+    expect(ja.review?.on).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it.each(VARIANTS)("%s reads in Japanese on its rules page, section by section", (variant) => {
+    const ja = speaker("ja");
+    const page = rulesPageFor(variant, ja);
+    for (const section of ["object", "board", "play", "house"] as const) {
+      expect(page[section].length, `${variant} ${section}`).toBeGreaterThan(0);
+      for (const line of page[section]) {
+        expect(line, `${variant} ${section}: "${line}" is not in Japanese`).toMatch(JAPANESE);
+        expect(line, `${variant} ${section}: a placeholder was left standing in "${line}"`).not.toMatch(/\{\w+\}/);
+      }
+    }
+    expect(page.tagline).toBe(variantCopy(variant, "ja").tagline);
+    expect(page.origin).toMatch(JAPANESE);
+    // The English page is the English row, whatever the Japanese says.
+    expect(rulesPageFor(variant).tagline).toBe(RULE_VARIANT_DISPLAY[variant].tagline);
+  });
+
+  it.each(Object.keys(OPENING_DISPLAY))("opening %s has full Japanese copy, read and back-translated", (opening) => {
+    const english = OPENING_DISPLAY[opening as keyof typeof OPENING_DISPLAY];
+    const ja = OPENING_COPY_JA[opening as keyof typeof OPENING_COPY_JA];
+    expect(ja.label).toMatch(JAPANESE);
+    expect(ja.rules.length).toBe(english.rules.length);
+    for (const [text, back] of [ja.tagline, ...ja.rules]) {
+      expect(text).toMatch(JAPANESE);
+      expect(text).not.toMatch(HALF_WIDTH_BESIDE_JAPANESE);
+      expect(back.trim().length).toBeGreaterThan(0);
+    }
+    expect(ja.review).toBeDefined();
   });
 
   it("gives each game exactly one home family", () => {

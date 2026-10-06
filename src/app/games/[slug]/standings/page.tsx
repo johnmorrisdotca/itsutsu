@@ -12,7 +12,8 @@ import { siblingsOf } from "@/lib/gomoku/families";
 import { gamePath, historyPath, playPath, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { PuzzleStandingsPage } from "@/components/puzzles/PuzzleStandingsPage";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { currentLocale } from "@/lib/i18n/currentLocale";
+import { variantCopy } from "@/lib/gomoku/variantCopy";
 import { fetchVariantLeaders, type VariantStanding } from "@/lib/rating/variantRatings";
 import { LISTED_ALREADY, ipTotalsOf, scopeOfGame } from "@/lib/points/ipBoards";
 import { RATING_POOLS } from "@/lib/rating/pools";
@@ -50,7 +51,7 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
   if (puzzle !== null) return <PuzzleStandingsPage kind={puzzle} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
-  const copy = RULE_VARIANT_DISPLAY[variant];
+  const copy = variantCopy(variant, await currentLocale());
   const siblings = siblingsOf(variant);
   const testMode = await currentTestModeReader();
   const [standings, againstComputers] = await Promise.all([

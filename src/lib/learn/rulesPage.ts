@@ -1,7 +1,6 @@
 import {
   LINE_RULES,
   PLACEMENTS,
-  STONE_DISPLAY,
   VARIANT_SPECS,
   boardSizesFor,
   defaultBoardFor,
@@ -10,27 +9,39 @@ import { checkersBoardLine, checkersDrawLines, checkersPlayLines } from "./rules
 import { hexagonCells, hexagonSide } from "@/lib/gomoku/rules/hexagon";
 import { gameArtPath } from "@/lib/gomoku/artwork";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantCopy } from "@/lib/gomoku/variantCopy";
+import { openingCopy } from "@/lib/gomoku/openingCopy";
 import { aliasesFor } from "@/lib/legacy/gameAliases";
+import { DEFAULT_LOCALE, type PhraseKey } from "@/lib/i18n/i18n.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import type { Vars } from "@/lib/i18n/i18n.types";
 
 import { type Origin, originFor, wikipediaUrl } from "./origins";
-import { FORBIDDEN_PATTERN_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import type { ForbiddenPattern, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
 
-/**
- * A hexagon's side, in words. Only ever four to seven here — the four boards
- * Honeycomb is played on — and a sentence reads better with the word than
- * with the digit beside a cell count that is already a digit.
- */
-function sideWord(side: number): string {
-  return ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight"][side] ?? String(side);
+/** The separator a list of three or more is joined with in the reader's language. */
+function separator(say: Speaker): string {
+  return say.locale === "ja" ? "、" : ", ";
 }
 
-/** "a, b and c" — an English list, for a sentence rather than a table. */
-function listOf(parts: readonly string[]): string {
-  if (parts.length <= 1) return parts[0] ?? "";
-  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+/** "a, b, c" — a list inside a sentence, joined the way the reader's language joins one. */
+export function joined(say: Speaker, parts: readonly string[]): string {
+  return parts.join(separator(say));
 }
+
+/** "a, b and c" — a list for a sentence rather than a table, with its last item joined by the reader's own "and". */
+function listOf(say: Speaker, parts: readonly string[]): string {
+  if (parts.length <= 1) return parts[0] ?? "";
+  return say.say("rulespage.list.and", { head: joined(say, parts.slice(0, -1)), last: parts[parts.length - 1] as string });
+}
+
+/** The phrase that names each forbidden shape, with the kanji a player already knows it by. */
+const PATTERN_PHRASE: Record<ForbiddenPattern, PhraseKey> = {
+  doubleThree: "rulespage.pattern.doubleThree",
+  doubleFour: "rulespage.pattern.doubleFour",
+  overline: "rulespage.pattern.overline",
+};
 
 /**
  * A rules page in one template for every game — Object, Board, Play, House
@@ -105,65 +116,64 @@ function namesFor(variant: RuleVariant, label: string): string[] {
   return names;
 }
 
-function lineWording(rule: string, length: number): string {
+function lineWording(say: Speaker, rule: string, length: number): string {
   switch (rule) {
     case LINE_RULES.exact:
-      return `exactly ${length} in a row wins; a longer line does not`;
+      return say.say("rulespage.object.ruleExact", { length: String(length) });
     case LINE_RULES.exactOpen:
-      return `exactly ${length} in a row wins, and not when an opponent's stone shuts it in at both ends`;
+      return say.say("rulespage.object.ruleExactOpen", { length: String(length) });
     default:
-      return `${length} or more in a row wins`;
+      return say.say("rulespage.object.ruleAtLeast", { length: String(length) });
   }
 }
 
-export function rulesPageFor(variant: RuleVariant): RulesPage {
+export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAULT_LOCALE)): RulesPage {
   const spec = VARIANT_SPECS[variant];
-  const copy = RULE_VARIANT_DISPLAY[variant];
+  const copy = variantCopy(variant, say.locale);
   const length = spec.winLength ?? 5;
   const sizes = boardSizesFor(variant);
+  const word = (key: PhraseKey, vars?: Vars) => say.say(key, vars);
 
   const object: string[] = [];
   if (spec.connects) {
-    object.push("Join your own two sides of the board with an unbroken chain of your stones: Black the top and bottom, White the left and right.");
-    object.push("A full board always has exactly one winner, so a draw is impossible — that is a fact about the shape of the board, not a rule anybody wrote.");
+    object.push(word("rulespage.object.connectsJoin"));
+    object.push(word("rulespage.object.connectsNoDraw"));
   } else if (spec.camps) {
-    object.push("Be the first to fill the far corner camp with your pieces. Nothing is captured and no line counts for anything.");
-    object.push("A side that keeps pieces at home to block still loses once every other square of its camp is taken.");
+    object.push(word("rulespage.object.campsFill"));
+    object.push(word("rulespage.object.campsBlock"));
   } else if (spec.chineseCheckers) {
-    object.push("Be the first to fill the point of the star directly opposite yours with your own pieces. Nothing is captured and no line counts for anything.");
-    object.push("A side that keeps pieces at home to block still loses once every other cell of the far point is taken.");
+    object.push(word("rulespage.object.starFill"));
+    object.push(word("rulespage.object.starBlock"));
   } else if (spec.flips) {
-    object.push(
-      spec.misere
-        ? "Finish with fewer discs than the other colour. Everything turns as usual; the object is upside down."
-        : "Finish with more discs than the other colour.",
-    );
-    object.push("The game ends when neither colour has a legal move — usually a full board. Equal counts are a draw.");
+    object.push(spec.misere ? word("rulespage.object.flipsFewer") : word("rulespage.object.flipsMore"));
+    object.push(word("rulespage.object.flipsEnd"));
   } else if (spec.checkers) {
-    object.push("Leave the other side with no piece that can move: jump theirs off the board until none is left, or shut in whatever remains.");
-    object.push("No lines and nothing placed after the start: every piece is down from the first move, and the whole game is in how they step and jump.");
+    object.push(word("rulespage.object.checkersNoMove"));
+    object.push(word("rulespage.object.checkersNoLines"));
   } else if (spec.go) {
-    object.push("Surround more of the board than the other colour. Stones never move once placed, and no line ever wins anything.");
-    object.push("A connected group of one colour with no empty point touching it anywhere is captured whole, off the board at once.");
+    object.push(word("rulespage.object.goSurround"));
+    object.push(word("rulespage.object.goCapture"));
   } else if (spec.makerBreaker) {
-    object.push(`Black is the Maker and wins if any ${length} in a row of one colour appears, whoever placed it. White is the Breaker and wins if the board fills with no such line.`);
+    object.push(word("rulespage.object.makerBreaker", { length: String(length) }));
   } else if (spec.misere) {
-    object.push(`Avoid making ${length} in a row: the player who makes it loses.`);
+    object.push(word("rulespage.object.misere", { length: String(length) }));
   } else if (spec.loseLength !== null) {
-    object.push(`Make ${length} in a row and win, without ever making exactly ${spec.loseLength}, which loses.`);
+    object.push(word("rulespage.object.loseLength", { length: String(length), lose: String(spec.loseLength) }));
   } else {
-    object.push(`Be the first to make a line: ${lineWording(spec.lineRule.black, length)}.`);
+    object.push(word("rulespage.object.line", { rule: lineWording(say, spec.lineRule.black, length) }));
   }
   if (spec.lineRule.black !== spec.lineRule.white) {
-    object.push(`For white, ${lineWording(spec.lineRule.white, length)}.`);
+    object.push(word("rulespage.object.lineWhite", { rule: lineWording(say, spec.lineRule.white, length) }));
   }
-  if (spec.captures) {
+  if (spec.captures && spec.capturesToWin !== null) {
     object.push(
-      `Capturing ${spec.capturesToWin} enemy stones also wins${spec.captureSizes.length > 1 ? ", taken in pairs and triples" : ", five pairs"}.`,
+      word(spec.captureSizes.length > 1 ? "rulespage.object.capturesBoth" : "rulespage.object.capturesPairs", {
+        stones: say.count("rulespage.count.enemyStone", spec.capturesToWin),
+      }),
     );
   }
-  if (spec.anyColour && !spec.makerBreaker) object.push("A line of either colour wins for the player who completed it.");
-  if (spec.squareWins) object.push("Four of your pieces in a 2×2 square also wins.");
+  if (spec.anyColour && !spec.makerBreaker) object.push(word("rulespage.object.anyColour"));
+  if (spec.squareWins) object.push(word("rulespage.object.square"));
 
   // The honeycomb is not a square of anything, and says what it is below.
   // The board this game OPENS on, which is not the first of the list: the list
@@ -173,179 +183,175 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     ? []
     : [
         sizes.length === 1
-          ? `A ${sizes[0]}×${sizes[0]} board.`
-          : `A square board of ${sizes.join(", ")} lines; ${opens}×${opens} by default.`,
+          ? word("rulespage.board.sizeOne", { size: String(sizes[0]) })
+          : word("rulespage.board.sizeMany", { sizes: joined(say, sizes.map(String)), opens: String(opens) }),
       ];
   if (spec.quadrantSize !== null) {
-    board.push(`It is divided into four ${spec.quadrantSize}×${spec.quadrantSize} quadrants, each of which can be turned.`);
+    board.push(word("rulespage.board.quadrants", { size: String(spec.quadrantSize) }));
   }
   if (spec.rocks !== null && spec.rocks.arriveAfter !== null) {
     board.push(
-      `It starts empty. Once ${spec.rocks.arriveAfter} stones have been played, ${spec.deadSquares} rocks and ${spec.hotSquares} hotspots fall onto it, laid from the game's seed: a rock is a point nothing can land on and no line runs through, and a hotspot counts as either colour's stone. One that falls on a stone is lost, and so is a hotspot that would finish a line by itself.`,
+      word("rulespage.board.rocksFall", {
+        after: say.count("rulespage.count.stone", spec.rocks.arriveAfter),
+        dead: say.count("rulespage.count.rock", spec.deadSquares),
+        hot: say.count("rulespage.count.hotspot", spec.hotSquares),
+      }),
     );
   } else if (spec.rocks !== null) {
-    board.push(`${spec.deadSquares} points, laid from the game's seed anywhere but the centre, are rocks: nothing can land there and no line runs through.`);
-    board.push(`${spec.hotSquares} more are hotspots, which count as either colour's stone.`);
+    board.push(word("rulespage.board.rocks", { dead: say.count("rulespage.count.point", spec.deadSquares) }));
+    board.push(word("rulespage.board.hotspots", { hot: String(spec.hotSquares) }));
   } else {
-    if (spec.deadSquares > 0) board.push(`${spec.deadSquares === 1 ? "One square" : `${spec.deadSquares} squares`}, chosen at random when the game starts, ${spec.deadSquares === 1 ? "is" : "are"} dead: nothing can land there and no line runs through.`);
-    if (spec.hotSquares > 0) board.push(`${spec.hotSquares === 1 ? "One square" : `${spec.hotSquares} squares`}, chosen at random, ${spec.hotSquares === 1 ? "is" : "are"} a hotspot that counts as either colour's stone.`);
+    if (spec.deadSquares > 0) {
+      board.push(spec.deadSquares === 1 ? word("rulespage.board.deadOne") : word("rulespage.board.deadMany", { count: String(spec.deadSquares) }));
+    }
+    if (spec.hotSquares > 0) {
+      board.push(spec.hotSquares === 1 ? word("rulespage.board.hotOne") : word("rulespage.board.hotMany", { count: String(spec.hotSquares) }));
+    }
   }
-  if (spec.wrap === "columns") {
-    board.push("The left and right edges join, so a line may run off one side and onto the other.");
-  }
-  if (spec.wrap === "both") {
-    board.push(
-      "Every edge joins its opposite: left to right and top to bottom. A line running off any side continues from the far one, so the board has a middle everywhere and a corner nowhere.",
-    );
-  }
-  if (spec.wormholes > 0) board.push("Two squares, chosen at random when the game starts, are the mouths of a wormhole. Nothing can land on a mouth, and a line that reaches one continues from the other in the same direction.");
-  if (spec.pieces !== null) board.push(`Each player has ${spec.pieces} pieces.`);
-  if (spec.connects) {
-    board.push("A rhombus ruled as a triangular lattice, eleven points a side by default, with the stones on the crossings. Black owns the top and bottom edges, marked dark; White owns the left and right, marked pale. The two corners between a dark edge and a pale one belong to both.");
-  }
-  if (spec.camps) {
-    board.push("Each side's pieces start filling a camp in one corner, black top-left and white bottom-right: nineteen on 16×16, thirteen on 10×10, ten on 8×8. The camps are shaded on the board.");
-  }
-  if (spec.checkers) board.push(checkersBoardLine(variant, opens));
-  if (spec.hexagon && spec.flips) {
+  if (spec.wrap === "columns") board.push(word("rulespage.board.wrapColumns"));
+  if (spec.wrap === "both") board.push(word("rulespage.board.wrapBoth"));
+  if (spec.wormholes > 0) board.push(word("rulespage.board.wormholes"));
+  if (spec.pieces !== null) board.push(word("rulespage.board.pieces", { pieces: say.count("rulespage.count.piece", spec.pieces) }));
+  if (spec.connects) board.push(word("rulespage.board.connects"));
+  if (spec.camps) board.push(word("rulespage.board.camps"));
+  if (spec.checkers) board.push(checkersBoardLine(variant, opens, say));
+  if (spec.hexagon) {
     /*
      * COUNTED, NOT LOOKED UP. This line used to read the two boards off a
      * pair of ternaries on `sizes[0] === 11`, which said 61 for every board
      * that was not the eleven-square — true while there were two boards and
      * false the moment a third was offered. `hexagonCells` works it out from
      * the radius, so the sentence is right at any size the game is given.
+     *
+     * The line game's own reading (no `flips`) leaves the centre open, and only
+     * three of the six neighbour directions are lattice axes a line can run along.
      */
+    const sealed = spec.flips;
     board.push(
-      `A hexagon of hexagons, ${sideWord(hexagonSide(opens))} cells a side and ${hexagonCells(opens)} in all, with the centre cell sealed and the six round it set at the start, three of each colour, no two alike side by side. Every cell touches six others, so a run may lie along any of six directions rather than eight.`,
+      word(sealed ? "rulespage.board.hexFlips" : "rulespage.board.hexLines", {
+        side: say.words(hexagonSide(opens)),
+        cells: String(hexagonCells(opens)),
+      }),
     );
     const others = sizes.filter((size) => size !== opens);
     if (others.length > 0) {
       board.push(
-        `It is played on ${others.length + 1} hexagons in all: this one, and ${listOf(others.map((size) => `${hexagonCells(size)} cells at ${sideWord(hexagonSide(size))} a side`))}. The centre is sealed on every one of them, which leaves an even number of cells to fill whichever board is chosen.`,
-      );
-    }
-  } else if (spec.hexagon) {
-    // The line game's own reading: the centre is open, and only three of the six neighbour directions are lattice axes a line can run along.
-    board.push(
-      `A hexagon of hexagons, ${sideWord(hexagonSide(opens))} cells a side and ${hexagonCells(opens)} in all, with nothing sealed at the centre. Every cell touches six others, but a line may only run along three of the lattice's own axes.`,
-    );
-    const others = sizes.filter((size) => size !== opens);
-    if (others.length > 0) {
-      board.push(
-        `It is played on ${others.length + 1} hexagons in all: this one, and ${listOf(others.map((size) => `${hexagonCells(size)} cells at ${sideWord(hexagonSide(size))} a side`))}.`,
+        word(sealed ? "rulespage.board.hexFlipsOthers" : "rulespage.board.hexLinesOthers", {
+          boards: String(others.length + 1),
+          list: listOf(
+            say,
+            others.map((size) => word("rulespage.board.hexOther", { cells: String(hexagonCells(size)), side: say.words(hexagonSide(size)) })),
+          ),
+        }),
       );
     }
   }
-  if (spec.chineseCheckers) {
-    board.push("A hexagram: a centre hexagon with six triangular points, 121 cells in all. Each side's ten pieces start filling one point, black at the top and white at the bottom, shaded on the board; the far point is the one to fill.");
-  }
-  if (spec.go) {
-    board.push("Stones sit on the intersections of the lines, not in the squares between them, so the board has one more point on a side than it has squares. The star points mark the traditional handicap spots.");
-  }
+  if (spec.chineseCheckers) board.push(word("rulespage.board.star"));
+  if (spec.go) board.push(word("rulespage.board.go"));
   if (spec.queue !== null) {
-    board.push(
-      spec.queue === "domino"
-        ? "A shared queue of dominoes: two stones each, black-black, white-white, black-white or white-black, drawn at random from the game's seed. Both players draw the same run and see the next three."
-        : "A shared queue of the seven four-square shapes, each holding two black and two white stones, drawn at random from the game's seed. Both players draw the same run and see the next three.",
-    );
+    board.push(word(spec.queue === "domino" ? "rulespage.board.queueDomino" : "rulespage.board.queueShapes"));
   }
 
   const play: string[] = [];
   if (spec.connects) {
-    play.push("Players take turns placing one stone on any empty point. Nothing ever moves and nothing is ever taken.");
-    play.push("Three families of lines cross at every point, so each one touches six others: two along its row, two along its slanted column, and two along the board's short diagonal.");
-    play.push("The game ends the moment one colour's chain reaches from one of their sides to the other.");
+    play.push(word("rulespage.play.connectsTurn"));
+    play.push(word("rulespage.play.connectsLines"));
+    play.push(word("rulespage.play.connectsEnd"));
   } else if (spec.camps) {
-    play.push("A turn moves one piece. It may step to any neighbouring empty square, in any of the eight directions.");
-    play.push("Or it may jump: over an adjacent piece of either colour, into the empty square straight beyond it. From there it may jump again, and again, turning corners as it likes, so long as each jump crosses a piece. A move may stop after any jump.");
-    play.push("A piece jumped over is not taken; it stays where it is.");
-    play.push("The game ends the moment a move fills the far camp.");
+    play.push(word("rulespage.play.campsStep"));
+    play.push(word("rulespage.play.campsJump"));
+    play.push(word("rulespage.play.jumpedStays"));
+    play.push(word("rulespage.play.campsEnd"));
   } else if (spec.chineseCheckers) {
-    play.push("A turn moves one piece. It may step to any neighbouring empty cell, in any of the six directions the board's own lattice touches.");
-    play.push("Or it may jump: over an adjacent piece of either colour, into the empty cell straight beyond it. From there it may jump again, and again, turning corners as it likes, so long as each jump crosses a piece. A move may stop after any jump.");
-    play.push("A piece jumped over is not taken; it stays where it is.");
-    play.push("The game ends the moment a move fills the point directly opposite yours.");
+    play.push(word("rulespage.play.starStep"));
+    play.push(word("rulespage.play.starJump"));
+    play.push(word("rulespage.play.jumpedStays"));
+    play.push(word("rulespage.play.starEnd"));
   } else if (spec.flips && spec.hexagon) {
-    play.push("The six cells round the sealed centre start with three discs of each colour, alternating round the ring.");
-    play.push("A disc goes only where it brackets one or more of the other colour in a straight run along one of the six lattice directions, with one of your own at the far end. Every bracketed run turns to your colour. The sealed centre closes nothing: a run that reaches it turns nothing.");
-    play.push("A colour with nowhere to go passes, and the other colour plays again. You may not pass while you have a move.");
-    play.push("When neither colour can move, the discs are counted.");
+    play.push(word("rulespage.play.hexStart"));
+    play.push(word("rulespage.play.hexBracket"));
+    play.push(word("rulespage.play.hexPass"));
+    play.push(word("rulespage.play.hexCount"));
   } else if (spec.queue !== null) {
-    play.push("Each turn you lay the next piece in the queue, turned or flipped as you like, on empty points.");
-    if (spec.singles > 0) play.push(`Instead of a piece you may lay a single stone of your own colour; each player has ${spec.singles} for the game.`);
-    play.push("A piece carries both colours, so it can finish a line for either side; the line's owner wins whoever laid it, and a line for each at once is a draw.");
-    play.push("If nothing fits, the turn passes; two passes in a row end the game as a draw.");
+    play.push(word("rulespage.play.queueLay"));
+    if (spec.singles > 0) play.push(word("rulespage.play.queueSingles", { count: String(spec.singles) }));
+    play.push(word("rulespage.play.queueLines"));
+    play.push(word("rulespage.play.queuePass"));
   } else if (spec.checkers) {
-    play.push(...checkersPlayLines(variant));
+    play.push(...checkersPlayLines(variant, say));
   } else if (spec.go) {
-    play.push("Players take turns placing one stone on any empty intersection. Black opens; stones never move once played.");
-    play.push("A stone touches its four orthogonal neighbours, not the diagonals. Play a stone that leaves an adjacent enemy group with no liberty left anywhere and the whole group comes off the board at once.");
-    play.push("You may not play into your own group's last liberty unless the same move captures an enemy group and so opens one. You may not immediately retake the single stone a capture just lifted — the ko rule — though playing anywhere else first, even a pass, clears it.");
-    play.push("Either side may pass instead of playing. Two passes in a row end the game and it is counted: every stone on the board plus every empty point surrounded by one colour alone, with a fixed 6.5-point bonus for white.");
+    play.push(word("rulespage.play.goTurn"));
+    play.push(word("rulespage.play.goCapture"));
+    play.push(word("rulespage.play.goKo"));
+    play.push(word("rulespage.play.goPass"));
   } else if (spec.pieces !== null) {
-    play.push(`Players first place their ${spec.pieces} pieces, one a turn. Then a turn moves one of your pieces a single step to an adjacent empty point, in any direction.`);
+    play.push(word("rulespage.play.pieces", { pieces: say.count("rulespage.count.piece", spec.pieces) }));
   } else {
     play.push(
       spec.stonesPerTurn > 1
-        ? `Black opens with ${spec.firstTurnStones} stone; after that each player places ${spec.stonesPerTurn} stones a turn.`
-        : "Players take turns placing one stone on an empty point.",
+        ? word("rulespage.play.stonesMany", {
+            first: say.count("rulespage.count.stone", spec.firstTurnStones),
+            per: say.count("rulespage.count.stone", spec.stonesPerTurn),
+          })
+        : word("rulespage.play.stoneOne"),
     );
   }
-  if (spec.singleColour) play.push("Every stone is black, whoever places it.");
-  else if (spec.anyColour) play.push("On your turn you choose which colour to place.");
-  if (spec.placement === PLACEMENTS.drop) play.push("A stone played anywhere in a column falls to the lowest empty point in it.");
-  if (spec.placement === PLACEMENTS.edge) play.push("A stone may only be placed on an edge of the board or directly beside a stone already there: above, below, left or right.");
-  if (spec.quadrantSize !== null) play.push("After placing, turn any one quadrant a quarter, either way. The whole board is then read for lines, for both colours.");
+  if (spec.singleColour) play.push(word("rulespage.play.singleColour"));
+  else if (spec.anyColour) play.push(word("rulespage.play.anyColour"));
+  if (spec.placement === PLACEMENTS.drop) play.push(word("rulespage.play.drop"));
+  if (spec.placement === PLACEMENTS.edge) play.push(word("rulespage.play.edge"));
+  if (spec.quadrantSize !== null) play.push(word("rulespage.play.quadrant"));
   if (spec.captures) {
-    play.push(
-      spec.captureSizes.length > 1
-        ? "Flanking exactly two or exactly three enemy stones in a line, with your stone at each end, captures them. Only the closing stone captures; moving into a flanked position is safe."
-        : "Flanking exactly two enemy stones in a line, with your stone at each end, captures the pair. Only the closing stone captures; moving into a flanked position is safe.",
-    );
+    play.push(word(spec.captureSizes.length > 1 ? "rulespage.play.capturesBoth" : "rulespage.play.capturesPair"));
   }
-  if (spec.lineClear) play.push("When the bottom row is full it disappears and every stone above drops one row.");
+  if (spec.lineClear) play.push(word("rulespage.play.lineClear"));
   if (spec.flips || spec.camps || spec.connects || spec.checkers || spec.chineseCheckers || spec.go) {
     // Said above; a full board is only the usual way for both to be stuck, a race has no full board, checkers ends with pieces gone, and Go ends on two passes, not a full board.
   } else if (spec.misere) {
-    if (spec.placement === PLACEMENTS.drop) play.push("You may not play directly on top of the opponent's last stone while any other column has room.");
-    play.push("A full board is a win for the player who opened.");
-  } else if (spec.makerBreaker) play.push("A full board with no line is the Breaker's win.");
-  else play.push(spec.quadrantSize !== null ? "A full board with no line, after its last turn, is a draw; a line for both colours at once is a draw." : "A full board with no line is a draw.");
+    if (spec.placement === PLACEMENTS.drop) play.push(word("rulespage.play.misereDrop"));
+    play.push(word("rulespage.play.misereFull"));
+  } else if (spec.makerBreaker) play.push(word("rulespage.play.makerFull"));
+  else play.push(spec.quadrantSize !== null ? word("rulespage.play.drawQuadrant") : word("rulespage.play.drawFull"));
 
   const house: string[] = [];
   for (const stone of ["black", "white"] as const) {
     const patterns = spec.forbidden[stone];
     if (patterns.length > 0) {
       house.push(
-        `${stone === "black" ? "Black" : "White"} may not make ${patterns
-          .map((pattern) => `a ${FORBIDDEN_PATTERN_DISPLAY[pattern].label} (${FORBIDDEN_PATTERN_DISPLAY[pattern].kanji})`)
-          .join(", ")}. Those points are marked on the board and cannot be played. A five wins even when the same stone would make a forbidden shape.`,
+        word("rulespage.house.forbidden", {
+          stone: word(stone === "black" ? "rulespage.stone.black" : "rulespage.stone.white"),
+          patterns: joined(say, patterns.map((pattern) => word(PATTERN_PHRASE[pattern]))),
+        }),
       );
     }
   }
   house.push(
     spec.allowFirstPlayerChoice
-      ? "Either colour may open, or the first stone may be drawn by lot."
-      : `${STONE_DISPLAY[spec.firstStone].label} always opens.`,
+      ? word("rulespage.house.chooseFirst")
+      : word("rulespage.house.alwaysOpens", {
+          stone: word(spec.firstStone === "black" ? "rulespage.stone.black" : "rulespage.stone.white"),
+        }),
   );
-  if (spec.checkers) house.push(...checkersDrawLines(variant));
+  if (spec.checkers) house.push(...checkersDrawLines(variant, say));
   if (spec.openings.length > 1) {
-    house.push(`Openings on offer: ${spec.openings.map((opening) => OPENING_DISPLAY[opening].label).join(", ")}.`);
+    house.push(word("rulespage.house.openings", { names: joined(say, spec.openings.map((opening) => openingCopy(opening, say.locale).label)) }));
   }
   house.push(
-    spec.analysis
-      ? "The threat reading, hints and the chance-of-winning bar apply."
-      : spec.flips
-        ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines to read here, only discs to count."
-        : spec.camps || spec.chineseCheckers
-          ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only distance to cover."
-        : spec.connects
-          ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only whether your two sides are joined."
-        : spec.checkers
-          ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only pieces jumping."
-        : spec.go
-          ? "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only groups, liberties and territory."
-        : "The threat reading, hints and the chance-of-winning bar are switched off: stones move after they are placed, so a line-by-line reading says nothing true.",
+    word(
+      spec.analysis
+        ? "rulespage.house.readingOn"
+        : spec.flips
+          ? "rulespage.house.readingOffFlips"
+          : spec.camps || spec.chineseCheckers
+            ? "rulespage.house.readingOffRace"
+            : spec.connects
+              ? "rulespage.house.readingOffConnects"
+              : spec.checkers
+                ? "rulespage.house.readingOffCheckers"
+                : spec.go
+                  ? "rulespage.house.readingOffGo"
+                  : "rulespage.house.readingOffMoving",
+    ),
   );
   house.push(copy.board);
 
@@ -357,7 +363,7 @@ export function rulesPageFor(variant: RuleVariant): RulesPage {
     origin: copy.origin,
     inspiredBy: copy.inspiredBy,
     alsoKnownAs: namesFor(variant, copy.label),
-    from: originFor(copy.country),
+    from: originFor(copy.country, say.locale),
     wikipedia: copy.wikipedia === undefined ? null : wikipediaUrl(copy.wikipedia),
     object,
     board,

@@ -5,7 +5,8 @@ import { PageTitle } from "@/components/layout/Headings";
 import { PAGE_TITLE_KANJI } from "@/components/ui/ui.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { gamePath, rulesPath, setUpLink } from "@/lib/gomoku/slugs";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantCopy } from "@/lib/gomoku/variantCopy";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 import { SET_UP_COPY } from "./live.constants";
 import { RematchSwap, RematchTitle } from "./RematchHeading";
 import { stillARematch } from "./setUpStart";
@@ -36,7 +37,7 @@ import { GameTrail } from "@/components/games/GameTrail";
  * again, with no reload either way. The server draws the address's answer, and
  * `RematchTitle` and `RematchSwap` carry on from there.
  */
-export function SetUpHeading({
+export async function SetUpHeading({
   from,
   variant,
 }: {
@@ -44,7 +45,7 @@ export function SetUpHeading({
   /** The game the address names, or null at /games/new. */
   variant: RuleVariant | null;
 }) {
-  const copy = variant === null ? null : RULE_VARIANT_DISPLAY[variant];
+  const copy = variant === null ? null : variantCopy(variant, await currentLocale());
   const plain: HeadingTitle = copy !== null ? { en: copy.label, kanji: copy.kanji } : { en: "New game", kanji: "新規対局" };
 
   const title: HeadingTitle =

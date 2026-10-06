@@ -10,6 +10,7 @@ import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
 import { PIECE_COLOUR_LIST } from "@/lib/pieces/pieceColours";
 import { refusalWords } from "@/lib/pieces/seatColours";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 const bodySchema = z.object({
   token: z.string().min(1).max(128).optional(),
@@ -42,7 +43,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     if (outcome.ok) return NextResponse.json({ colours: outcome.colours }, { status: 200, headers: NO_STORE });
     if (outcome.reason === "refused") {
       return NextResponse.json(
-        { error: refusalWords(outcome.refusal), reason: "refused", offer: outcome.refusal.offer },
+        { error: refusalWords(outcome.refusal, await currentSpeaker()), reason: "refused", offer: outcome.refusal.offer },
         { status: 409, headers: NO_STORE },
       );
     }

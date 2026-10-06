@@ -450,7 +450,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     rules: [
       "Place a stone, then turn any one of the four 2×2 quadrants a quarter.",
       "Four in a row, anywhere and for either colour, wins after the turn.",
-      "Five for both at once is a draw, and so is a full board.",
+      "Four for both at once is a draw, and so is a full board.",
     ],
     board: "4×4. Fast and surprisingly sharp.",
   },

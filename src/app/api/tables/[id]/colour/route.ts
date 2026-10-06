@@ -7,6 +7,7 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import { setTableColour } from "@/lib/party/online/server/tableColour";
 import { PIECE_COLOUR_LIST, type PieceColour } from "@/lib/pieces/pieceColours";
 import { tableRefusalWords } from "@/lib/pieces/tableColours";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 const bodySchema = z.object({ colour: z.enum(PIECE_COLOUR_LIST as [string, ...string[]]).nullable() });
 
@@ -25,7 +26,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/tables/[id]
     if (outcome === "none") return notFound("No such table, or no seat of yours at it.");
     if (outcome === "over") return NextResponse.json({ error: "That table is over." }, { status: 409, headers: NO_STORE });
     if (typeof outcome === "object") {
-      return NextResponse.json({ error: tableRefusalWords(outcome.refused), reason: "refused", offer: outcome.refused.offer }, { status: 409, headers: NO_STORE });
+      return NextResponse.json({ error: tableRefusalWords(outcome.refused, await currentSpeaker()), reason: "refused", offer: outcome.refused.offer }, { status: 409, headers: NO_STORE });
     }
     return NextResponse.json({ ok: true }, { headers: NO_STORE });
   } catch (error) {

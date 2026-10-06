@@ -35,7 +35,7 @@ review on a schedule to catch what slipped.
 | Kind | Examples | Ships with a deploy | Held by |
 |---|---|---|---|
 | **A. Pages on the site** | `/about`, the home page, rules pages, `/learn`, a game's background and history, `/games` | yes, they are code | coverage tests that read the code |
-| **B. Generated docs** | `CHANGELOG.md` (written by `pnpm release:take`, read by `/releases`), `docs/japanese-review.md`, the game pictures and thumbnails | yes (`CHANGELOG.md` is the one Markdown file that deploys) | the generator plus a test that fails on drift; never edited by hand |
+| **B. Generated docs** | `CHANGELOG.md` (written by `pnpm release:take`, read by `/releases`), `docs/japanese-review.md`, `docs/japanese-review-games.md`, the game pictures and thumbnails | yes (`CHANGELOG.md` is the one Markdown file that deploys) | the generator plus a test that fails on drift; never edited by hand |
 | **C. Hand-written docs** | `README.md`, `AGENTS.md`, `docs/email.md`, `docs/brand/*`, `docs/plans/*` | no (the `paths` filters skip `*.md` and `docs/**`) | the map below, the release checklist, and the scheduled review |
 
 ## Standing conventions
@@ -125,6 +125,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | About screenshots | `public/art/about/*`, listed in `src/app/about/about.shots.ts` | a page one of them shows changes shape: the board, the replay panel, the picture window, the set-up screen, a player's page | `about.coverage.test.ts` (each file exists, at the size the page reserves) |
 | `/releases` | `CHANGELOG.md` | written by `pnpm release:take`; never by hand | `releases.test.ts` |
 | `docs/japanese-review.md` | `src/lib/i18n/dictionaries/**` | regenerate; never edit | `japanese.coverage.test.ts` |
+| `docs/japanese-review-games.md` | `src/lib/i18n/dictionaries/*.ja.*` (games, openings, computer players, families, attribution) | regenerate; never edit | `gameCopyReview.coverage.test.ts` |
 
 When a new doc lands, it gets a row here in the same commit. A doc without a
 row has no trigger, so nothing will ever make anybody re-read it.

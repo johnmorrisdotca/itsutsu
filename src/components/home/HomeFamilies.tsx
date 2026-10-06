@@ -4,6 +4,8 @@ import { FamilyMark } from "@/components/games/FamilyMark";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_HEADING, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import { GAME_FAMILIES, familyCountWords, familyPagePath } from "@/lib/gomoku/families";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 
 /**
  * THE FAMILIES, ON THE FRONT PAGE, SO A VISITOR SEES THE SHAPE OF THE
@@ -18,7 +20,8 @@ import { GAME_FAMILIES, familyCountWords, familyPagePath } from "@/lib/gomoku/fa
  * on this page the same day. Each card is the way into that family's page,
  * which is open to anyone and shows exactly the games the card counted.
  */
-export function HomeFamilies() {
+export async function HomeFamilies() {
+  const locale = await currentLocale();
   return (
     <section className="flex flex-col gap-4" data-testid="front-families">
       <div className="flex flex-col gap-1">
@@ -48,7 +51,7 @@ export function HomeFamilies() {
                     <span className="whitespace-nowrap font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
                     <span className="text-xs font-normal text-muted">{familyCountWords(family)}</span>
                   </span>
-                  <span className="text-xs text-muted">{family.blurb}</span>
+                  <span className="text-xs text-muted">{familyBlurb(family, locale)}</span>
                 </span>
               </span>
               <CardArrow />

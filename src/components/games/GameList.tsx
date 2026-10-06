@@ -19,6 +19,7 @@ import {
 import { gameCopyFor, isCasualKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { CasualLine } from "@/components/casual/CasualLine";
 import { PartyLine } from "@/components/party/PartyLine";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
 import { aliasesFor } from "@/lib/legacy/gameAliases";
 import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
 
@@ -41,6 +42,7 @@ import { currentSpeaker } from "@/lib/i18n/currentLocale";
  */
 export async function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn: boolean }) {
   const say = await currentSpeaker();
+  const locale = say.locale;
   return (
     <div className="flex flex-col gap-8" data-testid="every-game">
       <p className="text-sm text-muted">
@@ -64,10 +66,10 @@ export async function GameList({ stats, signedIn }: { stats: CatalogueStats; sig
               {say.count("count.gameKind", family.games.length)}
             </span>
           </h2>
-          <p className="text-sm text-muted">{family.blurb}</p>
+          <p className="text-sm text-muted">{familyBlurb(family, locale)}</p>
           <dl className="flex flex-col gap-3">
             {family.games.map((variant) => {
-              const copy = gameCopyFor(variant);
+              const copy = gameCopyFor(variant, locale);
               const aliases = isPuzzleKind(variant) || isPartyKind(variant) || isCasualKind(variant) ? [] : aliasesFor(variant);
               return (
                 <div key={variant} className="grid gap-x-6 gap-y-1 sm:grid-cols-[14rem_1fr]" data-testid={`every-game-${variant}`}>

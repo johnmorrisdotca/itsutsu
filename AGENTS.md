@@ -259,7 +259,19 @@ rule that stops the gap growing, and the gate that holds it.
   fails a key said twice or a file nobody joined. A component reads it with
   `useSpeaker()`, a server page with `say`. Copy that belongs to data, a game's
   rules or a level's name, gets a sibling table per language typed
-  `Record<Locale, …>` beside the data, never a second copy of the data.
+  `Record<Locale, …>` beside the data, never a second copy of the data. For a
+  game's words that sibling is `src/lib/i18n/dictionaries/` (`variants.ja.*`,
+  `openings.ja`, `bots.ja`, `families.ja`, `attribution.ja`): a line is
+  `["日本語", "literal English"]` and an entry carries a `review` stamp. Readers
+  ask `variantCopy`, `openingCopy`, `botProfile`, `familyBlurb` and `gameCopyFor`
+  for the speaker's locale, never the English table directly. The English row
+  stays in its own file, which is allowed in `ALLOWED_FILES` as the English half
+  of a pair, and only while the coverage tests hold a Japanese line beside every
+  line of it. A name is not copy: a game's, family's or colour's Japanese name is
+  its `kanji`, and a computer player's name and `native` are not translated.
+  `opponent.constants.ts` and `analysis.constants.ts` are hashed by the measured
+  ladder's fingerprint (`ladderFingerprint.ts`): a word is never edited in
+  either, for a translation or anything else, so their Japanese sits beside them.
 - **The Japanese is drafted with `back`, and the `japanese-reviewer` agent
   checks it before the change lands.** John does not read Japanese and both
   sites publish it under his name, so a phrase that no reader has passed does
@@ -358,6 +370,19 @@ that is missing any of them fails the build rather than shipping quietly.
   origin, board advice, and at least three rule bullets; `rulesPageFor` must fill every
   section. If the game is our version of a published game, set `inspiredBy` — see
   `RULES_ATTRIBUTION`.
+- **It reads in Japanese.** John, 2026-10-06: every word on the site in English and
+  Japanese. `VARIANT_COPY_JA` (`src/lib/i18n/dictionaries/variants.ja.constants.ts`, one
+  file per family, `Record<RuleVariant, …>` so a game without one does not compile)
+  holds the tagline, the origin, one line for each English rule bullet and the board
+  advice, each as `[日本語, literal English]` with a `review` stamp, in the words of
+  `docs/plans/en-ja-everywhere/TERMS.md`; the game's name is its `kanji` and is not
+  repeated. A new opening is a row in `openings.ja.constants.ts`, a new computer
+  player one in `bots.ja.constants.ts`, a new family one in `families.ja.constants.ts`
+  (its blurb; its name is its kanji). `variants.coverage.test.ts` and
+  `gameCopyJa.coverage.test.ts` fail for a game, opening, program, family or shelf
+  reason without them, for a line with no back-translation, and for a rules page that
+  does not read in Japanese from top to bottom. A sentence the rules page builds from
+  the game's spec rather than its copy is a `rulespage.*` phrase.
 - **It belongs to a family.** Add it to `GAME_FAMILIES` in `families.ts`. A game in no
   family appears on no index page, so nobody will ever meet it. That family is its one
   HOME — its family page, its siblings, the family's counts and figures, and the XP

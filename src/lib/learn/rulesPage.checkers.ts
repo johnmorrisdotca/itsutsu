@@ -1,23 +1,26 @@
 import { CAPTURE_CHOICES, CROWN_MID_CAPTURE, ENDGAME_COUNT_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { CheckersRules, EndgameCount, PieceTally, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { NO_PROGRESS_RULES, PROGRESS_MEASURES } from "@/lib/gomoku/rules/noProgress";
-import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
-import { inWords as wordsIn } from "@/lib/text/inWords";
-
-/** This page is written in English only so far, so its counts are spelt out in English. */
-const inWords = (count: number) => wordsIn(count, DEFAULT_LOCALE);
+import type { Speaker } from "@/lib/i18n/i18n";
 
 /**
  * The rules page's sentences for a game of the checkers family, written from
  * its `CheckersRules` rather than from its name — so International Draughts
  * and Canadian Checkers, which differ only in their board, cannot be described
  * differently, and English checkers reads exactly as it did before the family
- * had other games in it.
+ * had other games in it. Every sentence is a phrase (`rulespage.checkers.*`),
+ * said in the reader's language.
  */
 
-/** A short list in words: "a", "a or b", "a, b or c". */
-function either(items: string[]): string {
-  return items.length === 1 ? items[0] : `${items.slice(0, -1).join(", ")} or ${items[items.length - 1]}`;
+/**
+ * A short list in words: "a", "a or b", "a, b or c". A list of whole phrases
+ * (`long`) is joined with its own "or", which Japanese says more firmly than
+ * it does for two bare numbers.
+ */
+function either(say: Speaker, items: string[], long = false): string {
+  if (items.length === 1) return items[0] as string;
+  const head = items.slice(0, -1).join(say.locale === "ja" ? "、" : ", ");
+  return say.say(long ? "rulespage.list.orEither" : "rulespage.list.or", { head, last: items[items.length - 1] as string });
 }
 
 function rulesOf(variant: RuleVariant): CheckersRules {
@@ -27,59 +30,59 @@ function rulesOf(variant: RuleVariant): CheckersRules {
 }
 
 /** What the board holds at the start. */
-export function checkersBoardLine(variant: RuleVariant, size: number): string {
+export function checkersBoardLine(variant: RuleVariant, size: number, say: Speaker): string {
   const rules = rulesOf(variant);
   const men = (rules.menRows * size) / 2;
-  return `Played on the dark squares only, ${inWords((size * size) / 2)} of the ${inWords(size * size)}. Each side starts with ${inWords(men)} men filling its own ${inWords(rules.menRows)} rows.`;
+  return say.say("rulespage.checkers.board", {
+    dark: say.words((size * size) / 2),
+    all: say.words(size * size),
+    men: say.words(men),
+    rows: say.words(rules.menRows),
+  });
 }
 
 /** How a turn goes: stepping, capturing, carrying a capture on, crowning, and how the game ends. */
-export function checkersPlayLines(variant: RuleVariant): string[] {
+export function checkersPlayLines(variant: RuleVariant, say: Speaker): string[] {
   const rules = rulesOf(variant);
-  const lines = ["A turn moves one piece: a man steps one square diagonally forward, onto an empty square."];
+  const lines = [say.say("rulespage.checkers.step")];
 
   if (!rules.menCaptureBackward && rules.captureChoice === CAPTURE_CHOICES.free) {
-    lines.push("Capturing is a jump over an adjacent enemy piece into the empty square beyond, and it is forced: if any of your pieces can capture, you must play a capture rather than a step, though you may choose which one.");
+    lines.push(say.say("rulespage.checkers.forcedFree"));
   } else {
-    lines.push(
-      rules.menCaptureBackward
-        ? "A man captures by jumping an adjacent enemy piece into the empty square beyond it, forward or backward."
-        : "A man captures by jumping an adjacent enemy piece into the empty square beyond it, forward only.",
-    );
-    lines.push(
-      rules.captureChoice === CAPTURE_CHOICES.maximum
-        ? "Capturing is forced, and so is taking the most you can: of every capture on the board, only one taking the greatest number of pieces may be played. A king counts as one piece, the same as a man; among captures taking equally many, you choose."
-        : "Capturing is forced: if any of your pieces can capture, you must play a capture rather than a step, though you may choose which one — the longer or the shorter.",
-    );
+    lines.push(say.say(rules.menCaptureBackward ? "rulespage.checkers.menBackward" : "rulespage.checkers.menForward"));
+    lines.push(say.say(rules.captureChoice === CAPTURE_CHOICES.maximum ? "rulespage.checkers.choiceMost" : "rulespage.checkers.choiceFree"));
   }
 
   if (rules.crownMidCapture === CROWN_MID_CAPTURE.stops) {
-    lines.push("A piece that captures and can capture again from where it lands keeps jumping in the same move. A man crowned partway through always stops there — only a king may carry a chain on, and only on a later move.");
+    lines.push(say.say("rulespage.checkers.crownStops"));
   } else {
-    lines.push(
-      rules.crownMidCapture === CROWN_MID_CAPTURE.passes
-        ? "A piece that captures and can capture again keeps going in the same move, turning corners as it must. A man that crosses the far row partway through is not crowned: it carries on as a man, and is crowned only if the capture ends there."
-        : "A piece that captures and can capture again keeps going in the same move, turning corners as it must. A man that reaches the far row partway through is crowned at once, and carries on capturing as a king.",
-    );
+    lines.push(say.say(rules.crownMidCapture === CROWN_MID_CAPTURE.passes ? "rulespage.checkers.crownPasses" : "rulespage.checkers.crownAtOnce"));
   }
   if (rules.flyingKings || rules.menCaptureBackward) {
-    lines.push("The pieces a capture takes come off the board only when it is over. Until then each still stands in the way: none may be jumped a second time, and nothing may pass through one.");
+    lines.push(say.say("rulespage.checkers.afterCapture"));
   }
 
-  lines.push(
-    rules.flyingKings
-      ? "A man whose move ends on the far row is crowned a king. A king flies: it moves any distance along an open diagonal, either way, and captures a piece at any distance, landing on any empty square beyond it — one from which it can capture again, where there is one."
-      : "A man reaching the far row is crowned a king, and may then step and capture backward as well as forward.",
-  );
-  lines.push("The game ends the moment a colour has no piece that can move: none left, or every one shut in.");
+  lines.push(say.say(rules.flyingKings ? "rulespage.checkers.crownFlying" : "rulespage.checkers.crownPlain"));
+  lines.push(say.say("rulespage.checkers.gameEnd"));
   return lines;
 }
 
 /** A side's pieces in words: "two kings and a man", "a king". */
-function tallyWords(tally: PieceTally): string {
-  const part = (count: number, one: string, many: string) =>
-    count === 0 ? null : count === 1 ? `a ${one}` : `${inWords(count)} ${many}`;
-  return [part(tally.kings, "king", "kings"), part(tally.men, "man", "men")].filter((word) => word !== null).join(" and ");
+function tallyWords(say: Speaker, tally: PieceTally): string {
+  const kings =
+    tally.kings === 0
+      ? null
+      : tally.kings === 1
+        ? say.say("rulespage.checkers.kingOne")
+        : say.say("rulespage.checkers.kingMany", { count: say.words(tally.kings) });
+  const men =
+    tally.men === 0
+      ? null
+      : tally.men === 1
+        ? say.say("rulespage.checkers.manOne")
+        : say.say("rulespage.checkers.manMany", { count: say.words(tally.men) });
+  if (kings !== null && men !== null) return say.say("rulespage.checkers.tally", { kings, men });
+  return kings ?? men ?? "";
 }
 
 /**
@@ -87,38 +90,60 @@ function tallyWords(tally: PieceTally): string {
  * lone opponent that climbs one king at a time to the most a side can hold is
  * "three or more kings", which is what it means.
  */
-function endingsWords(endings: readonly (readonly [PieceTally, PieceTally])[]): string {
+function endingsWords(say: Speaker, endings: readonly (readonly [PieceTally, PieceTally])[]): string {
   const against = endings[0][1];
   const sameOpponent = endings.every(([, other]) => other.kings === against.kings && other.men === against.men);
-  if (!sameOpponent) return either(endings.map(([one, other]) => `${tallyWords(one)} against ${tallyWords(other)}`));
+  if (!sameOpponent) {
+    return either(
+      say,
+      endings.map(([one, other]) => say.say("rulespage.checkers.against", { one: tallyWords(say, one), other: tallyWords(say, other) })),
+      true,
+    );
+  }
   const firsts = endings.map(([one]) => one);
   const climbing =
     firsts.length >= 3 && firsts.every((one, at) => one.men === 0 && one.kings === firsts[0].kings + at);
-  if (climbing) return `${inWords(firsts[0].kings)} or more kings against ${tallyWords(against)}`;
-  return `${either(firsts.map(tallyWords))} against ${tallyWords(against)}`;
+  if (climbing) {
+    return say.say("rulespage.checkers.kingsOrMore", { count: say.words(firsts[0].kings), against: tallyWords(say, against) });
+  }
+  return say.say("rulespage.checkers.against", {
+    one: either(
+      say,
+      firsts.map((one) => tallyWords(say, one)),
+      true,
+    ),
+    other: tallyWords(say, against),
+  });
 }
 
 /** One count, as a sentence. */
-function countLine(count: EndgameCount): string {
-  if (count.kind === ENDGAME_COUNT_KINDS.balance) {
-    return `It is a draw when, in an ending of ${either(count.pieces.map(inWords))} pieces with a king on each side, ${inWords(count.movesEach)} moves each go by with nothing taken and no man crowned.`;
+function countLine(count_: EndgameCount, say: Speaker): string {
+  if (count_.kind === ENDGAME_COUNT_KINDS.balance) {
+    return say.say("rulespage.checkers.drawBalance", {
+      pieces: either(
+        say,
+        count_.pieces.map((pieces) => say.words(pieces)),
+      ),
+      moves: say.words(count_.movesEach),
+    });
   }
-  return `It is a draw when ${endingsWords(count.endings)} is not won within ${inWords(count.movesEach)} more moves each${
-    count.restartsOnChange ? ", counted afresh whenever a piece is taken or crowned" : " of that ending arising"
-  }.`;
+  return say.say(count_.restartsOnChange ? "rulespage.checkers.drawCountFresh" : "rulespage.checkers.drawCountOnce", {
+    ending: endingsWords(say, count_.endings),
+    moves: say.words(count_.movesEach),
+  });
 }
 
 /** The ways the game can be drawn, as this site applies them. */
-export function checkersDrawLines(variant: RuleVariant): string[] {
+export function checkersDrawLines(variant: RuleVariant, say: Speaker): string[] {
   const rules = rulesOf(variant);
   const lines: string[] = [];
   const idle = NO_PROGRESS_RULES[variant];
   if (idle !== undefined && idle.measure === PROGRESS_MEASURES.taking) {
-    lines.push(`It is a draw once ${inWords(idle.plies / 2)} moves each have gone by in which only kings have moved and nothing has been taken.`);
+    lines.push(say.say("rulespage.checkers.drawIdle", { moves: say.words(idle.plies / 2) }));
   }
   if (rules.repetitionDraw !== null) {
-    lines.push("It is a draw when the same position comes round for the third time with the same side to move.");
+    lines.push(say.say("rulespage.checkers.drawRepeat"));
   }
-  for (const count of rules.endgameCounts) lines.push(countLine(count));
+  for (const entry of rules.endgameCounts) lines.push(countLine(entry, say));
   return lines;
 }

@@ -39,6 +39,7 @@ const MET: readonly { prefix: string; seen: string; place: string }[] = [
   { prefix: "xp.who.", seen: "The XP pages", place: "who a page is narrowed to, inside a sentence" },
   { prefix: "xp.imported.twin", seen: "A player's XP history", place: "a row crediting a record from another site" },
   { prefix: "points.", seen: "The IP page, /points, and every game's IP board", place: "the page, the boards and the line on a player's page" },
+  { prefix: "rulespage.", seen: "Every rules page", place: "the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules" },
   { prefix: "xp.", seen: "After earning points", place: "the notice that drops in from the top of the page, a person's standing under their record, and the XP boards" },
   { prefix: "catalogue.", seen: "The games index, /games", place: "under every game and every family, in all three views" },
   // The draughts family's file, which is met on those games only; before `record.`, which would claim it.

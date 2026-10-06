@@ -5,6 +5,8 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { listingWhy } from "@/lib/gomoku/familyCopy";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 import { familyPath } from "@/lib/gomoku/slugs";
 
 import type { FamilyShelfProps } from "./games.types";
@@ -18,12 +20,13 @@ import type { FamilyShelfProps } from "./games.types";
  * draws the same cards as every other family's page rather than a copy of
  * them.
  */
-export function FamilyShelf({ shelf, current = null }: FamilyShelfProps) {
+export async function FamilyShelf({ shelf, current = null }: FamilyShelfProps) {
+  const locale = await currentLocale();
   return (
     <ul className="flex flex-col gap-3" data-testid="family-games">
       {shelf.map((shown) => {
         const game = shown.variant;
-        const sibling = gameCopyFor(game);
+        const sibling = gameCopyFor(game, locale);
         return (
           /*
             The same card the catalogue draws, and the same rule: the whole
@@ -55,7 +58,7 @@ export function FamilyShelf({ shelf, current = null }: FamilyShelfProps) {
                     </Link>
                   </span>
                   <span className="text-sm" data-testid="family-game-why">
-                    {shown.why}
+                    {listingWhy(game, shown.home.key, shown.why, locale)}
                   </span>
                 </>
               ) : null}

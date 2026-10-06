@@ -15,6 +15,9 @@ import { GAME_FAMILIES, gamesShownIn } from "@/lib/gomoku/families";
 import type { CatalogueView } from "@/lib/gomoku/catalogueView";
 import type { Speaker } from "@/lib/i18n/i18n";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { familyBlurb, listingWhy } from "@/lib/gomoku/familyCopy";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
+import type { Locale } from "@/lib/i18n/i18n.types";
 
 /*
  * /games FOR A READER WITH NO SESSION, and the catalogue's families as copy,
@@ -37,22 +40,22 @@ import { gameCopyFor } from "@/lib/catalogue/gameKeys";
  * shelf too (`ALSO_LISTED_IN`), each saying which family it lives in — shown,
  * and counted once, at home.
  */
-export function catalogueFamilies(): CatalogueFamily[] {
+export function catalogueFamilies(locale: Locale = DEFAULT_LOCALE): CatalogueFamily[] {
   return GAME_FAMILIES.map((family) => ({
     key: family.key,
     title: family.title,
     kanji: family.kanji,
-    blurb: family.blurb,
-    games: family.games.map(gameCopy),
+    blurb: familyBlurb(family, locale),
+    games: family.games.map((game) => gameCopy(game, locale)),
     guests: gamesShownIn(family).flatMap((shown) =>
-      shown.listed === "shelf" ? [{ ...gameCopy(shown.variant), home: { title: shown.home.title, kanji: shown.home.kanji }, why: shown.why }] : [],
+      shown.listed === "shelf" ? [{ ...gameCopy(shown.variant, locale), home: { title: shown.home.title, kanji: shown.home.kanji }, why: listingWhy(shown.variant, shown.home.key, shown.why, locale) }] : [],
     ),
   }));
 }
 
 /** One game's words, as a family's card shows them. */
-function gameCopy(variant: CatalogueFamily["games"][number]["variant"]): CatalogueFamily["games"][number] {
-  const copy = gameCopyFor(variant);
+function gameCopy(variant: CatalogueFamily["games"][number]["variant"], locale: Locale): CatalogueFamily["games"][number] {
+  const copy = gameCopyFor(variant, locale);
   return { variant, label: copy.label, kanji: copy.kanji, tagline: copy.tagline, inspiredBy: copy.inspiredBy };
 }
 
@@ -127,7 +130,7 @@ export async function PublicCatalogue({ view, say }: { view: CatalogueView; say:
           that game, and the three ways of looking at the list are the same games arranged
           differently.
         </p>
-        <GameCatalogue view={view} families={catalogueFamilies()} stats={stats} signedIn={false} />
+        <GameCatalogue view={view} families={catalogueFamilies(say.locale)} stats={stats} signedIn={false} locale={say.locale} />
       </section>
   </Page>
   );

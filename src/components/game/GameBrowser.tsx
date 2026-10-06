@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from "react";
 
 import { availableOpenings } from "@/lib/gomoku/engine";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { variantCopy } from "@/lib/gomoku/variantCopy";
+import { openingCopy } from "@/lib/gomoku/openingCopy";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { GameName } from "@/components/games/GameName";
@@ -39,6 +40,7 @@ function GameBrowser({
   onClose,
 }: GamePanelProps & { onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const locale = useLocale();
   const { settings } = session.state;
   const { variant, opening } = settings;
   const [shown, setShown] = useState<RuleVariant>(variant);
@@ -99,7 +101,7 @@ function GameBrowser({
         <div className="flex flex-col gap-6 overflow-y-auto px-6 py-5">
           <ul className="grid gap-3 sm:grid-cols-2">
             {RULE_VARIANT_LIST.map((option) => {
-              const copy = RULE_VARIANT_DISPLAY[option];
+              const copy = variantCopy(option, locale);
               const current = option === variant;
               const focused = option === shown;
               return (
@@ -179,7 +181,7 @@ function GameBrowser({
             </SectionTitle>
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {openings.map((option) => {
-                const copy = OPENING_DISPLAY[option];
+                const copy = openingCopy(option, locale);
                 const active = shown === variant && option === opening;
                 return (
                   <li

@@ -8,6 +8,7 @@ import { STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import type { PieceColour } from "@/lib/pieces/pieceColours";
 import { refusalWords, seatColourRefusal, type SeatColours } from "@/lib/pieces/seatColours";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * BOTH SEATS' COLOURS ON A BOARD PLAYED AT ONE SCREEN: a row for Black and a
@@ -25,6 +26,7 @@ export function SeatColoursPanel({
   appearance: Appearance;
   onChoose: (side: Stone, colour: PieceColour | null) => void;
 }) {
+  const say = useSpeaker();
   const set = STONE_SETS[appearance.stoneSet];
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="seat-colours">
@@ -43,7 +45,7 @@ export function SeatColoursPanel({
             label={`${STONE_DISPLAY[side].label}'s colour`}
             unavailable={(colour) => {
               const refusal = seatColourRefusal(side, colour, colours);
-              return refusal === null ? null : refusalWords(refusal);
+              return refusal === null ? null : refusalWords(refusal, say);
             }}
             testId={`seat-colours-${side}`}
           />

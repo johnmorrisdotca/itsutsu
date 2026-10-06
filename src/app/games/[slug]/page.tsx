@@ -39,6 +39,7 @@ import {
   standingsPath,
   variantFor,
 } from "@/lib/gomoku/slugs";
+import { currentLocale, currentSpeaker } from "@/lib/i18n/currentLocale";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { partyTableFor } from "@/components/party/partyTables";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -48,7 +49,7 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]">): 
   const { slug } = await params;
   // Karakuri's family page answers here too, at /games/karakuri (`CasualFamilyPage`).
   if (slug === CASUAL_FAMILY_KEY) return { title: CASUAL_FAMILY_TITLE };
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? "");
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? "", await currentLocale());
   if (copy === null) return { title: "Games" };
   return { title: `${copy.label} ${copy.kanji}`, description: copy.tagline };
 }
@@ -110,7 +111,8 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
   if (casual !== null) return <CasualFrontDoor kind={casual} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
-  const page = rulesPageFor(variant);
+  const say = await currentSpeaker();
+  const page = rulesPageFor(variant, say);
 
   return (
     <Page>

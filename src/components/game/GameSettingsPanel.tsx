@@ -18,6 +18,9 @@ import {
 import { openingFor } from "@/lib/gomoku/rules/flips";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { variantCopy } from "@/lib/gomoku/variantCopy";
+import { openingCopy } from "@/lib/gomoku/openingCopy";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import { availableOpenings } from "@/lib/gomoku/engine";
 import type {
   DrawLimit,
@@ -47,6 +50,7 @@ import type { AwarenessLevel, GamePanelProps, HintPolicy } from "./game.types";
 import { boardWords } from "@/lib/gomoku/boardWords";
 
 export function GameSettingsPanel({ session, actions }: GamePanelProps) {
+  const locale = useLocale();
   const { settings } = session.state;
   const { variant, size, firstPlayer, obstacles, opening } = settings;
   const spec = VARIANT_SPECS[variant];
@@ -134,7 +138,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
       </Field>
       ) : null}
 
-      <Field label="Rules" hint={RULE_VARIANT_DISPLAY[variant].tagline}>
+      <Field label="Rules" hint={variantCopy(variant, locale).tagline}>
         <Select
           value={variant}
           onChange={(event) =>
@@ -153,7 +157,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
       {locks.opening === null ? (
       <Field
         label={GAME_COPY.opening.label}
-        hint={said(locks.opening, OPENING_DISPLAY[opening].tagline)}
+        hint={said(locks.opening, openingCopy(opening, locale).tagline)}
       >
         <Select
           value={opening}

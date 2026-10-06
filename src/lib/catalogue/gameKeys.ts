@@ -2,6 +2,9 @@
 import { RULE_VARIANT_LIST } from "../gomoku/gomoku.constants";
 import type { RuleVariant } from "../gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY, type VariantCopy } from "../gomoku/variants.constants";
+import { variantCopy } from "../gomoku/variantCopy";
+import { DEFAULT_LOCALE } from "../i18n/i18n.constants";
+import type { Locale } from "../i18n/i18n.types";
 import { CASUAL_DISPLAY, CASUAL_KIND_LIST } from "../casual/casual.constants";
 import type { CasualKind } from "../casual/casual.types";
 import { PARTY_DISPLAY, PARTY_KIND_LIST } from "../party/party.constants";
@@ -80,19 +83,25 @@ export const EVERY_GAME_KEY: readonly GameKey[] = EVERY_KIND_KEY.filter((key) =>
  */
 export const RECORDED_GAME_KEYS: readonly GameKey[] = [...RULE_VARIANT_LIST, ...PUZZLE_KIND_LIST];
 
-/** What a game, a puzzle or a party game is called and how it is described, whichever kind it is. */
-export function gameCopyFor(key: GameKey): VariantCopy {
+/**
+ * What a game, a puzzle or a party game is called and how it is described, whichever kind it is.
+ *
+ * A rule variant answers in the reader's language (`variantCopy`); the other
+ * kinds answer in English until their own tickets give them a Japanese row
+ * (ENJA-07 for puzzles, ENJA-08 for party and casual games).
+ */
+export function gameCopyFor(key: GameKey, locale: Locale = DEFAULT_LOCALE): VariantCopy {
   if (isPuzzleKind(key)) return PUZZLE_DISPLAY[key];
   if (isPartyKind(key)) return PARTY_DISPLAY[key];
   if (isCasualKind(key)) return CASUAL_DISPLAY[key];
-  return RULE_VARIANT_DISPLAY[key];
+  return variantCopy(key, locale);
 }
 
 /** The copy for a key read off a stored row or an address, or null for one this deploy has not got. */
-export function gameCopyOf(key: string): VariantCopy | null {
+export function gameCopyOf(key: string, locale: Locale = DEFAULT_LOCALE): VariantCopy | null {
   if (isPuzzleKind(key)) return PUZZLE_DISPLAY[key];
   if (isPartyKind(key)) return PARTY_DISPLAY[key];
   if (isCasualKind(key)) return CASUAL_DISPLAY[key];
-  if (key in RULE_VARIANT_DISPLAY) return RULE_VARIANT_DISPLAY[key as RuleVariant];
+  if (key in RULE_VARIANT_DISPLAY) return variantCopy(key as RuleVariant, locale);
   return null;
 }

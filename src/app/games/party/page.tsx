@@ -8,6 +8,8 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import Link from "@/components/ui/Link";
+import { currentLocale } from "@/lib/i18n/currentLocale";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
 import { GAME_FAMILIES, familyCountWords, gamesShownIn } from "@/lib/gomoku/families";
 
 /** The one family this page is for: a family no recorded game calls home, which no game's family page can be (`familyPagePath`). */
@@ -31,7 +33,8 @@ export const metadata: Metadata = { title: PARTY === undefined ? "Party games" :
  * Pure, like every family page: a table in `families.ts`, the same for
  * everybody, prerendered.
  */
-export default function PartyGamesPage() {
+export default async function PartyGamesPage() {
+  const locale = await currentLocale();
   if (PARTY === undefined) notFound();
   return (
     <Page>
@@ -39,7 +42,7 @@ export default function PartyGamesPage() {
       <PageTitle
         title={PARTY.title}
         kanji={PARTY.kanji}
-        lead={PARTY.blurb}
+        lead={familyBlurb(PARTY, locale)}
         crumb={<GameTrail game={{ label: PARTY.title }} />}
       />
 

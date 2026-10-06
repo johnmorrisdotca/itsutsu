@@ -49,6 +49,8 @@ import { showsLocalTime } from "@/lib/social/childRules";
 import { ageBandOf } from "@/lib/auth/ageBandStore";
 import { closedToReader } from "@/lib/social/childReach";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
+import { botBio } from "@/lib/gomoku/botCopy";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 
 export const metadata = { title: "Player" };
 
@@ -334,7 +336,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         */}
         {(member?.bio ?? "").trim() !== "" ? (
           <p className="text-sm whitespace-pre-line text-ink-soft" data-testid="player-bio">
-            {member?.bio}
+            {member?.botTier ? botBio(member.botTier as BotTier, member.bio ?? "", await currentLocale()) : member?.bio}
           </p>
         ) : null}
         {/*

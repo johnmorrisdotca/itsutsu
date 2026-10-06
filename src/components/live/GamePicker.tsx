@@ -11,6 +11,8 @@ import { OneName } from "@/components/i18n/OneName";
 import { boardGamesShownIn } from "@/lib/gomoku/families";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantCopy } from "@/lib/gomoku/variantCopy";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
 
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
@@ -150,7 +152,7 @@ export function GamePicker({
   const shelves = onPuzzle === undefined ? SET_UP_FAMILIES : ROW_FAMILIES;
   const puzzles = puzzle === null ? null : (PUZZLE_SHELVES.find((shelf) => (shelf.games as string[]).includes(listedGameOf(puzzle))) ?? null);
   const opened = puzzles ?? family;
-  const tagline = RULE_VARIANT_DISPLAY[value as RuleVariant]?.tagline;
+  const tagline = value in RULE_VARIANT_DISPLAY ? variantCopy(value as RuleVariant, speaker.locale).tagline : undefined;
   // The chosen game when this shelf is not its home, for the "also under" on the line under the games.
   const chosenShown = puzzles === null ? boardGamesShownIn(family).find((shown) => shown.variant === value) : undefined;
   const chosenGuest = chosenShown?.listed === "shelf" ? chosenShown : undefined;
@@ -332,7 +334,7 @@ export function GamePicker({
         ) : (
         <>
         <span className="text-xs leading-snug text-muted" data-testid="set-up-family-blurb">
-          {family.blurb}
+          {familyBlurb(family, speaker.locale)}
         </span>
         <div className={PICK_TILE_GRID}>
         {boardGamesShownIn(family).map((shown) => {

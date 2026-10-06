@@ -1,5 +1,7 @@
 import { RULE_VARIANT_LIST, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantCopy } from "@/lib/gomoku/variantCopy";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { Field, Select } from "@/components/ui/Controls";
 import { BoardPicker } from "./BoardPicker";
@@ -62,6 +64,7 @@ export function GameAndBoardChooser({
   /** Choosing a puzzle from the row of families, which hands the whole screen to it — see `GamePicker`. */
   onPuzzle?: (kind: PuzzleKind | null) => void;
 }) {
+  const locale = useLocale();
   const variant = value.variant as RuleVariant;
   const sizes = boardSizesFor(variant);
 
@@ -115,7 +118,7 @@ export function GameAndBoardChooser({
             onPuzzle={onPuzzle}
           />
         ) : (
-          <Field label={variantLabel} hint={RULE_VARIANT_DISPLAY[variant]?.tagline}>
+          <Field label={variantLabel} hint={RULE_VARIANT_DISPLAY[variant] === undefined ? undefined : variantCopy(variant, locale).tagline}>
             <Select
               value={value.variant}
               disabled={disabled}

@@ -8,6 +8,8 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import Link from "@/components/ui/Link";
+import { currentLocale } from "@/lib/i18n/currentLocale";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
 import { GAME_FAMILIES, familyCountWords, gamesShownIn } from "@/lib/gomoku/families";
 
 /** The one family this page is for: Tables, whose games are played round one device or on two and never recorded, so no game's family page can be it (`familyPagePath`). */
@@ -22,7 +24,8 @@ export const metadata: Metadata = { title: TABLES === undefined ? "Tables" : `${
  * in the catalogue's space, as Dice's is (`/games/dice`), which the gate
  * already opens to anybody: it names games and nobody who plays them.
  */
-export default function TablesPage() {
+export default async function TablesPage() {
+  const locale = await currentLocale();
   if (TABLES === undefined) notFound();
   return (
     <Page>
@@ -30,7 +33,7 @@ export default function TablesPage() {
       <PageTitle
         title={TABLES.title}
         kanji={TABLES.kanji}
-        lead={TABLES.blurb}
+        lead={familyBlurb(TABLES, locale)}
         crumb={<GameTrail game={{ label: TABLES.title }} />}
       />
 

@@ -8,6 +8,8 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import Link from "@/components/ui/Link";
+import { currentLocale } from "@/lib/i18n/currentLocale";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
 import { GAME_FAMILIES, familyCountWords, gamesShownIn } from "@/lib/gomoku/families";
 
 /** The one family this page is for: Table cards, whose games are played round one device or on several and never recorded, so no game's family page can be it (`familyPagePath`). */
@@ -23,7 +25,8 @@ export const metadata: Metadata = { title: TABLE_CARDS === undefined ? "Table ca
  * in the catalogue's space, as Party games' is (`/games/party`), which the
  * gate already opens to anybody: it names games and nobody who plays them.
  */
-export default function TableCardsPage() {
+export default async function TableCardsPage() {
+  const locale = await currentLocale();
   if (TABLE_CARDS === undefined) notFound();
   return (
     <Page>
@@ -31,7 +34,7 @@ export default function TableCardsPage() {
       <PageTitle
         title={TABLE_CARDS.title}
         kanji={TABLE_CARDS.kanji}
-        lead={TABLE_CARDS.blurb}
+        lead={familyBlurb(TABLE_CARDS, locale)}
         crumb={<GameTrail game={{ label: TABLE_CARDS.title }} />}
       />
 

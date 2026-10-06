@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { PieceColourPicker } from "@/components/board/PieceColourPicker";
 import { tableColourRefusal, tableRefusalWords } from "@/lib/pieces/tableColours";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { MarbleChip } from "./MarbleChip";
 import { PARTY_MARBLES, marbleFace } from "./party.constants";
@@ -19,6 +20,7 @@ import { usePartyMarbles, usePartyTable } from "./partyMarbles";
  * table offers no colours (a picture, a card) it is the plain marble.
  */
 export function SeatColourButton({ player, playing }: { player: number; playing: number }) {
+  const say = useSpeaker();
   const { colours, choose } = usePartyTable();
   const marbles = usePartyMarbles();
   const [open, setOpen] = useState(false);
@@ -69,7 +71,7 @@ export function SeatColourButton({ player, playing }: { player: number; playing:
             label={`Player ${player + 1}'s colour`}
             unavailable={(colour) => {
               const refusal = tableColourRefusal(player, colour, marbles, playing);
-              return refusal === null ? null : tableRefusalWords(refusal);
+              return refusal === null ? null : tableRefusalWords(refusal, say);
             }}
             testId="set-up-seat-colour-picker"
           />

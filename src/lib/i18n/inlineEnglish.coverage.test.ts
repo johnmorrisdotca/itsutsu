@@ -35,13 +35,8 @@ import {
  * Nothing here reads the clock, the network or a database.
  */
 const RECORDED = [
-  // ENJA-05, game copy tables: every game's rules, tagline, openings, bots and family names
-  "src/lib/learn/rulesPage.ts",
-  "src/lib/learn/rulesPage.checkers.ts",
+  // ENJA-05, game copy tables: every game's rules, tagline, openings, bots and family names. Each folder here holds only what is left of it: the games', openings', bots' and families' own words are done, beside their Japanese.
   "src/lib/gomoku",
-  "src/lib/bots",
-  "src/lib/pieces",
-  "src/lib/catalogue",
   "src/lib/famous",
   "src/app/games",
   // ENJA-06, set-up screen, game screen and every ending

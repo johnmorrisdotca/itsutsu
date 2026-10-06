@@ -22,9 +22,11 @@ import { EVERY_GAME_KEY, gameCopyFor, isCasualKind, isPartyKind, isPuzzleKind } 
 import { CasualLine } from "@/components/casual/CasualLine";
 import { PartyLine } from "@/components/party/PartyLine";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
-import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
+import { rulesAttribution } from "@/lib/gomoku/attributionCopy";
 import { shelfCountWords } from "@/lib/gomoku/families";
 import { familyPath } from "@/lib/gomoku/slugs";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
+import type { Locale } from "@/lib/i18n/i18n.types";
 
 import { FamilyFold } from "@/components/games/FamilyFold";
 import { familyOpenAt, isFamilyFoldKey, type FamilyFoldKey, type KeptFolds } from "@/lib/catalogue/familyFolds";
@@ -49,6 +51,7 @@ export function GameCatalogue({
   signedIn,
   folds = {},
   keepsFolds = false,
+  locale = DEFAULT_LOCALE,
 }: {
   view: CatalogueView;
   families: CatalogueFamily[];
@@ -67,6 +70,8 @@ export function GameCatalogue({
    * its board for a member and the door for anybody else.
    */
   signedIn: boolean;
+  /** The reader's language: a game's tagline is read in it. */
+  locale?: Locale;
 }) {
   return (
     <section className="flex flex-col gap-4" data-testid="game-catalogue">
@@ -75,7 +80,7 @@ export function GameCatalogue({
       {view === CATALOGUE_VIEWS.cards ? (
         // The filters read the query on the client, so they render once that is known.
         <Suspense>
-          <GameCards cards={CARDS} stats={stats} signedIn={signedIn} />
+          <GameCards cards={cardsFor(locale)} stats={stats} signedIn={signedIn} />
         </Suspense>
       ) : null}
       {view === CATALOGUE_VIEWS.families ? <Families families={families} stats={stats} signedIn={signedIn} folds={folds} keepsFolds={keepsFolds} /> : null}
@@ -91,7 +96,7 @@ export function GameCatalogue({
         IS the catalogue, in all three of its arrangements.
       */}
       <section className="flex flex-col gap-2 text-xs text-muted" data-testid="rules-attribution">
-        {RULES_ATTRIBUTION.map((paragraph) => (
+        {rulesAttribution(locale).map((paragraph) => (
           <p key={paragraph.slice(0, 24)}>{paragraph}</p>
         ))}
       </section>
@@ -273,17 +278,29 @@ function FamilyGameCard({
  * `kind` comes off the spec rather than being written down a second time, so
  * the bar that narrows by "what wins" cannot drift from what actually wins.
  */
-const CARDS: GameCard[] = EVERY_GAME_KEY.map((variant) => {
-  const copy = gameCopyFor(variant);
-  // A puzzle is won by nothing: it is solved. Its kind is its own chip on the bar.
-  const kind: GameCardKind = isPuzzleKind(variant)
-    ? "puzzle"
-    : isPartyKind(variant)
-    ? "party"
-    : isCasualKind(variant)
-    ? "casual"
-    : VARIANT_SPECS[variant].flips
-      ? "flips"
-      : (String(VARIANT_SPECS[variant].winLength ?? 5) as GameCardKind);
-  return { variant, label: copy.label, kanji: copy.kanji, tagline: copy.tagline, inspiredBy: copy.inspiredBy, kind };
-});
+const CARDS_BY_LOCALE = new Map<Locale, GameCard[]>();
+
+function cardsFor(locale: Locale): GameCard[] {
+  const made = CARDS_BY_LOCALE.get(locale);
+  if (made !== undefined) return made;
+  const cards = buildCards(locale);
+  CARDS_BY_LOCALE.set(locale, cards);
+  return cards;
+}
+
+function buildCards(locale: Locale): GameCard[] {
+  return EVERY_GAME_KEY.map((variant) => {
+    const copy = gameCopyFor(variant, locale);
+    // A puzzle is won by nothing: it is solved. Its kind is its own chip on the bar.
+    const kind: GameCardKind = isPuzzleKind(variant)
+      ? "puzzle"
+      : isPartyKind(variant)
+      ? "party"
+      : isCasualKind(variant)
+      ? "casual"
+      : VARIANT_SPECS[variant].flips
+        ? "flips"
+        : (String(VARIANT_SPECS[variant].winLength ?? 5) as GameCardKind);
+    return { variant, label: copy.label, kanji: copy.kanji, tagline: copy.tagline, inspiredBy: copy.inspiredBy, kind };
+  });
+}

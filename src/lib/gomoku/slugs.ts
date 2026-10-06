@@ -92,8 +92,11 @@ export function variantFor(slug: string): RuleVariant | null {
  * two. And every party game's one table (`PARTY_KIND_LIST`), Dots and Boxes
  * for two to six, which has no board for two to be beside.
  */
+/** The address segment of a table played round one device. */
+const PASS_AND_PLAY_SEGMENT = "pass-and-play";
+
 export function passAndPlayPath(variant: string): string {
-  return `${gamePath(variant)}/pass-and-play`;
+  return `${gamePath(variant)}/${PASS_AND_PLAY_SEGMENT}`;
 }
 
 /**

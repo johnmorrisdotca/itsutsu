@@ -22,6 +22,8 @@ import { gamePath, rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { fixedOpener } from "@/lib/gomoku/rules/creation";
 import { draftRatingRefusal } from "@/lib/rating/handicapRefusal";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantCopy } from "@/lib/gomoku/variantCopy";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 import { GameTrail } from "@/components/games/GameTrail";
 
 export const dynamic = "force-dynamic";
@@ -192,7 +194,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
         ? { kind: "draw", body: creation.body, pool }
         : { kind: "create", body: creation.body };
 
-  const copy = RULE_VARIANT_DISPLAY[variant];
+  const copy = variantCopy(variant, await currentLocale());
   /*
    * Why the address could not be honoured in full. `setUpFrom`'s own problem
    * first — a rematch of a swept game, a fork past the end of one — then a posted

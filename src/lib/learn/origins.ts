@@ -12,6 +12,9 @@
  * than a gap: there is no country that Ring Drop is from.
  */
 
+import { DEFAULT_LOCALE } from "../i18n/i18n.constants";
+import type { Locale } from "../i18n/i18n.types";
+
 /** The countries any of these games actually come from. ISO 3166-1 alpha-2. */
 export type CountryCode = "BR" | "CA" | "CN" | "DE" | "DK" | "FR" | "GB" | "JP" | "KR" | "NL" | "RU" | "TW" | "US" | "VN";
 
@@ -30,6 +33,29 @@ export const COUNTRY_NAMES: Record<CountryCode, string> = {
   TW: "Taiwan",
   US: "the United States",
   VN: "Vietnam",
+};
+
+/**
+ * The same countries as a Japanese reader names them. Each is the name a
+ * Japanese atlas uses; `GB` is "England" in English here because that is the
+ * country the games came from, and イングランド is the same country.
+ * Read by the reviewer agent 2026-10-06 (ENJA-05).
+ */
+export const COUNTRY_NAMES_JA: Record<CountryCode, string> = {
+  BR: "ブラジル",
+  CA: "カナダ",
+  CN: "中国",
+  DE: "ドイツ",
+  DK: "デンマーク",
+  FR: "フランス",
+  GB: "イングランド",
+  JP: "日本",
+  KR: "韓国",
+  NL: "オランダ",
+  RU: "ロシア",
+  TW: "台湾",
+  US: "アメリカ合衆国",
+  VN: "ベトナム",
 };
 
 const FIRST_INDICATOR = 0x1f1e6;
@@ -52,9 +78,9 @@ export function flagFor(code: CountryCode): string {
 /** Where a game came from, ready to print. */
 export type Origin = { code: CountryCode; country: string; flag: string };
 
-export function originFor(code: CountryCode | undefined): Origin | null {
+export function originFor(code: CountryCode | undefined, locale: Locale = DEFAULT_LOCALE): Origin | null {
   if (code === undefined) return null;
-  return { code, country: COUNTRY_NAMES[code], flag: flagFor(code) };
+  return { code, country: (locale === "ja" ? COUNTRY_NAMES_JA : COUNTRY_NAMES)[code], flag: flagFor(code) };
 }
 
 /**

@@ -1,6 +1,9 @@
 import { LocalTime } from "@/components/ui/LocalTime";
 import { OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantCopy } from "@/lib/gomoku/variantCopy";
+import { openingCopy } from "@/lib/gomoku/openingCopy";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -49,7 +52,7 @@ import { describeHeadStart } from "@/lib/gomoku/headStartWords";
  * was agreed, what is about to be played and what is being played are one set of
  * words in three places rather than three descriptions that can drift.
  */
-export function SharedRules({
+export async function SharedRules({
   game,
   refusal,
 }: {
@@ -63,7 +66,8 @@ export function SharedRules({
   refusal: RatingRefusal | null;
 }) {
   const variant = game.variant as RuleVariant;
-  const copy = RULE_VARIANT_DISPLAY[variant];
+  const locale = await currentLocale();
+  const copy = RULE_VARIANT_DISPLAY[variant] === undefined ? undefined : variantCopy(variant, locale);
   const handicap = describeHandicap(game.handicap);
   const headStart = describeHeadStart(game);
 
@@ -107,7 +111,7 @@ export function SharedRules({
       <MoreSettings summary={describeSettings(game, refusal)}>
         {copy !== undefined ? <p className="text-xs text-muted">{copy.tagline}</p> : null}
         {game.opening !== OPENING_RULES.free && game.opening in OPENING_DISPLAY ? (
-          <p className="text-xs text-muted">{OPENING_DISPLAY[game.opening as OpeningRule].tagline}</p>
+          <p className="text-xs text-muted">{openingCopy(game.opening as OpeningRule, locale).tagline}</p>
         ) : null}
         {headStart !== null ? (
           <p className="text-xs text-muted" data-testid="shared-head-start-line">

@@ -96,7 +96,8 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
   const variant = puzzle === null && party === null && casual === null ? variantFor(slug) : null;
   if (puzzle === null && party === null && casual === null && variant === null) notFound();
   const key = puzzle ?? party ?? casual ?? variant!;
-  const page = puzzle !== null ? puzzleRulesPage(puzzle) : party !== null ? partyRulesPage(party) : casual !== null ? casualRulesPage(casual) : rulesPageFor(variant!);
+  const say = await currentSpeaker();
+  const page = puzzle !== null ? puzzleRulesPage(puzzle) : party !== null ? partyRulesPage(party) : casual !== null ? casualRulesPage(casual) : rulesPageFor(variant!, say);
   // A game's strategy guides; the cube's method, which is a guide of its own (`/learn/cube`).
   const guides =
     variant !== null
@@ -104,7 +105,6 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
       : puzzle === "cube"
         ? [{ href: "/learn/cube", title: CUBE_GUIDE_COPY.title, summary: CUBE_GUIDE_COPY.lead }]
         : [];
-  const say = await currentSpeaker();
   /*
    * The game's own name. It has no dictionary entry and wants none — a name
    * is not translated — but the site already carries its Japanese in the

@@ -6,6 +6,8 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
+import { botProfile } from "@/lib/gomoku/botCopy";
+import type { Locale } from "@/lib/i18n/i18n.types";
 import { shownName } from "@/lib/rating/shownName";
 
 import Link from "@/components/ui/Link";
@@ -262,7 +264,7 @@ function Run({
       </span>
       <div id={grid} className={PICK_PEOPLE}>
         {run.visible.map((tile) => (
-          <Tile key={tile.value} {...tileWords(tile, variant)} shown={shown} disabled={disabled} onChange={onChange} />
+          <Tile key={tile.value} {...tileWords(tile, variant, speaker.locale)} shown={shown} disabled={disabled} onChange={onChange} />
         ))}
       </div>
       {run.capped ? (
@@ -295,7 +297,7 @@ function Run({
       */}
       {program?.tier != null ? (
         <span className="text-xs leading-snug text-muted" data-testid="set-up-opponent-hint">
-          {BOT_PROFILES[program.tier].blurb}
+          {botProfile(program.tier, speaker.locale).blurb}
         </span>
       ) : null}
     </div>
@@ -348,11 +350,11 @@ function Run({
               <SeatMark kind={mine.computer ? "computer" : "person"} size="small">
                 {markLetter(mine)}
               </SeatMark>
-              <span className="truncate">{tileWords(mine, variant).title}</span>
+              <span className="truncate">{tileWords(mine, variant, speaker.locale).title}</span>
             </span>
-            {tileWords(mine, variant).line === null ? null : (
+            {tileWords(mine, variant, speaker.locale).line === null ? null : (
               <span className="text-xs leading-snug font-normal text-muted" data-testid="set-up-opponent-strength">
-                {tileWords(mine, variant).line}
+                {tileWords(mine, variant, speaker.locale).line}
               </span>
             )}
           </span>
@@ -378,9 +380,9 @@ function markLetter(tile: OpponentTile): string {
 }
 
 /** A tile's picture and words, from who it is and which game is being set up. */
-function tileWords(tile: OpponentTile, variant: string) {
+function tileWords(tile: OpponentTile, variant: string, locale: Locale) {
   const shownAs = tile.computer ? tile.name : shownName(tile.name);
-  const profile = tile.tier === null ? null : BOT_PROFILES[tile.tier];
+  const profile = tile.tier === null ? null : botProfile(tile.tier, locale);
   const random = tile.value === RANDOM_COMPUTER;
   const initial = markLetter(tile);
   return {

@@ -78,13 +78,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
  * one is a decision the test refuses.
  */
 export const PENDING_PATHS = [
-  // ENJA-05, game copy tables: every game's rules, tagline, openings, bots and family names
-  { path: "src/lib/learn/rulesPage.ts", ticket: "ENJA-05" },
-  { path: "src/lib/learn/rulesPage.checkers.ts", ticket: "ENJA-05" },
+  // ENJA-05, game copy tables: every game's rules, tagline, openings, bots and family names. Each folder here holds only what is left of it: the games', openings', bots' and families' own words are done, beside their Japanese.
   { path: "src/lib/gomoku", ticket: "ENJA-05" },
-  { path: "src/lib/bots", ticket: "ENJA-05" },
-  { path: "src/lib/pieces", ticket: "ENJA-05" },
-  { path: "src/lib/catalogue", ticket: "ENJA-05" },
   { path: "src/lib/famous", ticket: "ENJA-05" },
   { path: "src/app/games", ticket: "ENJA-05" },
   // ENJA-06, set-up screen, game screen and every ending
@@ -214,6 +209,27 @@ export const ALLOWED_FILES = new Map([
   ["src/lib/xp/xpBoard.sort.ts", "a sort spec's column labels and notes, which `paging.ts` only checks are not empty; the board's headings are phrases"],
   ["src/lib/xp/xpHistory.sort.ts", "a sort spec's column label, as xpBoard.sort.ts"],
   ["src/lib/points/ladderSql.ts", "a SQL fragment the database runs, not language"],
+  /*
+   * THE ENGLISH HALF OF A PAIR. A game's own words are a table of English beside
+   * a sibling table of Japanese (`Record<…>` each), so the English row is not an
+   * English sentence left out of the phrase table: it is one language of two. The
+   * Japanese lives under src/lib/i18n/dictionaries/ and is held by
+   * `variants.coverage.test.ts` and `gameCopyJa.coverage.test.ts`, which fail for a
+   * game, opening, computer player, family or shelf with no Japanese beside it.
+   */
+  ["src/lib/gomoku/variants.constants.ts", "the English half of every game's words; the Japanese is variants.ja.*.constants.ts, held by variants.coverage.test.ts"],
+  ["src/lib/gomoku/openings.constants.ts", "the English half of the openings, handicap switches and attribution; the Japanese is openings.ja.constants.ts and attribution.ja.constants.ts, held by variants.coverage.test.ts and gameCopyJa.coverage.test.ts"],
+  ["src/lib/gomoku/opponent.constants.ts", "the English half of the graded computer players' profiles; the Japanese is bots.ja.constants.ts. The measured ladder's fingerprint hashes this file (ladderFingerprint.ts), so it is never edited to translate it"],
+  ["src/lib/gomoku/opponentSpecialists.constants.ts", "the English half of the specialist computer players' profiles; the Japanese is bots.ja.constants.ts, held by gameCopyJa.coverage.test.ts"],
+  ["src/lib/gomoku/families.data.ts", "the English half of the families' blurbs; the Japanese is families.ja.constants.ts, held by gameCopyJa.coverage.test.ts (a family's Japanese name is its kanji)"],
+  ["src/lib/gomoku/familyShelves.ts", "the English half of the reasons a game is also shelved elsewhere; the Japanese is families.ja.constants.ts, held by gameCopyJa.coverage.test.ts"],
+  ["src/lib/bots/bots.constants.ts", "the English half of the computer players' bios; the Japanese is bots.ja.constants.ts, held by gameCopyJa.coverage.test.ts"],
+  ["src/lib/bots/botNames.ts", "country names that key a flag lookup, the same strings a member types into their profile: names, not sentences"],
+  ["src/lib/catalogue/openSource.ts", "the names of this site's own open-source packages (Narabe, Kazu, Hitotsu…): names, not sentences"],
+  ["src/lib/pieces/pieceColours.ts", "colour names, each an English label beside its own kanji (深紅, 朱, 琥珀…), which a Japanese reader is shown instead of the label (Speaker.pairName); and the one CSS gradient string"],
+  ["src/lib/catalogue/gameSettings.ts", "language and word-list names, each an English label beside its own name in Japanese (英語, 仏語, 独語, かな, 日常, ポップ) that a Japanese reader is shown instead"],
+  ["src/lib/catalogue/gamesTabs.ts", "the catalogue's tab names, each an English label beside its own kanji (学び, 名局, 賽) that a Japanese reader is shown instead"],
+  ["src/lib/famous/famousGames.data.ts", "the names of players, events and places exactly as the sources record them, and the games' moves: a record, not the site's own sentences"],
 ]);
 
 /**

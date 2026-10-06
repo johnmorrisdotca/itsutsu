@@ -1,3 +1,4 @@
+import type { Speaker } from "../i18n/i18n";
 import { blend, distance, shade } from "./colourMath";
 
 /**
@@ -120,4 +121,14 @@ export function nextFreeColour(wanted: PieceColour, others: readonly string[]): 
     if (!others.some((other) => tooAlike(PIECE_COLOURS[colour].flat, other))) return colour;
   }
   return null;
+}
+
+/**
+ * "<colour> is free.", said after a refusal: the colour by its English label, or
+ * by its kanji, which is its name to a Japanese reader. English joins a second
+ * sentence with a space and Japanese does not.
+ */
+export function offerWords(colour: PieceColour, say: Speaker): string {
+  const name = say.pairName(PIECE_COLOURS[colour].label, PIECE_COLOURS[colour].kanji).text;
+  return `${say.locale === "ja" ? "" : " "}${say.say("pieces.refusal.free", { colour: name })}`;
 }

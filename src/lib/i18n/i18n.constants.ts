@@ -11,6 +11,8 @@ import { PHRASES_CATALOGUE } from "./phrases.catalogue.constants";
 import { PHRASES_FEED } from "./phrases.feed.constants";
 import { PHRASES_COUNT } from "./phrases.count.constants";
 import { PHRASES_POINTS } from "./phrases.points.constants";
+import { PHRASES_RULESPAGE } from "./phrases.rulespage.constants";
+import { PHRASES_PIECES } from "./phrases.pieces.constants";
 
 /**
  * The languages the site knows about, and the English it speaks in by default.
@@ -111,6 +113,8 @@ export const PHRASE_AREAS = {
   feed: PHRASES_FEED,
   count: PHRASES_COUNT,
   points: PHRASES_POINTS,
+  rulespage: PHRASES_RULESPAGE,
+  pieces: PHRASES_PIECES,
 } as const;
 
 /**
@@ -152,6 +156,8 @@ export const PHRASES = {
   ...PHRASES_FEED,
   ...PHRASES_COUNT,
   ...PHRASES_POINTS,
+  ...PHRASES_RULESPAGE,
+  ...PHRASES_PIECES,
 } as const;
 
 /** A phrase the site can say. */

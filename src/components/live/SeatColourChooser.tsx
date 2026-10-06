@@ -9,6 +9,7 @@ import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { PIECE_COLOURS, type PieceColour } from "@/lib/pieces/pieceColours";
 import { refusalWords, seatColourRefusal, type SeatColours } from "@/lib/pieces/seatColours";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { rememberPieceColour } from "./rememberPieceColour";
 
@@ -49,6 +50,7 @@ export function SeatColourChooser({
   saves: boolean;
   onChanged: (colours: SeatColours) => void;
 }) {
+  const say = useSpeaker();
   const [problem, setProblem] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const side = STONE_DISPLAY[seat];
@@ -107,7 +109,7 @@ export function SeatColourChooser({
         label={`Your colour, playing ${side.label}`}
         unavailable={(colour) => {
           const refusal = seatColourRefusal(seat, colour, colours);
-          return refusal === null ? null : refusalWords(refusal);
+          return refusal === null ? null : refusalWords(refusal, say);
         }}
         disabled={busy}
         testId="seat-colour-picker"
