@@ -43,15 +43,18 @@ test.describe("the 32×32 Jirai", () => {
     test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
     test("opens zoomed on its middle's side of the board, moves and fits back, and the page never scrolls sideways", async ({ page }) => {
-      await page.goto(`${AT}/play?size=32&level=hard&seed=${freshPuzzleSeed()}`);
+      const seed = freshPuzzleSeed();
+      await page.goto(`${AT}/play?size=32&level=hard&seed=${seed}`);
       await ready(page, "puzzle-play");
       await expect(page.getByTestId("jirai-cell")).toHaveCount(1024);
       const view = page.getByTestId("jirai-viewport");
       await expect(view).toHaveAttribute("data-zoom", "3.00");
       // It opens on the middle of the field, where the opening is uncovered, not on a corner of covered squares.
-      const code = await codeOf(page);
-      const opened = code.indexOf("0");
-      expect(opened).toBeGreaterThanOrEqual(0);
+      // The square it opens on is the one the board was first opened at (`first` in the board's recipe), which is
+      // uncovered: the lowest-numbered zero is not it, since an opening can spread a long way up and to the left of it.
+      const opened = Number(generatePuzzle("jirai", 32, "hard", seed).givens.split(":")[5]);
+      expect(Number.isInteger(opened)).toBe(true);
+      expect((await codeOf(page))[opened]).toBe("0");
       const box = (await view.boundingBox())!;
       const middle = (await square(page, opened).boundingBox())!;
       expect(middle.x).toBeGreaterThanOrEqual(box.x - 1);
