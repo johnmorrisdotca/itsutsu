@@ -13,6 +13,7 @@ import { clueDepth, metLines, nextState, painted, runBetween } from "./paint";
 import { drawPicture, drawScene } from "./picture";
 import type { CellState, PictureClues } from "./pictureLogic.types";
 import { levelOf, solutionOf, solveClues } from "./solve";
+import { cpuNow } from "@/lib/testing/cpuTime";
 
 /** A picture drawn row by row, "#" shaded. */
 const picture = (...rows: string[]) => rows.join("").split("").map((char) => char === "#");
@@ -157,9 +158,9 @@ describe("the two biggest boards, 40×40 and 50×50", () => {
 
   it("made for a hard they do not offer, are the medium, and made as quickly as any", () => {
     for (const size of BIG) {
-      const started = performance.now();
+      const started = cpuNow();
       const made = generatePictureLogic(size, "hard", 5);
-      expect(performance.now() - started).toBeLessThan(2000);
+      expect(cpuNow() - started).toBeLessThan(2000);
       expect(solveClues(decodeClues(made.givens, size)!, "medium")?.level).toBe("medium");
     }
   });
@@ -178,9 +179,9 @@ describe("the two biggest boards, 40×40 and 50×50", () => {
   it("are made in a browser's time: every seed, both levels, well under a second on this machine", () => {
     for (const size of BIG) {
       for (const level of ["easy", "medium"] as const) {
-        const started = performance.now();
+        const started = cpuNow();
         for (let seed = 100; seed < 120; seed += 1) generatePictureLogic(size, level, seed);
-        const each = (performance.now() - started) / 20;
+        const each = (cpuNow() - started) / 20;
         expect(each, `${size} ${level}`).toBeLessThan(500);
       }
     }
@@ -188,9 +189,9 @@ describe("the two biggest boards, 40×40 and 50×50", () => {
 
   it("are checked by the server in one pass over the 2,500 squares, and a wrong square is refused", () => {
     const made = generatePictureLogic(50, "medium", 12);
-    const started = performance.now();
+    const started = cpuNow();
     for (let again = 0; again < 20; again += 1) expect(checkSolution("pictureLogic", 50, made.givens, made.solution, "medium")).toEqual({ ok: true });
-    expect((performance.now() - started) / 20).toBeLessThan(25);
+    expect((cpuNow() - started) / 20).toBeLessThan(25);
     const flipped = made.solution.slice(0, 1250) + (made.solution[1250] === "#" ? "." : "#") + made.solution.slice(1251);
     expect(checkSolution("pictureLogic", 50, made.givens, flipped, "medium").ok).toBe(false);
     expect(progressFits("pictureLogic", 50, "x".repeat(2500))).toBe(true);

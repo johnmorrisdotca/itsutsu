@@ -14,3 +14,9 @@ export function cpuMs(work: () => void): number {
   const used = process.cpuUsage(before);
   return (used.user + used.system) / 1000;
 }
+
+/** This process's CPU so far, in milliseconds: read it before and after a piece of work, as `performance.now()` would be, to time the work and not the machine. */
+export function cpuNow(): number {
+  const used = process.cpuUsage();
+  return (used.user + used.system) / 1000;
+}

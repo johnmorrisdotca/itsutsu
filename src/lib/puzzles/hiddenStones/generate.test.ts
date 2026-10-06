@@ -4,7 +4,7 @@ import { PUZZLE_SPECS } from "../puzzles.constants";
 import { decodeRegions, decodeStones, encodeRegions, encodeStones } from "./code";
 import { generateHiddenStones } from "./generate";
 import { applyReasoning, countSolutions, guessDepth } from "./solve";
-import { cpuMs } from "@/lib/testing/cpuTime";
+import { cpuMs, cpuNow } from "@/lib/testing/cpuTime";
 
 /** Two grids as they were made before 12×12 was climbed: sizes up to ten must go on making exactly these. */
 const PINNED_7_EASY = "ccbbbbaccbcbbbccccbddecccbddeeecdddfeeddggffggggg";
@@ -72,7 +72,7 @@ describe("generating Hidden Stones", () => {
   });
 
   it("climbs a 12×12 to one answer at each level, in the time a browser can spare", () => {
-    const started = performance.now();
+    const started = cpuNow();
     for (const seed of [31, 32, 33]) {
       const easy = generateHiddenStones(12, "easy", seed);
       const easyRegions = decodeRegions(easy.givens, 12)!;
@@ -84,7 +84,7 @@ describe("generating Hidden Stones", () => {
       expect(decodeStones(hard.solution, 12)).not.toBeNull();
     }
     // Six grids; measured at about a third of a second each on their own, so four seconds leaves the gate's parallel lanes room.
-    expect((performance.now() - started) / 6).toBeLessThan(4000);
+    expect((cpuNow() - started) / 6).toBeLessThan(4000);
   });
 
   it("makes the grid it always made at the sizes up to ten, so a seed already played is the same puzzle", () => {

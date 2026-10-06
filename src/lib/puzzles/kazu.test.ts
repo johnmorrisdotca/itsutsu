@@ -9,6 +9,7 @@ import { decodeCells, encodeCells, puzzleHash, symbolOf, valueOfSymbol } from ".
 import { seededRandom } from "./random";
 import { PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "./puzzles.constants";
 import { solvedAnswerOf } from "./solvedAnswer";
+import { cpuNow } from "@/lib/testing/cpuTime";
 
 const NUMBER_KINDS: readonly NumberKind[] = ["numberPlace", "jigsaw", "diagonal", "sumCages", "moreOrLess", "towers"];
 
@@ -102,29 +103,29 @@ describe("every Numbers puzzle is a puzzle: one answer, the level's reasoning, a
   }
 
   it("makes a hard 9×9 and a hard 16×16 in the time a browser can spare", () => {
-    const started = performance.now();
+    const started = cpuNow();
     for (const seed of [11, 12, 13]) generateNumberPlace(9, "hard", seed);
-    expect((performance.now() - started) / 3).toBeLessThan(1500);
-    const big = performance.now();
+    expect((cpuNow() - started) / 3).toBeLessThan(1500);
+    const big = cpuNow();
     for (const seed of [21, 22, 23]) {
       const puzzle = generateNumberPlace(16, "hard", seed);
       expect(checkSolution("numberPlace", 16, puzzle.givens, puzzle.solution)).toEqual({ ok: true });
     }
-    expect((performance.now() - big) / 3).toBeLessThan(1500);
+    expect((cpuNow() - big) / 3).toBeLessThan(1500);
   });
 });
 
 describe("the 25×25 Colossus", () => {
   it("is made at every level in a browser's time, and the server's check of its 625 cells takes a few milliseconds", () => {
     for (const level of PUZZLE_LEVEL_LIST) {
-      const started = performance.now();
+      const started = cpuNow();
       const puzzle = generateNumberPlace(25, level, 3);
       // Measured at 13 ms easy, 81 ms medium and 300 ms hard on average; the bound is for a busy runner (a phone is a few times slower).
-      expect(performance.now() - started, `${level} generation`).toBeLessThan(level === "hard" ? 6000 : 2000);
+      expect(cpuNow() - started, `${level} generation`).toBeLessThan(level === "hard" ? 6000 : 2000);
       expect(puzzle.givens).toHaveLength(625);
-      const check = performance.now();
+      const check = cpuNow();
       for (let again = 0; again < 20; again += 1) expect(checkSolution("numberPlace", 25, puzzle.givens, puzzle.solution, level)).toEqual({ ok: true });
-      expect((performance.now() - check) / 20, `${level} check`).toBeLessThan(50);
+      expect((cpuNow() - check) / 20, `${level} check`).toBeLessThan(50);
       expect(puzzle.solution).toMatch(/[H-P]/);
     }
   });

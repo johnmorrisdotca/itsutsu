@@ -7,6 +7,7 @@ import { boardOf, bridgesAt, decodeBridges, encodeBridges, spanBetween, spanTowa
 import { generateBridges } from "./generate";
 import { bridgeHint, bridgesChecked, bridgesWrong } from "./help";
 import { countSolutions, glance, levelOf, openOptions, settled, solutionOf } from "./solve";
+import { cpuNow } from "@/lib/testing/cpuTime";
 
 /**
  * Two little boards worked by hand, drawn row by row.
@@ -136,9 +137,9 @@ describe("generating Bridges", () => {
   it("makes the three biggest in a browser's time, at every level, over whatever seeds it is given", () => {
     for (const size of [17, 21, 25]) {
       for (const level of PUZZLE_LEVEL_LIST) {
-        const started = performance.now();
+        const started = cpuNow();
         for (let seed = 200; seed < 210; seed += 1) generateBridges(size, level, seed);
-        expect((performance.now() - started) / 10, `${size}×${size} ${level}`).toBeLessThan(500);
+        expect((cpuNow() - started) / 10, `${size}×${size} ${level}`).toBeLessThan(500);
       }
     }
   });
@@ -146,17 +147,17 @@ describe("generating Bridges", () => {
   it("is checked by the server in one pass over a 25×25's 625 cells", () => {
     const puzzle = generateBridges(25, "medium", 12);
     expect(PUZZLE_SPECS.bridges.mostCells).toBeGreaterThanOrEqual(puzzle.givens.length);
-    const started = performance.now();
+    const started = cpuNow();
     for (let again = 0; again < 20; again += 1) expect(checkBridges(25, puzzle.givens, puzzle.solution)).toEqual({ ok: true });
-    expect((performance.now() - started) / 20).toBeLessThan(10);
+    expect((cpuNow() - started) / 20).toBeLessThan(10);
     const board = boardOf(puzzle.givens, 25)!;
     expect(board.islands.length).toBeGreaterThan(80);
   });
 
   it("makes a hard 13×13 in the time a browser can spare", () => {
-    const started = performance.now();
+    const started = cpuNow();
     for (const seed of [31, 32, 33, 34, 35]) generateBridges(13, "hard", seed);
-    expect((performance.now() - started) / 5).toBeLessThan(500);
+    expect((cpuNow() - started) / 5).toBeLessThan(500);
   });
 });
 

@@ -13,6 +13,7 @@ import { solvedAnswerOf } from "../solvedAnswer";
 import { boardOf, checkSuido, suidoPieces } from "./check";
 import { generateSuido } from "./generate";
 import { freshSuidoSeed, suidoKindOfSeed } from "./seed";
+import { cpuNow } from "@/lib/testing/cpuTime";
 
 /** A seed that makes a network: in the block `NETWORK_SEED_BLOCK` keeps for them. */
 const NETWORK = 1_700_000_005;
@@ -126,9 +127,9 @@ describe("suido: kept, scored and addressed", () => {
 
   it("makes every size and level quickly enough for a phone, the hardest of them under a second", () => {
     for (const size of PUZZLE_SPECS.suido.sizes) {
-      const started = performance.now();
+      const started = cpuNow();
       generateSuido(size, "hard", 4242);
-      expect(performance.now() - started, `${size}×${size} hard`).toBeLessThan(1000);
+      expect(cpuNow() - started, `${size}×${size} hard`).toBeLessThan(1000);
     }
   });
 });

@@ -5,6 +5,7 @@ import { PUZZLE_LEVEL_LIST, PUZZLE_SPECS } from "../puzzles.constants";
 import { BLACK, decodeBlackAndWhite, EMPTY, encodeBlackAndWhite, linesOf, WHITE } from "./code";
 import { generateBlackAndWhite } from "./generate";
 import { applySingles, countSolutions, guessDepth } from "./solve";
+import { cpuNow } from "@/lib/testing/cpuTime";
 
 /** The rules restated for the test, independent of the solver: half each, no three alike, no line repeated. */
 function keepsTheRules(cells: readonly number[], size: number): boolean {
@@ -66,9 +67,9 @@ describe("generating Black and White", () => {
   });
 
   it("makes a hard 12×12 in the time a browser can spare", () => {
-    const started = performance.now();
+    const started = cpuNow();
     for (const seed of [31, 32, 33]) generateBlackAndWhite(12, "hard", seed);
-    expect((performance.now() - started) / 3).toBeLessThan(4000);
+    expect((cpuNow() - started) / 3).toBeLessThan(4000);
   });
 });
 

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { JOURNEY_ROLES, JOURNEY_TOTAL_PLAYERS } from "./journeyRoles.constants";
 import { runJourneySimulation } from "./journeys";
 import type { RoleSummary } from "./journeys.types";
+import { cpuNow } from "@/lib/testing/cpuTime";
 
 function roleSummary(roles: readonly RoleSummary[], key: string): RoleSummary {
   const found = roles.find((r) => r.role.key === key);
@@ -43,9 +44,9 @@ describe("runJourneySimulation", () => {
    */
   it("runs well under a second once warmed, with headroom for a busy shared machine", () => {
     runJourneySimulation(1);
-    const started = performance.now();
+    const started = cpuNow();
     runJourneySimulation(1);
-    const elapsed = performance.now() - started;
+    const elapsed = cpuNow() - started;
     expect(elapsed).toBeLessThan(8000);
   });
 

@@ -6,6 +6,7 @@ import { decodeCubeProgress, encodeCubeProgress, progressFits } from "../puzzleP
 
 import { CUBE_MOVES_MOST, checkCube } from "./check";
 import { CUBE_SIZES, SCRAMBLE_LENGTHS, cubeOfSeed, generateCube, scrambleOf } from "./generate";
+import { cpuNow } from "@/lib/testing/cpuTime";
 
 describe("a cube made from a seed", () => {
   it.each(CUBE_SIZES)("is scrambled as far as its level says, the same every time, on the %i×%i", (size) => {
@@ -35,9 +36,9 @@ describe("the biggest cubes, 6×6 and 7×7", () => {
     const answer = `${wandering}${cube.solution}`;
     expect(answer.length).toBeGreaterThan(21_000);
     expect(answer.length).toBeLessThanOrEqual(CUBE_MOVES_MOST);
-    const started = performance.now();
+    const started = cpuNow();
     expect(checkCube(7, cube.givens, answer)).toEqual({ ok: true });
-    expect(performance.now() - started).toBeLessThan(2000);
+    expect(cpuNow() - started).toBeLessThan(2000);
     expect(progressFits("cube", 7, answer)).toBe(true);
     // And one turn too many to be kept is refused.
     expect(checkCube(7, cube.givens, `${answer}${"x01".repeat(Math.ceil((CUBE_MOVES_MOST - answer.length) / 3) + 1)}`).ok).toBe(false);
