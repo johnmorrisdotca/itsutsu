@@ -5,6 +5,13 @@ Italian, Japanese, Mongolian, Russian, Spanish, Swedish, Turkish and
 Vietnamese. "I think we should aim to support all these languages too."
 
 Row: `plan-the-eleven-more-languages-vint-ee-offers-from-russian-and-estonian-to-vietn`.
+**Waits on `docs/plans/en-ja-everywhere/` (John, 2026-10-06): every word on
+Itsutsu and UmaKuma in English and Japanese first, then the next language.**
+That plan makes a new language a full translation instead of a frame, and its
+ENJA-15 skill is how each language below is added. For Japanese, the reader
+who signs off is now the `japanese-reviewer` agent; every other language here
+still needs a person.
+
 This is a plan, not a build. **The rule the Japanese work set holds for every
 language here: nothing ships without a reader who can sign it off.**
 
