@@ -42,16 +42,16 @@ const MATCH = [
 
 /** Every file that draws a page under a game, by route: the page itself where it draws its own. */
 const TRAIL_DRAWN_BY: Record<string, readonly string[]> = {
-  "/games/[slug]": ["src/app/games/[slug]/page.tsx", "src/components/puzzles/PuzzleFrontDoor.tsx", "src/components/party/PartyFrontDoor.tsx"],
+  "/games/[slug]": ["src/app/games/[slug]/page.tsx", "src/components/puzzles/PuzzleFrontDoor.tsx", "src/components/party/PartyFrontDoor.tsx", "src/components/casual/CasualFrontDoor.tsx", "src/components/casual/CasualFamilyPage.tsx"],
   "/games/[slug]/rules": ["src/app/games/[slug]/rules/page.tsx"],
   "/games/[slug]/family": ["src/app/games/[slug]/family/page.tsx"],
   "/games/[slug]/background": ["src/app/games/[slug]/background/page.tsx"],
   "/games/[slug]/standings": ["src/app/games/[slug]/standings/page.tsx", "src/components/puzzles/PuzzleStandingsPage.tsx"],
   "/games/[slug]/daily": ["src/components/puzzles/DailyArchivePage.tsx"],
   "/games/[slug]/daily/[day]": ["src/components/puzzles/DailyDayPage.tsx"],
-  "/games/[slug]/new": ["src/components/live/SetUpHeading.tsx", "src/components/puzzles/PuzzleSetUpPage.tsx"],
+  "/games/[slug]/new": ["src/components/live/SetUpHeading.tsx", "src/components/puzzles/PuzzleSetUpPage.tsx", "src/components/casual/CasualSetUpPage.tsx"],
   "/games/[slug]/begin": ["src/app/games/[slug]/begin/page.tsx"],
-  "/games/[slug]/play": ["src/app/games/[slug]/play/page.tsx", "src/components/puzzles/PuzzlePlayPage.tsx"],
+  "/games/[slug]/play": ["src/app/games/[slug]/play/page.tsx", "src/components/puzzles/PuzzlePlayPage.tsx", "src/components/casual/CasualPlayPage.tsx"],
   "/games/[slug]/pass-and-play": ["src/app/games/[slug]/pass-and-play/page.tsx"],
   "/games/[slug]/kept/[id]": ["src/app/games/[slug]/kept/[id]/page.tsx"],
   "/games/[slug]/tables/[id]": ["src/app/games/[slug]/tables/[id]/page.tsx"],

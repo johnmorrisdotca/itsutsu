@@ -465,4 +465,34 @@ export const GAME_FAMILIES: GameFamily[] = [
     /* On the set-up screen since 2026-09-30: its puzzles each draw their own preview there (`PuzzleBoardPreview`). */
     games: ["gomoji", "kumimoji", "koushi", "superghost"],
   },
+  {
+    key: "karakuri",
+    /*
+     * KARAKURI からくり (2026-10-05). Eight small games for a finger, from the
+     * open-source package `@johnmorrisdotca/karakuri`: a block to slide out, a
+     * tube to pour, a plate to unscrew, a pin to pull, a rope to cut, a line to
+     * draw, an arm to stretch and a story to choose a tool for. Each has five
+     * levels (Choice Story four stories) that step up, and is played alone, in a
+     * minute or two a level.
+     *
+     * CASUAL, A KIND OF ITS OWN (`lib/casual/`, docs/plans/casual-games/README.md):
+     * not a rule variant (no two colours, no engine, no ladder), not a puzzle
+     * (a puzzle here is checked on the server and earns points) and not a party
+     * game (a party is who sits round the table). Nothing of a casual game ever
+     * reaches the server: the levels won are kept in the browser, shown in My
+     * games, and worth no points and no XP. So, like Party games, this family is
+     * all at home and none recorded: it counts towards no award
+     * (`RECORDED_FAMILIES`), keeps no ladder, and has a page of its own at
+     * `/games/karakuri` (`familyPagePath`).
+     *
+     * からくり: a clockwork contrivance, the word for a mechanism, a trick
+     * with moving parts, and for a toy that works by one; every game here is a
+     * small mechanism to set going.
+     */
+    title: "Karakuri",
+    kanji: "からくり",
+    blurb: "Small games for a finger, a minute or two a level. Slide a block out, pour the colours apart, unscrew the plates, pull the pins in the right order, cut the right rope, draw a shelter, stretch an arm round the pegs, or choose the right tool for the job. Played alone, never rated, nothing to sign up for.",
+    games: ["gridEscape", "tubeSort", "nutsAndBolts", "pinRescue", "ropeCut", "saveTheCharacter", "stretchGrabber", "choiceStory"],
+    notOnSetUp: "A casual game has one choice, its level, made on the game's own set-up page; the set-up screen makes a game between two seats.",
+  },
 ];

@@ -7,6 +7,7 @@ import { currentMemberId } from "@/lib/auth/currentSession";
 import Link from "@/components/ui/Link";
 
 import { LocalGameCardClient } from "@/components/mine/LocalGameCardClient";
+import { CasualCards } from "@/components/casual/CasualCard";
 import { PartyCheckersCard } from "@/components/party/PartyCheckersGame";
 import { PartyHalmaCard } from "@/components/party/PartyHalmaGame";
 import { PairGoCard } from "@/components/party/PairGoCard";
@@ -163,6 +164,8 @@ export default async function MyGamesPage({ searchParams }: PageProps<"/play">) 
               const { Card } = PARTY_KIND_TABLES[kind];
               return <Card key={kind} />;
             })}
+            {/* Karakuri's casual games: a card for each with a level won or in progress, kept in this browser (`CasualCards`). */}
+            <CasualCards />
           </>
         }
         openSeats={<OpenSeatsSection filter={readOpenSeatFilter(asked)} />}

@@ -9,7 +9,8 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { gamePath, historyPath, partyKindFor, passAndPlayPath, puzzleFor, setUpPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
+import { casualRulesPage } from "@/lib/casual/casualRulesPage";
+import { gamePath, casualKindFor, historyPath, partyKindFor, passAndPlayPath, puzzleFor, setUpPath, slugFor, variantFor } from "@/lib/gomoku/slugs";
 import { partyRulesPage } from "@/lib/party/partyRulesPage";
 
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
@@ -27,7 +28,7 @@ import { GameTrail } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/rules">): Promise<Metadata> {
   const { slug } = await params;
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? "");
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? "");
   return { title: copy === null ? "Rules 規則" : `${copy.label} · Rules 規則` };
 }
 
@@ -90,10 +91,12 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
   const puzzle = puzzleFor(slug);
   // And a party game's, built by `partyRulesPage` from its own spec and copy, with no record to link either.
   const party = puzzle === null ? partyKindFor(slug) : null;
-  const variant = puzzle === null && party === null ? variantFor(slug) : null;
-  if (puzzle === null && party === null && variant === null) notFound();
-  const key = puzzle ?? party ?? variant!;
-  const page = puzzle !== null ? puzzleRulesPage(puzzle) : party !== null ? partyRulesPage(party) : rulesPageFor(variant!);
+  // And a casual game's, built by `casualRulesPage` the same way.
+  const casual = puzzle === null && party === null ? casualKindFor(slug) : null;
+  const variant = puzzle === null && party === null && casual === null ? variantFor(slug) : null;
+  if (puzzle === null && party === null && casual === null && variant === null) notFound();
+  const key = puzzle ?? party ?? casual ?? variant!;
+  const page = puzzle !== null ? puzzleRulesPage(puzzle) : party !== null ? partyRulesPage(party) : casual !== null ? casualRulesPage(casual) : rulesPageFor(variant!);
   // A game's strategy guides; the cube's method, which is a guide of its own (`/learn/cube`).
   const guides =
     variant !== null

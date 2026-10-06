@@ -16,7 +16,8 @@ import {
   setUpPath,
   standingsPath,
 } from "@/lib/gomoku/slugs";
-import { gameCopyFor, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { gameCopyFor, isCasualKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { CasualLine } from "@/components/casual/CasualLine";
 import { PartyLine } from "@/components/party/PartyLine";
 import { aliasesFor } from "@/lib/legacy/gameAliases";
 import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
@@ -65,7 +66,7 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
           <dl className="flex flex-col gap-3">
             {family.games.map((variant) => {
               const copy = gameCopyFor(variant);
-              const aliases = isPuzzleKind(variant) || isPartyKind(variant) ? [] : aliasesFor(variant);
+              const aliases = isPuzzleKind(variant) || isPartyKind(variant) || isCasualKind(variant) ? [] : aliasesFor(variant);
               return (
                 <div key={variant} className="grid gap-x-6 gap-y-1 sm:grid-cols-[14rem_1fr]" data-testid={`every-game-${variant}`}>
                   <dt className="flex items-center gap-2 font-medium">
@@ -107,6 +108,16 @@ export function GameList({ stats, signedIn }: { stats: CatalogueStats; signedIn:
                         <PartyLine kind={variant} signedIn={signedIn} />
                         <span className="flex flex-wrap gap-x-3 text-xs">
                           <Link href={passAndPlayPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
+                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
+                          <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>family</Link>
+                        </span>
+                      </>
+                    ) : isCasualKind(variant) ? (
+                      // A casual game is kept in one browser: no record, no standings, and its family has a page of its own.
+                      <>
+                        <CasualLine kind={variant} signedIn={signedIn} />
+                        <span className="flex flex-wrap gap-x-3 text-xs">
+                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
                           <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
                           <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>family</Link>
                         </span>

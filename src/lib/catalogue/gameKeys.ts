@@ -2,6 +2,8 @@
 import { RULE_VARIANT_LIST } from "../gomoku/gomoku.constants";
 import type { RuleVariant } from "../gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY, type VariantCopy } from "../gomoku/variants.constants";
+import { CASUAL_DISPLAY, CASUAL_KIND_LIST } from "../casual/casual.constants";
+import type { CasualKind } from "../casual/casual.types";
 import { PARTY_DISPLAY, PARTY_KIND_LIST } from "../party/party.constants";
 import type { PartyKind } from "../party/party.types";
 import { PUZZLE_DISPLAY, PUZZLE_KIND_LIST } from "../puzzles/puzzles.constants";
@@ -9,9 +11,10 @@ import type { PuzzleKind } from "../puzzles/puzzles.types";
 import { isSettingKind } from "./gameSettings";
 
 /**
- * A game in the catalogue is one of three things: a rule variant the engine
- * plays between two colours, a puzzle one person solves, or a party game a
- * table of people plays round one device.
+ * A game in the catalogue is one of four things: a rule variant the engine
+ * plays between two colours, a puzzle one person solves, a party game a
+ * table of people plays round one device, or a casual game one person plays
+ * for a minute (Karakuri's eight, `docs/plans/casual-games/README.md`).
  *
  * The three are kept as three kinds rather than one stretched one (see
  * docs/plans/numbers/README.md for the puzzles and
@@ -21,11 +24,12 @@ import { isSettingKind } from "./gameSettings";
  * two-player set-up, a ladder, a record, a solve — ask `isRuleVariant`,
  * `isPuzzleKind` or `isPartyKind` and say what they skip.
  */
-export type GameKey = RuleVariant | PuzzleKind | PartyKind;
+export type GameKey = RuleVariant | PuzzleKind | PartyKind | CasualKind;
 
 const VARIANTS = new Set<string>(RULE_VARIANT_LIST);
 const PUZZLES = new Set<string>(PUZZLE_KIND_LIST);
 const PARTIES = new Set<string>(PARTY_KIND_LIST);
+const CASUALS = new Set<string>(CASUAL_KIND_LIST);
 
 export function isPuzzleKind(key: string): key is PuzzleKind {
   return PUZZLES.has(key);
@@ -34,6 +38,11 @@ export function isPuzzleKind(key: string): key is PuzzleKind {
 /** A party game: played round one device, kept only in that browser, never rated or recorded. */
 export function isPartyKind(key: string): key is PartyKind {
   return PARTIES.has(key);
+}
+
+/** A casual game: played alone for a minute a level, kept only in the browser it is played in, never rated and worth no points. */
+export function isCasualKind(key: string): key is CasualKind {
+  return CASUALS.has(key);
 }
 
 /**
@@ -51,7 +60,7 @@ export function isRuleVariant(key: string): key is RuleVariant {
  * French is stored as `gomojiMot`. What a stored row, a picture or a date is
  * kept by; never what a list of games shows.
  */
-export const EVERY_KIND_KEY: readonly GameKey[] = [...RULE_VARIANT_LIST, ...PUZZLE_KIND_LIST, ...PARTY_KIND_LIST];
+export const EVERY_KIND_KEY: readonly GameKey[] = [...RULE_VARIANT_LIST, ...PUZZLE_KIND_LIST, ...PARTY_KIND_LIST, ...CASUAL_KIND_LIST];
 
 /**
  * Every game, puzzle and party game, in that order: the whole catalogue, what
@@ -75,6 +84,7 @@ export const RECORDED_GAME_KEYS: readonly GameKey[] = [...RULE_VARIANT_LIST, ...
 export function gameCopyFor(key: GameKey): VariantCopy {
   if (isPuzzleKind(key)) return PUZZLE_DISPLAY[key];
   if (isPartyKind(key)) return PARTY_DISPLAY[key];
+  if (isCasualKind(key)) return CASUAL_DISPLAY[key];
   return RULE_VARIANT_DISPLAY[key];
 }
 
@@ -82,6 +92,7 @@ export function gameCopyFor(key: GameKey): VariantCopy {
 export function gameCopyOf(key: string): VariantCopy | null {
   if (isPuzzleKind(key)) return PUZZLE_DISPLAY[key];
   if (isPartyKind(key)) return PARTY_DISPLAY[key];
+  if (isCasualKind(key)) return CASUAL_DISPLAY[key];
   if (key in RULE_VARIANT_DISPLAY) return RULE_VARIANT_DISPLAY[key as RuleVariant];
   return null;
 }

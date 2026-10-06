@@ -18,7 +18,8 @@ import {
   type CatalogueView,
 } from "@/lib/gomoku/catalogueView";
 import { GAMES_TABS } from "@/lib/catalogue/gamesTabs";
-import { EVERY_GAME_KEY, gameCopyFor, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { EVERY_GAME_KEY, gameCopyFor, isCasualKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
+import { CasualLine } from "@/components/casual/CasualLine";
 import { PartyLine } from "@/components/party/PartyLine";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { RULES_ATTRIBUTION } from "@/lib/gomoku/openings.constants";
@@ -255,6 +256,8 @@ function FamilyGameCard({
           <PuzzleLine kind={game.variant} signedIn={signedIn} />
         ) : isPartyKind(game.variant) ? (
           <PartyLine kind={game.variant} signedIn={signedIn} />
+        ) : isCasualKind(game.variant) ? (
+          <CasualLine kind={game.variant} signedIn={signedIn} />
         ) : (
           <GameStatsStrip stats={stats.games[game.variant]} signedIn={signedIn} />
         )}
@@ -277,6 +280,8 @@ const CARDS: GameCard[] = EVERY_GAME_KEY.map((variant) => {
     ? "puzzle"
     : isPartyKind(variant)
     ? "party"
+    : isCasualKind(variant)
+    ? "casual"
     : VARIANT_SPECS[variant].flips
       ? "flips"
       : (String(VARIANT_SPECS[variant].winLength ?? 5) as GameCardKind);

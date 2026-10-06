@@ -14,8 +14,9 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
 import { PuzzlePlayPage } from "@/components/puzzles/PuzzlePlayPage";
+import { CasualPlayPage, casualLevelAsked } from "@/components/casual/CasualPlayPage";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
-import { gamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
+import { casualKindFor, gamePath, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
@@ -25,7 +26,7 @@ import { GameTrailNav } from "@/components/games/GameTrail";
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/play">): Promise<Metadata> {
   const { slug } = await params;
   const puzzle = puzzleFor(slug);
-  const copy = gameCopyOf(variantFor(slug) ?? puzzle ?? "");
+  const copy = gameCopyOf(variantFor(slug) ?? puzzle ?? casualKindFor(slug) ?? "");
   return { title: copy === null ? "Games" : `Play ${copy.label}` };
 }
 
@@ -45,6 +46,9 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
   // A Gomoji's language and word list are in the query (`gameSettings.ts`).
   const puzzle = puzzleForAddress(slug, query);
   if (puzzle !== null) return <PuzzlePlayPage kind={puzzle} query={query} />;
+  // A casual game: the level in the query, the board drawn in the browser (`CasualPlay`).
+  const casual = casualKindFor(slug);
+  if (casual !== null) return <CasualPlayPage kind={casual} level={casualLevelAsked(casual, query)} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const copy = RULE_VARIANT_DISPLAY[variant];

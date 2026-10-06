@@ -414,3 +414,18 @@ them (`points/ladder.ts`, `points/gamePoints.ts`).
 - `/games/<slug>/standings` → `/games/<slug>/leaderboard`, to match its title.
 - `/history`: keep. Its title is now Game history, which the address already says.
 - `/play` (My games) → `/my-games`: "Play" leads to set-up everywhere else.
+
+## Casual games: Karakuri (2026-10-05)
+
+| Concept | The label everywhere | No longer |
+|---|---|---|
+| One of a casual game's five steps | **Level** (**Story** for Choice Story) | stage, round, board |
+| A level with nothing yet won | the tile's number alone | New, Locked |
+| A level won | **Won** | Done, Completed |
+| The level being played, not yet won | **In progress** | Going, Active |
+| Begin the same level again | **Restart** | Reset, Retry |
+| After losing, begin it again | **Try again** | Retry |
+| After winning, begin it again | **Play again** | Replay |
+| End a level unsolved | **Give up** (a game played alone, as a puzzle's is) | Resign, Quit |
+| Another level or game | **New game** (to the set-up, leaving the level where it is) | |
+| How a casual game is counted | **Unrated, worth no points** | free play, practice |

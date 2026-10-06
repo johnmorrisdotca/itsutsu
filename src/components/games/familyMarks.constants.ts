@@ -317,6 +317,23 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     path: "M 2 1.1 A 0.9 0.9 0 1 1 1.22 1.55 l -0.32 0.15 M 1.22 1.55 l 0.03 0.35",
   },
   /*
+   * KARAKURI (2026-10-05): a small mechanism in little — a rope swung from the
+   * top corner with a weight hanging off its end, a block sliding out along the
+   * foot, and a pin across the right-hand side: three of the eight games'
+   * parts on one board, none of them a stone anybody takes.
+   */
+  Karakuri: {
+    n: 5,
+    cells: true,
+    stones: [
+      { r: 3, c: 3 },
+      { r: 4, c: 0, white: true },
+      { r: 4, c: 1, white: true },
+      { r: 1, c: 0, faded: true },
+    ],
+    path: "M 0.5 0.5 Q 3.2 0.7 3.5 3 M 4.5 1.2 L 4.5 3.2",
+  },
+  /*
    * TERRITORY AND RACES, one picture for the family that took the races in
    * on 2026-09-24: the surrounded stone of Territory on the left, and on the
    * right a black piece hopping over a white one towards the far end of the

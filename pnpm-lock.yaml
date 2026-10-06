@@ -29,6 +29,9 @@ importers:
       '@johnmorrisdotca/jirai':
         specifier: 0.4.0
         version: 0.4.0(react@19.2.8)
+      '@johnmorrisdotca/karakuri':
+        specifier: 0.1.0
+        version: 0.1.0
       '@johnmorrisdotca/kazu':
         specifier: 1.4.0
         version: 1.4.0
@@ -467,6 +470,10 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@johnmorrisdotca/karakuri@0.1.0':
+    resolution: {integrity: sha512-s8SI718nDivgpnQyrdivwq07+IhlOFyIHk0IPhcVhoR/Pu6pmx0GnYGxpyD+UmQ7Ad9nK0LaRxnH3+H13RA/Ig==}
+    engines: {node: '>=22'}
 
   '@johnmorrisdotca/kazu@1.4.0':
     resolution: {integrity: sha512-70vjih9e88ZILPYx+URFBjyTzpzsqrpHnE9OoPJp8hrLb2j+mgYASiqT7vVnkNnyMTaVaZ5EXLArTlfxm2wwjA==}
@@ -3174,6 +3181,8 @@ snapshots:
   '@johnmorrisdotca/jirai@0.4.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
+
+  '@johnmorrisdotca/karakuri@0.1.0': {}
 
   '@johnmorrisdotca/kazu@1.4.0': {}
 

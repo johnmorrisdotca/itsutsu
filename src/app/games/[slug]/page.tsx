@@ -19,9 +19,13 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, SECTION_TITLE, STRETCHED_ROW } from "@/components/ui/ui.constants";
 import { PuzzleFrontDoor } from "@/components/puzzles/PuzzleFrontDoor";
 import { PartyFrontDoor } from "@/components/party/PartyFrontDoor";
+import { CasualFrontDoor } from "@/components/casual/CasualFrontDoor";
+import { CASUAL_FAMILY_TITLE, CasualFamilyPage } from "@/components/casual/CasualFamilyPage";
+import { CASUAL_FAMILY_KEY } from "@/lib/casual/casual.constants";
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import {
   backgroundPath,
+  casualKindFor,
   familyPath,
   historyPath,
   myGamePath,
@@ -42,14 +46,16 @@ import { GameTrail } from "@/components/games/GameTrail";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? "");
+  // Karakuri's family page answers here too, at /games/karakuri (`CasualFamilyPage`).
+  if (slug === CASUAL_FAMILY_KEY) return { title: CASUAL_FAMILY_TITLE };
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? "");
   if (copy === null) return { title: "Games" };
   return { title: `${copy.label} ${copy.kanji}`, description: copy.tagline };
 }
 
 export function generateStaticParams() {
-  // The puzzles and the party games have front doors at the same address shape as the games.
-  return EVERY_GAME_KEY.map((variant) => ({ slug: slugFor(variant) }));
+  // The puzzles and the party games have front doors at the same address shape as the games, and Karakuri's family page is answered here as well.
+  return [...EVERY_GAME_KEY.map((variant) => ({ slug: slugFor(variant) })), { slug: CASUAL_FAMILY_KEY }];
 }
 
 /**
@@ -79,6 +85,8 @@ export function generateStaticParams() {
  */
 export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
   const { slug } = await params;
+  // The family of the casual games has no game at home that its page could be under, so its page is answered here (`CasualFamilyPage`).
+  if (slug === CASUAL_FAMILY_KEY) return <CasualFamilyPage />;
   /*
    * A puzzle first: it has a front door of its own shape, with no ladder, no
    * record and no board — see `PuzzleFrontDoor`, and docs/plans/numbers for
@@ -93,6 +101,13 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
    */
   const party = partyKindFor(slug);
   if (party !== null) return <PartyFrontDoor kind={party} />;
+  /*
+   * And a casual game: Karakuri's eight, played alone a level at a time and
+   * kept only in the browser — see `CasualFrontDoor`, and
+   * docs/plans/casual-games for why it is a kind of its own.
+   */
+  const casual = casualKindFor(slug);
+  if (casual !== null) return <CasualFrontDoor kind={casual} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const page = rulesPageFor(variant);

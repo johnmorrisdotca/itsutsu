@@ -31,6 +31,7 @@ const NOT_PLAYED_ON: Record<string, string> = {
   "src/components/puzzles/WordReplay.tsx": "a word puzzle already over, replayed guess by guess with its keyboard readOnly; nobody is playing it",
   "src/components/party/PartySetUp.tsx": "a pass-and-play table's set-up: the board beside it is the live board set out for that many, readOnly, before anybody moves",
   "src/components/party/DotsSetUp.tsx": "Dots and Boxes' set-up: the board beside it is the live board at the size chosen, readOnly (no line to tap), before anybody draws",
+  "src/components/casual/CasualSetUp.tsx": "a casual game's set-up: the board beside it is the live board at the level chosen, readOnly (nothing to touch), before the level begins",
   "src/components/party/MancalaSetUp.tsx": "Mancala's set-up: the board beside it is the live board under the rules chosen, readOnly (no pit to tap), before anybody sows",
   "src/components/party/tenka/TenkaSetUp.tsx": "Tenka's set-up: the map beside it is the live map dealt for that many, with nothing to tap, before anybody moves",
   "src/components/puzzles/SolitaireReplay.tsx": "a Solitaire already won or given up, played back move by move on a readOnly table; nobody is playing it",
@@ -59,9 +60,9 @@ const PART_OF: Record<string, string> = {
  * Superghost's fragment, the letters its table watches, drawn by its table alone; Bridges' grid the same day;
  * and Mancala's board, drawn by its table and its set-up; Picture logic's grid (2026-09-29); Tenka's map, the same; and Mahjong's layout, drawn by its
  * solve, its table, its set-up's preview and a finished solve's page. And Solitaire's table (2026-09-29), drawn by its solve, its set-up's
- * preview and its replay.
+ * preview and its replay. And a casual game's board (2026-10-05), drawn by its play and its set-up's preview.
  */
-const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|BridgesGrid|PictureLogicGrid|GomojiGrid|DotsBoard|GhostFragment|MancalaBoard|TenkaMap|MahjongBoard|SolitaireTable)[\s>]/;
+const DRAWS_A_SURFACE = /<(Board|PuzzleGrid|HiddenStonesGrid|BlackAndWhiteGrid|BridgesGrid|PictureLogicGrid|GomojiGrid|DotsBoard|GhostFragment|MancalaBoard|TenkaMap|MahjongBoard|SolitaireTable|CasualBoardClient)[\s>]/;
 const ASKS = /useIdleWatch\(|<AskIfAway[\s>]|useSolve\(/;
 
 function tsxUnder(folder: string): string[] {
@@ -84,6 +85,7 @@ describe("the idle question", () => {
     expect(surfaces).toContain("src/components/puzzles/BridgesSolve.tsx");
     expect(surfaces).toContain("src/components/puzzles/PictureLogicSolve.tsx");
     expect(surfaces).toContain("src/components/puzzles/SolitaireSolve.tsx");
+    expect(surfaces).toContain("src/components/casual/CasualPlay.tsx");
     expect(surfaces).toContain("src/components/party/DotsGame.tsx");
     expect(surfaces).toContain("src/components/party/GhostGame.tsx");
     expect(surfaces).toContain("src/components/party/MancalaGame.tsx");

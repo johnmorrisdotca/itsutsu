@@ -33,6 +33,7 @@ export const FAMILY_FOLD_KEYS = [
   "tables",
   "party",
   "word-games",
+  "karakuri",
 ] as const;
 
 export type FamilyFoldKey = (typeof FAMILY_FOLD_KEYS)[number];

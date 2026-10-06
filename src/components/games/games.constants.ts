@@ -75,6 +75,8 @@ export const GAME_CARD_KINDS: { kind: GameCardKind; label: string; kanji: string
   { kind: "puzzle", label: "Puzzles", kanji: "詰" },
   // A table round one device, won by the most boxes or whatever the game counts: not a line of any length.
   { kind: "party", label: "Party games", kanji: "団欒" },
+  // Played alone for a minute a level, and kept nowhere but the browser (Karakuri's eight).
+  { kind: "casual", label: "Casual games", kanji: "気軽" },
 ];
 
 /** A quiet text link in a row of them, as the plain list uses. */

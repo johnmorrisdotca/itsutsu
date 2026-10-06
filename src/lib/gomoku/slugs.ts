@@ -3,6 +3,7 @@ import { isSettingKind, listedGameOf, settingQuery } from "../catalogue/gameSett
 import { joinQuery } from "./addressQuery";
 
 export { joinQuery };
+import type { CasualKind } from "../casual/casual.types";
 import type { PartyKind } from "../party/party.types";
 import type { PuzzleKind } from "../puzzles/puzzles.types";
 
@@ -13,9 +14,9 @@ import type { RuleVariant } from "./gomoku.types";
  * address — are a table of their own (`slugs.data.ts`); this file builds the
  * paths from them.
  */
-import { GAME_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS } from "./slugs.data";
+import { CASUAL_SLUGS, GAME_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS } from "./slugs.data";
 
-export { GAME_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS };
+export { CASUAL_SLUGS, GAME_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS };
 
 const VARIANT_BY_SLUG = new Map<string, RuleVariant>(
   (Object.entries(GAME_SLUGS) as [RuleVariant, string][]).map(([variant, slug]) => [slug, variant]),
@@ -30,6 +31,15 @@ const PARTY_BY_SLUG = new Map<string, PartyKind>(
   (Object.entries(PARTY_SLUGS) as [PartyKind, string][]).map(([kind, slug]) => [slug, kind]),
 );
 
+const CASUAL_BY_SLUG = new Map<string, CasualKind>(
+  (Object.entries(CASUAL_SLUGS) as [CasualKind, string][]).map(([kind, slug]) => [slug, kind]),
+);
+
+/** The casual game a slug names, or null for an address that names none. */
+export function casualKindFor(slug: string): CasualKind | null {
+  return CASUAL_BY_SLUG.get(slug) ?? null;
+}
+
 /** The party game a slug names, or null for an address that names none. */
 export function partyKindFor(slug: string): PartyKind | null {
   return PARTY_BY_SLUG.get(slug) ?? null;
@@ -42,7 +52,7 @@ export function puzzleFor(slug: string): PuzzleKind | null {
 
 /** The game, puzzle or party game a slug names, or null. */
 export function gameKeyFor(slug: string): GameKey | null {
-  return VARIANT_BY_SLUG.get(slug) ?? PUZZLE_BY_SLUG.get(slug) ?? PARTY_BY_SLUG.get(slug) ?? null;
+  return VARIANT_BY_SLUG.get(slug) ?? PUZZLE_BY_SLUG.get(slug) ?? PARTY_BY_SLUG.get(slug) ?? CASUAL_BY_SLUG.get(slug) ?? null;
 }
 
 /**
@@ -51,7 +61,7 @@ export function gameKeyFor(slug: string): GameKey | null {
  * key falls back to itself rather than throwing a whole page away.
  */
 export function slugFor(variant: string): string {
-  return GAME_SLUGS[variant as RuleVariant] ?? PUZZLE_SLUGS[variant as PuzzleKind] ?? PARTY_SLUGS[variant as PartyKind] ?? variant;
+  return GAME_SLUGS[variant as RuleVariant] ?? PUZZLE_SLUGS[variant as PuzzleKind] ?? PARTY_SLUGS[variant as PartyKind] ?? CASUAL_SLUGS[variant as CasualKind] ?? variant;
 }
 
 /** The variant a slug names, or null for an address that names nothing. */
@@ -156,6 +166,11 @@ export function backgroundPath(variant: string): string {
 /** /games/<slug>/play — a board, now, in this browser, in the setting asked for. */
 export function playPath(variant: string): string {
   return withSetting(`${gameBase(variant)}/play`, variant);
+}
+
+/** /games/<slug>/play?level=N — a casual game at a level (Karakuri); the level chosen at its set-up. */
+export function casualPlayPath(kind: string, level: number): string {
+  return joinQuery(`${gameBase(kind)}/play`, `?level=${level}`);
 }
 
 /** /games/<slug>/new — setting a shared game up, before it exists. */

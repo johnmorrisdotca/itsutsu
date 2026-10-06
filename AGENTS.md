@@ -348,6 +348,20 @@ award counts: `RECORDED_FAMILIES`), has a front door, rules and a table at
 `PARTY_KIND_TABLES`, and `party.coverage.test.ts` plays its rules out at every
 table it offers and asks it every question above in its own terms. The
 reasoning, and how to add the next one, is in `docs/plans/party-games/README.md`.
+**Nor is a casual game, and it has a gate of its own too.** Karakuri's eight
+(2026-10-05) are `CasualKind`s under `src/lib/casual/`: one person, a level at a
+time, played by the open-source package `@johnmorrisdotca/karakuri` on a canvas
+in the browser. Each is joined into `GameKey` beside the other three, lives in
+the Karakuri family (one no award counts: `RECORDED_FAMILIES`, with a page of its
+own at `/games/karakuri`, answered by the game page's route to spare the server function a route), has a front door, rules, a set-up of its levels and a
+play page at `/games/<slug>/play?level=N`, waits on My games through
+`CasualCards`, and is kept for offline play. It is never rated and earns no points
+and no XP: what it remembers, the levels won and the one in progress, is in the
+browser's storage and nowhere else, and `casual.coverage.test.ts` fails the
+build if anything under `src/lib/casual/` or `src/components/casual/` reaches for
+the database or an API. Its board is `CasualBoardClient` (`ssr: false`, so the
+package is in no server function). The reasoning, and how to add a ninth, is in
+`docs/plans/casual-games/README.md`.
 **A language or a word list is a setting of a game, never a game of its own.**
 John, 2026-09-28, at five Gomoji cards on one shelf (English, Kana, French,
 German, Pop): "just have 1 and allow language selection", then "this is the

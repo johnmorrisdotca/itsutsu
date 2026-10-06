@@ -317,8 +317,12 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   // The shelf a family's page draws, one card a game — Party games' page draws it too, under its own mark.
   "src/components/games/FamilyShelf.tsx": { GameThumb: "regular" },
   "src/app/games/party/page.tsx": { FamilyMark: "regular" },
+  // Karakuri's page, the same shelf under its own mark.
+  "src/components/casual/CasualFamilyPage.tsx": { FamilyMark: "regular" },
   "src/app/games/table-cards/page.tsx": { FamilyMark: "regular" },
   "src/app/games/tables/page.tsx": { FamilyMark: "regular" },
+  // The same tab's casual games, a row for each with a level won or in progress, kept in this browser: a row like the rest.
+  "src/components/casual/CasualCard.tsx": { GameThumb: "small" },
   // My games' Pass and play tab: a race table's game kept in this browser (Chinese Checkers, Halma), a row like the board for two beside it.
   "src/components/party/PartyGameCard.tsx": { GameThumb: "small" },
   // The same tab's Pair Go game, kept in this browser: a row like the two beside it.

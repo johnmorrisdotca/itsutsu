@@ -1,5 +1,5 @@
 // Relative, not `@/`: the browser specs import this file, and Playwright resolves no alias in what it imports.
-import { type GameKey, isPartyKind, isRuleVariant } from "../catalogue/gameKeys";
+import { type GameKey, isCasualKind, isPartyKind, isRuleVariant } from "../catalogue/gameKeys";
 import { listedGameOf } from "../catalogue/gameSettings";
 
 import { ALSO_LISTED_IN } from "./familyShelves";
@@ -17,7 +17,12 @@ export { GAME_FAMILIES };
  * and kept in one browser (`isPartyKind`). A shelf of guests keeps none.
  */
 export function familyKeepsRecords(family: GameFamily): boolean {
-  return family.games.some((game) => !isPartyKind(game));
+  return family.games.some((game) => !isUnrecorded(game));
+}
+
+/** A game the site keeps no record of: a party game (kept in one browser) or a casual game (the same, played alone). */
+function isUnrecorded(game: GameKey): boolean {
+  return isPartyKind(game) || isCasualKind(game);
 }
 
 /**
@@ -53,7 +58,7 @@ export const RECORDED_FAMILIES: GameFamily[] = GAME_FAMILIES.filter(familyKeepsR
  * already has this one.
  */
 export function familyPagePath(family: GameFamily): string {
-  const first = family.games.find((game) => !isPartyKind(game));
+  const first = family.games.find((game) => !isUnrecorded(game));
   return first === undefined ? `/games/${family.key}` : familyPath(first);
 }
 

@@ -1,4 +1,5 @@
 import { dependencies } from "../../../package.json";
+import { CASUAL_KIND_LIST } from "../casual/casual.constants";
 import { CARD_GAME_LIST } from "../cardGames/cardGames.constants";
 import { SUGOROKU_KIND_LIST } from "../party/sugoroku/sugoroku.constants";
 import { isRuleVariant, type GameKey } from "./gameKeys";
@@ -11,7 +12,7 @@ import { isRuleVariant, type GameKey } from "./gameKeys";
  * build carries, read from the site's own package.json, which pins each one
  * exactly; a version is never typed twice.
  */
-export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu" | "tobiishi" | "gunjin" | "jirai";
+export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu" | "tobiishi" | "gunjin" | "jirai" | "karakuri";
 
 /** Each package's name as it is written, and its repository. */
 export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: string; repo: string }>> = {
@@ -33,6 +34,7 @@ export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: st
   kazu: { name: "Kazu", repo: "https://github.com/johnmorrisdotca/kazu" },
   gunjin: { name: "Gunjin", repo: "https://github.com/johnmorrisdotca/gunjin" },
   jirai: { name: "Jirai", repo: "https://github.com/johnmorrisdotca/jirai" },
+  karakuri: { name: "Karakuri", repo: "https://github.com/johnmorrisdotca/karakuri" },
 };
 
 const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
@@ -70,6 +72,7 @@ const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
   diceWar: "korokoro",
   gunjin: "gunjin",
   ...Object.fromEntries(SUGOROKU_KIND_LIST.map((kind) => [kind, "sugoroku"])),
+  ...Object.fromEntries(CASUAL_KIND_LIST.map((kind) => [kind, "karakuri"])),
   ...Object.fromEntries(CARD_GAME_LIST.map((kind) => [kind, "toranpu"])),
 };
 
@@ -81,5 +84,7 @@ export function openSourceOf(game: GameKey): OpenSourcePackage | null {
 /** The version of a package this build carries, as the site's package.json pins it, or null if it does not depend on it. */
 export function openSourceVersion(pkg: OpenSourcePackage): string | null {
   const pinned = (dependencies as Record<string, string | undefined>)[`@johnmorrisdotca/${pkg}`];
-  return pinned === undefined ? null : pinned.replace(/^[\^~]/, "");
+  // A tarball or a path (a package not yet published) pins no version to name.
+  if (pinned === undefined || /^(file|link|workspace):/.test(pinned)) return null;
+  return pinned.replace(/^[\^~]/, "");
 }

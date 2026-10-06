@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { mySolvePath } from "../src/lib/gomoku/slugs";
+import { CASUAL_SLUGS, mySolvePath } from "../src/lib/gomoku/slugs";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
 import { freshPuzzleSeed, playSequence, ready, winningSequence } from "./support";
 import { gamesMade } from "./tidy";
@@ -412,6 +412,18 @@ function puzzle(slug: string, query = ""): Survey {
   };
 }
 
+/** A casual game, opened at its third level: the board in the page's own column, with its result and presses below it. */
+function casual(slug: string): Survey {
+  return {
+    name: `/games/${slug}/play`,
+    open: async (page) => {
+      await page.goto(`/games/${slug}/play?level=3`);
+      await ready(page, "casual-game");
+      await expect(page.locator('[data-testid="casual-board"][data-ready="true"] canvas')).toBeVisible();
+    },
+  };
+}
+
 const SURVEYED_PUZZLES = [
   "number-place",
   "hidden-stones",
@@ -616,6 +628,7 @@ const SURVEY: Survey[] = [
   table("halma", "party-start"),
   table("block-five", "blocks-start"),
   table("go", "pairgo-start"),
+  ...Object.values(CASUAL_SLUGS).map(casual),
 ];
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 1920, height: 1080 }]) {

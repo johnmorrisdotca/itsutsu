@@ -10,8 +10,9 @@ import { currentReader } from "@/lib/auth/currentReader";
 import { gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFor } from "@/lib/auth/memberAccount";
 import { PuzzleSetUpPage } from "@/components/puzzles/PuzzleSetUpPage";
+import { CasualSetUpPage } from "@/components/casual/CasualSetUpPage";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
-import { puzzleFor, variantFor } from "@/lib/gomoku/slugs";
+import { casualKindFor, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
 import { fetchOpponents } from "@/lib/social/opponents";
@@ -22,7 +23,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/new">): Promise<Metadata> {
   const { slug } = await params;
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? "");
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? casualKindFor(slug) ?? "");
   return { title: copy === null ? "New game" : `New game of ${copy.label}` };
 }
 
@@ -45,6 +46,9 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/new"
  */
 export default async function SetUpPage({ params, searchParams }: PageProps<"/games/[slug]/new">) {
   const [{ slug }, asked] = await Promise.all([params, searchParams]);
+  // A casual game has one choice, its level, kept in the browser: nothing to read on the server.
+  const casual = casualKindFor(slug);
+  if (casual !== null) return <CasualSetUpPage kind={casual} />;
   const reader = await currentReader();
   // A puzzle is set up with a size and a level, and nothing a game asks: see `PuzzleSetUp`.
   // A Gomoji's language and word list are in the query (`gameSettings.ts`).

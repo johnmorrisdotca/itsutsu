@@ -1,4 +1,5 @@
 // Relative, like the rest of this folder: the browser specs import the addresses, and Playwright resolves no alias.
+import type { CasualKind } from "../casual/casual.types";
 import type { PartyKind } from "../party/party.types";
 import type { PuzzleKind } from "../puzzles/puzzles.types";
 
@@ -143,4 +144,21 @@ export const PARTY_SLUGS: Record<PartyKind, string> = {
   cribbage: "cribbage",
   ohHell: "oh-hell",
   war: "war",
+};
+
+/**
+ * The casual games' slugs (`CasualKind`: Karakuri's eight): the package's own
+ * ids, which are already kebab case. Under each is a front door, rules, a
+ * set-up that chooses a level (`/new`) and the game itself (`/play?level=`),
+ * nothing else: a casual game has no record, ladder, history or family page of its own.
+ */
+export const CASUAL_SLUGS: Record<CasualKind, string> = {
+  saveTheCharacter: "save-the-character",
+  pinRescue: "pin-rescue",
+  nutsAndBolts: "nuts-and-bolts",
+  stretchGrabber: "stretch-grabber",
+  gridEscape: "grid-escape",
+  ropeCut: "rope-cut",
+  tubeSort: "tube-sort",
+  choiceStory: "choice-story",
 };
