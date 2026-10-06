@@ -1,7 +1,8 @@
 import Link from "@/components/ui/Link";
 
 import { LevelName } from "@/components/xp/LevelName";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import { countText } from "@/lib/rating/figures";
 import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
 import type { RecordScope } from "@/lib/rating/recordScope";
@@ -35,14 +36,14 @@ export async function YourXpStanding({
   reader: TestModeReader;
 }) {
   if (viewer === null) return null;
-  const locale = await currentLocale();
+  const say = await currentSpeaker();
 
   /* A reader is a person, and a board narrowed to the computer players is not
      one they can be on: said, rather than a rank counted among programs. */
   if (who === DIRECTORY_WHO.computers) {
     return (
       <p className="text-sm" data-testid="your-xp">
-        This board is narrowed to the bots, so you are not among them.
+        {say.say("xp.standing.computers")}
       </p>
     );
   }
@@ -54,15 +55,18 @@ export async function YourXpStanding({
   if (total <= 0) {
     return (
       <p className="text-sm" data-testid="your-xp">
-        You are on{" "}
-        <Link href={levelPath(level)} className="underline underline-offset-4">
-          level {level}, {xpLevelName(level)}
-        </Link>{" "}
-        with no experience yet, so you are not on the board.{" "}
-        <Link href="/games/new" className="underline underline-offset-4">
-          Finish a game
-        </Link>{" "}
-        and you will be.
+        {weave(say.say("xp.standing.none"), {
+          level: (
+            <Link href={levelPath(level)} className="underline underline-offset-4">
+              {say.say("xp.standing.levelName", { level: String(level), name: xpLevelName(level, say.locale) })}
+            </Link>
+          ),
+          finish: (
+            <Link href="/games/new" className="underline underline-offset-4">
+              {say.say("xp.standing.finish")}
+            </Link>
+          ),
+        })}
       </p>
     );
   }
@@ -71,19 +75,26 @@ export async function YourXpStanding({
 
   return (
     <p className="text-sm" data-testid="your-xp" data-rank={rank ?? undefined}>
-      You have {countText(total, locale)} XP and stand at <LevelName level={level} linkable={false} />
-      {", "}
-      <Link href={levelPath(level)} className="underline underline-offset-4">
-        {xpLevelName(level)}
-      </Link>
+      {weave(say.say("xp.standing.have"), {
+        total: countText(total),
+        badge: <LevelName level={level} linkable={false} />,
+        name: (
+          <Link href={levelPath(level)} className="underline underline-offset-4">
+            {xpLevelName(level, say.locale)}
+          </Link>
+        ),
+      })}
       {rank === null ? (
-        <span className="text-muted"> — your row is marked below.</span>
+        <span className="text-muted"> {say.say("xp.standing.marked")}</span>
       ) : (
         /* Ties share a number: two members on one total are level with each
            other, and separating them by `id` would be an order nobody can see. */
         <span className="text-muted">
           {" "}
-          — {countText(rank, locale)} of {countText(board.total, locale)} {who === DIRECTORY_WHO.people ? "among the people" : "on the board"}.
+          {say.say(who === DIRECTORY_WHO.people ? "xp.standing.rankPeople" : "xp.standing.rankBoard", {
+            rank: countText(rank),
+            total: countText(board.total),
+          })}
         </span>
       )}
     </p>

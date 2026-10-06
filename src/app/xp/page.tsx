@@ -1,5 +1,7 @@
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import Link from "@/components/ui/Link";
 
+import { Paired } from "@/components/i18n/Paired";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -12,6 +14,7 @@ import { YourXpStanding } from "@/components/xp/YourXpStanding";
 import type { SortChoice } from "@/lib/api/paging.types";
 import { isRefusal } from "@/lib/api/paging";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
 import { countText } from "@/lib/rating/figures";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
@@ -31,11 +34,10 @@ import { xpScopeHref } from "@/lib/xp/xpScope";
 import { xpScopeFor } from "@/lib/xp/xpScopeServer";
 import { ipTotalsOf } from "@/lib/points/ipBoards";
 
-export const metadata = {
-  title: "XP leaderboard",
-  description:
-    "Every member of Itsutsu by experience earned: their level, their total, and when they last earned.",
-};
+export async function generateMetadata() {
+  const say = await currentSpeaker();
+  return { title: say.say("xp.board.metaTitle"), description: say.say("xp.board.metaDescription", { site: SITE_NAME }) };
+}
 
 /* The reader's own row is marked and their standing is read off the session. */
 export const dynamic = "force-dynamic";
@@ -139,59 +141,55 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
       <SiteHeader />
 
       <PageTitle
-        title="Experience"
+        title={say.say("xp.title")}
         kanji="経験値"
         aside={
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <Link href="/xp/promotions" className="text-sm underline underline-offset-4" data-testid="to-promotions">
-              Recent level-ups <span className="font-mincho">昇級</span>
+              <Paired en={say.say("xp.promotions.title")} kanji="昇級" />
             </Link>
             <Link href="/xp/levels" className="text-sm underline underline-offset-4" data-testid="to-ladder">
-              All {countText(XP_LEVELS, say.locale)} levels <span className="font-mincho">段位</span>
+              <Paired en={say.say("xp.levels.titleCount", { count: countText(XP_LEVELS) })} kanji="段位" />
             </Link>
           </div>
         }
       />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
         <p className="text-sm text-muted">
-          Experience is not the rating. A rating says how well you play; experience says you
-          turned up and tried things — a game finished, a game won, a game you had never played
-          before, a buddy added, a weekend. Every level has a name, from{" "}
-          <Link href={levelPath(1)} className="underline underline-offset-4">
-            {xpLevelName(1)}
-          </Link>{" "}
-          up to{" "}
-          <Link href={levelPath(XP_LEVELS)} className="underline underline-offset-4">
-            {xpLevelName(XP_LEVELS)}
-          </Link>
-          . Press a heading to sort by it. Today and 7 days are what each member earned here on their
-          own days — credit from other sites counts in the total, never as a gain; Behind next is how
-          far a row trails the one above it. The games finished here before the ladder existed were
-          paid for when it was built, so it reaches back to the first game on the site — and a
-          record kept from another site is credited too, which Include worldwide counts and unticking
-          it leaves out.
+          {weave(say.say("xp.board.intro"), {
+            first: (
+              <Link href={levelPath(1)} className="underline underline-offset-4">
+                {xpLevelName(1, say.locale)}
+              </Link>
+            ),
+            last: (
+              <Link href={levelPath(XP_LEVELS)} className="underline underline-offset-4">
+                {xpLevelName(XP_LEVELS, say.locale)}
+              </Link>
+            ),
+          })}
         </p>
 
         {refused ? (
           <p className="text-sm text-muted" data-testid="xp-sort-refused">
-            That was not an order the leaderboard has, so this is the board by XP.
+            {say.say("xp.board.sortRefused")}
           </p>
         ) : null}
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <WhoFilter who={who} hrefFor={(next) => xpWhoHref("/xp", query, next)} label="Which players the board lists" />
+          <WhoFilter who={who} hrefFor={(next) => xpWhoHref("/xp", query, next)} label={say.say("xp.board.whoLabel")} />
           <RecordScopeBar
             base="/xp"
             scope={scope}
             hrefFor={(next) => xpScopeHref("/xp", query, next)}
-            label="How much experience the board counts"
+            label={say.say("xp.board.scopeLabel")}
           />
           {narrowed ? (
             /* "Every page a link lands on says what it was narrowed to, and lets it be taken off." */
             <p className="text-xs text-muted" data-testid="xp-narrowed">
-              Filtered by {XP_WHO_SAID[who]}: {countText(board.total, say.locale)} on the board.{" "}
+              {say.say("xp.board.narrowed", { who: say.say(XP_WHO_SAID[who]), count: countText(board.total) })}{" "}
               <Link href={xpWhoHref("/xp", query, DIRECTORY_WHO.everyone)} className="underline underline-offset-4">
-                Show everyone
+                {say.say("xp.showEveryone")}
               </Link>
             </p>
           ) : null}
@@ -210,7 +208,8 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           from={from}
           viewerId={viewer?.memberId ?? null}
           viewerZone={viewer?.timeZone ?? ""}
-          rankAmong={narrowed ? XP_WHO_SAID[who] : undefined}
+          rankAmong={narrowed ? say.say(XP_WHO_SAID[who]) : undefined}
+          say={say}
           gains={gains}
           ip={ip}
           above={above}
@@ -219,9 +218,9 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
               /* An empty narrowed table keeps its shape and says whose it is: the computer
                  players before any of them has earned, say. */
               <>
-                None of {XP_WHO_SAID[who]} has earned any experience here yet.{" "}
+                {say.say("xp.board.emptyNarrowed", { who: say.say(XP_WHO_SAID[who]) })}{" "}
                 <Link href={xpWhoHref("/xp", query, DIRECTORY_WHO.everyone)} className="underline underline-offset-4" data-testid="xp-show-everyone">
-                  Show everyone
+                  {say.say("xp.showEveryone")}
                 </Link>
               </>
             ) : viewer === null ? (
@@ -231,26 +230,29 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
                * told what the site wants from them.
                */
               <>
-                Nobody has earned any experience here yet.{" "}
-                <Link href="/join" className="underline underline-offset-4" data-testid="xp-join-link">
-                  Join Itsutsu
-                </Link>{" "}
-                and be the first onto the ladder.
+                {weave(say.say("xp.board.emptyGuest"), {
+                  join: (
+                    <Link href="/join" className="underline underline-offset-4" data-testid="xp-join-link">
+                      {say.say("xp.joinSite", { site: SITE_NAME })}
+                    </Link>
+                  ),
+                })}
               </>
             ) : (
               <>
-                Nobody has earned any experience here yet.{" "}
-                <Link href="/games/new" className="underline underline-offset-4" data-testid="xp-play-link">
-                  Play a game
-                </Link>{" "}
-                and be the first onto the ladder — finishing one earns experience whether you
-                win it or not.
+                {weave(say.say("xp.board.emptyMember"), {
+                  play: (
+                    <Link href="/games/new" className="underline underline-offset-4" data-testid="xp-play-link">
+                      {say.say("xp.playAGame")}
+                    </Link>
+                  ),
+                })}
               </>
             )
           }
         />
 
-        <XpBoardFoot board={board} query={query} from={from} />
+        <XpBoardFoot board={board} query={query} from={from} say={say} />
       </section>
     </Page>
   );

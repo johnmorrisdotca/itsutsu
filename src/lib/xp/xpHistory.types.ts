@@ -83,6 +83,8 @@ export type XpAbout =
    * about a calendar.
    */
   | { of: "words"; said: string; stale?: true }
+  /** A race at a puzzle: the row does not say which puzzle, so the page says "a race". */
+  | { of: "race" }
   | { of: "nobody" };
 
 /** One award on a member's ledger, as the panel reads it. */

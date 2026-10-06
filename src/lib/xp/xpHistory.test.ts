@@ -4,7 +4,9 @@ import { BOT_MEMBERS } from "@/lib/bots/bots.constants";
 import { GAME_FAMILIES } from "@/lib/gomoku/families";
 import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
 
-import { XP_EVENTS, XP_EVENT_SPECS, XP_SUBJECTS } from "./xp.constants";
+import { XP_EVENTS, XP_EVENT_SPECS } from "./xp.constants";
+import { xpEventCopy } from "./xpAwardCopy";
+import { XP_SUBJECTS } from "./xpSubjects.constants";
 import {
   XP_SUBJECT_KIND_OF,
   xpAboutFor,
@@ -252,9 +254,9 @@ describe("one stored event as a row", () => {
 
   it("takes its words from the catalogue and its points from the row", () => {
     const row = xpLedgerRowFor({ ...event, points: 15 });
-    expect(row?.label).toBe(XP_EVENT_SPECS.gameWon.label);
+    expect(row?.label).toBe(xpEventCopy("gameWon").label);
     expect(row?.kanji).toBe(XP_EVENT_SPECS.gameWon.kanji);
-    expect(row?.blurb).toBe(XP_EVENT_SPECS.gameWon.blurb);
+    expect(row?.blurb).toBe(xpEventCopy("gameWon").blurb);
     /*
      * FIFTEEN, not the catalogue's twenty. `points` is what was paid at the
      * time, and repricing an award must never rewrite anybody's history — so the

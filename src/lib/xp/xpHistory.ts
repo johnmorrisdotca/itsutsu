@@ -6,8 +6,11 @@ import { RULE_VARIANTS } from "@/lib/gomoku/gomoku.constants";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
+import type { Locale } from "@/lib/i18n/i18n.types";
+
 import { XP_EVENTS, XP_EVENT_SPECS } from "./xp.constants";
-import { IMPORTED_XP_SPECS, isImportedXpType } from "./importedXp.constants";
+import { importedXpCopy, isImportedXpType } from "./importedXp.constants";
+import { xpEventCopy } from "./xpAwardCopy";
 import { stakeOfImportedSubject } from "./importedXp";
 import { XP_SUBJECT_KINDS, type XpAbout, type XpLedgerRow, type XpSubjectKind } from "./xpHistory.types";
 import type { XpEventType } from "./xp.types";
@@ -217,8 +220,8 @@ export function xpAboutFor(type: XpEventType, subject: string): XpAbout {
   }
 
   if (kind === XP_SUBJECT_KINDS.race) {
-    // A race has a page under its puzzle, but the row does not say which puzzle: said in words.
-    return { of: "words", said: "a race at a puzzle" };
+    // A race has a page under its puzzle, but the row does not say which puzzle: said in words, by the page.
+    return { of: "race" };
   }
 
   if (kind === XP_SUBJECT_KINDS.family) {
@@ -259,19 +262,23 @@ export function needsMatch(about: XpAbout): about is { of: "match"; gameId: stri
  * Null rather than a row with the type string standing in for the label: see
  * `XpLedgerSkips`. The caller counts what it dropped.
  */
-export function xpLedgerRowFor(event: {
-  id: string;
-  type: string;
-  points: number;
-  subject: string;
-  dayKey: string;
-  createdAt: Date;
-}): XpLedgerRow | null {
+export function xpLedgerRowFor(
+  event: {
+    id: string;
+    type: string;
+    points: number;
+    subject: string;
+    dayKey: string;
+    createdAt: Date;
+  },
+  /** The reader's language, for the label and the reason. English where a page has not asked. */
+  locale: Locale = "en",
+): XpLedgerRow | null {
   /* Credit imported from another site's record explains itself from its own
      table, and is about the site or the game it names — words, since there is
      nothing here to link to. Never looked up as an Itsutsu award. */
   if (isImportedXpType(event.type)) {
-    const imported = IMPORTED_XP_SPECS[event.type];
+    const imported = importedXpCopy(event.type, locale);
     const stake = stakeOfImportedSubject(event.subject);
     return {
       id: event.id,
@@ -286,15 +293,15 @@ export function xpLedgerRowFor(event: {
     };
   }
   const type = event.type as XpEventType;
-  const spec = XP_EVENT_SPECS[type];
-  if (spec === undefined) return null;
+  if (XP_EVENT_SPECS[type] === undefined) return null;
+  const copy = xpEventCopy(type, locale);
   return {
     id: event.id,
     type,
     points: event.points,
-    label: spec.label,
-    kanji: spec.kanji,
-    blurb: spec.blurb,
+    label: copy.label,
+    kanji: copy.kanji,
+    blurb: copy.blurb,
     about: xpAboutFor(type, event.subject),
     dayKey: event.dayKey,
     earnedAt: event.createdAt.toISOString(),

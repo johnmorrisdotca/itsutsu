@@ -4,7 +4,7 @@ import { gamesHref } from "@/components/games/GameCount";
 import { buildGameWhere, toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 import { appliedNarrowings } from "@/lib/history/narrowings";
 
-import { ipHref } from "./IpFigure";
+import { ipHref } from "./ipHref";
 
 /** A scope of several games and a puzzle, as the site's board is. */
 const SITE_SCOPE = { variants: ["freestyle", "reversi"] as const, puzzles: ["hiddenStones"] as const };

@@ -1,4 +1,9 @@
+import { copyLocale } from "@/lib/i18n/copyLocale";
+import { speaker } from "@/lib/i18n/i18n";
+import type { Locale } from "@/lib/i18n/i18n.types";
+
 import { LEVEL_NAMES, type LevelName } from "./levelNames.constants";
+import { LEVEL_NAMES_JA } from "./levelNames.ja.constants";
 import { XP_LEVELS } from "./xpCurve";
 
 /**
@@ -48,9 +53,13 @@ import { XP_LEVELS } from "./xpCurve";
  * which only ever returns an integer between 1 and 100.
  */
 
-/** What a level with no name is called. `42` is the level, and it is true. */
-function floorName(level: number): string {
-  return Number.isInteger(level) ? `Level ${level}` : "Level —";
+/**
+ * What a level with no name is called, in the reader's language. The number is
+ * dropped for a non-integer (see above), and the dash is the site's own spelling
+ * of "no value here", the same in both languages.
+ */
+function floorName(level: number, locale: Locale): string {
+  return speaker(locale).say("xp.level.floor", { level: Number.isInteger(level) ? String(level) : "—" });
 }
 
 /**
@@ -61,9 +70,14 @@ function floorName(level: number): string {
  * part-filled row, because "level 101 is called nothing" and "level 101 is
  * called the empty string" must not look the same to the page drawing it.
  */
-export function levelNameRow(level: number): LevelName | null {
+export function levelNameRow(level: number, locale: Locale = "en"): LevelName | null {
   if (!Number.isInteger(level) || level < 1 || level > XP_LEVELS) return null;
-  return LEVEL_NAMES[level - 1] ?? null;
+  const english = LEVEL_NAMES[level - 1];
+  if (english === undefined) return null;
+  if (copyLocale(locale) === "en") return english;
+  /* The Japanese row is the same level; the kanji stays as it is, since it is the same word. */
+  const japanese = LEVEL_NAMES_JA[level - 1];
+  return japanese === undefined ? english : { level, name: japanese.name, ...(english.kanji === undefined ? {} : { kanji: english.kanji }), note: japanese.note };
 }
 
 /**
@@ -74,8 +88,8 @@ export function levelNameRow(level: number): LevelName | null {
  * costs nothing — which is the reason the level is derived from `Member.xp` and
  * never stored beside it.
  */
-export function xpLevelName(level: number): string {
-  return levelNameRow(level)?.name ?? floorName(level);
+export function xpLevelName(level: number, locale: Locale = "en"): string {
+  return levelNameRow(level, locale)?.name ?? floorName(level, locale);
 }
 
 /**

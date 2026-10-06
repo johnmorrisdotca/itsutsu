@@ -1,4 +1,10 @@
+import { copyLocale } from "@/lib/i18n/copyLocale";
+import { speaker } from "@/lib/i18n/i18n";
+import type { Locale } from "@/lib/i18n/i18n.types";
+
 import { XP_EVENTS, XP_EVENT_SPECS } from "./xp.constants";
+import { IMPORTED_VOLUME_COPY, type ImportedVolumeType } from "./xpAwardCopy.constants";
+import { xpEventCopy } from "./xpAwardCopy";
 import type { XpEventType } from "./xp.types";
 import type { ImportedClassKind, ImportedXpRules, ImportedXpType } from "./importedXp.types";
 
@@ -88,50 +94,39 @@ export function importedTwinFor(type: XpEventType): ImportedXpType | null {
 /** What a member reads about one kind in their history. */
 export type ImportedXpSpec = { label: string; kanji: string; blurb: string };
 
-const VOLUME_SPECS: Record<"importedGames" | "importedWins" | "importedTournamentGames" | "importedTournamentWins", ImportedXpSpec> = {
-  importedGames: {
-    label: "Games played elsewhere",
-    kanji: "他局",
-    blurb: "Credit for games finished on another site, from the record kept of them here.",
-  },
-  importedWins: {
-    label: "Games won elsewhere",
-    kanji: "他勝",
-    blurb: "Credit for games won on another site, on top of finishing them.",
-  },
-  importedTournamentGames: {
-    label: "Tournament games elsewhere",
-    kanji: "大会",
-    blurb: "Credit for tournament games finished on another site, worth more than ordinary play.",
-  },
-  importedTournamentWins: {
-    label: "Tournament wins elsewhere",
-    kanji: "大会勝",
-    blurb: "Credit for tournament games won on another site.",
-  },
+/** The kanji heading of each of the four kinds that have no Itsutsu twin; their words are in `xpAwardCopy.constants.ts`. */
+const VOLUME_KANJI: Record<ImportedVolumeType, string> = {
+  importedGames: "他局",
+  importedWins: "他勝",
+  importedTournamentGames: "大会",
+  importedTournamentWins: "大会勝",
 };
 
 /**
- * What a member reads about each kind in their history: the four above, and a
- * twin reading as its Itsutsu award does with "elsewhere" beside it — a table
- * of its own, so an imported award can never be looked up as an Itsutsu one.
- * `importedXp.test.ts` checks every type has a row.
+ * What a member reads about each kind in their history, in their language: the
+ * four above, and a twin reading as its Itsutsu award does with "elsewhere"
+ * beside it — a table of its own, so an imported award can never be looked up as
+ * an Itsutsu one. `importedXp.test.ts` checks every type has words in both.
  */
-export const IMPORTED_XP_SPECS = Object.fromEntries(
-  IMPORTED_XP_TYPES.map((type): [ImportedXpType, ImportedXpSpec] => {
-    const twin = IMPORTED_TWIN_OF[type];
-    if (twin === undefined) return [type, VOLUME_SPECS[type as keyof typeof VOLUME_SPECS]];
-    const spec = XP_EVENT_SPECS[twin];
-    return [
-      type,
-      {
-        label: `${spec.label}, elsewhere`,
-        kanji: spec.kanji,
-        blurb: `Counted from a record kept from another site: ${spec.label.toLowerCase()}, there rather than here.`,
-      },
-    ];
-  }),
-) as Record<ImportedXpType, ImportedXpSpec>;
+export function importedXpCopy(type: ImportedXpType, locale: Locale = "en"): ImportedXpSpec {
+  const twin = IMPORTED_TWIN_OF[type];
+  if (twin === undefined) {
+    const volume = type as ImportedVolumeType;
+    const kanji = VOLUME_KANJI[volume];
+    if (copyLocale(locale) === "ja") return { label: kanji, kanji, blurb: IMPORTED_VOLUME_COPY.ja[volume].blurb };
+    const words = IMPORTED_VOLUME_COPY.en[volume];
+    return { label: words.label, kanji, blurb: words.blurb };
+  }
+  const say = speaker(locale);
+  const spec = xpEventCopy(twin, locale);
+  /* English reads "a hundred wins at a game" as a phrase and lower-cases it mid-sentence; Japanese has no case. */
+  const mid = copyLocale(locale) === "ja" ? spec.label : spec.label.toLowerCase();
+  return {
+    label: say.say("xp.imported.twinLabel", { label: spec.label }),
+    kanji: spec.kanji,
+    blurb: say.say("xp.imported.twinBlurb", { label: mid }),
+  };
+}
 
 /**
  * Which kind of play a source site's class of games is.

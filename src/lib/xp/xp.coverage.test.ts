@@ -7,13 +7,15 @@ import {
   XP_DAY_STREAK_MILESTONES,
   XP_EVENTS,
   XP_EVENT_SPECS,
-  XP_SUBJECTS,
   XP_UNWIRED,
   XP_WIN_STREAK_MILESTONES,
   dayStreakMilestoneFor,
   winStreakMilestoneFor,
-  xpEventCopy,
 } from "./xp.constants";
+import { placeholdersIn } from "@/lib/i18n/i18n";
+import { XP_AWARD_COPY } from "./xpAwardCopy.constants";
+import { xpEventCopy } from "./xpAwardCopy";
+import { XP_SUBJECTS } from "./xpSubjects.constants";
 import {
   XP_FULL_BOARD_PEOPLE_ONLY,
   XP_FULL_BOARD_TYPES,
@@ -100,6 +102,26 @@ describe("every event can explain itself", () => {
     expect(copy.kanji.length, "kanji").toBeGreaterThan(0);
     expect(copy.blurb.length, "blurb").toBeGreaterThan(15);
     expect(copy.sentence.length, "sentence").toBeGreaterThan(5);
+  });
+
+  /*
+   * Both languages, and the Japanese is held to the English's own shape: the
+   * same `{names}` to fill, no placeholder left standing once they are filled,
+   * and real Japanese rather than the English typed again. A reader of Japanese
+   * is shown the kanji as the heading, so the label IS the kanji.
+   */
+  it.each(types)("%s is said in English and in Japanese", (type) => {
+    const english = xpEventCopy(type, "en");
+    const japanese = xpEventCopy(type, "ja");
+    expect(japanese.label, "the heading of a Japanese reader is the kanji").toBe(XP_EVENT_SPECS[type].kanji);
+    for (const field of ["blurb", "sentence"] as const) {
+      expect(placeholdersIn(XP_AWARD_COPY.ja[type][field]).sort(), `${field}'s names`).toEqual(
+        placeholdersIn(XP_AWARD_COPY.en[type][field]).sort(),
+      );
+      expect(japanese[field], `Japanese ${field}`).toMatch(/[぀-ヿ一-鿿]/);
+      for (const text of [english[field], japanese[field]]) expect(text, `${field} filled in`).not.toMatch(/[{}]/);
+    }
+    expect(XP_AWARD_COPY.ja[type].back.trim().length, "back-translation").toBeGreaterThan(10);
   });
 
   it.each(types)("%s says what its subject is, so nobody has to guess", (type) => {
@@ -444,9 +466,9 @@ describe("a stored flash, read back", () => {
       {
         id: "2026-09-12T00:00:00.000Z-0",
         points: 20,
-        label: XP_EVENT_SPECS.gameWon.label,
+        label: xpEventCopy("gameWon").label,
         kanji: XP_EVENT_SPECS.gameWon.kanji,
-        sentence: XP_EVENT_SPECS.gameWon.sentence,
+        sentence: xpEventCopy("gameWon").sentence,
       },
     ]);
   });

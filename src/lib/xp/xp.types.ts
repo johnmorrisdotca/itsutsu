@@ -108,23 +108,16 @@ export type XpEventType =
 /**
  * What one kind of award is worth, and how often it may happen.
  *
- * Shaped after `STATUS_DISPLAY` in `backlog.constants.ts` — `label`, `kanji`,
- * `blurb` — with the two behaviour fields the ledger needs beside them, because
- * separating "what it is called" from "what it does" would mean two tables to
- * keep in step for no reader's benefit.
+ * Shaped after `STATUS_DISPLAY` in `backlog.constants.ts`, with the two
+ * behaviour fields the ledger needs beside the kanji, because separating "what
+ * it is called" from "what it does" would mean two tables to keep in step for
+ * no reader's benefit. The words themselves, in each language, are in
+ * `xpAwardCopy.constants.ts`.
  */
 export type XpEventSpec = {
   points: number;
-  /** What a member reads in a list or a table cell. */
-  label: string;
+  /** The heading's kanji, which is the whole heading for a reader of Japanese. */
   kanji: string;
-  /** Why it exists, in a sentence, for the member reading their own history. */
-  blurb: string;
-  /**
-   * What a toast says. Second person, present tense, no points in it — the
-   * toast prints the number itself.
-   */
-  sentence: string;
   /**
    * Events of this type one member may earn in a day. Absent means no
    * allowance, which is right for anything that cannot be farmed: a first game

@@ -3,6 +3,7 @@ import { RatingTiers } from "@/components/about/RatingTiers";
 import { LAST_TEN_SHARE, XpCurve } from "@/components/about/XpCurve";
 import { thousands } from "@/lib/ui/thousands";
 import { XP_EVENT_SPECS } from "@/lib/xp/xp.constants";
+import { xpEventCopy } from "@/lib/xp/xpAwardCopy";
 import type { XpEventType } from "@/lib/xp/xp.types";
 import { XP_LEVELS, xpForLevel } from "@/lib/xp/xpCurve";
 import { xpLevelName } from "@/lib/xp/levelNames";
@@ -45,14 +46,16 @@ const PRICES = (
     head={["Award", "XP", "A day at most", "For"]}
     rows={SAMPLES.map((type) => {
       const spec = XP_EVENT_SPECS[type];
+      /* English until the About page is converted (ENJA-10): this table is built once, not per reader. */
+      const copy = xpEventCopy(type);
       return [
         <span key={type} className="whitespace-nowrap">
-          {spec.label} <span className="font-mincho text-xs opacity-70">{spec.kanji}</span>
+          {copy.label} <span className="font-mincho text-xs opacity-70">{spec.kanji}</span>
         </span>,
         spec.points,
         spec.cap ?? "–",
         <span key={`${type}-blurb`} className="text-muted">
-          {spec.blurb}
+          {copy.blurb}
         </span>,
       ];
     })}

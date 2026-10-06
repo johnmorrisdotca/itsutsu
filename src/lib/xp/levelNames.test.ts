@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { levelNameRow, xpLevelKanji, xpLevelName } from "./levelNames";
 import { LEVEL_NAMES } from "./levelNames.constants";
+import { LEVEL_NAMES_JA } from "./levelNames.ja.constants";
 import { XP_LEVELS } from "./xpCurve";
 
 /**
@@ -174,5 +175,58 @@ describe("xpLevelKanji", () => {
     expect(xpLevelKanji(plain!.level)).toBe("");
     expect(xpLevelKanji(XP_LEVELS + 1)).toBe("");
     expect(xpLevelKanji(Number.NaN)).toBe("");
+  });
+});
+
+/**
+ * THE HUNDRED NAMES IN JAPANESE, AS A SET.
+ *
+ * Each row is the same level as the English row at its place, the name is the
+ * name a Japanese reader would use, and where the English row has a kanji it is
+ * this row's name exactly: it is the word already shown beside the English
+ * heading, so a Japanese reader must not be shown a second, different one.
+ */
+describe("LEVEL_NAMES_JA", () => {
+  it("has one row for each level, in the order of the English ones", () => {
+    expect(LEVEL_NAMES_JA).toHaveLength(LEVEL_NAMES.length);
+    LEVEL_NAMES_JA.forEach((row, index) => {
+      expect(row.level).toBe(LEVEL_NAMES[index]?.level);
+    });
+  });
+
+  it("gives every level a unique name", () => {
+    const seen = new Map<string, number>();
+    for (const { level, name } of LEVEL_NAMES_JA) {
+      expect(name.trim(), `level ${level} has an empty name`).not.toBe("");
+      expect(seen.has(name), `level ${level} repeats "${name}" from level ${seen.get(name)}`).toBe(false);
+      seen.set(name, level);
+    }
+  });
+
+  it("uses the kanji already beside the English name wherever there is one", () => {
+    for (const english of LEVEL_NAMES) {
+      if (english.kanji === undefined) continue;
+      expect(LEVEL_NAMES_JA[english.level - 1]?.name, `level ${english.level}`).toBe(english.kanji);
+    }
+  });
+
+  it("gives every level a one-line note in Japanese, read back in English", () => {
+    for (const { level, note, back } of LEVEL_NAMES_JA) {
+      expect(note, `level ${level}'s note is not Japanese`).toMatch(/[぀-ヿ一-鿿]/);
+      expect(note, `level ${level}'s note spans lines`).not.toMatch(/[\r\n]/);
+      expect(back.trim(), `level ${level} has no back-translation`).not.toBe("");
+    }
+  });
+
+  it("is what a reader of Japanese is handed", () => {
+    expect(xpLevelName(1, "ja")).toBe("インサートコイン");
+    expect(xpLevelName(XP_LEVELS, "ja")).toBe("神の一手");
+    expect(levelNameRow(37, "ja")?.note).toBe(LEVEL_NAMES_JA[36]?.note);
+    expect(levelNameRow(37, "ja")?.kanji, "the kanji stays for the pairing").toBe("定石");
+  });
+
+  it("floors a level with no name in Japanese too", () => {
+    expect(xpLevelName(XP_LEVELS + 1, "ja")).toBe("レベル101");
+    expect(xpLevelName(4.7, "ja")).toBe("レベル—");
   });
 });

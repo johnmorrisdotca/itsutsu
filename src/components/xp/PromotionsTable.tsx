@@ -31,20 +31,20 @@ import { withoutLevel } from "@/lib/xp/nameTag.types";
  * and says it was imported and where the play was — never shown as a day's play
  * here. Under Itsutsu only there is no such line to draw.
  */
-export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty, tags }: PromotionsTableProps) {
+export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty, tags, say }: PromotionsTableProps) {
   return (
     <div className={TABLE_SCROLL} data-testid="promotions">
       <table className={TABLE_CLASS}>
         <thead className={TABLE_HEAD_CLASS}>
           <tr>
             <th className={HEAD} scope="col">
-              Member
+              {say.say("xp.col.member")}
             </th>
             <th className={HEAD} scope="col">
-              Level-up
+              {say.say("xp.promotions.levelUp")}
             </th>
             <th className={HEAD} scope="col">
-              When
+              {say.say("xp.promotions.when")}
             </th>
           </tr>
         </thead>
@@ -71,8 +71,8 @@ export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty
                   data-to={promotion.to}
                 >
                   <td className="py-1.5 pr-3">
-                    <PlayerName name={promotion.name} memberId={promotion.memberId} fallback="A member with no name yet" tag={withoutLevel(tags.get(promotion.memberId))} />
-                    {you ? <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span> : null}
+                    <PlayerName name={promotion.name} memberId={promotion.memberId} fallback={say.say("xp.unnamed")} tag={withoutLevel(tags.get(promotion.memberId))} />
+                    {you ? <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">{say.say("xp.you")}</span> : null}
                   </td>
                   <td className="py-1.5 pr-3">
                     <span className="inline-flex flex-wrap items-baseline gap-x-2">
@@ -80,13 +80,13 @@ export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty
                       <span aria-hidden className="text-muted">
                         →
                       </span>
-                      <span className="sr-only">to</span>
+                      <span className="sr-only">{say.say("xp.promotions.to")}</span>
                       <LevelName level={promotion.to} testId="promotion-to" />
                     </span>
                     {/* One award over several rungs is one line, and it says how many. */}
                     {climbed > 1 ? (
                       <span className="ml-2 text-xs text-muted" data-testid="promotion-several">
-                        {climbed} levels at once
+                        {say.say("xp.promotions.several", { count: String(climbed) })}
                       </span>
                     ) : null}
                   </td>
@@ -98,11 +98,13 @@ export function PromotionsTable({ items, creditFrom, viewerId, viewerZone, empty
                     </time>
                     {promotion.imported ? (
                       <span className="block text-xs" data-testid="promotion-imported">
-                        Imported, for play on {creditFrom.get(promotionsCursor(promotion)) ?? "other sites"}
+                        {say.say("xp.promotions.imported", {
+                          sites: creditFrom.get(promotionsCursor(promotion)) ?? say.say("xp.promotions.otherSites"),
+                        })}
                       </span>
                     ) : promotion.paidLater !== null ? (
                       <span className="block text-xs" data-testid="promotion-backfilled">
-                        Backfilled, for play on {promotion.paidLater}
+                        {say.say("xp.promotions.backfilled", { day: promotion.paidLater })}
                       </span>
                     ) : null}
                   </td>

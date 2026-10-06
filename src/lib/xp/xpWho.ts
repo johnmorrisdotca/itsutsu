@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { DIRECTORY_WHO, DIRECTORY_WHO_LIST, type DirectoryWho } from "@/lib/rating/directoryFilter";
 
 /**
@@ -56,9 +57,13 @@ export function xpWhoHref(at: string, query: string, who: DirectoryWho): string 
   return `${at}?${params.toString()}`;
 }
 
-/** How the page names the narrowed set in a sentence. */
-export const XP_WHO_SAID: Record<DirectoryWho, string> = {
-  [DIRECTORY_WHO.everyone]: "everyone",
-  [DIRECTORY_WHO.people]: "the people",
-  [DIRECTORY_WHO.computers]: "the bots",
+/**
+ * How the page names the narrowed set in a sentence: the phrase to say, in the
+ * reader's language (`say.say(XP_WHO_SAID[who])`), since a noun that fits one
+ * sentence has to fit it in each language.
+ */
+export const XP_WHO_SAID: Record<DirectoryWho, PhraseKey> = {
+  [DIRECTORY_WHO.everyone]: "xp.who.everyone",
+  [DIRECTORY_WHO.people]: "xp.who.people",
+  [DIRECTORY_WHO.computers]: "xp.who.computers",
 };

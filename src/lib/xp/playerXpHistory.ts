@@ -2,6 +2,7 @@ import "server-only";
 
 import { isRefusal, parseSort } from "@/lib/api/paging";
 import { keysetWhere } from "@/lib/api/paging.cursor";
+import type { Locale } from "@/lib/i18n/i18n.types";
 import { prisma } from "@/lib/prisma";
 
 import { XP_LEDGER_SORT } from "./xpHistory.sort";
@@ -50,14 +51,17 @@ export type PlayerXpHistory = {
 export async function playerXpHistory({
   memberId,
   cursor,
+  locale,
 }: {
   memberId: string;
   cursor: string | null;
+  /** The reader's language, for the words of each award. */
+  locale?: Locale;
 }): Promise<PlayerXpHistory> {
   const params = new URLSearchParams({ limit: String(XP_HISTORY_PAGE) });
   if (cursor !== null) params.set("cursor", cursor);
   const sort = parseSort(XP_LEDGER_SORT, new URLSearchParams());
-  const page = await xpLedgerPage({ memberId, params });
+  const page = await xpLedgerPage({ memberId, params, locale });
   /*
    * Neither can be refused — no sort is asked for, so the ledger's own fallback
    * is used — and a refusal here would be a change to `XP_LEDGER_SORT` that

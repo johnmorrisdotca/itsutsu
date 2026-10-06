@@ -90,7 +90,8 @@ export function MemberLevel({ xp, imported = null, testId = "member-level" }: Me
   const standing = xpStanding(xp);
   const atTheTop = standing.span === 0;
   const next = level + 1;
-  const kanji = xpLevelKanji(level);
+  /* For a reader of Japanese the badge already says the kanji as the name, so a second copy beside it would say it twice. */
+  const kanji = say.pairsWithKanji ? xpLevelKanji(level) : "";
   const label = "text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase";
   const xpHeading = say.pair("xp.unit", XP_KANJI);
 
@@ -155,8 +156,8 @@ export function MemberLevel({ xp, imported = null, testId = "member-level" }: Me
               data-testid={`${testId}-next-level`}
             >
               {say.say("xp.toNext", {
-                count: countText(standing.toNext, say.locale),
-                name: `Lv ${next} · ${xpLevelName(next)}`,
+                count: countText(standing.toNext),
+                name: `Lv ${next} · ${xpLevelName(next, say.locale)}`,
               })}
             </Link>
           )}

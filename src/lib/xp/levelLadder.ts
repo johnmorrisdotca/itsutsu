@@ -1,3 +1,5 @@
+import type { Locale } from "@/lib/i18n/i18n.types";
+
 import { levelNameRow } from "./levelNames";
 import { XP_LEVELS, xpForLevel } from "./xpCurve";
 
@@ -79,8 +81,8 @@ export function levelXpRange(level: number): { from: number; to: number | null }
 }
 
 /** One rung, or null for a level the ladder does not have. */
-export function ladderRung(level: number): LadderRung | null {
-  const row = levelNameRow(level);
+export function ladderRung(level: number, locale: Locale = "en"): LadderRung | null {
+  const row = levelNameRow(level, locale);
   if (row === null) return null;
   const toReach = xpForLevel(level);
   return {
@@ -104,10 +106,10 @@ export function ladderRung(level: number): LadderRung | null {
  * cached copy of a table meant to be retuned is the fault `xpCurve.ts` refuses
  * for the level itself.
  */
-export function levelLadder(): LadderRung[] {
+export function levelLadder(locale: Locale = "en"): LadderRung[] {
   const rungs: LadderRung[] = [];
   for (let level = 1; level <= XP_LEVELS; level += 1) {
-    const rung = ladderRung(level);
+    const rung = ladderRung(level, locale);
     if (rung !== null) rungs.push(rung);
   }
   return rungs;

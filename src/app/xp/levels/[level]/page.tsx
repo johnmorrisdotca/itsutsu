@@ -1,3 +1,4 @@
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 
@@ -13,6 +14,7 @@ import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { ImportedXpNote } from "@/components/xp/ImportedXpNote";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Speaker } from "@/lib/i18n/i18n";
+import { weave } from "@/lib/i18n/weave";
 import { RECORD_SCOPES } from "@/lib/rating/recordScope";
 import { importedFactsFor } from "@/lib/xp/importedRecipients";
 import { importedNoteText } from "@/lib/xp/importedNote";
@@ -62,11 +64,12 @@ function levelFrom(raw: string): number | null {
 }
 
 export async function generateMetadata({ params }: PageProps<"/xp/levels/[level]">) {
+  const say = await currentSpeaker();
   const level = levelFrom((await params).level);
-  if (level === null) return { title: "No such level" };
-  const rung = ladderRung(level);
+  if (level === null) return { title: say.say("xp.level.none") };
+  const rung = ladderRung(level, say.locale);
   return {
-    title: `Level ${level} · ${xpLevelName(level)}`,
+    title: say.say("xp.level.pageTitle", { level: String(level), name: xpLevelName(level, say.locale) }),
     description: rung?.note,
   };
 }
@@ -75,7 +78,8 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
   const level = levelFrom((await params).level);
   if (level === null) notFound();
 
-  const rung = ladderRung(level);
+  const say = await currentSpeaker();
+  const rung = ladderRung(level, say.locale);
   /*
    * Belt and braces, and not dead code: `levelFrom` bounds the number against
    * the CURVE's hundred and this reads the NAMES' hundred. They are two files
@@ -89,7 +93,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
   /* The same two choices as the board — who, and how much is counted — on the
      same memory: one board, one answer. */
   const asked = await searchParams;
-  const [who, scope, say] = await Promise.all([xpWhoFor(asked), xpScopeFor(asked), currentSpeaker()]);
+  const [who, scope] = await Promise.all([xpWhoFor(asked), xpScopeFor(asked)]);
   const reader = await currentTestModeReader();
   const [roll, viewer] = await Promise.all([membersAtLevel(level, who, scope, reader), viewerXp()]);
   // The flag and badge beside each name, one read for the rung (`nameTagsOf`).
@@ -112,20 +116,20 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
     <Page>
       <SiteHeader />
 
-      <nav className="flex items-center justify-between gap-3 text-sm" aria-label="The rungs either side">
+      <nav className="flex items-center justify-between gap-3 text-sm" aria-label={say.say("xp.level.either")}>
         {level > 1 ? (
           <Link href={levelPath(level - 1)} className="underline underline-offset-4" data-testid="level-below">
-            ← {level - 1}. {xpLevelName(level - 1)}
+            ← {level - 1}. {xpLevelName(level - 1, say.locale)}
           </Link>
         ) : (
-          <span className="text-muted">The bottom of the ladder</span>
+          <span className="text-muted">{say.say("xp.level.bottom")}</span>
         )}
         {level < XP_LEVELS ? (
           <Link href={levelPath(level + 1)} className="underline underline-offset-4" data-testid="level-above">
-            {level + 1}. {xpLevelName(level + 1)} →
+            {level + 1}. {xpLevelName(level + 1, say.locale)} →
           </Link>
         ) : (
-          <span className="text-muted">The top of the ladder</span>
+          <span className="text-muted">{say.say("xp.level.top")}</span>
         )}
       </nav>
 
@@ -133,69 +137,78 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
         title={rung.name}
         kanji={rung.kanji}
         lead={rung.note}
-        crumb={<span className="font-mono tracking-[0.14em] uppercase">Level {level}</span>}
+        crumb={<span className="font-mono tracking-[0.14em] uppercase">{say.say("xp.level.crumb", { level: String(level) })}</span>}
         testId="level-name-heading"
       />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
         <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm" data-testid="level-costs">
           <div>
-            <dt className="text-xs text-muted uppercase">To reach it</dt>
-            <dd className="font-mono tabular-nums">{countText(rung.toReach, say.locale)} XP</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted uppercase">Climbed from {level === 1 ? "—" : level - 1}</dt>
-            {/* Nobody climbed to level 1, so there is no figure — an em dash, not
-                a nought, which would read as a rung that was free. */}
-            <dd className="font-mono tabular-nums">{rung.step === 0 ? "—" : `${countText(rung.step, say.locale)} XP`}</dd>
+            <dt className="text-xs text-muted uppercase">{say.say("xp.level.toReachIt")}</dt>
+            <dd className="font-mono tabular-nums">{say.say("xp.amount", { count: countText(rung.toReach) })}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted uppercase">
-              {range.to === null ? "Above it" : `On to ${level + 1}`}
+              {say.say("xp.level.climbedFrom", { from: level === 1 ? "—" : String(level - 1) })}
+            </dt>
+            {/* Nobody climbed to level 1, so there is no figure — an em dash, not
+                a nought, which would read as a rung that was free. */}
+            <dd className="font-mono tabular-nums">
+              {rung.step === 0 ? "—" : say.say("xp.amount", { count: countText(rung.step) })}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted uppercase">
+              {range.to === null ? say.say("xp.level.aboveIt") : say.say("xp.level.nextRung", { next: String(level + 1) })}
             </dt>
             <dd className="font-mono tabular-nums">
               {range.to === null ? (
-                <span className="text-muted">Nothing — this is the top</span>
+                <span className="text-muted">{say.say("xp.level.nothingAbove")}</span>
               ) : (
-                `${countText(range.to - range.from, say.locale)} XP`
+                say.say("xp.amount", { count: countText(range.to - range.from) })
               )}
             </dd>
           </div>
         </dl>
 
         <p className="text-sm text-muted">
-          A member stands here on {countText(range.from, say.locale)} XP
-          {range.to === null ? " or more" : ` up to ${countText(range.to - 1, say.locale)}`}. The whole ladder
-          is on{" "}
-          <Link href="/xp/levels" className="underline underline-offset-4" data-testid="to-ladder">
-            the hundred levels
-          </Link>
-          , who is where is on{" "}
-          <Link href="/xp" className="underline underline-offset-4" data-testid="to-leaderboard">
-            the leaderboard
-          </Link>
-          , and who went up a level lately is on{" "}
-          <Link href="/xp/promotions" className="underline underline-offset-4" data-testid="to-promotions">
-            recent promotions
-          </Link>
-          .
+          {range.to === null
+            ? say.say("xp.level.rangeOpen", { from: countText(range.from) })
+            : say.say("xp.level.rangeClosed", { from: countText(range.from), to: countText(range.to - 1) })}{" "}
+          {weave(say.say("xp.level.where"), {
+            ladder: (
+              <Link href="/xp/levels" className="underline underline-offset-4" data-testid="to-ladder">
+                {say.say("xp.level.whereLadder")}
+              </Link>
+            ),
+            leaderboard: (
+              <Link href="/xp" className="underline underline-offset-4" data-testid="to-leaderboard">
+                {say.say("xp.level.whereBoard")}
+              </Link>
+            ),
+            promotions: (
+              <Link href="/xp/promotions" className="underline underline-offset-4" data-testid="to-promotions">
+                {say.say("xp.level.wherePromotions")}
+              </Link>
+            ),
+          })}
         </p>
       </section>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`}>
-        <SectionHeading title="Players at this level" kanji="在籍" />
+        <SectionHeading title={say.say("xp.level.players")} kanji="在籍" />
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <WhoFilter who={who} hrefFor={(next) => xpWhoHref(levelPath(level), query, next)} label="Which players the rung lists" />
+          <WhoFilter who={who} hrefFor={(next) => xpWhoHref(levelPath(level), query, next)} label={say.say("xp.level.whoLabel")} />
           <RecordScopeBar
             base={levelPath(level)}
             scope={scope}
             hrefFor={(next) => xpScopeHref(levelPath(level), query, next)}
-            label="How much experience the rung counts"
+            label={say.say("xp.level.scopeLabel")}
           />
           {who !== DIRECTORY_WHO.everyone ? (
             <p className="text-xs text-muted" data-testid="level-narrowed">
-              Filtered by {XP_WHO_SAID[who]}.{" "}
+              {say.say("xp.narrowed", { who: say.say(XP_WHO_SAID[who]) })}{" "}
               <Link href={xpWhoHref(levelPath(level), query, DIRECTORY_WHO.everyone)} className="underline underline-offset-4">
-                Show everyone
+                {say.say("xp.showEveryone")}
               </Link>
             </p>
           ) : null}
@@ -219,10 +232,13 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
         */}
         {mine !== null && mine !== level ? (
           <p className="text-sm" data-testid="level-you-are">
-            You are on{" "}
-            <Link href={`${levelPath(mine)}?${query}`} className="font-medium underline underline-offset-4" data-testid="level-you-are-link">
-              level {mine}, {xpLevelName(mine)} →
-            </Link>
+            {weave(say.say("xp.level.youAreOn"), {
+              link: (
+                <Link href={`${levelPath(mine)}?${query}`} className="font-medium underline underline-offset-4" data-testid="level-you-are-link">
+                  {say.say("xp.level.youLink", { level: String(mine), name: xpLevelName(mine, say.locale) })}
+                </Link>
+              ),
+            })}
           </p>
         ) : null}
         <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} notes={notes} tags={tags} ip={ip} say={say} />
@@ -250,6 +266,7 @@ function WhoIsHere({
   ip,
   say,
 }: {
+  /** The reader's language. */
   say: Speaker;
   level: number;
   roll: LevelRoll;
@@ -269,10 +286,10 @@ function WhoIsHere({
           <thead className={TABLE_HEAD_CLASS}>
             <tr>
               <th className={HEAD} scope="col">
-                Member
+                {say.say("xp.col.member")}
               </th>
               <th className={HEAD} scope="col">
-                XP
+                {say.say("xp.unit")}
               </th>
               <th className={HEAD} scope="col" title={IP_HEAD_TITLE}>
                 IP
@@ -284,8 +301,8 @@ function WhoIsHere({
               <tr className={ROW_CLASS}>
                 <td className="py-3 pr-3 text-sm text-muted" colSpan={3} data-testid="level-empty">
                   {who === DIRECTORY_WHO.everyone
-                    ? `Nobody is standing on level ${level} yet.`
-                    : `None of ${XP_WHO_SAID[who]} is standing on level ${level} yet.`}
+                    ? say.say("xp.level.nobody", { level: String(level) })
+                    : say.say("xp.level.nobodyNarrowed", { who: say.say(XP_WHO_SAID[who]), level: String(level) })}
                 </td>
               </tr>
             ) : (
@@ -300,12 +317,12 @@ function WhoIsHere({
                     <PlayerName
                       name={member.name}
                       memberId={member.id}
-                      fallback="A member with no name yet"
+                      fallback={say.say("xp.unnamed")}
                       // Everybody here stands on this rung, which the page is named for.
                       tag={withoutLevel(tags.get(member.id))}
                     />
                     {member.id === viewerId ? (
-                      <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span>
+                      <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">{say.say("xp.you")}</span>
                     ) : null}
                     {notes.get(member.id) ?? null}
                   </td>
@@ -320,11 +337,14 @@ function WhoIsHere({
 
       {roll.more ? (
         <p className="text-xs text-muted" data-testid="level-more">
-          The first {countText(LEVEL_ROLL, say.locale)} of them, highest first. The{" "}
-          <Link href="/xp" className="underline underline-offset-4">
-            leaderboard
-          </Link>{" "}
-          ranks everybody.
+          {weave(say.say("xp.level.more"), {
+            count: countText(LEVEL_ROLL),
+            leaderboard: (
+              <Link href="/xp" className="underline underline-offset-4">
+                {say.say("xp.level.whereBoard")}
+              </Link>
+            ),
+          })}
         </p>
       ) : null}
 
@@ -336,21 +356,21 @@ function WhoIsHere({
          * the bait-and-switch AGENTS.md warns about.
          */
         <p className="text-sm" data-testid="level-invite">
-          {viewerId === null ? (
-            <>
-              <Link href="/join" className="underline underline-offset-4" data-testid="level-join-link">
-                Join Itsutsu
-              </Link>{" "}
-              and be the first to stand here.
-            </>
-          ) : (
-            <>
-              <Link href="/games/new" className="underline underline-offset-4" data-testid="level-play-link">
-                Play a game
-              </Link>{" "}
-              and be the first to stand here.
-            </>
-          )}
+          {viewerId === null
+            ? weave(say.say("xp.level.inviteGuest"), {
+                join: (
+                  <Link href="/join" className="underline underline-offset-4" data-testid="level-join-link">
+                    {say.say("xp.joinSite", { site: SITE_NAME })}
+                  </Link>
+                ),
+              })
+            : weave(say.say("xp.level.inviteMember"), {
+                play: (
+                  <Link href="/games/new" className="underline underline-offset-4" data-testid="level-play-link">
+                    {say.say("xp.playAGame")}
+                  </Link>
+                ),
+              })}
         </p>
       ) : null}
     </div>

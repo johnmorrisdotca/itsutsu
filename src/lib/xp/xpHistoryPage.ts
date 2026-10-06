@@ -15,6 +15,7 @@ import {
 } from "@/lib/api/paging.cursor";
 import type { PagedEnvelope, PagingRefusal } from "@/lib/api/paging.types";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import type { Locale } from "@/lib/i18n/i18n.types";
 import { prisma } from "@/lib/prisma";
 
 import { needsMatch, xpLedgerRowFor } from "./xpHistory";
@@ -108,6 +109,8 @@ async function variantsFor(gameIds: readonly string[]): Promise<Map<string, Rule
 export async function xpLedgerPage(input: {
   memberId: string;
   params: URLSearchParams;
+  /** The reader's language for each row's label and reason. English where the caller has not asked. */
+  locale?: Locale;
 }): Promise<XpLedgerPage | PagingRefusal> {
   const sort = parseSort(XP_LEDGER_SORT, input.params);
   if (isRefusal(sort)) return sort;
@@ -148,7 +151,7 @@ export async function xpLedgerPage(input: {
   const items: XpLedgerRow[] = [];
   let unknownType = 0;
   for (const event of rows) {
-    const row = xpLedgerRowFor(event);
+    const row = xpLedgerRowFor(event, input.locale);
     if (row === null) unknownType += 1;
     else items.push(row);
   }

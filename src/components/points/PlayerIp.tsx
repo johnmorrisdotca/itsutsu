@@ -1,5 +1,6 @@
 import Link from "@/components/ui/Link";
 
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { SITE_SCOPE, type IpStanding, ipStandingOf } from "@/lib/points/ipBoards";
 import { startOfMonth, startOfWeek } from "@/lib/puzzles/server/puzzleBoards";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
@@ -18,6 +19,7 @@ import { IpFigure } from "./IpFigure";
  */
 export async function PlayerIp({ memberId }: { memberId: string }) {
   const reader = await currentTestModeReader();
+  const say = await currentSpeaker();
   const [all, month, week] = await Promise.all([
     ipStandingOf(memberId, SITE_SCOPE, null, reader),
     ipStandingOf(memberId, SITE_SCOPE, startOfMonth(), reader),
@@ -28,13 +30,13 @@ export async function PlayerIp({ memberId }: { memberId: string }) {
       <IpFigure scope={SITE_SCOPE} memberId={memberId} ip={all?.ip ?? 0} suffix=" IP" className="font-mono font-semibold tabular-nums" testId="player-ip-figure" />
       {all === null ? (
         <Link href="/points" className="text-xs text-muted underline underline-offset-4" data-testid="player-ip-none">
-          None won yet: IP is for results →
+          {say.say("points.player.none")}
         </Link>
       ) : (
         <>
-          <Place standing={all} when="all time" testId="player-ip-all" />
-          <Place standing={month} when="this month" testId="player-ip-month" />
-          <Place standing={week} when="this week" testId="player-ip-week" />
+          <Place standing={all} when={say.say("points.player.allTime")} testId="player-ip-all" />
+          <Place standing={month} when={say.say("points.player.thisMonth")} testId="player-ip-month" />
+          <Place standing={week} when={say.say("points.player.thisWeek")} testId="player-ip-week" />
         </>
       )}
     </p>

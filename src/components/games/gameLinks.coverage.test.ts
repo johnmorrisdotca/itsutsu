@@ -614,7 +614,10 @@ describe("a puzzle's time and a score lead to what they were made of", () => {
     const points = readFileSync("src/components/puzzles/SolvePoints.tsx", "utf8");
     expect(points).toMatch(/puzzleRecordHref\(kind, \{ member: memberId, month, week \}\)/);
     expect(points).toContain("mySolvePath(kind, solveId) : solvePath(kind, solveId)");
-    const ip = readFileSync("src/components/points/IpFigure.tsx", "utf8");
+    /* Where an IP figure leads is `ipHref`, which `IpFigure` asks; the figure itself only draws it. */
+    const figure = readFileSync("src/components/points/IpFigure.tsx", "utf8");
+    expect(figure).toContain("ipHref(");
+    const ip = readFileSync("src/components/points/ipHref.ts", "utf8");
     expect(ip).toContain('ip: "paid"');
     expect(ip).toContain("puzzleRecordHref(");
   });

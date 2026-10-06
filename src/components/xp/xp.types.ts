@@ -1,3 +1,4 @@
+import type { Speaker } from "@/lib/i18n/i18n";
 import type { ImportedFacts } from "@/lib/xp/importedNote";
 import type { XpAbout } from "@/lib/xp/xpHistory.types";
 
@@ -110,7 +111,12 @@ export type LevelNameProps = {
 export type AwardWhose = "yours" | "theirs";
 
 /** What one XP award was about, and whose ledger it sits on. */
-export type AwardAboutProps = { about: XpAbout; whose: AwardWhose };
+export type AwardAboutProps = {
+  about: XpAbout;
+  whose: AwardWhose;
+  /** The reader's language. English where a page that draws the ledger has not been given one yet. */
+  say?: Speaker;
+};
 
 /** A player's XP history, on the XP tab of their page. */
 export type PlayerXpHistoryProps = {

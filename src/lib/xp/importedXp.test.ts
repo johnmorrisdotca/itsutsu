@@ -9,8 +9,8 @@ import {
   IMPORTED_XP_CANDIDATES,
   IMPORTED_XP_EVENTS,
   IMPORTED_XP_RULES,
-  IMPORTED_XP_SPECS,
   IMPORTED_XP_TYPES,
+  importedXpCopy,
 } from "./importedXp.constants";
 import {
   classKindOf,
@@ -229,8 +229,10 @@ describe("the settings table", () => {
 
   it("gives every imported type something to say, and every twin a real Itsutsu award", () => {
     for (const type of IMPORTED_XP_TYPES) {
-      expect(IMPORTED_XP_SPECS[type]?.label.length, type).toBeGreaterThan(5);
-      expect(IMPORTED_XP_SPECS[type]?.blurb.length, type).toBeGreaterThan(15);
+      for (const language of ["en", "ja"] as const) {
+        expect(importedXpCopy(type, language).label.length, `${type} ${language}`).toBeGreaterThan(1);
+        expect(importedXpCopy(type, language).blurb.length, `${type} ${language}`).toBeGreaterThan(10);
+      }
       const twin = IMPORTED_TWIN_OF[type];
       if (twin !== undefined) expect(XP_EVENT_SPECS[twin], type).toBeDefined();
     }

@@ -4,6 +4,7 @@ import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { PlayerName } from "@/components/players/PlayerName";
 import { familyPath, matchPath } from "@/lib/gomoku/slugs";
+import { speaker } from "@/lib/i18n/i18n";
 import { playerPath } from "@/lib/rating/playerKey";
 
 import type { AwardAboutProps } from "./xp.types";
@@ -22,7 +23,7 @@ import type { AwardAboutProps } from "./xp.types";
  * saying so in the markup is what keeps the exception from looking identical to
  * an oversight.
  */
-export function AwardAbout({ about, whose }: AwardAboutProps) {
+export function AwardAbout({ about, whose, say = speaker("en") }: AwardAboutProps) {
   const yours = whose === "yours";
 
   if (about.of === "game") {
@@ -39,9 +40,9 @@ export function AwardAbout({ about, whose }: AwardAboutProps) {
       return (
         <span
           className="text-muted"
-          title={`This match is no longer kept — finished games are held for the number of days ${yours ? "you" : "they"} chose.`}
+          title={say.say(yours ? "xp.about.matchGoneYours" : "xp.about.matchGoneTheirs")}
         >
-          a match no longer kept
+          {say.say("xp.about.matchGone")}
         </span>
       );
     }
@@ -57,7 +58,7 @@ export function AwardAbout({ about, whose }: AwardAboutProps) {
         <GameName variant={about.variant} />
         <span className="text-muted"> · </span>
         <Link href={matchPath(about.variant, about.gameId)} className="underline underline-offset-4">
-          that match
+          {say.say("xp.about.thatMatch")}
         </Link>
       </>
     );
@@ -75,7 +76,7 @@ export function AwardAbout({ about, whose }: AwardAboutProps) {
      * that are PHRASES rather than names: "that match", "your rival".
      */
     return about.through === null ? (
-      <span title="A family that has been renamed since this was earned.">{about.title}</span>
+      <span title={say.say("xp.about.familyRenamed")}>{about.title}</span>
     ) : (
       <Link href={familyPath(about.through)} className="underline-offset-2 hover:underline">
         {about.title}
@@ -93,10 +94,10 @@ export function AwardAbout({ about, whose }: AwardAboutProps) {
        * has one and this one does not.
        */
       <Link href={playerPath("", about.memberId)} className="underline underline-offset-4">
-        their page
+        {say.say("xp.about.theirPage")}
       </Link>
     ) : (
-      <PlayerName name={about.name} memberId={about.memberId} fallback="a bot" />
+      <PlayerName name={about.name} memberId={about.memberId} fallback={say.say("xp.about.aBot")} />
     );
   }
 
@@ -107,7 +108,7 @@ export function AwardAbout({ about, whose }: AwardAboutProps) {
         <GameName variant={about.variant} />
         <span className="text-muted"> · </span>
         <Link href={playerPath("", about.memberId)} className="underline underline-offset-4">
-          {yours ? "your rival" : "their rival"}
+          {say.say(yours ? "xp.about.yourRival" : "xp.about.theirRival")}
         </Link>
       </>
     );
@@ -115,12 +116,16 @@ export function AwardAbout({ about, whose }: AwardAboutProps) {
 
   if (about.of === "words") {
     return about.stale === true ? (
-      <span className="text-muted" title="Nothing on the site answers to this any more.">
+      <span className="text-muted" title={say.say("xp.about.stale")}>
         {about.said}
       </span>
     ) : (
       <span className="text-muted">{about.said}</span>
     );
+  }
+
+  if (about.of === "race") {
+    return <span className="text-muted">{say.say("xp.about.race")}</span>;
   }
 
   // Nothing to point at, said as nothing rather than as a link back to the

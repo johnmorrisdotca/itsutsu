@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import type { Speaker } from "@/lib/i18n/i18n";
 import type { Promotion } from "@/lib/xp/promotions.types";
 import type { NameTag } from "@/lib/xp/nameTagsOf";
 
@@ -21,4 +22,6 @@ export type PromotionsTableProps = {
   empty: ReactNode;
   /** The flag and badge beside each name, read once for the page (`nameTagsOf`). */
   tags: ReadonlyMap<string, NameTag>;
+  /** The reader's language: the headings and the lines under a date are said in it. */
+  say: Speaker;
 };

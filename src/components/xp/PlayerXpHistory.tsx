@@ -3,6 +3,9 @@ import Link from "@/components/ui/Link";
 import { Paired } from "@/components/i18n/Paired";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { PANEL_CLASS, SECTION_HEADING, TABLE_SCROLL } from "@/components/ui/ui.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { weave } from "@/lib/i18n/weave";
 import { countText } from "@/lib/rating/figures";
 import { playerXpHistory } from "@/lib/xp/playerXpHistory";
 import { xpParamsFrom } from "@/lib/xp/xpHistory";
@@ -39,31 +42,28 @@ import type { AwardWhose, PlayerXpHistoryProps } from "./xp.types";
 export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHistoryProps) {
   const raw = asked[XP_HISTORY_CURSOR_PARAM];
   const cursor = typeof raw === "string" && raw !== "" ? raw : null;
-  const history = await playerXpHistory({ memberId, cursor });
+  const say = await currentSpeaker();
+  const history = await playerXpHistory({ memberId, cursor, locale: say.locale });
   const params = xpParamsFrom(asked);
   const whose: AwardWhose = isYou ? "yours" : "theirs";
 
   return (
     <section id={XP_HISTORY_ANCHOR} className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="xp-history">
       <h2 className={SECTION_HEADING}>
-        <Paired en="How the XP was earned" kanji="経験の記録" kanjiClassName="text-xs font-normal opacity-70" />
+        <Paired en={say.say("xp.history.title")} kanji="経験の記録" kanjiClassName="text-xs font-normal opacity-70" />
       </h2>
-      <p className="text-xs text-muted">
-        Every award, newest first, under the day it was earned — counted in{" "}
-        {isYou ? "your" : "their"} own time zone. Total is where the whole stood once that award was
-        counted, credit from other sites included.
-      </p>
+      <p className="text-xs text-muted">{say.say(isYou ? "xp.history.introYours" : "xp.history.introTheirs")}</p>
 
       <div className={TABLE_SCROLL}>
         <table className={TABLE_CLASS} data-testid="xp-history-table">
           <thead className={TABLE_HEAD_CLASS}>
             <tr>
-              <th scope="col" className={HEAD}>For</th>
+              <th scope="col" className={HEAD}>{say.say("xp.history.for")}</th>
               {/* The phone folds About into the For cell — see ABOUT_ON_A_DESK. */}
-              <th scope="col" className={`${HEAD} ${ABOUT_ON_A_DESK}`}>About</th>
-              <th scope="col" className={HEAD}>XP</th>
-              <th scope="col" className={HEAD} title="The whole total once this award was counted">
-                Total
+              <th scope="col" className={`${HEAD} ${ABOUT_ON_A_DESK}`}>{say.say("xp.history.about")}</th>
+              <th scope="col" className={HEAD}>{say.say("xp.unit")}</th>
+              <th scope="col" className={HEAD} title={say.say("xp.history.totalTitle")}>
+                {say.say("xp.history.total")}
               </th>
             </tr>
           </thead>
@@ -75,24 +75,21 @@ export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHi
             <tbody>
               <tr className={ROW_CLASS}>
                 <td colSpan={4} className="py-3 text-sm text-muted" data-testid="xp-history-empty">
-                  {isYou ? (
-                    <>
-                      Nothing earned yet. Every game you finish earns XP, and so does every game here you
-                      try for the first time.{" "}
-                      <Link href="/games" className="underline underline-offset-4">
-                        Pick a game and start earning
-                      </Link>
-                      .
-                    </>
-                  ) : (
-                    <>
-                      Nothing earned here yet — each award will be listed here, day by day, as it arrives.{" "}
-                      <Link href="/xp" className="underline underline-offset-4">
-                        See where everyone stands
-                      </Link>
-                      .
-                    </>
-                  )}
+                  {isYou
+                    ? weave(say.say("xp.history.emptyYours"), {
+                        link: (
+                          <Link href="/games" className="underline underline-offset-4">
+                            {say.say("xp.history.emptyYoursLink")}
+                          </Link>
+                        ),
+                      })
+                    : weave(say.say("xp.history.emptyTheirs"), {
+                        link: (
+                          <Link href="/xp" className="underline underline-offset-4">
+                            {say.say("xp.history.emptyTheirsLink")}
+                          </Link>
+                        ),
+                      })}
                 </td>
               </tr>
             </tbody>
@@ -107,16 +104,19 @@ export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHi
                     </time>
                     {day.total === null ? null : (
                       <span className="ml-2 font-normal text-muted">
-                        <span className="font-mono text-moss" data-testid="xp-history-day-total">
-                          +{countText(day.total)}
-                        </span>{" "}
-                        that day
+                        {weave(say.say("xp.history.dayTotal"), {
+                          total: (
+                            <span className="font-mono text-moss" data-testid="xp-history-day-total">
+                              +{countText(day.total)}
+                            </span>
+                          ),
+                        })}
                       </span>
                     )}
                   </th>
                 </tr>
                 {day.entries.map((entry) => (
-                  <Award key={entry.id} entry={entry} whose={whose} />
+                  <Award key={entry.id} entry={entry} whose={whose} say={say} />
                 ))}
               </tbody>
             ))
@@ -133,12 +133,12 @@ export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHi
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
           {history.next === null ? null : (
             <Link href={xpHistoryHref(at, params, history.next)} className="underline underline-offset-4" data-testid="xp-history-older">
-              Older awards
+              {say.say("xp.history.older")}
             </Link>
           )}
           {cursor === null ? null : (
             <Link href={xpHistoryHref(at, params, null)} className="underline underline-offset-4" data-testid="xp-history-newest">
-              Back to the newest
+              {say.say("xp.backToNewest")}
             </Link>
           )}
         </p>
@@ -146,9 +146,9 @@ export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHi
 
       {history.skipped.unknownType > 0 ? (
         <p className="text-xs text-muted" data-testid="xp-history-skipped">
-          {history.skipped.unknownType} award{history.skipped.unknownType === 1 ? "" : "s"} on this page
-          were earned under a rule this version of the site cannot explain, and are not shown. The total
-          still counts them.
+          {say.say(history.skipped.unknownType === 1 ? "xp.history.skipped.one" : "xp.history.skipped.other", {
+            count: countText(history.skipped.unknownType),
+          })}
         </p>
       ) : null}
     </section>
@@ -156,7 +156,7 @@ export async function PlayerXpHistory({ memberId, isYou, asked, at }: PlayerXpHi
 }
 
 /** One award: what for, what about, the points, and the total it left. */
-function Award({ entry, whose }: { entry: XpHistoryEntry; whose: AwardWhose }) {
+function Award({ entry, whose, say }: { entry: XpHistoryEntry; whose: AwardWhose; say: Speaker }) {
   return (
     <tr className={ROW_CLASS} data-testid="xp-history-award" data-elsewhere={entry.elsewhere ? "true" : "false"}>
       <td className="py-1.5 pr-3 align-top">
@@ -173,20 +173,20 @@ function Award({ entry, whose }: { entry: XpHistoryEntry; whose: AwardWhose }) {
             className="ml-2 rounded-sm bg-shade px-1 text-[0.65rem] tracking-wide text-muted uppercase"
             data-testid="xp-history-elsewhere"
             data-here="false"
-            title="Credit for a record kept from another site. There is no game here to open."
+            title={say.say("xp.history.elsewhereTitle")}
           >
-            From another site
+            {say.say("xp.history.elsewhere")}
           </span>
         ) : null}
         <span className="block text-xs text-muted">{entry.blurb}</span>
         {entry.about.of === "nobody" ? null : (
           <span className="mt-0.5 block sm:hidden">
-            <AwardAbout about={entry.about} whose={whose} />
+            <AwardAbout about={entry.about} whose={whose} say={say} />
           </span>
         )}
       </td>
       <td className={`py-1.5 pr-3 align-top ${ABOUT_ON_A_DESK}`}>
-        <AwardAbout about={entry.about} whose={whose} />
+        <AwardAbout about={entry.about} whose={whose} say={say} />
       </td>
       <td className={`${CELL} whitespace-nowrap align-top`} data-testid="xp-history-points">
         +{countText(entry.points)}

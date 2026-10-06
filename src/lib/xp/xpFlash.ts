@@ -1,10 +1,13 @@
 import "server-only";
 
 import { currentMemberRow } from "@/lib/auth/currentSession";
+import { currentLocale } from "@/lib/i18n/currentLocale";
+import type { Locale } from "@/lib/i18n/i18n.types";
 import { prisma } from "@/lib/prisma";
 
 import { xpLevelName } from "./levelNames";
 import { XP_EVENT_SPECS } from "./xp.constants";
+import { xpEventCopy } from "./xpAwardCopy";
 import type { XpEventType } from "./xp.types";
 
 /**
@@ -145,7 +148,11 @@ export async function xpFlashFor(): Promise<XpFlashToShow | null> {
   const row = await currentMemberRow();
   const flash = row?.xpFlash as Partial<XpFlash> | null | undefined;
   if (!flash || typeof flash.at !== "string") return null;
-  return { at: flash.at, about: typeof flash.about === "string" ? flash.about : null, toasts: toToasts(flash) };
+  return {
+    at: flash.at,
+    about: typeof flash.about === "string" ? flash.about : null,
+    toasts: toToasts(flash, await currentLocale()),
+  };
 }
 
 /**
@@ -157,17 +164,17 @@ export async function xpFlashFor(): Promise<XpFlashToShow | null> {
  * beside nothing is worse than no toast, and the ledger still has the row —
  * which is the whole reason the flash is allowed to be lossy.
  */
-export function toToasts(value: unknown): XpToastItem[] {
+export function toToasts(value: unknown, locale: Locale = "en"): XpToastItem[] {
   const flash = value as Partial<XpFlash> | null | undefined;
   if (!flash || !Array.isArray(flash.awards)) return [];
-  const level = levelOn(flash);
+  const level = levelOn(flash, locale);
 
   return flash.awards.flatMap((award, index) => {
     const entry = award as Partial<{ type: string; points: number }> | null;
     if (!entry || typeof entry.type !== "string") return [];
     if (typeof entry.points !== "number" || !Number.isFinite(entry.points) || entry.points <= 0) return [];
-    const spec = XP_EVENT_SPECS[entry.type as XpEventType];
-    if (spec === undefined) return [];
+    if (XP_EVENT_SPECS[entry.type as XpEventType] === undefined) return [];
+    const copy = xpEventCopy(entry.type as XpEventType, locale);
     return [{
       /* The stamp plus the position in the batch. Unique, stable across a
          re-render of the same flash — so the host's dismiss keeps working — and
@@ -175,9 +182,9 @@ export function toToasts(value: unknown): XpToastItem[] {
          the browser's and be reported as a hydration mismatch. */
       id: `${flash.at ?? "xp"}-${index}`,
       points: entry.points,
-      label: spec.label,
-      kanji: spec.kanji,
-      sentence: spec.sentence,
+      label: copy.label,
+      kanji: copy.kanji,
+      sentence: copy.sentence,
       /* On the LAST award of the batch only. A level is crossed once however
          many awards carried you over it, and putting it on all three would say
          "you reached Pixel" three times in one stack of toasts. */
@@ -205,11 +212,11 @@ export function toToasts(value: unknown): XpToastItem[] {
  * the rows are read against each other. `LevelName`'s own comment says which
  * way round that is and why.
  */
-function levelOn(flash: Partial<XpFlash>): { name: string; reached: boolean } | null {
+function levelOn(flash: Partial<XpFlash>, locale: Locale): { name: string; reached: boolean } | null {
   const level = flash.level;
   if (!level || typeof level.level !== "number" || typeof level.reached !== "boolean") return null;
   if (!Number.isInteger(level.level) || level.level < 1) return null;
-  return { name: xpLevelName(level.level), reached: level.reached };
+  return { name: xpLevelName(level.level, locale), reached: level.reached };
 }
 
 /**

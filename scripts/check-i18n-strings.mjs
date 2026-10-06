@@ -108,13 +108,6 @@ export const PENDING_PATHS = [
   { path: "src/components/cards", ticket: "ENJA-08" },
   { path: "src/lib/casual", ticket: "ENJA-08" },
   { path: "src/components/casual", ticket: "ENJA-08" },
-  // ENJA-09, XP, levels and the points ladder
-  { path: "src/lib/xp", ticket: "ENJA-09" },
-  { path: "src/components/xp", ticket: "ENJA-09" },
-  { path: "src/app/xp", ticket: "ENJA-09" },
-  { path: "src/lib/points", ticket: "ENJA-09" },
-  { path: "src/components/points", ticket: "ENJA-09" },
-  { path: "src/app/points", ticket: "ENJA-09" },
   // ENJA-10, pages: home, About, Learn, players, history, My account, feed, inbox, join
   { path: "src/app/about", ticket: "ENJA-10" },
   { path: "src/components/about", ticket: "ENJA-10" },
@@ -215,6 +208,29 @@ export const COPY_DATA_FILES = new Set(["src/lib/gomoku/families.data.ts", "src/
  */
 export const ALLOWED_FILES = new Map([
   ["src/lib/app/appleLaunch.ts", "CSS media queries that pick an iPhone's launch picture by screen size; code, not language"],
+  ["src/lib/xp/xpSubjects.constants.ts", "notes to the developer wiring an award about what its subject is (\"the game id\"); never drawn on a page"],
+  ["src/lib/xp/backfillXp.constants.ts", "why the one-off backfill does not replay an award, printed in full by its runner to whoever runs it; never drawn on a page"],
+  ["src/lib/xp/importedRecipients.ts", "why the payer's runner refuses a record, printed to the operator who runs it; never drawn on a page"],
+  ["src/lib/xp/xpBoard.sort.ts", "a sort spec's column labels and notes, which `paging.ts` only checks are not empty; the board's headings are phrases"],
+  ["src/lib/xp/xpHistory.sort.ts", "a sort spec's column label, as xpBoard.sort.ts"],
+  ["src/lib/points/ladderSql.ts", "a SQL fragment the database runs, not language"],
+]);
+
+/**
+ * Tables of copy that belong to data, written once per language BESIDE the data
+ * they describe (AGENTS.md, "Every Word Goes Through The Phrase Table"): each is
+ * typed `Record<…>` over both languages or sits next to its Japanese sibling,
+ * so a row with no Japanese is a compile error, and a coverage test holds both
+ * halves complete. The English in them IS the site's English; it is not left
+ * out of the gate for being unread. It is here because a table of a hundred
+ * level names or seventy-three awards is data with words in it, and moving it
+ * into the phrase catalogue would only make a second copy of the data.
+ * Each path says what the table is and where its Japanese is.
+ */
+export const COPY_TABLES = new Map([
+  ["src/lib/xp/xpAwardCopy.constants.ts", "what every XP award is called and why, English and Japanese side by side, a `Record<XpEventType, …>` each; held complete by xp.coverage.test.ts"],
+  ["src/lib/xp/levelNames.constants.ts", "the hundred level names in English; the Japanese row for each is in levelNames.ja.constants.ts, held to the same hundred by levelNames.test.ts"],
+  ["src/lib/xp/levelNames.ja.constants.ts", "the hundred level names in Japanese, whose `back` field is English reading the Japanese back for the review sheet; held to the same hundred by levelNames.test.ts"],
 ]);
 
 /**
@@ -231,6 +247,7 @@ const CODE_IN_A_STRING = /\b(?:SELECT|INSERT INTO|UPDATE|DELETE FROM|WHERE|ORDER
 export const ALLOWED_TERMS = [
   ["Itsutsu", "the site's own name, which is a name rather than a phrase (AGENTS.md: \"the brand is not a phrase\")"],
   ["XP", "the point currency, a bare acronym everywhere it is drawn"],
+  ["Escape", "the name `KeyboardEvent.key` reports for the Escape key, compared and never drawn"],
   ["SGF|PDN", "file-format names, the same in every language"],
   ["Google", "the sign-in provider's name"],
   ["Vercel|Neon", "hosting and database providers' names"],
@@ -646,7 +663,7 @@ export function scan(root = repoRoot) {
   for (const absPath of files) {
     const relPath = relative(root, absPath).split("\\").join("/");
     if (EXCLUDED_PATHS.some(([path]) => under(relPath, path))) continue;
-    if (ALLOWED_FILES.has(relPath)) continue;
+    if (ALLOWED_FILES.has(relPath) || COPY_TABLES.has(relPath)) continue;
     if (!COPY_DATA_FILES.has(relPath) && EXCLUDED_NAMES.some(([pattern]) => pattern.test(relPath))) continue;
     const list = flaggedIn(relPath, readFileSync(absPath, "utf8"));
     if (list.length > 0) byFile.set(relPath, list);

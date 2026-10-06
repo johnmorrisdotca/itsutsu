@@ -111,6 +111,7 @@ import { XP_BACKFILL_COVERAGE } from "./backfillXp.constants";
 import { buddyLinkFor, planBackfill } from "./backfillXp";
 import type { BackfillBuddy, LedgerDisagreement } from "./backfillXp.types";
 import { XP_EVENT_SPECS } from "./xp.constants";
+import { xpEventCopy } from "./xpAwardCopy";
 import type { XpEventType } from "./xp.types";
 
 const ASKED = process.env.XP_BACKFILL === "1";
@@ -164,7 +165,7 @@ function reportDisagreements(where: string, disagreements: readonly LedgerDisagr
 function reportTypes(byType: ReadonlyMap<XpEventType, { events: number; points: number }>): void {
   const rows = [...byType.entries()].sort((one, two) => two[1].points - one[1].points);
   for (const [type, sum] of rows) {
-    say(`    ${XP_EVENT_SPECS[type].label.padEnd(22)} ${String(sum.events).padStart(6)} × → ${sum.points} XP`);
+    say(`    ${xpEventCopy(type).label.padEnd(22)} ${String(sum.events).padStart(6)} × → ${sum.points} XP`);
   }
 }
 

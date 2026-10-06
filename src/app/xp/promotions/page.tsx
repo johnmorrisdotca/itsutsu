@@ -1,3 +1,4 @@
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import Link from "@/components/ui/Link";
 
 import { PageTitle } from "@/components/layout/Headings";
@@ -6,9 +7,11 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { WhoFilter } from "@/components/players/WhoFilter";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { Paired } from "@/components/i18n/Paired";
 import { PromotionsTable } from "@/components/xp/PromotionsTable";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import { countText } from "@/lib/rating/figures";
 import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
 import { RECORD_SCOPES, type RecordScope } from "@/lib/rating/recordScope";
@@ -23,10 +26,10 @@ import { viewerXp } from "@/lib/xp/xpViewer";
 import { XP_WHO_PARAM, XP_WHO_SAID, xpWhoHref } from "@/lib/xp/xpWho";
 import { xpWhoFor } from "@/lib/xp/xpWhoServer";
 
-export const metadata = {
-  title: "Recent level-ups",
-  description: "Who went up an experience level on Itsutsu lately, newest first: from which level to which, and when.",
-};
+export async function generateMetadata() {
+  const say = await currentSpeaker();
+  return { title: say.say("xp.promotions.title"), description: say.say("xp.promotions.metaDescription", { site: SITE_NAME }) };
+}
 
 /* Who the list is about and how much it counts are remembered on the member's account, and their own lines are marked. */
 export const dynamic = "force-dynamic";
@@ -87,45 +90,36 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
       <SiteHeader />
 
       <PageTitle
-        title="Recent level-ups"
+        title={say.say("xp.promotions.title")}
         kanji="昇級"
         aside={
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <Link href="/xp" className="text-sm underline underline-offset-4" data-testid="to-leaderboard">
-              XP leaderboard <span className="font-mincho">経験値</span>
+              <Paired en={say.say("xp.board.metaTitle")} kanji="経験値" />
             </Link>
             <Link href="/xp/levels" className="text-sm underline underline-offset-4" data-testid="to-ladder">
-              All {countText(XP_LEVELS, say.locale)} levels <span className="font-mincho">段位</span>
+              <Paired en={say.say("xp.levels.titleCount", { count: countText(XP_LEVELS) })} kanji="段位" />
             </Link>
           </div>
         }
       />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-        <p className="text-sm text-muted">
-          Who went up a level lately, newest first. A level is read from the total, so a promotion
-          is the moment an award carried somebody over a rung. An award that carried them over
-          more than one is a single line, from where they stood to where they arrived. Games
-          finished before the ladder was built were paid for by a backfill on 13 September 2026; a
-          promotion that came from it is dated by the backfill and says which day&rsquo;s play it
-          was for. A record kept from another site is credited too: Include worldwide counts it, and
-          a promotion the credit paid is dated by the payment and says where the play was; unticking
-          it leaves it out.
-        </p>
+        <p className="text-sm text-muted">{say.say("xp.promotions.intro")}</p>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <WhoFilter who={who} hrefFor={(next) => xpWhoHref(AT, query, next)} label="Which players the list shows" />
+          <WhoFilter who={who} hrefFor={(next) => xpWhoHref(AT, query, next)} label={say.say("xp.promotions.whoLabel")} />
           <RecordScopeBar
             base={AT}
             scope={scope}
             hrefFor={(next) => xpScopeHref(AT, query, next)}
-            label="How much experience the list counts"
+            label={say.say("xp.promotions.scopeLabel")}
           />
           {narrowed ? (
             /* "Every page a link lands on says what it was narrowed to, and lets it be taken off." */
             <p className="text-xs text-muted" data-testid="promotions-narrowed">
-              Filtered by {XP_WHO_SAID[who]}.{" "}
+              {say.say("xp.narrowed", { who: say.say(XP_WHO_SAID[who]) })}{" "}
               <Link href={pageHref(DIRECTORY_WHO.everyone, scope, null)} className="underline underline-offset-4">
-                Show everyone
+                {say.say("xp.showEveryone")}
               </Link>
             </p>
           ) : null}
@@ -149,30 +143,35 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
           viewerId={viewer?.memberId ?? null}
           viewerZone={viewer?.timeZone ?? ""}
           tags={await nameTagsOf(page.items.map((item) => item.memberId))}
+          say={say}
           empty={
             narrowed ? (
               <>
-                None of {XP_WHO_SAID[who]} has gone up a level yet.{" "}
+                {say.say("xp.promotions.emptyNarrowed", { who: say.say(XP_WHO_SAID[who]) })}{" "}
                 <Link href={pageHref(DIRECTORY_WHO.everyone, scope, null)} className="underline underline-offset-4" data-testid="promotions-show-everyone">
-                  Show everyone
+                  {say.say("xp.showEveryone")}
                 </Link>
               </>
             ) : viewer === null ? (
               /* Somebody with no member row: an invitation, not the signed-in label. */
               <>
-                Nobody has gone up a level yet.{" "}
-                <Link href="/join" className="underline underline-offset-4" data-testid="promotions-join-link">
-                  Join Itsutsu
-                </Link>{" "}
-                and be the first.
+                {weave(say.say("xp.promotions.emptyGuest"), {
+                  join: (
+                    <Link href="/join" className="underline underline-offset-4" data-testid="promotions-join-link">
+                      {say.say("xp.joinSite", { site: SITE_NAME })}
+                    </Link>
+                  ),
+                })}
               </>
             ) : (
               <>
-                Nobody has gone up a level yet.{" "}
-                <Link href="/games/new" className="underline underline-offset-4" data-testid="promotions-play-link">
-                  Play a game
-                </Link>{" "}
-                and be the first — finishing one earns experience whether you win it or not.
+                {weave(say.say("xp.promotions.emptyMember"), {
+                  play: (
+                    <Link href="/games/new" className="underline underline-offset-4" data-testid="promotions-play-link">
+                      {say.say("xp.playAGame")}
+                    </Link>
+                  ),
+                })}
               </>
             )
           }
@@ -182,12 +181,12 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
         <div className="flex flex-wrap items-center gap-3">
           {page.next === null ? null : (
             <Link href={pageHref(who, scope, page.next)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="promotions-older">
-              Show older level-ups
+              {say.say("xp.promotions.older")}
             </Link>
           )}
           {cursor === null ? null : (
             <Link href={pageHref(who, scope, null)} className="text-sm underline underline-offset-4" data-testid="promotions-newest">
-              Back to the newest
+              {say.say("xp.backToNewest")}
             </Link>
           )}
         </div>

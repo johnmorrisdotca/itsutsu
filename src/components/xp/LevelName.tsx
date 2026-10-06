@@ -1,5 +1,11 @@
+"use client";
+
 import Link from "@/components/ui/Link";
 
+import { useLocale } from "@/components/i18n/LocaleProvider";
+import { copyLocale } from "@/lib/i18n/copyLocale";
+import { speaker } from "@/lib/i18n/i18n";
+import type { Locale } from "@/lib/i18n/i18n.types";
 import { levelNameRow, levelPath, xpLevelKanji, xpLevelName } from "@/lib/xp/levelNames";
 
 import type { LevelNameProps } from "./xp.types";
@@ -48,10 +54,12 @@ import type { LevelNameProps } from "./xp.types";
 export function levelBadge(
   level: number,
   compact = false,
+  locale: Locale = "en",
 ): { shown: string; whole: string; label: string; href: string | null } {
-  const name = xpLevelName(level);
+  const name = xpLevelName(level, locale);
   const kanji = xpLevelKanji(level);
-  const whole = kanji === "" ? name : `${name} ${kanji}`;
+  /* For a reader of Japanese the name IS the kanji where the level has one, so pairing them would say it twice. */
+  const whole = kanji === "" || copyLocale(locale) === "ja" ? name : `${name} ${kanji}`;
 
   /*
    * The number is always shown and the NAME is what may be dropped, which is the
@@ -62,8 +70,8 @@ export function levelBadge(
   return {
     shown: compact ? `${level}` : `${level} · ${name}`,
     whole,
-    label: `Level ${level}, ${whole}`,
-    href: levelNameRow(level) === null ? null : levelPath(level),
+    label: speaker(locale).say("xp.level.label", { level: String(level), name: whole }),
+    href: levelNameRow(level, locale) === null ? null : levelPath(level),
   };
 }
 
@@ -75,7 +83,7 @@ export function LevelName({
   className = "",
   testId = "level-name",
 }: LevelNameProps) {
-  const { shown, whole, label, href } = levelBadge(level, compact);
+  const { shown, whole, label, href } = levelBadge(level, compact, useLocale());
 
   const body = (
     <>

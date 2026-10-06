@@ -193,7 +193,7 @@ describe("what is announced", () => {
    */
   it("says it in the reader's language", () => {
     const japanese = speaker("ja");
-    expect(announcement(japanese, 50, "初勝利", { name: "初段", reached: true })).toBe("+50 経験値: 初勝利. 昇級: 初段.");
-    expect(announcement(japanese, 50, "初勝利", { name: "二段", reached: false })).toBe("+50 経験値: 初勝利. 次のレベル：二段.");
+    expect(announcement(japanese, 50, "初勝利", { name: "初段", reached: true })).toBe("+50経験値を獲得：初勝利。昇級：初段に到達。");
+    expect(announcement(japanese, 50, "初勝利", { name: "二段", reached: false })).toBe("+50経験値を獲得：初勝利。次のレベル：二段です。");
   });
 });

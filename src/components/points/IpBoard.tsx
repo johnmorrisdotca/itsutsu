@@ -1,11 +1,15 @@
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { connection } from "next/server";
 import Link from "@/components/ui/Link";
 
 import { thousands } from "@/lib/ui/thousands";
+import { Paired } from "@/components/i18n/Paired";
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { ALL_TIME, monthOf, weekOf, type RecordPeriod } from "@/lib/history/recordMonth";
 import { IP_SHOWN, IP_WHOLE } from "@/lib/points/points.constants";
 import { type IpRow, type IpScope, ipBoardOf } from "@/lib/points/ipBoards";
@@ -54,10 +58,10 @@ export async function IpBoard({
   testId?: string;
 }) {
   await connection();
-  const session = await currentSession();
+  const [session, say] = await Promise.all([currentSession(), currentSpeaker()]);
   const heading = (
     <h2 className={SECTION_TITLE}>
-      IP leaderboard <span className="font-mincho normal-case tracking-normal">点数番付</span>
+      <Paired en={say.say("points.board.title")} kanji="点数番付" kanjiClassName="normal-case tracking-normal" />
     </h2>
   );
   if (session === null) {
@@ -65,14 +69,14 @@ export async function IpBoard({
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid={testId}>
         {heading}
         <p className="text-sm text-muted" data-testid={`${testId}-shut`}>
-          Who has won the most at {title} is the playing half of this site, and that needs an invite.
+          {say.say("points.board.shut", { title })}
         </p>
         <p className="text-sm">
           <Link href="/join" className="font-semibold underline-offset-2 hover:underline">
-            I have an invite →
+            {say.say("points.board.haveInvite")}
           </Link>{" "}
           <Link href={ASK_FOR_INVITE_PATH} className="text-muted underline-offset-2 hover:underline">
-            No invite? Ask for one
+            {say.say("points.board.noInvite")}
           </Link>
         </p>
       </section>
@@ -92,16 +96,15 @@ export async function IpBoard({
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid={testId}>
       {heading}
       <div className={`grid gap-4 ${stacked ? "" : "md:grid-cols-3"}`}>
-        <IpTable label="All time" kanji="通算" rows={allTime} names={names} tags={tags} xp={xp} playHref={playHref} scope={scope} period={ALL_TIME} testId={`${testId}-all`} />
-        <IpTable label="This month" kanji="今月" rows={thisMonth} names={names} tags={tags} xp={xp} playHref={playHref} scope={scope} period={{ month: monthOf(startOfMonth()), week: null }} testId={`${testId}-month`} />
-        <IpTable label="This week" kanji="今週" rows={thisWeek} names={names} tags={tags} xp={xp} playHref={playHref} scope={scope} period={{ month: null, week: weekOf(startOfWeek()) }} testId={`${testId}-week`} />
+        <IpTable say={say} label={say.say("points.board.allTime")} kanji="通算" rows={allTime} names={names} tags={tags} xp={xp} playHref={playHref} scope={scope} period={ALL_TIME} testId={`${testId}-all`} />
+        <IpTable say={say} label={say.say("points.board.thisMonth")} kanji="今月" rows={thisMonth} names={names} tags={tags} xp={xp} playHref={playHref} scope={scope} period={{ month: monthOf(startOfMonth()), week: null }} testId={`${testId}-month`} />
+        <IpTable say={say} label={say.say("points.board.thisWeek")} kanji="今週" rows={thisWeek} names={names} tags={tags} xp={xp} playHref={playHref} scope={scope} period={{ month: null, week: weekOf(startOfWeek()) }} testId={`${testId}-week`} />
       </div>
       <p className="text-xs text-muted">
-        IP, Itsutsu Points, is won by results alone: a win pays the most the game is worth, a draw half, and a close loss
-        a little; beating a stronger player pays more. XP is for taking part.{" "}
+        {say.say("points.board.explain", { site: SITE_NAME })}{" "}
         {whole ? null : (
           <Link href="/points" className="font-semibold text-ink underline-offset-2 hover:underline" data-testid={`${testId}-site`}>
-            Every game together, and how each is priced →
+            {say.say("points.board.siteLink")}
           </Link>
         )}
       </p>
@@ -110,6 +113,7 @@ export async function IpBoard({
 }
 
 function IpTable({
+  say,
   label,
   kanji,
   rows,
@@ -121,6 +125,7 @@ function IpTable({
   period,
   testId,
 }: {
+  say: Speaker;
   label: string;
   kanji: string;
   rows: readonly IpRow[];
@@ -138,17 +143,17 @@ function IpTable({
   return (
     <div className="flex min-w-0 flex-col gap-1" data-testid={testId}>
       <h3 className="text-sm font-semibold">
-        {label} <span className="font-mincho text-xs font-normal text-muted">{kanji}</span>
+        <Paired en={label} kanji={kanji} kanjiClassName="text-xs font-normal text-muted" />
       </h3>
       <div className={TABLE_SCROLL}>
         <table className="w-full text-sm">
           <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
             <tr>
               <th className="w-8 py-1 text-left">#</th>
-              <th className="py-1 text-left">Player</th>
+              <th className="py-1 text-left">{say.say("points.board.player")}</th>
               <th className="py-1 text-right">IP</th>
-              <th className="py-1 pl-3 text-right" title="Experience 経験 — what this member has earned on Itsutsu">
-                XP
+              <th className="py-1 pl-3 text-right" title={say.say("points.board.xpTitle", { site: SITE_NAME })}>
+                {say.say("xp.unit")}
               </th>
             </tr>
           </thead>
@@ -157,9 +162,9 @@ function IpTable({
               /* An empty board is data: its shape, and the way in. */
               <tr className="border-t border-rule">
                 <td colSpan={4} className="py-2 text-sm text-muted" data-testid={`${testId}-empty`}>
-                  Nobody on it yet.{" "}
+                  {say.say("points.board.empty")}{" "}
                   <Link href={playHref} className="font-semibold text-ink underline-offset-2 hover:underline">
-                    Be the first →
+                    {say.say("points.board.beFirst")}
                   </Link>
                 </td>
               </tr>
@@ -170,7 +175,7 @@ function IpTable({
                   <tr key={row.memberId} className="border-t border-rule" data-testid="ip-row" data-member={row.memberId} data-ip={row.ip}>
                     <td className="py-1 text-muted tabular-nums">{at + 1}</td>
                     <td className="py-1">
-                      <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" tag={tags.get(row.memberId)} />
+                      <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback={say.say("points.board.aMember")} tag={tags.get(row.memberId)} />
                     </td>
                     <td className="py-1 text-right font-mono font-semibold tabular-nums">
                       <IpFigure scope={scope} memberId={row.memberId} ip={row.ip} month={period.month} week={period.week} testId="ip-row-figure" />

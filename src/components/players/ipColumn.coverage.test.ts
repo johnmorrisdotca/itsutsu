@@ -109,8 +109,13 @@ const IP_LEADS: Record<string, string> = {
   "src/components/points/IpBoard.tsx": "the IP leaderboard: ranked by IP, so IP comes first and XP after it",
 };
 
-/** Files with a `<table>` and an XP heading, read as a `<th>` holding just "XP". */
-const WITH_XP = FILES.filter((file) => /<table\b/.test(file.source) && /<th\b[^>]*>\s*XP\s*</.test(file.source));
+/**
+ * Files with a `<table>` and an XP heading, read as a `<th>` holding just "XP" or
+ * the phrase that says it (`xp.unit`, "XP" in English and 経験値 in Japanese).
+ */
+const WITH_XP = FILES.filter(
+  (file) => /<table\b/.test(file.source) && /<th\b[^>]*>\s*(?:XP|\{say\.say\("xp\.unit"\)\})\s*</.test(file.source),
+);
 
 describe("a table built by hand with an XP heading has IP after it", () => {
   it("finds such tables at all, so the check below is not vacuous", () => {

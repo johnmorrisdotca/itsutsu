@@ -1,21 +1,6 @@
-import { RECORDED_FAMILIES } from "@/lib/gomoku/families";
-import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
 import type { StreakOutcome } from "@/lib/rating/streak";
-import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
-import { inWords } from "@/lib/text/inWords";
 
 import type { XpEventSpec, XpEventType } from "./xp.types";
-
-/*
- * How many games and families there are, in words, read from the catalogue.
- * The awards said "forty-four" after the forty-fifth game arrived, and "all
- * eleven families" for months after eleven became eight; a count written into
- * a sentence is wrong the day a game or a family is added, so these sentences
- * count instead.
- */
-const GAMES = inWords(RULE_VARIANT_LIST.length, DEFAULT_LOCALE);
-/* The families a game can be played FROM: Party games, whose own games are never recorded, is never one a first game is paid in. */
-const FAMILIES = inWords(RECORDED_FAMILIES.length, DEFAULT_LOCALE);
 
 /**
  * Everything that earns XP on this site, priced, named and explained.
@@ -23,6 +8,12 @@ const FAMILIES = inWords(RECORDED_FAMILIES.length, DEFAULT_LOCALE);
  * One table. Adding an event is one row — the type in `xp.types.ts`, the row
  * here — and `Record<XpEventType, XpEventSpec>` makes a missing one a compile
  * error rather than a blank cell somebody notices in production.
+ *
+ * **The words are not here.** What an award is called, why it exists and what
+ * its toast says are copy, in English and in Japanese, and live beside each
+ * other in `xpAwardCopy.constants.ts`, where a row with no Japanese is a
+ * compile error too. This table keeps what the economy needs: the price, the
+ * kanji heading, and the rules for how often.
  *
  * The reasoning behind every number is in `docs/plans/xp/XP_DESIGN.md`, which is
  * where it belongs: a price is a decision about the whole economy, and a reader
@@ -37,7 +28,7 @@ const FAMILIES = inWords(RECORDED_FAMILIES.length, DEFAULT_LOCALE);
  *
  * **How often an award may happen is not in this table.** It is in the subject
  * the caller passes, which the unique index on `XpEvent` then enforces. See
- * `XP_SUBJECTS` below.
+ * `XP_SUBJECTS` in `xpSubjects.constants.ts`.
  */
 
 /** The type keys, for a caller that must not spell one as a literal. */
@@ -125,59 +116,35 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
 
   joined: {
     points: 50,
-    label: "Joined",
     kanji: "入会",
-    blurb: "For being here at all. Once, ever.",
-    sentence: "Welcome to Itsutsu.",
   },
   dailyVisit: {
     points: 10,
-    label: "A new day",
     kanji: "毎日",
-    blurb: "For looking in, once a day.",
-    sentence: "Good to see you again.",
   },
   dayStreak7: {
     points: 150,
-    label: "Seven days running",
     kanji: "七日",
-    blurb: "For a week of days without missing one.",
-    sentence: "Seven days in a row.",
   },
   dayStreak30: {
     points: 750,
-    label: "Thirty days running",
     kanji: "三十日",
-    blurb: "For a month of days without missing one.",
-    sentence: "Thirty days in a row.",
   },
   dayStreak100: {
     points: 3000,
-    label: "A hundred days running",
     kanji: "百日",
-    blurb: "For a hundred days without missing one.",
-    sentence: "A hundred days in a row.",
   },
   dayStreak365: {
     points: 15000,
-    label: "A year running",
     kanji: "一年",
-    blurb: "For a whole year without missing a day. It repeats, so it is worth repeating for.",
-    sentence: "A year without missing a day.",
   },
   weekendGame: {
     points: 25,
-    label: "Weekend game",
     kanji: "週末",
-    blurb: "For finishing a game at the weekend. Once a weekend.",
-    sentence: "A game at the weekend.",
   },
   backFromAway: {
     points: 100,
-    label: "Back from away",
     kanji: "帰還",
-    blurb: "For coming back after time away.",
-    sentence: "Welcome back.",
   },
   /* A year of membership, and the milestones at five and ten. John approved
      them, 2026-09-14, as the same awards a kept record earns for its years on
@@ -187,24 +154,15 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      off. They count only with a hundred games played here (`XP_YEAR_AWARDS`). */
   yearHere: {
     points: 1000,
-    label: "A year on Itsutsu",
     kanji: "一周年",
-    blurb: "For every year since you joined, with a hundred games played here.",
-    sentence: "Another year on Itsutsu.",
   },
   yearsHere5: {
     points: 10000,
-    label: "Five years on Itsutsu",
     kanji: "五周年",
-    blurb: "For five years since you joined, with a hundred games played here. Once.",
-    sentence: "Five years on Itsutsu.",
   },
   yearsHere10: {
     points: 25000,
-    label: "Ten years on Itsutsu",
     kanji: "十周年",
-    blurb: "For ten years since you joined, with a hundred games played here. Once.",
-    sentence: "Ten years on Itsutsu.",
   },
 
   /* ── Playing ────────────────────────────────────────────────────────────
@@ -214,89 +172,56 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
 
   firstGameEver: {
     points: 250,
-    label: "Your first game",
     kanji: "初局",
-    blurb: "For finishing your very first game here.",
-    sentence: "Your first game on Itsutsu.",
   },
   gameFinished: {
     points: 25,
-    label: "Game finished",
     kanji: "終局",
-    blurb: "For seeing a game through, won or lost.",
-    sentence: "A game seen through.",
     cap: 6,
   },
   gameWon: {
     points: 50,
-    label: "Game won",
     kanji: "勝利",
-    blurb: "For winning one, on top of what finishing it paid.",
-    sentence: "A game won.",
     cap: 6,
     ridesAllowance: true,
   },
   wonVsPerson: {
     points: 25,
-    label: "Won against a person",
     kanji: "対人",
-    blurb: "On top of the win, for beating somebody rather than something.",
-    sentence: "Beat a real person.",
     cap: 6,
     ridesAllowance: true,
   },
   wonVsBuddy: {
     points: 40,
-    label: "Won against a buddy",
     kanji: "友人",
-    blurb: "On top again, for beating somebody on your buddy list.",
-    sentence: "Beat one of your buddies.",
     cap: 6,
     ridesAllowance: true,
   },
   revengeWin: {
     points: 150,
-    label: "Turned it around",
     kanji: "復讐",
-    blurb: "For beating somebody at a game they had beaten you at. Once per rivalry.",
-    sentence: "You turned that one around.",
   },
   longGame: {
     points: 25,
-    label: "A long game",
     kanji: "長局",
-    blurb: "For a game that went the distance.",
-    sentence: "That one went the distance.",
     cap: 6,
     ridesAllowance: true,
   },
   comeback: {
     points: 150,
-    label: "A comeback",
     kanji: "逆転",
-    blurb: "For winning a game you were losing.",
-    sentence: "Won from behind.",
   },
   winStreak3: {
     points: 75,
-    label: "Three in a row",
     kanji: "三連勝",
-    blurb: "For three wins without a loss between them.",
-    sentence: "Three wins in a row.",
   },
   winStreak5: {
     points: 200,
-    label: "Five in a row",
     kanji: "五連勝",
-    blurb: "For five wins without a loss between them.",
-    sentence: "Five wins in a row.",
   },
   winStreak10: {
     points: 600,
-    label: "Ten in a row",
     kanji: "十連勝",
-    blurb: "For ten wins without a loss between them.",
-    sentence: "Ten wins in a row.",
   },
 
   /* ── Beating somebody better than you ───────────────────────────────────
@@ -309,28 +234,19 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
 
   upsetWin: {
     points: 100,
-    label: "An upset",
     kanji: "番狂わせ",
-    blurb: "On top of the win, for beating an established player rated at least a hundred above you.",
-    sentence: "You beat somebody better than you.",
     cap: 3,
     ridesAllowance: true,
   },
   bigUpsetWin: {
     points: 250,
-    label: "A big upset",
     kanji: "大番狂わせ",
-    blurb: "On top of the win, for beating an established player rated at least two hundred above you.",
-    sentence: "You beat somebody far better than you.",
     cap: 2,
     ridesAllowance: true,
   },
   giantKilled: {
     points: 750,
-    label: "A giant killed",
     kanji: "大物食い",
-    blurb: "On top of the win, for beating a highly ranked player rated at least three hundred above you.",
-    sentence: "You beat one of the best players here.",
     cap: 1,
     ridesAllowance: true,
   },
@@ -346,38 +262,23 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
 
   firstOfVariant: {
     points: 50,
-    label: "A game you had not played",
     kanji: "初手合",
-    blurb: `For your first game of a game. There are ${GAMES} of them.`,
-    sentence: "A game you had never played.",
   },
   firstWinAtVariant: {
     points: 10,
-    label: "First win at a game",
     kanji: "初勝",
-    blurb: `For your first win at one of the ${GAMES}.`,
-    sentence: "Your first win at this one.",
   },
   firstOfFamily: {
     points: 150,
-    label: "A family you had not met",
     kanji: "初族",
-    blurb: `For your first game from one of the ${FAMILIES} families.`,
-    sentence: "A whole family you had not met.",
   },
   everyFamilyPlayed: {
     points: 2000,
-    label: "Every family played",
     kanji: "全族",
-    blurb: `For playing a game from all ${FAMILIES} families.`,
-    sentence: `All ${FAMILIES} families played.`,
   },
   everyVariantPlayed: {
     points: 5000,
-    label: "Every game played",
     kanji: "全種",
-    blurb: `For playing all ${GAMES} games on the site.`,
-    sentence: `All ${GAMES} games played.`,
   },
   /* A family won is 300 — twice `firstOfFamily` — and the balance John left to us
      ("winning a while famly? i dunno, look at balance and determine"). Winning
@@ -392,10 +293,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      the ceiling up from the table. */
   everyVariantWonInFamily: {
     points: 300,
-    label: "A family won",
     kanji: "一族制覇",
-    blurb: "For winning at every game in a family of more than one game. Paid on the win that completes it.",
-    sentence: "You have won at every game in this family.",
   },
 
   /* ── The puzzles ────────────────────────────────────────────────────────
@@ -408,10 +306,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      `POST /api/puzzles/solved`, after the server has checked the grid. */
   puzzleSolved: {
     points: 25,
-    label: "Puzzle solved",
     kanji: "解決",
-    blurb: "For solving a puzzle right through, checked by the site. The same puzzle pays once.",
-    sentence: "A puzzle solved.",
     cap: 6,
   },
   /* A word played out to its last guess without being found. John,
@@ -422,10 +317,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      puzzle whose countdown ran out (`puzzleClock.ts`) is played out too. */
   puzzleEnded: {
     points: 5,
-    label: "Puzzle played out",
     kanji: "挑戦",
-    blurb: "For playing a puzzle to its end without solving it: a word to its last guess, or any puzzle until its clock runs out. The same puzzle pays once.",
-    sentence: "A puzzle played to the end.",
     cap: 6,
   },
   /* A race won: the faster correct solve of two, at `gameWon`'s price and
@@ -433,10 +325,7 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
      `puzzleSolved` for the finish and nothing for the loss, as after a game. */
   raceWon: {
     points: 50,
-    label: "Race won",
     kanji: "競解",
-    blurb: "For the faster correct solve when two people race one puzzle.",
-    sentence: "You won the race.",
   },
 
   /* ── Milestones at one game ─────────────────────────────────────────────
@@ -451,87 +340,51 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
 
   wins10: {
     points: 250,
-    label: "Ten wins at a game",
     kanji: "十勝",
-    blurb: "For your tenth win at one of the games. Once per game.",
-    sentence: "Ten wins at this game.",
   },
   wins100: {
     points: 2500,
-    label: "A hundred wins at a game",
     kanji: "百勝",
-    blurb: "For your hundredth win at one of the games. Once per game.",
-    sentence: "A hundred wins at this game.",
   },
   wins250: {
     points: 6000,
-    label: "Two hundred and fifty wins",
     kanji: "二百五十勝",
-    blurb: "For two hundred and fifty wins at one of the games. Once per game.",
-    sentence: "Two hundred and fifty wins at this game.",
   },
   wins500: {
     points: 12500,
-    label: "Five hundred wins at a game",
     kanji: "五百勝",
-    blurb: "For five hundred wins at one of the games. Once per game.",
-    sentence: "Five hundred wins at this game.",
   },
   wins1000: {
     points: 25000,
-    label: "A thousand wins at a game",
     kanji: "千勝",
-    blurb: "For a thousand wins at one of the games. Once per game.",
-    sentence: "A thousand wins at this game.",
   },
   losses10: {
     points: 50,
-    label: "Good Sport",
     kanji: "善戦",
-    blurb: "For ten losses at one game. Somebody needed a game worth winning.",
-    sentence: "Ten losses at this game. A good sport.",
   },
   losses50: {
     points: 150,
-    label: "Sparring Partner",
     kanji: "稽古台",
-    blurb: "For fifty losses at one game. Everybody gets better against you.",
-    sentence: "Fifty losses at this game. A sparring partner.",
   },
   losses100: {
     points: 300,
-    label: "Stepping Stone",
     kanji: "踏み台",
-    blurb: "For a hundred losses at one game. Winners climbed on you, and thank you.",
-    sentence: "A hundred losses at this game. A stepping stone.",
   },
   losses250: {
     points: 750,
-    label: "Worthy Opponent",
     kanji: "好敵手",
-    blurb: "For two hundred and fifty losses at one game, and still sitting down to play.",
-    sentence: "Two hundred and fifty losses at this game. A worthy opponent.",
   },
   losses500: {
     points: 1500,
-    label: "Never Gives Up",
     kanji: "不屈",
-    blurb: "For five hundred losses at one game. Nobody could make you stop.",
-    sentence: "Five hundred losses at this game. You never give up.",
   },
   losses1000: {
     points: 3000,
-    label: "Legend of Grit",
     kanji: "根性",
-    blurb: "For a thousand losses at one game. A legend of grit.",
-    sentence: "A thousand losses at this game. A legend of grit.",
   },
   draws10: {
     points: 250,
-    label: "Stalemate Artist",
     kanji: "引分名人",
-    blurb: "For ten drawn games at one game. Nobody got past you, and you got past nobody.",
-    sentence: "Ten draws at this game. A stalemate artist.",
   },
 
   /* ── A full board, kept moving ──────────────────────────────────────────
@@ -549,80 +402,47 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
 
   fullHouse: {
     points: 500,
-    label: "Full House",
     kanji: "満卓",
-    blurb: "For your first full board: twenty games at once, every one of them answered by an opponent.",
-    sentence: "A full house. Twenty games on the go.",
   },
   cleanSweepFirst: {
     points: 900,
-    label: "First Clean Sweep",
     kanji: "初一掃",
-    blurb: "On top of the day's Clean Sweep, for the first day you kept a full board moving. Once.",
-    sentence: "Your first clean sweep.",
   },
   cleanSweep: {
     points: 100,
-    label: "Clean Sweep",
     kanji: "一掃",
-    blurb: "For a day at a full board with nothing left waiting on your move, and moves made that day.",
-    sentence: "A clean sweep: nothing left waiting on you.",
   },
   fullHouseCombo7: {
     points: 1000,
-    label: "Full House Combo ×7",
     kanji: "七連満卓",
-    blurb: "For seven clean sweeps in a row: a full board, kept moving, every day for a week.",
-    sentence: "Seven days of full houses, kept moving.",
   },
   fullHouseCombo15: {
     points: 2000,
-    label: "Full House Combo ×15",
     kanji: "十五連満卓",
-    blurb: "For fifteen clean sweeps in a row: a full board, kept moving, every day.",
-    sentence: "Fifteen days of full houses, kept moving.",
   },
   fullHouseCombo30: {
     points: 4000,
-    label: "Full House Combo ×30",
     kanji: "三十連満卓",
-    blurb: "For thirty clean sweeps in a row: a month at a full board, kept moving.",
-    sentence: "Thirty days of full houses, kept moving.",
   },
   fullHouseCombo60: {
     points: 8000,
-    label: "Full House Combo ×60",
     kanji: "六十連満卓",
-    blurb: "For sixty clean sweeps in a row: two months at a full board, kept moving.",
-    sentence: "Sixty days of full houses, kept moving.",
   },
   fullHouseCombo120: {
     points: 15000,
-    label: "Full House Combo ×120",
     kanji: "百二十連満卓",
-    blurb: "For a hundred and twenty clean sweeps in a row: four months at a full board.",
-    sentence: "A hundred and twenty days of full houses.",
   },
   fullHouseCombo250: {
     points: 30000,
-    label: "Full House Combo ×250",
     kanji: "二百五十連満卓",
-    blurb: "For two hundred and fifty clean sweeps in a row at a full board.",
-    sentence: "Two hundred and fifty days of full houses.",
   },
   fullHouseCombo500: {
     points: 60000,
-    label: "Full House Combo ×500",
     kanji: "五百連満卓",
-    blurb: "For five hundred clean sweeps in a row at a full board.",
-    sentence: "Five hundred days of full houses.",
   },
   fullHouseCombo1000: {
     points: 100000,
-    label: "Full House Combo ×1000",
     kanji: "千連満卓",
-    blurb: "For a thousand clean sweeps in a row at a full board. Nobody gets here by accident.",
-    sentence: "A thousand days of full houses.",
   },
 
   /* ── The computer ladder ────────────────────────────────────────────────
@@ -632,24 +452,15 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
 
   gradeBeaten: {
     points: 500,
-    label: "A grade beaten",
     kanji: "撃破",
-    blurb: "For your first win against one of the five computer grades.",
-    sentence: "A computer grade beaten.",
   },
   everyGradeBeaten: {
     points: 5000,
-    label: "Every grade beaten",
     kanji: "全段",
-    blurb: "For beating all five computer grades. The hardest ordinary goal here.",
-    sentence: "All five grades beaten.",
   },
   specialistBeaten: {
     points: 1000,
-    label: "A specialist beaten",
     kanji: "名手",
-    blurb: "For beating one of the two specialists at their own game.",
-    sentence: "A specialist beaten at their own game.",
   },
 
   /* ── People ─────────────────────────────────────────────────────────────
@@ -658,65 +469,41 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
 
   firstBuddy: {
     points: 100,
-    label: "Your first buddy",
     kanji: "初友",
-    blurb: "For adding somebody to your buddy list for the first time.",
-    sentence: "Your first buddy.",
   },
   buddyAdded: {
     points: 25,
-    label: "A buddy added",
     kanji: "友達",
-    blurb: "For adding somebody to your buddy list.",
-    sentence: "A buddy added.",
     cap: 3,
   },
   challengeSent: {
     points: 10,
-    label: "Game offered",
     kanji: "申込",
-    blurb: "For offering somebody a game.",
-    sentence: "Game offered.",
     cap: 3,
   },
   challengeAnswered: {
     points: 25,
-    label: "Offer answered",
     kanji: "応戦",
-    blurb: "For answering somebody's offer of a game with a move.",
-    sentence: "Offer answered.",
     cap: 6,
   },
   rematchPlayed: {
     points: 25,
-    label: "A rematch",
     kanji: "再戦",
-    blurb: "For taking a rematch. A game worth playing twice.",
-    sentence: "A rematch.",
     cap: 6,
   },
   forkPlayed: {
     points: 40,
-    label: "A fork",
     kanji: "分岐",
-    blurb: "For playing a position on from the middle of a finished game.",
-    sentence: "A position played on.",
     cap: 6,
   },
   timeGiven: {
     points: 25,
-    label: "Time given",
     kanji: "情け",
-    blurb: "For giving your opponent more time when they needed it.",
-    sentence: "That was sporting.",
     cap: 3,
   },
   applauseGiven: {
     points: 10,
-    label: "Applause given",
     kanji: "拍手",
-    blurb: "For applauding a game somebody played.",
-    sentence: "Applause given.",
     cap: 3,
   },
 
@@ -727,125 +514,26 @@ export const XP_EVENT_SPECS: Record<XpEventType, XpEventSpec> = {
 
   nameSet: {
     points: 25,
-    label: "A name set",
     kanji: "名前",
-    blurb: "For choosing what you are called here.",
-    sentence: "Your name is set.",
   },
   countrySet: {
     points: 25,
-    label: "A country set",
     kanji: "国",
-    blurb: "For saying where you are playing from.",
-    sentence: "Your country is set.",
   },
   bioSet: {
     points: 50,
-    label: "Something about you",
     kanji: "紹介",
-    blurb: "For writing a line about yourself on your page.",
-    sentence: "Your page says something about you.",
   },
   wordsSet: {
     points: 50,
-    label: "Four words set",
     kanji: "四語",
-    blurb: "For setting the four words that let you take a seat on any device.",
-    sentence: "Your four words are set.",
   },
   seatClaimedElsewhere: {
     points: 50,
-    label: "A seat on another device",
     kanji: "着席",
-    blurb: "For taking your seat on somebody else's screen with your four words.",
-    sentence: "You took your seat on another device.",
   },
 };
 
-/**
- * How the subject is built for each kind, as a note to whoever wires it.
- *
- * Not code, because the subject comes from whatever the caller is already
- * holding and a helper would mean passing it a game, a variant and a buddy so
- * it could pick one. It is a table because getting it wrong is invisible: a
- * `firstOfVariant` awarded with the game id instead of the variant pays
- * thirty-nine times over and nothing reports it.
- */
-export const XP_SUBJECTS: Record<XpEventType, string> = {
-  joined: "",
-  dailyVisit: "the day key",
-  dayStreak7: "the day key it was reached on",
-  dayStreak30: "the day key it was reached on",
-  dayStreak100: "the day key it was reached on",
-  dayStreak365: "the day key it was reached on",
-  weekendGame: "the ISO week, so it is once a weekend and not once a game",
-  backFromAway: "the awayUntil date that ended",
-  yearHere: "the date of the anniversary, so it is once per year of membership",
-  yearsHere5: "",
-  yearsHere10: "",
-  firstGameEver: "",
-  gameFinished: "the game id",
-  gameWon: "the game id",
-  wonVsPerson: "the game id",
-  wonVsBuddy: "the game id",
-  revengeWin: "the opponent's member id and the variant, so it is once per rivalry",
-  longGame: "the game id",
-  comeback: "the game id",
-  winStreak3: "the game id that completed the run, so a later run earns it again",
-  winStreak5: "the game id that completed the run",
-  winStreak10: "the game id that completed the run",
-  upsetWin: "the game id, so one game pays one band",
-  bigUpsetWin: "the game id, so one game pays one band",
-  giantKilled: "the game id, so one game pays one band",
-  firstOfVariant: "the RuleVariant key, or a PuzzleKind for a puzzle solved",
-  firstWinAtVariant: "the RuleVariant key",
-  firstOfFamily: "the family's key in GAME_FAMILIES, which the family title is not",
-  everyFamilyPlayed: "",
-  everyVariantPlayed: "",
-  everyVariantWonInFamily: "the family's key in GAME_FAMILIES, which the family title is not — once per family, and only a family of more than one game",
-  puzzleSolved: "the puzzle's kind, side and the hash of its givens, so one grid pays once",
-  puzzleEnded: "the puzzle's kind, side and the hash of its givens, as puzzleSolved, so one word pays once",
-  raceWon: "the race's id, so a race pays its winner once",
-  wins10: "the RuleVariant key, so it is once per game per member",
-  wins100: "the RuleVariant key, so it is once per game per member",
-  wins250: "the RuleVariant key, so it is once per game per member",
-  wins500: "the RuleVariant key, so it is once per game per member",
-  wins1000: "the RuleVariant key, so it is once per game per member",
-  losses10: "the RuleVariant key, so it is once per game per member",
-  losses50: "the RuleVariant key, so it is once per game per member",
-  losses100: "the RuleVariant key, so it is once per game per member",
-  losses250: "the RuleVariant key, so it is once per game per member",
-  losses500: "the RuleVariant key, so it is once per game per member",
-  losses1000: "the RuleVariant key, so it is once per game per member",
-  draws10: "the RuleVariant key, so it is once per game per member",
-  fullHouse: "",
-  cleanSweepFirst: "",
-  cleanSweep: "the day key of the day that was kept, in the member's own zone",
-  fullHouseCombo7: "the day key the run reached it on, so a later run earns it again",
-  fullHouseCombo15: "the day key the run reached it on",
-  fullHouseCombo30: "the day key the run reached it on",
-  fullHouseCombo60: "the day key the run reached it on",
-  fullHouseCombo120: "the day key the run reached it on",
-  fullHouseCombo250: "the day key the run reached it on",
-  fullHouseCombo500: "the day key the run reached it on",
-  fullHouseCombo1000: "the day key the run reached it on",
-  gradeBeaten: "the BotTier",
-  everyGradeBeaten: "",
-  specialistBeaten: "the BotTier",
-  firstBuddy: "",
-  buddyAdded: "the buddy's member id",
-  challengeSent: "the game id the offer created",
-  challengeAnswered: "the game id",
-  rematchPlayed: "the game id of the new game",
-  forkPlayed: "the game id of the new game",
-  timeGiven: "the game id",
-  applauseGiven: "the game id",
-  nameSet: "",
-  countrySet: "",
-  bioSet: "",
-  wordsSet: "",
-  seatClaimedElsewhere: "the game id",
-};
 
 /**
  * Kinds that are priced and named, and that nothing pays yet.
@@ -1114,12 +802,6 @@ export function winStreakMilestoneFor(wins: number): XpEventType | null {
 /** The same, for a run of days. */
 export function dayStreakMilestoneFor(days: number): XpEventType | null {
   return XP_DAY_STREAK_MILESTONES.find((milestone) => milestone.days === days)?.type ?? null;
-}
-
-/** What a toast and a history row say about one award. */
-export function xpEventCopy(type: XpEventType): Pick<XpEventSpec, "label" | "kanji" | "sentence" | "blurb"> {
-  const spec = XP_EVENT_SPECS[type];
-  return { label: spec.label, kanji: spec.kanji, sentence: spec.sentence, blurb: spec.blurb };
 }
 
 /** What one award of this kind is worth. */

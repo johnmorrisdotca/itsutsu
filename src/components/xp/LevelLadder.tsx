@@ -2,6 +2,7 @@ import Link from "@/components/ui/Link";
 
 import { Paired } from "@/components/i18n/Paired";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { countText } from "@/lib/rating/figures";
 import type { LadderRung } from "@/lib/xp/levelLadder";
 import { levelPath } from "@/lib/xp/levelNames";
@@ -41,24 +42,24 @@ import { TABLE_SCROLL } from "@/components/ui/ui.constants";
  */
 
 /** The ladder's own headings. Plain words: this table sorts by nothing. */
-function Headings() {
+function Headings({ say }: { say: Speaker }) {
   return (
     <thead className={TABLE_HEAD_CLASS}>
       <tr>
         <th className={HEAD} scope="col">
-          Level
+          {say.say("xp.level")}
         </th>
         <th className={HEAD} scope="col">
-          Name
+          {say.say("xp.ladder.name")}
         </th>
-        <th className={HEAD} scope="col" title="Total XP a member must hold to stand on this rung">
-          To reach
+        <th className={HEAD} scope="col" title={say.say("xp.ladder.toReachTitle")}>
+          {say.say("xp.ladder.toReach")}
         </th>
-        <th className={HEAD} scope="col" title="XP climbed from the rung below">
-          Climb
+        <th className={HEAD} scope="col" title={say.say("xp.ladder.climbTitle")}>
+          {say.say("xp.ladder.climb")}
         </th>
         <th className={HEAD} scope="col">
-          Why this one
+          {say.say("xp.ladder.why")}
         </th>
       </tr>
     </thead>
@@ -76,7 +77,7 @@ function Headings() {
  * `font-mincho` span, because the rule for how the two scripts sit together
  * belongs in that component and nowhere else.
  */
-function Rung({ rung, here }: { rung: LadderRung; here: boolean }) {
+function Rung({ rung, here, say }: { rung: LadderRung; here: boolean; say: Speaker }) {
   const band = rung.level % 10 === 1 && rung.level !== 1;
   const accent = rung.milestone ? "font-semibold text-moss" : "";
 
@@ -94,7 +95,7 @@ function Rung({ rung, here }: { rung: LadderRung; here: boolean }) {
         {rung.level}
         {here ? (
           <span className="ml-2 font-sans text-[0.65rem] tracking-wide text-moss uppercase">
-            You
+            {say.say("xp.you")}
           </span>
         ) : null}
       </td>
@@ -126,9 +127,12 @@ export function LevelLadder({
   rungs,
   /** The rung the reader stands on, or null when there is nobody to mark. */
   standing,
+  say,
 }: {
   rungs: readonly LadderRung[];
   standing: number | null;
+  /** The reader's language. */
+  say: Speaker;
 }) {
   return (
     /* Five columns with a sentence in the last one, so the table scrolls inside
@@ -136,13 +140,12 @@ export function LevelLadder({
     <div className={TABLE_SCROLL} data-testid="level-ladder">
       <table className={TABLE_CLASS}>
         <caption className="sr-only">
-          Every level of the experience ladder, with what it is called, what it costs to reach,
-          and why the name was chosen.
+          {say.say("xp.ladder.caption")}
         </caption>
-        <Headings />
+        <Headings say={say} />
         <tbody>
           {rungs.map((rung) => (
-            <Rung key={rung.level} rung={rung} here={rung.level === standing} />
+            <Rung key={rung.level} rung={rung} here={rung.level === standing} say={say} />
           ))}
         </tbody>
       </table>

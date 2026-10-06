@@ -7,6 +7,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import {
   ALLOWED_FILES,
   ALLOWED_TERMS,
+  COPY_TABLES,
   EXCLUDED_PATHS,
   PENDING_PATHS,
   formatPatternsIn,
@@ -64,13 +65,6 @@ const RECORDED = [
   "src/components/cards",
   "src/lib/casual",
   "src/components/casual",
-  // ENJA-09, XP, levels and the points ladder
-  "src/lib/xp",
-  "src/components/xp",
-  "src/app/xp",
-  "src/lib/points",
-  "src/components/points",
-  "src/app/points",
   // ENJA-10, pages: home, About, Learn, players, history, My account, feed, inbox, join
   "src/app/about",
   "src/components/about",
@@ -238,6 +232,11 @@ describe("what counts as English", () => {
     for (const [term, reason] of ALLOWED_TERMS) expect(reason.length, term).toBeGreaterThan(10);
     for (const [path, reason] of EXCLUDED_PATHS) expect(reason.length, path).toBeGreaterThan(10);
     for (const [path, reason] of ALLOWED_FILES) expect(reason.length, path).toBeGreaterThan(10);
+    for (const [path, reason] of COPY_TABLES) expect(reason.length, path).toBeGreaterThan(10);
+  });
+
+  it("names only files that exist among the allowances", () => {
+    for (const path of [...ALLOWED_FILES.keys(), ...COPY_TABLES.keys()]) expect(existsSync(path), path).toBe(true);
   });
 });
 

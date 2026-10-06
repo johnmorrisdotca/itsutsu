@@ -1,6 +1,7 @@
 import Link from "@/components/ui/Link";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { countText } from "@/lib/rating/figures";
 import type { XpBoardPage } from "@/lib/xp/xpBoard";
 
@@ -16,10 +17,13 @@ export function XpBoardFoot({
   board,
   query,
   from,
+  say,
 }: {
   board: XpBoardPage;
   query: string;
   from: number;
+  /** The reader's language. */
+  say: Speaker;
 }) {
   const shownTo = from + board.items.length;
 
@@ -40,8 +44,11 @@ export function XpBoardFoot({
     <div className="flex flex-wrap items-center gap-3">
       <p className="text-sm text-muted" data-testid="xp-board-count">
         {board.total === 0
-          ? "Nobody on the board yet."
-          : `${countText(shownTo - Math.min(from, shownTo))} of ${countText(board.total)} on the board.`}
+          ? say.say("xp.board.nobody")
+          : say.say("xp.board.count", {
+              shown: countText(shownTo - Math.min(from, shownTo)),
+              total: countText(board.total),
+            })}
       </p>
       {board.next === null ? null : (
         <Link
@@ -49,12 +56,12 @@ export function XpBoardFoot({
           className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
           data-testid="xp-board-next"
         >
-          Show the next {countText(Math.min(board.items.length, board.total - shownTo))}
+          {say.say("xp.board.next", { count: countText(Math.min(board.items.length, board.total - shownTo)) })}
         </Link>
       )}
       {from === 0 ? null : (
         <Link href={link(null, 0)} className="text-sm underline underline-offset-4" data-testid="xp-board-top">
-          Back to the top of the board
+          {say.say("xp.board.top")}
         </Link>
       )}
     </div>

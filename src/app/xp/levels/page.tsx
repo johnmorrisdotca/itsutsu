@@ -1,5 +1,7 @@
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import Link from "@/components/ui/Link";
 
+import { Paired } from "@/components/i18n/Paired";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -7,6 +9,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { LevelLadder } from "@/components/xp/LevelLadder";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { Speaker } from "@/lib/i18n/i18n";
+import { weave } from "@/lib/i18n/weave";
 import { countText } from "@/lib/rating/figures";
 import { LEVEL_MILESTONES, levelLadder } from "@/lib/xp/levelLadder";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
@@ -14,11 +17,17 @@ import { XP_LEVELS, xpForLevel } from "@/lib/xp/xpCurve";
 import { viewerXp } from "@/lib/xp/xpViewer";
 import { xpForBadge } from "@/lib/xp/xpScope";
 
-export const metadata = {
-  title: "All levels",
-  description:
-    "Every rung of Itsutsu's experience ladder, from Insert Coin to Divine Move: what each level is called, what it costs, and why.",
-};
+export async function generateMetadata() {
+  const say = await currentSpeaker();
+  return {
+    title: say.say("xp.levels.title"),
+    description: say.say("xp.levels.metaDescription", {
+      site: SITE_NAME,
+      first: xpLevelName(1, say.locale),
+      last: xpLevelName(XP_LEVELS, say.locale),
+    }),
+  };
+}
 
 /*
  * The reader's own rung is marked, and that is read off the session — so this
@@ -43,7 +52,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function LevelsPage() {
   const say = await currentSpeaker();
-  const rungs = levelLadder();
+  const rungs = levelLadder(say.locale);
   const viewer = await viewerXp();
   const standing = viewer?.standing ?? null;
 
@@ -54,30 +63,30 @@ export default async function LevelsPage() {
       {/* The leaderboard and the ladder are two halves of one thing, and each
           is the other's way on. See Nothing Is A Dead End. */}
       <PageTitle
-        title="All levels"
+        title={say.say("xp.levels.title")}
         kanji="段位"
         aside={
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <Link href="/xp/promotions" className="text-sm underline underline-offset-4" data-testid="to-promotions">
-              Recent level-ups <span className="font-mincho">昇級</span>
+              <Paired en={say.say("xp.promotions.title")} kanji="昇級" />
             </Link>
             <Link href="/xp" className="text-sm underline underline-offset-4" data-testid="to-leaderboard">
-              XP leaderboard <span className="font-mincho">経験値</span>
+              <Paired en={say.say("xp.board.metaTitle")} kanji="経験値" />
             </Link>
           </div>
         }
       />
       <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
         <p className="text-sm text-muted">
-          Experience is the second of the two ladders here, and it is not the rating. A rating
-          says how well you play; experience says you turned up and tried things — so an
-          unrated game at one screen pays it, and a game you lost still pays for having been
-          finished. Every level has a name out of gaming, from the arcade at the bottom to the
-          pantheon at the top, and {countText(XP_LEVELS, say.locale)} of them reach{" "}
-          <Link href={levelPath(XP_LEVELS)} className="underline underline-offset-4">
-            {xpLevelName(XP_LEVELS)}
-          </Link>{" "}
-          at {countText(xpForLevel(XP_LEVELS), say.locale)} XP.
+          {weave(say.say("xp.levels.intro"), {
+            count: countText(XP_LEVELS),
+            xp: countText(xpForLevel(XP_LEVELS)),
+            top: (
+              <Link href={levelPath(XP_LEVELS)} className="underline underline-offset-4">
+                {xpLevelName(XP_LEVELS, say.locale)}
+              </Link>
+            ),
+          })}
         </p>
 
         {viewer === null ? (
@@ -88,15 +97,18 @@ export default async function LevelsPage() {
            * rather than as a door being shut.
            */
           <p className="text-sm" data-testid="ladder-join">
-            Everybody starts at{" "}
-            <Link href={levelPath(1)} className="underline underline-offset-4">
-              level 1, {xpLevelName(1)}
-            </Link>
-            .{" "}
-            <Link href="/join" className="underline underline-offset-4" data-testid="ladder-join-link">
-              Join, and start climbing it
-            </Link>
-            .
+            {weave(say.say("xp.levels.guest"), {
+              level: (
+                <Link href={levelPath(1)} className="underline underline-offset-4">
+                  {say.say("xp.standing.levelName", { level: "1", name: xpLevelName(1, say.locale) })}
+                </Link>
+              ),
+              join: (
+                <Link href="/join" className="underline underline-offset-4" data-testid="ladder-join-link">
+                  {say.say("xp.levels.joinLink")}
+                </Link>
+              ),
+            })}
           </p>
         ) : (
           <YourRung
@@ -110,13 +122,9 @@ export default async function LevelsPage() {
           />
         )}
 
-        <p className="text-xs text-muted">
-          The marked rungs — {LEVEL_MILESTONES.map((level) => level).join(", ")} — are the ones
-          worth stopping at. Press any level for its own page: what the name is, what it cost,
-          and who is standing there.
-        </p>
+        <p className="text-xs text-muted">{say.say("xp.levels.marked", { marked: LEVEL_MILESTONES.join(", ") })}</p>
 
-        <LevelLadder rungs={rungs} standing={standing?.level ?? null} />
+        <LevelLadder rungs={rungs} standing={standing?.level ?? null} say={say} />
       </section>
     </Page>
   );
@@ -143,6 +151,7 @@ function YourRung({
   into: number;
   span: number;
   toNext: number;
+  say: Speaker;
 }) {
   const top = level >= XP_LEVELS;
   return (
@@ -152,24 +161,30 @@ function YourRung({
       data-level={level}
     >
       <p className="text-sm">
-        You are on{" "}
-        <Link href={levelPath(level)} className="font-semibold underline underline-offset-4">
-          level {level}, {xpLevelName(level)}
-        </Link>
-        , with {countText(xp, say.locale)} XP.{" "}
-        {top ? (
-          <span className="text-muted">
-            That is the top of the ladder — there is no rung above {xpLevelName(XP_LEVELS)}.
-          </span>
-        ) : (
-          <span className="text-muted">
-            {countText(toNext, say.locale)} more reaches{" "}
-            <Link href={levelPath(level + 1)} className="underline underline-offset-4">
-              {xpLevelName(level + 1)}
+        {weave(say.say("xp.levels.youAre"), {
+          level: (
+            <Link href={levelPath(level)} className="font-semibold underline underline-offset-4">
+              {say.say("xp.standing.levelName", { level: String(level), name: xpLevelName(level, say.locale) })}
             </Link>
-            .
-          </span>
-        )}
+          ),
+          xp: countText(xp),
+          rest: top ? (
+            <span className="text-muted">
+              {say.say("xp.levels.topOfLadder", { top: xpLevelName(XP_LEVELS, say.locale) })}
+            </span>
+          ) : (
+            <span className="text-muted">
+              {weave(say.say("xp.levels.moreReaches"), {
+                count: countText(toNext),
+                next: (
+                  <Link href={levelPath(level + 1)} className="underline underline-offset-4">
+                    {xpLevelName(level + 1, say.locale)}
+                  </Link>
+                ),
+              })}
+            </span>
+          ),
+        })}
       </p>
       {top ? null : (
         /* A bar rather than a percentage, because "930 of 1,150 into this level"
@@ -177,7 +192,7 @@ function YourRung({
         <div
           className="h-1.5 w-full overflow-hidden rounded-full bg-rule"
           role="img"
-          aria-label={`${countText(into, say.locale)} of ${countText(span, say.locale)} XP into level ${level}`}
+          aria-label={say.say("xp.levels.progress", { into: countText(into), span: countText(span), level: String(level) })}
         >
           <div
             className="h-full rounded-full bg-moss"

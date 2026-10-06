@@ -1,6 +1,8 @@
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { Suspense } from "react";
 
 import { GameName } from "@/components/games/GameName";
+import { Paired } from "@/components/i18n/Paired";
 import { GameThumb } from "@/components/games/GameThumb";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
@@ -8,6 +10,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { IpBoard } from "@/components/points/IpBoard";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { GAME_FAMILIES, boardGamesOf } from "@/lib/gomoku/families";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { GAME_MAX_BASE, gameMax, RESULT_MOST, RESULT_SHARES, RESULT_STEP } from "@/lib/points/gamePoints";
@@ -33,53 +36,50 @@ const percent = (share: number) => `${Math.round(share * 100)}%`;
  * The prices are read from the one table that sets them (`gamePoints.ts`),
  * never typed into a sentence, so this page cannot drift from what is paid.
  */
-export default function PointsPage() {
+export default async function PointsPage() {
+  const say = await currentSpeaker();
   return (
     <Page>
       <SiteHeader />
-      <PageTitle
-        title="IP, Itsutsu Points"
-        kanji="点数"
-        lead="Won by results alone, in every game and every puzzle. XP is for taking part; IP is for winning."
-      />
+      <PageTitle title={say.say("points.title", { site: SITE_NAME })} kanji="点数" lead={say.say("points.lead")} />
 
       <Suspense fallback={null}>
-        <IpBoard scope={SITE_SCOPE} title="every game" playHref="/games/new" whole testId="site-ip-board" />
+        <IpBoard scope={SITE_SCOPE} title={say.say("points.everyGame")} playHref="/games/new" whole testId="site-ip-board" />
       </Suspense>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="ip-explained">
         <h2 className={SECTION_TITLE}>
-          XP and IP <span className="font-mincho normal-case tracking-normal">経験と点数</span>
+          <Paired en={say.say("points.vs.title")} kanji="経験と点数" kanjiClassName="normal-case tracking-normal" />
         </h2>
         <div className={TABLE_SCROLL}>
           <table className="w-full text-sm">
             <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
               <tr>
                 <th className="py-1 pr-3 text-left" />
-                <th className="py-1 pr-3 text-left">XP, experience</th>
-                <th className="py-1 text-left">IP, Itsutsu Points</th>
+                <th className="py-1 pr-3 text-left">{say.say("points.vs.xpHead")}</th>
+                <th className="py-1 text-left">{say.say("points.vs.ipHead", { site: SITE_NAME })}</th>
               </tr>
             </thead>
             <tbody className="align-top">
               <tr className="border-t border-rule">
-                <th className="py-1.5 pr-3 text-left font-semibold">What it means</th>
-                <td className="py-1.5 pr-3">How long and how widely you have been part of the site</td>
-                <td className="py-1.5">How well you play</td>
+                <th className="py-1.5 pr-3 text-left font-semibold">{say.say("points.vs.means")}</th>
+                <td className="py-1.5 pr-3">{say.say("points.vs.meansXp")}</td>
+                <td className="py-1.5">{say.say("points.vs.meansIp")}</td>
               </tr>
               <tr className="border-t border-rule">
-                <th className="py-1.5 pr-3 text-left font-semibold">Earned by</th>
-                <td className="py-1.5 pr-3">Everything: games finished, new games tried, streaks, buddies, applause</td>
-                <td className="py-1.5">Results: wins, draws, close losses and every puzzle solved</td>
+                <th className="py-1.5 pr-3 text-left font-semibold">{say.say("points.vs.earned")}</th>
+                <td className="py-1.5 pr-3">{say.say("points.vs.earnedXp")}</td>
+                <td className="py-1.5">{say.say("points.vs.earnedIp")}</td>
               </tr>
               <tr className="border-t border-rule">
-                <th className="py-1.5 pr-3 text-left font-semibold">A loss</th>
-                <td className="py-1.5 pr-3">Still earns: you took part</td>
-                <td className="py-1.5">Earns nothing, unless the score was close</td>
+                <th className="py-1.5 pr-3 text-left font-semibold">{say.say("points.vs.loss")}</th>
+                <td className="py-1.5 pr-3">{say.say("points.vs.lossXp")}</td>
+                <td className="py-1.5">{say.say("points.vs.lossIp")}</td>
               </tr>
               <tr className="border-t border-rule">
-                <th className="py-1.5 pr-3 text-left font-semibold">Shows</th>
-                <td className="py-1.5 pr-3">Your level and title, beside your name</td>
-                <td className="py-1.5">Where you stand on every game&apos;s board, every family&apos;s, and this one</td>
+                <th className="py-1.5 pr-3 text-left font-semibold">{say.say("points.vs.shows")}</th>
+                <td className="py-1.5 pr-3">{say.say("points.vs.showsXp")}</td>
+                <td className="py-1.5">{say.say("points.vs.showsIp")}</td>
               </tr>
             </tbody>
           </table>
@@ -88,64 +88,57 @@ export default function PointsPage() {
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="ip-shares">
         <h2 className={SECTION_TITLE}>
-          What a game pays <span className="font-mincho normal-case tracking-normal">配点</span>
+          <Paired en={say.say("points.pays.title")} kanji="配点" kanjiClassName="normal-case tracking-normal" />
         </h2>
-        <p className="text-sm text-muted">
-          Every game has a most it can pay, below, and none is more than {GAME_MAX_BASE}. A result earns a share of it.
-        </p>
+        <p className="text-sm text-muted">{say.say("points.pays.intro", { most: String(GAME_MAX_BASE) })}</p>
         <div className={TABLE_SCROLL}>
           <table className="w-full text-sm">
             <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
               <tr>
-                <th className="py-1 pr-3 text-left">Result</th>
-                <th className="py-1 pr-3 text-right">Winner</th>
-                <th className="py-1 text-right">Loser</th>
+                <th className="py-1 pr-3 text-left">{say.say("points.pays.result")}</th>
+                <th className="py-1 pr-3 text-right">{say.say("points.pays.winner")}</th>
+                <th className="py-1 text-right">{say.say("points.pays.loser")}</th>
               </tr>
             </thead>
             <tbody>
-              <ShareRow result="Won on the board" winner={percent(RESULT_SHARES.won.winner)} loser={`up to ${percent(RESULT_SHARES.closeLoss)}, the closer the score the more`} />
-              <ShareRow result={`The other side resigned, from move ${RESULT_SHARES.resignFromMove}`} winner={percent(RESULT_SHARES.resigned.winner)} loser={percent(RESULT_SHARES.resigned.loser)} />
-              <ShareRow result={`The other side resigned before move ${RESULT_SHARES.resignFromMove}`} winner={percent(RESULT_SHARES.resignedEarly.winner)} loser={percent(RESULT_SHARES.resignedEarly.loser)} />
-              <ShareRow result="Won on time" winner={percent(RESULT_SHARES.time.winner)} loser={percent(RESULT_SHARES.time.loser)} />
-              <ShareRow result="Drawn" winner={percent(RESULT_SHARES.drawn)} loser={percent(RESULT_SHARES.drawn)} />
+              <ShareRow result={say.say("points.pays.won")} winner={percent(RESULT_SHARES.won.winner)} loser={say.say("points.pays.wonLoser", { share: percent(RESULT_SHARES.closeLoss) })} />
+              <ShareRow result={say.say("points.pays.resignedFrom", { move: String(RESULT_SHARES.resignFromMove) })} winner={percent(RESULT_SHARES.resigned.winner)} loser={percent(RESULT_SHARES.resigned.loser)} />
+              <ShareRow result={say.say("points.pays.resignedBefore", { move: String(RESULT_SHARES.resignFromMove) })} winner={percent(RESULT_SHARES.resignedEarly.winner)} loser={percent(RESULT_SHARES.resignedEarly.loser)} />
+              <ShareRow result={say.say("points.pays.time")} winner={percent(RESULT_SHARES.time.winner)} loser={percent(RESULT_SHARES.time.loser)} />
+              <ShareRow result={say.say("points.pays.drawn")} winner={percent(RESULT_SHARES.drawn)} loser={percent(RESULT_SHARES.drawn)} />
             </tbody>
           </table>
         </div>
         <ul className="list-disc pl-5 text-sm text-muted">
           <li>
-            Beating a stronger player pays up to {percent(1 + RESULT_SHARES.upset)} of the win, and beating a much weaker
-            one as little as {percent(1 - RESULT_SHARES.upset)}, by the two ratings before the game.
+            {say.say("points.pays.upset", { most: percent(1 + RESULT_SHARES.upset), least: percent(1 - RESULT_SHARES.upset) })}
           </li>
-          <li>A head start or a handicap in the winner&apos;s favour pays {percent(RESULT_SHARES.favoured)} of the win.</li>
+          <li>{say.say("points.pays.favoured", { share: percent(RESULT_SHARES.favoured) })}</li>
           <li>
-            The same two players again the same day: the second game pays {percent(RESULT_SHARES.again[1])}, and every one
-            after that {percent(RESULT_SHARES.again[2])}.
+            {say.say("points.pays.again", { second: percent(RESULT_SHARES.again[1]), later: percent(RESULT_SHARES.again[2]) })}
           </li>
-          <li>
-            Every result is rounded to the nearest {RESULT_STEP}, and no result pays more than {RESULT_MOST}, however big the
-            upset.
-          </li>
-          <li>A game on one screen, or on the practice board, pays nothing: nobody can say who played it.</li>
+          <li>{say.say("points.pays.rounded", { step: String(RESULT_STEP), most: String(RESULT_MOST) })}</li>
+          <li>{say.say("points.pays.oneScreen")}</li>
         </ul>
       </section>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="ip-maximums">
         <h2 className={SECTION_TITLE}>
-          The most each game pays <span className="font-mincho normal-case tracking-normal">上限</span>
+          <Paired en={say.say("points.max.title")} kanji="上限" kanjiClassName="normal-case tracking-normal" />
         </h2>
         <div className={TABLE_SCROLL}>
           <table className="w-full text-sm">
             <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
               <tr>
-                <th className="py-1 pr-3 text-left">Game</th>
-                <th className="py-1 text-right">Most, by board</th>
+                <th className="py-1 pr-3 text-left">{say.say("points.max.game")}</th>
+                <th className="py-1 text-right">{say.say("points.max.most")}</th>
               </tr>
             </thead>
             {GAME_FAMILIES.filter((family) => boardGamesOf(family).length > 0).map((family) => (
               <tbody key={family.key}>
                 <tr>
                   <th colSpan={2} className="pt-3 pb-1 text-left text-xs font-semibold text-muted">
-                    {family.title} <span className="font-mincho font-normal">{family.kanji}</span>
+                    <Paired en={family.title} kanji={family.kanji} kanjiClassName="font-normal" />
                   </th>
                 </tr>
                 {boardGamesOf(family).map((variant) => (
@@ -173,35 +166,29 @@ export default function PointsPage() {
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="ip-puzzles">
         <h2 className={SECTION_TITLE}>
-          What a puzzle pays <span className="font-mincho normal-case tracking-normal">配点</span>
+          <Paired en={say.say("points.puzzle.title")} kanji="配点" kanjiClassName="normal-case tracking-normal" />
         </h2>
         <p className="text-sm text-muted">
-          Every puzzle is priced on one scale: {PUZZLE_PRICE_LEAST} for the smallest and easiest, up to {PUZZLE_PRICE_MOST} for
-          the biggest and hardest. A bigger board or a harder level pays more, and the price is the same for every
-          player. Meikyuu, Suido and Tsunagi have 256 levels in each size (128 in each of Meikyuu&apos;s two colossal ones, and 64 on Suido&apos;s three huge boards), from easiest to hardest, and the later a level
-          comes the more it pays, up to {LEVEL_FAMILY_PRICE_MOST}.
+          {say.say("points.puzzle.intro", { least: String(PUZZLE_PRICE_LEAST), most: String(PUZZLE_PRICE_MOST), top: String(LEVEL_FAMILY_PRICE_MOST) })}
         </p>
         <ul className="list-disc pl-5 text-sm text-muted">
-          <li>Each Check or Hint takes some of the price off, in proportion to the points it cost the puzzle&apos;s own score.</li>
-          <li>
-            A word puzzle, Kumimoji and Koushi pay half the price for finishing and half for how well it went. A word that
-            ran out of guesses pays only for what it found.
-          </li>
-          <li>Your best solve of each puzzle counts once.</li>
+          <li>{say.say("points.puzzle.hints")}</li>
+          <li>{say.say("points.puzzle.words")}</li>
+          <li>{say.say("points.puzzle.best")}</li>
         </ul>
         <div className={TABLE_SCROLL}>
           <table className="w-full text-sm">
             <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
               <tr>
-                <th className="py-1 pr-3 text-left">Puzzle</th>
-                <th className="py-1 text-right">Pays, smallest to biggest</th>
+                <th className="py-1 pr-3 text-left">{say.say("points.puzzle.puzzle")}</th>
+                <th className="py-1 text-right">{say.say("points.puzzle.pays")}</th>
               </tr>
             </thead>
             {GAME_FAMILIES.filter((family) => family.games.some(isPuzzleKind)).map((family) => (
               <tbody key={family.key}>
                 <tr>
                   <th colSpan={2} className="pt-3 pb-1 text-left text-xs font-semibold text-muted">
-                    {family.title} <span className="font-mincho font-normal">{family.kanji}</span>
+                    <Paired en={family.title} kanji={family.kanji} kanjiClassName="font-normal" />
                   </th>
                 </tr>
                 {family.games.filter(isPuzzleKind).map((kind) => {
@@ -215,7 +202,7 @@ export default function PointsPage() {
                         </span>
                       </td>
                       <td className="py-1 text-right font-mono tabular-nums">
-                        {least} to {most}
+                        {say.say("points.puzzle.range", { least: String(least), most: String(most) })}
                       </td>
                     </tr>
                   );

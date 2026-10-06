@@ -117,9 +117,9 @@ export function resumeAfter(remaining: number): number {
  * anyone who looks; the announcement is for anyone who cannot.
  */
 export function announcement(say: Speaker, points: number, label: string, level?: XpToastItem["level"]): string {
-  const head = `${xpAmount(points)} ${say.say("xp.unit")}: ${label}.`;
+  const head = say.say("xp.announce.award", { amount: xpAmount(points), unit: say.say("xp.unit"), label });
   if (level === undefined) return head;
   return level.reached
-    ? `${head} ${say.say("xp.levelUp")}: ${level.name}.`
-    : `${head} ${say.say("xp.nextLevel", { name: level.name })}.`;
+    ? say.say("xp.announce.levelUp", { head, up: say.say("xp.levelUp"), name: level.name })
+    : say.say("xp.announce.next", { head, next: say.say("xp.nextLevel", { name: level.name }) });
 }

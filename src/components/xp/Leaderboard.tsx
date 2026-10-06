@@ -1,8 +1,10 @@
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import Link from "@/components/ui/Link";
 
 import { PlayerName } from "@/components/players/PlayerName";
 import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/components/players/PlayerRecord";
 import { ariaSort, sortHref } from "@/lib/api/paging";
+import type { Speaker } from "@/lib/i18n/i18n";
 import type { SortChoice, SortColumn, SortSpec } from "@/lib/api/paging.types";
 import { countText } from "@/lib/rating/figures";
 import type { RecordScope } from "@/lib/rating/recordScope";
@@ -70,6 +72,7 @@ function SortHead({
   at,
   query,
   param,
+  say,
   children,
   title,
 }: {
@@ -81,7 +84,10 @@ function SortHead({
   query: string;
   /** The spec's word for this column, or null for a column nothing can order by. */
   param: string | null;
-  children: React.ReactNode;
+  /** The reader's language, for what a screen reader is told of the sort. */
+  say: Speaker;
+  /** The heading as drawn: what a screen reader is told it sorts by. */
+  children: string;
   title?: string;
 }) {
   const column: SortColumn<string> | undefined =
@@ -121,7 +127,12 @@ function SortHead({
          * a label describing the effect would contradict it.
          */
         aria-label={
-          inForce ? `${column.label}, sorted ${way}. Press to reverse.` : `Sort by ${column.label}`
+          inForce
+            ? say.say("xp.sort.sorted", {
+                column: children,
+                way: say.say(way === "ascending" ? "xp.sort.ascending" : "xp.sort.descending"),
+              })
+            : say.say("xp.sort.by", { column: children })
         }
       >
         {children}
@@ -170,6 +181,8 @@ export type LeaderboardProps = {
   viewerZone: string;
   /** What the empty board offers, worded by the page for whoever is reading. */
   empty: React.ReactNode;
+  /** The reader's language: every heading, hover and marker here is said in it. */
+  say: Speaker;
   /**
    * What each row earned here today and over seven days, in each member's own
    * days, by member id — never imported credit, under either scope. A row missing from it prints a dash:
@@ -204,9 +217,11 @@ export function Leaderboard({
   gains,
   ip,
   above,
+  say,
 }: LeaderboardProps) {
   const spec = xpBoardSortSpec(scope) as SortSpec<string>;
-  const head = { spec, current, at, query };
+  const head = { spec, current, at, query, say };
+  const xp = say.say("xp.unit");
   /* Behind next follows the order in force, so it is computed over the rows as drawn. */
   const gaps = xpGapsFor(rows.map((row) => row.xp), above);
 
@@ -217,20 +232,20 @@ export function Leaderboard({
           <tr>
             {/* Rank is the row's place in the order in force, so it is a
                 consequence of the sort and can never be one. See the spec. */}
-            <SortHead {...head} param={null} title={rankAmong === undefined ? "Place in the order shown" : `Place in the order shown, among ${rankAmong}`}>
+            <SortHead {...head} param={null} title={rankAmong === undefined ? say.say("xp.col.place") : say.say("xp.col.placeAmong", { who: rankAmong })}>
               #
             </SortHead>
             <SortHead {...head} param="name">
-              Member
+              {say.say("xp.col.member")}
             </SortHead>
-            <SortHead {...head} param="level" title="Read from the total; the curve is monotonic">
-              Level
+            <SortHead {...head} param="level" title={say.say("xp.col.levelTitle")}>
+              {say.say("xp.level")}
             </SortHead>
             <SortHead {...head} param="xp">
-              XP
+              {xp}
             </SortHead>
             {/* Not sortable: IP is summed from the games and solves for the rows on screen, and ranked on its own board (/points). */}
-            <SortHead {...head} param={null} title="Itsutsu Points, won by results alone: the IP board ranks them">
+            <SortHead {...head} param={null} title={say.say("xp.col.ipTitle", { site: SITE_NAME })}>
               IP
             </SortHead>
             {/*
@@ -240,17 +255,17 @@ export function Leaderboard({
             */}
             {/* Earned here only, under either scope: credit imported from another
                 site is in the total and never a gain. See `xpGains.ts`. */}
-            <SortHead {...head} param={null} title="XP earned here today, on each member's own day. Credit from other sites counts in the total, never as a gain">
-              Today
+            <SortHead {...head} param={null} title={say.say("xp.col.todayTitle")}>
+              {say.say("xp.col.today")}
             </SortHead>
-            <SortHead {...head} param={null} title="XP earned here over the last seven days, today included. Credit from other sites counts in the total, never as a gain">
-              7 days
+            <SortHead {...head} param={null} title={say.say("xp.col.weekTitle")}>
+              {say.say("xp.col.week")}
             </SortHead>
-            <SortHead {...head} param={null} title="Points behind the row directly above, in the order shown">
-              Behind next
+            <SortHead {...head} param={null} title={say.say("xp.col.behindTitle")}>
+              {say.say("xp.col.behind")}
             </SortHead>
-            <SortHead {...head} param="last-earned" title="When they last earned anything">
-              Last earned
+            <SortHead {...head} param="last-earned" title={say.say("xp.col.lastTitle")}>
+              {say.say("xp.col.last")}
             </SortHead>
           </tr>
         </thead>
@@ -280,9 +295,9 @@ export function Leaderboard({
                 >
                   <td className={`${CELL} text-muted`}>{from + index + 1}</td>
                   <td className="py-1.5 pr-3">
-                    <PlayerName name={row.name} memberId={row.id} fallback="A member with no name yet" tag={{ country: row.country, kind: row.kind, level: null }} />
+                    <PlayerName name={row.name} memberId={row.id} fallback={say.say("xp.unnamed")} tag={{ country: row.country, kind: row.kind, level: null }} />
                     {you ? (
-                      <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">You</span>
+                      <span className="ml-2 text-[0.65rem] tracking-wide text-moss uppercase">{say.say("xp.you")}</span>
                     ) : null}
                     {notes?.get(row.id) ?? null}
                   </td>
@@ -302,7 +317,7 @@ export function Leaderboard({
                   <td
                     className={`${CELL} text-muted`}
                     data-testid="xp-board-behind"
-                    title={(gaps[index] ?? 0) < 0 ? "Ahead of the row above, in this order" : undefined}
+                    title={(gaps[index] ?? 0) < 0 ? say.say("xp.col.aheadTitle") : undefined}
                   >
                     {xpBehindText(gaps[index])}
                   </td>
