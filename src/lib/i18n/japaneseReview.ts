@@ -1,4 +1,4 @@
-import { JA_DRAFTED } from "./dictionaries/ja.drafted.constants";
+import { JA_DRAFTED, type DraftedPhrase } from "./dictionaries/ja.drafted.constants";
 import { JA_ALREADY_SAID } from "./dictionaries/ja.site.constants";
 import { PHRASES, PHRASE_KEYS, type PhraseKey } from "./i18n.constants";
 import { placeholdersIn } from "./i18n";
@@ -20,14 +20,17 @@ const MET: readonly { prefix: string; seen: string; place: string }[] = [
   { prefix: "nav.", seen: "Every screen", place: "navigation bar" },
   { prefix: "account.", seen: "Every screen", place: "account menu, top right" },
   { prefix: "site.", seen: "Every screen", place: "footer" },
+  { prefix: "install.", seen: "Phones and tablets, until dismissed", place: "the hint that offers the site as a home-screen app" },
   { prefix: "filter.", seen: "Most list pages", place: "filter bars on the record and players pages" },
   { prefix: "rules.", seen: "39 rules pages", place: "one per game" },
-  { prefix: "xp.", seen: "After earning points", place: "the notice that drops in from the top of the page" },
+  { prefix: "setup.", seen: "Every new game", place: "the set-up screen: opening, rating and opponent" },
+  { prefix: "xp.", seen: "After earning points", place: "the notice that drops in from the top of the page, a person's standing under their record, and the XP boards" },
   { prefix: "catalogue.", seen: "The games index, /games", place: "under every game and every family, in all three views" },
   // The draughts family's file, which is met on those games only; before `record.`, which would claim it.
   { prefix: "record.downloadPdn", seen: "Finished games of checkers and draughts", place: "beside Copy as text, in the move list under the replay" },
   { prefix: "record.", seen: "Finished games of go, Othello, gomoku, renju and Hex", place: "beside Copy as text, in the move list under the replay" },
   { prefix: "rivalry.", seen: "Two members' games", place: "the head-to-head scoreboard above a pair's record, and on a match before and after it" },
+  { prefix: "feed.", seen: "The feed, /feed", place: "its heading, tabs, every line of activity and its empty states" },
 ];
 
 function metBy(key: PhraseKey): { rank: number; seen: string; place: string } {
@@ -46,6 +49,31 @@ function cell(text: string): string {
   return text.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 
+/** Who has read a phrase: nobody, the reviewer agent, or a person who reads Japanese. */
+export type ReviewState = "drafted" | "agent" | "person";
+
+export function reviewState(row: DraftedPhrase): ReviewState {
+  return row.review === undefined ? "drafted" : row.review.by;
+}
+
+/**
+ * Whether a person still has something to do with this phrase: a decision only
+ * John can make (an `ask` on a phrase nobody has read) or a native read the
+ * reviewer recommended (an `ask` on a phrase the agent passed). A person's own
+ * read ends it, whatever the note says.
+ */
+export function awaitsPerson(row: DraftedPhrase): boolean {
+  return row.ask !== undefined && row.review?.by !== "person";
+}
+
+/** The Review column's words. */
+export function reviewLabel(row: DraftedPhrase): string {
+  const state = reviewState(row);
+  if (state === "drafted") return row.ask === undefined ? "Drafted, unread" : "Question, unread";
+  const who = state === "agent" ? "Agent" : "Person";
+  return `${who} ${row.review?.on ?? ""}${awaitsPerson(row) ? ", native read wanted" : ""}`;
+}
+
 /**
  * One line of the sheet, and the places that line covers.
  *
@@ -55,14 +83,18 @@ function cell(text: string): string {
  * the page — a reviewer reading the same row twice has been given nothing to
  * do the second time and has to work out whether they missed a difference.
  *
- * So rows are folded on what they actually show, and the places they cover
- * are joined into the one cell that differs. Nothing is dropped: a word
- * appearing in four places still says all four.
+ * So rows are folded on what they actually show — the English, the Japanese
+ * and the reading back — and the places they cover are joined into the one
+ * cell that differs. Nothing is dropped: a word appearing in four places still
+ * says all four, and the states and questions of its keys are joined the same
+ * way (so one wording is never on the sheet twice, even in two states).
  */
-type Row = { key: PhraseKey; cells: string[]; place: string };
+type Row = { place: string; wording: string[]; review: string; ask: string; awaiting: boolean };
 
-function fold(rows: Row[], placeColumn: number): string[][] {
-  const byContent = new Map<string, { cells: string[]; places: string[] }>();
+type Folded = { wording: string[]; places: string[]; reviews: string[]; asks: string[]; awaiting: boolean };
+
+function fold(rows: Row[]): Folded[] {
+  const byWording = new Map<string, Folded>();
   for (const row of rows) {
     /*
      * A separator that cannot occur in a cell, written as an escape rather
@@ -70,19 +102,37 @@ function fold(rows: Row[], placeColumn: number): string[][] {
      * whole file binary — no diffs, ever — which is a high price for one
      * invisible character.
      */
-    const identity = row.cells.join("\u0000");
-    const found = byContent.get(identity);
+    const identity = row.wording.join("\u0000");
+    const found = byWording.get(identity);
     if (found === undefined) {
-      byContent.set(identity, { cells: row.cells, places: [row.place] });
-    } else if (!found.places.includes(row.place)) {
-      found.places.push(row.place);
+      byWording.set(identity, {
+        wording: row.wording,
+        places: [row.place],
+        reviews: [row.review],
+        asks: row.ask === "" ? [] : [row.ask],
+        awaiting: row.awaiting,
+      });
+      continue;
     }
+    if (!found.places.includes(row.place)) found.places.push(row.place);
+    if (!found.reviews.includes(row.review)) found.reviews.push(row.review);
+    if (row.ask !== "" && !found.asks.includes(row.ask)) found.asks.push(row.ask);
+    found.awaiting = found.awaiting || row.awaiting;
   }
-  return [...byContent.values()].map(({ cells, places }) => {
-    const merged = [...cells];
-    merged[placeColumn] = places.join("; ");
-    return merged;
-  });
+  return [...byWording.values()];
+}
+
+/** How many phrases are in each state, for the line at the top of the sheet. */
+export function reviewCounts(): { total: number; drafted: number; agent: number; person: number; waiting: number } {
+  const counts = { total: 0, drafted: 0, agent: 0, person: 0, waiting: 0 };
+  for (const key of PHRASE_KEYS) {
+    const row = JA_DRAFTED[key];
+    if (row === undefined) continue;
+    counts.total += 1;
+    counts[reviewState(row)] += 1;
+    if (awaitsPerson(row)) counts.waiting += 1;
+  }
+  return counts;
 }
 
 export function japaneseReview(): string {
@@ -90,29 +140,40 @@ export function japaneseReview(): string {
   const already = inReadingOrder(PHRASE_KEYS.filter((key) => JA_ALREADY_SAID[key] !== undefined));
   const placeheld = drafted.filter((key) => placeholdersIn(PHRASES[key]).length > 0);
 
-  const draftedRows = fold(
+  const draftedFolded = fold(
     drafted.map((key) => {
       const { seen, place } = metBy(key);
-      const row = JA_DRAFTED[key];
+      const row = JA_DRAFTED[key] as DraftedPhrase;
       return {
-        key,
         place: `${cell(seen)} — ${cell(place)}`,
-        cells: ["", cell(PHRASES[key]), `**${cell(row?.text ?? "")}**`, cell(row?.back ?? ""), ""],
+        wording: [cell(PHRASES[key]), `**${cell(row.text)}**`, cell(row.back)],
+        review: reviewLabel(row),
+        ask: cell(row.ask ?? ""),
+        awaiting: awaitsPerson(row),
       };
     }),
-    0,
   );
-  const alreadyRows = fold(
+  /* A question or a native read first: those are the lines a person has to do something about. */
+  const waitingRows = draftedFolded
+    .filter((one) => one.awaiting)
+    .map((one) => [one.places.join("; "), ...one.wording, one.reviews.join("; "), one.asks.join("; "), ""]);
+  const draftedRows = draftedFolded
+    .filter((one) => !one.awaiting)
+    .map((one) => [one.places.join("; "), ...one.wording, one.reviews.join("; "), ""]);
+  const alreadyFolded = fold(
     already.map((key) => {
       const row = JA_ALREADY_SAID[key];
       return {
-        key,
         place: cell(row?.where ?? ""),
-        cells: [cell(PHRASES[key]), cell(row?.text ?? ""), ""],
+        wording: [cell(PHRASES[key]), cell(row?.text ?? "")],
+        review: "",
+        ask: "",
+        awaiting: false,
       };
     }),
-    2,
   );
+  const alreadyRows = alreadyFolded.map((one) => [...one.wording, one.places.join("; ")]);
+  const counts = reviewCounts();
 
   const lines: string[] = [
     "# Japanese review sheet",
@@ -123,6 +184,11 @@ export function japaneseReview(): string {
     "The site speaks English and Japanese. This sheet is **only the Japanese a**",
     "**machine wrote**, which is the only part that needs a reader.",
     "",
+    `Phrases: ${counts.total}. Drafted and unread: ${counts.drafted}. Read by the reviewer agent: ${counts.agent}.`,
+    `Read by a person who reads Japanese: ${counts.person}. Waiting for a decision or a native read: ${counts.waiting}`,
+    "(these come first). **Review** says who has read a line and on what day. The terms",
+    "the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.",
+    "",
     "Rows are in the order a reader meets them: the navigation bar, the account",
     "menu and the footer are on every screen, so they come first. If you only have",
     "time for the top of the table, the top of the table is the part that matters.",
@@ -132,12 +198,25 @@ export function japaneseReview(): string {
     "himself whether the meaning drifted. If that column does not match the English",
     "beside it, the Japanese is wrong whatever anybody thinks of its style.",
     "",
-    `## 1. Written by a machine — please check these (${draftedRows.length})`,
+    `## 1. Waiting for a decision or a native read — start here (${waitingRows.length})`,
     "",
-    "| Where a reader meets it | English on the site | Japanese | What it says back | Correction |",
-    "| --- | --- | --- | --- | --- |",
+    "A **question** is a wording only the site's owner can choose between. A line the",
+    "agent has read but marked for a native read is high-stakes text (children,",
+    "consent, brands, legal): the agent's pass is not enough for it.",
+    "",
+    "| Where a reader meets it | English on the site | Japanese | What it says back | Review | What is asked | Correction |",
+    "| --- | --- | --- | --- | --- | --- | --- |",
   ];
 
+  for (const cells of waitingRows) lines.push(`| ${cells.join(" | ")} |`);
+
+  lines.push(
+    "",
+    `## 2. Written by a machine — please check these (${draftedRows.length})`,
+    "",
+    "| Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |",
+    "| --- | --- | --- | --- | --- | --- |",
+  );
   for (const cells of draftedRows) lines.push(`| ${cells.join(" | ")} |`);
 
   lines.push("");
@@ -151,7 +230,7 @@ export function japaneseReview(): string {
   }
 
   lines.push(
-    `## 2. Already on the site — nothing to check (${alreadyRows.length})`,
+    `## 3. Already on the site — nothing to check (${alreadyRows.length})`,
     "",
     "These are **John's own words**, published on the English site as the kanji",
     'beside a heading. Nothing was translated: the kanji that sat next to "Rules"',
@@ -165,7 +244,7 @@ export function japaneseReview(): string {
 
   lines.push(
     "",
-    "## 3. The game names, and most of the furniture — nothing to check either",
+    "## 4. The game names, and most of the furniture — nothing to check either",
     "",
     "Every game has carried its Japanese name since the day it was added, in the",
     "`kanji` field beside its English one. A Japanese reader is shown that name and",

@@ -6,6 +6,11 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
+Phrases: 179. Drafted and unread: 1. Read by the reviewer agent: 178.
+Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 3
+(these come first). **Review** says who has read a line and on what day. The terms
+the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
+
 Rows are in the order a reader meets them: the navigation bar, the account
 menu and the footer are on every screen, so they come first. If you only have
 time for the top of the table, the top of the table is the part that matters.
@@ -15,195 +20,203 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Written by a machine — please check these (179)
+## 1. Waiting for a decision or a native read — start here (3)
 
-| Where a reader meets it | English on the site | Japanese | What it says back | Correction |
-| --- | --- | --- | --- | --- |
-| Every screen — navigation bar | Games | **種目** | Kinds of game — the catalogue of games, not a game in progress. |  |
-| Every screen — navigation bar | New game | **新しい対局** | A new game — the screen a game is set up on. |  |
-| Every screen — navigation bar | My games | **対局中** | Games in progress — my own games, going. |  |
-| Every screen — navigation bar | Privacy | **プライバシー** | Privacy — the loanword every Japanese site uses for the page that says what it keeps about you. |  |
-| Every screen — navigation bar | Terms | **利用規約** | Terms of use — the usual Japanese name for a site's terms page. |  |
-| Every screen — account menu, top right | Sign in | **サインイン** | Sign in. |  |
-| Every screen — account menu, top right | Sign out | **サインアウト** | Sign out. |  |
-| Every screen — footer | Language | **言語** | Language |  |
-| Most list pages — filter bars on the record and players pages | Any | **すべて** | All / any. |  |
-| Most list pages — filter bars on the record and players pages | Filtered by | **絞り込み** | Narrowed down to / filtered by. |  |
-| Most list pages — filter bars on the record and players pages | Player | **対局者** | Player (the site's own word for one). |  |
-| Most list pages — filter bars on the record and players pages | Result | **結果** | Result. |  |
-| Most list pages — filter bars on the record and players pages | Search names | **名前を検索** | Search names. |  |
-| Most list pages — filter bars on the record and players pages | Sort | **並び順** | Sort order. |  |
-| 39 rules pages — one per game | Also known as {names}. | **別名は{names}。** | Its other names are {names}. |  |
-| 39 rules pages — one per game | Every game of {game} played here | **ここでの{game}の全対局** | Every game of {game} played here. |  |
-| 39 rules pages — one per game | From {country} | **{country}発** | Originating from {country}. |  |
-| 39 rules pages — one per game | A game of {game} in progress | **対局中の{game}の盤面** | The board of a game of {game} in play. |  |
-| 39 rules pages — one per game | Inspired by {name}. The name belongs to its owner; this is our own version of the rules. | **{name}に着想を得た版です。名称は権利者に帰属し、ここに記すのは当サイト独自の規則です。** | This is a version inspired by {name}. The name belongs to its rights holder; what is set down here is this site's own rules. |  |
-| 39 rules pages — one per game | Play → | **遊ぶ →** | Play → |  |
-| 39 rules pages — one per game | Read about {game} on Wikipedia ↗ | **{game}をウィキペディアで読む ↗** | Read about {game} on Wikipedia ↗ |  |
-| After earning points — the notice that drops in from the top of the page | The top of the ladder. | **最高レベルです。** | This is the highest level. |  |
-| After earning points — the notice that drops in from the top of the page | Where everybody stands by experience | **経験値の順位表** | The experience-points ranking table. |  |
-| After earning points — the notice that drops in from the top of the page | Dismiss | **閉じる** | Close. |  |
-| After earning points — the notice that drops in from the top of the page | Includes {xp} XP for {games} games played on {sites}. | **{sites}で対局した{games}局の分として、{xp}経験値を含みます。** | Includes {xp} experience points as credit for the {games} games played on {sites}. |  |
-| After earning points — the notice that drops in from the top of the page | Includes {xp} XP credited for games played on other sites. | **他のサイトで対局した分として、{xp}経験値を含みます。** | Includes {xp} experience points as credit for games played on other sites. |  |
-| After earning points — the notice that drops in from the top of the page | {list} and {last} | **{list}と{last}** | {list} and {last} |  |
-| After earning points — the notice that drops in from the top of the page | Level | **レベル** | Level. |  |
-| After earning points — the notice that drops in from the top of the page | Level up | **昇級** | Promotion — going up a grade. |  |
-| After earning points — the notice that drops in from the top of the page | Next level: {name} | **次のレベル：{name}** | Next level: {name} |  |
-| After earning points — the notice that drops in from the top of the page | Points earned | **獲得ポイント** | Points earned — the points acquired. |  |
-| After earning points — the notice that drops in from the top of the page | Include worldwide | **他のサイトも含める** | Include other sites. |  |
-| After earning points — the notice that drops in from the top of the page | Counting everywhere: experience earned here, plus credit for games played on other sites. | **通算で集計：ここで得た経験値に、他のサイトでの対局分を加えています。** | Counting in total: the credit for games on other sites is added to the experience points earned here. |  |
-| After earning points — the notice that drops in from the top of the page | Counting this site only: experience earned here, and nothing credited from elsewhere. | **このサイトのみで集計：ここで得た経験値だけで、他のサイトの分は含みません。** | Counting this site only: only the experience points earned here; the credit from other sites is not included. |  |
-| After earning points — the notice that drops in from the top of the page | {count} to {name} | **{name}まであと{count}** | {count} more to go until {name}. |  |
-| After earning points — the notice that drops in from the top of the page | XP | **経験値** | Experience points. |  |
-| The games index, /games — under every game and every family, in all three views | Be the first to play → | **最初の対局者になる →** | Become the first to play → |  |
-| The games index, /games — under every game and every family, in all three views | Reading is free — join to be the first to play it → | **閲覧は自由です。参加して最初に対局しよう →** | Browsing is free. Join, and be the first to play it → |  |
-| The games index, /games — under every game and every family, in all three views | {count} of {total} | **{total}種目中{count}** | {count} of {total} games. |  |
-| The games index, /games — under every game and every family, in all three views | A crown is the top of one game's ladder, as that game shows it. This player tops more of this family's games than anybody else. | **首位とは、一つの種目の順位表の一番上のことです。このプレイヤーは、この系統の種目で誰よりも多く首位に立っています。** | A first place is the top of one game's ladder. This player stands in first place in more of this family's games than anyone else. |  |
-| The games index, /games — under every game and every family, in all three views | Most crowns | **最多首位** | Most first places. |  |
-| The games index, /games — under every game and every family, in all three views | Crowns shared by {count} players | **{count}人が首位を分け合っています** | {count} players share the first places. |  |
-| The games index, /games — under every game and every family, in all three views | The rated games they drew on this ladder | **この順位表で引き分けたレーティング対局** | The rated games drawn on this ladder. |  |
-| The games index, /games — under every game and every family, in all three views | {count} games played across the family | **この系統で{count}局** | {count} games in this family. |  |
-| The games index, /games — under every game and every family, in all three views | {count} game played across the family | **この系統で{count}局** | {count} games in this family. |  |
-| The games index, /games — under every game and every family, in all three views | {played} of {total} tried here | **{total}種目中{played}種目で対局あり** | Played in {played} of its {total} games. |  |
-| The games index, /games — under every game and every family, in all three views | Join to see who → | **参加すると誰かわかります →** | Join, and you will see who → |  |
-| The games index, /games — under every game and every family, in all three views | Last played {count} days ago | **最終対局：{count}日前** | Last game: {count} days ago. |  |
-| The games index, /games — under every game and every family, in all three views | Last played {count} months ago | **最終対局：{count}か月前** | Last game: {count} months ago. |  |
-| The games index, /games — under every game and every family, in all three views | Last played today | **最終対局：今日** | Last game: today. |  |
-| The games index, /games — under every game and every family, in all three views | Last played {count} years ago | **最終対局：{count}年前** | Last game: {count} years ago. |  |
-| The games index, /games — under every game and every family, in all three views | Last played yesterday | **最終対局：昨日** | Last game: yesterday. |  |
-| The games index, /games — under every game and every family, in all three views | The rated games they lost on this ladder | **この順位表で負けたレーティング対局** | The rated games lost on this ladder. |  |
-| The games index, /games — under every game and every family, in all three views | Nobody has played this yet | **まだ誰も対局していません** | Nobody has played yet. |  |
-| The games index, /games — under every game and every family, in all three views | No rated games yet | **レーティング対局はまだありません** | No rated games yet. |  |
-| The games index, /games — under every game and every family, in all three views | Play → | **対局する →** | Play → |  |
-| The games index, /games — under every game and every family, in all three views | {count} games played | **対局数 {count}** | Games played: {count} |  |
-| The games index, /games — under every game and every family, in all three views | {count} game played | **対局数 {count}** | Games played: {count} |  |
-| The games index, /games — under every game and every family, in all three views | against bots | **対コンピュータ** | Against the computer. |  |
-| The games index, /games — under every game and every family, in all three views | among people | **対人** | Against people. |  |
-| The games index, /games — under every game and every family, in all three views | Leaderboard → | **順位表 →** | Standings → |  |
-| The games index, /games — under every game and every family, in all three views | Nobody holds a standing among people yet, so this is the top of the ladder against the bots — a separate ladder, never added to the people's. The record is won–lost–drawn on that ladder. | **対人の順位はまだないため、コンピュータ相手の順位表の首位です。対人の順位表とは別で、合算しません。成績はその順位表での勝ち–負け–引き分けです。** | There is no standing against people yet, so this is first place on the ladder against the computer. It is separate from the people's ladder and never added to it. The record is wins–losses–draws on that ladder. |  |
-| The games index, /games — under every game and every family, in all three views | The top of this game's ladder among people: rated games between members, best rating first. The record is won–lost–drawn on that ladder. | **この種目の対人順位表の首位です。メンバー同士のレーティング対局で、レーティングの高い順。成績はその順位表での勝ち–負け–引き分けです。** | This is first place on this game's ladder against people. Rated games between members, highest rating first. The record is wins–losses–draws on that ladder. |  |
-| The games index, /games — under every game and every family, in all three views | Top player | **首位** | First place. |  |
-| The games index, /games — under every game and every family, in all three views | The rated games they won on this ladder | **この順位表で勝ったレーティング対局** | The rated games won on this ladder. |  |
-| Finished games of checkers and draughts — beside Copy as text, in the move list under the replay | Download as PDN | **PDN形式でダウンロード** | Download in PDN format. |  |
-| Finished games of go, Othello, gomoku, renju and Hex — beside Copy as text, in the move list under the replay | Download as SGF | **SGF形式でダウンロード** | Download in SGF format. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | against {name} | **{name}との対戦** | Games against {name}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Every game between {one} and {other} has been a draw | **{one}と{other}の対局はすべて引き分け** | Every game between {one} and {other} has been a draw. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Every game between you and {name} has been a draw | **{name}との対局はすべて引き分け** | Every game with {name} has been a draw. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | All games | **通算** | All-time total. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {winner} has beaten {loser} {count} times in a row | **{winner}が{loser}に{count}連勝中** | {winner} is on {count} wins in a row against {loser}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You've beaten {name} {count} times in a row | **{name}に{count}連勝中** | You are on {count} wins in a row against {name}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name} leads you {score} | **{name}があなたに{score}でリード** | {name} leads you {score}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | The last {count} games between {one} and {other} were draws | **{one}と{other}の直近{count}局は引き分け** | The last {count} games between {one} and {other} were draws. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Your last {count} games against {name} were draws | **{name}との直近{count}局は引き分け** | Your last {count} games with {name} were draws. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Draws | **引き分け** | Draws. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name}'s first win against you | **{name}があなたに初勝利** | {name} wins against you for the first time. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {winner}'s first win against {loser} | **{winner}が{loser}に初勝利** | {winner} wins against {loser} for the first time. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Your first win against {name} | **{name}に対するあなたの初勝利** | Your first win against {name}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Games | **対局数** | Number of games played. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} haven't played each other in {count} months | **{one}と{other}は{count}か月対戦していません** | {one} and {other} have not played each other for {count} months. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You haven't played {name} in {count} months | **{name}とは{count}か月対戦していません** | You have not played {name} for {count} months. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} haven't played each other in a year | **{one}と{other}は1年対戦していません** | {one} and {other} have not played each other for a year. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You haven't played {name} in a year | **{name}とは1年対戦していません** | You have not played {name} for a year. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} haven't played each other in {count} years | **{one}と{other}は{count}年対戦していません** | {one} and {other} have not played each other for {count} years. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You haven't played {name} in {count} years | **{name}とは{count}年対戦していません** | You have not played {name} for {count} years. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Last played | **最後の対局** | The last game played. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {leader} leads {trailer} {score} | **{leader}が{trailer}に{score}でリード** | {leader} leads {trailer} {score}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You lead {name} {score} | **{name}に{score}でリード** | You lead {name} {score}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You've lost to {name} {count} times in a row | **{name}に{count}連敗中** | You are on {count} losses in a row to {name}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} have never played each other | **{one}と{other}はまだ対戦したことがありません** | {one} and {other} have not yet ever played each other. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You and {name} have never played each other | **あなたと{name}はまだ対戦したことがありません** | You and {name} have not yet ever played each other. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} have never played {game} before | **{one}と{other}は{game}でまだ対戦したことがありません** | {one} and {other} have not yet played each other at {game}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You and {name} have never played {game} before | **あなたと{name}は{game}でまだ対戦したことがありません** | You and {name} have not yet played each other at {game}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Not yet | **まだなし** | None yet. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Streak | **連続** | In a row. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | The last game was a draw | **直近の対局は引き分け** | The most recent game was a draw. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | The last {count} were draws | **{count}局連続で引き分け** | {count} games in a row were draws. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name} won the last game | **直近の対局は{name}の勝ち** | The most recent game was won by {name}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name} won the last {count} | **{name}が{count}連勝中** | {name} is on {count} wins in a row. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} are tied {score} | **{one}と{other}は{score}で互角** | {one} and {other} are evenly matched at {score}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You and {name} are tied {score} | **あなたと{name}は{score}で互角** | You and {name} are evenly matched at {score}. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Head to head | **対戦成績** | Head-to-head record. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | A player | **名前のない対局者** | A player with no name. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | vs | **対** | Versus. |  |
-| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Wins | **勝ち** | Wins. |  |
-| — — — | New here: {games} | **新しく加わりました:{games}** | Newly added: {games}. |  |
-| — — — | Be the first to play → | **最初に遊んでみましょう →** | Be the first to play. |  |
-| — — — | {who} was credited {xp} for games played on other sites | **{who}に他のサイトでの対局に対して{xp}が加算されました** | {xp} was added to {who} for games on other sites. |  |
-| — — — | You were credited {xp} for games played on other sites | **他のサイトでの対局に対して{xp}が加算されました** | {xp} was added for games on other sites. |  |
-| — — — | {who} drew with {other} at {game} | **{who}が{game}で{other}と引き分けました** | {who} drew with {other} at {game}. |  |
-| — — — | You drew with {other} at {game} | **{game}で{other}と引き分けました** | You drew with {other} at {game}. |  |
-| — — — | Nothing here yet: no games finished lately between players this tab may show, no new games and no news. | **まだ何もありません。このタブに表示できる対局者どうしの最近の対局も、新しいゲームも、ニュースもありません。** | Nothing yet. There are no recent games between players this tab can show, no new games and no news. |  |
-| — — — | Nothing here yet. When you or a buddy start or finish a game, earn XP, reach a level or solve a puzzle, it shows here, newest first. | **まだ何もありません。あなたや仲間が対局を始めたり終えたり、経験値を得たり、レベルが上がったり、パズルを解いたりすると、ここに新しい順で表示されます。** | Nothing yet. When you or your buddies start or finish a game, earn experience, go up a level or solve a puzzle, it is shown here, newest first. |  |
-| — — — | Find buddies → | **仲間を探す →** | Find buddies. |  |
-| — — — | Your feed | **あなたの近況** | Your recent activity. |  |
-| — — — | {who} won {ip} | **{who}が{ip}を勝ち取りました** | {who} won {ip}. |  |
-| — — — | You won {ip} | **{ip}を勝ち取りました** | You won {ip}. |  |
-| — — — | What you and your buddies have been playing lately, newest first. | **あなたと仲間が最近遊んだこと。新しい順です。** | What you and your buddies played recently. Newest first. |  |
-| — — — | Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only bots and members who have said they are 18 or over are named. | **最近ここで終わった対局、新しく加わったゲーム、そしてサイトのニュース(初めての出来事、新しい首位、最速記録)です。名前を表示するのは、コンピューターと18歳以上と答えた会員だけです。** | Games that ended here recently, games newly added, and the site's news (first events, new leaders, fastest records). Names are shown only for computers and members who answered that they are 18 or over. |  |
-| — — — | {who} reached level {level}, {name} | **{who}がレベル{level}「{name}」になりました** | {who} became level {level}, "{name}". |  |
-| — — — | You reached level {level}, {name} | **レベル{level}「{name}」になりました** | You became level {level}, "{name}". |  |
-| — — — | {who} lost to {other} at {game} | **{who}が{game}で{other}に負けました** | {who} lost to {other} at {game}. |  |
-| — — — | You lost to {other} at {game} | **{game}で{other}に負けました** | You lost to {other} at {game}. |  |
-| — — — | A new best time at {game} {board}: {who}, {time} | **{game} {board}の最速記録:{who}、{time}** | The fastest record at {game} {board}: {who}, {time}. |  |
-| — — — | A new best time at {game} {board}: {time} | **{game} {board}の最速記録:{time}** | The fastest record at {game} {board}: {time}. |  |
-| — — — | {who} beat {other} at {game}, the first person here to | **{who}が{game}で{other}に勝ちました。ここで勝った最初の人です** | {who} won against {other} at {game}. The first person here to win. |  |
-| — — — | {other} was beaten at {game} for the first time | **{other}が{game}で初めて負けました** | {other} lost at {game} for the first time. |  |
-| — — — | {game} was played here for the first time | **{game}がここで初めて遊ばれました** | {game} was played here for the first time. |  |
-| — — — | {game} was played here for the first time: {who} drew with {other} | **{game}がここで初めて遊ばれました。{who}と{other}は引き分けでした** | {game} was played here for the first time. {who} and {other} drew. |  |
-| — — — | {game} was played here for the first time: {who} beat {other} | **{game}がここで初めて遊ばれました。{who}が{other}に勝ちました** | {game} was played here for the first time. {who} won against {other}. |  |
-| — — — | {who}'s first loss here, at {game} | **{who}がここで初めて負けました({game})** | {who} lost for the first time here ({game}). |  |
-| — — — | {who} took first place at {game} | **{who}が{game}で首位に立ちました** | {who} took first place at {game}. |  |
-| — — — | {who}'s first win here, at {game} | **{who}がここで初めて勝ちました({game})** | {who} won for the first time here ({game}). |  |
-| — — — | {who} solved {count} {game} puzzles | **{who}が{game}のパズルを{count}問解きました** | {who} solved {count} {game} puzzles. |  |
-| — — — | You solved {count} {game} puzzles | **{game}のパズルを{count}問解きました** | You solved {count} {game} puzzles. |  |
-| — — — | {who} solved a {game} puzzle | **{who}が{game}のパズルを一つ解きました** | {who} solved one {game} puzzle. |  |
-| — — — | You solved a {game} puzzle | **{game}のパズルを一つ解きました** | You solved one {game} puzzle. |  |
-| — — — | See the fastest times | **最速記録を見る** | See the fastest records. |  |
-| — — — | See the game | **対局を見る** | See the game. |  |
-| — — — | See the ladder | **順位表を見る** | See the ladder. |  |
-| — — — | See their solves | **解いた記録を見る** | See the records of what was solved. |  |
-| — — — | somebody | **誰か** | Somebody. |  |
-| — — — | {who} started a game of {game} against {other} | **{who}が{other}と{game}の対局を始めました** | {who} started a game of {game} with {other}. |  |
-| — — — | You started a game of {game} against {other} | **{other}と{game}の対局を始めました** | You started a game of {game} with {other}. |  |
-| — — — | Everyone | **みんな** | Everyone. |  |
-| — — — | You and your buddies | **あなたと仲間** | You and your buddies. |  |
-| — — — | Whose activity to show | **誰の近況を表示するか** | Whose activity to show. |  |
-| — — — | Feed | **近況** | Recent activity. |  |
-| — — — | Today | **今日** | Today. |  |
-| — — — | {who} started a game of {game}, waiting for somebody to sit down | **{who}が{game}の対局を始めました。相手を待っています** | {who} started a game of {game}. Waiting for an opponent. |  |
-| — — — | You started a game of {game}, waiting for somebody to sit down | **{game}の対局を始めました。相手を待っています** | You started a game of {game}. Waiting for an opponent. |  |
-| — — — | {who} beat {other} at {game} | **{who}が{game}で{other}に勝ちました** | {who} won against {other} at {game}. |  |
-| — — — | You beat {other} at {game} | **{game}で{other}に勝ちました** | You won against {other} at {game}. |  |
-| — — — | {who} earned {xp} | **{who}が{xp}を獲得しました** | {who} earned {xp}. |  |
-| — — — | You earned {xp} | **{xp}を獲得しました** | You earned {xp}. |  |
-| — — — | Yesterday | **昨日** | Yesterday. |  |
-| — — — | Open the browser's ⋮ menu, then Install app or Add to Home screen. | **ブラウザの ⋮ メニューを開き、「アプリをインストール」または「ホーム画面に追加」を選んでください。** | Open the browser's ⋮ menu, then choose "Install app" or "Add to home screen". |  |
-| — — — | Install app | **アプリをインストール** | Install the app. |  |
-| — — — | Not now | **今はしない** | Not now. |  |
-| — — — | Tap Share (in the ••• menu on newer iPhones), then Add to Home Screen. | **共有（新しいiPhoneでは ••• メニューの中）をタップし、「ホーム画面に追加」を選んでください。** | Tap Share (inside the ••• menu on newer iPhones), then choose "Add to Home Screen". |  |
-| — — — | It opens like an app: the whole screen, no browser bar, and you stay signed in. | **アプリのように開きます。全画面で、ブラウザのバーはなく、サインインしたままです。** | It opens like an app. Full screen, no browser bar, and you stay signed in. |  |
-| — — — | Add it to your home screen | **ホーム画面に追加** | Add to home screen. |  |
-| — — — | also under {family} | **{family}にもあり** | Also found under {family}. |  |
-| — — — | Whoever comes along first takes the other seat. | **最初に来た人がもう一方の席に着きます。** | The first person to come sits in the other seat. |  |
-| — — — | Asked for | **指名** | Nominated — the person named for this game. |  |
-| — — — | Friendly | **親善対局** | Friendly game. |  |
-| — — — | Played for its own sake. No rating moves. | **対局そのものを楽しむ一局です。レーティングは変動しません。** | A game played to enjoy the game itself. The rating does not change. |  |
-| — — — | Online now | **在室** | In the room — here now. |  |
-| — — — | Opening | **開局ルール** | Opening rule — the rule for how a game begins. |  |
-| — — — | Opponent | **対戦相手** | Opponent — the person you play against. |  |
-| — — — | Players you know | **知人** | Acquaintances — people you know. |  |
-| — — — | Rated | **レーティング対局** | Rated game. |  |
-| — — — | The result moves both players' ratings. | **結果が双方のレーティングに反映されます。** | The result is reflected in both players' ratings. |  |
-| — — — | Ratings | **レーティング** | Rating. |  |
-| — — — | Show all {count} | **全{count}人を表示** | Show all {count} people. |  |
-| — — — | Show fewer | **折りたたむ** | Fold it back up — show fewer. |  |
-| — — — | Bots | **対コンピュータ** | Against the computer. |  |
+A **question** is a wording only the site's owner can choose between. A line the
+agent has read but marked for a native read is high-stakes text (children,
+consent, brands, legal): the agent's pass is not enough for it.
+
+| Where a reader meets it | English on the site | Japanese | What it says back | Review | What is asked | Correction |
+| --- | --- | --- | --- | --- | --- | --- |
+| Every screen — navigation bar | Games | **種目** | Kinds of game — the catalogue of games, not a game in progress. | Question, unread | Which word is the catalogue's name in Japanese: 種目 (John's own, kept everywhere else on the site) or ゲーム? |  |
+| 39 rules pages — one per game | Inspired by {name}. The name belongs to its owner; this is our own version of the rules. | **{name}に着想を得た版です。名称は権利者に帰属し、ここに記すのは当サイト独自の規則です。** | This is a version inspired by {name}. The name belongs to its rights holder; what is set down here is this site's own rules. | Agent 2026-10-06, native read wanted | A trademark notice (the name belongs to its owner): a native read is recommended. |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only bots and members who have said they are 18 or over are named. | **最近ここで終わった対局、新しく加わったゲーム、そしてサイトのニュース（初めての出来事、新しい首位、最速記録）です。名前を表示するのは、コンピュータと18歳以上と答えた会員だけです。** | Games that ended here recently, games newly added, and the site's news (first events, new leaders, fastest records). Names are shown only for computers and members who answered that they are 18 or over. | Agent 2026-10-06, native read wanted | Says who is named by age (18 or over): about children, so a native read is recommended. |  |
+
+## 2. Written by a machine — please check these (175)
+
+| Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
+| --- | --- | --- | --- | --- | --- |
+| Every screen — navigation bar | New game | **新規対局** | New game — the same word as the heading of the set-up screen this button opens. | Agent 2026-10-06 |  |
+| Every screen — navigation bar | My games | **対局中** | Games in progress — my own games, going. | Agent 2026-10-06 |  |
+| Every screen — navigation bar | Privacy | **プライバシー** | Privacy — the loanword every Japanese site uses for the page that says what it keeps about you. | Agent 2026-10-06 |  |
+| Every screen — navigation bar | Terms | **利用規約** | Terms of use — the usual Japanese name for a site's terms page. | Agent 2026-10-06 |  |
+| Every screen — account menu, top right | Sign in | **サインイン** | Sign in. | Agent 2026-10-06 |  |
+| Every screen — account menu, top right | Sign out | **サインアウト** | Sign out. | Agent 2026-10-06 |  |
+| Every screen — footer | Language | **言語** | Language | Agent 2026-10-06 |  |
+| Phones and tablets, until dismissed — the hint that offers the site as a home-screen app | Open the browser's ⋮ menu, then Install app or Add to Home screen. | **ブラウザの ⋮ メニューを開き、「アプリをインストール」または「ホーム画面に追加」を選んでください。** | Open the browser's ⋮ menu, then choose "Install app" or "Add to home screen". | Agent 2026-10-06 |  |
+| Phones and tablets, until dismissed — the hint that offers the site as a home-screen app | Install app | **アプリをインストール** | Install the app. | Agent 2026-10-06 |  |
+| Phones and tablets, until dismissed — the hint that offers the site as a home-screen app | Not now | **今はしない** | Not now. | Agent 2026-10-06 |  |
+| Phones and tablets, until dismissed — the hint that offers the site as a home-screen app | Tap Share (in the ••• menu on newer iPhones), then Add to Home Screen. | **共有（新しいiPhoneでは ••• メニューの中）をタップし、「ホーム画面に追加」を選んでください。** | Tap Share (inside the ••• menu on newer iPhones), then choose "Add to Home Screen". | Agent 2026-10-06 |  |
+| Phones and tablets, until dismissed — the hint that offers the site as a home-screen app | It opens like an app: the whole screen, no browser bar, and you stay signed in. | **アプリのように開きます。全画面で、ブラウザのバーはなく、サインインしたままです。** | It opens like an app. Full screen, no browser bar, and you stay signed in. | Agent 2026-10-06 |  |
+| Phones and tablets, until dismissed — the hint that offers the site as a home-screen app | Add it to your home screen | **ホーム画面に追加** | Add to home screen. | Agent 2026-10-06 |  |
+| Most list pages — filter bars on the record and players pages | Any | **すべて** | All / any. | Agent 2026-10-06 |  |
+| Most list pages — filter bars on the record and players pages | Filtered by | **絞り込み** | Narrowed down to / filtered by. | Agent 2026-10-06 |  |
+| Most list pages — filter bars on the record and players pages | Player | **対局者** | Player (the site's own word for one). | Agent 2026-10-06 |  |
+| Most list pages — filter bars on the record and players pages | Result | **結果** | Result. | Agent 2026-10-06 |  |
+| Most list pages — filter bars on the record and players pages | Search names | **名前を検索** | Search names. | Agent 2026-10-06 |  |
+| Most list pages — filter bars on the record and players pages | Sort | **並び順** | Sort order. | Agent 2026-10-06 |  |
+| 39 rules pages — one per game | Also known as {names}. | **別名は{names}。** | Its other names are {names}. | Agent 2026-10-06 |  |
+| 39 rules pages — one per game | Every game of {game} played here | **ここでの{game}の全対局** | Every game of {game} played here. | Agent 2026-10-06 |  |
+| 39 rules pages — one per game | From {country} | **{country}発** | Originating from {country}. | Agent 2026-10-06 |  |
+| 39 rules pages — one per game | A game of {game} in progress | **対局中の{game}の盤面** | The board of a game of {game} in play. | Agent 2026-10-06 |  |
+| 39 rules pages — one per game | Play → | **遊ぶ →** | Play → | Agent 2026-10-06 |  |
+| 39 rules pages — one per game | Read about {game} on Wikipedia ↗ | **{game}をウィキペディアで読む ↗** | Read about {game} on Wikipedia ↗ | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | also under {family} | **{family}にも掲載** | Also listed under {family}. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Whoever comes along first takes the other seat. | **最初に来た人がもう一方の席に着きます。** | The first person to come sits in the other seat. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Asked for | **指名** | Nominated — the person named for this game. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Friendly | **親善対局** | Friendly game. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Played for its own sake. No rating moves. | **対局そのものを楽しむ一局です。レーティングは変動しません。** | A game played to enjoy the game itself. The rating does not change. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Online now | **オンライン中** | Online now. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Opening | **開局ルール** | Opening rule — the rule for how a game begins. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Opponent | **対戦相手** | Opponent — the person you play against. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Players you know | **知人** | Acquaintances — people you know. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Rated | **レーティング対局** | Rated game. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | The result moves both players' ratings. | **結果が双方のレーティングに反映されます。** | The result is reflected in both players' ratings. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Ratings | **レーティング** | Rating. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Show all {count} | **全{count}人を表示** | Show all {count} people. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Show fewer | **折りたたむ** | Fold it back up — show fewer. | Agent 2026-10-06 |  |
+| Every new game — the set-up screen: opening, rating and opponent | Bots | **対コンピュータ** | Against the computer. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | The top of the ladder. | **最高レベルです。** | This is the highest level. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Where everybody stands by experience | **経験値の順位表** | The experience-points ranking table. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Dismiss | **閉じる** | Close. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Includes {xp} XP for {games} games played on {sites}. | **{sites}で対局した{games}局の分として、{xp}経験値を含みます。** | Includes {xp} experience points as credit for the {games} games played on {sites}. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Includes {xp} XP credited for games played on other sites. | **他のサイトで対局した分として、{xp}経験値を含みます。** | Includes {xp} experience points as credit for games played on other sites. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | {list} and {last} | **{list}と{last}** | {list} and {last} | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Level | **レベル** | Level. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Level up | **昇級** | Promotion — going up a grade. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Next level: {name} | **次のレベル：{name}** | Next level: {name} | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Points earned | **獲得経験値** | Experience points earned. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Include worldwide | **他のサイトも含める** | Include other sites. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Counting everywhere: experience earned here, plus credit for games played on other sites. | **通算で集計：ここで得た経験値に、他のサイトでの対局分を加えています。** | Counting in total: the credit for games on other sites is added to the experience points earned here. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Counting this site only: experience earned here, and nothing credited from elsewhere. | **このサイトのみで集計：ここで得た経験値だけで、他のサイトの分は含みません。** | Counting this site only: only the experience points earned here; the credit from other sites is not included. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | {count} to {name} | **{name}まであと{count}経験値** | {count} experience points to go until {name}. | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | XP | **経験値** | Experience points. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views; The feed, /feed — its heading, tabs, every line of activity and its empty states | Be the first to play → | **最初の対局者になる →** | Become the first to play → | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Reading is free — join to be the first to play it → | **閲覧は自由です。参加して最初の対局者になる →** | Browsing is free. Join and become the first to play → | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | {count} of {total} | **{total}種目中{count}** | {count} of {total} games. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | A crown is the top of one game's ladder, as that game shows it. This player tops more of this family's games than anybody else. | **首位とは、一つの種目の順位表の一番上のことです。この対局者は、この系統の種目で誰よりも多く首位に立っています。** | A first place is the top of one game's ladder. This player stands in first place in more of this family's games than anyone else. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Most crowns | **最多首位** | Most first places. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Crowns shared by {count} players | **{count}人が首位を分け合っています** | {count} players share the first places. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | The rated games they drew on this ladder | **この順位表で引き分けたレーティング対局** | The rated games drawn on this ladder. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | {count} games played across the family | **この系統で{count}局** | {count} games in this family. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | {count} game played across the family | **この系統で{count}局** | {count} games in this family. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | {played} of {total} tried here | **{total}種目中{played}種目で対局あり** | Played in {played} of its {total} games. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Join to see who → | **参加すると、誰なのかわかります →** | Join, and you will see who it is → | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Last played {count} days ago | **最終対局：{count}日前** | Last game: {count} days ago. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Last played {count} months ago | **最終対局：{count}か月前** | Last game: {count} months ago. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Last played today | **最終対局：今日** | Last game: today. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Last played {count} years ago | **最終対局：{count}年前** | Last game: {count} years ago. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Last played yesterday | **最終対局：昨日** | Last game: yesterday. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | The rated games they lost on this ladder | **この順位表で負けたレーティング対局** | The rated games lost on this ladder. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Nobody has played this yet | **まだ誰も対局していません** | Nobody has played yet. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | No rated games yet | **レーティング対局はまだありません** | No rated games yet. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Play → | **対局する →** | Play → | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | {count} games played | **対局数 {count}** | Games played: {count} | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | {count} game played | **対局数 {count}** | Games played: {count} | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | against bots | **対コンピュータ** | Against the computer. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | among people | **対人** | Against people. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Leaderboard → | **順位表 →** | Standings → | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Nobody holds a standing among people yet, so this is the top of the ladder against the bots — a separate ladder, never added to the people's. The record is won–lost–drawn on that ladder. | **対人の順位はまだないため、コンピュータ相手の順位表の首位です。対人の順位表とは別で、合算しません。成績はその順位表での勝ち–負け–引き分けです。** | There is no standing against people yet, so this is first place on the ladder against the computer. It is separate from the people's ladder and never added to it. The record is wins–losses–draws on that ladder. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | The top of this game's ladder among people: rated games between members, best rating first. The record is won–lost–drawn on that ladder. | **この種目の対人順位表の首位です。会員同士のレーティング対局で、レーティングの高い順。成績はその順位表での勝ち–負け–引き分けです。** | This is first place on this game's ladder against people. Rated games between members, highest rating first. The record is wins–losses–draws on that ladder. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | Top player | **首位** | First place. | Agent 2026-10-06 |  |
+| The games index, /games — under every game and every family, in all three views | The rated games they won on this ladder | **この順位表で勝ったレーティング対局** | The rated games won on this ladder. | Agent 2026-10-06 |  |
+| Finished games of checkers and draughts — beside Copy as text, in the move list under the replay | Download as PDN | **PDN形式でダウンロード** | Download in PDN format. | Agent 2026-10-06 |  |
+| Finished games of go, Othello, gomoku, renju and Hex — beside Copy as text, in the move list under the replay | Download as SGF | **SGF形式でダウンロード** | Download in SGF format. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | against {name} | **{name}との対戦** | Games against {name}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Every game between {one} and {other} has been a draw | **{one}と{other}の対局はすべて引き分け** | Every game between {one} and {other} has been a draw. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Every game between you and {name} has been a draw | **{name}との対局はすべて引き分け** | Every game with {name} has been a draw. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | All games | **通算** | All-time total. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {winner} has beaten {loser} {count} times in a row | **{winner}が{loser}に{count}連勝中** | {winner} is on {count} wins in a row against {loser}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You've beaten {name} {count} times in a row | **{name}に{count}連勝中** | You are on {count} wins in a row against {name}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name} leads you {score} | **{name}があなたに{score}でリード** | {name} leads you {score}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | The last {count} games between {one} and {other} were draws | **{one}と{other}の直近{count}局は引き分け** | The last {count} games between {one} and {other} were draws. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Your last {count} games against {name} were draws | **{name}との直近{count}局は引き分け** | Your last {count} games with {name} were draws. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Draws | **引き分け** | Draws. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name}'s first win against you | **{name}があなたに初勝利** | {name} wins against you for the first time. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {winner}'s first win against {loser} | **{winner}が{loser}に初勝利** | {winner} wins against {loser} for the first time. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Your first win against {name} | **{name}に初勝利** | First win against {name}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Games | **対局数** | Number of games played. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} haven't played each other in {count} months | **{one}と{other}は{count}か月対戦していません** | {one} and {other} have not played each other for {count} months. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You haven't played {name} in {count} months | **{name}とは{count}か月対戦していません** | You have not played {name} for {count} months. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} haven't played each other in a year | **{one}と{other}は1年対戦していません** | {one} and {other} have not played each other for a year. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You haven't played {name} in a year | **{name}とは1年対戦していません** | You have not played {name} for a year. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} haven't played each other in {count} years | **{one}と{other}は{count}年対戦していません** | {one} and {other} have not played each other for {count} years. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You haven't played {name} in {count} years | **{name}とは{count}年対戦していません** | You have not played {name} for {count} years. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Last played | **最終対局** | The last game (the same word the games index uses for "last played"). | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {leader} leads {trailer} {score} | **{leader}が{trailer}に{score}でリード** | {leader} leads {trailer} {score}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You lead {name} {score} | **{name}に{score}でリード** | You lead {name} {score}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You've lost to {name} {count} times in a row | **{name}に{count}連敗中** | You are on {count} losses in a row to {name}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} have never played each other | **{one}と{other}はまだ対戦したことがありません** | {one} and {other} have not yet ever played each other. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You and {name} have never played each other | **{name}とはまだ対戦したことがありません** | You have not yet ever played {name}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} have never played {game} before | **{one}と{other}は{game}でまだ対戦したことがありません** | {one} and {other} have not yet played each other at {game}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You and {name} have never played {game} before | **{name}とは{game}でまだ対戦したことがありません** | You have not yet played {name} at {game}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Not yet | **まだなし** | None yet. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Streak | **連続記録** | Streak record — the run of results in a row. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | The last game was a draw | **直近の対局は引き分け** | The most recent game was a draw. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | The last {count} were draws | **{count}局連続で引き分け** | {count} games in a row were draws. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name} won the last game | **直近の対局は{name}の勝ち** | The most recent game was won by {name}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {name} won the last {count} | **{name}が{count}連勝中** | {name} is on {count} wins in a row. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | {one} and {other} are tied {score} | **{one}と{other}は{score}で互角** | {one} and {other} are evenly matched at {score}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | You and {name} are tied {score} | **{name}とは{score}で互角** | Evenly matched with {name} at {score}. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Head to head | **対戦成績** | Head-to-head record. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | A player | **ある対局者** | A (certain) player. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | vs | **対** | Versus. | Agent 2026-10-06 |  |
+| Two members' games — the head-to-head scoreboard above a pair's record, and on a match before and after it | Wins | **勝ち** | Wins. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | New here: {games} | **新しく加わりました：{games}** | Newly added: {games}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} was credited {xp} for games played on other sites | **{who}に、他のサイトでの対局分として{xp}が加算されました** | {xp} was added to {who} for games played on other sites. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You were credited {xp} for games played on other sites | **他のサイトでの対局に対して{xp}が加算されました** | {xp} was added for games on other sites. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} drew with {other} at {game} | **{who}が{game}で{other}と引き分けました** | {who} drew with {other} at {game}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You drew with {other} at {game} | **{game}で{other}と引き分けました** | You drew with {other} at {game}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | Nothing here yet: no games finished lately between players this tab may show, no new games and no news. | **まだ何もありません。このタブに表示できる対局者どうしの最近の対局も、新しいゲームも、ニュースもありません。** | Nothing yet. There are no recent games between players this tab can show, no new games and no news. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | Nothing here yet. When you or a buddy start or finish a game, earn XP, reach a level or solve a puzzle, it shows here, newest first. | **まだ何もありません。あなたや仲間が対局を始めたり終えたり、経験値を得たり、レベルが上がったり、パズルを解いたりすると、ここに新しい順で表示されます。** | Nothing yet. When you or your buddies start or finish a game, earn experience, go up a level or solve a puzzle, it is shown here, newest first. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | Find buddies → | **仲間を探す →** | Find buddies. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | Your feed | **自分の近況** | Your own recent activity. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} won {ip} | **{who}が{ip}を勝ち取りました** | {who} won {ip}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You won {ip} | **{ip}を勝ち取りました** | You won {ip}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | What you and your buddies have been playing lately, newest first. | **あなたと仲間が最近遊んだこと。新しい順です。** | What you and your buddies played recently. Newest first. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} reached level {level}, {name} | **{who}がレベル{level}「{name}」になりました** | {who} became level {level}, "{name}". | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You reached level {level}, {name} | **レベル{level}「{name}」になりました** | You became level {level}, "{name}". | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} lost to {other} at {game} | **{who}が{game}で{other}に負けました** | {who} lost to {other} at {game}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You lost to {other} at {game} | **{game}で{other}に負けました** | You lost to {other} at {game}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | A new best time at {game} {board}: {who}, {time} | **{game} {board}の最速記録を更新：{who}、{time}** | Fastest record at {game} {board} broken: {who}, {time}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | A new best time at {game} {board}: {time} | **{game} {board}の最速記録を更新：{time}** | Fastest record at {game} {board} broken: {time}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} beat {other} at {game}, the first person here to | **{who}が{game}で{other}に勝ちました。ここで勝った最初の人です** | {who} won against {other} at {game}. The first person here to win. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {other} was beaten at {game} for the first time | **{other}が{game}で初めて負けました** | {other} lost at {game} for the first time. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {game} was played here for the first time | **{game}がここで初めて遊ばれました** | {game} was played here for the first time. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {game} was played here for the first time: {who} drew with {other} | **{game}がここで初めて遊ばれました。{who}と{other}は引き分けでした** | {game} was played here for the first time. {who} and {other} drew. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {game} was played here for the first time: {who} beat {other} | **{game}がここで初めて遊ばれました。{who}が{other}に勝ちました** | {game} was played here for the first time. {who} won against {other}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who}'s first loss here, at {game} | **{who}がここで初めて負けました（{game}）** | {who} lost for the first time here ({game}). | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} took first place at {game} | **{who}が{game}で首位に立ちました** | {who} took first place at {game}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who}'s first win here, at {game} | **{who}がここで初めて勝ちました（{game}）** | {who} won for the first time here ({game}). | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} solved {count} {game} puzzles | **{who}が{game}のパズルを{count}問解きました** | {who} solved {count} {game} puzzles. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You solved {count} {game} puzzles | **{game}のパズルを{count}問解きました** | You solved {count} {game} puzzles. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} solved a {game} puzzle | **{who}が{game}のパズルを1問解きました** | {who} solved 1 {game} puzzle. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You solved a {game} puzzle | **{game}のパズルを1問解きました** | You solved 1 {game} puzzle. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | See the fastest times | **最速記録を見る** | See the fastest records. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | See the game | **対局を見る** | See the game. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | See the ladder | **順位表を見る** | See the ladder. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | See their solves | **解いた記録を見る** | See the records of what was solved. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | somebody | **誰か** | Somebody. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} started a game of {game} against {other} | **{who}が{other}と{game}の対局を始めました** | {who} started a game of {game} with {other}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You started a game of {game} against {other} | **{other}と{game}の対局を始めました** | You started a game of {game} with {other}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | Everyone | **全員** | Everyone (the same word as the Players page's Everyone filter). | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You and your buddies | **あなたと仲間** | You and your buddies. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | Whose activity to show | **誰の近況を表示するか** | Whose activity to show. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | Feed | **近況** | Recent activity. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | Today | **今日** | Today. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} started a game of {game}, waiting for somebody to sit down | **{who}が{game}の対局を始めました。相手を待っています** | {who} started a game of {game}. Waiting for an opponent. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You started a game of {game}, waiting for somebody to sit down | **{game}の対局を始めました。相手を待っています** | You started a game of {game}. Waiting for an opponent. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} beat {other} at {game} | **{who}が{game}で{other}に勝ちました** | {who} won against {other} at {game}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You beat {other} at {game} | **{game}で{other}に勝ちました** | You won against {other} at {game}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} earned {xp} | **{who}が{xp}を獲得しました** | {who} earned {xp}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | You earned {xp} | **{xp}を獲得しました** | You earned {xp}. | Agent 2026-10-06 |  |
+| The feed, /feed — its heading, tabs, every line of activity and its empty states | Yesterday | **昨日** | Yesterday. | Agent 2026-10-06 |  |
 
 `{game}`, `{name}`, `{names}` and `{country}` are filled in when the page is
 drawn — a game's name, a country. They have to survive a correction exactly as
 written, braces and spelling both, or the sentence loses the word it was about.
 
-## 2. Already on the site — nothing to check (11)
+## 3. Already on the site — nothing to check (11)
 
 These are **John's own words**, published on the English site as the kanji
 beside a heading. Nothing was translated: the kanji that sat next to "Rules"
@@ -224,7 +237,7 @@ English half was the redundant one. Listed for completeness, not for review.
 | Objective | 目的 | the Objective section of every rules page |
 | How to play | 手順 | the How to play section of every rules page |
 
-## 3. The game names, and most of the furniture — nothing to check either
+## 4. The game names, and most of the furniture — nothing to check either
 
 Every game has carried its Japanese name since the day it was added, in the
 `kanji` field beside its English one. A Japanese reader is shown that name and

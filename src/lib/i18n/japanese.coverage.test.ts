@@ -5,7 +5,7 @@ import { JA_DRAFTED } from "./dictionaries/ja.drafted.constants";
 import { JA_ALREADY_SAID } from "./dictionaries/ja.site.constants";
 import { placeholdersIn } from "./i18n";
 import { PHRASES, PHRASE_KEYS } from "./i18n.constants";
-import { japaneseReview } from "./japaneseReview";
+import { awaitsPerson, japaneseReview } from "./japaneseReview";
 import { renderedSource, withoutComments } from "./rendered";
 
 /**
@@ -156,6 +156,59 @@ describe("Japanese a machine wrote", () => {
   });
 });
 
+describe("who has read the Japanese a machine wrote", () => {
+  const drafted = PHRASE_KEYS.filter((key) => JA_DRAFTED[key] !== undefined);
+
+  /*
+   * A phrase is either read (`review`) or an open question (`ask`, nobody has
+   * read it). One that is neither is DRAFTED and unaccounted for: it ships
+   * unread and nothing says so, which is the state this field exists to end.
+   *
+   * WHEN THIS FAILS for a phrase you just added: run `japanese-reviewer` over
+   * it, apply its fixes, and stamp the entry with `review: { by: "agent", on }`
+   * (today's date). If the reviewer cannot decide, leave `review` out and give
+   * the entry an `ask` that tells John what he has to choose.
+   */
+  it("leaves no phrase drafted without a question to answer", () => {
+    const unaccounted = drafted.filter((key) => {
+      const row = JA_DRAFTED[key];
+      return row?.review === undefined && row?.ask === undefined;
+    });
+    expect(unaccounted, "these phrases are unread and ask nothing: review them, or ask").toEqual([]);
+  });
+
+  it("dates each review as a real day, by the agent or by a person", () => {
+    for (const key of drafted) {
+      const review = JA_DRAFTED[key]?.review;
+      if (review === undefined) continue;
+      expect(["agent", "person"], `${key} was read by somebody unknown`).toContain(review.by);
+      expect(review.on, `${key} has no real date`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(Number.isNaN(Date.parse(review.on)), `${key}'s date does not exist`).toBe(false);
+    }
+  });
+
+  it("never stamps a phrase that is still a question for John", () => {
+    /*
+     * An `ask` with no `review` is an open decision; the same phrase read by
+     * the agent carries an `ask` only to recommend a native read. What is not
+     * allowed is a note with nothing in it.
+     */
+    for (const key of drafted) {
+      const ask = JA_DRAFTED[key]?.ask;
+      if (ask !== undefined) expect(ask.trim(), `${key} asks nothing`).not.toBe("");
+    }
+  });
+
+  it("drops the note once a person has read the phrase", () => {
+    for (const key of drafted) {
+      const row = JA_DRAFTED[key];
+      if (row?.review?.by === "person") {
+        expect(row.ask, `${key} has been read by a person: take its ask out`).toBeUndefined();
+      }
+    }
+  });
+});
+
 describe("the review sheet somebody is handed", () => {
   const wanted = japaneseReview();
 
@@ -220,6 +273,36 @@ describe("the review sheet somebody is handed", () => {
       .filter((line) => line.startsWith("| ") && line.includes("**"))
       .map((line) => line.split("|").slice(2, 5).join("|").trim());
     expect(new Set(wordings).size, "a wording is shown more than once").toBe(wordings.length);
+  });
+
+  /*
+   * The Review column, and the lines a person has to act on first. The sheet is
+   * the only thing John can hand a reader, so what is unread, who read what,
+   * and what waits for a decision have to be on it and at the top of it.
+   */
+  it("shows who read each phrase, and lists what waits for a person first", () => {
+    const sheet = readFileSync(REVIEW_FILE, "utf8");
+    expect(sheet).toContain("| Review |");
+    const waiting = PHRASE_KEYS.filter((key) => {
+      const row = JA_DRAFTED[key];
+      return row !== undefined && awaitsPerson(row);
+    });
+    const firstWaiting = sheet.indexOf("## 1. Waiting for a decision or a native read");
+    const firstRest = sheet.indexOf("## 2. Written by a machine");
+    expect(firstWaiting, "the waiting section is missing").toBeGreaterThan(-1);
+    expect(firstRest).toBeGreaterThan(firstWaiting);
+    for (const key of waiting) {
+      const at = sheet.indexOf(JA_DRAFTED[key]?.text ?? "\0");
+      expect(at, `${key} is not in the sheet`).toBeGreaterThan(-1);
+      expect(at, `${key} waits for a person and must come before the rest`).toBeLessThan(firstRest);
+    }
+    for (const key of PHRASE_KEYS) {
+      const row = JA_DRAFTED[key];
+      if (row === undefined || awaitsPerson(row)) continue;
+      const wording = `**${row.text}**`;
+      if (!sheet.includes(wording)) continue;
+      expect(sheet.indexOf(wording), `${key} is not waiting and must come after the waiting section`).toBeGreaterThan(firstRest);
+    }
   });
 
   it("names every phrase a machine wrote", () => {
