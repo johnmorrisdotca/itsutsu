@@ -480,7 +480,10 @@ test.describe("the word puzzle", () => {
 test("today's word is one address for the day, reached from Gomoji's own page", async ({ page }) => {
   const { dailyWordSeed, dayKeyOf } = await import("../src/lib/puzzles/dailyWords/dailyDay");
   await page.goto("/games/gomoji");
-  await page.locator('[data-testid="daily-row"][data-size="5"]').getByTestId("daily-play").click();
+  // Today's buttons stream in after the page: for a moment the placeholder and the live row are both there, so wait for the one.
+  const play = page.locator('[data-testid="daily-row"][data-size="5"]').getByTestId("daily-play");
+  await expect(play).toHaveCount(1);
+  await play.click();
   // The same seed for everybody today, on an ordinary address that can be shared and kept.
   await expect(page).toHaveURL(new RegExp(`/games/gomoji/play\\?.*seed=${dailyWordSeed(dayKeyOf(new Date()))}`));
 });
