@@ -335,9 +335,13 @@ describe("the review sheet somebody is handed", () => {
       expect(at, `${key} is not in the sheet`).toBeGreaterThan(-1);
       expect(at, `${key} waits for a person and must come before the rest`).toBeLessThan(firstRest);
     }
+    /* Two keys may share their Japanese wording, one waiting and one read: the
+       sheet then holds it in both sections, so a read row whose wording a waiting
+       row also has cannot be found by its text and is left to the first loop. */
+    const waitingWords = new Set(waiting.map((key) => JA_DRAFTED[key]?.text));
     for (const key of PHRASE_KEYS) {
       const row = JA_DRAFTED[key];
-      if (row === undefined || awaitsPerson(row)) continue;
+      if (row === undefined || awaitsPerson(row) || waitingWords.has(row.text)) continue;
       const wording = `**${row.text}**`;
       if (!sheet.includes(wording)) continue;
       expect(sheet.indexOf(wording), `${key} is not waiting and must come after the waiting section`).toBeGreaterThan(firstRest);
