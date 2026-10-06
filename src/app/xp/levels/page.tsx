@@ -5,6 +5,8 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { LevelLadder } from "@/components/xp/LevelLadder";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { countText } from "@/lib/rating/figures";
 import { LEVEL_MILESTONES, levelLadder } from "@/lib/xp/levelLadder";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
@@ -40,6 +42,7 @@ export const dynamic = "force-dynamic";
  * array in memory and nothing else. See `xpViewer.ts`.
  */
 export default async function LevelsPage() {
+  const say = await currentSpeaker();
   const rungs = levelLadder();
   const viewer = await viewerXp();
   const standing = viewer?.standing ?? null;
@@ -70,11 +73,11 @@ export default async function LevelsPage() {
           says how well you play; experience says you turned up and tried things — so an
           unrated game at one screen pays it, and a game you lost still pays for having been
           finished. Every level has a name out of gaming, from the arcade at the bottom to the
-          pantheon at the top, and {countText(XP_LEVELS)} of them reach{" "}
+          pantheon at the top, and {countText(XP_LEVELS, say.locale)} of them reach{" "}
           <Link href={levelPath(XP_LEVELS)} className="underline underline-offset-4">
             {xpLevelName(XP_LEVELS)}
           </Link>{" "}
-          at {countText(xpForLevel(XP_LEVELS))} XP.
+          at {countText(xpForLevel(XP_LEVELS), say.locale)} XP.
         </p>
 
         {viewer === null ? (
@@ -103,6 +106,7 @@ export default async function LevelsPage() {
             into={standing!.into}
             span={standing!.span}
             toNext={standing!.toNext}
+            say={say}
           />
         )}
 
@@ -131,7 +135,9 @@ function YourRung({
   into,
   span,
   toNext,
+  say,
 }: {
+  say: Speaker;
   level: number;
   xp: number;
   into: number;
@@ -150,14 +156,14 @@ function YourRung({
         <Link href={levelPath(level)} className="font-semibold underline underline-offset-4">
           level {level}, {xpLevelName(level)}
         </Link>
-        , with {countText(xp)} XP.{" "}
+        , with {countText(xp, say.locale)} XP.{" "}
         {top ? (
           <span className="text-muted">
             That is the top of the ladder — there is no rung above {xpLevelName(XP_LEVELS)}.
           </span>
         ) : (
           <span className="text-muted">
-            {countText(toNext)} more reaches{" "}
+            {countText(toNext, say.locale)} more reaches{" "}
             <Link href={levelPath(level + 1)} className="underline underline-offset-4">
               {xpLevelName(level + 1)}
             </Link>
@@ -171,7 +177,7 @@ function YourRung({
         <div
           className="h-1.5 w-full overflow-hidden rounded-full bg-rule"
           role="img"
-          aria-label={`${countText(into)} of ${countText(span)} XP into level ${level}`}
+          aria-label={`${countText(into, say.locale)} of ${countText(span, say.locale)} XP into level ${level}`}
         >
           <div
             className="h-full rounded-full bg-moss"

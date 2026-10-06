@@ -1,3 +1,5 @@
+import type { Speaker } from "@/lib/i18n/i18n";
+
 /**
  * A CALENDAR MONTH IN AN ADDRESS: `month=2026-09`, in UTC.
  *
@@ -20,21 +22,6 @@ export const ALL_TIME: RecordPeriod = { month: null, week: null };
 
 const MONTH = /^(\d{4})-(0[1-9]|1[0-2])$/;
 
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-] as const;
-
 /** The month a value names, as it is written in an address, or null for anything else. */
 export function readMonth(value: string | null | undefined): string | null {
   const text = value?.trim() ?? "";
@@ -52,10 +39,13 @@ export function monthBounds(month: string): { start: Date; end: Date } {
   return { start: new Date(Date.UTC(year, index - 1, 1)), end: new Date(Date.UTC(year, index, 1)) };
 }
 
-/** A month in words, for the chip that says a record was narrowed to it: "September 2026". */
-export function monthWords(month: string): string {
-  const [year, index] = month.split("-").map(Number) as [number, number];
-  return `${MONTH_NAMES[index - 1]} ${year}`;
+/**
+ * A month in words, for the chip that says a record was narrowed to it, in the
+ * reader's language: "September 2026", "2026年9月". The month's name is the
+ * language's own (`i18n/format.constants.ts`), never one typed here.
+ */
+export function monthWords(month: string, say: Speaker): string {
+  return say.month(month) ?? month;
 }
 
 /*
@@ -95,8 +85,7 @@ export function weekBounds(week: string): { start: Date; end: Date } {
   return { start, end: new Date(start.getTime() + 7 * DAY_MS) };
 }
 
-/** A week in words, for the chip that says a record was narrowed to it: "the week of 21 September 2026". */
-export function weekWords(week: string): string {
-  const [year, month, day] = week.split("-").map(Number) as [number, number, number];
-  return `the week of ${day} ${MONTH_NAMES[month - 1]} ${year}`;
+/** A week in words, for the chip that says a record was narrowed to it: "the week of 21 September 2026", "2026年9月21日の週". */
+export function weekWords(week: string, say: Speaker): string {
+  return say.say("record.weekOf", { date: say.day(week, "long") ?? week });
 }

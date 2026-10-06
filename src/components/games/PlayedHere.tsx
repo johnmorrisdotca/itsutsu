@@ -18,6 +18,7 @@ import { PANEL_CLASS, RAISED_LINK, SECTION_TITLE, STRETCHED_LINK, STRETCHED_ROW 
 import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import { matchPath, playPath } from "@/lib/gomoku/slugs";
 import { fetchPlayedCounts, recentGamesOf } from "@/lib/history/gameCounts";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 import { countText } from "@/lib/rating/figures";
 import { closedToReader } from "@/lib/social/childReach";
 
@@ -58,6 +59,7 @@ import { closedToReader } from "@/lib/social/childReach";
  */
 export async function PlayedHere({ variant, title }: { variant: string; title: string }) {
   await connection();
+  const locale = await currentLocale();
 
   /*
    * Documentation for a stranger; a record for anybody who is in.
@@ -143,7 +145,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
           number that refers to games, applied where it had not been.
         */}
         <GameCount
-          count={countText(total)}
+          count={countText(total, locale)}
           variant={variant}
           className="normal-case tracking-normal"
           title={`Every game of ${title} played here`}

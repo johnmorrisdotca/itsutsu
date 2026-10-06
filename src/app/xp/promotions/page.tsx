@@ -95,7 +95,7 @@ export default async function PromotionsPage({ searchParams }: PageProps<"/xp/pr
               XP leaderboard <span className="font-mincho">経験値</span>
             </Link>
             <Link href="/xp/levels" className="text-sm underline underline-offset-4" data-testid="to-ladder">
-              All {countText(XP_LEVELS)} levels <span className="font-mincho">段位</span>
+              All {countText(XP_LEVELS, say.locale)} levels <span className="font-mincho">段位</span>
             </Link>
           </div>
         }

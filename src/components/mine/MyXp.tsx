@@ -6,6 +6,8 @@ import { AwardAbout } from "@/components/xp/AwardAbout";
 import { ABOUT_ON_A_DESK } from "@/components/xp/xp.constants";
 import { Paired } from "@/components/i18n/Paired";
 import { currentMemberRow } from "@/lib/auth/currentSession";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { isRefusal } from "@/lib/api/paging";
 import { LevelName } from "@/components/xp/LevelName";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
@@ -108,7 +110,7 @@ function Earned({ row }: { row: XpLedgerRow }) {
  * hundred rungs, and where the reader stands among people, are MORE of what the
  * line above already shows. They are the only links here that lead off the panel.
  */
-function Standing({ xp }: { xp: number }) {
+function Standing({ xp, say }: { xp: number; say: Speaker }) {
   const standing = xpStanding(xp);
   const atTheTop = standing.span === 0;
   const next = standing.level + 1;
@@ -116,7 +118,7 @@ function Standing({ xp }: { xp: number }) {
     <div className="flex flex-col gap-1.5" data-testid="my-xp-standing">
       <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
         <span className="font-mono text-lg tabular-nums" data-testid="my-xp-total">
-          {xp.toLocaleString("en-US")} XP
+          {say.number(xp)} XP
         </span>
         {/*
           The badge rather than a word: the number, the name, the kanji on hover
@@ -130,7 +132,7 @@ function Standing({ xp }: { xp: number }) {
             "The top of the ladder."
           ) : (
             <>
-              {standing.toNext.toLocaleString("en-US")} to{" "}
+              {say.number(standing.toNext)} to{" "}
               {/*
                 The rung AHEAD, named and linked — a plain `Link` and not a
                 second `LevelName`, because "215 to Lv 13 · Game Boy" puts two
@@ -242,13 +244,14 @@ export async function MyXp({
     );
   }
 
+  const say = await currentSpeaker();
   const query = xpParamsFrom(params);
   const page = await xpLedgerPage({ memberId: row.id, params: query });
 
   return (
     <div className="flex flex-col gap-4" data-testid="my-xp">
       {/* The badge's total, decided in one place — see `xpForBadge`. */}
-      <Standing xp={xpForBadge(row)} />
+      <Standing xp={xpForBadge(row)} say={say} />
       <DayZoneNote timeZone={row.timeZone} country={row.country} preferences={row.preferences} />
 
       {isRefusal(page) ? (

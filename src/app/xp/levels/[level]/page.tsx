@@ -12,6 +12,7 @@ import { xpWhoFor } from "@/lib/xp/xpWhoServer";
 import { RecordScopeBar } from "@/components/players/RecordScopeBar";
 import { ImportedXpNote } from "@/components/xp/ImportedXpNote";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { RECORD_SCOPES } from "@/lib/rating/recordScope";
 import { importedFactsFor } from "@/lib/xp/importedRecipients";
 import { importedNoteText } from "@/lib/xp/importedNote";
@@ -139,13 +140,13 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
         <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm" data-testid="level-costs">
           <div>
             <dt className="text-xs text-muted uppercase">To reach it</dt>
-            <dd className="font-mono tabular-nums">{countText(rung.toReach)} XP</dd>
+            <dd className="font-mono tabular-nums">{countText(rung.toReach, say.locale)} XP</dd>
           </div>
           <div>
             <dt className="text-xs text-muted uppercase">Climbed from {level === 1 ? "—" : level - 1}</dt>
             {/* Nobody climbed to level 1, so there is no figure — an em dash, not
                 a nought, which would read as a rung that was free. */}
-            <dd className="font-mono tabular-nums">{rung.step === 0 ? "—" : `${countText(rung.step)} XP`}</dd>
+            <dd className="font-mono tabular-nums">{rung.step === 0 ? "—" : `${countText(rung.step, say.locale)} XP`}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted uppercase">
@@ -155,15 +156,15 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
               {range.to === null ? (
                 <span className="text-muted">Nothing — this is the top</span>
               ) : (
-                `${countText(range.to - range.from)} XP`
+                `${countText(range.to - range.from, say.locale)} XP`
               )}
             </dd>
           </div>
         </dl>
 
         <p className="text-sm text-muted">
-          A member stands here on {countText(range.from)} XP
-          {range.to === null ? " or more" : ` up to ${countText(range.to - 1)}`}. The whole ladder
+          A member stands here on {countText(range.from, say.locale)} XP
+          {range.to === null ? " or more" : ` up to ${countText(range.to - 1, say.locale)}`}. The whole ladder
           is on{" "}
           <Link href="/xp/levels" className="underline underline-offset-4" data-testid="to-ladder">
             the hundred levels
@@ -224,7 +225,7 @@ export default async function LevelPage({ params, searchParams }: PageProps<"/xp
             </Link>
           </p>
         ) : null}
-        <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} notes={notes} tags={tags} ip={ip} />
+        <WhoIsHere level={level} roll={roll} viewerId={viewer?.memberId ?? null} who={who} notes={notes} tags={tags} ip={ip} say={say} />
       </section>
     </Page>
   );
@@ -247,7 +248,9 @@ function WhoIsHere({
   notes,
   tags,
   ip,
+  say,
 }: {
+  say: Speaker;
   level: number;
   roll: LevelRoll;
   /** What each member on the rung has won across the site, by member id (`ipTotalsOf`). */
@@ -306,7 +309,7 @@ function WhoIsHere({
                     ) : null}
                     {notes.get(member.id) ?? null}
                   </td>
-                  <td className={CELL}>{countText(member.xp)}</td>
+                  <td className={CELL}>{countText(member.xp, say.locale)}</td>
                   <IpCell ip={{ ip: ip.get(member.id) ?? 0, memberId: member.id, game: null }} />
                 </tr>
               ))
@@ -317,7 +320,7 @@ function WhoIsHere({
 
       {roll.more ? (
         <p className="text-xs text-muted" data-testid="level-more">
-          The first {countText(LEVEL_ROLL)} of them, highest first. The{" "}
+          The first {countText(LEVEL_ROLL, say.locale)} of them, highest first. The{" "}
           <Link href="/xp" className="underline underline-offset-4">
             leaderboard
           </Link>{" "}

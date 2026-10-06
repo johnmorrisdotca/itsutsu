@@ -1,7 +1,11 @@
 import { CAPTURE_CHOICES, CROWN_MID_CAPTURE, ENDGAME_COUNT_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { CheckersRules, EndgameCount, PieceTally, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { NO_PROGRESS_RULES, PROGRESS_MEASURES } from "@/lib/gomoku/rules/noProgress";
-import { inWords } from "@/lib/text/inWords";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
+import { inWords as wordsIn } from "@/lib/text/inWords";
+
+/** This page is written in English only so far, so its counts are spelt out in English. */
+const inWords = (count: number) => wordsIn(count, DEFAULT_LOCALE);
 
 /**
  * The rules page's sentences for a game of the checkers family, written from

@@ -147,7 +147,7 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
               Recent level-ups <span className="font-mincho">昇級</span>
             </Link>
             <Link href="/xp/levels" className="text-sm underline underline-offset-4" data-testid="to-ladder">
-              All {countText(XP_LEVELS)} levels <span className="font-mincho">段位</span>
+              All {countText(XP_LEVELS, say.locale)} levels <span className="font-mincho">段位</span>
             </Link>
           </div>
         }
@@ -189,7 +189,7 @@ export default async function XpPage({ searchParams }: PageProps<"/xp">) {
           {narrowed ? (
             /* "Every page a link lands on says what it was narrowed to, and lets it be taken off." */
             <p className="text-xs text-muted" data-testid="xp-narrowed">
-              Filtered by {XP_WHO_SAID[who]}: {countText(board.total)} on the board.{" "}
+              Filtered by {XP_WHO_SAID[who]}: {countText(board.total, say.locale)} on the board.{" "}
               <Link href={xpWhoHref("/xp", query, DIRECTORY_WHO.everyone)} className="underline underline-offset-4">
                 Show everyone
               </Link>

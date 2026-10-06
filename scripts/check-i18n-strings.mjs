@@ -41,6 +41,23 @@
  * sweep, not a parser. Where it is wrong the answer is an allowance below with
  * its reason, not a smarter and slower check.
  *
+ * AND THREE PATTERNS THAT ARE NOT ENGLISH BUT KEEP A READER FROM THEIR LANGUAGE
+ * (ENJA-04, dates, numbers and counts), read from the code with comments taken out:
+ *   4. `locale`      `.toLocaleString(`, `.toLocaleDateString(` or `.toLocaleTimeString(`,
+ *                    with an "en-US", an "en-GB", `undefined` or nothing. Node and a
+ *                    browser spell a date and a number differently, so a page drawn by
+ *                    both is a hydration fault, and a locale typed here is one reader's.
+ *                    A date is `Speaker.day` or `ui/when.ts`, a number `Speaker.number`.
+ *   5. `plural`      a count made plural by hand: `n === 1 ? "game" : "games"`,
+ *                    `n === 1 ? "" : "s"`, `+ "s"`. Japanese has no plural but counts
+ *                    with a counter word (3局, 5人, 2回), so the count is a phrase with
+ *                    `{count}` in two forms and `Speaker.count` picks one.
+ *   6. `no-locale`   `countText(n)` with no locale: the figure is marked in English.
+ *                    English and Japanese mark thousands alike, so nothing is wrong on
+ *                    the page yet; the locale is what a third language will need.
+ * They count against a pending path like a sentence does: a path comes off the list
+ * only when it holds none of the six.
+ *
  * It reads files and nothing else: no database, no network, no timing. The
  * counts are the same on every machine.
  */
@@ -61,12 +78,6 @@ import { fileURLToPath, pathToFileURL } from "node:url";
  * one is a decision the test refuses.
  */
 export const PENDING_PATHS = [
-  // ENJA-04, dates, numbers and counts: month, day and number words typed by hand
-  { path: "src/lib/history/recordMonth.ts", ticket: "ENJA-04" },
-  { path: "src/lib/social/daysOff.ts", ticket: "ENJA-04" },
-  { path: "src/lib/puzzles/dailyWords/dailyDay.ts", ticket: "ENJA-04" },
-  { path: "src/components/layout/SectionedDocument.tsx", ticket: "ENJA-04" },
-  { path: "src/lib/text/inWords.ts", ticket: "ENJA-04" },
   // ENJA-05, game copy tables: every game's rules, tagline, openings, bots and family names
   { path: "src/lib/learn/rulesPage.ts", ticket: "ENJA-05" },
   { path: "src/lib/learn/rulesPage.checkers.ts", ticket: "ENJA-05" },
@@ -434,6 +445,143 @@ const NON_TEXT_ATTRS = /^(?:className|class|href|src|srcSet|id|key|name|type|rol
 /** Calls whose argument is for a developer, not a reader. */
 const DEV_CALL = /(?:new\s+Error|console\.\w+|throw|assert\w*|invariant|describe|it|test|expect|import|require|\.test|\.match|\.replace|\.split|\.startsWith|\.endsWith|\.includes|\.indexOf|new\s+RegExp|new\s+URL|\.getItem|\.setItem|\.removeItem|\.get|\.set|\.has|\.delete|\.append|searchParams\.\w+|headers\.\w+|cookies\.\w+|revalidateTag|revalidatePath|redirect|notFound)\s*\(\s*$/;
 
+/**
+ * The source with its comments blanked, character for character, so a line
+ * number is still a line somebody can open. Strings and template literals are
+ * kept (and skipped over, so a `//` in a URL starts no comment): the patterns
+ * below read the very literals a plural is made of.
+ *
+ * @param {string} source
+ */
+export function withoutComments(source) {
+  let out = "";
+  let index = 0;
+  const blank = (text) => text.replace(/[^\n]/g, " ");
+  while (index < source.length) {
+    const here = source[index];
+    const next = source[index + 1];
+    if (here === "/" && next === "/") {
+      const end = source.indexOf("\n", index);
+      const stop = end === -1 ? source.length : end;
+      out += blank(source.slice(index, stop));
+      index = stop;
+      continue;
+    }
+    if (here === "/" && next === "*") {
+      const end = source.indexOf("*/", index + 2);
+      const stop = end === -1 ? source.length : end + 2;
+      out += blank(source.slice(index, stop));
+      index = stop;
+      continue;
+    }
+    if (here === '"' || here === "'") {
+      let probe = index + 1;
+      while (probe < source.length && source[probe] !== here && source[probe] !== "\n") probe += source[probe] === "\\" ? 2 : 1;
+      out += source.slice(index, probe + 1);
+      index = probe + 1;
+      continue;
+    }
+    if (here === "`") {
+      /* A template literal: its text, and the code inside each `${ }`, which may hold strings of its own. */
+      let probe = index + 1;
+      let depth = 0;
+      while (probe < source.length) {
+        const c = source[probe];
+        if (depth === 0 && c === "`") break;
+        if (c === "\\") {
+          probe += 2;
+          continue;
+        }
+        if (depth === 0 && c === "$" && source[probe + 1] === "{") {
+          depth = 1;
+          probe += 2;
+          continue;
+        }
+        if (depth > 0) {
+          if (c === "{") depth += 1;
+          else if (c === "}") depth -= 1;
+        }
+        probe += 1;
+      }
+      out += source.slice(index, probe + 1);
+      index = probe + 1;
+      continue;
+    }
+    out += here;
+    index += 1;
+  }
+  return out;
+}
+
+/**
+ * A comparison against 1 that picks a piece of text: the shape every hand-built
+ * plural has. `=== 1`, `!== 1`, `> 1`, `<= 1`, then `?` and a string whose first
+ * character is a letter, a digit or nothing at all ("" for the singular).
+ */
+const PLURAL_BRANCH = /[!=]==?\s*1\s*\?\s*(?:"(?:[A-Za-z0-9]|")|'(?:[A-Za-z0-9]|')|`(?:[A-Za-z0-9]|`|\$\{))/g;
+/** The same ternary the other way round, for the singular's suffix: `n > 1 ? "s" : ""`. */
+const PLURAL_SUFFIX_BRANCH = /[<>]=?\s*1\s*\?\s*(?:["'](?:s|es)["']\s*:\s*["']["']|["']["']\s*:\s*["'](?:s|es)["'])/g;
+/** `if (n === 1) return "a card";` and its block form. */
+const PLURAL_RETURN = /[!=]==?\s*1\)\s*(?:return\s+|\{\s*return\s+)["'`][A-Za-z0-9]/g;
+/** `noun + "s"`, the oldest one. */
+const PLURAL_SUFFIX = /\+\s*["']s["']/g;
+/** A date or a number formatted by the runtime's own locale, or one typed in. */
+const LOCALE_CALL = /\.toLocale(?:Date|Time)?String\s*\(/g;
+
+/** The index just past the `)` that closes the call whose `(` is at `open`, and its top-level argument count. */
+function callArguments(code, open) {
+  let depth = 0;
+  let args = 0;
+  let sawAny = false;
+  for (let index = open; index < code.length; index += 1) {
+    const c = code[index];
+    if (c === '"' || c === "'" || c === "`") {
+      const quote = c;
+      index += 1;
+      while (index < code.length && code[index] !== quote) index += code[index] === "\\" ? 2 : 1;
+      sawAny = true;
+      continue;
+    }
+    if (c === "(" || c === "[" || c === "{") depth += 1;
+    else if (c === ")" || c === "]" || c === "}") {
+      depth -= 1;
+      if (depth === 0) return { end: index + 1, args: sawAny ? args + 1 : 0 };
+    } else if (c === "," && depth === 1) args += 1;
+    else if (depth >= 1 && !/\s/.test(c)) sawAny = true;
+  }
+  return { end: code.length, args: 0 };
+}
+
+/**
+ * The patterns of ENJA-04 in one file: a locale typed or taken from the runtime,
+ * a plural made by hand, and a figure counted with no locale. Pure, for the test.
+ *
+ * @param {string} source
+ * @returns {{ line: number; kind: string; snippet: string }[]}
+ */
+export function formatPatternsIn(source) {
+  const code = withoutComments(source);
+  const lineOf = (at) => code.slice(0, at).split("\n").length;
+  const snippetAt = (at) => code.slice(code.lastIndexOf("\n", at) + 1, code.indexOf("\n", at) === -1 ? undefined : code.indexOf("\n", at)).trim().slice(0, 120);
+  const found = [];
+  const add = (kind, at) => found.push({ line: lineOf(at), kind, snippet: snippetAt(at) });
+  for (const match of code.matchAll(LOCALE_CALL)) add("locale", match.index);
+  for (const pattern of [PLURAL_BRANCH, PLURAL_SUFFIX_BRANCH, PLURAL_RETURN, PLURAL_SUFFIX]) for (const match of code.matchAll(pattern)) add("plural", match.index);
+  for (const match of code.matchAll(/(?<![\w.])countText\(/g)) {
+    const before = code.slice(code.lastIndexOf("\n", match.index) + 1, match.index);
+    if (/(?:function|import|export)\s*(?:\{[^}]*)?$/.test(before)) continue;
+    if (callArguments(code, match.index + match[0].length - 1).args === 1) add("no-locale", match.index);
+  }
+  /* One report per line and kind: a line with two plurals is one thing to fix. */
+  const seen = new Set();
+  return found.filter((item) => {
+    const key = `${item.line}:${item.kind}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function flaggedIn(relPath, source) {
   const isTsx = relPath.endsWith(".tsx");
   const flagged = [];
@@ -462,6 +610,7 @@ function flaggedIn(relPath, source) {
       if (looksLikeEnglish(jsx.text)) flagged.push({ line: jsx.line, kind: "jsx-text", snippet: jsx.text });
     }
   }
+  for (const item of formatPatternsIn(source)) flagged.push(item);
   return flagged;
 }
 
@@ -476,6 +625,9 @@ function walk(dirPath, out) {
     }
   }
 }
+
+/** The kinds that are a pattern in the code and not a sentence in English. */
+export const PATTERN_KINDS = new Set(["locale", "plural", "no-locale"]);
 
 const under = (relPath, folder) => relPath === folder || relPath.startsWith(`${folder}/`);
 
@@ -525,14 +677,18 @@ export function judge(result, pending = PENDING_PATHS, exists = () => true) {
   /** @type {{ file: string; line: number; kind: string; snippet: string }[]} */
   const violations = [];
   const counts = new Map(pending.map((entry) => [entry.path, 0]));
+  /** How many of each pending path's count are the ENJA-04 patterns and not sentences. */
+  const patterns = new Map(pending.map((entry) => [entry.path, 0]));
   for (const [file, list] of result.byFile) {
     const entry = pendingFor(file, pending);
-    if (entry) counts.set(entry.path, (counts.get(entry.path) ?? 0) + list.length);
-    else for (const item of list) violations.push({ file, ...item });
+    if (entry) {
+      counts.set(entry.path, (counts.get(entry.path) ?? 0) + list.length);
+      patterns.set(entry.path, (patterns.get(entry.path) ?? 0) + list.filter((item) => PATTERN_KINDS.has(item.kind)).length);
+    } else for (const item of list) violations.push({ file, ...item });
   }
   const finished = pending.filter((entry) => (counts.get(entry.path) ?? 0) === 0);
   const missing = pending.filter((entry) => !exists(entry.path));
-  return { violations, counts, finished, missing };
+  return { violations, counts, patterns, finished, missing };
 }
 
 function main() {
@@ -540,14 +696,17 @@ function main() {
   const verdict = judge(result, PENDING_PATHS, (path) => existsSync(join(repoRoot, path)));
 
   let total = 0;
+  let patternTotal = 0;
   if (PENDING_PATHS.length > 0) {
     console.log("i18n string check: English still pending, not enforced (PENDING_PATHS):");
     for (const entry of PENDING_PATHS) {
       const count = verdict.counts.get(entry.path) ?? 0;
+      const pattern = verdict.patterns.get(entry.path) ?? 0;
       total += count;
-      console.log(`  ${String(count).padStart(5)}  ${entry.path}  (${entry.ticket})`);
+      patternTotal += pattern;
+      console.log(`  ${String(count).padStart(5)}  ${entry.path}  (${entry.ticket})${pattern > 0 ? `  [${pattern} of them hand-built plural, locale or no-locale count]` : ""}`);
     }
-    console.log(`  ${String(total).padStart(5)}  in all, in ${PENDING_PATHS.length} pending path(s)\n`);
+    console.log(`  ${String(total).padStart(5)}  in all, in ${PENDING_PATHS.length} pending path(s), ${patternTotal} of them plural, locale or no-locale count patterns\n`);
   }
 
   let failed = false;

@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { BUTTON_QUIET, BUTTON_STRONG, BUTTON_TAP } from "@/components/ui/ui.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { readerDay } from "@/lib/ui/when";
 import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
 import type { PhraseDrawFields, PhraseStatusFields } from "@/lib/phrase/phraseSetup.types";
 
@@ -12,21 +14,6 @@ import { WORDS_COPY } from "./mine.constants";
 import { emptyArrangement, reconcileArrangement, swapBoxes, type Arrangement } from "./phraseArrangement";
 import { WordCandidates } from "./WordCandidates";
 import { WordTiles } from "./WordTiles";
-
-/**
- * When the words were set, as a date a person reads, in the zone they are
- * reading it in.
- *
- * Rendered only once the browser has taken over — see where it is called —
- * because the server does not know where the reader is: formatted there, an
- * evening's pick came out as the next day (UTC had already turned), and a date
- * that differs between the server and the browser is a hydration mismatch as
- * well as a wrong one. The day-month-year order is fixed rather than left to
- * the browser's locale so the line reads the same on every device.
- */
-function sinceDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-}
 
 /**
  * The four-word phrase, on its own tab of the member's page.
@@ -58,6 +45,8 @@ function sinceDate(iso: string): string {
 export function PhraseSetup({ initial }: { initial: PhraseStatusFields }) {
   const router = useRouter();
   const hydrated = useHydrated();
+  // The date the words were set is written in the reader's own zone and language, which only the browser knows: it is drawn once `hydrated`, never by the server.
+  const say = useSpeaker();
   const [status, setStatus] = useState(initial);
   const [picking, setPicking] = useState(false);
   const [ticket, setTicket] = useState<string | null>(null);
@@ -185,7 +174,7 @@ export function PhraseSetup({ initial }: { initial: PhraseStatusFields }) {
             {status.set ? (
               <>
                 {WORDS_COPY.setStatus}
-                {hydrated && status.setAt ? WORDS_COPY.since(sinceDate(status.setAt)) : ""}.
+                {hydrated && status.setAt ? WORDS_COPY.since(readerDay(say.locale, status.setAt, "long") ?? "") : ""}.
               </>
             ) : (
               WORDS_COPY.unsetStatus

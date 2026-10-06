@@ -2,6 +2,7 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SectionedDocument, longDate } from "@/components/layout/SectionedDocument";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 
 import { CONTACT, TERMS_CHANGED, TERMS_SECTIONS, TERMS_SUBTITLE, TERMS_TITLE } from "./terms.constants";
 
@@ -18,14 +19,15 @@ export const metadata = {
  * because the reader deciding whether to ask for an invite is the one it is
  * for. Drawn by `SectionedDocument`, exactly as /privacy is.
  */
-export default function TermsPage() {
+export default async function TermsPage() {
+  const locale = await currentLocale();
   return (
     <Page>
       <SiteHeader />
 
       <PageTitle title={TERMS_TITLE.en} kanji={TERMS_TITLE.kanji} lead={TERMS_SUBTITLE}>
         <p className="text-xs text-muted" data-testid="terms-changed">
-          Last changed {longDate(TERMS_CHANGED)}
+          Last changed {longDate(TERMS_CHANGED, locale)}
         </p>
       </PageTitle>
 

@@ -1,3 +1,7 @@
+import type { DateStyle } from "@/lib/i18n/format.constants";
+import { formatSpecFor } from "@/lib/i18n/format";
+import type { Locale } from "@/lib/i18n/i18n.types";
+
 import type { WhenStyle } from "./when.types";
 
 /**
@@ -83,4 +87,59 @@ export function readerWhen(iso: string, style: WhenStyle, localeTag: string, tim
   const at = moment(iso);
   if (at === null) return null;
   return new Intl.DateTimeFormat(localeTag, { ...READER_FORMAT[style], timeZone }).format(at);
+}
+
+/**
+ * A CALENDAR DAY IN THE READER'S LANGUAGE: "6 Oct 2026", "2026年10月6日".
+ *
+ * Not a moment: a day on the calendar, the same everywhere, so nothing here
+ * reads a zone and nothing here is `Intl`. The weekday is worked out from the
+ * date itself in UTC. The months, the weekdays and the shape each style takes
+ * are the language's row in `i18n/format.constants.ts`, so a server render and
+ * the browser hydrating it draw the same text in any language the site offers.
+ *
+ * `day` is a key as the site writes them, "2026-10-06", or any ISO moment, of
+ * which only the UTC date is read. Null for something that is not a date, like
+ * the moment formatters above, so a caller with nothing to show shows nothing.
+ */
+export function calendarDay(locale: Locale, day: string, style: DateStyle): string | null {
+  const at = new Date(/^\d{4}-\d{2}-\d{2}$/.test(day) ? `${day}T00:00:00Z` : day);
+  if (Number.isNaN(at.getTime())) return null;
+  return calendarParts(locale, at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate(), at.getUTCDay(), style);
+}
+
+/**
+ * The calendar day a moment falls on in the zone of the runtime calling this,
+ * written for the reader: for the browser, AFTER HYDRATION, where that zone is
+ * the reader's own. A moment late in the evening is still that evening's day
+ * here, which is not what the UTC date in `calendarDay` says. It reads the
+ * runtime's local date fields and nothing else, so it needs no `Intl`, but it
+ * is the same fault as `readerWhen` if a server render also draws it: gate it
+ * on `useHydrated`, as `LocalTime` does.
+ */
+export function readerDay(locale: Locale, iso: string, style: DateStyle): string | null {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return null;
+  return calendarParts(locale, at.getFullYear(), at.getMonth(), at.getDate(), at.getDay(), style);
+}
+
+/** A month key, "2026-10", as the language writes a month and its year: "October 2026", "2026年10月". */
+export function calendarMonth(locale: Locale, month: string): string | null {
+  const parts = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(month);
+  if (parts === null) return null;
+  return calendarParts(locale, Number(parts[1]), Number(parts[2]) - 1, 1, 0, "month");
+}
+
+function calendarParts(locale: Locale, year: number, month: number, date: number, weekday: number, style: DateStyle): string {
+  const spec = formatSpecFor(locale);
+  const slots: Record<string, string> = {
+    y: String(year),
+    mn: String(month + 1),
+    m: spec.months[month] as string,
+    ms: spec.monthsShort[month] as string,
+    d: String(date),
+    w: spec.weekdays[weekday] as string,
+    ws: spec.weekdaysShort[weekday] as string,
+  };
+  return spec.dates[style].replace(/\{(\w+)\}/g, (_, slot: string) => slots[slot] ?? "");
 }

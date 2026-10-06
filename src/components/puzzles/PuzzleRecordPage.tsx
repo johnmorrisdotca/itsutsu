@@ -7,6 +7,8 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { gamePath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { monthWords, weekWords } from "@/lib/history/recordMonth";
 import { PUZZLE_RECORD_SORTS, puzzleRecordAsked, puzzleRecordHref, type PuzzleRecordAsked } from "@/lib/puzzles/puzzleRecordAddress";
@@ -45,10 +47,11 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
   const copy = PUZZLE_DISPLAY[kind];
   const asked = puzzleRecordAsked(kind, query);
   const me = await currentMemberId();
+  const say = await currentSpeaker();
   const record = await puzzleRecordOf(kind, asked);
   const { names, tags } = await namesAndTagsOf([...record.solves.map((solve) => solve.memberId), ...(asked.member === null ? [] : [asked.member])]);
   const whose = asked.member === null ? null : asked.member === me ? "Your" : `${shownName(names.get(asked.member) || "A member")}'s`;
-  const chips = chipsOf(kind, asked, whose);
+  const chips = chipsOf(kind, asked, whose, say);
   const pages = Math.max(1, Math.ceil(record.total / PUZZLE_RECORD_PAGE));
 
   return (
@@ -111,8 +114,8 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
           <p className="text-sm" data-testid="record-tally" data-points={record.tally.points}>
             <span className="font-semibold tabular-nums">{thousands(record.tally.points)} points</span> from{" "}
             {record.tally.puzzles} {record.tally.puzzles === 1 ? "puzzle" : "puzzles"}
-            {asked.month === null ? "" : ` in ${monthWords(asked.month)}`}
-            {asked.week === null ? "" : ` in ${weekWords(asked.week)}`}: each puzzle counts once, at its best, and the
+            {asked.month === null ? "" : ` in ${monthWords(asked.month, say)}`}
+            {asked.week === null ? "" : ` in ${weekWords(asked.week, say)}`}: each puzzle counts once, at its best, and the
             rows marked <span aria-hidden>★</span><span className="sr-only">with a star</span> are the ones counted.
           </p>
         ) : null}
@@ -145,15 +148,15 @@ export async function PuzzleRecordPage({ kind, query }: { kind: PuzzleKind; quer
 }
 
 /** The chips for what the record was narrowed to, each with the address that takes it off. */
-function chipsOf(kind: PuzzleKind, asked: PuzzleRecordAsked, whose: string | null): Chip[] {
+function chipsOf(kind: PuzzleKind, asked: PuzzleRecordAsked, whose: string | null, say: Speaker): Chip[] {
   const off = (change: Partial<PuzzleRecordAsked>) => puzzleRecordHref(kind, { ...asked, ...change, page: 1 });
   const chips: (Chip | null)[] = [
     whose === null ? null : { key: "member", label: `${whose} solves`, without: off({ member: null }) },
     asked.size === null ? null : { key: "size", label: sizeWord(asked.size, kind), without: off({ size: null }) },
     asked.level === null ? null : { key: "level", label: PUZZLE_LEVEL_DISPLAY[asked.level].label, without: off({ level: null }) },
     asked.clock === null ? null : { key: "clock", label: clockWords(asked.clock), without: off({ clock: null }) },
-    asked.month === null ? null : { key: "month", label: `Finished in ${monthWords(asked.month)}`, without: off({ month: null }) },
-    asked.week === null ? null : { key: "week", label: `Finished in ${weekWords(asked.week)}`, without: off({ week: null }) },
+    asked.month === null ? null : { key: "month", label: say.say("record.finishedIn", { when: monthWords(asked.month, say) }), without: off({ month: null }) },
+    asked.week === null ? null : { key: "week", label: say.say("record.finishedIn", { when: weekWords(asked.week, say) }), without: off({ week: null }) },
     asked.sort === PUZZLE_RECORD_SORTS.fastest ? { key: "sort", label: "Solved, fastest first", without: off({ sort: PUZZLE_RECORD_SORTS.newest }) } : null,
   ];
   return chips.filter((chip): chip is Chip => chip !== null);

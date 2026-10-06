@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, SECTION_TITLE, SELECT_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { dayLabel, monthLabel } from "@/lib/puzzles/dailyWords/dailyDay";
@@ -22,6 +23,7 @@ import type { DailyArchiveTableProps } from "./dailyWords.types";
  */
 export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyArchiveTableProps) {
   const hydrated = useHydrated();
+  const locale = useLocale();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const wanted = search.trim().toLowerCase();
@@ -32,11 +34,11 @@ export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyAr
       .map((week) => ({
         ...week,
         days: week.days.filter(
-          (row) => row.day.includes(wanted) || dayLabel(row.day).toLowerCase().includes(wanted) || row.words.some((each) => each.word.toLowerCase().includes(wanted)),
+          (row) => row.day.includes(wanted) || dayLabel(row.day, locale).toLowerCase().includes(wanted) || row.words.some((each) => each.word.toLowerCase().includes(wanted)),
         ),
       }))
       .filter((week) => week.days.length > 0);
-  }, [weeks, wanted]);
+  }, [weeks, wanted, locale]);
 
   return (
     <div className="flex flex-col gap-4" data-testid="daily-archive" {...readyMark(hydrated)}>
@@ -53,7 +55,7 @@ export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyAr
             >
               {months.map((each) => (
                 <option key={each} value={each}>
-                  {monthLabel(each)}
+                  {monthLabel(each, locale)}
                 </option>
               ))}
               <option value="all">Every month</option>
@@ -86,7 +88,7 @@ export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyAr
       ) : (
         shown.map((week) => (
           <section key={week.monday} className="flex flex-col gap-1" data-testid="daily-week" data-monday={week.monday}>
-            <h2 className={SECTION_TITLE}>Week of {dayLabel(week.monday)}</h2>
+            <h2 className={SECTION_TITLE}>Week of {dayLabel(week.monday, locale)}</h2>
             <div className={TABLE_SCROLL}>
               <table className="w-full text-sm">
                 <Head sizes={sizes} unit={unit} />
@@ -95,8 +97,8 @@ export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyAr
                     <tr key={row.day} className="border-t border-rule" data-testid="daily-day" data-day={row.day}>
                       {/* The day leads to its own page: its words and the fastest to find each. */}
                       <td className="py-1 pr-2 whitespace-nowrap tabular-nums">
-                        <Link href={row.dayHref} title={`${dayLabel(row.day)}: the fastest finds`} className="underline decoration-rule-strong underline-offset-2 hover:decoration-ink" data-testid="daily-day-fastest">
-                          {/* The week's heading carries the year. */ dayLabel(row.day, false)}
+                        <Link href={row.dayHref} title={`${dayLabel(row.day, locale)}: the fastest finds`} className="underline decoration-rule-strong underline-offset-2 hover:decoration-ink" data-testid="daily-day-fastest">
+                          {/* The week's heading carries the year. */ dayLabel(row.day, locale, false)}
                         </Link>
                       </td>
                       {sizes.map((size) => {

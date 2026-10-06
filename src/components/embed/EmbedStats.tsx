@@ -2,6 +2,10 @@
 
 import useSWR from "swr";
 
+import { useLocale } from "@/components/i18n/LocaleProvider";
+import type { Locale } from "@/lib/i18n/i18n.types";
+import { readerDay } from "@/lib/ui/when";
+
 import type { EmbedSummary } from "@/lib/embed/embedSummary";
 import { RecordFigure } from "@/components/players/PlayerRecord";
 
@@ -29,11 +33,9 @@ const RESULT_LABEL: Record<string, string> = {
   abandoned: "—",
 };
 
-function playedOn(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
+/** The day a game was played, in the reader's zone and language: "6 Oct", "10月6日". */
+function playedOn(iso: string, locale: Locale): string {
+  return readerDay(locale, iso, "shortNoYear") ?? "";
 }
 
 function nameOr(name: string, fallback: string): string {
@@ -47,6 +49,7 @@ export function EmbedStats({
   token: string;
   player: string | null;
 }) {
+  const locale = useLocale();
   const query = new URLSearchParams({ token });
   if (player !== null) query.set("player", player);
 
@@ -105,7 +108,7 @@ export function EmbedStats({
               </span>
               <span className="shrink-0 tabular-nums">
                 {RESULT_LABEL[game.result] ?? game.result} · {game.moveCount} ·{" "}
-                {playedOn(game.playedAt)}
+                {playedOn(game.playedAt, locale)}
               </span>
             </li>
           ))}

@@ -13,20 +13,32 @@
  * server's own days are the best guess available.
  */
 
+import { formatSpecFor } from "@/lib/i18n/format";
+import type { Speaker } from "@/lib/i18n/i18n";
+
 const DAY_MS = 86_400_000;
 
 /** Sunday first, as the profile lists them. */
 export const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
-export const WEEKDAY_DISPLAY: Record<number, { label: string; short: string; kanji: string }> = {
-  0: { label: "Sunday", short: "Sun", kanji: "日" },
-  1: { label: "Monday", short: "Mon", kanji: "月" },
-  2: { label: "Tuesday", short: "Tue", kanji: "火" },
-  3: { label: "Wednesday", short: "Wed", kanji: "水" },
-  4: { label: "Thursday", short: "Thu", kanji: "木" },
-  5: { label: "Friday", short: "Fri", kanji: "金" },
-  6: { label: "Saturday", short: "Sat", kanji: "土" },
-};
+/** The kanji set beside a weekday's name for a reader whose own writing is not Han script. */
+const WEEKDAY_KANJI = ["日", "月", "火", "水", "木", "金", "土"] as const;
+
+/**
+ * A weekday's words for one reader: its name, the short name a button carries,
+ * and the kanji beside them, which is null for a reader whose own language is
+ * written in that script already (Japanese reads 日 as the short name itself,
+ * so a second 日 beside it would say the day twice). The names are the
+ * language's own, from the calendar table.
+ */
+export function weekdayWords(say: Speaker, day: number): { label: string; short: string; kanji: string | null } {
+  const spec = formatSpecFor(say.locale);
+  return {
+    label: spec.weekdays[day] as string,
+    short: spec.weekdaysShort[day] as string,
+    kanji: say.pairsWithKanji ? (WEEKDAY_KANJI[day] ?? null) : null,
+  };
+}
 
 /**
  * Somebody must play on some day.

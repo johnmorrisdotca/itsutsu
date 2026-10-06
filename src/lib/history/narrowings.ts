@@ -1,5 +1,6 @@
-import type { PhraseKey } from "@/lib/i18n/i18n.constants";
-import type { Vars } from "@/lib/i18n/i18n.types";
+import { speaker } from "@/lib/i18n/i18n";
+import { DEFAULT_LOCALE, type PhraseKey } from "@/lib/i18n/i18n.constants";
+import type { Locale, Vars } from "@/lib/i18n/i18n.types";
 import { playerPath } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
 import {
@@ -98,10 +99,20 @@ export function appliedNarrowings(input: {
   month?: string;
   /** The week they finished in, when the figure was a weekly board's. */
   week?: string;
+  /** The reader's language, which the month and the week of a chip are written in. */
+  locale: Locale;
 }): Narrowing[] {
-  const { player, outcome, pool, rated, verdict, ip = "", month = "", week = "" } = input;
+  const { player, outcome, pool, rated, verdict, ip = "", month = "", week = "", locale } = input;
   const monthRead = readMonth(month);
   const weekRead = readWeek(week);
+  const english = speaker(DEFAULT_LOCALE);
+  const reader = speaker(locale);
+  /** "Finished in <span>", the English label and the reader's phrase side by side, as every chip with a phrase has them. */
+  const finishedIn = (key: string, when: (say: ReturnType<typeof speaker>) => string): Narrowing => ({
+    key,
+    label: english.say("record.finishedIn", { when: when(english) }),
+    phrase: { key: "record.finishedIn", vars: { when: when(reader) } },
+  });
   const list: (Narrowing | null)[] = [
     player === null
       ? null
@@ -127,8 +138,8 @@ export function appliedNarrowings(input: {
     named("pool", pool === "" ? null : (GAME_POOL_DISPLAY[pool]?.label ?? null)),
     named("rated", rated === "" ? null : (GAME_RATED_DISPLAY[rated]?.label ?? null)),
     named("ip", ip === "" ? null : (GAME_IP_DISPLAY[ip]?.label ?? null)),
-    named("month", monthRead === null ? null : `Finished in ${monthWords(monthRead)}`),
-    named("week", weekRead === null ? null : `Finished in ${weekWords(weekRead)}`),
+    monthRead === null ? null : finishedIn("month", (say) => monthWords(monthRead, say)),
+    weekRead === null ? null : finishedIn("week", (say) => weekWords(weekRead, say)),
     // Unlike outcome, verdict has no player-independent reading at all — see verdictWhere.
     verdict === "" || player === null ? null : named("verdict", verdictLabel(verdict)),
   ];

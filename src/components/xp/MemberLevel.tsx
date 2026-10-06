@@ -131,7 +131,7 @@ export function MemberLevel({ xp, imported = null, testId = "member-level" }: Me
             data-testid={`${testId}-total`}
           >
             {/* Written the way every count on the site is written — see `countText`. */}
-            {countText(xp)}
+            {countText(xp, say.locale)}
           </Link>
           {/* John's "justification that they have put in their time or mileage on other sites". */}
           {imported === null ? null : <ImportedXpNote note={importedNoteText(say, imported)} testId={`${testId}-imported`} />}
@@ -155,7 +155,7 @@ export function MemberLevel({ xp, imported = null, testId = "member-level" }: Me
               data-testid={`${testId}-next-level`}
             >
               {say.say("xp.toNext", {
-                count: countText(standing.toNext),
+                count: countText(standing.toNext, say.locale),
                 name: `Lv ${next} · ${xpLevelName(next)}`,
               })}
             </Link>

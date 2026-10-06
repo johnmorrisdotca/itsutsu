@@ -1,3 +1,6 @@
+import { numberIn } from "@/lib/i18n/format";
+import type { Locale } from "@/lib/i18n/i18n.types";
+
 import type { GameScore } from "./elo";
 
 /**
@@ -58,12 +61,20 @@ export function winRateText(rate: number | null): string {
   return rate === null ? "—" : `${(rate * 100).toFixed(1)}%`;
 }
 
-/** A count with its thousands separated — these records run to thousands of games. */
-export function countText(value: number): string {
-  return value.toLocaleString("en-GB");
+/**
+ * A count with its thousands separated, in the reader's own marks — these
+ * records run to thousands of games. `locale` is the speaker's, never a literal:
+ * the mark is the language's (`i18n/format.constants.ts`), and nothing here may
+ * ask the runtime, whose answer differs between Node and a browser. English and
+ * Japanese mark thousands alike, so a caller that has no speaker yet and leaves
+ * `locale` out reads the same digits; `i18n:check` lists each such call, so
+ * the ones left are visible until a speaker reaches them.
+ */
+export function countText(value: number, locale: Locale = "en"): string {
+  return numberIn(locale, value);
 }
 
 /** Won, lost and drawn as one string, in the order every table here writes them. */
-export function recordText(record: { won: number; lost: number; drawn: number }): string {
-  return `${countText(record.won)}W · ${countText(record.lost)}L · ${countText(record.drawn)}D`;
+export function recordText(record: { won: number; lost: number; drawn: number }, locale: Locale = "en"): string {
+  return `${countText(record.won, locale)}W · ${countText(record.lost, locale)}L · ${countText(record.drawn, locale)}D`;
 }

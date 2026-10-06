@@ -9,9 +9,11 @@ import {
   ALLOWED_TERMS,
   EXCLUDED_PATHS,
   PENDING_PATHS,
+  formatPatternsIn,
   judge,
   looksLikeEnglish,
   scan,
+  withoutComments,
 } from "../../../scripts/check-i18n-strings.mjs";
 
 /**
@@ -32,12 +34,6 @@ import {
  * Nothing here reads the clock, the network or a database.
  */
 const RECORDED = [
-  // ENJA-04, dates, numbers and counts: month, day and number words typed by hand
-  "src/lib/history/recordMonth.ts",
-  "src/lib/social/daysOff.ts",
-  "src/lib/puzzles/dailyWords/dailyDay.ts",
-  "src/components/layout/SectionedDocument.tsx",
-  "src/lib/text/inWords.ts",
   // ENJA-05, game copy tables: every game's rules, tagline, openings, bots and family names
   "src/lib/learn/rulesPage.ts",
   "src/lib/learn/rulesPage.checkers.ts",
@@ -128,7 +124,7 @@ const RECORDED = [
   "src/lib/api",
 ];
 
-const TICKETS = /^ENJA-(?:04|05|06|07|08|09|10|11|12|13)$/;
+const TICKETS = /^ENJA-(?:05|06|07|08|09|10|11|12|13)$/;
 
 describe("the pending list of English outside the phrase table", () => {
   it("never holds a path the recorded list does not", () => {
@@ -242,5 +238,96 @@ describe("what counts as English", () => {
     for (const [term, reason] of ALLOWED_TERMS) expect(reason.length, term).toBeGreaterThan(10);
     for (const [path, reason] of EXCLUDED_PATHS) expect(reason.length, path).toBeGreaterThan(10);
     for (const [path, reason] of ALLOWED_FILES) expect(reason.length, path).toBeGreaterThan(10);
+  });
+});
+
+/*
+ * DATES, NUMBERS AND COUNTS (ENJA-04). Three patterns that are not sentences but
+ * keep a reader from their language: a date or a number formatted by a locale
+ * typed into the code or by the runtime's own, a plural made by hand, and a
+ * figure counted with no locale. They count against a pending path like a
+ * sentence does, and fail anywhere else.
+ */
+describe("what the gate sees in dates, numbers and counts", () => {
+  const kinds = (source: string) => formatPatternsIn(source).map((item) => item.kind);
+
+  it("flags a locale typed in, and the runtime's own", () => {
+    expect(kinds('const a = xp.toLocaleString("en-US");')).toEqual(["locale"]);
+    expect(kinds('const a = new Date(iso).toLocaleDateString("en-GB", { day: "numeric" });')).toEqual(["locale"]);
+    expect(kinds("const a = at.toLocaleTimeString();")).toEqual(["locale"]);
+    expect(kinds("const a = xp.toLocaleString(undefined);")).toEqual(["locale"]);
+  });
+
+  it("does not flag the other toLocale methods, which are about letters and not about a reader", () => {
+    expect(kinds("const a = word.toLocaleLowerCase();")).toEqual([]);
+  });
+
+  it("flags every shape of hand-built plural the site had", () => {
+    for (const source of [
+      'const a = `${n} ${n === 1 ? "game" : "games"}`;',
+      'const a = `${n} game${n === 1 ? "" : "s"}`;',
+      'const a = `${n} game${n !== 1 ? "s" : ""}`;',
+      'const a = `${n} game${n > 1 ? "s" : ""}`;',
+      'const a = n === 1 ? "1 move" : `${n} moves`;',
+      "const a = n === 1 ? `a ${one}` : `${n} ${many}`;",
+      'if (n === 1) return "a card";',
+      'const a = noun + "s";',
+    ]) {
+      expect(kinds(source), source).toEqual(["plural"]);
+    }
+  });
+
+  it("does not flag a comparison with 1 that picks no text", () => {
+    for (const source of [
+      "const a = people.length === 1 ? people[0] : null;",
+      "const a = n === 1 ? 0 : (1 - 2 * top) / (n - 1);",
+      "const a = count > 1 ? ` calc(${x})` : 0;",
+      "const a = row % 2 === 1 ? SEED_STEP / 2 : 0;",
+      "const a = seat === 1 ? SIDES.black : SIDES.white;",
+    ]) {
+      expect(kinds(source), source).toEqual([]);
+    }
+  });
+
+  it("flags a count with no locale, and passes one that has it", () => {
+    expect(kinds("const a = countText(total);")).toEqual(["no-locale"]);
+    expect(kinds("const a = countText(Math.min(a, b));")).toEqual(["no-locale"]);
+    expect(kinds("const a = countText(total, say.locale);")).toEqual([]);
+    expect(kinds("const a = countText(Math.min(a, b), locale);")).toEqual([]);
+    expect(kinds("export function countText(value: number, locale: Locale = 'en') {}")).toEqual([]);
+  });
+
+  it("passes the helpers that replace them", () => {
+    expect(kinds('const a = say.count("count.move", record.length);')).toEqual([]);
+    expect(kinds("const a = say.number(xp);")).toEqual([]);
+    expect(kinds('const a = say.day(day, "short");')).toEqual([]);
+  });
+
+  it("reads code and not a comment about the code", () => {
+    expect(kinds('// the old way: n === 1 ? "game" : "games"\nconst a = 1;')).toEqual([]);
+    expect(kinds('/* xp.toLocaleString("en-US") was here */ const a = 1;')).toEqual([]);
+    expect(withoutComments('const url = "https://x.test/a"; // a note').trimEnd()).toBe('const url = "https://x.test/a";');
+  });
+
+  it("names the line, so a failure can be opened", () => {
+    const found = formatPatternsIn('const a = 1;\nconst b = `${n} game${n === 1 ? "" : "s"}`;');
+    expect(found.map((item) => item.line)).toEqual([2]);
+  });
+
+  it("counts a file's patterns against its pending path, and fails them anywhere else", () => {
+    const root = mkdtempSync(join(tmpdir(), "enja-gate-format-"));
+    try {
+      const full = join(root, "src/lib/newThing/counts.ts");
+      mkdirSync(join(full, ".."), { recursive: true });
+      writeFileSync(full, 'export const moves = (n: number) => `${n} ${n === 1 ? "move" : "moves"}`;');
+      const result = scan(root);
+      expect(judge(result, []).violations.map((v) => `${v.file} ${v.kind}`)).toEqual(["src/lib/newThing/counts.ts plural"]);
+      const covered = judge(result, [{ path: "src/lib/newThing", ticket: "ENJA-06" }]);
+      expect(covered.violations).toEqual([]);
+      expect(covered.counts.get("src/lib/newThing")).toBe(1);
+      expect(covered.patterns.get("src/lib/newThing")).toBe(1);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

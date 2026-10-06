@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { speaker } from "@/lib/i18n/i18n";
 import { monthBounds, monthOf, monthWords, readMonth, readWeek, weekBounds, weekOf, weekWords } from "@/lib/history/recordMonth";
 
 import { puzzleRecordAsked, puzzleRecordHref } from "./puzzleRecordAddress";
@@ -50,7 +51,8 @@ describe("a month in an address", () => {
   });
 
   it("says itself in words for the chip", () => {
-    expect(monthWords("2026-09")).toBe("September 2026");
+    expect(monthWords("2026-09", speaker("en"))).toBe("September 2026");
+    expect(monthWords("2026-09", speaker("ja"))).toBe("2026年9月");
   });
 });
 
@@ -71,7 +73,8 @@ describe("a week in an address", () => {
     expect(weekOf(new Date("2026-09-28T00:00:00Z"))).toBe("2026-09-28");
     // Across a month and a year.
     expect(weekOf(new Date("2027-01-01T12:00:00Z"))).toBe("2026-12-28");
-    expect(weekWords("2026-09-21")).toBe("the week of 21 September 2026");
+    expect(weekWords("2026-09-21", speaker("en"))).toBe("the week of 21 September 2026");
+    expect(weekWords("2026-09-21", speaker("ja"))).toBe("2026年9月21日の週");
   });
 
   it("carries a weekly board's figure to exactly that week's solves", () => {

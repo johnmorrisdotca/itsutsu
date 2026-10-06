@@ -29,9 +29,13 @@ describe("the days of the daily words", () => {
   });
 
   it("are printed the same by every server and browser, and grouped Monday to Sunday", () => {
-    expect(dayLabel("2026-10-03")).toBe("Sat 3 Oct 2026");
-    expect(dayLabel("2026-10-03", false)).toBe("Sat 3 Oct");
-    expect(monthLabel("2026-10")).toBe("October 2026");
+    expect(dayLabel("2026-10-03", "en")).toBe("Sat 3 Oct 2026");
+    expect(dayLabel("2026-10-03", "en", false)).toBe("Sat 3 Oct");
+    expect(monthLabel("2026-10", "en")).toBe("October 2026");
+    // A Japanese reader reads the same day as 2026年10月3日, with the weekday in full-width brackets.
+    expect(dayLabel("2026-10-03", "ja")).toBe("2026年10月3日（土）");
+    expect(dayLabel("2026-10-03", "ja", false)).toBe("10月3日（土）");
+    expect(monthLabel("2026-10", "ja")).toBe("2026年10月");
     expect(mondayOf("2026-10-03")).toBe("2026-09-28");
     expect(mondayOf("2026-09-28")).toBe("2026-09-28");
     expect(mondayOf("2026-10-04")).toBe("2026-09-28");

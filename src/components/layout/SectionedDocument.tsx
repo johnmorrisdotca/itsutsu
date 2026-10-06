@@ -1,5 +1,8 @@
 import { Fragment } from "react";
 
+import type { Locale } from "@/lib/i18n/i18n.types";
+import { calendarDay } from "@/lib/ui/when";
+
 import { BrandStones } from "./BrandMarks";
 import { SectionHeading } from "./Headings";
 
@@ -57,26 +60,10 @@ export function SectionedDocument({
   );
 }
 
-/** "2026-09-24" as "24 September 2026", in the site's own language, without Intl in render. */
-export function longDate(iso: string): string {
-  const [year, month, day] = iso.split("-").map(Number);
-  return `${day} ${MONTHS[(month ?? 1) - 1]} ${year}`;
+/** "2026-09-24" as "24 September 2026", or "2026年9月24日", in the reader's language, without Intl in render. */
+export function longDate(iso: string, locale: Locale): string {
+  return calendarDay(locale, iso, "long") ?? iso;
 }
-
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-] as const;
 
 /** The contact address, wherever a sentence names it, as a mailto link. */
 function withContactLink(text: string, contact: string) {

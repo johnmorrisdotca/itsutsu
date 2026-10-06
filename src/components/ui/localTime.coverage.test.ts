@@ -103,16 +103,6 @@ const EXCEPTIONS: Record<string, { calls: number; reason: string }> = {
     reason: "reads the device zone in the guessZone click handler",
   },
   /*
-   * GATED ON `useHydrated` AT ITS ONE CALL SITE (`hydrated && status.setAt`), so
-   * the server draws nothing there and the browser formats it after taking over.
-   * `LocalTime` would do the same with a UTC first drawing; this one draws
-   * nothing first instead, which is the other honest answer.
-   */
-  "src/components/mine/PhraseSetup.tsx": {
-    calls: 1,
-    reason: "sinceDate is only called when useHydrated says the browser has the page",
-  },
-  /*
    * NOT A RENDER AT ALL. A zone a member sends is checked by asking the platform
    * whether it knows it; the formatter is thrown away.
    */
@@ -121,47 +111,13 @@ const EXCEPTIONS: Record<string, { calls: number; reason: string }> = {
     reason: "validates a time zone in an API route; nothing is drawn",
   },
   /*
-   * DRAWN ONLY FROM DATA THE BROWSER FETCHED. `EmbedStats` returns null until
-   * SWR has an answer, and SWR has none on the server — no fallback is passed —
-   * so the date is only ever formatted in a browser render. That reason is
-   * fragile and worth knowing: handing it server data as `fallbackData` makes
-   * this the fault, and this exception must go when that happens.
+   * The feed's one, in a server component that no client component imports.
+   * It is not a moment: it is a day key the server already worked out in the
+   * reader's own zone, written out at noon UTC with the zone pinned to UTC, so
+   * it is the same date wherever it is drawn. (The counts and dates the other
+   * components print come from the language's own table, `Speaker.number` and
+   * `Speaker.day`, which is `Intl`-free and so is not read here.)
    */
-  "src/components/embed/EmbedStats.tsx": {
-    calls: 1,
-    reason: "formats only SWR data, which is undefined on the server, so it is never drawn twice",
-  },
-  /*
-   * COUNTS, NOT MOMENTS, AND DRAWN BY THE SERVER ONLY. Two figures with an
-   * explicit "en-US", in a server component (`/me` renders it; nothing marked
-   * "use client" imports it), so there is no browser drawing to disagree with.
-   *
-   * And "en-US" for an integer is stable across Node and Chromium in its own
-   * right, which is the question this was asked to settle: both carry ICU's
-   * CLDR data, and English grouping — a comma every three digits — is not the
-   * kind of data CLDR revises, unlike region names (0.146.1) or date patterns.
-   * It is still listed rather than matched loosely, because a date written
-   * with `toLocaleString` in this file would look identical to the matcher.
-   */
-  "src/components/layout/MemberStrip.tsx": {
-    calls: 1,
-    reason: "the XP total under the masthead: an integer with an explicit en-US locale, in a server component, as MyXp",
-  },
-  "src/components/mine/MyXp.tsx": {
-    calls: 2,
-    reason: "integer counts with an explicit en-US locale, in a server component",
-  },
-  /*
-   * The feed's two, both in server components that no client component
-   * imports. The points are an integer with an explicit en-US locale, as
-   * MyXp. The day heading is not a moment: it is a day key the server already
-   * worked out in the reader's own zone, written out at noon UTC with the zone
-   * pinned to UTC, so it is the same date wherever it is drawn.
-   */
-  "src/components/feed/FeedLine.tsx": {
-    calls: 1,
-    reason: "an XP total: an integer with an explicit en-US locale, in a server component, as MyXp",
-  },
   "src/components/feed/FeedList.tsx": {
     calls: 1,
     reason: "a day heading from a day key, formatted with the zone pinned to UTC, in a server component",

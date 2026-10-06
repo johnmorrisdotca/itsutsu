@@ -1,5 +1,8 @@
 import { dayKey, dayOfSeed, isDayKey as taneIsDayKey } from "@johnmorrisdotca/tane";
 
+import type { Locale } from "@/lib/i18n/i18n.types";
+import { calendarDay, calendarMonth } from "@/lib/ui/when";
+
 import { DAILY_SEED_BLOCK } from "../random";
 
 /**
@@ -55,25 +58,20 @@ export function dayAfter(day: string, by = 1): string {
   return dayKeyOf(new Date(dayStart(day).getTime() + by * DAY_MS));
 }
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
 /**
- * A day as a page prints it, "Sat 3 Oct 2026". Written out here rather than
+ * A day as a page prints it in the reader's language: "Sat 3 Oct 2026",
+ * "2026年10月3日（土）". Written from the language's own table rather than
  * through `Intl`, which spells dates by the zone and language of whoever
  * renders (`localTime.coverage.test.ts`): a day is a calendar date, the same
  * everywhere, and so is its name.
  */
-export function dayLabel(day: string, withYear = true): string {
-  const at = dayStart(day);
-  const date = `${WEEKDAYS[at.getUTCDay()]} ${at.getUTCDate()} ${MONTHS[at.getUTCMonth()]!.slice(0, 3)}`;
-  return withYear ? `${date} ${at.getUTCFullYear()}` : date;
+export function dayLabel(day: string, locale: Locale, withYear = true): string {
+  return calendarDay(locale, day, withYear ? "weekday" : "weekdayNoYear") ?? day;
 }
 
-/** A month, `2026-10`, as "October 2026". */
-export function monthLabel(month: string): string {
-  const [year, number] = month.split("-");
-  return `${MONTHS[Number(number) - 1] ?? month} ${year}`;
+/** A month, `2026-10`, as "October 2026", "2026年10月". */
+export function monthLabel(month: string, locale: Locale): string {
+  return calendarMonth(locale, month) ?? month;
 }
 
 /** The Monday of a day's week (weeks run Monday to Sunday, as ISO counts them). */

@@ -95,7 +95,7 @@ export function GameStatsStrip({ stats, signedIn, compact = false, standings = t
         {phraseWith(say.say(stats.played === 1 ? "catalogue.playedOne" : "catalogue.playedMany"), {
           count: (
             <GameCount
-              count={countText(stats.played)}
+              count={countText(stats.played, say.locale)}
               variant={variant}
               outcome="decided"
               title={say.say("rules.everyGamePlayed", { game: RULE_VARIANT_DISPLAY[variant as RuleVariant].label })}
@@ -243,13 +243,13 @@ function TopRecord({ top, variant }: { top: TopPlayerShown; variant: string }) {
     if (!linkable) {
       return (
         <span className={tone} title={title} data-testid={testId}>
-          {countText(count)}
+          {countText(count, say.locale)}
         </span>
       );
     }
     return (
       <GameCount
-        count={countText(count)}
+        count={countText(count, say.locale)}
         variant={variant}
         memberId={top.memberId}
         player={top.name ?? undefined}
@@ -296,7 +296,7 @@ export function FamilyStatsLine({ stats }: FamilyStatsLineProps) {
     <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs font-normal text-muted" data-testid="family-stats">
       <span data-testid="family-stats-played">
         {say.say(stats.played === 1 ? "catalogue.familyPlayedOne" : "catalogue.familyPlayedMany", {
-          count: countText(stats.played),
+          count: countText(stats.played, say.locale),
         })}
       </span>
       <span aria-hidden>·</span>
@@ -336,11 +336,11 @@ function lastPlayedText(say: Speaker, since: SinceLastPlayed): string {
     case "yesterday":
       return say.say("catalogue.lastYesterday");
     case "days":
-      return say.say("catalogue.lastDays", { count: countText(since.count) });
+      return say.say("catalogue.lastDays", { count: countText(since.count, say.locale) });
     case "months":
-      return say.say("catalogue.lastMonths", { count: countText(since.count) });
+      return say.say("catalogue.lastMonths", { count: countText(since.count, say.locale) });
     case "years":
-      return say.say("catalogue.lastYears", { count: countText(since.count) });
+      return say.say("catalogue.lastYears", { count: countText(since.count, say.locale) });
   }
 }
 

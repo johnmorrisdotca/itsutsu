@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { appliedNarrowings } from "./narrowings";
 
-const NONE = { player: null, outcome: "", pool: "", rated: "", verdict: "" };
+const NONE = { player: null, outcome: "", pool: "", rated: "", verdict: "", locale: "en" as const };
 
 describe("appliedNarrowings", () => {
   it("shows nothing when nothing was applied", () => {
@@ -21,9 +21,26 @@ describe("appliedNarrowings", () => {
   });
 
   it("says a week in words, and claims no week that is not a Monday", () => {
-    expect(appliedNarrowings({ ...NONE, week: "2026-09-21" })).toEqual([{ key: "week", label: "Finished in the week of 21 September 2026" }]);
+    expect(appliedNarrowings({ ...NONE, week: "2026-09-21" })).toEqual([
+      {
+        key: "week",
+        label: "Finished in the week of 21 September 2026",
+        phrase: { key: "record.finishedIn", vars: { when: "the week of 21 September 2026" } },
+      },
+    ]);
     // A Tuesday narrows nothing in the query, so the chip must not claim it did.
     expect(appliedNarrowings({ ...NONE, week: "2026-09-22" })).toEqual([]);
+  });
+
+  it("writes the month and the week in the reader's language, and keeps the English label beside them", () => {
+    const [month] = appliedNarrowings({ ...NONE, locale: "ja", month: "2026-09" });
+    expect(month).toEqual({
+      key: "month",
+      label: "Finished in September 2026",
+      phrase: { key: "record.finishedIn", vars: { when: "2026年9月" } },
+    });
+    const [week] = appliedNarrowings({ ...NONE, locale: "ja", week: "2026-09-21" });
+    expect(week?.phrase?.vars).toEqual({ when: "2026年9月21日の週" });
   });
 
   it("does the same for lost, the outcome's other player-only half", () => {
@@ -198,6 +215,7 @@ describe("appliedNarrowings", () => {
       pool: "people",
       rated: "yes",
       verdict: "up",
+      locale: "en",
     });
     expect(narrowings.map((one) => one.key)).toEqual(["player", "outcome", "pool", "rated", "verdict"]);
   });

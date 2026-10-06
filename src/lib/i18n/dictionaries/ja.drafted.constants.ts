@@ -426,6 +426,15 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Download in PDN format.",
     review: AGENT_READ,
   },
+  /* A chip on a record narrowed to a month or a week: a headline fragment, so no ending 。 */
+  "record.finishedIn": {
+    text: "{when}に終了",
+    back: "Finished in {when}.",
+  },
+  "record.weekOf": {
+    text: "{date}の週",
+    back: "The week of {date}.",
+  },
 
   /*
    * The rivalry scoreboard. 対戦 is "playing each other" and 対局 is "a game

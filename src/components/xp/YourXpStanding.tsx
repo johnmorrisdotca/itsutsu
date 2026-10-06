@@ -1,6 +1,7 @@
 import Link from "@/components/ui/Link";
 
 import { LevelName } from "@/components/xp/LevelName";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 import { countText } from "@/lib/rating/figures";
 import { DIRECTORY_WHO, type DirectoryWho } from "@/lib/rating/directoryFilter";
 import type { RecordScope } from "@/lib/rating/recordScope";
@@ -34,6 +35,7 @@ export async function YourXpStanding({
   reader: TestModeReader;
 }) {
   if (viewer === null) return null;
+  const locale = await currentLocale();
 
   /* A reader is a person, and a board narrowed to the computer players is not
      one they can be on: said, rather than a rank counted among programs. */
@@ -69,7 +71,7 @@ export async function YourXpStanding({
 
   return (
     <p className="text-sm" data-testid="your-xp" data-rank={rank ?? undefined}>
-      You have {countText(total)} XP and stand at <LevelName level={level} linkable={false} />
+      You have {countText(total, locale)} XP and stand at <LevelName level={level} linkable={false} />
       {", "}
       <Link href={levelPath(level)} className="underline underline-offset-4">
         {xpLevelName(level)}
@@ -81,7 +83,7 @@ export async function YourXpStanding({
            other, and separating them by `id` would be an order nobody can see. */
         <span className="text-muted">
           {" "}
-          — {countText(rank)} of {countText(board.total)} {who === DIRECTORY_WHO.people ? "among the people" : "on the board"}.
+          — {countText(rank, locale)} of {countText(board.total, locale)} {who === DIRECTORY_WHO.people ? "among the people" : "on the board"}.
         </span>
       )}
     </p>

@@ -40,10 +40,10 @@ export function importedNoteText(say: Speaker, facts: ImportedFacts): ImportedNo
      it was paid — still says it is a credit, without inventing where it came
      from. */
   if (facts.games === null || facts.sites.length === 0) {
-    return { text: say.say("xp.imported.includesElsewhere", { xp: countText(facts.xp) }), games: null };
+    return { text: say.say("xp.imported.includesElsewhere", { xp: countText(facts.xp, say.locale) }), games: null };
   }
   return {
-    text: say.say("xp.imported.includes", { xp: countText(facts.xp), sites: importedSitesSaid(say, facts.sites) }),
+    text: say.say("xp.imported.includes", { xp: countText(facts.xp, say.locale), sites: importedSitesSaid(say, facts.sites) }),
     games: facts.games,
   };
 }

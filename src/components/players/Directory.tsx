@@ -6,6 +6,7 @@ import { memberKind } from "@/lib/auth/memberKind";
 import { DirectoryFilters } from "@/components/players/DirectoryFilters";
 import { RecencyMark } from "@/components/mine/Recency";
 import { buddyMemberIds } from "@/lib/social/buddies";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 import { countText } from "@/lib/rating/figures";
 import { currentReader } from "@/lib/auth/currentReader";
 import { DIRECTORY_SORT_SPEC } from "@/lib/rating/directory.sort";
@@ -261,6 +262,7 @@ export async function Directory({
   query: string;
   now: Date;
 }) {
+  const locale = await currentLocale();
   const params = new URLSearchParams(query);
   const asked = readDirectoryPaging(params);
   /*
@@ -416,7 +418,7 @@ export async function Directory({
 
       <div className="flex flex-wrap items-center gap-3">
         <p className="text-sm text-muted" data-testid="directory-page-count">
-          {countText(people.length)} of {countText(page.matching)} shown
+          {countText(people.length, locale)} of {countText(page.matching, locale)} shown
         </p>
         {page.next === null ? null : (
           <Link
@@ -424,7 +426,7 @@ export async function Directory({
             className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
             data-testid="directory-next"
           >
-            Show the next {countText(Math.min(paging.limit, page.matching - people.length))}
+            Show the next {countText(Math.min(paging.limit, page.matching - people.length), locale)}
           </Link>
         )}
         {/*

@@ -14,7 +14,6 @@ import { puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
 import { playerPath } from "@/lib/rating/playerKey";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { xpHistoryHref } from "@/lib/xp/xpHistoryDays";
-import { thousands } from "@/lib/ui/thousands";
 
 /**
  * ONE LINE OF THE FEED: the game's picture where there is a game, the sentence
@@ -65,14 +64,14 @@ function slot(name: string, entry: FeedActivityEntry, say: Speaker): ReactNode {
           className="underline-offset-2 hover:underline"
           data-testid="feed-xp"
         >
-          {entry.points.toLocaleString("en-US")} {say.say("xp.unit")}
+          {say.number(entry.points)} {say.say("xp.unit")}
         </Link>
       ) : null;
     case "ip":
       // IP leads to the board it ranks on, as the strip's does.
       return entry.kind === FEED_KINDS.ip ? (
         <Link href="/points" className="underline-offset-2 hover:underline" data-testid="feed-ip">
-          {thousands(entry.points)} IP
+          {say.number(entry.points)} IP
         </Link>
       ) : null;
     case "level":

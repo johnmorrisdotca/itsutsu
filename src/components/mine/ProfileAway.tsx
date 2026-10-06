@@ -1,5 +1,6 @@
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
-import { MOST_DAYS_OFF, WEEKDAYS, WEEKDAY_DISPLAY } from "@/lib/social/daysOff";
+import { MOST_DAYS_OFF, WEEKDAYS, weekdayWords } from "@/lib/social/daysOff";
 
 import { PROFILE_WIDTH } from "./mine.constants";
 import type { ProfileSectionProps } from "./profileForm.types";
@@ -13,6 +14,7 @@ import type { ProfileSectionProps } from "./profileForm.types";
  */
 export function ProfileAway({ fields, set }: ProfileSectionProps) {
   const away = fields.awayFrom !== "" || fields.awayUntil !== "";
+  const say = useSpeaker();
 
   return (
     <>
@@ -98,13 +100,14 @@ export function ProfileAway({ fields, set }: ProfileSectionProps) {
             {WEEKDAYS.map((day) => {
               const chosen = fields.daysOff.includes(day);
               const full = !chosen && fields.daysOff.length >= MOST_DAYS_OFF;
+              const words = weekdayWords(say, day);
               return (
                 <button
                   key={day}
                   type="button"
                   disabled={full}
                   aria-pressed={chosen}
-                  title={WEEKDAY_DISPLAY[day].label}
+                  title={words.label}
                   data-testid={`day-off-${day}`}
                   onClick={() =>
                     set({
@@ -117,8 +120,13 @@ export function ProfileAway({ fields, set }: ProfileSectionProps) {
                     chosen ? "border-moss bg-moss-soft text-ink" : "border-rule hover:bg-shade"
                   }`}
                 >
-                  {WEEKDAY_DISPLAY[day].short}{" "}
-                  <span className="font-mincho opacity-70">{WEEKDAY_DISPLAY[day].kanji}</span>
+                  {words.short}
+                  {words.kanji === null ? null : (
+                    <>
+                      {" "}
+                      <span className="font-mincho opacity-70">{words.kanji}</span>
+                    </>
+                  )}
                 </button>
               );
             })}

@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { speaker } from "@/lib/i18n/i18n";
+
 import {
   MOST_DAYS_OFF,
   WEEKDAYS,
-  WEEKDAY_DISPLAY,
+  weekdayWords,
   cleanDaysOff,
   daysOffGraceMs,
   weekdayIn,
@@ -43,12 +45,18 @@ describe("which days a member named", () => {
     expect(cleanDaysOff([0, 1, 2, 3, 4, 5])).toHaveLength(6);
   });
 
-  it("has a name for every day, in both scripts", () => {
+  it("has a name for every day, with the kanji beside it for an English reader", () => {
     for (const day of WEEKDAYS) {
-      expect(WEEKDAY_DISPLAY[day].label.length).toBeGreaterThan(2);
-      expect(WEEKDAY_DISPLAY[day].short).toHaveLength(3);
-      expect(WEEKDAY_DISPLAY[day].kanji).toHaveLength(1);
+      const words = weekdayWords(speaker("en"), day);
+      expect(words.label.length).toBeGreaterThan(2);
+      expect(words.short).toHaveLength(3);
+      expect(words.kanji).toHaveLength(1);
     }
+    expect(weekdayWords(speaker("en"), 0)).toEqual({ label: "Sunday", short: "Sun", kanji: "日" });
+  });
+
+  it("names the day in a Japanese reader's own writing, and does not say it twice", () => {
+    expect(weekdayWords(speaker("ja"), 2)).toEqual({ label: "火曜日", short: "火", kanji: null });
   });
 });
 

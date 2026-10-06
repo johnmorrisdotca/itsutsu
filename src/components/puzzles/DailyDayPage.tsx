@@ -6,6 +6,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
+import { currentLocale } from "@/lib/i18n/currentLocale";
 import { gamePath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
 import { dailyDayPath, dailyPlayPath, dailyWordsPath, shownWord } from "@/lib/puzzles/dailyWords/dailyAddress";
@@ -39,11 +40,12 @@ export async function DailyDayPage({ kind, day, today }: { kind: PuzzleKind; day
   const boards = await Promise.all(lengths.map(async ({ size, word }) => ({ size, word, fastest: await fastestOfWord(kind, size, word) })));
   const { names, tags } = await namesAndTagsOf(boards.flatMap((board) => board.fastest.map((row) => row.memberId)));
   const before = dayAfter(day, -1);
+  const locale = await currentLocale();
   return (
     <Page>
       <SiteHeader />
       <PageTitle
-        title={past ? dayLabel(day) : `Today, ${dayLabel(day)}`}
+        title={past ? dayLabel(day, locale) : `Today, ${dayLabel(day, locale)}`}
         kanji={past ? "" : "今日"}
         crumb={
           <GameTrail

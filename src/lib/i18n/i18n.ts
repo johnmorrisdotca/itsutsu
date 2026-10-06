@@ -1,4 +1,8 @@
+import { calendarDay, calendarMonth } from "@/lib/ui/when";
+
 import { DICTIONARIES } from "./dictionaries";
+import type { DateStyle } from "./format.constants";
+import { listIn, listPiecesIn, numberIn, pluralFormIn, wordsIn } from "./format";
 import { LOCALES, PHRASES, type PhraseKey } from "./i18n.constants";
 import type { Locale, Paired, Vars } from "./i18n.types";
 
@@ -31,6 +35,14 @@ export function placeholdersIn(template: string): string[] {
 }
 
 /**
+ * The phrases that are a count with a noun: a base such as `count.move` whose
+ * `.one` and `.other` forms are both in the catalogue. `Speaker.count` picks
+ * the form the reader's language gives the number.
+ */
+type CountBase<K> = K extends `${infer Base}.one` ? (`${Base}.other` extends PhraseKey ? Base : never) : never;
+export type CountKey = CountBase<PhraseKey>;
+
+/**
  * The site talking to one reader.
  *
  * A small object rather than a bare `t(locale, key)` because every call site
@@ -57,6 +69,25 @@ export type Speaker = {
   pair(key: PhraseKey, kanji: string, vars?: Vars): Paired;
   /** A name the catalogue does not hold — a game's — with its own script. */
   pairName(english: string, kanji: string): Paired;
+  /**
+   * A count with its noun, the way this reader's language says it: "1 game"
+   * and "3 games", "1局" and "3局". `key` is the base of a `.one`/`.other`
+   * pair; `{count}` is filled with the number, thousands marked, and `vars`
+   * fills the rest of the phrase.
+   */
+  count(key: CountKey, count: number, vars?: Vars): string;
+  /** A number with its thousands marked in this reader's marks: 12,345. */
+  number(value: number): string;
+  /** A small count in words where the language spells it ("sixty-four"), in digits where it does not. */
+  words(count: number): string;
+  /** A list joined as this reader's language joins one: "a, b and c", "a、b、c". */
+  list(items: readonly string[]): string;
+  /** The same joins around items the caller draws itself: pictures, links. */
+  listPieces<T>(items: readonly T[]): (T | string)[];
+  /** A calendar day, "2026-10-06", written for this reader: "6 Oct 2026", "2026年10月6日". Null for what is not a date. */
+  day(day: string, style: DateStyle): string | null;
+  /** A month key, "2026-10", as "October 2026" or "2026年10月". Null for what is not a month. */
+  month(month: string): string | null;
 };
 
 export function speaker(locale: Locale): Speaker {
@@ -102,5 +133,16 @@ export function speaker(locale: Locale): Speaker {
       if (spec.kanjiReadsAsOwn && kanji !== "") return { text: kanji, kanji: null };
       return { text: english, kanji: tail(kanji) };
     },
+    count(key, count, vars) {
+      const form = pluralFormIn(locale, count);
+      const phrase = `${key}.${form}` as PhraseKey;
+      return fill(dictionary[phrase] ?? PHRASES[phrase], { ...vars, count: numberIn(locale, count) });
+    },
+    number: (value) => numberIn(locale, value),
+    words: (count) => wordsIn(locale, count),
+    list: (items) => listIn(locale, items),
+    listPieces: (items) => listPiecesIn(locale, items),
+    day: (day, style) => calendarDay(locale, day, style),
+    month: (month) => calendarMonth(locale, month),
   };
 }

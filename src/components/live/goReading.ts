@@ -89,7 +89,8 @@ export function goRisk(before: GameState, turn: BotTurn, after: GameState): GoRi
   if (around.every((next) => before.board[next.row * size + next.col] === me)) return "fillsOwnEye";
   if (after === before) return null;
   const group = groupAt(after.board as Cell[], size, point);
-  return group.liberties.size === 1 ? "selfAtari" : null;
+  if (group.liberties.size !== 1) return null;
+  return "selfAtari";
 }
 
 /** The colour's name for a sentence. */

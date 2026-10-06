@@ -1,6 +1,7 @@
 import Link from "@/components/ui/Link";
 
 import { currentMemberRow } from "@/lib/auth/currentSession";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { levelShown } from "@/lib/xp/levelShown";
 import { levelPath, xpLevelName } from "@/lib/xp/levelNames";
 import { xpForBadge } from "@/lib/xp/xpScope";
@@ -24,6 +25,7 @@ import { StripGames, StripIp } from "./StripGames";
 export async function MemberStrip() {
   const member = await currentMemberRow();
   if (member === null) return null;
+  const say = await currentSpeaker();
   const xp = xpForBadge({ xp: member.xp, xpEverywhere: member.xpEverywhere });
   const level = levelShown({ xp });
   return (
@@ -41,7 +43,7 @@ export async function MemberStrip() {
         </Link>
       )}
       <Link href="/xp" className="whitespace-nowrap underline-offset-4 hover:text-ink hover:underline" data-testid="strip-xp">
-        {xp.toLocaleString("en-US")} XP
+        {say.number(xp)} XP
       </Link>
       <StripIp />
     </nav>

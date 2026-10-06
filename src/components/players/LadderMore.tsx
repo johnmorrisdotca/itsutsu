@@ -3,6 +3,7 @@
 import Link from "@/components/ui/Link";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import { countText } from "@/lib/rating/figures";
 import type { LadderEntry } from "@/lib/rating/ladder";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -114,6 +115,7 @@ export function LadderMore({
   sort: RecordSort;
 }) {
   const hydrated = useHydrated();
+  const locale = useLocale();
   const { more, next, loading, failed, sentinel } = useLiveScroll<LadderEntry>({
     endpoint,
     from,
@@ -178,14 +180,14 @@ export function LadderMore({
           <div ref={sentinel} className="h-8" aria-hidden data-testid="ladder-sentinel" />
           <p className="text-sm text-muted" aria-live="polite" data-testid="ladder-progress">
             {next === null
-              ? `All ${countText(total)} on the ladder shown.`
-              : `${countText(rows.length)} of ${countText(total)} shown${loading ? " — reading more…" : ". Keep scrolling for more."}`}
+              ? `All ${countText(total, locale)} on the ladder shown.`
+              : `${countText(rows.length, locale)} of ${countText(total, locale)} shown${loading ? " — reading more…" : ". Keep scrolling for more."}`}
           </p>
         </>
       ) : (
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm text-muted" data-testid="ladder-count">
-            {countText(rows.length)} of {countText(total)} on the ladder
+            {countText(rows.length, locale)} of {countText(total, locale)} on the ladder
           </p>
           {failed ? (
             <span className="text-sm text-muted" data-testid="ladder-scroll-failed">
@@ -194,7 +196,7 @@ export function LadderMore({
           ) : null}
           {from === null ? null : (
             <Link href={link(from)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="ladder-next">
-              Show the next {countText(Math.min(first.length, total - rows.length))}
+              Show the next {countText(Math.min(first.length, total - rows.length), locale)}
             </Link>
           )}
           {/*

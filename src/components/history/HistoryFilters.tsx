@@ -127,6 +127,7 @@ export function HistoryFilters({
     ip: value("ip"),
     month: value("month"),
     week: value("week"),
+    locale: say.locale,
   });
 
   return (

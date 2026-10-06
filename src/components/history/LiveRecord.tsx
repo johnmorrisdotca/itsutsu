@@ -2,6 +2,7 @@
 
 import { HistoryTable } from "./HistoryTable";
 import { Pager } from "./Pager";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 import { countText } from "@/lib/rating/figures";
 import type { GameSummary, Pagination } from "@/lib/history/gameHistory.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -58,6 +59,7 @@ export function LiveRecord({
   params: Record<string, string>;
 }) {
   const hydrated = useHydrated();
+  const locale = useLocale();
   const { more, next, loading, failed, sentinel } = useLiveScroll<GameSummary>({
     endpoint,
     from,
@@ -87,11 +89,11 @@ export function LiveRecord({
           <p className="text-sm text-muted" aria-live="polite" data-testid="record-progress">
             {next === null ? (
               <>
-                All {countText(pagination.total)} game{pagination.total === 1 ? "" : "s"} shown.
+                All {countText(pagination.total, locale)} game{pagination.total === 1 ? "" : "s"} shown.
               </>
             ) : (
               <>
-                {countText(shown)} of {countText(pagination.total)} shown
+                {countText(shown, locale)} of {countText(pagination.total, locale)} shown
                 {loading ? " — reading more…" : ". Keep scrolling for more."}
               </>
             )}
