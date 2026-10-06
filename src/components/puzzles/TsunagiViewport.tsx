@@ -242,8 +242,8 @@ export function TsunagiViewport({
     gesture.current = now;
     // Pinched about the middle between them, and carried along as the middle moves.
     setView((each) => {
-      const zoomed = before.distance > 0 && now.distance > 0 ? zoomedAbout(each, now.distance / before.distance, before.x - rect.left, before.y - rect.top, rect.width) : each;
-      return kept({ ...zoomed, x: zoomed.x + (now.x - before.x), y: zoomed.y + (now.y - before.y) }, rect.width);
+      const zoomed = before.distance > 0 && now.distance > 0 ? zoomedAbout(each, now.distance / before.distance, before.x - rect.left, before.y - rect.top, rect.width, mostZoom) : each;
+      return kept({ ...zoomed, x: zoomed.x + (now.x - before.x), y: zoomed.y + (now.y - before.y) }, rect.width, mostZoom);
     });
   };
   const touchUp = (event: PointerEvent<HTMLDivElement>) => {
