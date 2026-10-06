@@ -281,14 +281,14 @@ rule that stops the gap growing, and the gate that holds it.
   it.** The authored files (`dictionaries/`, `xpAwardCopy.ja.constants.ts`,
   `levelNames.ja.constants.ts`) keep every sentence beside its `back`, `review`
   and `ask`, and only the review sheets and the tests read them. What the site
-  runs on is two generated modules of sentences alone,
-  `jaText.phrases.generated.constants.ts` and
-  `jaText.copy.generated.constants.ts`: **after editing any Japanese, run
-  `pnpm i18n:text` and commit the two files**, or `jaText.coverage.test.ts`
+  runs on is one generated file of sentences alone,
+  `jaText.generated.json`, read off disk by a server for a reader of Japanese
+  and never imported (see Function Size): **after editing any Japanese, run
+  `pnpm i18n:text` and commit the file**, or `jaText.coverage.test.ts`
   fails with that instruction (on a merge, run it again rather than resolving
-  the generated files by hand). Code reads the words through `jaText()`
+  the generated file by hand). Code reads the words through `jaText()`
   (`src/lib/i18n/jaText.ts`) and never imports an authored file or a generated
-  one: a server build loads them itself, and a browser is handed them as a prop
+  one: a server build reads them itself, and a browser is handed them as a prop
   of `JaLocale` only when the reader's language is Japanese, so an English
   reader downloads none of it and no `back` reaches any browser or page
   function. The root layout draws `JaLocale` for every language and never a
@@ -1246,6 +1246,26 @@ deployment carries a copy.
   manifest in every function, so any `next/font/google` face but Geist and
   Geist Mono says `preload: false` (`pageFunction.coverage.test.ts`). Together
   these took the pages' function from 38.9 MB to 37.2.
+  **The site's words are packed once per layer, and the Japanese not at all.**
+  A module imported by both a server component and a client component is
+  compiled twice (the server layer, and the layer that draws client components
+  on the server), and a route handler's bundle holds its own copies on top, so
+  naming a module from the layout cannot make it one (the rule above is about
+  groups of pages, and the phrase catalogue was already one copy per layer).
+  Measured 2026-10-06: the Japanese, 0.5 MB, was in two chunks of the pages'
+  function and four of the API's. It is now one file, `jaText.generated.json`,
+  read off disk by `jaText.data.ts` the first time a reader of Japanese asks,
+  by a path the tracer can follow, and imported by nothing
+  (`pageFunction.coverage.test.ts` fails by name for an import, a path it
+  cannot follow, or a page-reachable module holding more than 300 kana). That
+  took the pages' function 37.5 to 37.2 MB and the API's 31.2 to 30.5. What is
+  still compiled twice is the English: the phrase catalogue (about 125 KB a
+  copy, 60 KB for each thousand phrases) and the copy tables beside data
+  (`variants.constants.ts` and the like, about 200 KB a copy). Moving them to a
+  file the same way needs a server-only alias, which Turbopack does not have
+  (`resolveAlias` takes only `browser`), so a dev server would read a stale
+  file; `gzip -9` takes the Japanese file from 257 KB to 69 KB at half a
+  millisecond to open, and is the next lever if the ceiling closes in.
 
 ### Every Landed Commit Bumps The Version
 

@@ -124,9 +124,9 @@ const nextConfig: NextConfig = {
       /*
        * THE JAPANESE IS NOT IN THE JAVASCRIPT AN ENGLISH READER IS SENT.
        *
-       * `jaText.ts` imports `jaText.server`, which loads the Japanese words as a
-       * side effect, so every server build has them and nobody has to remember to
-       * ask. In a browser build this module is an empty one instead, and the words
+       * `jaText.ts` imports `jaText.server`, which registers how to read the
+       * Japanese words (from one file, the first time a reader of Japanese asks),
+       * so every server build can and nobody has to remember to ask. In a browser build this module is an empty one instead, and the words
        * come only from `JaLocale`, which the root layout draws for a reader of
        * Japanese: its chunk is named by no page that renders English, so it is
        * never fetched. `jaText.coverage.test.ts` holds that this alias is here and

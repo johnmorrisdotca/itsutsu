@@ -13,11 +13,10 @@ import { rulesAttributionJa } from "./dictionaries/attribution.ja.constants";
 import { BOT_COPY_JA } from "./dictionaries/bots.ja.constants";
 import { HANDICAP_COPY_JA, OPENING_COPY_JA, SECOND_STONE_COPY_JA } from "./dictionaries/openings.ja.constants";
 import { VARIANT_COPY_JA } from "./dictionaries/variants.ja.constants";
-import { buildCopyText, buildPhraseText, copyModule, phraseModule } from "./jaText.build";
+import { buildCopyText, buildPhraseText, jaTextJson } from "./jaText.build";
+import { loadJaText } from "./jaText.data";
 import { LEVEL_NAMES_JA } from "../xp/levelNames.ja.constants";
 import { IMPORTED_VOLUME_COPY_JA, XP_AWARD_COPY_JA } from "../xp/xpAwardCopy.ja.constants";
-import { JA_COPY_TEXT } from "./jaText.copy.generated.constants";
-import { JA_PHRASE_TEXT } from "./jaText.phrases.generated.constants";
 
 /*
  * THE JAPANESE A BROWSER AND A PAGE ARE GIVEN IS THE TEXT, AND ONLY THE TEXT.
@@ -30,40 +29,35 @@ import { JA_PHRASE_TEXT } from "./jaText.phrases.generated.constants";
  * sibling tables, so every browser downloaded the Japanese, and the review notes
  * on it, to read English; and every page's function carried the same.
  *
- * Now a reader's words are two generated modules of text alone
- * (`jaText.*.generated.constants.ts`), loaded for a reader of Japanese
- * (`JaLocale`) and not otherwise. This holds both halves of that: the generated
- * modules are what the authored files say, and nothing a browser or a page can
- * reach contains a back-translation.
+ * Now a reader's words are one generated file of text alone
+ * (`jaText.generated.json`), read by a server for a reader of Japanese and handed
+ * to a browser by `JaLocale`, and not otherwise. This holds both halves of that:
+ * the generated file is what the authored files say, and nothing a browser or a
+ * page can reach contains a back-translation.
  *
- * `pnpm i18n:text` rewrites the two modules from the authored files.
+ * `pnpm i18n:text` rewrites the file from the authored files.
  */
 
 const ROOT = resolve(__dirname, "../../..");
-const PHRASES_FILE = "src/lib/i18n/jaText.phrases.generated.constants.ts";
-const COPY_FILE = "src/lib/i18n/jaText.copy.generated.constants.ts";
+const TEXT_FILE = "src/lib/i18n/jaText.generated.json";
 
 describe("the Japanese a reader is given", () => {
   if (process.env.JA_TEXT_WRITE === "1") {
     it("is rewritten from the authored files (pnpm i18n:text)", () => {
-      writeFileSync(resolve(ROOT, PHRASES_FILE), phraseModule(buildPhraseText()));
-      writeFileSync(resolve(ROOT, COPY_FILE), copyModule(buildCopyText()));
+      writeFileSync(resolve(ROOT, TEXT_FILE), jaTextJson(buildPhraseText(), buildCopyText()));
     });
     return;
   }
 
-  it("is the text of the authored phrases, none left out and none left over", () => {
-    expect(readFileSync(resolve(ROOT, PHRASES_FILE), "utf8"), "run `pnpm i18n:text`: the authored phrases and what a reader is given have come apart").toBe(phraseModule(buildPhraseText()));
-    expect(JA_PHRASE_TEXT).toEqual(buildPhraseText());
-  });
-
-  it("is the text of the authored copy beside the games, the computer players, the families, the levels and the awards", () => {
-    expect(readFileSync(resolve(ROOT, COPY_FILE), "utf8"), "run `pnpm i18n:text`: the authored copy and what a reader is given have come apart").toBe(copyModule(buildCopyText()));
-    expect(JA_COPY_TEXT).toEqual(buildCopyText());
+  it("is the text of the authored phrases and of the authored copy beside the games, the computer players, the families, the levels and the awards, none left out and none left over", () => {
+    expect(readFileSync(resolve(ROOT, TEXT_FILE), "utf8"), "run `pnpm i18n:text`: the authored Japanese and what a reader is given have come apart").toBe(jaTextJson(buildPhraseText(), buildCopyText()));
+    const text = loadJaText();
+    expect(text.phrases).toEqual(buildPhraseText());
+    expect({ ...text, phrases: undefined }).toEqual({ ...buildCopyText(), phrases: undefined });
   });
 
   it("names the attribution paragraphs' puzzles by a mark the page fills in, and nothing else is left unfilled", () => {
-    const paragraphs = JA_COPY_TEXT.attribution;
+    const paragraphs = loadJaText().attribution;
     expect(paragraphs.length).toBeGreaterThan(0);
     const marks = paragraphs.flatMap((paragraph) => [...paragraph.matchAll(/\{puzzle\.(\w+)\}/g)].map((match) => match[1]!));
     expect(marks.length, "the last paragraph names puzzles").toBeGreaterThan(0);
@@ -102,8 +96,8 @@ const REVIEW_SIDE = (path: string) =>
     "src/lib/i18n/japaneseCopyTables.ts",
   ].includes(path);
 
-/** The modules that hold the text a reader of Japanese is shown. */
-const TEXT_SIDE = (path: string) => /^src\/lib\/i18n\/jaText\.(?:data\.ts|\w+\.generated\.constants\.ts)$/.test(path);
+/** The module that reads the text a reader of Japanese is shown. */
+const TEXT_SIDE = (path: string) => path === "src/lib/i18n/jaText.data.ts";
 
 const SWAPPED_FOR_A_BROWSER = "src/lib/i18n/jaText.server.ts";
 const WHERE_A_BROWSER_IS_GIVEN_JAPANESE = "src/components/i18n/JaLocale.tsx";
@@ -189,7 +183,7 @@ describe("where the back-translations can be reached from", () => {
     expect(offenders.map((path) => chainTo(server, path))).toEqual([]);
   });
 
-  it("loads the Japanese into a server build by importing it, and hands it to a browser as a prop of JaLocale", () => {
+  it("lets a server build read the Japanese by importing its loader, and hands it to a browser as a prop of JaLocale", () => {
     expect(files.get("src/lib/i18n/jaText.ts")?.reaches).toContain(SWAPPED_FOR_A_BROWSER);
     expect(files.get(SWAPPED_FOR_A_BROWSER)?.reaches).toContain("src/lib/i18n/jaText.data.ts");
     const importers = [...files.values()].filter((file) => file.reaches.includes("src/lib/i18n/jaText.data.ts")).map((file) => file.path);

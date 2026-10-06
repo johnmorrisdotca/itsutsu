@@ -18,8 +18,8 @@ import type { PhraseKey } from "./i18n.constants";
  *
  * This is the shape of what is kept after the review data is taken away: the
  * sentence and nothing about it. It is made from the authored files by
- * `pnpm i18n:text` (`jaText.build.ts`), written to two generated modules, and
- * read at run time through `jaText()` (`jaText.ts`). Each table keeps the
+ * `pnpm i18n:text` (`jaText.build.ts`), written to one generated file
+ * (`jaText.generated.json`), and read at run time through `jaText()` (`jaText.ts`). Each table keeps the
  * `Record<…>` its authored original has, so a game, an award or a level with no
  * Japanese still fails to compile where it is authored, and
  * `jaText.coverage.test.ts` fails when these copies are not what the authored

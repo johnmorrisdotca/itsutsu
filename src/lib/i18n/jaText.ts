@@ -1,4 +1,4 @@
-// A server build registers the Japanese as this is evaluated; a browser's build has an empty module here
+// A server build registers how to read the Japanese as this is evaluated; a browser's build has an empty module here
 // (`turbopack.resolveAlias` in next.config.ts), and `JaLocale` registers instead.
 import "@/lib/i18n/jaText.server";
 

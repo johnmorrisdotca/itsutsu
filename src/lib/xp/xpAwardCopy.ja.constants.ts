@@ -9,7 +9,7 @@ import type { AwardWordsEn, ImportedVolumeType } from "./xpAwardCopy.constants";
  * The sibling of `xpAwardCopy.constants.ts`, which holds the English and the
  * words a browser needs. This file is the authored Japanese, `back` and
  * `review` included, and only the review sheet and the tests read it: what a
- * reader is shown is a text-only copy of it (`jaText.copy.generated.constants.ts`,
+ * reader is shown is a text-only copy of it (`jaText.generated.json`,
  * made by `pnpm i18n:text`), so a back-translation never travels to a browser
  * or into a page's function. `jaText.coverage.test.ts` refuses a browser
  * module that reaches this file.

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -56,8 +56,6 @@ const READERS_A_PAGE_USES: ReadonlyMap<string, string> = new Map([
 const BIG_FILE_BYTES = 64 * 1024;
 const BIG_FILES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map([
   ["src/lib/puzzles/puzzles.constants.ts", "Every puzzle's name, rules and sizes, printed by its page, its rules page and every list of games."],
-  ["src/lib/i18n/jaText.copy.generated.constants.ts", "The Japanese of every game's rules, opening, computer player, family, level and award, printed by every page for a reader of Japanese. 122 KB of sentences alone, made from 375 KB of authored files by `pnpm i18n:text`: the back-translations and review notes are not in it (`jaText.coverage.test.ts`)."],
-  ["src/lib/i18n/jaText.phrases.generated.constants.ts", "Every phrase of the site in Japanese, one sentence to a line, read for a reader of Japanese by every page that says a phrase. 143 KB of sentences alone, made from the authored phrase files by `pnpm i18n:text`: the back-translations and review notes are not in it (`jaText.coverage.test.ts`)."],
   ["src/lib/puzzles/suido/levelBoards.data.ts", "The hash and the first characters of every Suido level's board, 100 KB for the 4,000 levels of sixteen sizes where the boards themselves are a megabyte and a quarter: which level a solve was, on a solve's page, a member's page and a level's fastest times (suido/levels.ts, suidoRecords.ts)."],
 ]);
 
@@ -257,6 +255,54 @@ describe("the pages' server function", () => {
     const unexpected = big.filter((path) => !BIG_FILES_A_PAGE_PRINTS.has(path)).map((path) => `${Math.round(files.get(path)!.bytes / 1024)} KB  ${chainTo(reach, path)}`);
     expect(unexpected).toEqual([]);
     for (const path of BIG_FILES_A_PAGE_PRINTS.keys()) expect(big, `${path} is no longer a big file a page reaches; take it off the list`).toContain(path);
+  });
+
+  /*
+   * THE JAPANESE IS READ FROM ONE FILE, NEVER COMPILED IN. Imported, the sentences
+   * are in the build's chunks once for each layer of the render (the server
+   * components, and the client components drawn on the server), and once more for
+   * each route handler's bundle: 0.51 MB of them twice in the pages' function and
+   * four times in the API's, measured 2026-10-06 (37.5 MB for the pages, 31.2 for
+   * the API, of 39). Read off disk by `jaText.data.ts` they are one file of 0.26 MB,
+   * and only for a reader of Japanese. The path stays a literal the tracer can
+   * follow, the file is named by nothing else, and no module a page reaches holds
+   * sentences of its own: the few kana in a game's display copy are not them, and
+   * the daily word pools are lists a page prints from, written down here.
+   */
+  const JAPANESE_FILE = "src/lib/i18n/jaText.generated.json";
+  const KANA = /[\u3040-\u30ff]/g;
+  const KANA_A_TABLE_MAY_HOLD = 300;
+  const KANA_POOLS_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map([
+    ["src/lib/puzzles/dailyWords/pool.ja.3.data.ts", "Today's three-kana word, from the Japanese pool."],
+    ["src/lib/puzzles/dailyWords/pool.ja.4.data.ts", "Today's four-kana word, from the Japanese pool."],
+    ["src/lib/puzzles/dailyWords/pool.ja.5.data.ts", "Today's five-kana word, from the Japanese pool."],
+  ]);
+
+  it("reads the Japanese from its one file, by a path the build can follow", () => {
+    const loader = files.get("src/lib/i18n/jaText.data.ts");
+    expect(loader, "jaText.data.ts is gone: the server has no way to read the Japanese").toBeDefined();
+    const text = readFileSync(resolve(__dirname, "../..", loader!.path), "utf8");
+    expect(text, "read the Japanese with join(process.cwd(), <folder>, <file name>), both written out: a path the tracer cannot follow ships nothing, or everything").toMatch(
+      /readFileSync\(\s*join\(process\.cwd\(\),\s*"src\/lib\/i18n",\s*"jaText\.generated\.json"\s*\)/,
+    );
+    expect(existsSync(resolve(__dirname, "../..", JAPANESE_FILE)), `${JAPANESE_FILE} does not exist: run pnpm i18n:text`).toBe(true);
+  });
+
+  it("imports the Japanese file from nowhere, so no build compiles it in", () => {
+    const offenders = [...files.values()]
+      .filter((file) => /(?:from|import\(|require\()\s*["'][^"']*jaText\.generated/.test(readFileSync(resolve(__dirname, "../..", file.path), "utf8")))
+      .map((file) => file.path);
+    expect(offenders, "read the Japanese through jaText.data.ts, off disk; an import compiles it into every layer's chunks").toEqual([]);
+  });
+
+  it("carries no sentences of Japanese in anything a page reaches", () => {
+    const offenders = reached
+      .filter((path) => !KANA_POOLS_A_PAGE_PRINTS.has(path))
+      .map((path) => ({ path, kana: (readFileSync(resolve(__dirname, "../..", path), "utf8").match(KANA) ?? []).length }))
+      .filter(({ kana }) => kana > KANA_A_TABLE_MAY_HOLD)
+      .map(({ path, kana }) => `${kana} kana  ${chainTo(reach, path)}`);
+    expect(offenders, "a module a page reaches holds Japanese sentences, which every layer's chunks and every route's bundle copy: put them in the authored files and let pnpm i18n:text write them to the one file").toEqual([]);
+    for (const path of KANA_POOLS_A_PAGE_PRINTS.keys()) expect(reached, `${path} is no longer reached by a page; take it off the list`).toContain(path);
   });
 
   it("carries no game package nobody wrote down", () => {
