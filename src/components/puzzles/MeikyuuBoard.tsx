@@ -160,7 +160,7 @@ export function MeikyuuBoard({
       if (!live) return;
       // A tall maze is played in its own box (`ratio`), stood up or lying as the site has decided (`meikyuu/turn.ts`) and not as the package would (`auto`); the page leaves its room itself (`reserve` 0), as the wood is sized to the window.
       const shape = tall ? { ratio: MEIKYUU_TALL_RATIO, orientation: turnedNow.current ? ("landscape" as const) : ("portrait" as const), reserve: 0 } : {};
-      const board = play.mountMeikyuu(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, tap: true, language: packageLanguage(languageNow.current), edgePan: edgeNow.current, stones: stoneOptionOf(stonesNow.current), ...shape });
+      const board = play.mountMeikyuu(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, banner: false, tap: true, language: packageLanguage(languageNow.current), edgePan: edgeNow.current, stones: stoneOptionOf(stonesNow.current), ...shape });
       if (board === null) return;
       mount.current = board;
       const read = (): void => {
@@ -215,7 +215,7 @@ export function MeikyuuBoard({
           <MeikyuuFrame size={INSET_SIZE} stand={stand}>
             <div
               ref={host}
-              className="h-full w-full [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full"
+              className="h-full w-full [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full"
               data-testid="meikyuu-board"
             />
           </MeikyuuFrame>

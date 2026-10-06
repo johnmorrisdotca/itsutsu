@@ -84,8 +84,8 @@ export const MEIKYUU_WORDS_JA = {
     difficulty: {
       label: ["難しさ", "Difficulty"],
       says: [
-        "このレベルの遊びにくさを、0から100で表します。抜け道の長さ、分かれ道の数、ゴールへまっすぐ向かうとまちがえる頻度、まちがえた先の長さで決まります。",
-        "How hard this level is to play, on a scale of 0 to 100: how long the way through is, how many forks it has, how often heading straight for the goal goes wrong, and how far the wrong turns go.",
+        "このレベルの遊びにくさを、0から100で表します。抜け道の長さ、分かれ道の数、ゴールへまっすぐ向かうとまちがえる頻度、まちがえた先の長さ、そして抜け道が迷路のどれだけの広がりを通るかで決まります。道が隅だけにとどまる迷路は、数字が低くなります。",
+        "How hard this level is to play, on a scale of 0 to 100: how long the way through is, how many forks it has, how often heading straight for the goal goes wrong, how far the wrong turns go, and how much of the map the way crosses. A way that stays in one corner counts for less.",
       ],
     },
   },

@@ -2,10 +2,10 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { meikyuuLevelBand } from "../meikyuu/levelCounts";
 import { meikyuuLevelOfBoard, meikyuuLevelsAt } from "../meikyuu/levels";
 import { loadMeikyuuLevelsFromModule } from "../meikyuu/levelsModule";
 import { isMeikyuuSize, MEIKYUU_EVERY_SIZE } from "../meikyuu/sizes";
+import type { OrdinaryLevel } from "../puzzles.types";
 import type { LevelFastest } from "./tsunagiRecords";
 
 /**
@@ -47,6 +47,9 @@ export async function meikyuuSolvedBy(memberId: string): Promise<MeikyuuSolved> 
 
 export const MEIKYUU_FASTEST_SHOWN = 5;
 
+/** The three thirds a Meikyuu solve is filed under (`meikyuuLevelBand`). */
+const MEIKYUU_THIRDS: readonly OrdinaryLevel[] = ["easy", "medium", "hard"];
+
 /**
  * The fastest solves of one level, one per member at their best: the level's
  * own leaderboard. Everybody draws through the same maze, so these times are
@@ -59,8 +62,10 @@ export async function meikyuuLevelFastest(size: number, level: number): Promise<
   const givens = meikyuuLevelsAt(size)[level - 1]?.code;
   if (givens === undefined) return [];
   const rows = await prisma.puzzleSolve.findMany({
-    // On no clock, with no Hint: a level offers neither, so a solve that says otherwise is no time to race.
-    where: { kind: "meikyuu", size, level: meikyuuLevelBand(size, level), givens, solved: true, helped: null, hintsUsed: 0, clock: "none" },
+    // On no clock, with no Hint: a level offers neither, so a solve that says otherwise is no time to race. The maze is its givens. The third a solve was filed
+    // under (its `level`) is the third its number was in when it was solved, and since package 3.0.0 the lists are in the order of the score, so the same maze may be in
+    // another third now: all three are asked for, so no solve of this maze is lost to a renumbering.
+    where: { kind: "meikyuu", size, level: { in: [...MEIKYUU_THIRDS] }, givens, solved: true, helped: null, hintsUsed: 0, clock: "none" },
     orderBy: [{ elapsedMs: "asc" }, { finishedAt: "asc" }],
     take: MEIKYUU_FASTEST_SHOWN * 4,
     select: { id: true, memberId: true, elapsedMs: true, finishedAt: true },

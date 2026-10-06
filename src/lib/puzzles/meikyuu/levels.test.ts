@@ -69,14 +69,14 @@ describe("meikyuu's sizes are the package's words for how big a maze is", () => 
     }
   });
 
-  it("keep the package's order inside a size, so no level is easier than the one before", () => {
+  it("keep the package's order inside a size, so no level scores under the one before (the order of the score since package 3.0.0)", () => {
     for (const size of MEIKYUU_SIZES) {
       const rows = meikyuuLevelsAt(size);
       rows.forEach((row, at) => {
         expect(MEIKYUU_SIZES.map((each) => meikyuuSizeWord(each)!)).toContain(sizeOf(row.cells));
         if (at > 0) {
           expect(row.number, `size ${size} level ${at + 1}`).toBeGreaterThan(rows[at - 1]!.number);
-          expect(row.effort).toBeGreaterThanOrEqual(rows[at - 1]!.effort);
+          expect(row.score, `size ${size} level ${at + 1}`).toBeGreaterThanOrEqual(rows[at - 1]!.score);
         }
       });
     }
@@ -226,9 +226,22 @@ describe("a maze solved under the first list's numbers is still a solve of that 
       else moved += 1;
     }
     expect(same + moved + gone).toBe(1000);
-    expect(same).toBe(843);
-    expect(moved).toBe(0);
+    // 843 are still levels and 157 are not; since package 3.0.0 put every list in the order of its score, nearly all of the 843 stand at another place.
+    expect(same + moved).toBe(843);
+    expect(moved).toBeGreaterThan(700);
     expect(gone).toBe(157);
+  });
+
+  it("finds a maze solved before the lists were put in the order of the score at its new number, in the browser's kept solves and the account's alike", () => {
+    // Huge level 1 of package 2.3.0, a cross whose answer is the middle and one arm, scored 76 and four dots; counting how much of the map the answer covers it scores 47 and stands at place 2.
+    const code = "cross:90:growing:centre-out:18570";
+    const huge = meikyuuSizeOfWord("huge");
+    const now = meikyuuLevelOfBoard(huge, code);
+    expect(now).toBe(2);
+    expect(meikyuuLevelsAt(huge)[now! - 1]!.score).toBe(47);
+    // The level the number named before names another maze now, and solving that one is not a solve of this.
+    expect(meikyuuLevelsAt(huge)[0]!.code).not.toBe(code);
+    expect(meikyuuLevelOfBoard(huge, meikyuuLevelsAt(huge)[0]!.code)).toBe(1);
   });
 
   it("is refused as a new solve once the maze is no level, whoever solved it before", () => {

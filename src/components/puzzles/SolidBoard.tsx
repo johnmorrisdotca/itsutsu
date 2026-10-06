@@ -84,7 +84,7 @@ export function SolidBoard({
     if (element === null) return;
     void loadSolidPackage().then(({ play }) => {
       if (!live) return;
-      const board = play.mountSolid(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, tap: true, language: packageLanguage(languageNow.current), stones: stoneOptionOf(stonesNow.current) });
+      const board = play.mountSolid(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, banner: false, tap: true, language: packageLanguage(languageNow.current), stones: stoneOptionOf(stonesNow.current) });
       if (board === null) return;
       mount.current = board;
       const read = (): void => {
@@ -125,7 +125,7 @@ export function SolidBoard({
   return (
     <div ref={column} className="w-full select-none" data-testid="puzzle-grid" data-kind="meikyuu" data-solid="true" data-locked={locked ? "true" : "false"} data-wallpaper-focus="">
       <MeikyuuFrame size={INSET_SIZE}>
-        <div ref={host} className="h-full w-full [&_.mk-banner]:hidden [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full" data-testid="meikyuu-board" data-solid-board="true" />
+        <div ref={host} className="h-full w-full [&_.mk-box]:rounded-none [&_.mk-wrap]:h-full" data-testid="meikyuu-board" data-solid-board="true" />
       </MeikyuuFrame>
     </div>
   );

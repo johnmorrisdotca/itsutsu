@@ -26,6 +26,9 @@ const levelUrl = (width: number, height: number, level: number, band = "easy") =
 /** The package's tall levels of one size, in its order: what the page calls level 1, 2, 3 of that size. */
 const levelsOf = (size: number) => MEIKYUU_TALL_LEVELS.filter((level) => level.size === size);
 
+/** The first level of a size that is a plain square maze with no keys: a mouse drawn through the first cells of its way draws each of them, whatever the order the package puts its levels in. */
+const plainSquare = (size: number) => levelsOf(size).find((level) => level.recipe.shape === "square" && level.recipe.mode !== "keys")!.inSize;
+
 async function aMember(browser: Browser, baseURL: string | undefined, tag: string, view = { width: 1280, height: 1100 }, touch = false): Promise<{ context: BrowserContext; page: Page; email: string }> {
   const email = `meikyuu-tall-${tag}-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.test`;
   const context = await memberContext(browser, baseURL!, { email, name: "Meikyuu Tall" }, { viewport: view, ...(touch ? { hasTouch: true, isMobile: true } : {}) });
@@ -186,7 +189,8 @@ test.describe("playing a tall maze", () => {
   test("on a desk, Lying down turns the maze a quarter and the same line solves it; Upright stands it up again, and the choice is remembered", async ({ browser, baseURL }) => {
     const { context, page, email } = await aMember(browser, baseURL, "lying");
     try {
-      await openLevel(page, 6, 9, 2);
+      const lying = plainSquare(1);
+      await openLevel(page, 6, 9, lying);
       await expect(page.getByTestId("meikyuu-wayup-auto")).toHaveAttribute("data-chosen", "true");
       await page.getByTestId("meikyuu-wayup-landscape").click();
       await expect(page.getByTestId("meikyuu-board")).toHaveAttribute("data-turned", "true");
@@ -212,7 +216,8 @@ test.describe("playing a tall maze", () => {
       expect(kept).toBeTruthy();
 
       // Remembered on this device: the next page opens lying down, and Auto puts it back to the room's own answer.
-      await page.goto(levelUrl(6, 9, 4));
+      // (Another level than the one just solved, which opens finished, with no board to turn.)
+      await page.goto(levelUrl(6, 9, lying + 1));
       await ready(page, "puzzle-play");
       await expect(page.getByTestId("meikyuu-wayup-landscape")).toHaveAttribute("data-chosen", "true");
       await expect(page.getByTestId("meikyuu-board")).toHaveAttribute("data-turned", "true");

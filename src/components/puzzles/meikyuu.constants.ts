@@ -80,7 +80,7 @@ export const SOLID_STEPS = MEIKYUU_SOLID_STEPS;
 export const MEIKYUU_CHIPS: LevelChipsCopy = {
   difficulty: {
     label: "Difficulty",
-    says: "How hard this level is to play, on a scale of 0 to 100: how long the way through is, how many forks it has, how often heading straight for the goal goes wrong, and how far the wrong turns go.",
+    says: "How hard this level is to play, on a scale of 0 to 100: how long the way through is, how many forks it has, how often heading straight for the goal goes wrong, how far the wrong turns go, and how much of the map the way crosses. A way that stays in one corner counts for less.",
   },
   teaches: { says: "" },
   tests: { label: "", kanji: "", says: "" },

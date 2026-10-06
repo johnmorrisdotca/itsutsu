@@ -169,6 +169,18 @@ and held by `levels.test.ts`:
   table would, and the test proves they agree on all 1,000. A run kept half way on a place whose maze changed
   is drawn against the new maze and cleared if the line is not a way through it (`MeikyuuBoard`).
 
+## Package 3.0.0: difficulty counts the map, and the lists are in the order of the score (2026-10-06)
+
+Tickets `meikyuu-a-level-s-difficulty-counts-how-much-of-the-maze-its-answer-covers` and `every-game-with-fixed-levels-rates-difficulty-by-how-much-of-the-board-the-answe`.
+John, looking at Huge level 1 (the cross, 4,736 cells, an answer of 134 in the middle and one arm, four dots of five): difficulty is how much of the map the answer covers.
+The package's score is now the six terms times a factor from 0.5 to 1 for how much of the map the answer covers (`LEVELS-STANDARD.md` in johnmorrisdotca/.github is the family's one definition),
+and every list is in the order of that score, so **a level's number names a different maze** (the sets did not change). What the site does about it, held by `levels.test.ts`:
+
+- **Dots are the score in fifths, as before** (`MeikyuuLevelChips`: `ceil(score / 20)`, cut at 20, 40, 60, 80, absolute across sizes). 861 of the 3,776 levels lose a dot and none gains one; the first Huge level of 2.3.0 is 47 and three dots, at place 2.
+- **A solve is the maze, never its number** (the rule above, already). The account's solves (`meikyuuSolvedBy`), this browser's (`keptSolves`), the points (priced from the maze's own way, `puzzlePoints`) and the solve's page (`meikyuuLevelOfSolve`) all find the level by the recipe, so every solve is marked at the number its maze has now. Of the 843 first-release mazes that are levels, nearly all stand at another number now.
+- **Fastest times are by the maze** (`meikyuuLevelFastest`): a solve is filed under the third (easy, medium, hard) its number was in when it was solved, and the same maze may be in another third now, so the read asks for all three thirds and the maze's recipe. Without that every time set on a level that changed third would have vanished from its table.
+- **A half-drawn run is kept under the number** (`PuzzleRun`: kind, size, third, seed), so a run left on Huge 2 before the release is, afterwards, a line offered to another maze: the board takes it back only if it is a run of that maze (`restore` answers false and changes nothing), so it never plays a wrong line, and a run that does not fit resumes as a fresh board. Decision to review: a run kept on a renumbered level is not carried to its maze (there is no old list on the site to find which maze it was, and the beta has two or three players); it lapses.
+
 ## The gates it meets
 
 `puzzles.coverage.test.ts` (a generator, one answer at every size and level, a
