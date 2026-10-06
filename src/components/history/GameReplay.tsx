@@ -297,9 +297,16 @@ export function GameReplay({
       <aside className="flex w-full flex-col gap-4 lg:w-72">
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted">
-            <span className="tabular-nums">
-              {say.say("replay.moveOf", { move: String(moveNumber), last: String(game.moveCount) })}
-            </span>
+            {/*
+              The phrase is woven rather than filled in, so the figures keep their own type and the
+              line is not one element whose whole text is "Move 5 of 5": the review window and "Just
+              the board" hide this column (display: none, so no screen reader reads it either) and
+              draw that line once, in `MoveCount`, where it is the one thing that says it.
+            */}
+            {weave(say.say("replay.moveOf", { move: "{move}", last: "{last}" }), {
+              move: <span className="font-mono tabular-nums">{moveNumber}</span>,
+              last: <span className="font-mono tabular-nums">{game.moveCount}</span>,
+            })}
             {current !== undefined ? (
               <>
                 {" · "}
