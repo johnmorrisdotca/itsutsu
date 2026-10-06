@@ -64,7 +64,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 |---|---|---|
 | `README.md`, headline, "What it does", "Forty-five games…" | visitors, engineers | `src/lib/gomoku/gomoku.constants.ts` (`RULE_VARIANT_LIST`), `src/lib/gomoku/families.ts`, `src/lib/gomoku/variants.constants.ts` |
 | `README.md`, "Puzzles" | visitors, engineers | `src/lib/puzzles/**`, the `@johnmorrisdotca/kazu` version in `package.json`, `src/components/puzzles/**`, `src/app/api/puzzles/**`, `src/lib/catalogue/gameKeys.ts` |
-| `docs/plans/en-ja-everywhere/README.md` and its ENJA files | agents, engineers | `src/lib/i18n/**`, `scripts/check-i18n-strings.mjs` (from ENJA-02), `docs/japanese-review.md`, the `PENDING_PATHS` list, and the survey numbers (re-read before trusting, dated 2026-10-06) |
+| `docs/plans/en-ja-everywhere/README.md` and its ENJA files | agents, engineers | `src/lib/i18n/**`, `scripts/check-i18n-strings.mjs`, `docs/japanese-review.md`, the `PENDING_PATHS` list, and the survey numbers (re-read before trusting, dated 2026-10-06) |
 | `docs/plans/languages/README.md` | agents, engineers | `src/lib/i18n/i18n.constants.ts` (`LOCALES`), `src/lib/i18n/dictionaries.ts`, `LanguagePicker.tsx` |
 | `docs/plans/numbers/README.md` | agents, engineers | `src/lib/puzzles/kazu.ts`, `src/lib/puzzles/{jigsaw,killer,moreOrLess,towers,numberPlace}/*.ts` (the re-exports of Kazu), the `@johnmorrisdotca/kazu` version in `package.json`, `src/lib/puzzles/puzzleCheck.ts`, `src/lib/puzzles/solvedAnswer.ts`, `src/components/puzzles/NumberSolve.tsx` and `e2e/number-place-colossus.spec.ts` (the 25×25) |
 | `README.md`, "Forty-five games…" (Party games) | visitors, engineers | `src/lib/party/**`, `src/components/party/**`, `src/lib/gomoku/party/**`, `src/lib/gomoku/familyShelves.ts` |
@@ -104,6 +104,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `AGENTS.md` | agents | a rule changes; the agent that changes the rule changes the file |
 | `AGENTS.md`, "Function Size" | agents | `src/lib/functionSizeGate.mjs`, `scripts/check-function-sizes.mjs`, `scripts/function-sizes.baseline.json`, `src/lib/pageFunction.coverage.test.ts`, `src/lib/pageFunctionGraph.ts`, `next.config.ts` (the tracing lists) |
 | `AGENTS.md`, "Playing Offline" | agents | `public/sw.js`, `src/lib/offline/`, `src/components/offline/`, `playwright.config.ts` (`serviceWorkers`) |
+| `AGENTS.md`, "Every Word Goes Through The Phrase Table" | agents | `scripts/check-i18n-strings.mjs` (its allowances and `PENDING_PATHS`), `src/lib/i18n/inlineEnglish.coverage.test.ts` (`RECORDED`), `src/lib/i18n/phrases.*.constants.ts` and `PHRASE_AREAS` in `i18n.constants.ts`, the `i18n` leg of `verify` in `.github/workflows/vercel-deploy.yml`, the `English in phrases` lane in `scripts/preflight.mjs` |
 
 ### On the site (kinds A and B)
 

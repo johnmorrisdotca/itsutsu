@@ -30,6 +30,7 @@ const LANES = [
   { name: "unit tests", commands: ["pnpm test:unit"] },
   { name: "audit", commands: ["pnpm security:check"] },
   { name: "no AI attribution", commands: ["pnpm attribution:check"] },
+  { name: "English in phrases", commands: ["pnpm i18n:check"] },
   { name: "types, then build", commands: ["pnpm typecheck", "pnpm build"] },
 ];
 

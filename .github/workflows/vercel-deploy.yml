@@ -47,8 +47,15 @@ jobs:
       # lint, types and audit, a minute each, share one leg to pay for them:
       # still five legs, and five legs plus fourteen browser shards is nineteen
       # jobs, inside GitHub's twenty at once on a free account.
+      #
+      # `i18n` is the sixth (2026-10-06, ENJA-02): the gate on English typed
+      # outside the phrase table. It reads source files and nothing else, about
+      # a second of work, but it is a leg of its own so that its verdict is its
+      # own and no `&&` joins it to another check. Six legs and fourteen shards
+      # are twenty jobs, which is the cap and not past it; the deploy job waits
+      # on the lot, so nothing here is queued behind it.
       matrix:
-        check: [static, unit-1, unit-2, unit-3, build]
+        check: [static, unit-1, unit-2, unit-3, build, i18n]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -81,6 +88,12 @@ jobs:
         run: pnpm exec vitest run --shard=${MATRIX_CHECK#unit-}/3
         env:
           MATRIX_CHECK: ${{ matrix.check }}
+
+      # English typed outside the phrase table, with the pending list that only
+      # shrinks. See AGENTS.md, "Every Word Goes Through The Phrase Table".
+      - name: English outside the phrase table
+        if: matrix.check == 'i18n'
+        run: pnpm i18n:check
 
       - name: Audit production dependencies
         if: matrix.check == 'static'

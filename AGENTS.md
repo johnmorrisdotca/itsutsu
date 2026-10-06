@@ -243,6 +243,58 @@ skips the dedicated check or grants more than "continue".
 - One constants module per component group (`Board.constants.ts`), not one per component.
 - Domain values (`Stone`, `RuleVariant`, `GameStatus`) are compared through the constants in `src/lib/gomoku/gomoku.constants.ts`, never inline string literals. Display text for domain values comes from `STONE_DISPLAY` / `RULE_VARIANT_DISPLAY`.
 
+### Every Word Goes Through The Phrase Table
+
+John, 2026-10-06: **"we should make sure all apps are EN/JP support and then
+add the next ones once we're ready for it."** Until then nothing stopped a new
+sentence being typed straight into a component, so the site grew English faster
+than it was translated: about 5% of what a member reads came from `PHRASES`
+when this was written, and the rest was typed where it was drawn. This is the
+rule that stops the gap growing, and the gate that holds it.
+
+- **New visible text goes into `PHRASES` in English and Japanese.** The English
+  is a key in the file for its area, `src/lib/i18n/phrases.<area>.constants.ts`
+  (nav, rules, setup, xp and so on, the first word of the key); a new area is a
+  new file and one line in `i18n.constants.ts`, and `phrases.coverage.test.ts`
+  fails a key said twice or a file nobody joined. A component reads it with
+  `useSpeaker()`, a server page with `say`. Copy that belongs to data, a game's
+  rules or a level's name, gets a sibling table per language typed
+  `Record<Locale, …>` beside the data, never a second copy of the data.
+- **The Japanese is drafted with `back`, and the `japanese-reviewer` agent
+  checks it before the change lands.** John does not read Japanese and both
+  sites publish it under his name, so a phrase that no reader has passed does
+  not ship. The process, and each ticket's part in it, is
+  `docs/plans/en-ja-everywhere/README.md`.
+- **The gate is `pnpm i18n:check`** (`scripts/check-i18n-strings.mjs`). It reads
+  every `.ts` and `.tsx` file under `src/` and fails on a JSX sentence, on a
+  prose attribute (`title`, `aria-label`, `placeholder`, `alt`, `label`), and on any
+  string literal that reads as English: a ternary's branches, an object's
+  values, a list of rule bullets, an API's refusal. It runs in `quality:check`,
+  as its own lane in `scripts/preflight.mjs` and as the `i18n` leg of `verify`,
+  and it reads files only, so it takes about a second and the same on every
+  machine. What it does not count is a thrown `Error`, a console line, a path,
+  a class name, a test and the phrase catalogue itself.
+- **What is allowed without a phrase is written in the script with its reason**:
+  the brand (Itsutsu, XP), a format's name (SGF, PDN), board coordinates, the
+  operator's own pages (admin and the board), names copied from other sites'
+  records, and tables of boards and word lists. Anything else is a phrase.
+  Adding an allowance because the gate is in the way is the move "Nothing
+  Answers What It Cannot Answer" describes: read what it objects to first.
+- **The pending list only shrinks.** `PENDING_PATHS` in the script is every
+  folder or file that held English on 2026-10-06, each with the ENJA ticket
+  that takes it off, and `i18n:check` prints how many strings each still holds.
+  Finishing an area is taking its path off the list in the script **and** in
+  `RECORDED` in `src/lib/i18n/inlineEnglish.coverage.test.ts`; the script fails
+  a pending path that holds no English or no longer exists, and the test fails
+  a path that was not on the recorded list. A new path is never the way out of
+  a red gate: the text goes through `PHRASES`. The list names folders where it
+  can, so renaming a file inside one breaks nothing.
+- **It is a sweep, not a parser.** Prose is told from code by the function
+  words it carries (the, a, is, you) and by short capitalised phrases, so it
+  can miss a one-word label in lower case and can flag a code word. Do not
+  reword a sentence until it stops looking like English to turn the gate green:
+  that satisfies the report and hides the text.
+
 ### Engine Is Pure
 
 - Game rules live only in the engine, Narabe (`@johnmorrisdotca/narabe`, an open-source package in its own repository, github.com/johnmorrisdotca/narabe, since 2026-09-30): `src/engine.ts` there and the `src/rules/` modules it delegates to (winning lines, forbidden shapes, captures, turn length, openings), each unit tested beside its source. The site depends on it at a released version, the tarball the repository's release workflow attaches to a `v*` tag; a change to a rule is a commit there, a new version and tag, and a one-line bump of that URL here. The package ships its source and tests beside the build, so the gates below read them from `node_modules`. The site reaches it through the modules at the old paths, `src/lib/gomoku/engine.ts`, `gomoku.constants.ts`, `gomoku.types.ts` and `rules/*.ts`, which re-export it, so every import and every name below still holds; a rule is changed in the package, never in a re-export. Components and hooks never inspect the board to decide outcomes; they call the engine.
@@ -1005,9 +1057,12 @@ below before trusting it — these numbers move):
    requests only now. Before adding a workflow, count the jobs one push starts.
 3. **Keep the slowest shard short.** When it passes about eight minutes, add
    shards — they are free on this public repository — or rebalance the files.
-   The one ceiling is GitHub's twenty concurrent jobs on a free account: five
-   checks, twelve shards and the deploy is eighteen, so an overlapping
-   pull-request run queues for a while and costs nothing.
+   The one ceiling is GitHub's twenty concurrent jobs on a free account: six
+   checks and fourteen shards are twenty, which is the ceiling itself (the
+   deploy waits for them rather than running beside them), so an overlapping
+   pull-request run queues for a while and costs nothing. Another leg or shard
+   goes past it; fold a check into an existing leg rather than adding a
+   twenty-first job.
 4. **Shards are balanced by time, not by count.** `e2e.yml` gives each shard
    the files `scripts/e2e-shard.mjs` deals it from `e2e/shard-times.json`
    (heaviest first, each to the lightest shard). Refresh the times from a run

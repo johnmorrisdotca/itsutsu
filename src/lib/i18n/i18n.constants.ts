@@ -1,4 +1,14 @@
 import type { Locale, LocaleSpec } from "./i18n.types";
+import { PHRASES_SITE } from "./phrases.site.constants";
+import { PHRASES_INSTALL } from "./phrases.install.constants";
+import { PHRASES_FILTER } from "./phrases.filter.constants";
+import { PHRASES_RULES } from "./phrases.rules.constants";
+import { PHRASES_SETUP } from "./phrases.setup.constants";
+import { PHRASES_XP } from "./phrases.xp.constants";
+import { PHRASES_RECORD } from "./phrases.record.constants";
+import { PHRASES_RIVALRY } from "./phrases.rivalry.constants";
+import { PHRASES_CATALOGUE } from "./phrases.catalogue.constants";
+import { PHRASES_FEED } from "./phrases.feed.constants";
 
 /**
  * The languages the site knows about, and the English it speaks in by default.
@@ -82,6 +92,24 @@ export const LANG_CHOSEN_COOKIE = "lang-chosen";
 export const LANG_CHOSEN_FOR_SECONDS = 60;
 
 /**
+ * Each area of the catalogue by the name of its file, `phrases.<area>.constants.ts`.
+ * `phrases.coverage.test.ts` reads it to prove that no key is said twice and
+ * that none was lost in the join.
+ */
+export const PHRASE_AREAS = {
+  site: PHRASES_SITE,
+  install: PHRASES_INSTALL,
+  filter: PHRASES_FILTER,
+  rules: PHRASES_RULES,
+  setup: PHRASES_SETUP,
+  xp: PHRASES_XP,
+  record: PHRASES_RECORD,
+  rivalry: PHRASES_RIVALRY,
+  catalogue: PHRASES_CATALOGUE,
+  feed: PHRASES_FEED,
+} as const;
+
+/**
  * Every phrase the site can say in more than one language, in the language it
  * was written in.
  *
@@ -102,290 +130,22 @@ export const LANG_CHOSEN_FOR_SECONDS = 60;
  * to use the same set — `i18n.coverage.test.ts` fails the build otherwise,
  * because a dropped placeholder is a sentence with a hole in it that nothing
  * else would report.
+ *
+ * It is the join of the areas in `PHRASE_AREAS`, one `phrases.<area>.constants.ts`
+ * each, split by the first word of a key. A new key goes in its area's file;
+ * a new area is a new file and one line here, in both lists.
  */
 export const PHRASES = {
-  "site.language": "Language",
-
-  "nav.about": "About",
-  "nav.rules": "Rules",
-  "nav.record": "Game history",
-  "nav.players": "Players",
-  "nav.everyGame": "All games",
-  "nav.play": "My games",
-  "nav.newGame": "New game",
-  "nav.games": "Games",
-  "nav.learn": "Learn",
-  "nav.admin": "Admin",
-  "nav.privacy": "Privacy",
-  "nav.terms": "Terms",
-
-  "account.signIn": "Sign in",
-  "account.signOut": "Sign out",
-
-  "install.title": "Add it to your home screen",
-  "install.lead": "It opens like an app: the whole screen, no browser bar, and you stay signed in.",
-  "install.ios": "Tap Share (in the ••• menu on newer iPhones), then Add to Home Screen.",
-  "install.android": "Open the browser's ⋮ menu, then Install app or Add to Home screen.",
-  "install.button": "Install app",
-  "install.dismiss": "Not now",
-
-  "filter.narrowedTo": "Filtered by",
-  "filter.player": "Player",
-  "filter.result": "Result",
-  "filter.board": "Board",
-  "filter.rules": "Rules",
-  "filter.sort": "Sort",
-  "filter.any": "Any",
-  "filter.searchNames": "Search names",
-
-  "rules.object": "Objective",
-  "rules.board": "Board",
-  "rules.play": "How to play",
-  "rules.house": "House rules",
-  "rules.learn": "Learn",
-  "rules.inspiredBy":
-    "Inspired by {name}. The name belongs to its owner; this is our own version of the rules.",
-  "rules.alsoKnownAs": "Also known as {names}.",
-  "rules.from": "From {country}",
-  "rules.imageAlt": "A game of {game} in progress",
-  "rules.play.button": "Play →",
-  "rules.everyGamePlayed": "Every game of {game} played here",
-  "rules.wikipedia": "Read about {game} on Wikipedia ↗",
-
-  /*
-   * The set-up screen's last three choices, which were dropdowns and are
-   * tiles: the opening, whether the game counts, and who it is against. The
-   * names on the tiles are the domain's own copy (`OPENING_DISPLAY`,
-   * `BOT_PROFILES`); these are the words around them.
-   */
-  "setup.opening": "Opening",
-  "setup.ratings": "Ratings",
-  "setup.rated": "Rated",
-  "setup.ratedMeans": "The result moves both players' ratings.",
-  "setup.friendly": "Friendly",
-  "setup.friendlyMeans": "Played for its own sake. No rating moves.",
-  "setup.opponent": "Opponent",
-  "setup.anyoneMeans": "Whoever comes along first takes the other seat.",
-  "setup.askedFor": "Asked for",
-  "setup.hereNow": "Online now",
-  "setup.playersYouKnow": "Players you know",
-  "setup.theComputer": "Bots",
-  "setup.showAll": "Show all {count}",
-  "setup.showFewer": "Show fewer",
-  /*
-   * The line on a game's chip when the family showing it is not its home —
-   * "also under Flips" — so a game on two shelves reads as meant. The home
-   * family's name fills {family}, in the reader's own script.
-   */
-  "setup.alsoUnder": "also under {family}",
-
-  /*
-   * The XP toast. It shipped in 0.158.4 with these five as fixed English in
-   * `xp.constants.ts`, so a Japanese reader was paid in their own language
-   * and told about it in somebody else's. The unit is spelt out rather than
-   * left as the letters: "XP" is a name only to an English reader.
-   */
-  "xp.unit": "XP",
-  "xp.pointsEarned": "Points earned",
-  "xp.dismiss": "Dismiss",
-  "xp.levelUp": "Level up",
-  "xp.nextLevel": "Next level: {name}",
-
-  /*
-   * A person's standing on their own page — the level and the total, under
-   * their record. John: "View Person should always show this prominent info…
-   * the Name of the person, Stats/Record and XP + XP level Name." The words a
-   * table heading already says in English ("XP", "Level") are said here in the
-   * reader's language, since this is a sentence about somebody and not a column.
-   */
-  "xp.level": "Level",
-  "xp.toNext": "{count} to {name}",
-  "xp.atTheTop": "The top of the ladder.",
-  "xp.board": "Where everybody stands by experience",
-
-  /*
-   * Experience credited for another site's record, and which total a board is
-   * counting. John: "we will show filters, that show worldwide XP with a
-   * justification that they have put in their time or mileage on other sites)
-   * and the Itsutsu only XP as well". `{games}` is drawn as a count that says it
-   * was counted elsewhere; `{sites}` is a list the next phrase joins.
-   */
-  "xp.imported.includes": "Includes {xp} XP for {games} games played on {sites}.",
-  "xp.imported.includesElsewhere": "Includes {xp} XP credited for games played on other sites.",
-  "xp.imported.listLast": "{list} and {last}",
-  "xp.scope.everywhere": "Counting everywhere: experience earned here, plus credit for games played on other sites.",
-  "xp.scope.here": "Counting this site only: experience earned here, and nothing credited from elsewhere.",
-  "xp.scope.countEverywhere": "Include worldwide",
-
-  /*
-   * The replay's download. SGF stays as the letters in every language: it is
-   * the name of the format, and the name a reader will find it under in any
-   * program that opens one.
-   */
-  "record.downloadSgf": "Download as SGF",
-  /** The same for the draughts family, whose file is PDN (Portable Draughts Notation). */
-  "record.downloadPdn": "Download as PDN",
-
-  /*
-   * The rivalry scoreboard: two members' record against each other, above the
-   * list of their games and on a match before and after it is played.
-   *
-   * TWO FORMS OF EVERY LINE, `.you` and `.named`, and that is a rule rather
-   * than a style. "You" is said only to a reader who is one of the two; anybody
-   * else signed in reads both names, because "You lead Dan" on a page about two
-   * other people is a sentence about the wrong person.
-   *
-   * COUNTS: this dictionary has no plural mechanism, only `{placeholders}`, so a
-   * count that can be one has a key per form — `.one` and `.other` — and every
-   * language answers both. The rest never meet a one: a run worth naming starts
-   * at three and a gap at six months, so "{count} times" and "{count} months"
-   * are always plural in English. A year is the exception, and has two keys.
-   * `{score}` is the score as digits, "4–4", which no language here reorders.
-   */
-  "rivalry.title": "Head to head",
-  "rivalry.versus": "vs",
-  "rivalry.wins": "Wins",
-  "rivalry.draws": "Draws",
-  "rivalry.games": "Games",
-  "rivalry.allGames": "All games",
-  "rivalry.lastPlayed": "Last played",
-  "rivalry.notYet": "Not yet",
-  "rivalry.streak": "Streak",
-  "rivalry.against": "against {name}",
-  "rivalry.unnamed": "A player",
-  "rivalry.streakWon.one": "{name} won the last game",
-  "rivalry.streakWon.other": "{name} won the last {count}",
-  "rivalry.streakDrawn.one": "The last game was a draw",
-  "rivalry.streakDrawn.other": "The last {count} were draws",
-  "rivalry.never.you": "You and {name} have never played each other",
-  "rivalry.never.named": "{one} and {other} have never played each other",
-  "rivalry.neverGame.you": "You and {name} have never played {game} before",
-  "rivalry.neverGame.named": "{one} and {other} have never played {game} before",
-  "rivalry.gapMonths.you": "You haven't played {name} in {count} months",
-  "rivalry.gapMonths.named": "{one} and {other} haven't played each other in {count} months",
-  "rivalry.gapYear.you": "You haven't played {name} in a year",
-  "rivalry.gapYear.named": "{one} and {other} haven't played each other in a year",
-  "rivalry.gapYears.you": "You haven't played {name} in {count} years",
-  "rivalry.gapYears.named": "{one} and {other} haven't played each other in {count} years",
-  "rivalry.firstWin.you": "Your first win against {name}",
-  "rivalry.firstLoss.you": "{name}'s first win against you",
-  "rivalry.firstWin.named": "{winner}'s first win against {loser}",
-  "rivalry.beaten.you": "You've beaten {name} {count} times in a row",
-  "rivalry.lostTo.you": "You've lost to {name} {count} times in a row",
-  "rivalry.beaten.named": "{winner} has beaten {loser} {count} times in a row",
-  "rivalry.drawnRun.you": "Your last {count} games against {name} were draws",
-  "rivalry.drawnRun.named": "The last {count} games between {one} and {other} were draws",
-  "rivalry.allDrawn.you": "Every game between you and {name} has been a draw",
-  "rivalry.allDrawn.named": "Every game between {one} and {other} has been a draw",
-  "rivalry.tied.you": "You and {name} are tied {score}",
-  "rivalry.tied.named": "{one} and {other} are tied {score}",
-  "rivalry.lead.you": "You lead {name} {score}",
-  "rivalry.behind.you": "{name} leads you {score}",
-  "rivalry.lead.named": "{leader} leads {trailer} {score}",
-
-  /*
-   * The figures under every game and family on /games — John: "making these
-   * pages a little more statistically interesting". A count of games says one
-   * and many as two phrases, because a language that makes the difference
-   * needs both and one that does not (Japanese) answers both the same.
-   *
-   * "last played" needs no singular: `sinceLastPlayed` says one day as
-   * "yesterday" and never counts a single month or year.
-   */
-  "catalogue.playedOne": "{count} game played",
-  "catalogue.playedMany": "{count} games played",
-  "catalogue.nobodyYet": "Nobody has played this yet",
-  "catalogue.beFirst": "Be the first to play →",
-  "catalogue.beFirstStranger": "Reading is free — join to be the first to play it →",
-  "catalogue.topPlayer": "Top player",
-  "catalogue.poolPeople": "among people",
-  "catalogue.poolComputer": "against bots",
-  "catalogue.topMeansPeople":
-    "The top of this game's ladder among people: rated games between members, best rating first. The record is won–lost–drawn on that ladder.",
-  "catalogue.topMeansComputer":
-    "Nobody holds a standing among people yet, so this is the top of the ladder against the bots — a separate ladder, never added to the people's. The record is won–lost–drawn on that ladder.",
-  "catalogue.noStanding": "No rated games yet",
-  "catalogue.joinToSeeWho": "Join to see who →",
-  /** The way into a game of it, from its card on the catalogue. */
-  "catalogue.play": "Play →",
-  "catalogue.standings": "Leaderboard →",
-  "catalogue.wonTitle": "The rated games they won on this ladder",
-  "catalogue.lostTitle": "The rated games they lost on this ladder",
-  "catalogue.drawnTitle": "The rated games they drew on this ladder",
-  "catalogue.lastToday": "Last played today",
-  "catalogue.lastYesterday": "Last played yesterday",
-  "catalogue.lastDays": "Last played {count} days ago",
-  "catalogue.lastMonths": "Last played {count} months ago",
-  "catalogue.lastYears": "Last played {count} years ago",
-  "catalogue.familyPlayedOne": "{count} game played across the family",
-  "catalogue.familyPlayedMany": "{count} games played across the family",
-  "catalogue.familyTried": "{played} of {total} tried here",
-  "catalogue.crownsHeld": "Most crowns",
-  "catalogue.crownCount": "{count} of {total}",
-  "catalogue.crownMeans":
-    "A crown is the top of one game's ladder, as that game shows it. This player tops more of this family's games than anybody else.",
-  "catalogue.crownsShared": "Crowns shared by {count} players",
-
-  /*
-   * The feed (/feed): what the reader and their buddies have been doing, and
-   * the games finished lately among adults. Each sentence comes as a "you"
-   * form and a named one, and its {slots} are filled with links by the page
-   * — see `feedWords.ts`.
-   */
-  "feed.title": "Feed",
-  "feed.homeLink": "Your feed",
-  "feed.lead": "What you and your buddies have been playing lately, newest first.",
-  "feed.leadEveryone":
-    "Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only bots and members who have said they are 18 or over are named.",
-  "feed.tabMine": "You and your buddies",
-  "feed.tabEveryone": "Everyone",
-  "feed.tabsLabel": "Whose activity to show",
-  "feed.today": "Today",
-  "feed.yesterday": "Yesterday",
-  "feed.won.you": "You beat {other} at {game}",
-  "feed.won.named": "{who} beat {other} at {game}",
-  "feed.lost.you": "You lost to {other} at {game}",
-  "feed.lost.named": "{who} lost to {other} at {game}",
-  "feed.drawn.you": "You drew with {other} at {game}",
-  "feed.drawn.named": "{who} drew with {other} at {game}",
-  "feed.started.you": "You started a game of {game} against {other}",
-  "feed.started.named": "{who} started a game of {game} against {other}",
-  "feed.waiting.you": "You started a game of {game}, waiting for somebody to sit down",
-  "feed.waiting.named": "{who} started a game of {game}, waiting for somebody to sit down",
-  "feed.xp.you": "You earned {xp}",
-  "feed.xp.named": "{who} earned {xp}",
-  "feed.ip.you": "You won {ip}",
-  "feed.ip.named": "{who} won {ip}",
-  "feed.credited.you": "You were credited {xp} for games played on other sites",
-  "feed.credited.named": "{who} was credited {xp} for games played on other sites",
-  "feed.level.you": "You reached level {level}, {name}",
-  "feed.level.named": "{who} reached level {level}, {name}",
-  "feed.puzzleOne.you": "You solved a {game} puzzle",
-  "feed.puzzleOne.named": "{who} solved a {game} puzzle",
-  "feed.puzzleMany.you": "You solved {count} {game} puzzles",
-  "feed.puzzleMany.named": "{who} solved {count} {game} puzzles",
-  "feed.news.firstGameWon": "{game} was played here for the first time: {who} beat {other}",
-  "feed.news.firstGameDrawn": "{game} was played here for the first time: {who} drew with {other}",
-  "feed.news.firstGame": "{game} was played here for the first time",
-  "feed.news.firstPlace": "{who} took first place at {game}",
-  "feed.news.botBeaten": "{who} beat {other} at {game}, the first person here to",
-  "feed.news.botBeatenNobody": "{other} was beaten at {game} for the first time",
-  "feed.news.firstWin": "{who}'s first win here, at {game}",
-  "feed.news.firstLoss": "{who}'s first loss here, at {game}",
-  "feed.news.bestTime": "A new best time at {game} {board}: {who}, {time}",
-  "feed.news.bestTimeNobody": "A new best time at {game} {board}: {time}",
-  "feed.added": "New here: {games}",
-  "feed.seeGame": "See the game",
-  "feed.seeLadder": "See the ladder",
-  "feed.seeFastest": "See the fastest times",
-  "feed.seeSolves": "See their solves",
-  "feed.somebody": "somebody",
-  "feed.emptyMine":
-    "Nothing here yet. When you or a buddy start or finish a game, earn XP, reach a level or solve a puzzle, it shows here, newest first.",
-  "feed.emptyEveryone":
-    "Nothing here yet: no games finished lately between players this tab may show, no new games and no news.",
-  "feed.beFirst": "Be the first to play →",
-  "feed.findBuddies": "Find buddies →",
+  ...PHRASES_SITE,
+  ...PHRASES_INSTALL,
+  ...PHRASES_FILTER,
+  ...PHRASES_RULES,
+  ...PHRASES_SETUP,
+  ...PHRASES_XP,
+  ...PHRASES_RECORD,
+  ...PHRASES_RIVALRY,
+  ...PHRASES_CATALOGUE,
+  ...PHRASES_FEED,
 } as const;
 
 /** A phrase the site can say. */
