@@ -214,8 +214,9 @@ const WORD_ANSWER_MOST = MOST_GUESSES * LONGEST_WORD;
 const TILE_GAME_MOST = KUMIMOJI_GRID_MOST * (KUMIMOJI_GRID_MOST + 1);
 
 export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
-  // 256: a 16×16's cells, one character each, 1–9 then A–G.
-  numberPlace: { sizes: [4, 6, 9, 16], offered: [4, 6, 9, 16], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 256 },
+  // 625: a 25×25's cells, one character each, 1–9 then A–P. Five sizes and room for four tiles, so they are a shelf (`shelves`): 4 to 16, then 6 to 25.
+  // The 25×25 is zoomed and panned on a phone (`TsunagiViewport`), where a cell of the whole board fitted to 390 pixels is about fourteen wide.
+  numberPlace: { sizes: [4, 6, 9, 16, 25], offered: [4, 6, 9, 16], defaultSize: 9, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: 625, shelves: true },
   hiddenStones: {
     sizes: [4, 5, 6, 7, 8, 9, 10, 12],
     offered: [4, 7, 9, 12],
@@ -575,6 +576,7 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     6: { label: "Short", kanji: "短" },
     9: { label: "Classic", kanji: "定番" },
     16: { label: "Giant", kanji: "特大" },
+    25: { label: "Colossus", kanji: "巨大" },
   },
   hiddenStones: {
     4: { label: "Beginner", kanji: "入門" },
@@ -904,12 +906,12 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     rules: [
       "Fill every empty cell with a number from 1 up to the side of the grid, so that each row, each column and each box holds every number exactly once.",
       "The numbers already printed are the givens. They stay where they are, and every puzzle here has exactly one answer that fits them.",
-      "The 16×16 Giant has sixteen symbols: 1 to 9, then A to G for 10 to 16. Type the letter, or press its key.",
+      "The 16×16 Giant has sixteen symbols: 1 to 9, then A to G for 10 to 16. The 25×25 Colossus has twenty-five: A to P for 10 to 25. Type the letter, or press its key.",
       "There is no guessing at the easy level: every cell can be found by reasoning from what is already there. Medium and hard ask you to try something and see.",
       "The clock starts on your first entry and stops when the last cell is right. Check tells you how many cells are wrong, never which.",
     ],
     board:
-      "9×9 with 3×3 boxes is the puzzle everybody knows. 4×4 with 2×2 boxes is over in a minute and is the one to give a child; 6×6 with boxes two rows tall and three wide sits between. 16×16, the Giant, has boxes four by four and the letters A to G after 9; it is best on a tablet or a computer, where its cells are big enough to tap.",
+      "9×9 with 3×3 boxes is the puzzle everybody knows. 4×4 with 2×2 boxes is over in a minute and is the one to give a child; 6×6 with boxes two rows tall and three wide sits between. 16×16, the Giant, has boxes four by four and the letters A to G after 9; it is best on a tablet or a computer, where its cells are big enough to tap. 25×25, the Colossus, has boxes five by five and runs on to the letter P; on a phone you zoom in and move about it, and an easy one is still found by looking alone.",
   },
   hiddenStones: {
     label: "Hidden Stones",

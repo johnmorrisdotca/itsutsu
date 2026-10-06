@@ -473,6 +473,9 @@ const SURVEY: Survey[] = [
   },
   ...SURVEYED_PUZZLES.map((slug) => puzzle(slug)),
   puzzle("number-place", "size=16&level=easy"),
+  // The Colossus, 25×25 (2026-10-05), and Jirai's Huge field, 32×32: 625 and 1,024 squares a desk's window has to hold in the modal with nothing to scroll. On a desk they open whole.
+  puzzle("number-place", "size=25&level=easy"),
+  puzzle("jirai", "size=32&level=easy"),
   // Bridges' biggest, 25×25 (2026-10-05): opens at twice the box, so the empty-column measure is taken after Fit, with the whole board in view.
   {
     ...puzzle("bridges", "size=25&level=medium"),

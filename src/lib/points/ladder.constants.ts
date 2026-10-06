@@ -89,7 +89,8 @@ const TILES: Reference = { each: 15, per: "tile" };
 const KOUSHI: Reference = { each: 880, per: "solve" };
 
 export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
-  numberPlace: { how: "size", rungs: { 4: 50, 6: 75, 9: 100, 16: 125 } },
+  // The 25×25 Colossus (2026-10-05) is the top rung, 125; the 16×16 comes down from 125 to 110 to sit between it and the 9×9, and the smaller sizes stay where they were.
+  numberPlace: { how: "size", rungs: { 4: 50, 6: 75, 9: 100, 16: 110, 25: 125 } },
   jigsaw: { how: "size", rungs: { 5: 50, 6: 70, 7: 90, 9: 125 } },
   diagonal: { how: "size", rungs: { 6: 50, 9: 125 } },
   sumCages: { how: "size", rungs: { 6: 50, 9: 125 } },
@@ -132,7 +133,8 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   hitori: { how: "size", rungs: { 5: 50, 7: 70, 9: 90, 12: 125 } },
   crossSums: { how: "size", rungs: { 6: 50, 8: 75, 10: 100, 12: 125 } },
   regions: { how: "size", rungs: { 6: 50, 8: 75, 10: 100, 12: 125 } },
-  jirai: { how: "size", rungs: { 7: 50, 9: 65, 12: 95, 16: 125 } },
+  // The 32×32 Huge board (2026-10-05) is the top rung; the 16×16 comes down from 125 to sit between it and the 12×12.
+  jirai: { how: "size", rungs: { 7: 50, 9: 65, 12: 95, 16: 110, 32: 125 } },
   kumimoji: { how: "tiles", full: TILES },
   tsunagi: { how: "ranked", rungs: { 4: 50, 5: 70, 6: 85, 7: 95, 8: 110, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 15: 150 } },
   // The squares 5 to 14 and the long boards 5×7, 6×10 and 8×14 (kept as 507, 610 and 814), and the huge 20×20, 28×28 and 20×50 (2050), which have sixty-four levels and not 256. A level family's ceiling is 200, which is a rung of 150 and the 50 a level's place adds (`rankAdd`), so the three huge ones take the top rung: they pay what the 14×14 pays at its hardest, and a huge level's third pays by the same thirds as every size's (`RANK_OF_THIRD`).

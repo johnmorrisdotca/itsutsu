@@ -13,8 +13,15 @@ import { JIRAI_COPY, jiraiChecked, jiraiStepWord } from "./jirai.constants";
 import { PuzzleSteps } from "./PuzzleSteps";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
+import { TsunagiViewport } from "./TsunagiViewport";
 import { SolveShow } from "./SolveShow";
+import { useNarrowZoom } from "./narrowZoom";
 import { useStepHistory } from "./useStepHistory";
+
+/** The Huge board is looked at through a box on a phone (`TsunagiViewport`): a square of the whole 32×32 fitted to 390 pixels is about eleven wide, so it opens at three times that and zooms to four. */
+const HUGE_FROM = 32;
+const HUGE_START_ZOOM = 3;
+const HUGE_MOST_ZOOM = 4;
 
 /**
  * Solving a Jirai: a board the browser has dealt and Jirai has proved needs no guess, opened at its middle.
@@ -43,6 +50,7 @@ export function JiraiSolve({
 }) {
   const hydrated = useHydrated();
   const { size, seed, givens, solution } = puzzle;
+  const opens = useNarrowZoom(HUGE_START_ZOOM);
   const recipe = useMemo(() => jiraiRecipeOf(size, givens)!, [size, givens]);
   const board = useMemo(() => jiraiBoardOf(recipe, solution)!, [recipe, solution]);
   const [code, setCode] = useState<string>(() => (resumed !== null && resumed.progress.length === recipe.cells.length && /^[.f\-0-8]+$/.test(resumed.progress) ? resumed.progress : recipe.cells));
@@ -119,17 +127,19 @@ export function JiraiSolve({
     <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="jirai" data-seed={seed} data-code={code} data-mistakes={mistakes} data-wrong={[...hinting.marked].join(",")} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <JiraiBoard
-          size={size}
-          givens={givens}
-          code={history.shown}
-          flagging={flagging}
-          wrong={hinting.marked}
-          hint={history.reviewing ? null : lit}
-          readOnly={!live}
-          label={JIRAI_COPY.label(size)}
-          onMove={move}
-        />
+        <TsunagiViewport size={size} name="jirai" zoomFrom={HUGE_FROM} startZoom={size >= HUGE_FROM ? opens : undefined} startAt={{ x: ((recipe.first % size) + 0.5) / size, y: (Math.floor(recipe.first / size) + 0.5) / size }} mostZoom={size >= HUGE_FROM ? HUGE_MOST_ZOOM : undefined}>
+          <JiraiBoard
+            size={size}
+            givens={givens}
+            code={history.shown}
+            flagging={flagging}
+            wrong={hinting.marked}
+            hint={history.reviewing ? null : lit}
+            readOnly={!live}
+            label={JIRAI_COPY.label(size)}
+            onMove={move}
+          />
+        </TsunagiViewport>
       </SolvePaused>
       <PuzzleSteps<string> steps={steps} viewing={history.viewing} go={history.go} size={size} say={jiraiStepWord} />
       {done === null ? (

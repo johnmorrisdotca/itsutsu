@@ -56,7 +56,7 @@ Measured table (rung at the smallest to largest offered size, Easy):
 
 | Puzzle | Rungs |
 |---|---|
-| Number Place 4, 6, 9, 16 | 50, 75, 100, 125 |
+| Number Place 4, 6, 9, 16, 25 | 50, 75, 100, 110, 125 (the 25×25 joined 2026-10-05; the 16×16 was 125) |
 | Jigsaw 5, 6, 7, 9 | 50, 70, 90, 125 |
 | Diagonal, Sum Cages 6, 9 | 50, 125 |
 | More or Less, Towers 4 to 7 | 50, 80, 105, 125 |
@@ -70,7 +70,7 @@ Measured table (rung at the smallest to largest offered size, Easy):
 | Loop 5, 7, 10 | 50, 85, 125 |
 | Hitori 5, 7, 9, 12 | 50, 70, 90, 125 |
 | Cross Sums, Regions 6, 8, 10, 12 | 50, 75, 100, 125 |
-| Jirai 7, 9, 12, 16 | 50, 65, 95, 125 |
+| Jirai 7, 9, 12, 16, 32 | 50, 65, 95, 110, 125 (the 32×32 joined 2026-10-05; the 16×16 was 125) |
 | Meikyuu small, medium, large, huge | 55, 95, 120, 150 (to 105, 145, 170, 200) |
 | Meikyuu tall 6x9 to 20x30 | 50, 60, 70, 80, 90, 100 (to 100 ... 150) |
 | Suido 5x5 to 14x14 | 50 to 150 (to 100 ... 200); long boards 65, 90, 120 |

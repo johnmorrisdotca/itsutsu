@@ -30,7 +30,18 @@ export const PUZZLE_CELL =
  * 390px phone and would crop a full-size letter.
  */
 export function puzzleCellText(size: number): string {
-  return size > 9 ? "text-xs sm:text-base" : "text-lg sm:text-xl";
+  return size > COLOSSUS_SCALED_FROM ? "" : size > 9 ? "text-xs sm:text-base" : "text-lg sm:text-xl";
+}
+
+/**
+ * From this side up a grid is looked at through a zoomable box (the 25×25 Colossus, `NumberSolve`), so a cell is as wide as the
+ * zoom makes it and a number has to follow: it is a share of the grid's own width (`cellTextStyle`), not a size in pixels.
+ */
+export const COLOSSUS_SCALED_FROM = 16;
+
+/** A cell's number sized to the grid's width where `puzzleCellText` leaves it to this: about half a cell, in the grid's container units. */
+export function cellTextStyle(size: number): { fontSize: string } | undefined {
+  return size > COLOSSUS_SCALED_FROM ? { fontSize: `${(52 / size).toFixed(3)}cqw` } : undefined;
 }
 
 /** At most this many keys in a row under the grid: the 16×16's seventeen keys make two rows a fingertip each. */

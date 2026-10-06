@@ -21,6 +21,7 @@ import {
   PUZZLE_GRID,
   PUZZLE_MARK_BELOW,
   PUZZLE_MARK_RIGHT,
+  cellTextStyle,
   puzzleCellText,
 } from "./puzzles.constants";
 import { symbolOf } from "@/lib/puzzles/puzzleCode";
@@ -105,7 +106,7 @@ export function PuzzleGrid({
       <PuzzleBoard size={clues === null ? size : size + 2} coordinates={clues === null}>
       <RingIf size={size} clues={clues}>
       <div className="relative h-full w-full">
-      <div className={PUZZLE_GRID} style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}>
+      <div className={PUZZLE_GRID} style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`, ...(cellTextStyle(size) === undefined ? {} : { containerType: "inline-size" }) }}>
         {givens.map((given, index) => {
           const row = Math.floor(index / size);
           const col = index % size;
@@ -124,6 +125,7 @@ export function PuzzleGrid({
               key={index}
               type="button"
               className={`relative ${PUZZLE_CELL} ${puzzleCellText(size)} ${isGiven ? PUZZLE_CELL_GIVEN : ""} ${onDiagonal ? PUZZLE_CELL_DIAGONAL : ""} ${selected === index ? PUZZLE_CELL_SELECTED : ""} ${wrong.has(index) ? PUZZLE_CELL_WRONG : ""} ${edges}`}
+              style={cellTextStyle(size)}
               onClick={() => onSelect(index)}
               disabled={done}
               aria-label={`row ${row + 1}, column ${col + 1}, ${value === 0 ? "empty" : symbolOf(value)}${isGiven ? ", given" : ""}${sumAt.has(index) ? `, a cage adding to ${sumAt.get(index)}` : ""}`}

@@ -82,7 +82,8 @@ describe("the puzzle ladder prices every puzzle", () => {
       const lowest = Math.min(...offered.map((size) => price(kind, size, "easy")));
       expect(lowest, kind).toBe(50);
     }
-    expect(price("numberPlace", 16, "hard")).toBe(150);
+    expect(price("numberPlace", 25, "hard")).toBe(150);
+    expect([4, 6, 9, 16, 25].map((size) => price("numberPlace", size, "easy"))).toEqual([50, 75, 100, 110, 125]);
     expect(price("freecell", 4, "medium")).toBe(50);
     expect(price("freecell", 3, "medium")).toBe(100);
     expect(price("freecell", 2, "medium")).toBe(150);
@@ -106,9 +107,9 @@ describe("the Pencil puzzles", () => {
     expect([6, 8, 10, 12].map((size) => price("regions", size, "easy"))).toEqual([50, 75, 100, 125]);
     expect(LEVELS_WITH_EXTRA.map((level) => price("shikaku", 7, level))).toEqual([70, 80, 95, 110]);
     expect(LEVELS_WITH_EXTRA.map((level) => price("crossSums", 8, level))).toEqual([75, 85, 100, 115]);
-    expect([7, 9, 12, 16].map((size) => price("jirai", size, "easy"))).toEqual([50, 65, 95, 125]);
+    expect([7, 9, 12, 16, 32].map((size) => price("jirai", size, "easy"))).toEqual([50, 65, 95, 110, 125]);
     expect(LEVELS_WITH_EXTRA.map((level) => price("jirai", 9, level))).toEqual([65, 75, 90, 105]);
-    expect(price("jirai", 16, "hard")).toBe(150);
+    expect(price("jirai", 32, "hard")).toBe(150);
   });
 
   it("adds 40 for extra hard, and stops at the ceiling where that would pass it", () => {

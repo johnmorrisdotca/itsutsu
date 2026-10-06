@@ -37,21 +37,11 @@ export function akariBulbsOf(size: number, code: string): number[] | null {
 
 const codeOf = (size: number, bulbs: readonly number[]): string => Array.from({ length: size * size }, (_, at) => (bulbs.includes(at) ? BULB : BLANK)).join("");
 
-/**
- * KAZU'S LAST-RESORT LAYOUT. When Kazu 1.3.0 cannot find a random board of an Akari level within its attempts it falls
- * back, without saying so (the board's `level` stays the one asked), to the fixed rooms of 1.2.0: rows and columns of
- * black squares that cut the board into a lattice, 74% black at 14×14. Measured over sixty seeds, 27 of the 14×14 easy
- * boards and 3 of the medium ones were that lattice, 10 of the 12×12 easy ones, and none at 10×10 or smaller; a random
- * board is never more than 56% black (6×6; at most 48% at any size offered). A seed that made such a board has no
- * puzzle, which is what the next seed is for (`generatePencil`).
- */
-const LAST_RESORT_BLACK_SHARE = 0.7;
-
 export const akari: PencilEngine = {
   codeLength: (size) => size * size,
   make(size, level, seed) {
+    // Kazu 1.4.0 makes a random board for every seed at every size (1.3.0 returned a fixed lattice for some, which this once skipped).
     const made = generateAkari(size, size, seed, level);
-    if (made.cells.filter((cell) => cell !== null).length > size * size * LAST_RESORT_BLACK_SHARE) throw new Error("Kazu's fixed Akari layout, not a random board");
     const givens = made.cells.map((cell) => (cell === null ? BLANK : cell === false ? BLACK : String(cell))).join("");
     return { givens, solution: codeOf(size, made.solution) };
   },

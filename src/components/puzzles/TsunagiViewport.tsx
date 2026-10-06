@@ -78,6 +78,7 @@ export function TsunagiViewport({
   aspect = "1 / 1",
   mostZoom = MOST_ZOOM,
   startZoom = 1,
+  startAt,
   pinned,
   children,
 }: {
@@ -92,6 +93,8 @@ export function TsunagiViewport({
   mostZoom?: number;
   /** The zoom the board opens at: a board with a hundred lines is not read whole, so it opens near. Fit still shows the whole. */
   startZoom?: number;
+  /** Where in the board the zoomed view opens, as shares of its width and height (0 to 1): a Jirai field opens on the middle it was opened at. Left out, the top left. */
+  startAt?: { x: number; y: number };
   /** Clues kept at the box's top and left while the view moves (`Pinned`). */
   pinned?: Pinned;
   children: ReactNode;
@@ -102,6 +105,8 @@ export function TsunagiViewport({
   const [view, setView] = useState<View>(FITTED);
   const [frame, setFrame] = useState<PinFrame | null>(null);
   const opened = useRef(false);
+  /** Where the view opens, held as first given: it is used once, as the box first has its width. */
+  const openAt = useRef(startAt);
   /** The side of the playing area as last measured, which the edge nudge reads without a render. */
   const areaSide = useRef(0);
   const held = useRef<{ pointer: number; x: number; y: number; target: EventTarget | null } | null>(null);
@@ -115,7 +120,11 @@ export function TsunagiViewport({
       // A board that opens zoomed does so once, as the box first has its width.
       if (!opened.current && side > 0) {
         opened.current = true;
-        if (startZoom > 1) setView(kept({ zoom: startZoom, x: 0, y: 0 }, side, mostZoom));
+        if (startZoom > 1) {
+          const zoom = Math.min(mostZoom, Math.max(1, startZoom));
+          // The point asked for in the middle of the box, when the board is big enough to put it there (`kept` holds the edges).
+          setView(kept({ zoom, x: openAt.current === undefined ? 0 : side / 2 - openAt.current.x * side * zoom, y: openAt.current === undefined ? 0 : side / 2 - openAt.current.y * side * zoom }, side, mostZoom));
+        }
       }
     };
     measure();

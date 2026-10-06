@@ -33,7 +33,7 @@ describe("the ways to play Jirai are said by the seed", () => {
 });
 
 describe.each(VARIANTS)("Jirai, $variant.grid $variant.shape", ({ variant, seed }) => {
-  const sizes = variant.shape === "rectangle" ? [7, 9, 12, 16] : [9, 12, 16];
+  const sizes = variant.shape === "rectangle" ? [7, 9, 12, 16, 32] : [9, 12, 16, 32];
   it.each(sizes)("makes a board at %i that reads, checks, and is finished by what the clues prove", (size) => {
     for (const level of ["easy", "hard", "extra-hard"] as const) {
       const made = generateJirai(size, level, seed);
@@ -67,7 +67,7 @@ describe.each(VARIANTS)("Jirai, $variant.grid $variant.shape", ({ variant, seed 
 describe("every level is dealt as it was asked for, on every way to play", () => {
   it("keeps the seed asked for, at every size and level, and the mines step up with the level", () => {
     for (const { variant, seed } of VARIANTS) {
-      const sizes = variant.shape === "rectangle" ? [7, 9, 12, 16] : [9, 12, 16];
+      const sizes = variant.shape === "rectangle" ? [7, 9, 12, 16, 32] : [9, 12, 16, 32];
       for (const size of sizes) {
         let before = 0;
         for (const level of ["easy", "medium", "hard", "extra-hard"] as const) {

@@ -17,8 +17,15 @@ import { SolveHint } from "./SolveHint";
 import { PuzzleSteps } from "./PuzzleSteps";
 import { useStepHistory } from "./useStepHistory";
 import { SolveShow } from "./SolveShow";
+import { useNarrowZoom } from "./narrowZoom";
+import { TsunagiViewport } from "./TsunagiViewport";
 import { cellHint } from "@/lib/puzzles/hintCell";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
+
+/** The 25×25 Colossus is looked at through a box on a phone (`TsunagiViewport`): a cell of the whole grid fitted to 390 pixels is about fourteen wide, so it opens at twice that and zooms to four. */
+const COLOSSUS_FROM = 25;
+const COLOSSUS_START_ZOOM = 2;
+const COLOSSUS_MOST_ZOOM = 4;
 
 /**
  * Solving a grid of numbers — Number Place and its variants, More or Less and Towers.
@@ -50,6 +57,7 @@ export function NumberSolve({
 }) {
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
+  const opens = useNarrowZoom(COLOSSUS_START_ZOOM);
   // A More or Less code is the cells and then the marks, a Jigsaw's the cells and then the regions, a Towers the cells
   // and then its clues; the rest are the cells alone.
   const asked = useMemo(() => readNumberGivens(kind, puzzle.givens, size), [kind, puzzle.givens, size]);
@@ -70,7 +78,7 @@ export function NumberSolve({
     progress: encodeNumberProgress(entries),
     steps: () => encodeStepLog(history.steps.map(encodeNumberProgress)),
     resumed,
-  }, hints);
+  }, hints, size >= COLOSSUS_FROM); // The 25×25 types the letter P (25), so only Space pauses it.
 
   // Every grid it has been, for the scrubber under the board (`useStepHistory`); an earlier one is looked at, not written on.
   const opening = useMemo(() => (resumed === null ? null : openingSteps(resumed.steps, resumed.progress, size, decodeNumberProgress)), [resumed, size]);
@@ -114,7 +122,7 @@ export function NumberSolve({
     if (selected === null || done !== null || pausing.paused) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
-      // 1–9, and past nine the letters A–G, either case (`valueOfSymbol`).
+      // 1–9, and past nine the letters A–P, either case (`valueOfSymbol`).
       const typed = valueOfSymbol(event.key);
       if (typed >= 1 && typed <= size) {
         event.preventDefault();
@@ -164,6 +172,7 @@ export function NumberSolve({
     <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
+        <TsunagiViewport size={size} name="numbers" zoomFrom={COLOSSUS_FROM} startZoom={size >= COLOSSUS_FROM ? opens : undefined} mostZoom={size >= COLOSSUS_FROM ? COLOSSUS_MOST_ZOOM : undefined}>
         <PuzzleGrid
           kind={kind}
           size={size}
@@ -178,6 +187,7 @@ export function NumberSolve({
           done={done !== null}
           onSelect={tap}
         />
+        </TsunagiViewport>
       </SolvePaused>
       <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(value) => (value === 0 ? "cleared" : symbolOf(value))} />
       {done === null ? (

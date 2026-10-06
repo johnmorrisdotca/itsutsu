@@ -34,7 +34,7 @@ describe.each(PENCIL_KIND_LIST)("%s is made, read, checked and solved", (kind) =
     for (const level of CASES[kind].levels) {
       it(`makes a puzzle at ${size}×${size} ${level} that reads, checks and has one answer`, () => {
         for (let seed = 1; seed <= 6; seed += 1) {
-          // A seed with no puzzle (`akari.ts`) is the next seed's: what the site makes from it, then, and the same puzzle every time.
+          // A seed with no puzzle (Kakuro seed 97 in Kazu 1.2.0, none now) is the next seed's: what the site makes from it, then, and the same puzzle every time.
           const made = generatePencil(kind, size, level, seed);
           expect(generatePencil(kind, size, level, seed)).toEqual(made);
           expect(engine.reads(size, made.givens)).toBe(true);
@@ -162,16 +162,14 @@ describe("a seed with no puzzle names the next that has one", () => {
     }
   });
 
-  it("passes over the seeds for which Kazu returns its fixed Akari lattice, so no Akari is a pattern", () => {
-    // 14×14 easy is that lattice for about half of its seeds (see `akari.ts`): the seed asked for is one of them, and its board is another.
-    let moved = 0;
+  it("makes a random Akari for every seed, with no seed passed over, since Kazu 1.4.0 never returns its fixed lattice", () => {
+    // 14×14 easy was that lattice (74% black, five full black rows) for about half of its seeds in Kazu 1.3.0.
     for (let seed = 1; seed <= 12; seed += 1) {
       const made = generatePencil("akari", 14, "easy", seed);
-      if (made.seed !== seed) moved += 1;
+      expect(made.seed, `seed ${seed} made ${made.seed}`).toBe(seed);
       const blacks = [...made.givens].filter((character) => character !== ".").length;
-      expect(blacks / 196, `seed ${seed} made ${made.seed}`).toBeLessThan(0.5);
+      expect(blacks / 196, `seed ${seed}`).toBeLessThan(0.6);
     }
-    expect(moved).toBeGreaterThan(0);
   });
 
   it("names the next seed that has a puzzle where an engine cannot make one", () => {

@@ -23,6 +23,15 @@ level and seed, so a new Kazu version must make every puzzle as before
 `site.fixture.json` pins 3,600 more) or it is a new major version there.
 The plan files below stay as they were written, and name the code as it was.
 
+**2026-10-05: the 25×25 Colossus (Kazu 1.4.0; board row `number-place-a-giant-25x25-board-with-5x5-boxes`).** Number Place has a fifth size, 625 cells with
+boxes five by five and the symbols 1 to 9 then A to P, at easy, medium and hard, one answer each. Kazu carves it by proof (singles, then at most
+one or two guesses; its `provedByGuessing`), not by counting every answer, and makes it in a median of 13 ms easy, 81 ms medium and 308 ms hard
+(slowest of 50 seeds 30, 161 and 590 ms on a Mac; a phone is a few times slower). The set-up lists it on a second shelf (4 to 16, then 6 to 25,
+`shelves`), it is priced 125 at easy on the points ladder (the 16×16 comes down from 125 to 110), and the solve looks at it through
+`TsunagiViewport` on a phone (a zoom and move pad, opening at twice the fitted grid, to four times), its numbers sized by the grid's width
+(`cellTextStyle`). The keypad is the same 9-a-row grid of keys (three rows for 26); the keyboard types a letter up to P. The server's check is Kazu's
+O(cells) restating of the rules. `e2e/number-place-colossus.spec.ts` plays it at 390 and 1280.
+
 John, 2026-09-24: "adding a new category to the site. Numbers... for
 introducing Sudoku. Then we have to merge one group; I think merge Races +
 Territory… If there is another number type of game we can add like Sudoku,

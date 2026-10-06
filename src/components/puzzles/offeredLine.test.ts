@@ -36,8 +36,8 @@ describe("the line under a puzzle's description", () => {
     const door = readFileSync("src/components/puzzles/PuzzleFrontDoor.tsx", "utf8");
     expect(door).toContain("offeredLine(kind)");
     expect(door).not.toMatch(/spec\.offered\.map/);
-    // The shelved puzzles: Tsunagi, whose set-up is its own, and Pop Gomoji, Bridges (7 to 13, then 13 to 25), Picture logic (5 to 20, then 15 to 50) and Suido's Make a board (its sixteen sizes, four to a shelf), on the shared one. All turn through the list.
-    expect(PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].shelves === true)).toEqual(["gomojiPop", "tsunagi", "bridges", "pictureLogic", "suido"]);
+    // The shelved puzzles: Tsunagi, whose set-up is its own, and Pop Gomoji, Sudoku (4 to 16, then 6 to 25), Bridges (7 to 13, then 13 to 25), Picture logic (5 to 20, then 15 to 50) Suido's Make a board (its sixteen sizes) and Jirai (7 to 16, then 9 to 32), on the shared one. All turn through the list.
+    expect(PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].shelves === true)).toEqual(["numberPlace", "gomojiPop", "tsunagi", "bridges", "pictureLogic", "suido", "jirai"]);
     const tsunagi = readFileSync("src/components/puzzles/TsunagiSetUp.tsx", "utf8");
     expect(tsunagi).toContain('sizesOffered("tsunagi")');
     expect(tsunagi).not.toContain("spec.sizes");

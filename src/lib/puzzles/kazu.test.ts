@@ -114,6 +114,31 @@ describe("every Numbers puzzle is a puzzle: one answer, the level's reasoning, a
   });
 });
 
+describe("the 25×25 Colossus", () => {
+  it("is made at every level in a browser's time, and the server's check of its 625 cells takes a few milliseconds", () => {
+    for (const level of PUZZLE_LEVEL_LIST) {
+      const started = performance.now();
+      const puzzle = generateNumberPlace(25, level, 3);
+      // Measured at 13 ms easy, 81 ms medium and 300 ms hard on average; the bound is for a busy runner (a phone is a few times slower).
+      expect(performance.now() - started, `${level} generation`).toBeLessThan(level === "hard" ? 6000 : 2000);
+      expect(puzzle.givens).toHaveLength(625);
+      const check = performance.now();
+      for (let again = 0; again < 20; again += 1) expect(checkSolution("numberPlace", 25, puzzle.givens, puzzle.solution, level)).toEqual({ ok: true });
+      expect((performance.now() - check) / 20, `${level} check`).toBeLessThan(50);
+      expect(puzzle.solution).toMatch(/[H-P]/);
+    }
+  });
+
+  it("refuses a grid with a repeated number in a row, and one with a letter past P", () => {
+    const puzzle = generateNumberPlace(25, "easy", 4);
+    const cells = decodeCells(puzzle.solution, 25)!;
+    const twice = [...cells];
+    twice[1] = twice[0]!;
+    expect(checkSolution("numberPlace", 25, ".".repeat(625), encodeCells(twice)).ok).toBe(false);
+    expect(checkSolution("numberPlace", 25, ".".repeat(625), `Q${puzzle.solution.slice(1)}`).ok).toBe(false);
+  });
+});
+
 describe("the check refuses what is wrong, and says why in the site's words", () => {
   it("refuses a grid that is right as Number Place and wrong in a cage", () => {
     const puzzle = generateSumCages(6, "easy", 5);
@@ -175,7 +200,9 @@ describe("the cells past nine are letters", () => {
   it("reads a typed letter in either case, but a code only in capitals", () => {
     expect(valueOfSymbol("a")).toBe(10);
     expect(valueOfSymbol("G")).toBe(16);
-    expect(valueOfSymbol("H")).toBe(0);
+    expect(valueOfSymbol("H")).toBe(17);
+    expect(valueOfSymbol("p")).toBe(25);
+    expect(valueOfSymbol("Q")).toBe(0);
     expect(valueOfSymbol("0")).toBe(0);
     expect(decodeCells("a".padEnd(256, "."), 16)).toBeNull();
     expect(decodeCells("A".padEnd(256, "."), 16)).not.toBeNull();
