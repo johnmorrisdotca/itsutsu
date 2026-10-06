@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.538.0 — 2026-10-06 17:53 UTC
+- Houseki arrives: five gem and stone puzzles, from Falling Triplets to Magnetic Blocks, with levels, lessons and a daily.
+
 ## 0.537.0 — 2026-10-06 17:02 UTC
 - Learning the cube is easier: Turn it for me plays a step one move at a time with Back, Forward, a scrubber and speeds, and Show the turns draws each turn on the cube.
 
