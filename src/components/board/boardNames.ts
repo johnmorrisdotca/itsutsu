@@ -95,6 +95,7 @@ export function dottedName({ label, kanji }: Named): string {
  * shown, so it is the same in every language.
  */
 export function surfaceTestName(theme: BoardThemeTokens): string {
+  if (theme.surfaceName !== undefined) return theme.surfaceName;
   const english = speaker("en");
   for (const key of Object.keys(BOARD_THEMES) as (keyof typeof BOARD_THEMES)[]) {
     if (BOARD_THEMES[key] === theme) return themeName(english, key).label;

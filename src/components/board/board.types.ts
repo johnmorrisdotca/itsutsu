@@ -61,6 +61,8 @@ export type BoardAspect = "square" | "map";
 export type BoardThemeTokens = {
   /** Painted behind the grid — a gradient or a flat colour. */
   surface: string;
+  /** The English name a surface made on the spot (a Meikyuu frame colour) is known by in `data-surface`, where no built-in theme or felt matches it. */
+  surfaceName?: string;
   /** Sits under `surface` to give the wood an edge and a shadow. */
   frame: string;
   /**

@@ -45,7 +45,7 @@ test.describe("a seat link that cannot seat you", () => {
      * sentence saying only "games on the go" over a link to /play was a number
      * promising a longer list than it came from.
      */
-    await expect(notice).toContainText(/You are seated at \d+ games still being played/);
+    await expect(notice).toContainText(/You are seated at \d+ games? still being played/);
 
     // The site is around it, which is what the hand-written document lacked.
     await expect(page.locator("[data-chrome]").first()).toBeVisible();

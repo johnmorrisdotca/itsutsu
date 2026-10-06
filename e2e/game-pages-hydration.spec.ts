@@ -44,6 +44,12 @@ const READERS = [
   { where: "Vancouver, reading English", locale: "en-US", timezoneId: "America/Vancouver" },
 ] as const;
 
+/** What a reader's own language prints for a clock, an absent opponent and a finished game: the page reads in their language, not in English. */
+const SAYS = {
+  "ja-JP": { clock: /^\d+分\d{2}秒$/, away: "まで不在", ended: "終局" },
+  "en-US": { clock: /^\d+m \d{2}s$/, away: "Away until", ended: "ended" },
+} as const;
+
 type Reader = (typeof READERS)[number];
 type Made = { id: string; blackToken: string; whiteToken: string };
 
@@ -139,7 +145,7 @@ for (const reader of READERS) {
           },
         );
         // And once the browser has it, the countdown is counting.
-        await expect(page.getByTestId("deadline-remaining")).toHaveText(/^\d+m \d{2}s$/);
+        await expect(page.getByTestId("deadline-remaining")).toHaveText(SAYS[reader.locale].clock);
       } finally {
         await context.close();
         await request.post(`/api/games/${game.id}/resign`, { data: { token: game.whiteToken } });
@@ -175,7 +181,7 @@ for (const reader of READERS) {
           `/games/gomoku/match/${game.id}/seat/${game.blackToken}`,
           "shared-game",
           `a match against an away player for a reader in ${reader.where}`,
-          (at) => expect(at.getByTestId("opponent-line")).toContainText("Away until"),
+          (at) => expect(at.getByTestId("opponent-line")).toContainText(SAYS[reader.locale].away),
         );
       } finally {
         await context.close();
@@ -195,7 +201,7 @@ for (const reader of READERS) {
           `/games/gomoku/match/${game.id}`,
           "game-replay",
           `a finished game at its last move for a reader in ${reader.where}`,
-          (at) => expect(at.getByTestId("move-made-at")).toContainText("ended"),
+          (at) => expect(at.getByTestId("move-made-at")).toContainText(SAYS[reader.locale].ended),
         );
         /*
          * Agreeing is not enough: a page that printed UTC for ever would agree
