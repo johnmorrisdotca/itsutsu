@@ -12,11 +12,15 @@ import { BARE_HEAD_SCRIPT } from "@/components/layout/bare";
  * with every page, and copies what only the pages reach once for each group it
  * splits them into: eleven copies of the header's reads, and of the validation
  * library they parse with, 1.4 MB of the function every page is built into.
- * Every page draws the header, so its reads belong to the layout's share.
+ * Every page draws the header, so its reads belong to the layout's share, and
+ * so does the header itself: the pages import `SiteHeader` one by one, so the
+ * build copied it, with the account menu and the word list the menu reads, once
+ * for each group of pages, 0.7 MB more of the function (measured 2026-10-05).
  * `pageFunction.coverage.test.ts` holds the line; `pnpm functions:size` is
  * what measures it.
  */
 import "@/lib/history/headerCounts";
+import "@/components/layout/SiteHeader";
 import { TestModeBanner } from "@/components/layout/TestModeBanner";
 import { OfflineKeeper } from "@/components/offline/OfflineKeeper";
 import { currentLocale } from "@/lib/i18n/currentLocale";
@@ -36,11 +40,20 @@ const geistMono = Geist_Mono({
  * A mincho face for the Japanese display text. Mincho is what a go or renju
  * board's own lettering uses, and it carries the kanji at large sizes far
  * better than a sans fallback does.
+ *
+ * NOT PRELOADED. Zen Old Mincho is cut into about a hundred slices by the
+ * characters they hold, and the build treats every slice as a preload: with the
+ * default, each page named 74 font files (1.7 MB) in its head whatever the page
+ * said, and the build's font manifest listed 122 files for each of 68 pages,
+ * 1 MB of the function every page is built into. The browser fetches the slice
+ * a page's text needs when it draws that text, which is all a preload was
+ * ever for here. `pageFunction.coverage.test.ts` holds this.
  */
 const mincho = Zen_Old_Mincho({
   variable: "--font-mincho",
   weight: ["400", "700"],
   subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {

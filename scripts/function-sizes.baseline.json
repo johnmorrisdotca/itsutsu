@@ -2,7 +2,7 @@
   "functions": [
     {
       "name": "_not-found",
-      "mb": 34.1,
+      "mb": 37.2,
       "sample": [
         "_not-found",
         "about",
@@ -12,13 +12,13 @@
         "admin/player-journeys",
         "backlog",
         "champions",
-        "embed",
-        "famous"
+        "dice",
+        "embed"
       ]
     },
     {
       "name": "api/admin/members/[id]/claim",
-      "mb": 29.6,
+      "mb": 30.3,
       "sample": [
         "api/admin/members/[id]/claim",
         "api/admin/members/[id]/phrase",
@@ -34,7 +34,7 @@
     },
     {
       "name": "apple-icon.png.rsc",
-      "mb": 23.3,
+      "mb": 22.6,
       "sample": [
         "apple-icon.png",
         "favicon.ico",
@@ -46,14 +46,14 @@
     },
     {
       "name": "_global-error.rsc",
-      "mb": 22.6,
+      "mb": 21.9,
       "sample": [
         "_global-error"
       ]
     },
     {
       "name": "_middleware",
-      "mb": 1.7,
+      "mb": 1.8,
       "sample": [
         "_middleware"
       ]

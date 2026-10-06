@@ -1092,7 +1092,13 @@ deployment carries a copy.
   `dynamic(…, { ssr: false })`, as `yachtClient.tsx` is. And the build keeps
   one copy of what the root layout reaches but one for each group of pages of
   what only pages reach (eleven, for the header's reads), so `layout.tsx`
-  names `headerCounts.ts`; measure before moving anything every page uses.
+  names `headerCounts.ts` and `SiteHeader.tsx` (0.7 MB more, 2026-10-05);
+  measure before moving anything every page uses. **A font cut into slices is
+  never preloaded**: Zen Old Mincho's hundred slices were each a preload, 74
+  font files (1.7 MB) in every page's head and 1 MB of the build's font
+  manifest in every function, so any `next/font/google` face but Geist and
+  Geist Mono says `preload: false` (`pageFunction.coverage.test.ts`). Together
+  these took the pages' function from 38.9 MB to 37.2.
 
 ### Every Landed Commit Bumps The Version
 

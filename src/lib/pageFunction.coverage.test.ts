@@ -305,4 +305,44 @@ describe("the pages' server function", () => {
     const layout = files.get("src/app/layout.tsx");
     expect(layout?.reaches).toContain("src/lib/history/headerCounts.ts");
   });
+
+  /*
+   * AND THE HEADER ITSELF, for the same reason: pages import `SiteHeader` one
+   * at a time, so what only they reach was copied once for each group of
+   * pages (the account menu, the phrase list it reads, the level and inbox
+   * marks): 0.7 MB of the function, measured 2026-10-05.
+   */
+  it("has the root layout name the header", () => {
+    const layout = files.get("src/app/layout.tsx");
+    expect(layout?.reaches).toContain("src/components/layout/SiteHeader.tsx");
+  });
+
+  /*
+   * A FONT CUT INTO SLICES IS NOT PRELOADED. Zen Old Mincho comes in about a
+   * hundred slices by the characters each holds, and the build counts every
+   * one as a preload: each page named 74 font files (1.7 MB) in its head
+   * whichever it used, and the font manifest (`next-font-manifest`, two copies
+   * of it) listed 122 files for each of 68 pages, 1 MB of every function.
+   * Geist and Geist Mono are one file each and keep their preload; any other
+   * face from `next/font/google` says `preload: false`, and the browser
+   * fetches the slice its text needs.
+   */
+  it("preloads no font but the two single-file Geist faces", () => {
+    const ONE_FILE_FONTS = new Set(["Geist", "Geist_Mono"]);
+    const offenders: string[] = [];
+    let seen = 0;
+    for (const file of files.values()) {
+      const text = readFileSync(resolve(__dirname, "../..", file.path), "utf8");
+      const imported = /import\s*\{([^}]+)\}\s*from\s*["']next\/font\/google["']/.exec(text)?.[1];
+      if (imported === undefined) continue;
+      for (const name of imported.split(",").map((part) => part.trim()).filter((part) => part !== "")) {
+        seen += 1;
+        if (ONE_FILE_FONTS.has(name)) continue;
+        const call = new RegExp(`\\b${name}\\(\\{([^}]*)\\}\\)`).exec(text)?.[1] ?? "";
+        if (!/\bpreload:\s*false\b/.test(call)) offenders.push(`${file.path}: ${name} needs preload: false`);
+      }
+    }
+    expect(seen, "no next/font/google import found; this check has stopped reading").toBeGreaterThan(0);
+    expect(offenders).toEqual([]);
+  });
 });
