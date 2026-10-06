@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.526.0 — 2026-10-06 01:06 UTC
+- Tsunagi goes up to 30×30: Enormous, Immense and Colossal boards of 64 levels each, moved about with two fingers on a phone.
+
 ## 0.525.1 — 2026-10-06 00:44 UTC
 - Two checks on the email stop link no longer fail at random about once in a thousand runs, which had held a release.
 
