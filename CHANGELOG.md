@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.530.5 — 2026-10-06 09:22 UTC
+- Loop, Cross Sums and Regions are called that everywhere in the code behind them too, on Kazu 2.0.0; Karakuri is brought to 0.1.1.
+
 ## 0.530.4 — 2026-10-06 04:34 UTC
 - Very big boards respond faster: taking a tile off Mahjong's Palace no longer makes the browser restyle the whole page.
 
