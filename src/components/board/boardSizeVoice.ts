@@ -1,4 +1,6 @@
-import { BOARD_SIZE_NUMERAL_SCALE, boardSizeWords } from "./Board.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+
+import { BOARD_SIZE_NUMERAL_SCALE } from "./Board.constants";
 import type { BoardSizeMarkWords } from "./board.types";
 import { longBoardOf } from "./boardShape";
 
@@ -18,11 +20,13 @@ import { longBoardOf } from "./boardShape";
 export function boardSizeMarkVoice(
   size: number,
   words: BoardSizeMarkWords,
+  say: Speaker = speaker("en"),
 ): { "aria-hidden": "true" } | { role: "img"; "aria-label": string } {
   if (words === "beside") return { "aria-hidden": "true" };
   // A long board is said by its two sides, "5 by 7 board" (`boardShape.ts`).
   const long = longBoardOf(size);
-  return { role: "img", "aria-label": long === null ? boardSizeWords(size) : `${long.width} by ${long.height} board` };
+  const [width, height] = long === null ? [size, size] : [long.width, long.height];
+  return { role: "img", "aria-label": say.say("boardlook.sizeBy", { width: String(width), height: String(height) }) };
 }
 
 /**

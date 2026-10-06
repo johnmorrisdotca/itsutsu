@@ -17,8 +17,6 @@ import type {
  */
 export const BOARD_THEMES = {
   kaya: {
-    label: "Kaya",
-    kanji: "榧",
     surface:
       "radial-gradient(120% 90% at 20% 0%, #f0cf95 0%, #e2ba7a 45%, #d3a662 100%)",
     frame: "#8a5a24",
@@ -30,8 +28,6 @@ export const BOARD_THEMES = {
     dark: false,
   },
   shinkaya: {
-    label: "Shin-kaya",
-    kanji: "新榧",
     surface:
       "radial-gradient(120% 90% at 25% 0%, #a9743f 0%, #8d5c30 50%, #714825 100%)",
     frame: "#40260f",
@@ -47,8 +43,6 @@ export const BOARD_THEMES = {
     dark: true,
   },
   washi: {
-    label: "Washi",
-    kanji: "和紙",
     surface:
       "radial-gradient(130% 100% at 15% 0%, #fbf7ee 0%, #f2ebdc 55%, #e7dcc6 100%)",
     frame: "#c8bda4",
@@ -60,8 +54,6 @@ export const BOARD_THEMES = {
     dark: false,
   },
   sumi: {
-    label: "Sumi",
-    kanji: "墨",
     surface:
       "radial-gradient(130% 100% at 20% 0%, #2c2f36 0%, #1e2127 55%, #14161b 100%)",
     frame: "#0b0d10",
@@ -74,8 +66,6 @@ export const BOARD_THEMES = {
     dark: true,
   },
   matcha: {
-    label: "Matcha",
-    kanji: "抹茶",
     surface:
       "radial-gradient(130% 100% at 20% 0%, #9cb87a 0%, #82a05f 55%, #6a884a 100%)",
     frame: "#3f5228",
@@ -104,8 +94,6 @@ export const BOARD_THEMES = {
  */
 export const FELTS = {
   green: {
-    label: "Green",
-    kanji: "緑",
     surface: "radial-gradient(130% 100% at 20% 0%, #2f9a5a 0%, #1f7f45 55%, #16663a 100%)",
     frame: "#0c3d22",
     playSquare: "rgba(0, 0, 0, 0.18)",
@@ -116,8 +104,6 @@ export const FELTS = {
     dark: true,
   },
   blue: {
-    label: "Blue",
-    kanji: "青",
     surface: "radial-gradient(130% 100% at 20% 0%, #3a7fc4 0%, #2865a6 55%, #1d4f86 100%)",
     frame: "#0f2c4d",
     playSquare: "rgba(0, 0, 0, 0.18)",
@@ -128,8 +114,6 @@ export const FELTS = {
     dark: true,
   },
   red: {
-    label: "Red",
-    kanji: "赤",
     surface: "radial-gradient(130% 100% at 20% 0%, #c0473f 0%, #a3342e 55%, #862722 100%)",
     frame: "#4a1210",
     playSquare: "rgba(0, 0, 0, 0.18)",
@@ -140,8 +124,6 @@ export const FELTS = {
     dark: true,
   },
   black: {
-    label: "Black",
-    kanji: "黒",
     surface: "radial-gradient(130% 100% at 20% 0%, #3a3d42 0%, #2a2c30 55%, #1d1f22 100%)",
     frame: "#0b0c0e",
     playSquare: "rgba(255, 255, 255, 0.10)",
@@ -163,40 +145,30 @@ export const FELT_LIST = ["green", "blue", "red", "black", "wood"] as const;
  */
 export const STONE_SETS = {
   classic: {
-    label: "Slate & shell",
-    kanji: "那智黒",
     black: "radial-gradient(circle at 35% 30%, #6b6b6b 0%, #1a1a1a 45%, #000 100%)",
     white: "radial-gradient(circle at 35% 30%, #ffffff 0%, #ececec 45%, #bfbfbf 100%)",
     blackInk: "#ffffff",
     whiteInk: "#1a1a1a",
   },
   jade: {
-    label: "Jade & bone",
-    kanji: "翡翠",
     black: "radial-gradient(circle at 35% 30%, #3f7d63 0%, #14452f 45%, #06251a 100%)",
     white: "radial-gradient(circle at 35% 30%, #fffdf5 0%, #f2ead6 45%, #d8ccae 100%)",
     blackInk: "#eafff4",
     whiteInk: "#1f3a2c",
   },
   sakura: {
-    label: "Plum & blossom",
-    kanji: "桜",
     black: "radial-gradient(circle at 35% 30%, #a03a6b 0%, #5d1435 45%, #33071c 100%)",
     white: "radial-gradient(circle at 35% 30%, #fff5f8 0%, #ffe1ea 45%, #f3bfd0 100%)",
     blackInk: "#ffe9f2",
     whiteInk: "#5d1435",
   },
   indigo: {
-    label: "Indigo & rice",
-    kanji: "藍",
     black: "radial-gradient(circle at 35% 30%, #3b5f9e 0%, #14275a 45%, #081436 100%)",
     white: "radial-gradient(circle at 35% 30%, #fdfdfb 0%, #eef0e8 45%, #cfd3c4 100%)",
     blackInk: "#e6edff",
     whiteInk: "#14275a",
   },
   neon: {
-    label: "Neon",
-    kanji: "電光",
     black: "radial-gradient(circle at 35% 30%, #4b2fd0 0%, #2a1080 45%, #14063f 100%)",
     white: "radial-gradient(circle at 35% 30%, #b6fff4 0%, #5eead4 45%, #22c9b0 100%)",
     blackInk: "#c9b8ff",
@@ -211,11 +183,7 @@ export const STONE_SETS = {
  * house style; the squares view is its mirror. `auto` is the stored key for
  * the first, kept so a choice already saved still reads.
  */
-export const GRID_STYLES: Record<GridStyle, { label: string; kanji: string; hint: string }> = {
-  auto: { label: "Traditional view", kanji: "伝統", hint: "Each game drawn the way it is played: gomoku and go on the lines, tic-tac-toe and Reversi in the squares." },
-  lines: { label: "Itsutsu view", kanji: "碁盤", hint: "Every game on the crossings, as on a go board — the house style, tic-tac-toe included." },
-  cells: { label: "Squares view", kanji: "升目", hint: "Every game inside the squares, as on a chessboard — gomoku included." },
-};
+export const GRID_STYLES = { auto: "auto", lines: "lines", cells: "cells" } as const satisfies Record<GridStyle, GridStyle>;
 
 export const DEFAULT_APPEARANCE: Appearance = {
   boardTheme: "kaya",
@@ -575,15 +543,6 @@ export const GUIDE_COLOURS: Record<"light" | "dark", GuideColours> = {
   dark: { mark: "#fde68a", veil: "rgba(0, 0, 0, 0.45)" },
 };
 
-/** The guide in words: the rule on screen, and the choices by name for a screen reader. */
-export const TURN_GUIDE_COPY = {
-  capture: "You must capture.",
-  mostCaptured: "You must take the most pieces.",
-  onlyMoves: (count: number, listed: string) => `${count === 1 ? "Only one move" : `Only ${count} moves`}: ${listed}.`,
-  piecesThatMayMove: (count: number, listed: string) =>
-    `${count === 1 ? "The piece that may move" : "The pieces that may move"}: ${listed}.`,
-};
-
 /**
  * THE BOARD-SIZE MARK — a little board at the density its number means, drawn
  * by `BoardSizeMark` and nowhere else.
@@ -626,9 +585,6 @@ export const BOARD_SIZE_NUMERAL_CLASS =
  * a label on the picture rather than the number being the picture.
  */
 export const BOARD_SIZE_NUMERAL_SCALE = 0.46;
-
-/** The size in words, for a mark with nothing beside it saying so. */
-export const boardSizeWords = (size: number) => `${size} by ${size} board`;
 
 /** Which shape is cut out of the sheared array — the one word the fit, the tiles and the strips all read. */
 export type LatticeShape = "rhombus" | "hexagon" | "star";

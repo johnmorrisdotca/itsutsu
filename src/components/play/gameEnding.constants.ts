@@ -1,3 +1,5 @@
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+
 /**
  * THE WORDS FOR ENDING A GAME AND STARTING ANOTHER, one set for every kind of
  * play (`docs/plans/game-controls/README.md`).
@@ -13,36 +15,39 @@
  * - **Continue** takes the game in progress up again; **Resume** is only for
  *   un-pausing a clock.
  */
-const GAME_ENDING_COPY_END = "The game ended where it stood, with nobody the winner.";
-
-export const GAME_ENDING_COPY = {
-  resign: "Resign",
-  resignAsk: "Resign this game? The other side wins.",
+export const gameEndingCopy = (say: Speaker) => ({
+  resign: say.say("ending.resign"),
+  resignAsk: say.say("ending.resignAsk"),
   /** At a table round one device the player to move resigns: the other seat wins at two, and the table ends with nobody the winner at more. */
-  resignFor: (name: string, seats: number) => (seats === 2 ? `Resign this game for ${name}? The other player wins.` : `Resign this game for ${name}? The table ends here, with nobody the winner.`),
-  resigned: (name: string) => `${name} resigned.`,
+  resignFor: (name: string, seats: number) => say.say(seats === 2 ? "ending.resignForTwo" : "ending.resignForMany", { name }),
+  resigned: (name: string) => say.say("ending.resigned", { name }),
   /** How a table ended by a resignation reads where its result goes. */
-  resignedResult: (name: string, winners: readonly string[]) => (winners.length === 0 ? `${name} resigned. ${GAME_ENDING_COPY_END}` : `${name} resigned. ${winners.join(" and ")} wins.`),
-  giveUp: "Give up",
-  giveUpAsk: "Give up this game? It ends here, unsolved.",
-  newGame: "New game",
-  newGameAsk: "Start a new game? The one in progress ends here and is not kept.",
-  newGameYes: "Start a new game",
-  keepPlaying: "Keep playing",
+  resignedResult: (name: string, winners: readonly string[]) =>
+    winners.length === 0 ? say.say("ending.resignedNobody", { name }) : say.say("ending.resignedWinners", { name, winners: say.list(winners) }),
+  giveUp: say.say("ending.giveUp"),
+  giveUpAsk: say.say("ending.giveUpAsk"),
+  newGame: say.say("ending.newGame"),
+  newGameAsk: say.say("ending.newGameAsk"),
+  newGameYes: say.say("ending.newGameYes"),
+  keepPlaying: say.say("ending.keepPlaying"),
   /** On the link to the set-up screen from a game that stays kept where it is. */
-  newGameKeeps: "Starts a new game. This one stays where it is, in My games.",
+  newGameKeeps: say.say("ending.newGameKeeps"),
   /** On a front door, beside Continue. */
-  continue: "Continue →",
-  continueTo: (what: string) => `Continue ${what} →`,
+  continue: say.say("ending.continue"),
+  continueTo: (what: string) => say.say("ending.continueTo", { what }),
   /** Under New game on a front door, where the game in progress would be ended. */
-  doorEnds: "New game ends the one in progress here.",
+  doorEnds: say.say("ending.doorEnds"),
   /** Under New game on a front door, where the game in progress is kept. */
-  doorKeeps: "New game leaves the one in progress where it is.",
+  doorKeeps: say.say("ending.doorKeeps"),
   /** Under a live game's Continue, naming the member's other games of it, which wait in My games. */
-  othersGoing: (others: number, more: boolean, game: string) => `${others}${more ? "+" : ""} other ${game} ${others === 1 && !more ? "game is" : "games are"} going in My games`,
-  doorAsk: "Start a new game? The one in progress ends here and is not kept.",
-  doorKeep: "Keep it",
-} as const;
+  othersGoing: (others: number, more: boolean, game: string) =>
+    say.say(say.form("ending.othersGoing", more ? others + 1 : others), { others: say.number(others), plus: more ? "+" : "", game }),
+  doorAsk: say.say("ending.doorAsk"),
+  doorKeep: say.say("ending.doorKeep"),
+});
+
+/** The same words in English, for the tables that have not been given a speaker yet. */
+export const GAME_ENDING_COPY = gameEndingCopy(speaker("en"));
 
 /** The two ways a game ends from inside it. */
 export const ENDINGS = { resign: "resign", giveUp: "giveUp" } as const;

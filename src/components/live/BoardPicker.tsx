@@ -1,6 +1,7 @@
 "use client";
 
 import { BoardSizeMark } from "@/components/board/BoardSizeMark";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { OneName } from "@/components/i18n/OneName";
 import { BOARD_SIZE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 
@@ -36,7 +37,7 @@ export function BoardPicker({
   disabled = false,
   beside = false,
   names = BOARD_SIZE_DISPLAY,
-  legend = "Board",
+  legend,
 }: {
   /** The chosen board, as the length of one side. */
   value: number;
@@ -82,6 +83,7 @@ export function BoardPicker({
    * the same width, as one of four — see below, and
    * `boardSizeMark.coverage.test.ts`, which holds what is inside it.
    */
+  const say = useSpeaker();
   const only = sizes.length === 1;
   return (
     <fieldset
@@ -89,7 +91,7 @@ export function BoardPicker({
       data-testid="shared-rules-size"
       data-beside={beside ? "true" : "false"}
     >
-      <legend className="mb-0.5 text-sm text-ink-soft">{legend}</legend>
+      <legend className="mb-0.5 text-sm text-ink-soft">{legend ?? say.say("live.boardLabel")}</legend>
       <div className={beside ? PICK_BLOCKS_ASIDE : PICK_BLOCKS}>
         {sizes.map((size) => {
           const copy = names[size];

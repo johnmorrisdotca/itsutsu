@@ -14,6 +14,8 @@ import Link from "@/components/ui/Link";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { gameCopyFor, type GameKey } from "@/lib/catalogue/gameKeys";
+import { titleWithKanji } from "@/components/games/pageTitles";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { gamePath, partyKindFor, variantFor } from "@/lib/gomoku/slugs";
 import { tableState } from "@/lib/history/everyGame";
 import { viewHref } from "@/lib/history/myGamesViews";
@@ -25,7 +27,9 @@ import { playerPath } from "@/lib/rating/playerKey";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { KEPT_GAME_KEYS } from "@/lib/party/kept/keptReport";
 
-export const metadata = { title: "From your history 履歴" };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "gamepages.titleFromHistory", "履歴") };
+}
 export const dynamic = "force-dynamic";
 
 /**

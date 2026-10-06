@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useState } from "react";
 
 import { beginGame, type BeginAction } from "./beginGame";
@@ -52,6 +54,7 @@ export function useSetUpPress({
   /** Forget the game this address made, so a deliberate second one is still possible. */
   forget: () => void;
 } {
+  const say = useSpeaker();
   const router = useRouter();
   const [made, setMade] = useGameBegunHere(key);
   /*
@@ -77,7 +80,7 @@ export function useSetUpPress({
        * because a press that named a person must not do something else
        * without saying so. `seatTried` is what remembers the first press.
        */
-      const landed = await beginGame({ begin, variant, taking: begin.kind === "sit" && !seatTried });
+      const landed = await beginGame({ begin, variant, taking: begin.kind === "sit" && !seatTried, say });
       if (typeof landed !== "string") {
         if (begin.kind === "sit") setSeatTried(true);
         setTrouble(landed.error);

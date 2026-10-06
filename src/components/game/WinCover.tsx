@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 import { RESULT_CARD_TONE } from "@/components/history/resultCard.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, TAP_HEIGHT } from "@/components/ui/ui.constants";
 
-import { WIN_CALM_MS, WIN_COVER_COPY, WIN_FLASH_MS } from "./winCover.constants";
+import { WIN_CALM_MS, WIN_FLASH_MS, winCoverCopy } from "./winCover.constants";
 import type { WinNews } from "./winCover.types";
 import { ResultMark } from "./ResultMark";
 import { markOfOutcome } from "./resultMarks";
@@ -34,6 +35,7 @@ import { markOfOutcome } from "./resultMarks";
  * rather than cutting it off.
  */
 export function WinCover({ news, onClose }: { news: WinNews; onClose: () => void }) {
+  const say = useSpeaker();
   const card = useRef<HTMLDivElement | null>(null);
   const heading = useId();
   const tone = RESULT_CARD_TONE[news.tone];
@@ -125,7 +127,7 @@ export function WinCover({ news, onClose }: { news: WinNews; onClose: () => void
             </button>
           )}
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT}`} onClick={onClose} data-testid="win-cover-see-board">
-            {WIN_COVER_COPY.seeBoard}
+            {winCoverCopy(say).seeBoard}
           </button>
         </div>
       </div>

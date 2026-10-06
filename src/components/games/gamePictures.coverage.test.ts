@@ -110,12 +110,12 @@ const NOT_A_LIST: Record<string, { line: string; why: string }[]> = {
   ],
   "src/app/games/[slug]/standings/page.tsx": [
     {
-      line: "{gameCopyFor(game).label}",
+      line: "{gameCopyFor(game, say.locale).label}",
       why: 'a caption-size sentence under the ladder: "Also in Captures: Ninuki-renju, Sannuki-renju"',
     },
   ],
   "src/app/games/[slug]/play/page.tsx": [
-    { line: "{gameCopyFor(game).label}", why: 'the footer sentence "Also in Captures: …" under a board' },
+    { line: "{gameCopyFor(game, say.locale).label}", why: 'the footer sentence "Also in Captures: …" under a board' },
   ],
   "src/app/games/[slug]/match/[id]/FiledMatchPage.tsx": [
     {
@@ -124,10 +124,10 @@ const NOT_A_LIST: Record<string, { line: string; why: string }[]> = {
     },
   ],
   "src/app/games/[slug]/match/[id]/RefusedOfferPage.tsx": [
-    { line: "A game of <GameName variant={game.variant} />", why: "a sentence saying what was offered" },
+    { line: "game: <GameName variant={game.variant} />,", why: "a sentence saying what was offered, the name woven into it" },
   ],
   "src/app/games/[slug]/family/page.tsx": [
-    { line: "<GameName variant={variant} />.", why: 'a sentence: "7 games in this family, including Gomoku."' },
+    { line: "{weave(say.say(\"gamepages.inThisFamily\", { count: say.count(\"count.gameKind\", family.games.length) }), { game: <GameName variant={variant} /> })}", why: 'a sentence: "7 games in this family, including Gomoku."' },
   ],
   "src/components/about/GradeLadderGraph.tsx": [
     {

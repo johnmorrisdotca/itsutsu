@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { snapshotBoard, type BoardSnapshot } from "@/lib/record/boardSnapshot";
 import { boardWallpaperSvg, boardWallpaperTitle } from "@/lib/record/boardWallpaper";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BOARD_WALLPAPER_COPY, MOSAIC_SHAPES } from "@/lib/record/mosaic.constants";
 
 import { MosaicPanel } from "./MosaicPanel";
@@ -32,12 +33,13 @@ export const WALLPAPER_BOARD = "[data-wallpaper-board]";
  * nothing is sent anywhere and nothing is stored.
  */
 export function BoardWallpaper({ id, name, details, fileName }: { id: string; name: string; details: () => string[]; fileName: string }) {
-  const alt = BOARD_WALLPAPER_COPY.alt(name);
+  const say = useSpeaker();
+  const alt = say.say("mosaic.wallpaperAlt", { name });
   return (
     <MosaicWindow
       id={`wallpaper-${id}`}
-      label={BOARD_WALLPAPER_COPY.openLabel}
-      heading={BOARD_WALLPAPER_COPY.openLabel}
+      label={say.say("mosaic.heading")}
+      heading={say.say("mosaic.heading")}
       kanji={BOARD_WALLPAPER_COPY.kanji}
       alt={alt}
       name={() => name}
@@ -50,6 +52,7 @@ export function BoardWallpaper({ id, name, details, fileName }: { id: string; na
 
 /** The picture, taken from the page once the window is open (it mounts only then). */
 function BoardWallpaperPanel({ id, name, details, fileName, alt }: { id: string; name: string; details: () => string[]; fileName: string; alt: string }) {
+  const say = useSpeaker();
   const [taken, setTaken] = useState<{ state: "drawing" } | { state: "ready"; board: BoardSnapshot } | { state: "failed" }>({ state: "drawing" });
   // The words read once, as the window opens: the day is this reader's, and nothing about the game changes under an open window.
   const [title] = useState(() => boardWallpaperTitle(name, details()));
@@ -79,8 +82,8 @@ function BoardWallpaperPanel({ id, name, details, fileName, alt }: { id: string;
 
   return (
     <div className="flex flex-col gap-3" data-testid="board-wallpaper" data-state={taken.state}>
-      {taken.state === "drawing" ? <p className="text-center text-sm text-muted">{BOARD_WALLPAPER_COPY.drawing}</p> : null}
-      {taken.state === "failed" ? <p className="text-center text-sm text-shu">{BOARD_WALLPAPER_COPY.failed}</p> : null}
+      {taken.state === "drawing" ? <p className="text-center text-sm text-muted">{say.say("mosaic.wallpaperDrawing")}</p> : null}
+      {taken.state === "failed" ? <p className="text-center text-sm text-shu">{say.say("mosaic.wallpaperFailed")}</p> : null}
       {taken.state === "ready" ? (
         <MosaicPanel
           id={`wallpaper-${id}`}

@@ -5,9 +5,10 @@ import { useState } from "react";
 import { STONE_SETS } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { PieceColourPicker } from "@/components/board/PieceColourPicker";
-import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
-import { PIECE_COLOURS, type PieceColour } from "@/lib/pieces/pieceColours";
+import { pieceColourName, type PieceColour } from "@/lib/pieces/pieceColours";
 import { refusalWords, seatColourRefusal, type SeatColours } from "@/lib/pieces/seatColours";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
@@ -53,7 +54,7 @@ export function SeatColourChooser({
   const say = useSpeaker();
   const [problem, setProblem] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const side = STONE_DISPLAY[seat];
+  const side = stoneName(say, seat);
   const set = STONE_SETS[appearance.stoneSet];
 
   async function choose(colour: PieceColour | null) {
@@ -67,7 +68,7 @@ export function SeatColourChooser({
       });
       const answer = (await response.json().catch(() => null)) as { colours?: SeatColours; error?: string } | null;
       if (!response.ok || answer?.colours === undefined) {
-        setProblem(answer?.error ?? "That colour could not be kept. Try again.");
+        setProblem(answer?.error ?? say.say("live.seatColourFailed"));
         return;
       }
       onChanged(answer.colours);
@@ -88,25 +89,26 @@ export function SeatColourChooser({
       <p className="text-sm">
         {first ? (
           <>
-            <span className="font-semibold">Your pieces</span>{" "}
-            <span className="font-mincho text-muted">色</span>
-            {" — "}
+            <span className="font-semibold">{say.say("live.yourPieces")}</span>{" "}
+            {say.pairsWithKanji ? <span className="font-mincho text-muted">色</span> : null}
+            {say.pairsWithKanji ? " — " : "："}
             {chosen === null
-              ? `choose a colour for your ${side.label.toLowerCase()} stones before your first move, or keep them as they are.`
-              : `${PIECE_COLOURS[chosen].label} for ${side.label}. Change it now or any time.`}
+              ? say.say("live.seatColourFirst", { colour: side.toLowerCase() })
+              : say.say("live.seatColourChosen", { name: pieceColourName(say, chosen), colour: side })}
           </>
         ) : (
           <span className="text-muted">
-            Your pieces <span className="font-mincho">色</span> · {side.label}
-            {chosen === null ? "" : `, ${PIECE_COLOURS[chosen].label}`}
+            {chosen === null
+              ? say.say("live.seatColourLine", { colour: side })
+              : say.say("live.seatColourLineNamed", { colour: side, name: pieceColourName(say, chosen) })}
           </span>
         )}
       </p>
       <PieceColourPicker
         value={chosen}
         onChoose={(colour) => void choose(colour)}
-        usual={{ face: seat === "black" ? set.black : set.white, name: `${side.label} stones, as usual` }}
-        label={`Your colour, playing ${side.label}`}
+        usual={{ face: seat === "black" ? set.black : set.white, name: say.say("live.seatColourUsual", { colour: side }) }}
+        label={say.say("live.seatColourPlaying", { colour: side })}
         unavailable={(colour) => {
           const refusal = seatColourRefusal(seat, colour, colours);
           return refusal === null ? null : refusalWords(refusal, say);

@@ -1,3 +1,7 @@
+"use client";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import { turnGuideWords } from "./turnGuide";
 import type { TurnGuideNoteProps } from "./board.types";
 
@@ -11,7 +15,8 @@ import type { TurnGuideNoteProps } from "./board.types";
  * for a screen reader, since a sighted player has the marking on the board.
  */
 export function TurnGuideNote({ guide, size }: TurnGuideNoteProps) {
-  const words = guide === null ? null : turnGuideWords(guide, size);
+  const say = useSpeaker();
+  const words = guide === null ? null : turnGuideWords(guide, size, say);
   return (
     <p
       aria-live="polite"

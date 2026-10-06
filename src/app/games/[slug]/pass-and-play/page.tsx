@@ -15,6 +15,7 @@ import type { PartyTable } from "@/components/party/party.types";
 import { appearanceFor } from "@/lib/auth/members";
 import { currentReader } from "@/lib/auth/currentReader";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
 import { gamePath, partyKindFor, variantFor } from "@/lib/gomoku/slugs";
 import { onlineOfferFor } from "@/lib/party/online/server/onlineOffer";
@@ -34,7 +35,8 @@ function tableAt(slug: string): { key: GameKey; table: PartyTable } | null {
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/pass-and-play">): Promise<Metadata> {
   const found = tableAt((await params).slug);
-  return { title: found === null ? "Games" : headingOf(gameCopyFor(found.key).label, found.table.title) };
+  const say = await currentSpeaker();
+  return { title: found === null ? say.say("gamepages.games") : headingOf(gameCopyFor(found.key, say.locale).label, found.table.title) };
 }
 
 /** "Chinese Checkers, pass and play"; "Pair Go" and "Block Five for four", which name their game already. */

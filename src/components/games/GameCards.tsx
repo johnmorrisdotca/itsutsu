@@ -1,6 +1,7 @@
 "use client";
 
 import { ReadyOffline } from "@/components/offline/ReadyOffline";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
 import Link from "@/components/ui/Link";
 
@@ -16,7 +17,8 @@ import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, STRETCHED_CARD, STRETCHED_LINK } from "@/components/ui/ui.constants";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
-import { CARD_LETTERS, GAME_CARD_KINDS } from "./games.constants";
+import { GAME_CARD_KINDS } from "./cardKinds.constants";
+import { CARD_LETTERS } from "./games.constants";
 import type { GameCard } from "./games.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { ViewTabs } from "@/components/ui/ViewTabs";
@@ -52,6 +54,7 @@ export function GameCards({
   stats: CatalogueStats;
   signedIn: boolean;
 }) {
+  const say = useSpeaker();
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -79,9 +82,9 @@ export function GameCards({
       {/* Both are choices of what the page lists, so both are tabs (`ViewTabs`); the hydration mark stays on the letters' box, which the specs wait on. */}
       <div data-testid="letter-filter" {...readyMark(useHydrated())}>
         <ViewTabs
-          label="Games by first letter"
+          label={say.say("gamepages.letterGroup")}
           items={[
-            { key: "all", onClick: () => choose(""), current: chosen === "", testId: "letter-All", label: "All" },
+            { key: "all", onClick: () => choose(""), current: chosen === "", testId: "letter-All", label: say.say("gamepages.all") },
             ...CARD_LETTERS.map((letter) => ({
               key: letter,
               onClick: () => choose(letter),
@@ -95,10 +98,10 @@ export function GameCards({
       </div>
 
       <ViewTabs
-        label="Games by what wins"
+        label={say.say("gamepages.kindGroup")}
         testId="kind-filter"
         items={[
-          { key: "any", onClick: () => chooseKind(""), current: kind === "", testId: "letter-Any", label: "Any" },
+          { key: "any", onClick: () => chooseKind(""), current: kind === "", testId: "letter-Any", label: say.say("gamepages.any") },
           ...GAME_CARD_KINDS.map((option) => ({
             key: option.kind,
             onClick: () => chooseKind(option.kind),
@@ -111,7 +114,7 @@ export function GameCards({
       />
 
       {shown.length === 0 ? (
-        <p className="text-sm text-muted">No game matches.</p>
+        <p className="text-sm text-muted">{say.say("gamepages.noMatch")}</p>
       ) : null}
 
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="game-cards">
@@ -143,7 +146,7 @@ export function GameCards({
               <span className="text-xs text-muted">{copy.tagline}</span>
               <ReadyOffline game={copy.variant} />
               {copy.inspiredBy !== undefined ? (
-                <span className="text-[0.7rem] text-muted italic">Inspired by {copy.inspiredBy}</span>
+                <span className="text-[0.7rem] text-muted italic">{say.say("gamescreen.inspiredBy", { name: copy.inspiredBy })}</span>
               ) : null}
               {isPuzzleKind(copy.variant) ? (
                 <PuzzleLine kind={copy.variant} signedIn={signedIn} />

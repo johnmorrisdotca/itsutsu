@@ -1,8 +1,10 @@
 import { writeTurned } from "@/components/board/turned";
-import { GAME_COPY } from "@/components/game/game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { gameCopy } from "@/components/game/game.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
 import { Button } from "@/components/ui/Controls";
 import { rulesFor } from "@/lib/gomoku/engine";
-import { GAME_STATUS, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, STONES, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 
 import type { ColourChooserProps, GoPassProps, RuleNotesProps, TurnBoardProps } from "./sharedGame.types";
 
@@ -17,12 +19,14 @@ import type { ColourChooserProps, GoPassProps, RuleNotesProps, TurnBoardProps } 
 
 /** What the rules say about the position that the stones alone do not. */
 export function RuleNotes({ state }: RuleNotesProps) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   return (
     <>
       {VARIANT_SPECS[state.settings.variant].captures ? (
         <p className="text-xs text-muted" data-testid="shared-captures">
-          {GAME_COPY.captures.label} · {STONE_DISPLAY.black.label}{" "}
-          {state.captures.black} · {STONE_DISPLAY.white.label}{" "}
+          {GAME_COPY.captures.label} · {stoneName(say, "black")}{" "}
+          {state.captures.black} · {stoneName(say, "white")}{" "}
           {state.captures.white} ·{" "}
           {GAME_COPY.capturesToWin(state.settings.capturesToWin)}
         </p>
@@ -30,7 +34,7 @@ export function RuleNotes({ state }: RuleNotesProps) {
       {state.status === GAME_STATUS.playing &&
       rulesFor(state.settings, state.toPlay).forbidden.length > 0 ? (
         <p className="text-xs text-muted">
-          {STONE_DISPLAY[state.toPlay].label} may not play the points marked ✕.
+          {say.say("live.mayNotPlay", { colour: stoneName(say, state.toPlay) })}
         </p>
       ) : null}
     </>
@@ -38,6 +42,7 @@ export function RuleNotes({ state }: RuleNotesProps) {
 }
 
 export function TurnBoardButton({ gameId, turned }: TurnBoardProps) {
+  const say = useSpeaker();
   return (
     <>
       {/*
@@ -52,11 +57,11 @@ export function TurnBoardButton({ gameId, turned }: TurnBoardProps) {
           onClick={() => writeTurned(gameId, !turned)}
           className="rounded-full border border-rule bg-ivory/70 px-3 py-1 text-xs text-ink-soft transition-colors hover:bg-ivory"
           aria-pressed={turned}
-          title="Your own view of this board. The other player's board does not move."
+          title={say.say("live.ownView")}
           data-testid="turn-board"
         >
-          {turned ? "Flip the board back" : "Flip the board"}{" "}
-          <span className="font-mincho">盤反転</span>
+          {say.say(turned ? "replay.flipBack" : "replay.flip")}
+          {say.pairsWithKanji ? <> <span className="font-mincho">盤反転</span></> : null}
         </button>
       </div>
     </>
@@ -64,6 +69,8 @@ export function TurnBoardButton({ gameId, turned }: TurnBoardProps) {
 }
 
 export function ColourChooser({ placing, onChoose }: ColourChooserProps) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   return (
     <div
       className="flex flex-wrap items-center gap-2"
@@ -76,7 +83,7 @@ export function ColourChooser({ placing, onChoose }: ColourChooserProps) {
           onClick={() => onChoose(stone)}
           strong={placing === stone}
         >
-          {STONE_DISPLAY[stone].label}
+          {stoneName(say, stone)}
         </Button>
       ))}
     </div>
@@ -84,6 +91,7 @@ export function ColourChooser({ placing, onChoose }: ColourChooserProps) {
 }
 
 export function GoPassButton({ disabled, onPass }: GoPassProps) {
+  const GAME_COPY = gameCopy(useSpeaker());
   return (
     <div className="flex flex-wrap gap-2">
       <Button

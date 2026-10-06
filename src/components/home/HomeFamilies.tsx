@@ -3,7 +3,8 @@ import Link from "@/components/ui/Link";
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, SECTION_HEADING, STRETCHED_CARD } from "@/components/ui/ui.constants";
-import { GAME_FAMILIES, familyCountWords, familyPagePath } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, familyPagePath } from "@/lib/gomoku/families";
+import { familyCountWords } from "@/lib/gomoku/familyWords";
 import { familyBlurb } from "@/lib/gomoku/familyCopy";
 import { currentLocale } from "@/lib/i18n/currentLocale";
 

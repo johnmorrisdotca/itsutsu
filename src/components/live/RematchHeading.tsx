@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
 
 import { useRematchHeading } from "./setUpHeadingState";
@@ -14,13 +15,13 @@ import type { RematchSwapProps, RematchTitleProps } from "./setUp.types";
  */
 export function RematchTitle({ id, againName, plain, initial }: RematchTitleProps) {
   const state = useRematchHeading(id, initial);
-  const title = rematchTitle({ againName, state, plain });
+  const title = rematchTitle({ againName, state, plain, say: useSpeaker() });
   return <Paired en={title.en} kanji={title.kanji} kanjiClassName="text-lg font-normal opacity-70" />;
 }
 
 export function RematchSwap({ id, colour, initial }: RematchSwapProps) {
   const state = useRematchHeading(id, initial);
-  const note = swapNote(state, colour);
+  const note = swapNote(state, colour, useSpeaker());
   if (note === null) return null;
   return (
     <>

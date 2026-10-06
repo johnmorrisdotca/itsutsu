@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 // The page's own width: a board opened on its own is as wide as the page it came from.
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PAGE_WIDTH } from "@/components/layout/pageWidth.constants";
 import { FOCUS_RING } from "@/components/ui/ui.constants";
 
@@ -35,7 +36,7 @@ import type { BoardStory } from "./board.types";
 export function BoardFocus({
   children,
   story,
-  label = "this board",
+  label,
   layout = "",
 }: {
   children: ReactNode;
@@ -45,6 +46,8 @@ export function BoardFocus({
   /** The box's own layout while it sits in the page, for a parent that lays its children out ("flex flex-col gap-2"). */
   layout?: string;
 }) {
+  const say = useSpeaker();
+  const board = label ?? say.say("boardlook.focusThis");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -78,14 +81,14 @@ export function BoardFocus({
         className={open ? `relative mx-auto my-auto flex w-full ${PAGE_WIDTH} flex-col gap-3 rounded-xl bg-paper p-3 shadow-2xl sm:p-5` : "contents"}
         role={open ? "dialog" : undefined}
         aria-modal={open ? true : undefined}
-        aria-label={open ? `${label}, on its own` : undefined}
+        aria-label={open ? say.say("boardlook.focusDialog", { board }) : undefined}
       >
         <button
           type="button"
           onClick={() => setOpen(!open)}
           aria-pressed={open}
-          aria-label={open ? "Close, back to the page" : `Open ${label} on its own`}
-          title={open ? "Close (Esc)" : `Open ${label} on its own`}
+          aria-label={open ? say.say("boardlook.focusCloseAria") : say.say("boardlook.focusOpen", { board })}
+          title={open ? say.say("boardlook.focusCloseTitle") : say.say("boardlook.focusOpen", { board })}
           className={`${FOCUS_RING} absolute z-10 inline-flex items-center gap-1 rounded-md border border-rule-strong bg-paper/90 px-2 py-1 text-xs text-ink-soft shadow-sm transition-opacity hover:text-ink ${
             open ? "top-2 right-2 sm:top-3 sm:right-3" : "top-1 right-1 opacity-0 group-hover/focus:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
           }`}
@@ -93,7 +96,7 @@ export function BoardFocus({
         >
           {open ? (
             <>
-              <span aria-hidden="true">×</span> Close <span className="text-muted">Esc</span>
+              <span aria-hidden="true">×</span> {say.say("boardlook.focusClose")} <span className="text-muted">Esc</span>
             </>
           ) : (
             <span aria-hidden="true">⤢</span>

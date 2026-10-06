@@ -5,7 +5,9 @@ import { useEffect, useRef } from "react";
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { BoardTheme, StoneSet } from "@/components/board/board.types";
-import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
 import { useGameSession } from "./useGameSession";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -48,6 +50,7 @@ const EMBED_NAME_WAS = "gomoku";
  * iframe is the right tool here rather than a shared bundle.
  */
 export function EmbedGame({ options }: { options: EmbedOptions }) {
+  const say = useSpeaker();
   const { session, actions } = useGameSession(options.settings);
   const frame = useRef<HTMLDivElement>(null);
 
@@ -114,17 +117,17 @@ export function EmbedGame({ options }: { options: EmbedOptions }) {
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="text-muted">
           {state.status === GAME_STATUS.playing
-            ? `${STONE_DISPLAY[state.toPlay].label} to play`
+            ? say.say("gamescreen.toPlay", { colour: stoneName(say, state.toPlay) })
             : state.status === GAME_STATUS.draw || state.winner === null
-              ? "Draw"
-              : `${STONE_DISPLAY[state.winner].label} wins`}
+              ? say.say("gamescreen.draw")
+              : say.say("wincover.wins", { who: stoneName(say, state.winner) })}
         </span>
         <button
           type="button"
           onClick={() => actions.reset()}
           className="rounded-lg border border-rule px-2.5 py-1 text-sm hover:bg-shade"
         >
-          New game
+          {say.say("ending.newGame")}
         </button>
       </div>
     </div>

@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/Controls";
-import { MOSAIC_COPY, MOSAIC_SHAPES, type MosaicShape } from "@/lib/record/mosaic.constants";
+import { MOSAIC_SHAPES, type MosaicShape } from "@/lib/record/mosaic.constants";
+import { mosaicWords, shapeWords } from "@/lib/record/mosaicWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { nextPaint, pngOf, saveAs, shapeForScreen } from "@/lib/record/mosaicImage";
 
 import { MosaicFullScreen } from "./MosaicFullScreen";
@@ -57,6 +59,8 @@ export function MosaicPanel({
   /** Choices of the caller's own under the shapes, told which shape is chosen. */
   extra?: (shape: MosaicShape) => ReactNode;
 }) {
+  const say = useSpeaker();
+  const words = mosaicWords(say);
   const [shape, setShape] = useState<MosaicShape>(shapeForScreen);
   // The picture on the page, and the shape it was drawn in — which lags the choice by a drawing.
   const [shown, setShown] = useState<{ url: string; shape: MosaicShape } | null>(null);
@@ -152,12 +156,12 @@ export function MosaicPanel({
   function shapeChoice(prefix: string, name: string, tone: string) {
     return (
       <fieldset className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-1 ${tone}`} data-testid={`${prefix}-shape`}>
-        <legend className="sr-only">{MOSAIC_COPY.shapeLabel}</legend>
+        <legend className="sr-only">{words.shapeLabel}</legend>
         {(Object.keys(MOSAIC_SHAPES) as MosaicShape[]).map((choice) => (
           <label key={choice} className="flex min-h-11 cursor-pointer items-center gap-2">
             <input type="radio" name={name} checked={shape === choice} onChange={() => setShape(choice)} data-testid={`${prefix}-shape-${choice}`} />
             <span>
-              {MOSAIC_SHAPES[choice].label} <span className="opacity-70">{MOSAIC_SHAPES[choice].note}</span>
+              {shapeWords(say, choice).label} <span className="opacity-70">{shapeWords(say, choice).note}</span>
             </span>
           </label>
         ))}
@@ -173,29 +177,29 @@ export function MosaicPanel({
         Modal. Move the landscape, portrait and download buttons below the image."
       */}
       {shown !== null ? (
-        <button type="button" onClick={() => setFull(true)} className="mx-auto cursor-zoom-in rounded-lg focus-visible:ring-2 focus-visible:ring-moss focus-visible:outline-none" aria-label={MOSAIC_COPY.fullScreen} data-testid="mosaic-picture-press">
+        <button type="button" onClick={() => setFull(true)} className="mx-auto cursor-zoom-in rounded-lg focus-visible:ring-2 focus-visible:ring-moss focus-visible:outline-none" aria-label={words.fullScreen} data-testid="mosaic-picture-press">
           {/* eslint-disable-next-line @next/next/no-img-element -- a picture made in this browser a moment ago; there is nothing to optimise */}
           <img src={shown.url} alt={alt} className="mx-auto h-auto max-h-[70dvh] w-auto max-w-full rounded-lg border border-rule" data-testid="mosaic-picture" data-shape={shown.shape} />
         </button>
       ) : null}
-      {failed ? <p className="text-center text-sm text-red-700">{MOSAIC_COPY.failed}</p> : null}
+      {failed ? <p className="text-center text-sm text-red-700">{words.failed}</p> : null}
       <div className="flex flex-col items-center gap-2" data-testid="mosaic-controls">
         {shapeChoice("mosaic", `mosaic-shape-${id}`, "text-sm")}
         {extra?.(shape)}
         <span className="flex flex-wrap items-center justify-center gap-2">
           {auto ? null : (
             <Button onClick={() => void make(false)} disabled={busy} data-testid="make-mosaic">
-              {busy ? MOSAIC_COPY.making : shown === null ? MOSAIC_COPY.make : MOSAIC_COPY.again}
+              {busy ? words.making : shown === null ? words.make : words.again}
             </Button>
           )}
           {shown !== null ? (
             <Button onClick={() => setFull(true)} data-testid="mosaic-fullscreen">
-              {MOSAIC_COPY.fullScreen} <span aria-hidden="true">⤢</span>
+              {words.fullScreen} <span aria-hidden="true">⤢</span>
             </Button>
           ) : null}
           {auto || shown !== null ? (
             <Button onClick={() => void make(true)} disabled={busy} data-testid="download-mosaic">
-              {busy && auto ? MOSAIC_COPY.making : MOSAIC_COPY.download}
+              {busy && auto ? words.making : words.download}
             </Button>
           ) : null}
         </span>
@@ -216,7 +220,7 @@ export function MosaicPanel({
             className={`min-h-11 rounded-full border border-white/25 px-4 text-ivory hover:bg-white/10 ${busy ? "opacity-50" : ""}`}
             data-testid="mosaic-full-download"
           >
-            {busy ? MOSAIC_COPY.making : MOSAIC_COPY.download}
+            {busy ? words.making : words.download}
           </button>
         </MosaicFullScreen>
       ) : null}

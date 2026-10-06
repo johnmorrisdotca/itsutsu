@@ -3,6 +3,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { PHRASES, type PhraseKey } from "@/lib/i18n/i18n.constants";
+
 import { PLAY } from "./mine.constants";
 
 /**
@@ -146,6 +148,9 @@ describe("the word for offering a game", () => {
       for (const match of source.matchAll(/<ChallengeButton\b[^>]*?\/>/g)) {
         const label = /\blabel=\{?\s*([`"][^`"]*)/.exec(match[0])?.[1];
         if (label === undefined || /^[`"]Play\b/.test(label)) continue;
+        // A label said through a phrase whose English starts with Play (`${say.say("replay.forkLabel", …)}`) starts with Play.
+        const phrase = /\blabel=\{`\$\{say\.say\("([\w.]+)"/.exec(match[0])?.[1];
+        if (phrase !== undefined && /^Play\b/.test(PHRASES[phrase as PhraseKey] ?? "")) continue;
         const line = source.slice(0, match.index).split("\n").length;
         found.push(`${path}:${line}: label ${label}…`);
       }

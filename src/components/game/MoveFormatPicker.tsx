@@ -1,6 +1,7 @@
 "use client";
 
-import { MOVE_FORMAT_CHOICES, MOVE_FORMAT_DISPLAY } from "@/lib/record/moveFormats";
+import { MOVE_FORMAT_CHOICES, MOVE_FORMAT_DISPLAY, moveFormatLabel } from "@/lib/record/moveFormats";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { ViewTabs } from "@/components/ui/ViewTabs";
 
@@ -17,11 +18,12 @@ import { useMoveFormat } from "./MoveFormatContext";
  * the two cannot offer different choices.
  */
 export function MoveFormatPicker() {
+  const say = useSpeaker();
   const { format, setFormat } = useMoveFormat();
   // A choice of how the record reads: tabs, as every such choice is (`ViewTabs`).
   return (
     <ViewTabs
-      label="How the moves are written"
+      label={say.say("gamescreen.moveFormats")}
       testId="move-format"
       items={MOVE_FORMAT_CHOICES.map((choice) => ({
         key: choice,
@@ -29,7 +31,7 @@ export function MoveFormatPicker() {
         current: format === choice,
         title: MOVE_FORMAT_DISPLAY[choice].example,
         testId: `move-format-${choice}`,
-        label: MOVE_FORMAT_DISPLAY[choice].label,
+        label: moveFormatLabel(say, choice),
       }))}
     />
   );

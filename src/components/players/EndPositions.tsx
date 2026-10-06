@@ -10,7 +10,7 @@ import { replayGame } from "@/lib/gomoku/replay";
 import { slugFor } from "@/lib/gomoku/slugs";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
-import { ENDINGS_COPY, ENDINGS_OUTCOME_LIST, ENDINGS_OUTCOMES, type EndingsOutcome } from "@/lib/history/endings.constants";
+import { endingsCopy, ENDINGS_OUTCOME_LIST, ENDINGS_OUTCOMES, type EndingsOutcome } from "@/lib/history/endings.constants";
 import { frameOf, mosaicPlan, mosaicSvg } from "@/lib/record/mosaic";
 import { MOSAIC_COPY, MOSAIC_PICKS, MOSAIC_SHAPES } from "@/lib/record/mosaic.constants";
 import type { MosaicFrame } from "@/lib/record/mosaic.types";
@@ -46,6 +46,7 @@ export function EndPositions({
   variants: readonly RuleVariant[];
 }) {
   const say = useSpeaker();
+  const ENDINGS_COPY = endingsCopy(say);
   const hydrated = useHydrated();
   const [variant, setVariant] = useState<RuleVariant>(variants[0]);
   const [outcome, setOutcome] = useState<EndingsOutcome>(ENDINGS_OUTCOMES.won);

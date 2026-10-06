@@ -39,7 +39,8 @@ import {
   standingsPath,
   variantFor,
 } from "@/lib/gomoku/slugs";
-import { currentLocale, currentSpeaker } from "@/lib/i18n/currentLocale";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { Paired } from "@/components/i18n/Paired";
 import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { partyTableFor } from "@/components/party/partyTables";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -49,9 +50,10 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]">): 
   const { slug } = await params;
   // Karakuri's family page answers here too, at /games/karakuri (`CasualFamilyPage`).
   if (slug === CASUAL_FAMILY_KEY) return { title: CASUAL_FAMILY_TITLE };
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? "", await currentLocale());
-  if (copy === null) return { title: "Games" };
-  return { title: `${copy.label} ${copy.kanji}`, description: copy.tagline };
+  const say = await currentSpeaker();
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? "", say.locale);
+  if (copy === null) return { title: say.say("gamepages.games") };
+  return { title: say.pairsWithKanji ? `${copy.label} ${copy.kanji}` : copy.label, description: copy.tagline };
 }
 
 export function generateStaticParams() {
@@ -150,7 +152,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
               {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
               <img
                 src={page.image}
-                alt={`A game of ${page.title} in progress`}
+                alt={say.say("gamepages.pictureAlt", { game: page.title })}
                 className="w-full rounded-xl border border-rule"
                 data-testid="game-picture"
               />
@@ -180,7 +182,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
                 <GamePlayOrContinue variant={variant} />
               </Suspense>
               <Link href={playPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} w-full`} data-testid="game-play">
-                Practice board 試し打ち
+                <Paired en={say.say("gamepages.practiceBoard")} kanji="試し打ち" />
               </Link>
               {/*
                 A GAME FOR THE WHOLE TABLE, where the game has one: Chinese
@@ -200,7 +202,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
                   <span
                     className="mr-1.5 not-italic"
                     aria-hidden="true"
-                    title={`From ${page.from.country}`}
+                    title={say.say("gamepages.fromCountry", { country: page.from.country })}
                     data-testid="origin-flag"
                     data-country={page.from.code}
                   >
@@ -211,7 +213,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
               </p>
               {page.alsoKnownAs.length > 0 ? (
                 <p className="text-xs text-muted" data-testid="also-known-as">
-                  Also known as {page.alsoKnownAs.join(", ")}.
+                  {say.say("gamepages.alsoKnownAs", { names: say.joined(page.alsoKnownAs) })}
                 </p>
               ) : null}
             </div>
@@ -225,7 +227,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
           */}
           <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-object">
             <h2 className={SECTION_TITLE}>
-              Objective <span className="font-mincho normal-case tracking-normal">目的</span>
+              <Paired en={say.say("gamepages.objective")} kanji="目的" kanjiClassName="font-mincho normal-case tracking-normal" />
             </h2>
             <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
               {page.object.map((line) => (
@@ -234,7 +236,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             </ul>
             <p className="pt-1 text-sm">
               <Link href={rulesPath(variant)} className="font-semibold underline-offset-2 hover:underline" data-testid="game-rules-link">
-                Full rules of {page.title} <span className="font-mincho">規則</span> →
+                {say.say("gamepages.fullRules", { game: page.title })}{say.pairsWithKanji ? <span className="font-mincho"> 規則</span> : null} →
               </Link>
             </p>
           </section>
@@ -292,7 +294,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
 
           <nav className={`${PANEL_CLASS} flex flex-col gap-1 text-sm`} data-testid="game-facets">
             <h2 className={SECTION_TITLE}>
-              More on this game <span className="font-mincho normal-case tracking-normal">一覧</span>
+              <Paired en={say.say("gamepages.moreOnThis")} kanji="一覧" kanjiClassName="font-mincho normal-case tracking-normal" />
             </h2>
             {/*
               Every facet of this game, named once, so that nothing about it is
@@ -301,22 +303,22 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
             */}
             <div className="-mx-2 flex flex-col">
               <Facet href={rulesPath(variant)}>
-                Rules <span className="font-mincho opacity-70">規則</span>
+                <Paired en={say.say("gamepages.rules")} kanji="規則" kanjiClassName="font-mincho opacity-70" />
               </Facet>
               <Facet href={historyPath(variant)} testId="facet-history">
-                Game history <span className="font-mincho opacity-70">棋譜</span>
+                <Paired en={say.say("gamepages.gameHistory")} kanji="棋譜" kanjiClassName="font-mincho opacity-70" />
               </Facet>
               <Facet href={myGamePath(variant)} testId="facet-me">
-                Your games <span className="font-mincho opacity-70">自分の棋譜</span>
+                <Paired en={say.say("gamepages.yourGamesOf")} kanji="自分の棋譜" kanjiClassName="font-mincho opacity-70" />
               </Facet>
               <Facet href={standingsPath(variant)} testId="facet-standings">
-                Leaderboard <span className="font-mincho opacity-70">番付</span>
+                <Paired en={say.say("gamepages.leaderboard")} kanji="番付" kanjiClassName="font-mincho opacity-70" />
               </Facet>
               <Facet href={familyPath(variant)} testId="facet-family">
-                Family <span className="font-mincho opacity-70">同族</span>
+                <Paired en={say.say("gamepages.family")} kanji="同族" kanjiClassName="font-mincho opacity-70" />
               </Facet>
               <Facet href={backgroundPath(variant)} testId="facet-background">
-                Background <span className="font-mincho opacity-70">背景</span>
+                <Paired en={say.say("gamepages.background")} kanji="背景" kanjiClassName="font-mincho opacity-70" />
               </Facet>
             </div>
           </nav>
@@ -334,7 +336,7 @@ export default async function GamePage({ params }: PageProps<"/games/[slug]">) {
                 className="underline-offset-2 hover:underline"
                 data-testid="wikipedia-link"
               >
-                Read about {page.title} on Wikipedia ↗
+                {say.say("gamepages.wikipedia", { game: page.title })}
               </a>
             </p>
           ) : null}

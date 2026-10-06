@@ -1,51 +1,51 @@
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import type { ResultOutcome, ResultReason, ResultScore } from "@/lib/history/gameResult.types";
 
-/** The headline said to a player, where the card speaks to "you". */
-export const RESULT_HEADLINES: Record<Exclude<ResultOutcome, "decided">, { label: string; kanji: string }> = {
-  won: { label: "You won", kanji: "勝ち" },
-  lost: { label: "You lost", kanji: "負け" },
-  draw: { label: "Draw", kanji: "引き分け" },
-};
+export { RESULT_HEADLINES } from "./resultNames.constants";
 
 /**
- * WHY, IN ONE SENTENCE — about the winner (`who`) or about the side that lost
- * (`other`), whichever the ending is a fact about. Either may be "You", so every
- * sentence reads with "You" in it as well as with a name or a colour.
+ * WHY, IN ONE SENTENCE — about the winner or about the side that lost, whichever
+ * the ending is a fact about (`about`). `said` has a `{who}` in it, and `you`
+ * is the same sentence where that side is the reader, which Japanese says
+ * with no subject and English with "You". A draw's reasons have no side.
  */
-export const RESULT_REASONS: Record<ResultReason, (who: string, other: string) => string> = {
-  line: (who) => `${who} completed a winning line.`,
-  captures: (who) => `${who} captured enough to win.`,
-  time: (_who, other) => `${other} ran out of time.`,
-  resign: (_who, other) => `${other} resigned.`,
-  trap: (_who, other) => `${other} had no way out.`,
-  square: (who) => `${who} made the winning square.`,
-  full: (who) => `${who} led when the board filled.`,
-  count: (who) => `${who} had more discs at the end.`,
-  camp: (who) => `${who} filled the far camp first.`,
-  connection: (who) => `${who} joined both sides of the board.`,
-  blocked: (_who, other) => `${other} had no move left.`,
-  territory: (who) => `${who} held more of the board.`,
+export const RESULT_REASONS: Record<
+  ResultReason,
+  { about: "winner" | "loser" | null; said: PhraseKey; you: PhraseKey | null }
+> = {
+  line: { about: "winner", said: "result.line", you: "result.lineYou" },
+  captures: { about: "winner", said: "result.captures", you: "result.capturesYou" },
+  time: { about: "loser", said: "result.time", you: "result.timeYou" },
+  resign: { about: "loser", said: "result.resign", you: "result.resignYou" },
+  trap: { about: "loser", said: "result.trap", you: "result.trapYou" },
+  square: { about: "winner", said: "result.square", you: "result.squareYou" },
+  full: { about: "winner", said: "result.full", you: "result.fullYou" },
+  count: { about: "winner", said: "result.count", you: "result.countYou" },
+  camp: { about: "winner", said: "result.camp", you: "result.campYou" },
+  connection: { about: "winner", said: "result.connection", you: "result.connectionYou" },
+  blocked: { about: "loser", said: "result.blocked", you: "result.blockedYou" },
+  territory: { about: "winner", said: "result.territory", you: "result.territoryYou" },
   /*
    * A draw's reasons, in the board's own words (`GAME_COPY.draw…`) less the
    * "Draw." the card's headline has already said.
    */
-  noProgressRacing: () => "Nobody got a piece any nearer home for longer than its rules allow.",
-  noProgressTaking: () => "Nothing was taken and no man moved for longer than its rules allow.",
-  noProgressPlacing: () => "Every piece was down, and the sliding went on longer than its rules allow.",
-  noMoves: () => "Neither side had a move left.",
-  repetition: () => "The same position came round again, with the same side to move.",
-  endgameCount: () => "The ending was not won within the moves its rules allow.",
-  length: () => "The game ran to the length it was given.",
-  bothLines: () => "Both made a line at once.",
-  boardFull: () => "The board filled with nobody winning.",
-  draw: () => "Neither side won.",
+  noProgressRacing: { about: null, said: "result.noProgressRacing", you: null },
+  noProgressTaking: { about: null, said: "result.noProgressTaking", you: null },
+  noProgressPlacing: { about: null, said: "result.noProgressPlacing", you: null },
+  noMoves: { about: null, said: "result.noMoves", you: null },
+  repetition: { about: null, said: "result.repetition", you: null },
+  endgameCount: { about: null, said: "result.endgameCount", you: null },
+  length: { about: null, said: "result.length", you: null },
+  bothLines: { about: null, said: "result.bothLines", you: null },
+  boardFull: { about: null, said: "result.boardFull", you: null },
+  draw: { about: null, said: "result.draw", you: null },
 };
 
 /** What a score counts. */
-export const RESULT_SCORE_WORDS: Record<ResultScore["kind"], string> = {
-  captures: "Pairs captured",
-  discs: "Discs",
-  area: "Area",
+export const RESULT_SCORE_WORDS: Record<ResultScore["kind"], PhraseKey> = {
+  captures: "result.scorePairs",
+  discs: "result.scoreDiscs",
+  area: "result.scoreArea",
 };
 
 /**
@@ -61,17 +61,11 @@ export const RESULT_CARD_TONE: Record<ResultOutcome, { border: string; text: str
   decided: { border: "border-rule-strong", text: "text-ink" },
 };
 
+/** The card's buttons: each an English label beside its own kanji (`say.pair`), and the lines of its figures. */
 export const RESULT_CARD_COPY = {
-  rematch: "Rematch 再戦",
-  again: "Play again 再戦",
-  newGame: "New game 新規",
-  review: "Review the moves 棋譜",
-  close: "Close 閉じる",
-  xp: (points: number) => `+${points} XP from this game`,
-  /** Both players' rating change at this game, the reader's first. */
-  rating: (mine: string, theirs: string) => `Rating ${mine} · opponent ${theirs}`,
-  /* The level note the toasts would have carried: a level reached, or the next within a game. */
-  levelUp: (name: string) => `Level up: ${name}`,
-  nextLevel: (name: string) => `Next level: ${name}`,
-  waiting: (count: number) => (count === 1 ? "Your move in 1 game" : `Your move in ${count} games`),
-} as const;
+  rematch: { phrase: "result.rematch", kanji: "再戦" },
+  again: { phrase: "result.again", kanji: "再戦" },
+  newGame: { phrase: "result.newGame", kanji: "新規" },
+  review: { phrase: "result.review", kanji: "棋譜" },
+  close: { phrase: "result.close", kanji: "閉じる" },
+} as const satisfies Record<string, { phrase: PhraseKey; kanji: string }>;

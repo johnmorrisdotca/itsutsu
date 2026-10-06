@@ -1,5 +1,24 @@
 import type { PhraseKey } from "../i18n.constants";
 import { JA_DRAFTED_PIECES } from "./ja.drafted.pieces.constants";
+import { JA_DRAFTED_GAMEPAGES } from "./ja.drafted.gamepages.constants";
+import { JA_DRAFTED_ENDING } from "./ja.drafted.ending.constants";
+import { JA_DRAFTED_BOARDLOOK } from "./ja.drafted.boardlook.constants";
+import { JA_DRAFTED_WINCOVER } from "./ja.drafted.wincover.constants";
+import { JA_DRAFTED_GAMESCREEN } from "./ja.drafted.gamescreen.constants";
+import { JA_DRAFTED_GAME } from "./ja.drafted.game.constants";
+import { JA_DRAFTED_SUMMARY } from "./ja.drafted.summary.constants";
+import { JA_DRAFTED_LIVE } from "./ja.drafted.live.constants";
+import { JA_DRAFTED_READMOVES } from "./ja.drafted.readmoves.constants";
+import { JA_DRAFTED_RESULT } from "./ja.drafted.result.constants";
+import { JA_DRAFTED_MOSAIC } from "./ja.drafted.mosaic.constants";
+import { JA_DRAFTED_REPLAY } from "./ja.drafted.replay.constants";
+import { JA_DRAFTED_PLAYED } from "./ja.drafted.played.constants";
+import { JA_DRAFTED_HANDICAPOFFER } from "./ja.drafted.handicapoffer.constants";
+import { JA_DRAFTED_HEADSTART } from "./ja.drafted.headstart.constants";
+import { JA_DRAFTED_ADVANTAGE } from "./ja.drafted.advantage.constants";
+import { JA_DRAFTED_GOMOKU } from "./ja.drafted.gomoku.constants";
+import { JA_DRAFTED_RATING } from "./ja.drafted.rating.constants";
+import { JA_DRAFTED_CLOCK } from "./ja.drafted.clock.constants";
 import { JA_DRAFTED_RULESPAGE } from "./ja.drafted.rulespage.constants";
 
 import { JA_DRAFTED_XP } from "./ja.drafted.xp.constants";
@@ -957,6 +976,25 @@ const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   // Phrases kept in files of their own, so this one is not where every ticket edits (ENJA-05).
   ...JA_DRAFTED_RULESPAGE,
   ...JA_DRAFTED_PIECES,
+  ...JA_DRAFTED_GAMEPAGES,
+  ...JA_DRAFTED_ENDING,
+  ...JA_DRAFTED_BOARDLOOK,
+  ...JA_DRAFTED_WINCOVER,
+  ...JA_DRAFTED_GAMESCREEN,
+  ...JA_DRAFTED_GAME,
+  ...JA_DRAFTED_SUMMARY,
+  ...JA_DRAFTED_LIVE,
+  ...JA_DRAFTED_READMOVES,
+  ...JA_DRAFTED_RESULT,
+  ...JA_DRAFTED_MOSAIC,
+  ...JA_DRAFTED_REPLAY,
+  ...JA_DRAFTED_PLAYED,
+  ...JA_DRAFTED_HANDICAPOFFER,
+  ...JA_DRAFTED_HEADSTART,
+  ...JA_DRAFTED_ADVANTAGE,
+  ...JA_DRAFTED_GOMOKU,
+  ...JA_DRAFTED_CLOCK,
+  ...JA_DRAFTED_RATING,
 };
 
 /**

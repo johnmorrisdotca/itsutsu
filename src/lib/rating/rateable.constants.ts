@@ -1,3 +1,5 @@
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+
 /**
  * Why a game does not move anybody's rating.
  *
@@ -71,58 +73,51 @@ export type RatingRefusal = (typeof RATING_REFUSALS)[keyof typeof RATING_REFUSAL
  * when the site cannot honour either — and a chip cannot carry a reason, so it
  * carries the verdict and leaves the reason to the sentence above it.
  */
-export const RATING_REFUSED_WORD = "Will not count";
+export const RATING_REFUSED_WORD: PhraseKey = "rating.refusedWord";
 
-export const RATING_REFUSAL_DISPLAY: Record<
-  RatingRefusal,
-  { playing: string; filed: string; kanji: string; sentence: string; short: string }
-> = {
+type RefusalCopy = { playing: PhraseKey; filed: PhraseKey; kanji: string; sentence: PhraseKey; short: PhraseKey };
+
+export const RATING_REFUSAL_DISPLAY: Record<RatingRefusal, RefusalCopy> = {
   [RATING_REFUSALS.unnamed]: {
-    playing: "This game will not count",
-    filed: "This game did not count",
+    playing: "rating.willNotCount",
+    filed: "rating.didNotCount",
     kanji: "無名",
-    sentence:
-      "A seat here has no name on it, so there is nobody for the result to belong to. A name on both seats is what makes a game count.",
-    short: `${RATING_REFUSED_WORD} — a seat has no name`,
+    sentence: "rating.refusalUnnamed",
+    short: "rating.refusalUnnamedShort",
   },
   [RATING_REFUSALS.onePlayer]: {
-    playing: "This game will not count",
-    filed: "This game did not count",
+    playing: "rating.willNotCount",
+    filed: "rating.didNotCount",
     kanji: "一人二役",
-    sentence:
-      "Both seats are the same player. A rating says how two people compare, and there is only one person here — so the game is filed and replayed like any other, but no rating moves.",
-    short: `${RATING_REFUSED_WORD} — one player`,
+    sentence: "rating.refusalOnePlayer",
+    short: "rating.refusalOnePlayerShort",
   },
   [RATING_REFUSALS.keptRecord]: {
-    playing: "This game will not count",
-    filed: "This game did not count",
+    playing: "rating.willNotCount",
+    filed: "rating.didNotCount",
     kanji: "記録",
-    sentence:
-      "One of these names belongs to a record kept from before this site, which nobody plays under here. The game is filed, but the ladder is left alone.",
-    short: `${RATING_REFUSED_WORD} — a kept record`,
+    sentence: "rating.refusalKeptRecord",
+    short: "rating.refusalKeptRecordShort",
   },
   [RATING_REFUSALS.hotSeat]: {
-    playing: "This game will not count",
-    filed: "This game did not count",
+    playing: "rating.willNotCount",
+    filed: "rating.didNotCount",
     kanji: "同卓",
-    sentence:
-      "Both seats were played from one screen, so there is no way to tell the two of you apart from a login. A rating is an exchange between two separate players, and hot-seat play cannot give the site one — however the two names read.",
-    short: `${RATING_REFUSED_WORD} — one screen`,
+    sentence: "rating.refusalHotSeat",
+    short: "rating.refusalHotSeatShort",
   },
   [RATING_REFUSALS.handicap]: {
-    playing: "This game will not count",
-    filed: "This game did not count",
+    playing: "rating.willNotCount",
+    filed: "rating.didNotCount",
     kanji: "手合割",
-    sentence:
-      "One side took a handicap, so the two of you are not playing by the same rules. A rating is an exchange between two players on equal terms, and a handicap game cannot give the site one — so it is filed and replayed like any other, but no rating moves.",
-    short: `${RATING_REFUSED_WORD} — a handicap`,
+    sentence: "rating.refusalHandicap",
+    short: "rating.refusalHandicapShort",
   },
   [RATING_REFUSALS.headStart]: {
-    playing: "This game will not count",
-    filed: "This game did not count",
+    playing: "rating.willNotCount",
+    filed: "rating.didNotCount",
     kanji: "ハンデ戦",
-    sentence:
-      "One side has a head start, so the two of you are not playing on equal terms. A rating is an exchange between two players on equal terms, and a head-start game cannot give the site one — so it is filed and replayed like any other, but no rating moves.",
-    short: `${RATING_REFUSED_WORD} — a head start`,
+    sentence: "rating.refusalHeadStart",
+    short: "rating.refusalHeadStartShort",
   },
 };

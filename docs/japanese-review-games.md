@@ -4,7 +4,7 @@ Generated from `src/lib/i18n/dictionaries/*.ja.*` by `src/lib/i18n/gameCopyRevie
 
 Each row is one Japanese line, what it literally says in English, and who has read it. A game's, family's or colour's name is its kanji beside the English one and is not repeated here. The attribution paragraphs name each puzzle by its own kanji, written here as the puzzle's key.
 
-477 lines, 436 distinct. 0 read by a person, 477 by the reviewer agent, 0 drafted and unread.
+493 lines, 452 distinct. 0 read by a person, 493 by the reviewer agent, 0 drafted and unread.
 
 ## Open for a person
 
@@ -433,6 +433,22 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | computer wuyi: strength | Connect6で最強 | Strongest at Connect6 | Agent 2026-10-06 |
 | computer wuyi: blurb | Connect6だけを打ちます。Wuyiは、Connect6の打ち手が数えるものを数えます。双方に列が何本あるかではなく、それをすべてふさぐには石が何個必要かです。1手に2つしか置けないので、3つの脅威が同時にあれば勝ちが決まり、彼は最初の石から3つを目指して築いていきます。 | Plays only Connect6. Wuyi counts what a Connect6 player counts: not how many lines each side has, but how many stones it would take to block them all. Only two stones are placed per move, so three threats at once means a won game, and he builds towards three from the very first stone. | Agent 2026-10-06 |
 | computer wuyi: bio | 吳一辰は、ここでConnect6だけを打つコンピュータです。Wuyiは、ゲーム自身の理論と同じように読みます。脅威とは、石があと2つで六になる列のことで、1つの石でそれをふさげ、1手は石2つです。そのため大切なのは、盤上のすべての脅威をふさぐのに石が何個要るかで、3個なら勝ちです。名前は、2003年にConnect6を考案し、その開局の解明を主導したI-Chen Wuへのオマージュです。Wuyiとの対局はレーティング対局で、Wuyi自身にもレーティングがあります。 | 吳一辰 is a computer that plays only Connect6 here. Wuyi reads it the way the game's own theory does: a threat is a line that is two stones short of six, one stone blocks it, and a move is two stones. So what matters is how many stones it takes to block every threat on the board, and three means a win. The name is an homage to I-Chen Wu, who devised Connect6 in 2003 and led the work that solved its openings. Games against Wuyi are rated games, and Wuyi has a rating of his own. | Agent 2026-10-06 |
+| threat reading won: heading | 勝ち | Won | Agent 2026-10-06 |
+| threat reading won: detail | 5つ並びました。対局は終わりです。 | Five are in a row. The game is over. | Agent 2026-10-06 |
+| threat reading winning: heading | 必勝の形です | It is a winning shape | Agent 2026-10-06 |
+| threat reading winning: detail | 相手が止められない線があります。見つけられますか？ | There is a line the other side cannot stop. Can you find it? | Agent 2026-10-06 |
+| threat reading ahead: heading | 主導権があります | You have the initiative | Agent 2026-10-06 |
+| threat reading ahead: detail | 相手が答えているのは、こちらの狙いです。この調子で続けましょう。 | What the other side is answering is our threats. Let us keep going like this. | Agent 2026-10-06 |
+| threat reading even: heading | 互角 | Even | Agent 2026-10-06 |
+| threat reading even: detail | 盤上に、強制されている手はまだありません。 | There is no forced move on the board yet. | Agent 2026-10-06 |
+| threat reading danger: heading | 受けが必要です | A defence is needed | Agent 2026-10-06 |
+| threat reading danger: detail | 盤上に狙いがあります。受けないと、5つ並んでしまいます。 | There is a threat on the board. If it is not defended, five will be in a row. | Agent 2026-10-06 |
+| threat reading critical: heading | あと1手で負けです | One move from losing | Agent 2026-10-06 |
+| threat reading critical: detail | いま、まさに正しい場所を止めないと、次の1手で決まってしまいます。 | If you do not stop exactly the right place now, the next move decides it. | Agent 2026-10-06 |
+| threat reading lost: heading | 敗勢です | The position is lost | Agent 2026-10-06 |
+| threat reading lost: detail | 相手には止められない勝ちがあります。見つけられれば、ですが。 | The other side has a win that cannot be stopped, if they find it. | Agent 2026-10-06 |
+| losing move: heading | 敗着 | Losing move | Agent 2026-10-06 |
+| losing move: detail | この手で勝負が決まってしまいました。この手の前までは、まだ戦える形でした。 | This move decided the game. Before this move, the position could still be fought. | Agent 2026-10-06 |
 | family five-in-a-row: blurb | 定番の五目並べと、その競技形式です。まず五目並べから始めてください。ほかは、規則を少しずつ厳しくしたものです。 | The classic gomoku and its tournament forms. Start with gomoku; the others are that with the rules made a little stricter step by step. | Agent 2026-10-06 |
 | family drops: blurb | 石は列のいちばん下まで落ちます。短時間で終わり、スマートフォンにも向いています。 | Stones fall to the bottom of their column. Games finish quickly and suit smartphones. | Agent 2026-10-06 |
 | family flips: blurb | 終わるまで、石は誰のものとも決まりません。相手の色の石の並びを挟んでひっくり返すか、2つ組を盤から取ります。 | Until the end, no stone is anyone's for certain. You bracket a run of the other colour and turn it over, or take a pair off the board. | Agent 2026-10-06 |

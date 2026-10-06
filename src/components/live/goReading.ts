@@ -1,5 +1,5 @@
-import { isStone, otherStone } from "@/lib/gomoku/engine";
-import { MOVE_KINDS, STONES, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { isStone } from "@/lib/gomoku/engine";
+import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { pointName } from "@/lib/gomoku/notation";
 import { groupAt } from "@/lib/gomoku/rules/go";
 import type { Cell, GameState, Point, Stone } from "@/lib/gomoku/gomoku.types";
@@ -91,14 +91,4 @@ export function goRisk(before: GameState, turn: BotTurn, after: GameState): GoRi
   const group = groupAt(after.board as Cell[], size, point);
   if (group.liberties.size !== 1) return null;
   return "selfAtari";
-}
-
-/** The colour's name for a sentence. */
-export function colourName(stone: Stone): string {
-  return stone === STONES.black ? "Black" : "White";
-}
-
-/** The other colour, for "White passed" said to Black. */
-export function otherName(seat: Stone): string {
-  return colourName(otherStone(seat));
 }

@@ -1,4 +1,5 @@
 import { isBotId } from "@/lib/bots/bots";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
 import { MOVE_TIME_OPTIONS } from "./moveTime.constants";
 
 /**
@@ -91,10 +92,10 @@ export type ClockMode = "move" | "game";
 export const CLOCK_MODES: readonly ClockMode[] = ["move", "game"];
 
 /** The clock in words, for either mode. */
-export function describeClock(mode: string, moveTimeMs: number | null): string {
-  if (moveTimeMs === null) return "No clock";
-  if (mode === "game") return `${describeMoveTime(moveTimeMs).replace(" a move", "")} each for the whole game`;
-  return describeMoveTime(moveTimeMs);
+export function describeClock(mode: string, moveTimeMs: number | null, say: Speaker = speaker("en")): string {
+  if (moveTimeMs === null) return say.say("played.noClock");
+  if (mode === "game") return say.say("played.perGame", { time: durationWords(moveTimeMs, say) });
+  return describeMoveTime(moveTimeMs, say);
 }
 
 /**
@@ -127,28 +128,32 @@ export function isOverdue(deadline: Date | null, now = new Date()): boolean {
 }
 
 /** A per-move limit in words: "5 minutes", "1 hour", "3 days". Null is "no clock". */
-export function describeMoveTime(moveTimeMs: number | null): string {
-  if (moveTimeMs === null) return "No clock";
-  const minutes = Math.round(moveTimeMs / 60_000);
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} a move`;
+export function describeMoveTime(moveTimeMs: number | null, say: Speaker = speaker("en")): string {
+  if (moveTimeMs === null) return say.say("played.noClock");
+  return say.say("played.perMove", { time: durationWords(moveTimeMs, say) });
+}
+
+/** "5 minutes", "1 hour", "3 days" in the reader's language, in the largest unit that reads as a whole number. */
+function durationWords(ms: number, say: Speaker): string {
+  const minutes = Math.round(ms / 60_000);
+  if (minutes < 60) return say.count("played.minutes", minutes);
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} a move`;
-  const days = Math.round(hours / 24);
-  return `${days} day${days === 1 ? "" : "s"} a move`;
+  if (hours < 24) return say.count("played.hours", hours);
+  return say.count("played.days", Math.round(hours / 24));
 }
 
 /** Time left in words, for a countdown: "2h 05m", "45s", or "overdue". */
-export function describeRemaining(deadline: Date, now = new Date()): string {
+export function describeRemaining(deadline: Date, now = new Date(), say: Speaker = speaker("en")): string {
   const left = deadline.getTime() - now.getTime();
-  if (left <= 0) return "overdue";
+  if (left <= 0) return say.say("played.overdue");
   const seconds = Math.floor(left / 1000);
-  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 60) return say.say("played.leftSeconds", { seconds: String(seconds) });
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ${String(seconds % 60).padStart(2, "0")}s`;
+  if (minutes < 60) return say.say("played.leftMinutes", { minutes: String(minutes), seconds: String(seconds % 60).padStart(2, "0") });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ${String(minutes % 60).padStart(2, "0")}m`;
+  if (hours < 24) return say.say("played.leftHours", { hours: String(hours), minutes: String(minutes % 60).padStart(2, "0") });
   const days = Math.floor(hours / 24);
-  return `${days}d ${hours % 24}h`;
+  return say.say("played.leftDays", { days: String(days), hours: String(hours % 24) });
 }
 
 export { MOVE_TIME_OPTIONS };

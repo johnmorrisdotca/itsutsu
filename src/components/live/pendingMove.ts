@@ -1,9 +1,11 @@
 import { applyTurn } from "@/lib/gomoku/opponentTurns";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { AFTER_MOVE, type AfterMove } from "@/lib/preferences/turnFlow";
 import type { GameState, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { BotTurn } from "@/lib/gomoku/opponent.types";
-import { LIVE_MOVE_COPY } from "./live.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { variantName } from "@/lib/gomoku/variantCopy";
+
+import { liveMoveCopy } from "./live.constants";
 
 /**
  * A MOVE PLACED BUT NOT YET SENT, and the board as it would be.
@@ -57,11 +59,10 @@ export function pendingMove(state: GameState, turn: BotTurn): PendingMove | null
  * and it names the GAME for "the next similar game", because "the next Pente"
  * is the sentence somebody means.
  */
-export function submitWords(afterMove: AfterMove, variant: RuleVariant): string {
-  if (afterMove === AFTER_MOVE.myGames) return LIVE_MOVE_COPY.submitToMyGames;
-  if (afterMove === AFTER_MOVE.sameGame) {
-    return LIVE_MOVE_COPY.submitToSame(RULE_VARIANT_DISPLAY[variant].label);
-  }
-  if (afterMove === AFTER_MOVE.nextWaiting) return LIVE_MOVE_COPY.submitToNext;
-  return LIVE_MOVE_COPY.submit;
+export function submitWords(afterMove: AfterMove, variant: RuleVariant, say: Speaker): string {
+  const copy = liveMoveCopy(say);
+  if (afterMove === AFTER_MOVE.myGames) return copy.submitToMyGames;
+  if (afterMove === AFTER_MOVE.sameGame) return copy.submitToSame(variantName(variant, say));
+  if (afterMove === AFTER_MOVE.nextWaiting) return copy.submitToNext;
+  return copy.submit;
 }

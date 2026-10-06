@@ -1,7 +1,7 @@
 import { calendarDay, calendarMonth } from "@/lib/ui/when";
 
 import type { DateStyle } from "./format.constants";
-import { listIn, listPiecesIn, numberIn, pluralFormIn, wordsIn } from "./format";
+import { joinedIn, listIn, listPiecesIn, numberIn, pluralFormIn, sentenceIn, sentencesIn, wordsIn } from "./format";
 import { LOCALES, PHRASES, type PhraseKey } from "./i18n.constants";
 import type { Locale, Paired, Vars } from "./i18n.types";
 import { dictionaryFor } from "./jaText";
@@ -87,6 +87,12 @@ export type Speaker = {
   number(value: number): string;
   /** A small count in words where the language spells it ("sixty-four"), in digits where it does not. */
   words(count: number): string;
+  /** Items joined by the language's plain separator, with no "and": "a, b, c", "a、b、c". */
+  joined(items: readonly string[]): string;
+  /** Sentences set one after another: "A. B." in English, "A。B。" in Japanese. */
+  sentences(sentences: readonly string[]): string;
+  /** One piece of text made a sentence, with the stop this reader's language writes: "text." or "text。". */
+  sentence(text: string): string;
   /** A list joined as this reader's language joins one: "a, b and c", "a、b、c". */
   list(items: readonly string[]): string;
   /** The same joins around items the caller draws itself: pictures, links. */
@@ -149,6 +155,9 @@ export function speaker(locale: Locale): Speaker {
     words: (count) => wordsIn(locale, count),
     list: (items) => listIn(locale, items),
     listPieces: (items) => listPiecesIn(locale, items),
+    joined: (items) => joinedIn(locale, items),
+    sentences: (parts) => sentencesIn(locale, parts),
+    sentence: (text) => sentenceIn(locale, text),
     day: (day, style) => calendarDay(locale, day, style),
     month: (month) => calendarMonth(locale, month),
   };

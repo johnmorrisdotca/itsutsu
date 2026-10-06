@@ -1,3 +1,4 @@
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
 import type { ResultOutcome } from "@/lib/history/gameResult.types";
 
 import { RESULT_MARKS } from "./resultMark.constants";
@@ -36,9 +37,9 @@ export type SeatResult = { mark: ResultMarkKind; words: string };
  * who played in neither chair), the colour that won is named instead, with a
  * tick, because a result was reached and it was nobody's loss here.
  */
-export function seatResult(result: "black" | "white" | "draw" | "abandoned", seat: string | null, colourWon: string): SeatResult {
-  if (result === "draw") return { mark: RESULT_MARKS.other, words: "Draw" };
-  if (result === "abandoned") return { mark: RESULT_MARKS.other, words: "Unfinished" };
+export function seatResult(result: "black" | "white" | "draw" | "abandoned", seat: string | null, colourWon: string, say: Speaker = speaker("en")): SeatResult {
+  if (result === "draw") return { mark: RESULT_MARKS.other, words: say.say("gamescreen.resultDraw") };
+  if (result === "abandoned") return { mark: RESULT_MARKS.other, words: say.say("gamescreen.resultUnfinished") };
   if (seat === null) return { mark: RESULT_MARKS.success, words: colourWon };
-  return result === seat ? { mark: RESULT_MARKS.success, words: "You won" } : { mark: RESULT_MARKS.failure, words: "You lost" };
+  return result === seat ? { mark: RESULT_MARKS.success, words: say.say("gamescreen.resultYouWon") } : { mark: RESULT_MARKS.failure, words: say.say("gamescreen.resultYouLost") };
 }

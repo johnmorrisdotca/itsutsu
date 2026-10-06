@@ -4,6 +4,7 @@ import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Button, SectionTitle } from "@/components/ui/Controls";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_LEAD, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -12,7 +13,7 @@ import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 import { beginGame, type BeginAction } from "./beginGame";
 import { DoorstepPictures } from "./DoorstepPictures";
 import { RulesStatement } from "./RulesStatement";
-import { DOORSTEP_COPY, SIGN_IN_TO_PLAY, START_PRESS } from "./live.constants";
+import { doorstepCopy, signInToPlay, startPress } from "./live.constants";
 import { useGameBegunHere } from "./doorstepMemory";
 import type { RulesDraft } from "./rulesDraft";
 
@@ -100,6 +101,9 @@ export function Doorstep({
    */
   lineage: string | null;
 }) {
+  const say = useSpeaker();
+  const DOORSTEP_COPY = doorstepCopy(say);
+  const START_PRESS = startPress(say);
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,7 +147,7 @@ export function Doorstep({
        * the seat was standing in for. All three shapes are in `beginGame`, which
        * the set-up screen presses too, so one request cannot drift from the other.
        */
-      const landed = await beginGame({ begin, variant, taking });
+      const landed = await beginGame({ begin, variant, taking, say });
       if (typeof landed !== "string") {
         setError(landed.error);
         // A seat that could not be taken is a seat somebody else has. Say so, and
@@ -224,7 +228,7 @@ export function Doorstep({
         keeps the two from drifting.
       */}
       <div data-testid="doorstep-facts">
-        <RulesStatement rules={rules} refusal={refused} note={DOORSTEP_COPY.note} />
+        <RulesStatement rules={rules} refusal={refused} note={DOORSTEP_COPY.note} say={say} />
       </div>
 
       {made !== null ? (
@@ -287,7 +291,7 @@ export function Doorstep({
       </div>
 
       {!signedIn ? (
-        <p className="text-xs text-muted">{SIGN_IN_TO_PLAY}</p>
+        <p className="text-xs text-muted">{signInToPlay(say)}</p>
       ) : null}
     </section>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, SECTION_TITLE } from "@/components/ui/ui.constants";
@@ -33,6 +33,7 @@ export function Applause({
    */
   hasAccount: boolean;
 }) {
+  const say = useSpeaker();
   const [tally, setTally] = useState(initial);
   const [busy, setBusy] = useState(false);
 
@@ -51,7 +52,8 @@ export function Applause({
   return (
     <section className="flex flex-col gap-2" data-testid="applause" {...readyMark(useHydrated())}>
       <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
-        <Paired en={APPLAUSE_COPY.title.label} kanji={APPLAUSE_COPY.title.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
+        {say.say(APPLAUSE_COPY.title.label)}
+        {say.pairsWithKanji ? <span className="text-[0.8rem] font-normal tracking-normal opacity-70">{APPLAUSE_COPY.title.kanji}</span> : null}
         {tally.total > 0 ? <span className="font-normal tracking-normal">{tally.total}</span> : null}
       </h2>
       <div className="flex flex-wrap items-center gap-2">
@@ -65,25 +67,27 @@ export function Applause({
               onClick={() => void leave(mark.emoji)}
               disabled={!hasAccount || busy}
               aria-pressed={mine}
-              title={mine ? `${mark.label} · ${APPLAUSE_COPY.yours}` : mark.label}
-              data-testid={`applause-${mark.label.replace(/\s+/g, "-").toLowerCase()}`}
+              title={mine ? `${say.say(mark.label)} · ${say.say(APPLAUSE_COPY.yours)}` : say.say(mark.label)}
+              data-testid={`applause-${mark.slug}`}
               className={`${BUTTON_BASE} ${mine ? BUTTON_STRONG : BUTTON_QUIET} px-2.5 py-1 text-sm`}
             >
               <span aria-hidden>{mark.emoji}</span>
-              <span className="sr-only">{mark.label}</span>
+              <span className="sr-only">{say.say(mark.label)}</span>
               {count > 0 ? <span className="font-mono text-xs tabular-nums">{count}</span> : null}
             </button>
           );
         })}
       </div>
       <p className="text-xs text-muted">
-        {!signedIn
-          ? APPLAUSE_COPY.signedOut
-          : !hasAccount
-            ? APPLAUSE_COPY.noAccount
-            : tally.total === 0
-              ? APPLAUSE_COPY.none
-              : APPLAUSE_COPY.hint}
+        {say.say(
+          !signedIn
+            ? APPLAUSE_COPY.signedOut
+            : !hasAccount
+              ? APPLAUSE_COPY.noAccount
+              : tally.total === 0
+                ? APPLAUSE_COPY.none
+                : APPLAUSE_COPY.hint,
+        )}
       </p>
     </section>
   );

@@ -3,19 +3,24 @@
 import { SUGGESTION_DISPLAY } from "@/lib/gomoku/analysis.constants";
 import { pointName } from "@/lib/gomoku/notation";
 import { canChooseColour, canExtendOpening, seatToPlay } from "@/lib/gomoku/engine";
-import { GAME_STATUS, SEATS, SEAT_DISPLAY, STONES, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, SEATS, STONES, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { seatName, stoneName } from "@/lib/gomoku/seatWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { weave } from "@/lib/i18n/weave";
 import { EndGameButton, GameEnding, NewGameButton } from "@/components/play/GameEnding";
-import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+import { gameEndingCopy } from "@/components/play/gameEnding.constants";
 import { Button } from "@/components/ui/Controls";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 import { GameBrowserButton } from "./GameBrowser";
-import { GAME_COPY, HINT_POLICIES } from "./game.constants";
+import { gameCopy, HINT_POLICIES } from "./game.constants";
 import { openingPrompt } from "./openingCopy";
 import type { Seat } from "@/lib/gomoku/gomoku.types";
 import type { GamePanelProps } from "./game.types";
 
 /** Which colour the next stone will be, in the games where the mover chooses. */
 function ColourChooser({ session, actions }: GamePanelProps) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   if (session.placing === null || session.state.status !== "playing") return null;
   return (
     <div className="flex flex-wrap items-center gap-2" data-testid="colour-chooser">
@@ -27,7 +32,7 @@ function ColourChooser({ session, actions }: GamePanelProps) {
           strong={session.placing === stone}
           data-testid={`place-${stone}`}
         >
-          {STONE_DISPLAY[stone].label}
+          {stoneName(say, stone)}
         </Button>
       ))}
     </div>
@@ -39,6 +44,8 @@ function ColourChooser({ session, actions }: GamePanelProps) {
  * and in swap2 the option of laying two more stones instead.
  */
 function OpeningChoice({ session, actions }: GamePanelProps) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const { state, names } = session;
   if (!canChooseColour(state) || session.reviewing) return null;
 
@@ -47,7 +54,7 @@ function OpeningChoice({ session, actions }: GamePanelProps) {
       className={`flex flex-col gap-2 rounded-xl border px-3 py-2.5 ${TONE_CLASS.good}`}
       data-testid="opening-choice"
     >
-      <p className="text-sm font-semibold">{openingPrompt(state, names)}</p>
+      <p className="text-sm font-semibold">{openingPrompt(state, names, say)}</p>
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => actions.chooseColour(STONES.black)} data-testid="take-black">
           {GAME_COPY.takeBlack.label}
@@ -71,21 +78,31 @@ function OpeningChoice({ session, actions }: GamePanelProps) {
 
 /** What the engine suggested, once a hint has been spent on this position. */
 function HintLine({ session }: Pick<GamePanelProps, "session">) {
+  const say = useSpeaker();
   const { hint, state } = session;
   if (hint === null) return null;
 
   const { label, kanji } = SUGGESTION_DISPLAY[hint.reason];
+  const shown = say.pairName(label, kanji);
   return (
     <p className="text-xs text-moss" data-testid="hint-line">
-      <span className="font-mono font-semibold">
-        {pointName(state.settings.size, hint.point)}
-      </span>{" "}
-      — {label} <span className="opacity-70">{kanji}</span>
+      {weave(say.say("gamescreen.hintLine"), {
+        point: <span className="font-mono font-semibold">{pointName(state.settings.size, hint.point)}</span>,
+        label: (
+          <>
+            {shown.text}
+            {shown.kanji === null ? null : <span className="opacity-70"> {shown.kanji}</span>}
+          </>
+        ),
+      })}
     </p>
   );
 }
 
 export function GameControls({ session, actions, computerSeat = null }: GamePanelProps & { /** The seat a computer holds at this board, or null when two people are playing. */ computerSeat?: Seat | null }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
+  const GAME_ENDING_COPY = gameEndingCopy(say);
   const { state, settings, hintsLeft, helpRequest } = session;
   /*
    * A board with stones on it and no result is somebody's game. Starting a new
@@ -100,7 +117,7 @@ export function GameControls({ session, actions, computerSeat = null }: GamePane
    * move, who is named in the question, as at a pass-and-play table.
    */
   const resigning: Seat = computerSeat === null ? seat : computerSeat === SEATS.one ? SEATS.two : SEATS.one;
-  const resigningName = session.names[resigning].trim() || SEAT_DISPLAY[resigning].label;
+  const resigningName = session.names[resigning].trim() || seatName(say, resigning);
   const limited = settings.hintPolicy === HINT_POLICIES.limited;
   /*
    * Ten of the games read no lines: a race, a flip, a drop. There is no best
@@ -118,7 +135,7 @@ export function GameControls({ session, actions, computerSeat = null }: GamePane
           onClick={actions.undo}
           disabled={!session.canUndo}
           title={
-            state.settings.allowUndo ? undefined : "Undo is switched off for this game."
+            state.settings.allowUndo ? undefined : say.say("gamescreen.undoOff")
           }
         >
           {GAME_COPY.undo.label}
@@ -217,12 +234,13 @@ export function GameControls({ session, actions, computerSeat = null }: GamePane
           data-testid="resize-proposal"
         >
           <p className="text-sm font-semibold">
-            {SEAT_DISPLAY[session.resizeProposal.from].label} wants a{" "}
-            {session.resizeProposal.direction === "grow" ? "bigger" : "smaller"}{" "}
-            board — {session.resizeProposal.size}×{session.resizeProposal.size}.
+            {say.say(session.resizeProposal.direction === "grow" ? "gamescreen.resizeBigger" : "gamescreen.resizeSmaller", {
+              seat: seatName(say, session.resizeProposal.from),
+              size: String(session.resizeProposal.size),
+            })}
           </p>
           <p className="text-xs leading-snug opacity-85">
-            The stones keep their positions, and nobody loses a turn.
+            {say.say("gamescreen.resizeNote")}
           </p>
           <div className="flex gap-2">
             <Button onClick={actions.acceptResize} strong data-testid="accept-resize">
@@ -267,8 +285,7 @@ export function GameControls({ session, actions, computerSeat = null }: GamePane
             data-testid="help-request"
           >
             <p className="text-sm font-semibold">
-              {SEAT_DISPLAY[helpRequest === "one" ? "two" : "one"].label},{" "}
-              {GAME_COPY.helpWaiting}
+              {say.say("gamescreen.helpFor", { seat: seatName(say, helpRequest === "one" ? "two" : "one"), message: GAME_COPY.helpWaiting })}
             </p>
             <Button onClick={actions.cancelHelp}>{GAME_COPY.cancelHelp.label}</Button>
           </div>

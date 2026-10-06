@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { speaker } from "@/lib/i18n/i18n";
 import { DRAW_LIMIT_DISPLAY, DRAW_LIMIT_LIST, DRAW_LIMIT_SHARE } from "./gomoku.constants";
 
 // The rule is Narabe's (its own repository, `src/rules/drawLimit.test.ts`); the words for it are the site's.
@@ -8,7 +9,7 @@ describe("the words for a draw limit", () => {
     const copy = DRAW_LIMIT_DISPLAY[limit];
     expect(copy.label.length).toBeGreaterThan(2);
     expect(copy.kanji.length).toBeGreaterThan(0);
-    expect(copy.blurb.length).toBeGreaterThan(20);
+    expect(speaker("en").say(copy.blurb).length).toBeGreaterThan(20);
   });
 
   it("keeps the rule and the words apart, and in step", () => {

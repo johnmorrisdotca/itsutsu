@@ -1,3 +1,7 @@
+"use client";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import { MOVE_COUNT_SIZERS } from "./replay.constants";
 import type { MoveCountProps } from "./moveCount.types";
 
@@ -15,7 +19,9 @@ import type { MoveCountProps } from "./moveCount.types";
  * tabular, so the count does not shuffle as they change.
  */
 export function MoveCount({ at, last, start, className = "", testId }: MoveCountProps) {
-  const words = (move: number) => (move === 0 && start !== undefined ? start : `Move ${move} of ${last}`);
+  const say = useSpeaker();
+  const words = (move: number) =>
+    move === 0 && start !== undefined ? start : say.say("replay.moveOf", { move: String(move), last: String(last) });
   // The widths are held by the box's ::before and ::after, which are grid items but not text: a reader, a screen
   // reader and a test reading the count all see only the move shown.
   return (

@@ -1,7 +1,8 @@
 import { RULE_VARIANT_LIST, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { variantCopy } from "@/lib/gomoku/variantCopy";
-import { useLocale } from "@/components/i18n/LocaleProvider";
+import { useLocale, useSpeaker } from "@/components/i18n/LocaleProvider";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { Field, Select } from "@/components/ui/Controls";
 import { BoardPicker } from "./BoardPicker";
@@ -65,6 +66,7 @@ export function GameAndBoardChooser({
   onPuzzle?: (kind: PuzzleKind | null) => void;
 }) {
   const locale = useLocale();
+  const say = useSpeaker();
   const variant = value.variant as RuleVariant;
   const sizes = boardSizesFor(variant);
 
@@ -127,7 +129,7 @@ export function GameAndBoardChooser({
             >
               {RULE_VARIANT_LIST.map((option) => (
                 <option key={option} value={option}>
-                  {RULE_VARIANT_DISPLAY[option].label}
+                  {variantName(option, say)}
                 </option>
               ))}
             </Select>
@@ -160,7 +162,7 @@ export function GameAndBoardChooser({
       {pictures ? (
         boardUnderFamilies ? null : boardRow
       ) : sizes.length > 1 ? (
-        <Field label="Board">
+        <Field label={say.say("live.boardLabel")}>
           <Select
             value={value.size}
             disabled={disabled}

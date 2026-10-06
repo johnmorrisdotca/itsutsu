@@ -40,7 +40,7 @@ import { useBoardAwake } from "./useBoardAwake";
 
 const fetcher = async (url: string): Promise<GameDetail> => {
   const response = await fetch(url);
-  if (!response.ok) throw new Error("Could not load the game.");
+  if (!response.ok) throw new Error(`load failed: ${response.status}`);
   return response.json();
 };
 

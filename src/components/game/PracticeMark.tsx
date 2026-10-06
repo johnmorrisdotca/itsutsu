@@ -3,7 +3,8 @@ import Link from "@/components/ui/Link";
 import { Paired } from "@/components/i18n/Paired";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { PRACTICE_COPY } from "./game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { practiceCopy } from "./game.constants";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
 
 /**
@@ -26,6 +27,7 @@ import { SECTION_TITLE } from "@/components/ui/ui.constants";
  * so the real game is one press away, at the address that sets one up.
  */
 export function PracticeMark({ variant }: { variant: RuleVariant }) {
+  const PRACTICE_COPY = practiceCopy(useSpeaker());
   return (
     <section
       className="flex flex-col gap-2 rounded-2xl border border-ochre/50 bg-ochre-soft p-3"

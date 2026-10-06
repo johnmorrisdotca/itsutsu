@@ -1,12 +1,16 @@
 "use client";
 
-import type { CSSProperties } from "react";
-
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { wearsFelt } from "./appearance";
+import { feltName, nameWithKanji, themeName } from "./boardNames";
+import { boardPatchLook } from "./boardPaint";
 import { BOARD_THEMES, FELT_LIST, FELTS } from "./Board.constants";
-import type { Appearance, BoardTheme, BoardThemeTokens, Felt } from "./board.types";
+import type { Appearance, BoardTheme, Felt } from "./board.types";
+
+/** Where a swatch of a board is painted (`boardPaint.ts`), reached from here by the pickers beside a board. */
+export { boardPatchLook };
 
 /** The patches in the order they are shown: the reader's own board first, then the felts. */
 const PATCH_ORDER: readonly Felt[] = ["wood", ...FELT_LIST.filter((each) => each !== "wood")];
@@ -38,10 +42,12 @@ const PATCH_ORDER: readonly Felt[] = ["wood", ...FELT_LIST.filter((each) => each
  * over it says it can be pressed.
  */
 export function FeltPatches({ felt, wood, onChoose }: { felt: Felt; wood: BoardTheme; onChoose: (felt: Felt) => void }) {
+  const say = useSpeaker();
   return (
-    <div className="flex items-center justify-center gap-2" role="radiogroup" aria-label="Board colour" data-testid="felt-patches">
+    <div className="flex items-center justify-center gap-2" role="radiogroup" aria-label={say.say("boardlook.feltPicker")} data-testid="felt-patches">
       {PATCH_ORDER.map((each) => {
         const look = each === "wood" ? BOARD_THEMES[wood] : FELTS[each];
+        const name = each === "wood" ? themeName(say, wood) : feltName(say, each);
         const chosen = felt === each;
         return (
           <button
@@ -49,8 +55,8 @@ export function FeltPatches({ felt, wood, onChoose }: { felt: Felt; wood: BoardT
             type="button"
             role="radio"
             aria-checked={chosen}
-            aria-label={each === "wood" ? `Your board, ${look.label}` : look.label}
-            title={each === "wood" ? `Your board (${look.label})` : `${look.label} ${look.kanji}`}
+            aria-label={each === "wood" ? say.say("boardlook.feltOwnAria", { name: name.label }) : name.label}
+            title={each === "wood" ? say.say("boardlook.feltOwnTitle", { name: name.label }) : nameWithKanji(name)}
             onClick={() => onChoose(each)}
             data-testid={`felt-${each}`}
             className={`size-5 cursor-pointer rounded-[3px] outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-moss ${
@@ -62,22 +68,6 @@ export function FeltPatches({ felt, wood, onChoose }: { felt: Felt; wood: BoardT
       })}
     </div>
   );
-}
-
-/**
- * A patch of a board's surface, drawn as a bit of the board rather than a dot
- * of its colour: the surface, crossed once each way by its own ruling, so the
- * patch reads as four squares, inside a rim of the board's frame. For every
- * swatch that picks a board (`FeltPatches`, and the board themes beside a
- * game); a stone's or a marble's colour stays a circle.
- */
-export function boardPatchLook(look: BoardThemeTokens): CSSProperties {
-  const rule = `linear-gradient(${look.line}, ${look.line})`;
-  return {
-    background: `${rule} center / 1px 100% no-repeat, ${rule} center / 100% 1px no-repeat, ${look.surface}`,
-    // A border rather than an inset shadow: the ring that marks the chosen patch is a box-shadow, and an inline one would replace it.
-    border: `2px solid ${look.frame}`,
-  };
 }
 
 /** The patches under a board, where the game wears felt (`wearsFelt`); nothing for any other game. */

@@ -1,6 +1,8 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { SectionTitle } from "@/components/ui/Controls";
 import { SeatCard } from "./SeatCard";
@@ -27,14 +29,11 @@ export function InvitePanel({
   invites: SeatInvite[];
   yourStone: Stone | null;
 }) {
+  const say = useSpeaker();
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-4`}>
-      <SectionTitle kanji="招待">Invite links</SectionTitle>
-      <p className="text-xs text-muted">
-        Send a player their own link. Whoever opens it plays that colour, so it
-        is only shown while the seat is still waiting for somebody — once
-        they have sat down it is their credential, not an invitation.
-      </p>
+      <SectionTitle kanji="招待">{say.say("live.inviteTitle")}</SectionTitle>
+      <p className="text-xs text-muted">{say.say("live.inviteBody")}</p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
         {invites.map((invite) => (
@@ -42,9 +41,9 @@ export function InvitePanel({
             key={invite.stone}
             url={invite.url}
             qr={invite.qr}
-            name={{ en: STONE_DISPLAY[invite.stone].label, kanji: STONE_DISPLAY[invite.stone].kanji }}
+            name={{ en: stoneName(say, invite.stone), kanji: STONE_DISPLAY[invite.stone].kanji }}
             mark={<StoneDot stone={invite.stone} />}
-            message={`Your seat in our gomoku game (${STONE_DISPLAY[invite.stone].label}): ${invite.url}`}
+            message={say.say("live.inviteMessage", { colour: stoneName(say, invite.stone), url: invite.url })}
             isYours={invite.stone === yourStone}
             stone={invite.stone}
           />

@@ -1,4 +1,6 @@
 import type { ProgressMeasure } from "@/lib/gomoku/rules/noProgress";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 
 import type {
   AwarenessLevel,
@@ -7,32 +9,27 @@ import type {
   SessionSettings,
 } from "./game.types";
 
+/**
+ * An action or a heading: its words in the reader's language and the kanji
+ * beside them. An English reader sees the English with its kanji; a Japanese
+ * reader sees the Japanese words alone, so the kanji is dropped.
+ */
+export function pairOf(say: Speaker, key: PhraseKey, kanji: string): { label: string; kanji: string } {
+  return { label: say.say(key), kanji: say.pairsWithKanji ? kanji : "" };
+}
+
 export const AWARENESS_LEVELS = {
   off: "off",
   outlook: "outlook",
   full: "full",
 } as const satisfies Record<AwarenessLevel, AwarenessLevel>;
 
-export const AWARENESS_DISPLAY: Record<
-  AwarenessLevel,
-  { label: string; kanji: string; description: string }
-> = {
-  off: {
-    label: "Off",
-    kanji: "無",
-    description: "Read the board yourself.",
-  },
-  outlook: {
-    label: "Describe the position",
-    kanji: "形勢",
-    description: "You are told when you are winning or in trouble, never where.",
-  },
-  full: {
-    label: "Show threats",
-    kanji: "急所",
-    description: "Threats that must be answered are marked on the board.",
-  },
-};
+/** What each way of reading the board is called, and what it does, for the reader. */
+export const awarenessDisplay = (say: Speaker): Record<AwarenessLevel, { label: string; kanji: string; description: string }> => ({
+  off: { ...pairOf(say, "game.awarenessOff", "無"), description: say.say("game.awarenessOffDescription") },
+  outlook: { ...pairOf(say, "game.awarenessOutlook", "形勢"), description: say.say("game.awarenessOutlookDescription") },
+  full: { ...pairOf(say, "game.awarenessFull", "急所"), description: say.say("game.awarenessFullDescription") },
+});
 
 export const HINT_POLICIES = {
   off: "off",
@@ -40,45 +37,21 @@ export const HINT_POLICIES = {
   unlimited: "unlimited",
 } as const satisfies Record<HintPolicy, HintPolicy>;
 
-export const HINT_POLICY_DISPLAY: Record<
-  HintPolicy,
-  { label: string; kanji: string; description: string }
-> = {
-  off: { label: "No hints", kanji: "無", description: "The engine stays quiet." },
-  limited: {
-    label: "An allowance each",
-    kanji: "持ち駒",
-    description: "Spend them when you like, or give one to your opponent.",
-  },
-  unlimited: {
-    label: "Ask any time",
-    kanji: "自在",
-    description: "The engine answers every time you ask.",
-  },
-};
+export const hintPolicyDisplay = (say: Speaker): Record<HintPolicy, { label: string; kanji: string; description: string }> => ({
+  off: { ...pairOf(say, "game.hintOff", "無"), description: say.say("game.hintOffDescription") },
+  limited: { ...pairOf(say, "game.hintLimited", "持ち駒"), description: say.say("game.hintLimitedDescription") },
+  unlimited: { ...pairOf(say, "game.hintUnlimited", "自在"), description: say.say("game.hintUnlimitedDescription") },
+});
 
 export const HISTORY_MODES = {
   review: "review",
   branch: "branch",
 } as const satisfies Record<HistoryMode, HistoryMode>;
 
-export const HISTORY_MODE_DISPLAY: Record<
-  HistoryMode,
-  { label: string; kanji: string; description: string }
-> = {
-  review: {
-    label: "Read only",
-    kanji: "並べ替え",
-    description:
-      "Step through the game without changing it. Return to the last move to play on.",
-  },
-  branch: {
-    label: "Play from here",
-    kanji: "分岐",
-    description:
-      "Play from an earlier position. Everything after it is discarded, and you are asked first.",
-  },
-};
+export const historyModeDisplay = (say: Speaker): Record<HistoryMode, { label: string; kanji: string; description: string }> => ({
+  review: { ...pairOf(say, "game.historyReview", "並べ替え"), description: say.say("game.historyReviewDescription") },
+  branch: { ...pairOf(say, "game.historyBranch", "分岐"), description: say.say("game.historyBranchDescription") },
+});
 
 export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   awareness: AWARENESS_LEVELS.outlook,
@@ -95,132 +68,121 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
 export const DEFAULT_SEAT_NAMES = { one: "", two: "" } as const;
 
 /** Copy for the controls and the panels around the board. */
-export const GAME_COPY = {
-  undo: { label: "Undo", kanji: "待った" },
-  redo: { label: "Redo", kanji: "進む" },
-  newGame: { label: "New game", kanji: "新局" },
-  skip: { label: "Skip turn", kanji: "捨て石" },
-  skipHint: "Spends your turn on a far corner. It still costs you a stone.",
-  passHint: "Takes your turn without playing a stone. Two passes in a row end the game.",
-  swap: { label: "Swap colours", kanji: "交代" },
-  swapHint:
-    "Hand over your colour and take your opponent's stones instead. It costs you this move.",
-  hint: { label: "Best move", kanji: "手筋" },
-  grant: { label: "Give a hint", kanji: "献上" },
-  grantHint: "Give one of your hints to your opponent.",
-  askHelp: { label: "Ask for advice", kanji: "助言" },
-  askHelpHint: "Your opponent marks the point they think you should play.",
-  helpWaiting: "Mark the point you would play.",
-  cancelHelp: { label: "Cancel", kanji: "取消" },
-  moveHistory: { label: "Moves", kanji: "棋譜" },
-  settings: { label: "Settings", kanji: "設定" },
-  advanced: { label: "Advanced", kanji: "詳細" },
-  appearance: { label: "Appearance", kanji: "見た目" },
-  noHintsLeft: "No hints left.",
-  swapUnavailableDecided: "The position is already decided — no stealing it.",
-  swapUnavailableSpent: "You have used your swap.",
-  emptyRecord: "No stones yet.",
-  clock: { label: "Clock", kanji: "時計" },
-  byoyomi: { label: "Byoyomi", kanji: "秒読み" },
-  stats: { label: "This game", kanji: "内容" },
-  advantage: { label: "Who is ahead", kanji: "形勢" },
-  advantageHint:
-    "How the game stands while it is on — read by threats where the game has them, counted where it has something countable, and left unsaid where it has neither.",
-  earlyWarning: { label: "Warn early", kanji: "予兆" },
-  earlyWarningHint:
-    "Warn each side before the other can build an open three, not just once one exists. Both players get it, so it stays fair — but it makes a game harder to win.",
-  building: { label: "Something is forming", kanji: "予兆" },
-  buildingDetail:
-    "Your opponent can start an open three here next move. Nothing is forced yet.",
-  outOfTime: "out of time",
-  grow: { label: "Bigger board", kanji: "拡張" },
-  shrink: { label: "Smaller board", kanji: "縮小" },
-  resizeHint:
-    "Changes the board for both of you, so the other player has to agree. The stones keep their positions.",
-  resizeAgree: { label: "Agree", kanji: "同意" },
-  resizeDecline: { label: "No thanks", kanji: "辞退" },
-  shrinkBlocked: "The outer ring is in use, so the board cannot get smaller.",
-  reviewing: { label: "Reviewing", kanji: "検討" },
-  reviewingDetail: "You are looking at an earlier position.",
+export const gameCopy = (say: Speaker) => {
+  const pair = (key: PhraseKey, kanji: string) => pairOf(say, key, kanji);
+  return {
+  undo: pair("game.undo", "待った"),
+  redo: pair("game.redo", "進む"),
+  newGame: pair("game.newGame", "新局"),
+  skip: pair("game.skip", "捨て石"),
+  skipHint: say.say("game.skipHint"),
+  passHint: say.say("game.passHint"),
+  swap: pair("game.swap", "交代"),
+  swapHint: say.say("game.swapHint"),
+  hint: pair("game.hint", "手筋"),
+  grant: pair("game.grant", "献上"),
+  grantHint: say.say("game.grantHint"),
+  askHelp: pair("game.askHelp", "助言"),
+  askHelpHint: say.say("game.askHelpHint"),
+  helpWaiting: say.say("game.helpWaiting"),
+  cancelHelp: pair("game.cancelHelp", "取消"),
+  moveHistory: pair("game.moveHistory", "棋譜"),
+  settings: pair("game.settings", "設定"),
+  advanced: pair("game.advanced", "詳細"),
+  appearance: pair("game.appearance", "見た目"),
+  noHintsLeft: say.say("game.noHintsLeft"),
+  swapUnavailableDecided: say.say("game.swapUnavailableDecided"),
+  swapUnavailableSpent: say.say("game.swapUnavailableSpent"),
+  emptyRecord: say.say("game.emptyRecord"),
+  clock: pair("game.clock", "時計"),
+  byoyomi: pair("game.byoyomi", "秒読み"),
+  stats: pair("game.stats", "内容"),
+  advantage: pair("game.advantage", "形勢"),
+  advantageHint: say.say("game.advantageHint"),
+  earlyWarning: pair("game.earlyWarning", "予兆"),
+  earlyWarningHint: say.say("game.earlyWarningHint"),
+  building: pair("game.building", "予兆"),
+  buildingDetail: say.say("game.buildingDetail"),
+  outOfTime: say.say("game.outOfTime"),
+  grow: pair("game.grow", "拡張"),
+  shrink: pair("game.shrink", "縮小"),
+  resizeHint: say.say("game.resizeHint"),
+  resizeAgree: pair("game.resizeAgree", "同意"),
+  resizeDecline: pair("game.resizeDecline", "辞退"),
+  shrinkBlocked: say.say("game.shrinkBlocked"),
+  reviewing: pair("game.reviewing", "検討"),
+  reviewingDetail: say.say("game.reviewingDetail"),
   /** The banner over the board at the latest position: always drawn, so the board never moves (`ReviewBanner`). */
-  atLatest: { label: "Latest position", kanji: "現局" },
-  atLatestDetail: "Step back through the record to look at an earlier move.",
-  returnToLatest: { label: "Back to the game", kanji: "戻る" },
-  branchTitle: "Play from here?",
-  branchConfirm: { label: "Discard and play", kanji: "分岐" },
-  branchCancel: { label: "Cancel", kanji: "取消" },
-  opening: { label: "Opening", kanji: "布石" },
-  lineLength: { label: "Line", kanji: "連" },
-  lineLengthHint: "Stones in a row needed to win.",
-  takeBlack: { label: "Take black", kanji: "黒番" },
-  takeWhite: { label: "Take white", kanji: "白番" },
-  extendOpening: { label: "Add two stones", kanji: "二手追加" },
-  extendOpeningHint:
-    "Lay one white and one black stone, then your opponent chooses the colour.",
-  chooseColour: "choose a colour",
-  chooseColourOrExtend: "choose a colour, or add two stones",
-  laysThree: "lays the first three stones: black, white, black.",
-  laysTwo: "adds two stones: white, then black.",
-  opensAtTengen: "Black opens at tengen, the centre point.",
-  rifWhite: "White's first stone must touch tengen, inside the central 3×3.",
-  rifBlack: "Black's second stone must land inside the central 5×5.",
-  sakataFifth: "Black's third stone, the fifth move, must land inside the central 7×7.",
-  nestedStone: (laid: number) =>
-    `Stone ${laid + 1} must land inside the central ${2 * laid + 1}×${2 * laid + 1}; then the other side may swap.`,
-  proBlack: "Black's second stone must land outside the central 5×5.",
-  longProBlack: "Black's second stone must land outside the central 7×7.",
-  captures: { label: "Captures", kanji: "取り" },
-  capturesToWin: (stones: number) => `${stones} stones win`,
-  winsByCaptures: (stones: number) => `wins by capturing ${stones} stones`,
-  stoneOfTurn: (placed: number, total: number) => `Stone ${placed} of ${total} this turn`,
-  forbiddenNote: (colour: string, shapes: string) =>
-    `${colour} may not play the points marked ✕: ${shapes}.`,
-  browser: { label: "Games", kanji: "種目" },
-  browserTitle: "Choose a game",
-  browserIntro:
-    "Every game here is a line of stones at heart. Pick the rules, then an opening if the variant offers one. Changing either starts a new game.",
-  browserOpenings: { label: "Openings", kanji: "布石" },
-  browserPlay: (name: string) => `Play ${name}`,
-  browserCurrent: "Playing now",
-  browserUse: "Use this opening",
-  browserClose: "Close",
-  sharedOpeningNote: "Shared games start with the free opening.",
-  handicap: { label: "Handicap", kanji: "置き碁" },
-  handicapHint:
-    "One colour plays under the rules of a harder game while the other plays the plain one. Seat swaps are off while a handicap is set.",
-  handicapNone: "None",
-  handicapFor: (colour: string) => `${colour} plays with a handicap`,
-  secondStone: { label: "Second stone", kanji: "二手目" },
-  secondStoneHint: "Where the handicapped colour's second stone may go.",
-  review: { label: "Review", kanji: "感想戦" },
-  reviewEmpty: "Nothing to say yet. Finish the game and the review appears here.",
-  reviewOtherRules: "Under other rules",
+  atLatest: pair("game.atLatest", "現局"),
+  atLatestDetail: say.say("game.atLatestDetail"),
+  returnToLatest: pair("game.returnToLatest", "戻る"),
+  branchTitle: say.say("game.branchTitle"),
+  branchConfirm: pair("game.branchConfirm", "分岐"),
+  branchCancel: pair("game.branchCancel", "取消"),
+  opening: pair("game.opening", "布石"),
+  lineLength: pair("game.lineLength", "連"),
+  lineLengthHint: say.say("game.lineLengthHint"),
+  takeBlack: pair("game.takeBlack", "黒番"),
+  takeWhite: pair("game.takeWhite", "白番"),
+  extendOpening: pair("game.extendOpening", "二手追加"),
+  extendOpeningHint: say.say("game.extendOpeningHint"),
+  chooseColour: (who: string) => say.say("game.chooseColour", { who }),
+  chooseColourOrExtend: (who: string) => say.say("game.chooseColourOrExtend", { who }),
+  laysThree: (who: string) => say.say("game.laysThree", { who }),
+  laysTwo: (who: string) => say.say("game.laysTwo", { who }),
+  opensAtTengen: say.say("game.opensAtTengen"),
+  rifWhite: say.say("game.rifWhite"),
+  rifBlack: say.say("game.rifBlack"),
+  sakataFifth: say.say("game.sakataFifth"),
+  nestedStone: (laid: number) => say.say("game.nestedStone", { n: String(laid + 1), side: String(2 * laid + 1) }),
+  proBlack: say.say("game.proBlack"),
+  longProBlack: say.say("game.longProBlack"),
+  captures: pair("game.captures", "取り"),
+  capturesToWin: (stones: number) => say.say("game.capturesToWin", { stones: String(stones) }),
+  winsByCaptures: (who: string, stones: number) => say.say("game.winsByCaptures", { who, stones: String(stones) }),
+  stoneOfTurn: (placed: number, total: number) => say.say("game.stoneOfTurn", { placed: String(placed), total: String(total) }),
+  forbiddenNote: (colour: string, shapes: string) => say.say("game.forbiddenNote", { colour, shapes }),
+  browser: pair("game.browser", "種目"),
+  browserTitle: say.say("game.browserTitle"),
+  browserIntro: say.say("game.browserIntro"),
+  browserOpenings: pair("game.browserOpenings", "布石"),
+  browserPlay: (name: string) => say.say("game.browserPlay", { name }),
+  browserCurrent: say.say("game.browserCurrent"),
+  browserUse: say.say("game.browserUse"),
+  browserClose: say.say("game.browserClose"),
+  sharedOpeningNote: say.say("game.sharedOpeningNote"),
+  handicap: pair("game.handicap", "置き碁"),
+  handicapHint: say.say("game.handicapHint"),
+  handicapNone: say.say("game.handicapNone"),
+  handicapFor: (colour: string) => say.say("game.handicapFor", { colour }),
+  secondStone: pair("game.secondStone", "二手目"),
+  secondStoneHint: say.say("game.secondStoneHint"),
+  review: pair("game.review", "感想戦"),
+  reviewEmpty: say.say("game.reviewEmpty"),
+  reviewOtherRules: say.say("game.reviewOtherRules"),
   reviewForbidden: (move: string, colour: string, variant: string, shape: string) =>
-    `Move ${move} by ${colour} would not have been allowed in ${variant}: ${shape}.`,
-  reviewWouldNotWin: (colour: string, variant: string) =>
-    `${colour}'s winning line would not have counted in ${variant}.`,
+    say.say("game.reviewForbidden", { move, colour, variant, shape }),
+  reviewWouldNotWin: (colour: string, variant: string) => say.say("game.reviewWouldNotWin", { colour, variant }),
   reviewEarlierWin: (move: string, colour: string, variant: string) =>
-    `In ${variant} the game would already have been ${colour}'s at move ${move}.`,
+    say.say("game.reviewEarlierWin", { move, colour, variant }),
   reviewCapture: (move: string, colour: string, variant: string) =>
-    `In ${variant}, move ${move} by ${colour} would have captured a pair.`,
-  reviewRecovered: (who: string, count: number) =>
-    `${who} made ${count === 1 ? "a losing move" : `${count} losing moves`} and still won. The other side had the win and let it go.`,
-  reviewClean: (who: string) => `${who} never gave the game away.`,
-  reviewStreak: (who: string, streak: number) =>
-    `${who}'s ${ordinal(streak)} win in a row.`,
-  reviewFirstWin: (who: string) => `${who}'s first recorded win.`,
-  twistPrompt: "Turn a quadrant to finish your move.",
-  pickPiece: "Pick one of your pieces to slide.",
-  placePiece: "Choose the point it slides to, or pick a different piece.",
-  pickRacer: "Pick one of your pieces to move: a step, or a chain of jumps.",
-  placeRacer: "Choose where it lands, or pick a different piece.",
-  dropPrompt: "Play anywhere in a column. The stone falls to the bottom.",
-  winsByTrap: (who: string, loser: string) => `${who} wins. ${loser} made three in a row.`,
-  winsBySquare: (who: string) => `${who} wins with a square`,
-  drawBothLines: "Draw. Both made a line at once.",
-  drawByLength: "Draw. The game ran to the length it was given.",
-  drawByRepetition: "Draw by repetition: the same position came round again, with the same side to move.",
-  drawByEndgameCount: "Draw. The ending was not won within the moves its rules allow.",
+    say.say("game.reviewCapture", { move, colour, variant }),
+  reviewRecovered: (who: string, count: number) => say.count("game.reviewRecovered", count, { who }),
+  reviewClean: (who: string) => say.say("game.reviewClean", { who }),
+  reviewStreak: (who: string, streak: number) => say.say("game.reviewStreak", { who, ordinal: ordinal(say, streak) }),
+  reviewFirstWin: (who: string) => say.say("game.reviewFirstWin", { who }),
+  twistPrompt: say.say("game.twistPrompt"),
+  pickPiece: say.say("game.pickPiece"),
+  placePiece: say.say("game.placePiece"),
+  pickRacer: say.say("game.pickRacer"),
+  placeRacer: say.say("game.placeRacer"),
+  dropPrompt: say.say("game.dropPrompt"),
+  winsByTrap: (who: string, loser: string) => say.say("game.winsByTrap", { who, loser }),
+  winsBySquare: (who: string) => say.say("game.winsBySquare", { who }),
+  drawBothLines: say.say("game.drawBothLines"),
+  drawByLength: say.say("game.drawByLength"),
+  drawByRepetition: say.say("game.drawByRepetition"),
+  drawByEndgameCount: say.say("game.drawByEndgameCount"),
   /*
    * A stall that is an ordinary draw, named by the rule that drew it and that
    * rule's own count — the way chess says "draw by the fifty-move rule". One
@@ -229,79 +191,76 @@ export const GAME_COPY = {
    * count every move.
    */
   drawNoProgress: {
-    racing: (plies: number) => `Draw by the no-progress rule: in ${plies} moves, nobody got a piece any nearer home.`,
-    taking: (plies: number) => `Draw by the ${plies / 2}-move rule: ${plies / 2} moves each with nothing taken and no man moved.`,
-    placing: (plies: number) => `Draw by the sliding rule: ${plies} moves since the last piece went down, and nobody won.`,
+    racing: (plies: number) => say.say("game.drawNoProgressRacing", { plies: String(plies) }),
+    taking: (plies: number) => say.say("game.drawNoProgressTaking", { half: String(plies / 2) }),
+    placing: (plies: number) => say.say("game.drawNoProgressPlacing", { plies: String(plies) }),
   } satisfies Record<ProgressMeasure, (plies: number) => string>,
-  fixedBy: (game: string) => `Fixed by ${game}.`,
-  penaltyStrict: "Loss of game, ignoring vacation days",
-  rulesLocked: "The rules are fixed while a game is on. Start a new game to change them.",
-  centreDiscs: { label: "Centre discs placed" },
-  centreDiscsHint: "Two of each colour start in the centre, as in Othello. Off, and the players lay the first four themselves, as in the 1880s game.",
-  noDrawLimitCannotDraw:
-    "This game cannot end in a draw: a full board always joins one player's two sides. There is no length to set.",
-  noDrawLimitTooSmall:
-    "This board is too small to need a length. A game of this size is over well before any share of the board has been played.",
-  noReading: "No reading in a game where stones move after they are placed.",
-  idle: { label: "Are you still there?", kanji: "居る？" },
-  idleDetail: "Nothing has moved for a couple of minutes, so the clock is paused.",
-  idleConfirm: "Still here",
-  idleLeave: "I'm done for now",
+  fixedBy: (game: string) => say.say("game.fixedBy", { game }),
+  penaltyStrict: say.say("game.penaltyStrict"),
+  rulesLocked: say.say("game.rulesLocked"),
+  centreDiscs: { label: say.say("game.centreDiscs") },
+  centreDiscsHint: say.say("game.centreDiscsHint"),
+  noDrawLimitCannotDraw: say.say("game.noDrawLimitCannotDraw"),
+  noDrawLimitTooSmall: say.say("game.noDrawLimitTooSmall"),
+  noReading: say.say("game.noReading"),
+  idle: pair("game.idle", "居る？"),
+  idleDetail: say.say("game.idleDetail"),
+  idleConfirm: say.say("game.idleConfirm"),
+  idleLeave: say.say("game.idleLeave"),
   /*
    * Said because it is the thing that stops somebody staying out of doubt.
    * A local game is written to this browser as it is played, so leaving
    * costs nothing — and somebody who does not know that will sit through
    * the question rather than risk it.
    */
-  idleKept: "This game is kept. It will be here when you come back.",
+  idleKept: say.say("game.idleKept"),
   /* A live game's clock is the server's and does not stop for anyone; the game is kept on the site. */
-  idleLiveDetail: "Nothing has moved here for a couple of minutes. If this game has a clock, it is still running.",
-  idleLiveKept: "This game is kept on the site. It will be here, as it stands, when you come back.",
+  idleLiveDetail: say.say("game.idleLiveDetail"),
+  idleLiveKept: say.say("game.idleLiveKept"),
   /* A puzzle's run is this tab's alone, so leaving is the end of it — said, so nobody leaves believing otherwise. */
-  idlePuzzleDetail: "Nothing has moved for a couple of minutes, so the clock is paused and the grid is covered.",
-  idleRaceDetail: "Nothing has moved for a couple of minutes. A race's clock is the site's, and it is still running.",
+  idlePuzzleDetail: say.say("game.idlePuzzleDetail"),
+  idleRaceDetail: say.say("game.idleRaceDetail"),
   /* A member's unfinished puzzle is kept when they leave (`useKeptRun`); a visitor's lasts the page, and says so. */
-  idlePuzzleKept: "This puzzle is kept in your games. It will be here, as it stands, when you come back.",
-  idlePuzzleNotKept: "Without an account a puzzle lasts this page: leaving ends it.",
-  idleRaceKept: "The race is kept on the site. Its link brings you back to it.",
-  pass: { label: "Pass", kanji: "パス" },
-  forfeit: { label: "Timed out", kanji: "時間切れ" },
-  piece: { label: "Piece in hand", kanji: "手駒" },
-  nextPieces: { label: "Coming next", kanji: "次" },
-  rotatePiece: { label: "Rotate", kanji: "回転" },
-  flipPiece: { label: "Flip", kanji: "反転" },
-  useSingle: { label: "Place a single", kanji: "単石" },
-  usePiece: { label: "Place the piece", kanji: "駒" },
-  singlesLeft: (count: number) => `${count} single${count === 1 ? "" : "s"} left`,
+  idlePuzzleKept: say.say("game.idlePuzzleKept"),
+  idlePuzzleNotKept: say.say("game.idlePuzzleNotKept"),
+  idleRaceKept: say.say("game.idleRaceKept"),
+  pass: pair("game.pass", "パス"),
+  forfeit: pair("game.forfeit", "時間切れ"),
+  piece: pair("game.piece", "手駒"),
+  nextPieces: pair("game.nextPieces", "次"),
+  rotatePiece: pair("game.rotatePiece", "回転"),
+  flipPiece: pair("game.flipPiece", "反転"),
+  useSingle: pair("game.useSingle", "単石"),
+  usePiece: pair("game.usePiece", "駒"),
+  singlesLeft: (count: number) => say.count("game.singlesLeft", count),
   /*
    * The pass is taken for a player now — see rules/forcedPass.ts — so this is
    * only ever seen on a game that was already sitting stuck before it was, and
    * says what is true of that one rather than offering a choice there is not.
    */
-  noMoveLeft: "You have no move left. Pass to hand the turn on.",
-  youHadNoMove: "You had no move, so your turn passed.",
-  hadNoMoveToYou: (who: string) => `${who} had no move, so the turn passed back to you.`,
-  hadNoMove: (who: string) => `${who} had no move, so their turn passed.`,
+  noMoveLeft: say.say("game.noMoveLeft"),
+  youHadNoMove: say.say("game.youHadNoMove"),
+  hadNoMoveToYou: (who: string) => say.say("game.hadNoMoveToYou", { who }),
+  hadNoMove: (who: string) => say.say("game.hadNoMove", { who }),
   /** A turn a head start took, said to the colour given it, to the other side, and to anybody watching. */
-  headStartYours: (turn: number, of: number) => `Your head start: free turn ${turn} of ${of}, so it is your move again.`,
+  headStartYours: (turn: number, of: number) => say.say("game.headStartYours", { turn: String(turn), of: String(of) }),
   headStartToYou: (who: string, turn: number, of: number) =>
-    `${who}'s head start: free turn ${turn} of ${of}, so your turn passed.`,
-  headStartWatched: (who: string, turn: number, of: number) => `${who}'s head start: free turn ${turn} of ${of}.`,
-  drawNoMoves: "Draw. Neither side had a move left.",
-  passTurn: { label: "Pass", kanji: "パス" },
-  piecePrompt: "Place the piece in hand: rotate or flip it, then click where its top-left corner goes.",
-  singlePrompt: "Lay one stone of your colour.",
-  notes: { label: "Notes", kanji: "覚え書き" },
-  notesHint: "Private. Kept in this browser and never sent to anyone.",
-  notesPlaceholder: "What you are planning, what you noticed, what to try next time…",
-  placeAs: "Place a stone as",
-  makerBreakerRoles: (maker: string, breaker: string) =>
-    `${maker} is the Maker and wants a five of either colour; ${breaker} is the Breaker and wants none.`,
-  moveTime: { label: "Time per move", kanji: "持ち時間" },
-  moveTimeHint: "How long each player has for a move in a shared game. The clock starts when the other side moves.",
-  penalty: { label: "Running out of time", kanji: "時間切れ" },
-  penaltyTurn: "Loses the turn. Three in a row lose the game.",
-  penaltyGame: "Loses the game.",
+    say.say("game.headStartToYou", { who, turn: String(turn), of: String(of) }),
+  headStartWatched: (who: string, turn: number, of: number) => say.say("game.headStartWatched", { who, turn: String(turn), of: String(of) }),
+  drawNoMoves: say.say("game.drawNoMoves"),
+  passTurn: pair("game.passTurn", "パス"),
+  piecePrompt: say.say("game.piecePrompt"),
+  singlePrompt: say.say("game.singlePrompt"),
+  notes: pair("game.notes", "覚え書き"),
+  notesHint: say.say("game.notesHint"),
+  notesPlaceholder: say.say("game.notesPlaceholder"),
+  placeAs: say.say("game.placeAs"),
+  makerBreakerRoles: (maker: string, breaker: string) => say.say("game.makerBreakerRoles", { maker, breaker }),
+  moveTime: pair("game.moveTime", "持ち時間"),
+  moveTimeHint: say.say("game.moveTimeHint"),
+  penalty: pair("game.penalty", "時間切れ"),
+  penaltyTurn: say.say("game.penaltyTurn"),
+  penaltyGame: say.say("game.penaltyGame"),
   /*
    * The same three, named rather than explained.
    *
@@ -311,40 +270,38 @@ export const GAME_COPY = {
    * said, under the control where there is room for it, and the option says
    * which of the three this is.
    */
-  penaltyTurnShort: "Lose the turn",
-  penaltyGameShort: "Lose the game",
-  penaltyStrictShort: "Lose the game, strictly",
-  penaltyHint:
-    "Graceful: a missed deadline costs the turn, and the waiting player may claim it or simply keep waiting. Strict: a missed deadline is a loss.",
-  allowResign: { label: "Allow resigning", kanji: "投了可" },
-  allowResignHint: "Either seat may give the game up. Off, and a game can only be won, drawn or timed out.",
-  openSeat: { label: "Open to anyone", kanji: "公開" },
-  openSeatHint: "Post the other seat on the games page. Whoever answers first sits down as White.",
-  mustMoveBy: "must move by",
+  penaltyTurnShort: say.say("game.penaltyTurnShort"),
+  penaltyGameShort: say.say("game.penaltyGameShort"),
+  penaltyStrictShort: say.say("game.penaltyStrictShort"),
+  penaltyHint: say.say("game.penaltyHint"),
+  allowResign: pair("game.allowResign", "投了可"),
+  allowResignHint: say.say("game.allowResignHint"),
+  openSeat: pair("game.openSeat", "公開"),
+  openSeatHint: say.say("game.openSeatHint"),
+  /** With `{name}` and `{when}` standing where the colour and its deadline fall; `weave` puts them there. */
+  mustMoveBy: say.say("game.mustMoveBy"),
   /** Said on the board a move was just played on, when no other board is waiting. */
-  nothingWaiting: "That was the last board waiting on you.",
-  yourGames: "Your games",
-  claimTurn: { label: "Claim the turn", kanji: "手番請求" },
-  claimGame: { label: "Claim the win", kanji: "勝ち請求" },
-  claimHint: "Their time is up. Claim it, or leave the game waiting and pass the move back to them.",
-  claimTurnConfirm: "Claim their missed turn? They lose this move, and the board comes back to you.",
-  claimGameConfirm: "Claim the game on their clock? It ends here, and the result is filed against them.",
-  forfeitsNote: (count: number, limit: number) => `${count} of ${limit} turns forfeited`,
-} as const;
+  nothingWaiting: say.say("game.nothingWaiting"),
+  yourGames: say.say("game.yourGames"),
+  claimTurn: pair("game.claimTurn", "手番請求"),
+  claimGame: pair("game.claimGame", "勝ち請求"),
+  claimHint: say.say("game.claimHint"),
+  claimTurnConfirm: say.say("game.claimTurnConfirm"),
+  claimGameConfirm: say.say("game.claimGameConfirm"),
+  forfeitsNote: (count: number, limit: number) => say.say("game.forfeitsNote", { count: String(count), limit: String(limit) }),
+};
+};
 
-function ordinal(n: number): string {
+/** The English, for the places with no speaker. */
+export const GAME_COPY = gameCopy(speaker("en"));
+
+/** The last digit that has its own ending: 1st, 2nd, 3rd; every other digit takes "th". */
+const ORDINALS: Record<number, PhraseKey> = { 1: "game.ordinalSt", 2: "game.ordinalNd", 3: "game.ordinalRd" };
+
+function ordinal(say: Speaker, n: number): string {
   const rest = n % 100;
-  if (rest >= 11 && rest <= 13) return `${n}th`;
-  switch (n % 10) {
-    case 1:
-      return `${n}st`;
-    case 2:
-      return `${n}nd`;
-    case 3:
-      return `${n}rd`;
-    default:
-      return `${n}th`;
-  }
+  const key = rest >= 11 && rest <= 13 ? "game.ordinalTh" : (ORDINALS[n % 10] ?? "game.ordinalTh");
+  return say.say(key, { n: String(n) });
 }
 
 /**
@@ -356,11 +313,19 @@ function ordinal(n: number): string {
  * record, and somebody who has pasted another site's game into it is looking
  * at something that never happened here.
  */
-export const PRACTICE_COPY = {
+export const practiceCopy = (say: Speaker) => {
+  const pair = (key: PhraseKey, kanji: string) => pairOf(say, key, kanji);
+  /** What each format is called in a sentence a player reads. */
+  const formatWords: Record<string, string> = {
+    coordinates: say.say("game.formatCoordinates"),
+    squares: say.say("game.formatSquares"),
+    sgf: say.say("game.formatSgf"),
+    itsYourTurn: say.say("game.formatIyt"),
+    goldToken: say.say("game.formatGt"),
+  };
+  return {
   mark: {
-    label: "Practice board",
-    kanji: "試し打ち",
-    /* What it is NOT, in the order somebody would worry about it. */
+    ...pair("game.practiceLabel", "試し打ち"),
     /*
      * WHAT IS TRUE, and it is not "nothing is kept". A board played at one
      * screen IS filed, as an unrated game at one screen, so it can be come
@@ -369,45 +334,37 @@ export const PRACTICE_COPY = {
      * never touches is a rating. A game PASTED in is not filed at all; see
      * `session.pasted`, and the sentence below that says so.
      */
-    line: "Play both sides, take moves back, or paste a game in and walk through it. Nobody is sitting opposite, there is no clock, and nothing played here is rated — a board at one screen is kept as its own game, and a game you paste in is not kept at all.",
+    line: say.say("game.practiceLine"),
     /* The way out, since a practice board that cannot become a game is a dead end. */
-    real: "Start a real game",
+    real: say.say("game.practiceReal"),
   },
   paste: {
-    label: "Paste a game",
-    kanji: "棋譜貼付",
-    button: "Load moves",
-    clear: "Clear",
-    placeholder: "Paste a list of moves",
-    hint: (example: string) => `A list of moves, in most of the ways they are published — like ${example}. Move numbers, line breaks and a result on the end are all fine.`,
-    nothing: "Could not read any moves in that.",
+    ...pair("game.pasteLabel", "棋譜貼付"),
+    button: say.say("game.pasteButton"),
+    clear: say.say("game.pasteClear"),
+    placeholder: say.say("game.pastePlaceholder"),
+    hint: (example: string) => say.say("game.pasteHint", { example }),
+    nothing: say.say("game.pasteNothing"),
     /* Said on success too: somebody who pasted forty moves and got twelve has to be told. */
-    read: (moves: number, format: string) =>
-      `Read ${moves} ${moves === 1 ? "move" : "moves"} as ${FORMAT_WORDS[format] ?? format}.`,
+    read: (moves: number, format: string) => say.count("game.pasteRead", moves, { format: formatWords[format] ?? format }),
     /* Where a list stopped being playable, which is the engine's answer and not the reader's. */
-    refused: (at: number) => `Move ${at} cannot be played in this game, so the board stops there.`,
+    refused: (at: number) => say.say("game.pasteRefused", { at: String(at) }),
     /*
      * Where the list came from. Two other sites letter their columns with I and
      * one counts its rows from the top, so the same "I9" is a different point
      * on each — see `readSite`. Anywhere tries this site's ways, and knows the
      * other two sites' lists by their layout.
      */
-    fromLabel: "From",
+    fromLabel: say.say("game.pasteFrom"),
     from: {
-      anywhere: "Anywhere",
+      anywhere: say.say("game.pasteAnywhere"),
       itsYourTurn: "ItsYourTurn",
       goldToken: "GoldToken",
     },
-    fromHint:
-      "On ItsYourTurn press 'show move list'; on GoldToken the moves are under Past Moves. Copy them and paste here — with this board set to the same size as the game first, since ItsYourTurn counts its rows from the bottom edge.",
+    fromHint: say.say("game.pasteFromHint"),
   },
-} as const;
-
-/** What each format is called in a sentence a player reads. */
-const FORMAT_WORDS: Record<string, string> = {
-  coordinates: "coordinates",
-  squares: "Reversi squares",
-  sgf: "SGF",
-  itsYourTurn: "an ItsYourTurn move list",
-  goldToken: "a GoldToken move list",
+  };
 };
+
+/** The English, for the places with no speaker. */
+export const PRACTICE_COPY = practiceCopy(speaker("en"));

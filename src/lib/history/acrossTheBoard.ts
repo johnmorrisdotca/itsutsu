@@ -1,6 +1,7 @@
 import "server-only";
 
 import { STONES } from "@/lib/gomoku/gomoku.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { prisma } from "@/lib/prisma";
 import { isIgnoring } from "@/lib/social/ignores";
@@ -39,6 +40,7 @@ export async function acrossTheBoard(
   seat: Stone | null,
   seats: SeatIds,
   names: { blackName: string; whiteName: string },
+  say: Speaker = speaker("en"),
   now: Date = new Date(),
 ): Promise<Across | null> {
   if (seat === null) return null;
@@ -58,7 +60,7 @@ export async function acrossTheBoard(
       ? member.awayUntil.toISOString()
       : null;
   return {
-    name: member?.name || otherName || "the other seat",
+    name: member?.name || otherName || say.say("played.otherSeat"),
     country: member?.country ?? "",
     awayUntil: away,
   };

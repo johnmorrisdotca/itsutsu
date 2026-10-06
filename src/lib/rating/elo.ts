@@ -36,11 +36,7 @@ export function tierFor(ratedGames: number): RatingTier {
   return "established";
 }
 
-export const TIER_DISPLAY: Record<RatingTier, { label: string; kanji: string; note: string }> = {
-  unrated: { label: "Unrated", kanji: "未定", note: "Fewer than four rated games." },
-  provisional: { label: "Provisional", kanji: "仮", note: "Still finding its level; moves quickly." },
-  established: { label: "Established", kanji: "確定", note: "Twenty rated games or more." },
-};
+export { TIER_DISPLAY } from "./ratingNames.constants";
 
 /** The chance the first player beats the second, as Elo sees it. */
 export function expectedScore(rating: number, opponent: number): number {

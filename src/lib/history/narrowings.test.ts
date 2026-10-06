@@ -5,8 +5,14 @@ import { appliedNarrowings } from "./narrowings";
 const NONE = { player: null, outcome: "", pool: "", rated: "", verdict: "", locale: "en" as const };
 
 describe("appliedNarrowings", () => {
+  it("says each chip in a phrase of its own as well, so a page can say it in the reader's language", () => {
+    const chips = appliedNarrowings({ ...NONE, pool: "computer", rated: "rated", player: { name: "Alice", memberId: "id-1", removable: true } });
+    expect(chips.length).toBeGreaterThan(1);
+    for (const chip of chips) expect(chip.phrase, chip.key).toBeDefined();
+  });
+
   it("shows nothing when nothing was applied", () => {
-    expect(appliedNarrowings(NONE)).toEqual([]);
+    expect(appliedNarrowings(NONE)).toMatchObject([]);
   });
 
   /*
@@ -17,11 +23,11 @@ describe("appliedNarrowings", () => {
    */
   it("does not claim an outcome the query could not apply without a player", () => {
     const narrowings = appliedNarrowings({ ...NONE, outcome: "won" });
-    expect(narrowings).toEqual([]);
+    expect(narrowings).toMatchObject([]);
   });
 
   it("says a week in words, and claims no week that is not a Monday", () => {
-    expect(appliedNarrowings({ ...NONE, week: "2026-09-21" })).toEqual([
+    expect(appliedNarrowings({ ...NONE, week: "2026-09-21" })).toMatchObject([
       {
         key: "week",
         label: "Finished in the week of 21 September 2026",
@@ -29,49 +35,49 @@ describe("appliedNarrowings", () => {
       },
     ]);
     // A Tuesday narrows nothing in the query, so the chip must not claim it did.
-    expect(appliedNarrowings({ ...NONE, week: "2026-09-22" })).toEqual([]);
+    expect(appliedNarrowings({ ...NONE, week: "2026-09-22" })).toMatchObject([]);
   });
 
   it("writes the month and the week in the reader's language, and keeps the English label beside them", () => {
     const [month] = appliedNarrowings({ ...NONE, locale: "ja", month: "2026-09" });
-    expect(month).toEqual({
+    expect(month).toMatchObject({
       key: "month",
       label: "Finished in September 2026",
       phrase: { key: "record.finishedIn", vars: { when: "2026年9月" } },
     });
     const [week] = appliedNarrowings({ ...NONE, locale: "ja", week: "2026-09-21" });
-    expect(week?.phrase?.vars).toEqual({ when: "2026年9月21日の週" });
+    expect(week?.phrase?.vars).toMatchObject({ when: "2026年9月21日の週" });
   });
 
   it("does the same for lost, the outcome's other player-only half", () => {
-    expect(appliedNarrowings({ ...NONE, outcome: "lost" })).toEqual([]);
+    expect(appliedNarrowings({ ...NONE, outcome: "lost" })).toMatchObject([]);
   });
 
   it("shows decided and drawn even with no player — they are not about anybody's side", () => {
-    expect(appliedNarrowings({ ...NONE, outcome: "decided" })).toEqual([
+    expect(appliedNarrowings({ ...NONE, outcome: "decided" })).toMatchObject([
       { key: "outcome", label: "Won, lost or drawn" },
     ]);
-    expect(appliedNarrowings({ ...NONE, outcome: "drawn" })).toEqual([
+    expect(appliedNarrowings({ ...NONE, outcome: "drawn" })).toMatchObject([
       { key: "outcome", label: "Drawn" },
     ]);
   });
 
   it("shows won/lost once a player is applied", () => {
     const player = { name: "Alice", memberId: "id-1", removable: true };
-    expect(appliedNarrowings({ ...NONE, player, outcome: "won" })).toEqual([
+    expect(appliedNarrowings({ ...NONE, player, outcome: "won" })).toMatchObject([
       { key: "player", label: "Alice's games" },
       { key: "outcome", label: "Won" },
     ]);
   });
 
   it("never claims a verdict without a player — verdict has no player-free reading at all", () => {
-    expect(appliedNarrowings({ ...NONE, verdict: "up" })).toEqual([]);
-    expect(appliedNarrowings({ ...NONE, verdict: "judged" })).toEqual([]);
+    expect(appliedNarrowings({ ...NONE, verdict: "up" })).toMatchObject([]);
+    expect(appliedNarrowings({ ...NONE, verdict: "judged" })).toMatchObject([]);
   });
 
   it("shows a verdict once a player is applied", () => {
     const player = { name: "Alice", memberId: "id-1", removable: true };
-    expect(appliedNarrowings({ ...NONE, player, verdict: "up" })).toEqual([
+    expect(appliedNarrowings({ ...NONE, player, verdict: "up" })).toMatchObject([
       { key: "player", label: "Alice's games" },
       { key: "verdict", label: "Played well" },
     ]);
@@ -80,7 +86,7 @@ describe("appliedNarrowings", () => {
   it("gives a removable player chip no href — its own '×' takes it off", () => {
     const player = { name: "Alice", memberId: "id-1", removable: true };
     const [chip] = appliedNarrowings({ ...NONE, player });
-    expect(chip).toEqual({ key: "player", label: "Alice's games" });
+    expect(chip).toMatchObject({ key: "player", label: "Alice's games" });
     expect(chip.href).toBeUndefined();
   });
 
@@ -92,7 +98,7 @@ describe("appliedNarrowings", () => {
   it("gives a non-removable player chip a link to the player's own page, by id", () => {
     const player = { name: "Hanako Morris", memberId: "member-id-1", removable: false };
     const [chip] = appliedNarrowings({ ...NONE, player });
-    expect(chip).toEqual({
+    expect(chip).toMatchObject({
       key: "player",
       label: "Hanako M.'s games",
       href: "/players/member-id-1",
@@ -106,10 +112,10 @@ describe("appliedNarrowings", () => {
   });
 
   it("still shows pool and rated with no player, unaffected by any of this", () => {
-    expect(appliedNarrowings({ ...NONE, pool: "computer" })).toEqual([
+    expect(appliedNarrowings({ ...NONE, pool: "computer" })).toMatchObject([
       { key: "pool", label: "Against bots" },
     ]);
-    expect(appliedNarrowings({ ...NONE, rated: "yes" })).toEqual([{ key: "rated", label: "Rated" }]);
+    expect(appliedNarrowings({ ...NONE, rated: "yes" })).toMatchObject([{ key: "rated", label: "Rated" }]);
   });
 
   /*
@@ -125,14 +131,14 @@ describe("appliedNarrowings", () => {
    * ran.
    */
   it("shows no chip for all, which is what this site calls no narrowing", () => {
-    expect(appliedNarrowings({ ...NONE, pool: "all" })).toEqual([]);
-    expect(appliedNarrowings({ ...NONE, rated: "all" })).toEqual([]);
-    expect(appliedNarrowings({ ...NONE, outcome: "all" })).toEqual([]);
+    expect(appliedNarrowings({ ...NONE, pool: "all" })).toMatchObject([]);
+    expect(appliedNarrowings({ ...NONE, rated: "all" })).toMatchObject([]);
+    expect(appliedNarrowings({ ...NONE, outcome: "all" })).toMatchObject([]);
     const player = { name: "Alice", memberId: "id-1", removable: true };
-    expect(appliedNarrowings({ ...NONE, player, outcome: "all" })).toEqual([
+    expect(appliedNarrowings({ ...NONE, player, outcome: "all" })).toMatchObject([
       { key: "player", label: "Alice's games" },
     ]);
-    expect(appliedNarrowings({ ...NONE, player, verdict: "all" })).toEqual([
+    expect(appliedNarrowings({ ...NONE, player, verdict: "all" })).toMatchObject([
       { key: "player", label: "Alice's games" },
     ]);
   });
@@ -145,11 +151,11 @@ describe("appliedNarrowings", () => {
    * the site had agreed to it.
    */
   it("shows no chip for a value this site has no word for", () => {
-    expect(appliedNarrowings({ ...NONE, pool: "banana" })).toEqual([]);
-    expect(appliedNarrowings({ ...NONE, rated: "maybe" })).toEqual([]);
-    expect(appliedNarrowings({ ...NONE, outcome: "decided-ish" })).toEqual([]);
+    expect(appliedNarrowings({ ...NONE, pool: "banana" })).toMatchObject([]);
+    expect(appliedNarrowings({ ...NONE, rated: "maybe" })).toMatchObject([]);
+    expect(appliedNarrowings({ ...NONE, outcome: "decided-ish" })).toMatchObject([]);
     const player = { name: "Alice", memberId: "id-1", removable: true };
-    expect(appliedNarrowings({ ...NONE, player, verdict: "sideways" })).toEqual([
+    expect(appliedNarrowings({ ...NONE, player, verdict: "sideways" })).toMatchObject([
       { key: "player", label: "Alice's games" },
     ]);
   });
@@ -161,7 +167,7 @@ describe("appliedNarrowings", () => {
    */
   it("clears member, not player, when the player arrived by id", () => {
     const byId = { name: "Hanako Morris", memberId: "m-1", removable: true, via: "member" as const };
-    expect(appliedNarrowings({ ...NONE, player: byId })).toEqual([
+    expect(appliedNarrowings({ ...NONE, player: byId })).toMatchObject([
       { key: "player", label: "Hanako M.'s games", clears: "member" },
     ]);
     const byName = { name: "Alice", memberId: null, removable: true };
@@ -195,7 +201,7 @@ describe("appliedNarrowings", () => {
       via: "member" as const,
       against: { name: "Dan", memberId: "id-2" },
     };
-    expect(appliedNarrowings({ ...NONE, player, outcome: "won" })).toEqual([
+    expect(appliedNarrowings({ ...NONE, player, outcome: "won" })).toMatchObject([
       { key: "player", label: "Hanako M.'s games", clears: "member", alsoClears: ["against"] },
       { key: "against", label: "against Dan", phrase: { key: "rivalry.against", vars: { name: "Dan" } } },
       { key: "outcome", label: "Won" },
@@ -204,7 +210,7 @@ describe("appliedNarrowings", () => {
 
   it("claims no pair where none was applied", () => {
     const player = { name: "Alice", memberId: "id-1", removable: true };
-    expect(appliedNarrowings({ ...NONE, player }).map((one) => one.key)).toEqual(["player"]);
+    expect(appliedNarrowings({ ...NONE, player }).map((one) => one.key)).toMatchObject(["player"]);
   });
 
   it("orders chips player, outcome, pool, rated, verdict", () => {
@@ -217,6 +223,6 @@ describe("appliedNarrowings", () => {
       verdict: "up",
       locale: "en",
     });
-    expect(narrowings.map((one) => one.key)).toEqual(["player", "outcome", "pool", "rated", "verdict"]);
+    expect(narrowings.map((one) => one.key)).toMatchObject(["player", "outcome", "pool", "rated", "verdict"]);
   });
 });

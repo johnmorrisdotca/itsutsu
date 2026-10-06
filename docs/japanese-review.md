@@ -6,8 +6,8 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 562. Drafted and unread: 0. Read by the reviewer agent: 562.
-Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 2
+Phrases: 1663. Drafted and unread: 0. Read by the reviewer agent: 1663.
+Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 5
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
 
@@ -20,7 +20,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Waiting for a decision or a native read — start here (2)
+## 1. Waiting for a decision or a native read — start here (5)
 
 A **question** is a wording only the site's owner can choose between. A line the
 agent has read but marked for a native read is high-stakes text (children,
@@ -30,8 +30,11 @@ consent, brands, legal): the agent's pass is not enough for it.
 | --- | --- | --- | --- | --- | --- | --- |
 | 39 rules pages — one per game | Inspired by {name}. The name belongs to its owner; this is our own version of the rules. | **{name}に着想を得た版です。名称は権利者に帰属し、ここに記すのは当サイト独自の規則です。** | This is a version inspired by {name}. The name belongs to its rights holder; what is set down here is this site's own rules. | Agent 2026-10-06, native read wanted | A trademark notice (the name belongs to its owner): a native read is recommended. |  |
 | The feed, /feed — its heading, tabs, every line of activity and its empty states | Games finished here lately, the games that are new, and the site's news: firsts, new leaders and best times. Only bots and members who have said they are 18 or over are named. | **最近ここで終わった対局、新しく加わったゲーム、そしてサイトのニュース（初めての出来事、新しい首位、最速記録）です。名前を表示するのは、コンピュータと18歳以上と答えた会員だけです。** | Games that ended here recently, games newly added, and the site's news (first events, new leaders, fastest records). Names are shown only for computers and members who answered that they are 18 or over. | Agent 2026-10-06, native read wanted | Says who is named by age (18 or over): about children, so a native read is recommended. |  |
+| — — — | Slate & shell | **那智黒と蛤** | Slate and clam shell | Agent 2026-10-06, native read wanted | The five stone-set names are renderings of English names (那智黒と蛤, 翡翠と骨, 梅と桜, 藍と米, ネオン). A Go player should confirm they read as the stones' materials and colours. |  |
+| — — — | From {country} | **発祥：{country}** | Origin: {country} | Agent 2026-10-06, native read wanted | The country is printed as the data holds it, in English ("発祥：Japan"). Localising country names needs a table of its own; John to decide whether to add one. |  |
+| — — — | Sit in with your four words | **4つの合言葉で着席する** | Sit in with my four words | Agent 2026-10-06, native read wanted | The "four words" a member chooses to sit in as themselves are 合言葉 here. The account pages that set them must use the same word; John to confirm 合言葉 is the one he wants. |  |
 
-## 2. Written by a machine — please check these (557)
+## 2. Written by a machine — please check these (1593)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -59,7 +62,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | 39 rules pages — one per game | Every game of {game} played here | **ここでの{game}の全対局** | Every game of {game} played here. | Agent 2026-10-06 |  |
 | 39 rules pages — one per game | From {country} | **{country}発** | Originating from {country}. | Agent 2026-10-06 |  |
 | 39 rules pages — one per game | A game of {game} in progress | **対局中の{game}の盤面** | The board of a game of {game} in play. | Agent 2026-10-06 |  |
-| 39 rules pages — one per game | Play → | **遊ぶ →** | Play → | Agent 2026-10-06 |  |
+| 39 rules pages — one per game; — — — | Play → | **遊ぶ →** | Play → | Agent 2026-10-06 |  |
 | 39 rules pages — one per game | Read about {game} on Wikipedia ↗ | **{game}をウィキペディアで読む ↗** | Read about {game} on Wikipedia ↗ | Agent 2026-10-06 |  |
 | Every new game — the set-up screen: opening, rating and opponent | also under {family} | **{family}にも掲載** | Also listed under {family}. | Agent 2026-10-06 |  |
 | Every new game — the set-up screen: opening, rating and opponent | Whoever comes along first takes the other seat. | **最初に来た人がもう一方の席に着きます。** | The first person to come sits in the other seat. | Agent 2026-10-06 |  |
@@ -232,7 +235,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | The games this IP was won in | **このIPを獲得した対局** | The games this IP was won in | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Won across several games and puzzles: each game's own board leads to its games | **複数のゲームとパズルをまたいで獲得した分です。各ゲームの順位表から、そのゲームの対局へ進めます。** | Won across several games and puzzles. From each game's own ranking table you can go to that game's games. | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Won by results alone, in every game and every puzzle. XP is for taking part; IP is for winning. | **どのゲームでもパズルでも、結果だけで獲得します。経験値は参加するともらえるもの、IPは勝つともらえるものです。** | Won by results alone, in every game and every puzzle. Experience is what you get for taking part; IP is what you get for winning. | Agent 2026-10-06 |  |
-| The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Game | **ゲーム** | Game | Agent 2026-10-06 |  |
+| The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page; — — — | Game | **ゲーム** | Game | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Most, by board | **最高点（盤の大きさ別）** | Highest score (by board size) | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | The most each game pays | **各ゲームの最高点** | The highest score of each game | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | The same two players again the same day: the second game pays {second}, and every one after that {later}. | **同じ2人が同じ日にもう一度対局した場合、2局目は{second}、それ以降はすべて{later}になります。** | If the same two players play again the same day, the second game pays {second}, and every one after that pays {later}. | Agent 2026-10-06 |  |
@@ -243,7 +246,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | A game on one screen, or on the practice board, pays nothing: nobody can say who played it. | **1画面での対局や練習盤での対局は、何も獲得できません。誰が対局したか確かめられないからです。** | A game on one screen, or on the practice board, earns nothing, because nobody can confirm who played it. | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | The other side resigned before move {move} | **相手が{move}手目より前に投了** | The other side resigned before move {move} | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | The other side resigned, from move {move} | **相手が{move}手目以降に投了** | The other side resigned from move {move} on | Agent 2026-10-06 |  |
-| The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Result | **結果** | Result | Agent 2026-10-06 |  |
+| The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page; — — — | Result | **結果** | Result | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Every result is rounded to the nearest {step}, and no result pays more than {most}, however big the upset. | **どの結果も{step}単位に丸められ、番狂わせがどれだけ大きくても、{most}を超えることはありません。** | Every result is rounded to the nearest {step}, and no result pays more than {most}, however big the upset. | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Won on time | **時間切れで勝ち** | Won on time | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | What a game pays | **ゲームの配点** | What a game pays | Agent 2026-10-06 |  |
@@ -421,8 +424,8 @@ consent, brands, legal): the agent's pass is not enough for it.
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A turn moves one piece. It may step to any neighbouring empty cell, in any of the six directions the board's own lattice touches. | **1手で駒を1つ動かします。盤の格子がつながる6方向のどれでも、隣の空いているマスへ1歩進めます。** | A turn moves one piece. It can step to a neighbouring empty cell in any of the six directions in which the board's lattice connects. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Players take turns placing one stone on an empty point. | **交互に、空いている点へ石を1つずつ置きます。** | Taking turns, you place one stone on an empty point. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Black opens with {first}; after that each player places {per} a turn. | **黒は{first}で始め、そのあとは各自1手に{per}ずつ置きます。** | Black opens with {first}, and after that each player places {per} per turn. | Agent 2026-10-06 |  |
-| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Black | **黒** | Black | Agent 2026-10-06 |  |
-| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | White | **白** | White | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules; — — — | Black | **黒** | Black | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules; — — — | White | **白** | White | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | {count} XP | **{count}経験値** | {count} experience points | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | The top of the ladder. | **最高レベルです。** | This is the highest level. | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Back to the newest | **最新に戻る** | Back to the newest | Agent 2026-10-06 |  |
@@ -434,7 +437,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Level | **レベル** | Level. | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Level up | **昇級** | Promotion — going up a grade. | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Filtered by {who}. | **{who}で絞り込み中。** | Filtered by {who}. | Agent 2026-10-06 |  |
-| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Next level: {name} | **次のレベル：{name}** | Next level: {name} | Agent 2026-10-06 |  |
+| After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards; — — — | Next level: {name} | **次のレベル：{name}** | Next level: {name} | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Play a game | **ゲームで遊ぶ** | Play a game | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Points earned | **獲得経験値** | Experience points earned. | Agent 2026-10-06 |  |
 | After earning points — the notice that drops in from the top of the page, a person's standing under their record, and the XP boards | Include worldwide | **他のサイトも含める** | Include other sites. | Agent 2026-10-06 |  |
@@ -568,6 +571,84 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The feed, /feed — its heading, tabs, every line of activity and its empty states | {who} earned {xp} | **{who}が{xp}を獲得しました** | {who} earned {xp}. | Agent 2026-10-06 |  |
 | The feed, /feed — its heading, tabs, every line of activity and its empty states | You earned {xp} | **{xp}を獲得しました** | You earned {xp}. | Agent 2026-10-06 |  |
 | The feed, /feed — its heading, tabs, every line of activity and its empty states | Yesterday | **昨日** | Yesterday. | Agent 2026-10-06 |  |
+| — — — | A count, not a forecast. Here the smaller number is the better one: the object is to finish with fewer discs than your opponent. | **予想ではなく、石の数です。ここでは少ないほうが有利で、相手より石を少なくして終えることが目的です。** | It is a count of discs, not a forecast. Here the smaller number is better, and the aim is to finish with fewer discs than your opponent. | Agent 2026-10-06 |  |
+| — — — | A count, not a forecast. The lead in a flipping game changes hands late and often — a board that looks settled at move thirty rarely is. | **予想ではなく、石の数です。挟んで返すゲームでは、リードが終盤に何度も入れ替わります。30手目で決まったように見える盤でも、そうでないことがほとんどです。** | It is a count of discs, not a forecast. In a game where discs are flipped, the lead changes hands many times near the end. Even a board that looks settled at move 30 almost never is. | Agent 2026-10-06 |  |
+| — — — | A count of pieces that have reached the far camp. | **向こう側の陣地に着いた駒の数です。** | It is the number of pieces that have reached the far camp. | Agent 2026-10-06 |  |
+| — — — | A count of pieces that have reached the far camp. It says how far along the race each side is, not who will get there first — a train of pieces left behind can move faster than one that is already spread out. | **向こう側の陣地に着いた駒の数です。双方がどこまで進んだかを示すもので、どちらが先に着くかは示しません。後ろに残った駒のかたまりが、すでに散らばった駒より速く進むこともあります。** | It is the number of pieces that have reached the far camp. It shows how far each side has come, not who will arrive first. A group of pieces left behind can sometimes move faster than pieces that have already spread out. | Agent 2026-10-06 |  |
+| — — — | A plain count of pieces still on the board, kings included. | **盤上に残っている駒の単純な数で、キングも含みます。** | It is a plain count of the pieces left on the board, kings included. | Agent 2026-10-06 |  |
+| — — — | A plain count of pieces still on the board, kings included. Material is most of the game here, but a piece about to be forced into a capture is still counted — the number does not know what happens next. | **盤上に残っている駒の単純な数で、キングも含みます。ここでは駒の数がほぼ勝負を左右しますが、これから取らされる駒も数に入ります。数字は、このあとの展開までは分かりません。** | It is a plain count of the pieces left on the board, kings included. Here the number of pieces mostly decides the game, but a piece that is about to be forced into a capture is still counted. The number does not know what happens next. | Agent 2026-10-06 |  |
+| — — — | The area score as the board stands, komi included for White. | **いまの盤面を数えた点数で、白にはコミが入っています。** | It is the score counted on the board as it stands, with komi included for White. | Agent 2026-10-06 |  |
+| — — — | The area score as the board stands, komi included for White. It counts stones and the empty regions only one colour touches — so it cannot know which groups are dead, and a stone that will be captured is still counted until it is. Early on, most of the board belongs to nobody yet. | **いまの盤面を、石と、一方の色だけが囲む空点の合計で数えた点数です。白にはコミが入っています。どの石が死んでいるかは分からないので、取られる石も取られるまでは数えます。序盤は、盤のほとんどがまだ誰の地でもありません。** | It is the score counted on the board as it stands, as stones plus the empty points surrounded by only one colour. Komi is included for White. It cannot tell which stones are dead, so a stone that will be captured is counted until it is captured. Early on, most of the board is still nobody's territory. | Agent 2026-10-06 |  |
+| — — — | A reading of the threats on the board, in words rather than a percentage — this site does not search the position, and a number would suggest it had. | **盤上の狙いを、数字ではなく言葉で読んだものです。このサイトは局面を探索していないので、数字で出すと探索したかのように見えてしまいます。** | It is a reading of the threats on the board, given in words rather than a number. This site does not search the position, so giving a number would make it look as if it had. | Agent 2026-10-06 |  |
+| — — — | This game cannot be read that way | **このゲームは、この方法では優劣を判断できません** | This game's advantage cannot be judged by this method | Agent 2026-10-06 |  |
+| — — — | The two players do not want the same thing here: one is trying to make a line, the other to prevent every line. There is no single quantity both sides can be ahead on. | **ここでは2人の目的が違い、片方は線を作ろうとし、もう片方はあらゆる線を防ごうとします。双方が優劣を比べられる共通の数字はありません。** | The two players have different aims here: one tries to make a line and the other tries to stop every line. There is no common number on which both sides can be compared. | Agent 2026-10-06 |  |
+| — — — | The whole position is one question — whether a chain reaches side to side — and it is not a question a count of stones can answer. One stone can join two groups and settle a board that looked even. | **局面はすべて1つの問い、つまり、つながりが端から端まで届くかどうかで、石の数では答えられません。石1つで2つのかたまりがつながり、互角に見えた盤が決まることもあります。** | The whole position is one question, whether a chain reaches from one side to the other, and a count of stones cannot answer it. One stone can join two groups and decide a board that looked even. | Agent 2026-10-06 |  |
+| — — — | Pieces here cover several points at once, and what you may play next is whatever the queue hands you. A reading of lines assumes single stones placed freely, and neither is true here. | **ここでは1つの駒が複数の点をふさぎ、次に打てるのは、順番待ちの列から渡されたものです。線の読みは、1つずつ自由に置く石を前提にしていますが、ここではどちらも当てはまりません。** | Here one piece covers several points, and what you can play next is whatever the waiting line hands you. Reading lines assumes stones placed one at a time, freely, and neither is true here. | Agent 2026-10-06 |  |
+| — — — | The stones do not belong to a colour in this game, so there is no black position and no white one to weigh against each other — only the shape both players are building together. | **このゲームの石は色に属していないので、黒の形勢と白の形勢を比べることはできません。あるのは、2人がいっしょに作っていく形だけです。** | The stones in this game do not belong to a colour, so black's position and white's position cannot be compared. All there is is the shape the two players build together. | Agent 2026-10-06 |  |
+| — — — | The win is a square rather than a line, and both sides keep the same four pieces from first move to last. There is nothing to count that is not equal, and no line to read. | **勝ちは線ではなく正方形で、双方とも最初から最後まで同じ4つの駒を使います。数えても同じ数にしかならず、読める線もありません。** | A win is a square, not a line, and both sides use the same four pieces from start to finish. Counting only gives the same number, and there is no line to read. | Agent 2026-10-06 |  |
+| — — — | A quarter of the board turns after every stone. Nothing counted about this position survives the next move intact, so any reading of it would be out of date before it was shown. | **石を置くたびに盤の4分の1が回ります。この局面について数えたことは次の手で崩れてしまうので、どんな読みも、示したときにはもう古くなっています。** | A quarter of the board turns after every stone. Whatever is counted about this position falls apart on the next move, so any reading is already out of date by the time it is shown. | Agent 2026-10-06 |  |
+| — — — | Close | **閉じる** | Close | Agent 2026-10-06 |  |
+| — — — | Close, and bring back the rest of the page (Esc) | **閉じて、ページのほかの部分を戻します（Esc）** | Close, and bring back the rest of the page (Esc) | Agent 2026-10-06 |  |
+| — — — | Just the board | **盤だけ表示** | Just the board | Agent 2026-10-06 |  |
+| — — — | Read this page as the board and the moves alone | **このページを、盤と棋譜だけで表示します** | Show this page as the board and the moves alone | Agent 2026-10-06 |  |
+| — — — | Blue | **青** | Blue | Agent 2026-10-06 |  |
+| — — — | Green | **緑** | Green | Agent 2026-10-06 |  |
+| — — — | Your board, {name} | **自分の盤：{name}** | Your own board: {name} | Agent 2026-10-06 |  |
+| — — — | Your board ({name}) | **自分の盤（{name}）** | Your own board ({name}) | Agent 2026-10-06 |  |
+| — — — | Board colour | **盤の色** | Board colour | Agent 2026-10-06 |  |
+| — — — | Red | **赤** | Red | Agent 2026-10-06 |  |
+| — — — | Close, back to the page | **閉じて、ページに戻る** | Close, back to the page | Agent 2026-10-06 |  |
+| — — — | Close (Esc) | **閉じる（Esc）** | Close (Esc) | Agent 2026-10-06 |  |
+| — — — | {board}, on its own | **{board}だけの表示** | Display of {board} by itself | Agent 2026-10-06 |  |
+| — — — | Open {board} on its own | **{board}だけを開く** | Open just {board} | Agent 2026-10-06 |  |
+| — — — | this board | **この盤** | this board | Agent 2026-10-06 |  |
+| — — — | Traditional view | **伝統的な表示** | Traditional display | Agent 2026-10-06 |  |
+| — — — | Each game drawn the way it is played: gomoku and go on the lines, tic-tac-toe and Reversi in the squares. | **どのゲームも本来の描き方で表示します。五目並べと囲碁は線の交点に、三目並べとリバーシは升目の中に打ちます。** | Each game is drawn the way it is traditionally played. Gomoku and go are played on the crossings of the lines, and tic-tac-toe and Reversi inside the squares. | Agent 2026-10-06 |  |
+| — — — | Squares view | **升目の表示** | Squares view | Agent 2026-10-06 |  |
+| — — — | Every game inside the squares, as on a chessboard — gomoku included. | **すべてのゲームを、チェス盤のように升目の中に打ちます。五目並べも含みます。** | Every game is played inside the squares, as on a chessboard. Gomoku is included. | Agent 2026-10-06 |  |
+| — — — | {site} view | **{site}式の表示** | {site}-style view | Agent 2026-10-06 |  |
+| — — — | Every game on the crossings, as on a go board — the house style, tic-tac-toe included. | **すべてのゲームを、碁盤のように線の交点に打ちます。三目並べも含めた、このサイトの標準の表示です。** | Every game is played on the crossings, as on a go board. This is the site's own standard view, and tic-tac-toe is included. | Agent 2026-10-06 |  |
+| — — — | You must capture. | **必ず取らなければなりません。** | You must capture. | Agent 2026-10-06 |  |
+| — — — | You must take the most pieces. | **いちばん多く取る手を選ばなければなりません。** | You must choose the move that takes the most pieces. | Agent 2026-10-06 |  |
+| — — — | Only one move: {moves}. | **打てるのは1か所だけです：{moves}。** | Only one move is possible: {moves}. | Agent 2026-10-06 |  |
+| — — — | Only {count} moves: {moves}. | **打てるのは{count}か所だけです：{moves}。** | Only {count} moves are possible: {moves}. | Agent 2026-10-06 |  |
+| — — — | The piece that may move: {moves}. | **動かせる駒：{moves}。** | The piece that may move: {moves}. | Agent 2026-10-06 |  |
+| — — — | The pieces that may move: {moves}. | **動かせる駒：{moves}。** | The pieces that may move: {moves}. | Agent 2026-10-06 |  |
+| — — — | Played on {site} · {day} | **{site}で対局・{day}** | Played on {site}, {day} | Agent 2026-10-06 |  |
+| — — — | Full | **全画面** | Full screen | Agent 2026-10-06 |  |
+| — — — | Full screen board, as large as the window allows | **全画面の盤（ウィンドウいっぱい）** | Full screen board, as large as the window allows | Agent 2026-10-06 |  |
+| — — — | Board size | **盤の大きさ** | Board size | Agent 2026-10-06 |  |
+| — — — | Board | **盤** | Board | Agent 2026-10-06 |  |
+| — — — | Large | **大** | Large | Agent 2026-10-06 |  |
+| — — — | Large board, halfway to full screen | **大きめの盤（全画面の半分ほど）** | Large board, about halfway to full screen | Agent 2026-10-06 |  |
+| — — — | Regular | **標準** | Regular | Agent 2026-10-06 |  |
+| — — — | Regular board size, as the page draws it | **ページ本来の標準の大きさ** | Regular board size, as the page draws it | Agent 2026-10-06 |  |
+| — — — | {width} by {height} board | **{width}×{height}の盤** | {width} by {height} board | Agent 2026-10-06 |  |
+| — — — | {name}, size {step} of 3 | **{name}：3段階中{step}段階目** | {name}: stage {step} of 3 | Agent 2026-10-06 |  |
+| — — — | blocked | **ふさがれています** | blocked | Agent 2026-10-06 |  |
+| — — — | empty | **空き** | empty | Agent 2026-10-06 |  |
+| — — — | forbidden | **禁じ手** | forbidden | Agent 2026-10-06 |  |
+| — — — | hotspot | **ホットスポット** | hotspot | Agent 2026-10-06 |  |
+| — — — | {colour} king | **{colour}のキング** | {colour} king | Agent 2026-10-06 |  |
+| — — — | {point}, {what} | **{point}は{what}** | {point} is {what} | Agent 2026-10-06 |  |
+| — — — | {colour} stone | **{colour}の石** | {colour} stone | Agent 2026-10-06 |  |
+| — — — | wormhole | **ワームホール** | wormhole | Agent 2026-10-06 |  |
+| — — — | Indigo & rice | **藍と米** | Indigo and rice | Agent 2026-10-06 |  |
+| — — — | Jade & bone | **翡翠と骨** | Jade and bone | Agent 2026-10-06 |  |
+| — — — | Neon | **ネオン** | Neon | Agent 2026-10-06 |  |
+| — — — | Plum & blossom | **梅と桜** | Plum and cherry blossom | Agent 2026-10-06 |  |
+| — — — | {black} vs {white} · {game}, {board} | **{black} 対 {white}・{game}、{board}** | {black} versus {white}, {game}, {board} | Agent 2026-10-06 |  |
+| — — — | Kaya | **榧** | Kaya (a kind of wood) | Agent 2026-10-06 |  |
+| — — — | Matcha | **抹茶** | Matcha (powdered tea) | Agent 2026-10-06 |  |
+| — — — | Shin-kaya | **新榧** | New kaya (a darker wood) | Agent 2026-10-06 |  |
+| — — — | Sumi | **墨** | Sumi (ink) | Agent 2026-10-06 |  |
+| — — — | Washi | **和紙** | Washi (paper) | Agent 2026-10-06 |  |
+| — — — | Turn quadrant {quadrant} anticlockwise | **{quadrant}番の区画を反時計回りに回す** | Turn quadrant {quadrant} anticlockwise | Agent 2026-10-06 |  |
+| — — — | Turn quadrant {quadrant} clockwise | **{quadrant}番の区画を時計回りに回す** | Turn quadrant {quadrant} clockwise | Agent 2026-10-06 |  |
+| — — — | 3 minutes, then three 10-second periods. | **持ち時間3分、そのあと10秒の秒読みが3回。** | Time allowance 3 minutes, then three periods of 10-second byo-yomi. | Agent 2026-10-06 |  |
+| — — — | 30 minutes, then five 1-minute periods. | **持ち時間30分、そのあと1分の秒読みが5回。** | Time allowance 30 minutes, then five periods of 1-minute byo-yomi. | Agent 2026-10-06 |  |
+| — — — | Take as long as you like. | **好きなだけ考えられます。** | You can think for as long as you like. | Agent 2026-10-06 |  |
+| — — — | 10 minutes, then three 30-second periods. | **持ち時間10分、そのあと30秒の秒読みが3回。** | Time allowance 10 minutes, then three periods of 30-second byo-yomi. | Agent 2026-10-06 |  |
 | — — — | {count} game | **{count}ゲーム** | {count} game. | Agent 2026-10-06 |  |
 | — — — | {count} games | **{count}ゲーム** | {count} games. | Agent 2026-10-06 |  |
 | — — — | {count} game | **{count}局** | {count} game. | Agent 2026-10-06 |  |
@@ -586,12 +667,970 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | {count} puzzles | **{count}問** | {count} puzzles. | Agent 2026-10-06 |  |
 | — — — | {count} step | **{count}手順** | {count} step. | Agent 2026-10-06 |  |
 | — — — | {count} steps | **{count}手順** | {count} steps. | Agent 2026-10-06 |  |
+| — — — | Continue → | **続きから →** | Continue → | Agent 2026-10-06 |  |
+| — — — | Continue {what} → | **{what}の続きから →** | Continue {what} → | Agent 2026-10-06 |  |
+| — — — | Start a new game? The one in progress ends here and is not kept. | **新規対局を始めますか？進行中の対局はここで終わり、保存されません。** | Start a new game? The one in progress ends here and is not saved. | Agent 2026-10-06 |  |
+| — — — | New game ends the one in progress here. | **新規対局を始めると、ここで進行中の対局は終わります。** | Starting a new game ends the one in progress here. | Agent 2026-10-06 |  |
+| — — — | Keep it | **そのまま残す** | Keep it | Agent 2026-10-06 |  |
+| — — — | New game leaves the one in progress where it is. | **新規対局を始めても、進行中の対局はそのまま残ります。** | Starting a new game leaves the one in progress where it is. | Agent 2026-10-06 |  |
+| — — — | Give up | **あきらめる** | Give up | Agent 2026-10-06 |  |
+| — — — | Give up this game? It ends here, unsolved. | **あきらめますか？ここで終わり、解けないままになります。** | Give up? It ends here, left unsolved. | Agent 2026-10-06 |  |
+| — — — | Keep playing | **続ける** | Keep playing | Agent 2026-10-06 |  |
+| — — — | New game | **新規対局** | New game | Agent 2026-10-06 |  |
+| — — — | Starts a new game. This one stays where it is, in My games. | **新規対局を始めます。この対局は「対局中」にそのまま残ります。** | Starts a new game. This one stays where it is, under In progress. | Agent 2026-10-06 |  |
+| — — — | Start a new game | **新規対局を始める** | Start a new game | Agent 2026-10-06 |  |
+| — — — | {others}{plus} other {game} game is going in My games | **「対局中」に、ほかの{game}が{others}{plus}局あります** | {others}{plus} other {game} game is in In progress | Agent 2026-10-06 |  |
+| — — — | {others}{plus} other {game} games are going in My games | **「対局中」に、ほかの{game}が{others}{plus}局あります** | {others}{plus} other {game} games are in In progress | Agent 2026-10-06 |  |
+| — — — | Resign | **投了** | Resign | Agent 2026-10-06 |  |
+| — — — | Resign this game? The other side wins. | **この対局を投了しますか？相手の勝ちになります。** | Resign this game? The other side wins. | Agent 2026-10-06 |  |
+| — — — | {name} resigned. | **{name}が投了しました。** | {name} resigned. | Agent 2026-10-06 |  |
+| — — — | {name} resigned. The game ended where it stood, with nobody the winner. | **{name}が投了しました。対局はその場で終わり、勝者はいません。** | {name} resigned. The game ended where it stood, and there is no winner. | Agent 2026-10-06 |  |
+| — — — | {name} resigned. {winners} wins. | **{name}が投了しました。{winners}の勝ちです。** | {name} resigned. {winners} wins. | Agent 2026-10-06 |  |
+| — — — | Resign this game for {name}? The table ends here, with nobody the winner. | **{name}の代わりに投了しますか？卓はここで終わり、勝者はいません。** | Resign this game on behalf of {name}? The table ends here, and there is no winner. | Agent 2026-10-06 |  |
+| — — — | Resign this game for {name}? The other player wins. | **{name}の代わりに投了しますか？相手の勝ちになります。** | Resign this game on behalf of {name}? The other player wins. | Agent 2026-10-06 |  |
+| — — — | Advanced | **詳細** | Details | Agent 2026-10-06 |  |
+| — — — | Who is ahead | **勝率バー** | Win-rate bar | Agent 2026-10-06 |  |
+| — — — | How the game stands while it is on — read by threats where the game has them, counted where it has something countable, and left unsaid where it has neither. | **対局中の形勢です。脅威のあるゲームでは脅威で読み、数えられるものがあるゲームでは数え、どちらもないゲームでは何も示しません。** | How the game stands while it is on. Where the game has threats it is read by threats, where something can be counted it is counted, and where there is neither nothing is shown. | Agent 2026-10-06 |  |
+| — — — | Allow resigning | **投了を許可** | Allow resigning | Agent 2026-10-06 |  |
+| — — — | Either seat may give the game up. Off, and a game can only be won, drawn or timed out. | **どちらの席でも投了できます。オフにすると、対局は勝ち、引き分け、時間切れでしか終わりません。** | Either seat may resign. If it is off, a game can only end in a win, a draw or a timeout. | Agent 2026-10-06 |  |
+| — — — | Appearance | **見た目** | Appearance | Agent 2026-10-06 |  |
+| — — — | Ask for advice | **助言を求める** | Ask for advice | Agent 2026-10-06 |  |
+| — — — | Your opponent marks the point they think you should play. | **相手が、打つべきだと思う点に印をつけます。** | Your opponent marks the point they think you should play. | Agent 2026-10-06 |  |
+| — — — | Latest position | **最新の局面** | Latest position | Agent 2026-10-06 |  |
+| — — — | Step back through the record to look at an earlier move. | **棋譜をさかのぼると、前の手を見られます。** | Step back through the record to look at an earlier move. | Agent 2026-10-06 |  |
+| — — — | Show threats | **脅威を盤上に表示** | Show threats on the board | Agent 2026-10-06 |  |
+| — — — | Threats that must be answered are marked on the board. | **受けが必要な脅威が、盤上に印で示されます。** | Threats that must be answered are marked on the board. | Agent 2026-10-06 |  |
+| — — — | Off | **なし** | None | Agent 2026-10-06 |  |
+| — — — | Read the board yourself. | **盤は自分で読みます。** | You read the board yourself. | Agent 2026-10-06 |  |
+| — — — | Describe the position | **形勢を言葉で説明** | Describe the position in words | Agent 2026-10-06 |  |
+| — — — | You are told when you are winning or in trouble, never where. | **優勢か劣勢かは教えますが、場所は教えません。** | You are told whether you are ahead or behind, but not where. | Agent 2026-10-06 |  |
+| — — — | Cancel | **取り消す** | Cancel | Agent 2026-10-06 |  |
+| — — — | Discard and play | **捨てて打つ** | Discard and play | Agent 2026-10-06 |  |
+| — — — | Play from here? | **ここから打ちますか？** | Play from here? | Agent 2026-10-06 |  |
+| — — — | Games | **ゲーム** | Games | Agent 2026-10-06 |  |
+| — — — | Playing now | **いま遊んでいます** | Playing now | Agent 2026-10-06 |  |
+| — — — | Every game here is a line of stones at heart. Pick the rules, then an opening if the variant offers one. Changing either starts a new game. | **ここのゲームはどれも、根本は石を並べるゲームです。規則を選び、そのゲームに開局ルールがあれば、それも選びます。どちらを変えても、新しい対局が始まります。** | Every game here is, at heart, a game of lining up stones. Choose the rules, and then an opening rule if the game has one. Changing either starts a new game. | Agent 2026-10-06 |  |
+| — — — | Openings | **開局ルール** | Opening rules | Agent 2026-10-06 |  |
+| — — — | Play {name} | **{name}で遊ぶ** | Play {name} | Agent 2026-10-06 |  |
+| — — — | Choose a game | **ゲームを選ぶ** | Choose a game | Agent 2026-10-06 |  |
+| — — — | Use this opening | **この開局ルールを使う** | Use this opening rule | Agent 2026-10-06 |  |
+| — — — | Something is forming | **形ができつつあります** | A shape is forming | Agent 2026-10-06 |  |
+| — — — | Your opponent can start an open three here next move. Nothing is forced yet. | **相手は次の手でここに活三を作れます。まだ強制ではありません。** | Your opponent can start an open three here with the next move. Nothing is forced yet. | Agent 2026-10-06 |  |
+| — — — | Byoyomi | **秒読み** | Byo-yomi | Agent 2026-10-06 |  |
+| — — — | Captures | **取り** | Captures | Agent 2026-10-06 |  |
+| — — — | {stones} stones win | **{stones}子で勝ち** | {stones} stones win | Agent 2026-10-06 |  |
+| — — — | Centre discs placed | **中央の石を置いて開始** | Start with the centre discs placed | Agent 2026-10-06 |  |
+| — — — | Two of each colour start in the centre, as in Othello. Off, and the players lay the first four themselves, as in the 1880s game. | **現代のリバーシと同じく、各色2つの石を中央に置いて始めます。オフにすると、1880年代のゲームと同じく、最初の4つを双方で置きます。** | Two of each colour are placed in the centre to start, as in modern Reversi. If it is off, the players lay the first four themselves, as in the game of the 1880s. | Agent 2026-10-06 |  |
+| — — — | {who}, choose a colour. | **{who}：色を選んでください。** | {who}: please choose a colour. | Agent 2026-10-06 |  |
+| — — — | {who}, choose a colour, or add two stones. | **{who}：色を選ぶか、石を2つ追加してください。** | {who}: please choose a colour or add two stones. | Agent 2026-10-06 |  |
+| — — — | Claim the win | **勝ちを請求** | Claim the win | Agent 2026-10-06 |  |
+| — — — | Claim the game on their clock? It ends here, and the result is filed against them. | **相手の持ち時間切れで、勝ちを請求しますか？対局はここで終わり、結果は相手の負けとして記録されます。** | Claim the game because their time ran out? It ends here, and the result is recorded as a loss for them. | Agent 2026-10-06 |  |
+| — — — | Their time is up. Claim it, or leave the game waiting and pass the move back to them. | **相手の時間が切れました。請求するか、対局を待たせたまま、手番を相手に戻してください。** | Their time is up. Claim it, or leave the game waiting and return the move to them. | Agent 2026-10-06 |  |
+| — — — | Claim the turn | **手番を請求** | Claim the turn | Agent 2026-10-06 |  |
+| — — — | Claim their missed turn? They lose this move, and the board comes back to you. | **相手が逃した手番を請求しますか？相手はこの手を失い、盤はこちらに戻ります。** | Claim their missed turn? They lose this move, and the board comes back to you. | Agent 2026-10-06 |  |
+| — — — | Clock | **時計** | Clock | Agent 2026-10-06 |  |
+| — — — | Draw. Both made a line at once. | **引き分けです。双方が同時に並びを作りました。** | A draw. Both made a line at the same time. | Agent 2026-10-06 |  |
+| — — — | Draw. The ending was not won within the moves its rules allow. | **引き分けです。規則で認められている手数のうちに、終盤で勝負がつきませんでした。** | A draw. The ending was not won within the number of moves the rules allow. | Agent 2026-10-06 |  |
+| — — — | Draw. The game ran to the length it was given. | **引き分けです。決められた手数まで進みました。** | A draw. The game went on to the number of moves it was given. | Agent 2026-10-06 |  |
+| — — — | Draw by repetition: the same position came round again, with the same side to move. | **同じ局面の繰り返しで引き分けです。同じ手番で、同じ局面がもう一度現れました。** | A draw by repetition. The same position appeared again, with the same side to move. | Agent 2026-10-06 |  |
+| — — — | Draw. The board is full. | **引き分けです。盤が埋まりました。** | A draw. The board is full. | Agent 2026-10-06 |  |
+| — — — | Draw. Neither side had a move left. | **引き分けです。どちらにも打てる手がなくなりました。** | A draw. Neither side had a move left. | Agent 2026-10-06 |  |
+| — — — | Draw by the sliding rule: {plies} moves since the last piece went down, and nobody won. | **滑らせるルールによる引き分けです。最後の駒を置いてから{plies}手たちましたが、勝負はつきませんでした。** | A draw by the sliding rule. {plies} moves have passed since the last piece was placed, and nobody won. | Agent 2026-10-06 |  |
+| — — — | Draw by the no-progress rule: in {plies} moves, nobody got a piece any nearer home. | **進展なしの規則による引き分けです。{plies}手のあいだ、誰の駒も陣地に近づきませんでした。** | A draw by the no-progress rule. In {plies} moves, no piece got any nearer to its camp. | Agent 2026-10-06 |  |
+| — — — | Draw by the {half}-move rule: {half} moves each with nothing taken and no man moved. | **{half}手ルールによる引き分けです。双方{half}手、駒が取られず、通常の駒も動きませんでした。** | A draw by the {half}-move rule. For {half} moves each, nothing was taken and no ordinary piece moved. | Agent 2026-10-06 |  |
+| — — — | Play anywhere in a column. The stone falls to the bottom. | **好きな列に打ってください。石は底まで落ちます。** | Play in any column. The stone falls to the bottom. | Agent 2026-10-06 |  |
+| — — — | Warn early | **早めに警告** | Warn early | Agent 2026-10-06 |  |
+| — — — | Warn each side before the other can build an open three, not just once one exists. Both players get it, so it stays fair — but it makes a game harder to win. | **相手が活三を作れる状態になる前に、双方に警告します。できてからだけではありません。両者に出るので公平ですが、勝つのが難しくなります。** | Each side is warned before the other can build an open three, not only once one exists. Both players get it, so it stays fair, but it makes a game harder to win. | Agent 2026-10-06 |  |
+| — — — | No stones yet. | **まだ石がありません。** | There are no stones yet. | Agent 2026-10-06 |  |
+| — — — | Add two stones | **2つ追加** | Add two | Agent 2026-10-06 |  |
+| — — — | Lay one white and one black stone, then your opponent chooses the colour. | **白と黒の石を1つずつ置き、そのあと相手が色を選びます。** | Lay one white and one black stone, and then your opponent chooses the colour. | Agent 2026-10-06 |  |
+| — — — | Fixed by {game}. | **{game}で決まっています。** | It is fixed by {game}. | Agent 2026-10-06 |  |
+| — — — | Flip | **反転** | Flip | Agent 2026-10-06 |  |
+| — — — | {colour} may not play the points marked ✕: {shapes}. | **{colour}は、✕の点には打てません：{shapes}。** | {colour} may not play the points marked ✕: {shapes}. | Agent 2026-10-06 |  |
+| — — — | Timed out | **時間切れ** | Timed out | Agent 2026-10-06 |  |
+| — — — | {count} of {limit} turns forfeited | **{limit}回中{count}回、手番を失いました** | {count} of {limit} turns lost | Agent 2026-10-06 |  |
+| — — — | coordinates | **座標** | coordinates | Agent 2026-10-06 |  |
+| — — — | a GoldToken move list | **GoldTokenの手の一覧** | a GoldToken list of moves | Agent 2026-10-06 |  |
+| — — — | an ItsYourTurn move list | **ItsYourTurnの手の一覧** | an ItsYourTurn list of moves | Agent 2026-10-06 |  |
+| — — — | SGF | **SGF形式** | SGF format | Agent 2026-10-06 |  |
+| — — — | Reversi squares | **リバーシのマス目** | Reversi squares | Agent 2026-10-06 |  |
+| — — — | Give a hint | **ヒントを渡す** | Give a hint | Agent 2026-10-06 |  |
+| — — — | Give one of your hints to your opponent. | **自分のヒントを1つ、相手に渡します。** | Give one of your hints to your opponent. | Agent 2026-10-06 |  |
+| — — — | Bigger board | **盤を大きく** | Bigger board | Agent 2026-10-06 |  |
+| — — — | {who} had no move, so their turn passed. | **{who}は打てる手がなかったので、手番がパスになりました。** | {who} had no move, so their turn was passed. | Agent 2026-10-06 |  |
+| — — — | {who} had no move, so the turn passed back to you. | **{who}は打てる手がなかったので、手番がこちらに戻りました。** | {who} had no move, so the turn came back to you. | Agent 2026-10-06 |  |
+| — — — | Handicap | **ハンデ** | Handicap | Agent 2026-10-06 |  |
+| — — — | {colour} plays with a handicap | **{colour}にハンデがあります** | {colour} has a handicap | Agent 2026-10-06 |  |
+| — — — | One colour plays under the rules of a harder game while the other plays the plain one. Seat swaps are off while a handicap is set. | **片方の色は、より厳しいゲームの規則で打ち、もう片方は通常の規則で打ちます。ハンデがある間は、席の交代はできません。** | One colour plays under the rules of a harder game while the other plays the plain game. Swapping seats is off while a handicap is set. | Agent 2026-10-06 |  |
+| — — — | None | **なし** | None | Agent 2026-10-06 |  |
+| — — — | {who}'s head start: free turn {turn} of {of}, so your turn passed. | **{who}の先行：{of}手中{turn}手目なので、自分の手番がパスになりました。** | {who}'s head start: move {turn} of {of}, so your turn was passed. | Agent 2026-10-06 |  |
+| — — — | {who}'s head start: free turn {turn} of {of}. | **{who}の先行：{of}手中{turn}手目。** | {who}'s head start: move {turn} of {of}. | Agent 2026-10-06 |  |
+| — — — | Your head start: free turn {turn} of {of}, so it is your move again. | **自分の先行：{of}手中{turn}手目なので、もう一度自分の手番です。** | Your head start: move {turn} of {of}, so it is your turn again. | Agent 2026-10-06 |  |
+| — — — | Mark the point you would play. | **自分なら打つ点に印をつけてください。** | Mark the point you would play. | Agent 2026-10-06 |  |
+| — — — | Best move | **最善手** | Best move | Agent 2026-10-06 |  |
+| — — — | An allowance each | **ヒントの持ち分** | A share of hints each | Agent 2026-10-06 |  |
+| — — — | Spend them when you like, or give one to your opponent. | **好きなときに使うか、相手に1つ渡せます。** | Use them when you like, or give one to your opponent. | Agent 2026-10-06 |  |
+| — — — | No hints | **ヒントなし** | No hints | Agent 2026-10-06 |  |
+| — — — | The engine stays quiet. | **エンジンは何も言いません。** | The engine says nothing. | Agent 2026-10-06 |  |
+| — — — | Ask any time | **いつでも聞ける** | Can ask at any time | Agent 2026-10-06 |  |
+| — — — | The engine answers every time you ask. | **聞くたびに、エンジンが答えます。** | The engine answers every time you ask. | Agent 2026-10-06 |  |
+| — — — | Play from here | **ここから打つ** | Play from here | Agent 2026-10-06 |  |
+| — — — | Play from an earlier position. Everything after it is discarded, and you are asked first. | **前の局面から打ち直せます。そのあとの手はすべて捨てられ、先に確認が出ます。** | You can play again from an earlier position. Everything after it is discarded, and you are asked first. | Agent 2026-10-06 |  |
+| — — — | Read only | **見るだけ** | Look only | Agent 2026-10-06 |  |
+| — — — | Step through the game without changing it. Return to the last move to play on. | **対局を変えずに、手を順にたどれます。続けて打つには、最後の手に戻ってください。** | You can step through the game without changing it. To play on, return to the last move. | Agent 2026-10-06 |  |
+| — — — | Are you still there? | **まだいますか？** | Are you still there? | Agent 2026-10-06 |  |
+| — — — | Still here | **います** | I am here | Agent 2026-10-06 |  |
+| — — — | Nothing has moved for a couple of minutes, so the clock is paused. | **数分間動きがないので、時計を止めています。** | Nothing has moved for a few minutes, so the clock is paused. | Agent 2026-10-06 |  |
+| — — — | This game is kept. It will be here when you come back. | **この対局は保存されています。戻ってきたときも、ここにあります。** | This game is saved. It will be here when you come back. | Agent 2026-10-06 |  |
+| — — — | I'm done for now | **いったん終わる** | Finish for now | Agent 2026-10-06 |  |
+| — — — | Nothing has moved here for a couple of minutes. If this game has a clock, it is still running. | **ここは数分間動きがありません。この対局に時計がある場合は、動き続けています。** | Nothing has moved here for a few minutes. If this game has a clock, it is still running. | Agent 2026-10-06 |  |
+| — — — | This game is kept on the site. It will be here, as it stands, when you come back. | **この対局はサイトに保存されています。戻ってきたときも、いまの状態のままここにあります。** | This game is saved on the site. When you come back, it will be here just as it is. | Agent 2026-10-06 |  |
+| — — — | Nothing has moved for a couple of minutes, so the clock is paused and the grid is covered. | **数分間動きがないので、時計を止め、盤面を隠しています。** | Nothing has moved for a few minutes, so the clock is paused and the grid is covered. | Agent 2026-10-06 |  |
+| — — — | This puzzle is kept in your games. It will be here, as it stands, when you come back. | **このパズルは対局中の一覧に保存されています。戻ってきたときも、いまの状態のままあります。** | This puzzle is saved in your games. When you come back, it will be here just as it is. | Agent 2026-10-06 |  |
+| — — — | Without an account a puzzle lasts this page: leaving ends it. | **アカウントがないと、パズルはこのページにいる間だけです。離れると終わります。** | Without an account, a puzzle lasts only while you stay on this page. Leaving ends it. | Agent 2026-10-06 |  |
+| — — — | Nothing has moved for a couple of minutes. A race's clock is the site's, and it is still running. | **数分間動きがありません。競走の時計はサイトの時計で、動き続けています。** | Nothing has moved for a few minutes. A race's clock is the site's own, and it is still running. | Agent 2026-10-06 |  |
+| — — — | The race is kept on the site. Its link brings you back to it. | **競走はサイトに保存されています。そのリンクから戻れます。** | The race is saved on the site. Its link brings you back to it. | Agent 2026-10-06 |  |
+| — — — | {who} lays the first three stones: black, white, black. | **{who}が最初の3つの石（黒、白、黒）を置きます。** | {who} lays the first three stones (black, white, black). | Agent 2026-10-06 |  |
+| — — — | {who} adds two stones: white, then black. | **{who}が石を2つ（白、黒の順）追加します。** | {who} adds two stones (white, then black). | Agent 2026-10-06 |  |
+| — — — | Line | **連の長さ** | Length of the line | Agent 2026-10-06 |  |
+| — — — | Stones in a row needed to win. | **勝つために必要な、一列に並べる石の数です。** | The number of stones in a row needed to win. | Agent 2026-10-06 |  |
+| — — — | Black's second stone must land outside the central 7×7. | **黒の2つ目の石は、中央の7×7の外に置きます。** | Black's second stone must be placed outside the central 7×7. | Agent 2026-10-06 |  |
+| — — — | {maker} is the Maker and wants a five of either colour; {breaker} is the Breaker and wants none. | **{maker}は作り手で、どちらの色でも5つ並べたい側です。{breaker}は壊し手で、5つ並ぶのを防ぎたい側です。** | {maker} is the Maker and wants five in a row of either colour. {breaker} is the Breaker and wants to stop it. | Agent 2026-10-06 |  |
+| — — — | Moves | **棋譜** | Record of moves | Agent 2026-10-06 |  |
+| — — — | Time per move | **1手の持ち時間** | Time per move | Agent 2026-10-06 |  |
+| — — — | How long each player has for a move in a shared game. The clock starts when the other side moves. | **共有する対局で、各自が1手に使える時間です。相手が打つと、時計が動き始めます。** | How long each player has for a move in a shared game. The clock starts when the other side moves. | Agent 2026-10-06 |  |
+| — — — | {name} must move by {when} | **{name}は{when}までに打つ必要があります** | {name} must move by {when} | Agent 2026-10-06 |  |
+| — — — | Stone {n} must land inside the central {side}×{side}; then the other side may swap. | **{n}つ目の石は、中央の{side}×{side}の内側に置きます。そのあと、相手は色を交代できます。** | Stone {n} must be placed inside the central {side}×{side}, and then the other side may swap colours. | Agent 2026-10-06 |  |
+| — — — | Coming next | **次の駒** | Next pieces | Agent 2026-10-06 |  |
+| — — — | This game cannot end in a draw: a full board always joins one player's two sides. There is no length to set. | **このゲームは引き分けになりません。盤が埋まれば、必ずどちらかの2辺がつながります。手数は設定できません。** | This game cannot end in a draw, because a full board always joins one player's two sides. There is no number of moves to set. | Agent 2026-10-06 |  |
+| — — — | This board is too small to need a length. A game of this size is over well before any share of the board has been played. | **この盤は小さいので、手数の設定は不要です。この大きさでは、盤のどの割合も埋まる前に、勝負がつきます。** | This board is too small to need a number of moves. A game of this size is over well before any share of the board has been played. | Agent 2026-10-06 |  |
+| — — — | No hints left. | **ヒントは残っていません。** | No hints are left. | Agent 2026-10-06 |  |
+| — — — | You have no move left. Pass to hand the turn on. | **打てる手がありません。パスして手番を渡してください。** | You have no move left. Pass to hand the turn on. | Agent 2026-10-06 |  |
+| — — — | No reading in a game where stones move after they are placed. | **石を置いたあとに動かすゲームでは、形勢は読めません。** | There is no reading in a game where stones move after they are placed. | Agent 2026-10-06 |  |
+| — — — | Notes | **メモ** | Notes | Agent 2026-10-06 |  |
+| — — — | Private. Kept in this browser and never sent to anyone. | **非公開です。このブラウザにだけ保存され、誰にも送られません。** | Private. It is kept only in this browser and is never sent to anyone. | Agent 2026-10-06 |  |
+| — — — | What you are planning, what you noticed, what to try next time… | **考えていること、気づいたこと、次に試すこと…** | What you are planning, what you noticed, what to try next time… | Agent 2026-10-06 |  |
+| — — — | That was the last board waiting on you. | **手番を待っている盤は、これで最後でした。** | That was the last board waiting for you. | Agent 2026-10-06 |  |
+| — — — | Opening | **開局ルール** | Opening rule | Agent 2026-10-06 |  |
+| — — — | Black opens at tengen, the centre point. | **黒は、中央の天元から打ち始めます。** | Black starts at tengen, the centre point. | Agent 2026-10-06 |  |
+| — — — | Open to anyone | **誰でも参加できる** | Open to anyone | Agent 2026-10-06 |  |
+| — — — | Post the other seat on the games page. Whoever answers first sits down as White. | **もう一方の席をゲームのページに掲示します。最初に応じた人が、白で着席します。** | The other seat is put up on the games page. Whoever answers first sits down as White. | Agent 2026-10-06 |  |
+| — — — | {n}nd | **{n}連** | {n}th in a run | Agent 2026-10-06 |  |
+| — — — | {n}rd | **{n}連** | {n}th in a run | Agent 2026-10-06 |  |
+| — — — | {n}st | **{n}連** | {n}th in a run | Agent 2026-10-06 |  |
+| — — — | {n}th | **{n}連** | {n}th in a run | Agent 2026-10-06 |  |
+| — — — | out of time | **時間切れ** | out of time | Agent 2026-10-06 |  |
+| — — — | Pass | **パス** | Pass | Agent 2026-10-06 |  |
+| — — — | Takes your turn without playing a stone. Two passes in a row end the game. | **石を打たずに手番を渡します。連続して2回パスすると、対局が終わります。** | Hands over your turn without playing a stone. Two passes in a row end the game. | Agent 2026-10-06 |  |
+| — — — | Anywhere | **どこでも** | Anywhere | Agent 2026-10-06 |  |
+| — — — | Load moves | **手を読み込む** | Load the moves | Agent 2026-10-06 |  |
+| — — — | Clear | **消す** | Clear | Agent 2026-10-06 |  |
+| — — — | From | **出どころ** | Source | Agent 2026-10-06 |  |
+| — — — | On ItsYourTurn press 'show move list'; on GoldToken the moves are under Past Moves. Copy them and paste here — with this board set to the same size as the game first, since ItsYourTurn counts its rows from the bottom edge. | **ItsYourTurnでは「show move list」を押し、GoldTokenでは「Past Moves」の下に手があります。それをコピーしてここに貼り付けてください。その前に、この盤をその対局と同じ大きさにしておいてください。ItsYourTurnは行を下の端から数えるためです。** | On ItsYourTurn, press "show move list". On GoldToken, the moves are under "Past Moves". Copy them and paste them here. First set this board to the same size as that game, because ItsYourTurn counts its rows from the bottom edge. | Agent 2026-10-06 |  |
+| — — — | A list of moves, in most of the ways they are published — like {example}. Move numbers, line breaks and a result on the end are all fine. | **公開されているほとんどの形式の手の並びを読み込めます。例：{example}。手数、改行、末尾の結果があっても大丈夫です。** | A list of moves in most of the ways they are published, for example {example}. Move numbers, line breaks and a result at the end are all fine. | Agent 2026-10-06 |  |
+| — — — | Paste a game | **棋譜を貼り付ける** | Paste a record | Agent 2026-10-06 |  |
+| — — — | Could not read any moves in that. | **手を読み取れませんでした。** | No moves could be read. | Agent 2026-10-06 |  |
+| — — — | Paste a list of moves | **手の並びを貼り付けてください** | Paste a list of moves | Agent 2026-10-06 |  |
+| — — — | Read 1 move as {format}. | **{format}として1手を読み取りました。** | Read 1 move as {format}. | Agent 2026-10-06 |  |
+| — — — | Read {count} moves as {format}. | **{format}として{count}手を読み取りました。** | Read {count} moves as {format}. | Agent 2026-10-06 |  |
+| — — — | Move {at} cannot be played in this game, so the board stops there. | **{at}手目はこのゲームでは打てないので、盤はそこで止まります。** | Move {at} cannot be played in this game, so the board stops there. | Agent 2026-10-06 |  |
+| — — — | Running out of time | **時間切れのとき** | When time runs out | Agent 2026-10-06 |  |
+| — — — | Loses the game. | **対局に負けます。** | The game is lost. | Agent 2026-10-06 |  |
+| — — — | Lose the game | **対局に負ける** | Lose the game | Agent 2026-10-06 |  |
+| — — — | Graceful: a missed deadline costs the turn, and the waiting player may claim it or simply keep waiting. Strict: a missed deadline is a loss. | **ゆるやか：期限を過ぎると手番を失い、待っている側は請求するか、そのまま待てます。厳密：期限を過ぎると負けです。** | Lenient: a missed deadline costs the turn, and the waiting player may claim it or simply keep waiting. Strict: a missed deadline is a loss. | Agent 2026-10-06 |  |
+| — — — | Loss of game, ignoring vacation days | **対局負け（休暇日を考慮しない）** | Loss of the game, ignoring holiday days | Agent 2026-10-06 |  |
+| — — — | Lose the game, strictly | **厳密に対局負け** | Lose the game, strictly | Agent 2026-10-06 |  |
+| — — — | Loses the turn. Three in a row lose the game. | **手番を失います。3回続けると、対局に負けます。** | The turn is lost. Three in a row lose the game. | Agent 2026-10-06 |  |
+| — — — | Lose the turn | **手番を失う** | Lose the turn | Agent 2026-10-06 |  |
+| — — — | Pick one of your pieces to slide. | **滑らせる自分の駒を1つ選んでください。** | Choose one of your pieces to slide. | Agent 2026-10-06 |  |
+| — — — | Pick one of your pieces to move: a step, or a chain of jumps. | **動かす自分の駒を1つ選んでください。1歩進むか、連続して跳びます。** | Choose one of your pieces to move: one step, or a chain of jumps. | Agent 2026-10-06 |  |
+| — — — | Piece in hand | **手元の駒** | Piece in hand | Agent 2026-10-06 |  |
+| — — — | Place the piece in hand: rotate or flip it, then click where its top-left corner goes. | **手元の駒を置きます。回転や反転をしてから、左上の角を置く場所をクリックしてください。** | Place the piece in hand. Rotate or flip it, and then click where its top-left corner goes. | Agent 2026-10-06 |  |
+| — — — | Place a stone as | **石の色を選んで置く** | Place a stone in the colour | Agent 2026-10-06 |  |
+| — — — | Choose the point it slides to, or pick a different piece. | **滑らせる先の点を選ぶか、別の駒を選んでください。** | Choose the point it slides to, or choose a different piece. | Agent 2026-10-06 |  |
+| — — — | Choose where it lands, or pick a different piece. | **着地する場所を選ぶか、別の駒を選んでください。** | Choose where it lands, or choose a different piece. | Agent 2026-10-06 |  |
+| — — — | Practice board | **練習盤** | Practice board | Agent 2026-10-06 |  |
+| — — — | Play both sides, take moves back, or paste a game in and walk through it. Nobody is sitting opposite, there is no clock, and nothing played here is rated — a board at one screen is kept as its own game, and a game you paste in is not kept at all. | **両方の色を打ったり、手を戻したり、棋譜を貼り付けて順にたどったりできます。向かいに座る人も、時計もなく、ここで打ったものはレーティングに数えません。1つの画面で打つ盤は独立した対局として保存されますが、貼り付けた棋譜は保存されません。** | You can play both sides, take moves back, or paste in a game and walk through it. Nobody is sitting opposite, there is no clock, and nothing played here counts for rating. A board played on one screen is kept as a game of its own, but a game you paste in is not kept at all. | Agent 2026-10-06 |  |
+| — — — | Start a real game | **本番の対局を始める** | Start a real game | Agent 2026-10-06 |  |
+| — — — | Black's second stone must land outside the central 5×5. | **黒の2つ目の石は、中央の5×5の外に置きます。** | Black's second stone must be placed outside the central 5×5. | Agent 2026-10-06 |  |
+| — — — | Redo | **進む** | Go forward | Agent 2026-10-06 |  |
+| — — — | Agree | **同意する** | Agree | Agent 2026-10-06 |  |
+| — — — | No thanks | **断る** | Decline | Agent 2026-10-06 |  |
+| — — — | Changes the board for both of you, so the other player has to agree. The stones keep their positions. | **盤を双方で変えるので、相手の同意が必要です。石の位置はそのままです。** | It changes the board for both of you, so the other player has to agree. The stones keep their positions. | Agent 2026-10-06 |  |
+| — — — | Back to the game | **対局に戻る** | Back to the game | Agent 2026-10-06 |  |
+| — — — | Review | **感想戦** | Post-game review | Agent 2026-10-06 |  |
+| — — — | In {variant}, move {move} by {colour} would have captured a pair. | **{variant}では、{colour}の{move}手目で、2子を取っていました。** | In {variant}, move {move} by {colour} would have captured two stones. | Agent 2026-10-06 |  |
+| — — — | {who} never gave the game away. | **{who}は、一度も勝ちを手放しませんでした。** | {who} never gave the game away. | Agent 2026-10-06 |  |
+| — — — | In {variant} the game would already have been {colour}'s at move {move}. | **{variant}では、{move}手目の時点で、すでに{colour}の勝ちでした。** | In {variant}, the game would already have been {colour}'s at move {move}. | Agent 2026-10-06 |  |
+| — — — | Nothing to say yet. Finish the game and the review appears here. | **まだ振り返ることはありません。対局が終わると、ここに感想戦が表示されます。** | There is nothing to look back on yet. When the game is over, the review will appear here. | Agent 2026-10-06 |  |
+| — — — | {who}'s first recorded win. | **{who}の、記録された初めての勝ちです。** | {who}'s first recorded win. | Agent 2026-10-06 |  |
+| — — — | Move {move} by {colour} would not have been allowed in {variant}: {shape}. | **{variant}では、{colour}の{move}手目は禁じ手でした：{shape}。** | In {variant}, move {move} by {colour} would not have been allowed: {shape}. | Agent 2026-10-06 |  |
+| — — — | Reviewing | **検討中** | Reviewing | Agent 2026-10-06 |  |
+| — — — | You are looking at an earlier position. | **前の局面を見ています。** | You are looking at an earlier position. | Agent 2026-10-06 |  |
+| — — — | Under other rules | **ほかの規則で見ると** | Under other rules | Agent 2026-10-06 |  |
+| — — — | {who} made a losing move and still won. The other side had the win and let it go. | **{who}は敗着を1回打ちながら、勝ちました。相手には勝ちがありましたが、逃しました。** | {who} played one losing move and still won. The other side had the win and let it go. | Agent 2026-10-06 |  |
+| — — — | {who} made {count} losing moves and still won. The other side had the win and let it go. | **{who}は敗着を{count}回打ちながら、勝ちました。相手には勝ちがありましたが、逃しました。** | {who} played {count} losing moves and still won. The other side had the win and let it go. | Agent 2026-10-06 |  |
+| — — — | {who}'s {ordinal} win in a row. | **{who}の{ordinal}勝。** | {who}'s {ordinal} win. | Agent 2026-10-06 |  |
+| — — — | {colour}'s winning line would not have counted in {variant}. | **{variant}では、{colour}の勝ちの並びは勝ちになりませんでした。** | In {variant}, {colour}'s winning line would not have counted as a win. | Agent 2026-10-06 |  |
+| — — — | Black's second stone must land inside the central 5×5. | **黒の2つ目の石は、中央の5×5の内側に置きます。** | Black's second stone must be placed inside the central 5×5. | Agent 2026-10-06 |  |
+| — — — | White's first stone must touch tengen, inside the central 3×3. | **白の最初の石は、天元に接し、中央の3×3の内側に置きます。** | White's first stone must touch tengen, inside the central 3×3. | Agent 2026-10-06 |  |
+| — — — | Rotate | **回転** | Rotate | Agent 2026-10-06 |  |
+| — — — | The rules are fixed while a game is on. Start a new game to change them. | **対局中は規則を変えられません。変えるには、新しい対局を始めてください。** | The rules cannot be changed while a game is on. To change them, start a new game. | Agent 2026-10-06 |  |
+| — — — | Black's third stone, the fifth move, must land inside the central 7×7. | **黒の3つ目の石（5手目）は、中央の7×7の内側に置きます。** | Black's third stone, the fifth move, must be placed inside the central 7×7. | Agent 2026-10-06 |  |
+| — — — | Second stone | **2手目** | Second stone | Agent 2026-10-06 |  |
+| — — — | Where the handicapped colour's second stone may go. | **ハンデのある色の2つ目の石を置ける場所です。** | Where the second stone of the colour with the handicap may be placed. | Agent 2026-10-06 |  |
+| — — — | Settings | **設定** | Settings | Agent 2026-10-06 |  |
+| — — — | Shared games start with the free opening. | **共有する対局は、自由開局で始まります。** | Shared games start with the free opening. | Agent 2026-10-06 |  |
+| — — — | Smaller board | **盤を小さく** | Smaller board | Agent 2026-10-06 |  |
+| — — — | The outer ring is in use, so the board cannot get smaller. | **外側の一周に石があるので、盤を小さくできません。** | There are stones on the outer ring, so the board cannot get smaller. | Agent 2026-10-06 |  |
+| — — — | Lay one stone of your colour. | **自分の色の石を1つ置いてください。** | Lay one stone of your colour. | Agent 2026-10-06 |  |
+| — — — | 1 single left | **石があと1つ** | 1 single stone left | Agent 2026-10-06 |  |
+| — — — | {count} singles left | **石があと{count}つ** | {count} single stones left | Agent 2026-10-06 |  |
+| — — — | Skip turn | **捨て石を打つ** | Play a throwaway stone | Agent 2026-10-06 |  |
+| — — — | Spends your turn on a far corner. It still costs you a stone. | **手番を使って、遠い隅に石を置きます。石は1つ減ります。** | Uses your turn to place a stone in a far corner. It still uses up a stone. | Agent 2026-10-06 |  |
+| — — — | This game | **この対局** | This game | Agent 2026-10-06 |  |
+| — — — | Stone {placed} of {total} this turn | **この手番の{placed}つ目（全{total}つ）** | Stone {placed} of {total} this turn | Agent 2026-10-06 |  |
+| — — — | Swap colours | **色を交代** | Swap colours | Agent 2026-10-06 |  |
+| — — — | Hand over your colour and take your opponent's stones instead. It costs you this move. | **自分の色を渡して、相手の石を持ちます。この手番は使います。** | You hand over your colour and take your opponent's stones instead. It uses this move. | Agent 2026-10-06 |  |
+| — — — | The position is already decided — no stealing it. | **すでに勝負がついた局面なので、色の交代はできません。** | The position is already decided, so the colours cannot be swapped. | Agent 2026-10-06 |  |
+| — — — | You have used your swap. | **色の交代はすでに使いました。** | You have already used your swap. | Agent 2026-10-06 |  |
+| — — — | Take black | **黒を持つ** | Take black | Agent 2026-10-06 |  |
+| — — — | Take white | **白を持つ** | Take white | Agent 2026-10-06 |  |
+| — — — | Turn a quadrant to finish your move. | **4分の1の区画を回して、手を終えます。** | Turn a quarter of the board to finish your move. | Agent 2026-10-06 |  |
+| — — — | Undo | **待った** | Take back | Agent 2026-10-06 |  |
+| — — — | Place the piece | **駒を置く** | Place the piece | Agent 2026-10-06 |  |
+| — — — | Place a single | **石を1つ置く** | Place a single stone | Agent 2026-10-06 |  |
+| — — — | {who} wins by capturing {stones} stones | **{who}の勝ちです。{stones}子を取りました。** | {who} wins. Captured {stones} stones. | Agent 2026-10-06 |  |
+| — — — | {who} wins with a square | **{who}が正方形を作って勝ちました** | {who} won by making a square | Agent 2026-10-06 |  |
+| — — — | {who} wins. {loser} made three in a row. | **{who}の勝ちです。{loser}が3つ並べてしまいました。** | {who} wins. {loser} made three in a row. | Agent 2026-10-06 |  |
+| — — — | You had no move, so your turn passed. | **打てる手がなかったので、手番がパスになりました。** | You had no move, so your turn was passed. | Agent 2026-10-06 |  |
+| — — — | Your games | **対局中** | Games in progress | Agent 2026-10-06 |  |
+| — — — | Against the bots | **対コンピュータ** | Against the computer | Agent 2026-10-06 |  |
+| — — — | All | **すべて** | All | Agent 2026-10-06 |  |
+| — — — | Also in {family}: | **{family}のほかのゲーム：** | Other games in {family}: | Agent 2026-10-06 |  |
+| — — — | Also known as {names}. | **別名：{names}。** | Also known as: {names}. | Agent 2026-10-06 |  |
+| — — — | Also shown under {shelves}. | **{shelves}にも載っています。** | Also shown under {shelves}. | Agent 2026-10-06 |  |
+| — — — | also under {family} | **{family}にも所属** | also under {family} | Agent 2026-10-06 |  |
+| — — — | Any | **指定なし** | No preference | Agent 2026-10-06 |  |
+| — — — | Ask | **申し込む** | Ask | Agent 2026-10-06 |  |
+| — — — | No invite? Ask for one | **招待がない方はこちら** | No invite? This way | Agent 2026-10-06 |  |
+| — — — | Background | **背景** | Background | Agent 2026-10-06 |  |
+| — — — | This is where it will go when there is. The page exists ahead of the pictures on purpose: the address is part of how a game is laid out here, so it is kept whether or not anything has been drawn — and saying plainly that nothing has been is better than filling the space with something that was made for another purpose. | **背景画ができたら、ここに載せます。絵より先にこのページを用意しているのは、わざとです。ページのアドレスはゲームを並べる仕組みの一部なので、絵があってもなくても残します。何も描かれていないとはっきり書くほうが、別の目的で作ったものでこの場所を埋めるより良いからです。** | When there is background art, it will go here. The page exists ahead of the pictures on purpose: the page's address is part of how games are laid out, so it is kept whether or not anything has been drawn, and saying plainly that nothing has been drawn is better than filling the space with something made for another purpose. | Agent 2026-10-06 |  |
+| — — — | Back to game history | **棋譜の一覧に戻る** | Back to the list of game records | Agent 2026-10-06 |  |
+| — — — | Be the first to play {game} → | **{game}を最初に遊ぶ →** | Be the first to play {game} → | Agent 2026-10-06 |  |
+| — — — | Begin | **開始** | Begin | Agent 2026-10-06 |  |
+| — — — | A separate ladder, on this game alone, for the games where one seat was a program. These ratings are not the ones above and the two are never added together. A grade is a name for how a program plays, not a promise about how it does: read the standing and the games behind it, which is what a ladder is for. | **このゲームだけの別の順位表で、片方の席がコンピュータだった対局を対象にします。このレーティングは上のものとは別で、2つが合算されることはありません。段位はコンピュータの打ち方につけた名前であって、強さの約束ではありません。順位と、その元になった対局を見てください。それが順位表の役目です。** | A separate ladder, for this game alone, covering games where one seat was a computer. These ratings are separate from the ones above, and the two are never added together. A grade is a name for how a computer plays, not a promise about how well it does: look at the standing and the games behind it, which is what a ladder is for. | Agent 2026-10-06 |  |
+| — — — | How to show the games | **ゲームの表示方法** | How the games are shown | Agent 2026-10-06 |  |
+| — — — | Champion: | **王者：** | Champion: | Agent 2026-10-06 |  |
+| — — — | Counted on another site — no game here to open. | **ほかのサイトで数えたものです。ここには開けるゲームがありません。** | Counted on another site, so there is no game here to open. | Agent 2026-10-06 |  |
+| — — — | Ratings here are this game's own Elo, starting at 1600 and moved only by games of {game} between two named members. A standing is unrated for the first few games, provisional while it settles, and established after twenty. | **ここのレーティングは、このゲーム固有のElo値です。1600から始まり、名前のある会員どうしの{game}の対局でだけ動きます。最初の数局は未定、落ち着くまでは仮、20局を過ぎると確定です。** | The ratings here are this game's own Elo values. They start at 1600 and move only through games of {game} between two named members. A standing is undecided for the first few games, provisional while it settles, and settled after twenty games. | Agent 2026-10-06 |  |
+| — — — | Every family, and every game | **すべての系統とゲーム** | Every family and every game | Agent 2026-10-06 |  |
+| — — — | Every game of {game} played here | **ここで対局された{game}の全対局** | Every game of {game} played here | Agent 2026-10-06 |  |
+| — — — | family | **系統** | family | Agent 2026-10-06 |  |
+| — — — | leaderboard | **番付** | leaderboard | Agent 2026-10-06 |  |
+| — — — | play | **遊ぶ** | play | Agent 2026-10-06 |  |
+| — — — | Family | **系統** | Family | Agent 2026-10-06 |  |
+| — — — | The only one in its family so far. | **この系統には、今のところこのゲームだけです。** | So far this is the only game in its family. | Agent 2026-10-06 |  |
+| — — — | finished {when} | **{when}に終了** | finished {when} | Agent 2026-10-06 |  |
+| — — — | Fork | **分岐** | Fork | Agent 2026-10-06 |  |
+| — — — | Play from move {move} | **{move}手目から対局** | Play from move {move} | Agent 2026-10-06 |  |
+| — — — | Start a second game from this exact position, against the same opponent. Both games go on. You settle the clock and whether it counts before it starts; the board and the rules come with the position. | **この局面から、同じ相手との2局目を始めます。どちらの対局も続きます。持ち時間と、レーティング対局にするかどうかは、始める前に決めます。盤と規則は、この局面のものを引き継ぎます。** | Start a second game from this exact position, against the same opponent. Both games continue. The time control and whether it counts for rating are decided before it starts. The board and the rules come over with the position. | Agent 2026-10-06 |  |
+| — — — | Friendly · unrated | **親善対局・レーティング対象外** | Friendly game, not rated | Agent 2026-10-06 |  |
+| — — — | And {count} from other families, listed here too. | **このほか、ほかの系統の{count}もここに並べています。** | In addition, {count} from other families are listed here too. | Agent 2026-10-06 |  |
+| — — — | Full leaderboard → | **順位表の全体を見る →** | See the full leaderboard → | Agent 2026-10-06 |  |
+| — — — | Full rules of {game} | **{game}の規則（全文）** | Full rules of {game} | Agent 2026-10-06 |  |
+| — — — | Game | **対局** | Game | Agent 2026-10-06 |  |
+| — — — | Game history | **棋譜** | Game history | Agent 2026-10-06 |  |
+| — — — | Game review | **感想戦** | Game review | Agent 2026-10-06 |  |
+| — — — | Almost every game here is five in a row with one idea changed. Every name leads to that game — its rules, its record, its standings and a board. | **ここにあるゲームのほとんどは、五目並べに工夫を1つ加えたものです。名前を押すと、そのゲームの規則、戦績、順位表、盤に進めます。** | Almost every game here is five in a row with one idea changed. Pressing a name takes you to that game's rules, record, standings and board. | Agent 2026-10-06 |  |
+| — — — | I have an invite → | **招待を持っています →** | I have an invite → | Agent 2026-10-06 |  |
+| — — — | {count} game still being played | **対局中の{count}局** | {count} game being played | Agent 2026-10-06 |  |
+| — — — | {count} games still being played | **対局中の{count}局** | {count} games being played | Agent 2026-10-06 |  |
+| — — — | The games still being played with you in a seat — the ones the limit counts. | **席に着いて対局中のゲームです。上限に数えられるのは、これらです。** | The games being played with you in a seat. These are the ones the limit counts. | Agent 2026-10-06 |  |
+| — — — | hide | **閉じる** | close | Agent 2026-10-06 |  |
+| — — — | How to play | **遊び方** | How to play | Agent 2026-10-06 |  |
+| — — — | {count} in this family, including {game}. | **この系統には{count}があり、{game}もその1つです。** | This family has {count}, and {game} is one of them. | Agent 2026-10-06 |  |
+| — — — | Games by what wins | **勝ち方で絞る** | Filter games by how they are won | Agent 2026-10-06 |  |
+| — — — | Nobody holds a standing at {game} yet. A standing comes from a rated game between two members. | **{game}で順位を持つ人は、まだいません。順位は、会員どうしのレーティング対局から生まれます。** | Nobody has a standing at {game} yet. A standing comes from a rated game between two members. | Agent 2026-10-06 |  |
+| — — — | Reading about {game} is open to anybody. Who is winning at it is the playing half of this site, and that needs an invite. | **{game}について読むのは、だれでもできます。だれが強いかを見るのは、対局する会員向けの部分で、招待が必要です。** | Anybody can read about {game}. Seeing who is strong at it is for the members who play, and needs an invite. | Agent 2026-10-06 |  |
+| — — — | Leaderboard | **番付** | Leaderboard | Agent 2026-10-06 |  |
+| — — — | Games by first letter | **頭文字で絞る** | Filter games by first letter | Agent 2026-10-06 |  |
+| — — — | the game | **ゲーム** | the game | Agent 2026-10-06 |  |
+| — — — | history | **棋譜** | history | Agent 2026-10-06 |  |
+| — — — | rules | **規則** | rules | Agent 2026-10-06 |  |
+| — — — | {games} games in {families} families. Each one has a page of its own, and under it the rules, the record, the standings and a board. | **ゲームは{games}種類、{families}の系統に分かれています。どれにも専用のページがあり、その下に規則、戦績、順位表、盤があります。** | There are {games} games in {families} families. Each has a page of its own, with the rules, the record, the standings and a board under it. | Agent 2026-10-06 |  |
+| — — — | Live game | **対局中** | Game in progress | Agent 2026-10-06 |  |
+| — — — | Looking for a game | **対局相手を探している人** | People looking for a game | Agent 2026-10-06 |  |
+| — — — | This page counts your own games, and there is no player on this account yet — finish one and it will have something to show. | **このページは自分の対局を数えますが、このアカウントにはまだ対局者がいません。1局終えると、ここに表示されます。** | This page counts your own games, but this account has no player yet. Once you finish a game, it will be shown here. | Agent 2026-10-06 |  |
+| — — — | This page counts your own games, and it does not know who you are yet. | **このページは自分の対局を数えますが、まだだれの対局か分かりません。** | This page counts your own games, but it does not yet know whose games they are. | Agent 2026-10-06 |  |
+| — — — | More on this game | **このゲームのほかのページ** | Other pages about this game | Agent 2026-10-06 |  |
+| — — — | New game of {game} | **{game}の新規対局** | New game of {game} | Agent 2026-10-06 |  |
+| — — — | There is no background art for {game} yet. | **{game}の背景画は、まだありません。** | There is no background art for {game} yet. | Agent 2026-10-06 |  |
+| — — — | Nobody has finished a rated game of {game} against a program yet. | **{game}で、コンピュータを相手にしたレーティング対局を終えた人は、まだいません。** | Nobody has yet finished a rated game of {game} against a computer. | Agent 2026-10-06 |  |
+| — — — | No game matches. | **当てはまるゲームはありません。** | No game matches. | Agent 2026-10-06 |  |
+| — — — | No rated games of {game} between members yet. | **会員どうしの{game}のレーティング対局は、まだありません。** | There are no rated games of {game} between members yet. | Agent 2026-10-06 |  |
+| — — — | Not a game played here — this is from a record kept from elsewhere. | **ここで遊べるゲームではありません。ほかのサイトから引き継いだ記録にあるものです。** | Not a game that can be played here. This comes from a record carried over from another site. | Agent 2026-10-06 |  |
+| — — — | Objective | **目的** | Objective | Agent 2026-10-06 |  |
+| — — — | A game of {game} on {board} was offered here and the other player chose not to play it. It was never started, so there is no result: nobody won, nobody lost, and no rating moved for either of them. | **ここで{board}の{game}が申し込まれましたが、相手は対局しないことを選びました。対局は始まっていないため、結果はなく、勝者も敗者もなく、どちらのレーティングも動いていません。** | A game of {game} on {board} was offered here, but the other player chose not to play it. The game never started, so there is no result: there is no winner or loser, and neither rating moved. | Agent 2026-10-06 |  |
+| — — — | A game of {game} on {board} was offered here and the offer was taken back before it was answered. It was never started, so there is no result: nobody won, nobody lost, and no rating moved for either of them. | **ここで{board}の{game}が申し込まれましたが、返事の前に取り下げられました。対局は始まっていないため、結果はなく、勝者も敗者もなく、どちらのレーティングも動いていません。** | A game of {game} on {board} was offered here, but the offer was taken back before it was answered. The game never started, so there is no result: there is no winner or loser, and neither rating moved. | Agent 2026-10-06 |  |
+| — — — | This offer was declined | **この申し込みは断られました** | This offer was turned down | Agent 2026-10-06 |  |
+| — — — | Offers cost nothing to refuse, which is the point of them — ask again whenever you like. | **申し込みは、断っても何もかかりません。それが申し込みの良いところです。いつでも、もう一度申し込めます。** | Refusing an offer costs nothing, which is the point of offers. You can ask again at any time. | Agent 2026-10-06 |  |
+| — — — | This offer was withdrawn | **この申し込みは取り下げられました** | This offer was withdrawn | Agent 2026-10-06 |  |
+| — — — | Runs on {package}, open source. | **{package}で動いています（オープンソース）。** | Runs on {package}, which is open source. | Agent 2026-10-06 |  |
+| — — — | {count}, each played by passing one phone or tablet round the table. A game from another family says where it lives. | **{count}。どれも、スマートフォンかタブレットを1台、卓で回して遊びます。ほかの系統のゲームには、その所属が書いてあります。** | {count}, each played by passing one phone or tablet around the table. A game from another family says where it belongs. | Agent 2026-10-06 |  |
+| — — — | A game of {game} in progress | **対局中の{game}の盤面** | The board of a game of {game} in progress | Agent 2026-10-06 |  |
+| — — — | Play again as {colour} | **{colour}でもう一度対局** | Play again as {colour} | Agent 2026-10-06 |  |
+| — — — | No games of {game} have been played here yet. | **ここで{game}が対局されたことは、まだありません。** | No games of {game} have been played here yet. | Agent 2026-10-06 |  |
+| — — — | {game} — {tagline} {rules}. | **{game}：{tagline}　詳しくは{rules}をどうぞ。** | {game}: {tagline} For details, please see {rules}. | Agent 2026-10-06 |  |
+| — — — | Play {game} | **{game}を遊ぶ** | Play {game} | Agent 2026-10-06 |  |
+| — — — | Play one → | **遊んでみる →** | Try one → | Agent 2026-10-06 |  |
+| — — — | Almost every game here is five in a row with one idea changed. Every name below leads to that game, and the three ways of looking at the list are the same games arranged differently. | **ここにあるゲームのほとんどは、五目並べに工夫を1つ加えたものです。下の名前はどれも、そのゲームに通じています。一覧の3つの見方は、同じゲームの並べ方が違うだけです。** | Almost every game here is five in a row with one idea changed. Every name below leads to that game, and the three views of the list are just different ways of arranging the same games. | Agent 2026-10-06 |  |
+| — — — | Every game here is free to read about — the rules, what it is, where it came from, and the family it belongs to. Playing one needs an invite. | **ここにあるゲームは、規則や由来、属する系統まで、だれでも無料で読めます。遊ぶには招待が必要です。** | Anyone can read about every game here for free: the rules, what it is, where it came from and the family it belongs to. Playing one needs an invite. | Agent 2026-10-06 |  |
+| — — — | Nobody has finished a game of this here yet, so there is nothing to draw. | **ここでこのゲームを終えた人は、まだいないため、描くものがありません。** | Nobody has finished a game of this here yet, so there is nothing to draw. | Agent 2026-10-06 |  |
+| — — — | Be the first to play → | **最初に遊ぶ →** | Be the first to play → | Agent 2026-10-06 |  |
+| — — — | No invite? Ask for one → | **招待がない方はこちら →** | No invite? This way → | Agent 2026-10-06 |  |
+| — — — | How the last {count} games played out here ended — each one leads to its game. | **ここで対局された直近{count}局の終わり方です。どれも、その対局のページに進めます。** | How the last {count} games played here ended. Each one leads to its game page. | Agent 2026-10-06 |  |
+| — — — | Open this game | **この対局を開く** | Open this game | Agent 2026-10-06 |  |
+| — — — | The boards of games members have played here are for members. | **ここで会員が対局した盤は、会員だけに見せています。** | The boards of games members have played here are shown to members only. | Agent 2026-10-06 |  |
+| — — — | From real games | **実戦から** | From real games | Agent 2026-10-06 |  |
+| — — — | Rules | **規則** | Rules | Agent 2026-10-06 |  |
+| — — — | House rules | **ハウスルール** | House rules | Agent 2026-10-06 |  |
+| — — — | The rules of {game} | **{game}の規則** | The rules of {game} | Agent 2026-10-06 |  |
+| — — — | Finish or resign one in {link} and follow the same link again — it has not been used up. | **{link}で1局を終えるか投了してから、もう一度同じリンクを開いてください。リンクはまだ使えます。** | Finish or resign one game in {link}, then open the same link again. The link can still be used. | Agent 2026-10-06 |  |
+| — — — | You are seated at {held}, and {limit} at once is the limit here, so it was not claimed for you. | **{held}に着席中のため、同時に対局できる上限（{limit}局）に達しており、席は確保されませんでした。** | You are seated in {held}, which has reached the limit of games at once ({limit}), so the seat was not claimed for you. | Agent 2026-10-06 |  |
+| — — — | You already have as many games on the go as this site allows at once, so it was not claimed for you. | **同時に対局できる数の上限にすでに達しているため、席は確保されませんでした。** | You have already reached the limit of games at once, so the seat was not claimed for you. | Agent 2026-10-06 |  |
+| — — — | Your seat is still waiting. | **席はそのまま空けてあります。** | Your seat is still being kept free. | Agent 2026-10-06 |  |
+| — — — | show | **開く** | open | Agent 2026-10-06 |  |
+| — — — | Started {when} | **{when}に開始** | Started {when} | Agent 2026-10-06 |  |
+| — — — | Start {game} | **{game}を始める** | Start {game} | Agent 2026-10-06 |  |
+| — — — | {count}, played by passing one phone or tablet round the table, or on several devices at Hitotsu, with a computer in any seat. | **{count}。スマートフォンかタブレットを1台、卓で回して遊びます。ひとつでは、複数の端末でも遊べ、どの席にもコンピュータを座らせられます。** | {count}, played by passing one phone or tablet around the table. Hitotsu can also be played on several devices, with a computer in any seat. | Agent 2026-10-06 |  |
+| — — — | {count}, played round one device, on two devices or against the computer at four strengths. | **{count}。1台の端末を囲んで、2台の端末で、または4段階の強さのコンピュータと遊びます。** | {count}, played around one device, on two devices, or against the computer at four strengths. | Agent 2026-10-06 |  |
+| — — — | — the one you came from | **— いま見ていたゲーム** | — the one you were just looking at | Agent 2026-10-06 |  |
+| — — — | All solves | **解いた記録の一覧** | All solves | Agent 2026-10-06 |  |
+| — — — | Also in this family | **同じ系統のほかのゲーム** | Other games in this family | Agent 2026-10-06 |  |
+| — — — | Also on its shelf | **同じ棚のほかのゲーム** | Other games on its shelf | Agent 2026-10-06 |  |
+| — — — | Daily words | **毎日の言葉** | Daily words | Agent 2026-10-06 |  |
+| — — — | From your history | **履歴から** | From your history | Agent 2026-10-06 |  |
+| — — — | Online table | **オンライン卓** | Online table | Agent 2026-10-06 |  |
+| — — — | A solve | **解いた記録** | A solve | Agent 2026-10-06 |  |
+| — — — | A solve of {game} | **{game}を解いた記録** | A solve of {game} | Agent 2026-10-06 |  |
+| — — — | Your {game} | **{game}の自分の棋譜** | Your game records of {game} | Agent 2026-10-06 |  |
+| — — — | Your puzzle | **自分のパズル** | Your puzzle | Agent 2026-10-06 |  |
+| — — — | Your {game} | **自分の{game}** | Your {game} | Agent 2026-10-06 |  |
+| — — — | You are watching this game. Open your own seat link to play. | **この対局を観戦しています。打つには、自分の席のリンクを開いてください。** | You are watching this game. To play, open your own seat link. | Agent 2026-10-06 |  |
+| — — — | Where this is | **現在の場所** | Where you are | Agent 2026-10-06 |  |
+| — — — | Read about {game} on Wikipedia ↗ | **Wikipediaで{game}について読む ↗** | Read about {game} on Wikipedia ↗ | Agent 2026-10-06 |  |
+| — — — | Your games | **自分の棋譜** | Your game records | Agent 2026-10-06 |  |
+| — — — | Your games of {game} | **{game}の自分の棋譜** | Your game records of {game} | Agent 2026-10-06 |  |
+| — — — | Your record at {game} | **{game}での自分の戦績** | Your record at {game} | Agent 2026-10-06 |  |
+| — — — | Yours | **自分** | Yours | Agent 2026-10-06 |  |
+| — — — | Allow resizing the board | **盤の大きさの変更を許可** | Allow changing the size of the board | Agent 2026-10-06 |  |
+| — — — | Allow skipping a turn | **手番の見送りを許可** | Allow passing up a turn | Agent 2026-10-06 |  |
+| — — — | Allow swapping colours | **色の交代を許可** | Allow swapping colours | Agent 2026-10-06 |  |
+| — — — | Allow taking moves back | **待ったを許可** | Allow taking moves back | Agent 2026-10-06 |  |
+| — — — | Switch off for a game where every stone is final. | **すべての石が確定する対局にするときは、オフにします。** | Switch it off for a game where every stone is final. | Agent 2026-10-06 |  |
+| — — — | {game} always opens with black. | **{game}は、いつも黒から始まります。** | {game} always starts with black. | Agent 2026-10-06 |  |
+| — — — | Analysis | **脅威の読み** | Threat reading | Agent 2026-10-06 |  |
+| — — — | {label} — move {move} | **{label}：{move}手目** | {label}: move {move} | Agent 2026-10-06 |  |
+| — — — | The bot stopped: {why}. Choose “Nobody” and back again to restart it. | **コンピュータが止まりました：{why}。再開するには、「なし」を選んでから、元の席を選び直してください。** | The computer stopped: {why}. To restart it, choose "None" and then choose the original seat again. | Agent 2026-10-06 |  |
+| — — — | the bot stopped | **原因は不明です** | the cause is unknown | Agent 2026-10-06 |  |
+| — — — | Playing {point} from here discards the 1 move that came after this position. This cannot be undone. | **ここで{point}に打つと、この局面のあとの1手が捨てられます。元には戻せません。** | Playing {point} from here discards the 1 move that came after this position. This cannot be undone. | Agent 2026-10-06 |  |
+| — — — | Playing {point} from here discards the {count} moves that came after this position. This cannot be undone. | **ここで{point}に打つと、この局面のあとの{count}手が捨てられます。元には戻せません。** | Playing {point} from here discards the {count} moves that came after this position. This cannot be undone. | Agent 2026-10-06 |  |
+| — — — | {label} · {black} {blackCount} · {white} {whiteCount} · {rule} | **{label}・{black}{blackCount}・{white}{whiteCount}・{rule}** | {label}, {black} {blackCount}, {white} {whiteCount}, {rule} | Agent 2026-10-06 |  |
+| — — — | Changing a rule starts a new game. | **規則を変えると、新しい対局が始まります。** | Changing a rule starts a new game. | Agent 2026-10-06 |  |
+| — — — | Clock | **持ち時間** | Time control | Agent 2026-10-06 |  |
+| — — — | {colour}'s colour | **{colour}の色** | {colour}'s colour | Agent 2026-10-06 |  |
+| — — — | Computer opponent | **コンピュータの相手** | Computer opponent | Agent 2026-10-06 |  |
+| — — — | Thinks on this device, so it can take seconds over a move instead of the quarter second a server reply allows. The game itself is still recorded, as any practice game is. | **この端末で考えるので、サーバーからの返答（4分の1秒）と違い、1手に数秒かかることがあります。対局そのものは、ほかの練習対局と同じように記録されます。** | It thinks on this device, so unlike a reply from the server (a quarter of a second), a move can take a few seconds. The game itself is recorded just like any other practice game. | Agent 2026-10-06 |  |
+| — — — | Coordinates | **座標** | Coordinates | Agent 2026-10-06 |  |
+| — — — | Draw | **引き分け** | Draw | Agent 2026-10-06 |  |
+| — — — | {label} — {colour}, move {move} | **{label}：{colour}、{move}手目** | {label}: {colour}, move {move} | Agent 2026-10-06 |  |
+| — — — | First stone | **先手** | First player | Agent 2026-10-06 |  |
+| — — — | Flip the board | **盤を反転** | Flip the board | Agent 2026-10-06 |  |
+| — — — | Your own view: the far side of the board nearest you, letters and numbers with it. Nobody else's board moves. | **自分だけの向きです。盤の向こう側が手前に来て、文字と数字もいっしょに反転します。ほかの人の盤は動きません。** | Your own view only. The far side of the board comes nearest to you, and the letters and numbers turn with it. Nobody else's board moves. | Agent 2026-10-06 |  |
+| — — — | Grid | **罫線** | Grid lines | Agent 2026-10-06 |  |
+| — — — | {lead}: {parts}. | **{lead}：{parts}を適用。** | {lead}: {parts} applied. | Agent 2026-10-06 |  |
+| — — — | {seat}, {message} | **{seat}へ：{message}** | To {seat}: {message} | Agent 2026-10-06 |  |
+| — — — | {point} — {label} | **{point}の手：{label}** | The move at {point}: {label} | Agent 2026-10-06 |  |
+| — — — | Hints | **ヒント** | Hints | Agent 2026-10-06 |  |
+| — — — | Hints per player | **1人あたりのヒント数** | Hints per player | Agent 2026-10-06 |  |
+| — — — | What clicking a move does | **手をクリックしたときの動作** | What clicking a move does | Agent 2026-10-06 |  |
+| — — — | of {count} home | **自陣に入った数（各{count}枚中）** | number at home (out of {count} each) | Agent 2026-10-06 |  |
+| — — — | {count} in a row | **{count}つ並べる** | {count} in a row | Agent 2026-10-06 |  |
+| — — — | Inspired by {name} | **着想：{name}** | Inspired by {name} | Agent 2026-10-06 |  |
+| — — — | Keys: R turns, F flips, S lays a single stone. | **キー：Rで回転、Fで反転、Sで石を1つ置きます。** | Keys: R rotates, F flips, S places a single stone. | Agent 2026-10-06 |  |
+| — — — | Length | **手数の上限** | Limit on moves | Agent 2026-10-06 |  |
+| — — — | How the moves are written | **手の書き方** | How the moves are written | Agent 2026-10-06 |  |
+| — — — | Move numbers | **手数** | Move numbers | Agent 2026-10-06 |  |
+| — — — | Numbers the stones as a printed game record does. | **印刷された棋譜のように、石に手数を書きます。** | Numbers the stones as a printed record of a game does. | Agent 2026-10-06 |  |
+| — — — | Move {move} | **{move}手目** | Move {move} | Agent 2026-10-06 |  |
+| — — — | Nobody — two people | **なし（2人で対局）** | Nobody (two people play) | Agent 2026-10-06 |  |
+| — — — | Obstacles | **障害物** | Obstacles | Agent 2026-10-06 |  |
+| — — — | {name} opening | **{name}の開局ルール** | The {name} opening rule | Agent 2026-10-06 |  |
+| — — — | Pass and play | **1台で交代対局** | Pass and play | Agent 2026-10-06 |  |
+| — — — | Piece colours | **駒の色** | Piece colours | Agent 2026-10-06 |  |
+| — — — | Players | **対局者** | Players | Agent 2026-10-06 |  |
+| — — — | Plays as | **打つ席** | Plays as | Agent 2026-10-06 |  |
+| — — — | {seat} wants a bigger board — {size}×{size}. | **{seat}は、盤を{size}×{size}に広げたいと言っています。** | {seat} says it wants to widen the board to {size}×{size}. | Agent 2026-10-06 |  |
+| — — — | The stones keep their positions, and nobody loses a turn. | **石の位置はそのままで、手番を失う人もいません。** | The stones keep their positions, and nobody loses a turn. | Agent 2026-10-06 |  |
+| — — — | {seat} wants a smaller board — {size}×{size}. | **{seat}は、盤を{size}×{size}に縮めたいと言っています。** | {seat} says it wants to shrink the board to {size}×{size}. | Agent 2026-10-06 |  |
+| — — — | Unfinished | **中断** | Unfinished | Agent 2026-10-06 |  |
+| — — — | You lost | **負け** | Lost | Agent 2026-10-06 |  |
+| — — — | You won | **勝ち** | Won | Agent 2026-10-06 |  |
+| — — — | {move} · reviewing {index} of {total} | **{move}・{total}手中{index}手目を検討中** | {move}, reviewing move {index} of {total} | Agent 2026-10-06 |  |
+| — — — | {label} — move {index} of {total} | **{label}：{total}手中{index}手目** | {label}: move {index} of {total} | Agent 2026-10-06 |  |
+| — — — | second stone {name} | **2つ目の石：{name}** | second stone: {name} | Agent 2026-10-06 |  |
+| — — — | Setting out the board… | **盤を並べています…** | Setting out the board… | Agent 2026-10-06 |  |
+| — — — | Set up | **設定** | Settings | Agent 2026-10-06 |  |
+| — — — | Played on {site}, at one screen | **{site}で、1つの画面を使って対局** | Played on {site}, using one screen | Agent 2026-10-06 |  |
+| — — — | On {site}: both sides are yours, and nothing here is rated | **{site}での練習：両方の色を自分で打ち、レーティングには数えません** | Practice on {site}: you play both colours yourself, and nothing counts for rating | Agent 2026-10-06 |  |
+| — — — | Playing here starts a new line. | **ここで打つと、新しい変化が始まります。** | Playing here starts a new line of play. | Agent 2026-10-06 |  |
+| — — — | Hints used | **使ったヒント** | Hints used | Agent 2026-10-06 |  |
+| — — — | Longest think | **最長考** | Longest think | Agent 2026-10-06 |  |
+| — — — | Losing moves | **敗着** | Losing moves | Agent 2026-10-06 |  |
+| — — — | Moves | **手数** | Moves | Agent 2026-10-06 |  |
+| — — — | {moves} · {time} at the board | **{moves}・盤の前で{time}** | {moves}, {time} at the board | Agent 2026-10-06 |  |
+| — — — | Threats ignored | **放置した脅威** | Threats left alone | Agent 2026-10-06 |  |
+| — — — | Time used | **使った時間** | Time used | Agent 2026-10-06 |  |
+| — — — | Stones | **石** | Stones | Agent 2026-10-06 |  |
+| — — — | {colour} stones, as usual | **{colour}の石（いつもの色）** | {colour} stones (the usual colour) | Agent 2026-10-06 |  |
+| — — — | Strength | **強さ** | Strength | Agent 2026-10-06 |  |
+| — — — | thinking… | **考え中…** | thinking… | Agent 2026-10-06 |  |
+| — — — | {colour} to play | **{colour}の手番** | {colour} to play | Agent 2026-10-06 |  |
+| — — — | Undo is switched off for this game. | **この対局では、待ったは使えません。** | Taking moves back is turned off for this game. | Agent 2026-10-06 |  |
+| — — — | Warn before a three forms | **三ができる前に警告** | Warn before a three forms | Agent 2026-10-06 |  |
+| — — — | {who} to play | **{who}の手番** | {who} to play | Agent 2026-10-06 |  |
+| — — — | {who} wins: the other side has no move left | **{who}の勝ちです。相手に打てる手がなくなりました。** | {who} wins. The other side has no move left. | Agent 2026-10-06 |  |
+| — — — | {who} wins: the far camp is full | **{who}の勝ちです。向こう側の陣地が埋まりました。** | {who} wins. The far camp is full. | Agent 2026-10-06 |  |
+| — — — | {who} wins in {moves} | **{who}の勝ちです（{moves}）** | {who} wins ({moves}) | Agent 2026-10-06 |  |
+| — — — | {who} wins: left and right are joined | **{who}の勝ちです。左と右がつながりました。** | {who} wins. Left and right are joined. | Agent 2026-10-06 |  |
+| — — — | {who} wins on discs, {black} to {white} | **{who}の勝ちです。石の数は{black}対{white}です。** | {who} wins. The discs are {black} to {white}. | Agent 2026-10-06 |  |
+| — — — | {who} wins on time | **{who}の勝ちです（相手が時間切れ）** | {who} wins (the other side ran out of time) | Agent 2026-10-06 |  |
+| — — — | {who} wins by resignation | **{who}の勝ちです（相手が投了）** | {who} wins (the other side resigned) | Agent 2026-10-06 |  |
+| — — — | {who} wins: top and bottom are joined | **{who}の勝ちです。上と下がつながりました。** | {who} wins. Top and bottom are joined. | Agent 2026-10-06 |  |
+| — — — | {count} cells | **{count}マス** | {count} cells | Agent 2026-10-06 |  |
+| — — — | A draw once half as many moves as the board has points have been played with nobody winning. | **盤の点の数の半分の手数が進んでも勝負がつかなければ、引き分けになります。** | If half as many moves as the board has points have been played and nobody has won, it is a draw. | Agent 2026-10-06 |  |
+| — — — | No limit. The game ends when somebody wins or the board fills. | **制限はありません。どちらかが勝つか、盤が埋まるまで続きます。** | There is no limit. It goes on until somebody wins or the board fills up. | Agent 2026-10-06 |  |
+| — — — | A draw once three quarters as many moves as the board has points have been played with nobody winning. | **盤の点の数の4分の3の手数が進んでも勝負がつかなければ、引き分けになります。** | If three quarters as many moves as the board has points have been played and nobody has won, it is a draw. | Agent 2026-10-06 |  |
+| — — — | a hexagon of {count} cells | **{count}マスの六角形の盤** | a hexagonal board of {count} cells | Agent 2026-10-06 |  |
+| — — — | a hexagram of {count} cells | **{count}マスの六芒星の盤** | a six-pointed star board of {count} cells | Agent 2026-10-06 |  |
+| — — — | The star points are sealed off. Tengen, at the centre, stays open. | **星の点がふさがれます。中央の天元は空いたままです。** | The star points are blocked. Tengen, in the centre, stays open. | Agent 2026-10-06 |  |
+| — — — | Every intersection is playable. | **すべての交点に打てます。** | Every intersection can be played. | Agent 2026-10-06 |  |
+| — — — | Player {number} | **対局者{number}** | Player {number} | Agent 2026-10-06 |  |
+| — — — | Player 1 | **対局者1** | Player 1 | Agent 2026-10-06 |  |
+| — — — | Player 2 | **対局者2** | Player 2 | Agent 2026-10-06 |  |
+| — — — | {games}, and {guests} from other families | **{games}、ほかの系統から{guests}ゲーム** | {games}, and {guests} games from other families | Agent 2026-10-06 |  |
+| — — — | {games} from other families | **ほかの系統から{games}** | {games} from other families | Agent 2026-10-06 |  |
+| — — — | a {size}×{size} board | **{size}×{size}の盤** | a {size}×{size} board | Agent 2026-10-06 |  |
+| — — — | an {size}×{size} board | **{size}×{size}の盤** | an {size}×{size} board | Agent 2026-10-06 |  |
+| — — — | Already a rule of {game} for {colour}. | **{game}では、{colour}にすでに決まっている規則です。** | Already a rule of {game} for {colour}. | Agent 2026-10-06 |  |
+| — — — | Only in a game with captures. | **石を取れるゲームでのみ選べます。** | Only available in a game where stones can be captured. | Agent 2026-10-06 |  |
+| — — — | Only in a game that places two stones a turn. | **1手に2つ置くゲームでのみ選べます。** | Only available in a game that places two stones a turn. | Agent 2026-10-06 |  |
+| — — — | 1 corner | **隅1か所** | 1 corner | Agent 2026-10-06 |  |
+| — — — | {count} corners | **隅{count}か所** | {count} corners | Agent 2026-10-06 |  |
+| — — — | Discs of this colour on the corners before the first move, which nothing can ever turn. | **最初の手の前に、この色の石を隅に置きます。隅の石は、何をしても返りません。** | Before the first move, discs of this colour are placed in the corners. A disc in a corner can never be flipped. | Agent 2026-10-06 |  |
+| — — — | {colour} head start: {parts} | **{colour}に先行あり：{parts}** | {colour} has a head start: {parts} | Agent 2026-10-06 |  |
+| — — — | 1 free turn | **先行1手** | 1 head-start move | Agent 2026-10-06 |  |
+| — — — | {count} free turns | **先行{count}手** | {count} head-start moves | Agent 2026-10-06 |  |
+| — — — | Draughts | **ドラフツ** | Draughts | Agent 2026-10-06 |  |
+| — — — | Go | **囲碁** | Go | Agent 2026-10-06 |  |
+| — — — | Othello | **リバーシ** | Reversi | Agent 2026-10-06 |  |
+| — — — | a man off the other side | **相手の駒を1つ外す** | removing 1 of the other side's pieces | Agent 2026-10-06 |  |
+| — — — | {count} men off the other side | **相手の駒を{count}つ外す** | removing {count} of the other side's pieces | Agent 2026-10-06 |  |
+| — — — | Men taken off the other side's back row before the first move: odds of a man, as the clubs gave them. | **最初の手の前に、相手の最後列の駒を取り除きます。昔のクラブで行われた、駒落ちのハンデです。** | Before the first move, pieces are removed from the other side's back row. It is the piece-odds handicap the old clubs used. | Agent 2026-10-06 |  |
+| — — — | 1 handicap stone | **置き石1個** | 1 handicap stone | Agent 2026-10-06 |  |
+| — — — | {count} handicap stones | **置き石{count}個** | {count} handicap stones | Agent 2026-10-06 |  |
+| — — — | Stones set on the star points before the first move. The other colour then moves first, and komi is half a point. | **最初の手の前に、星の点に石を置きます。そのあとは相手の色が先に打ち、コミは0.5目です。** | Stones are placed on the star points before the first move. After that the other colour moves first, and komi is 0.5 points. | Agent 2026-10-06 |  |
+| — — — | Play {who} again | **{who}ともう一局** | Another game with {who} | Agent 2026-10-06 |  |
+| — — — | You have changed something, so this starts a new game against the same player rather than a repeat of the last one. The colours are drawn the ordinary way: you open. | **設定を変えたので、前回の再戦ではなく、同じ相手との新しい対局になります。色は通常どおりに決まり、自分が先手です。** | You changed a setting, so this is a new game against the same player, not a rematch of the last one. The colours are decided the usual way, and you play first. | Agent 2026-10-06 |  |
+| — — — | You have chosen {chosen}, so this is a new game with these rules — not a rematch of your last game against {them}, and the colours are not swapped. | **{chosen}を選んだので、この規則での新しい対局になります。{them}との前回の対局の再戦ではなく、色も入れ替わりません。** | You chose {chosen}, so this is a new game with these rules. It is not a rematch of your last game against {them}, and the colours are not swapped. | Agent 2026-10-06 |  |
+| — — — | The same board, the same rules and the same clock as last time against {who}, with the colours swapped — you take {colour}. Everything below is already filled in, so this is a confirmation; change anything you would rather play differently. | **前回の{who}との対局と同じ盤、同じ規則、同じ時計で、色を入れ替えて打ちます。今回は{colour}です。下の項目はすべて入力済みで、確認だけで始められます。変えたいところがあれば変更してください。** | The same board, rules and clock as last time against {who}, with the colours swapped. This time you are {colour}. Everything below is already filled in, so you only need to confirm. Change anything you want to be different. | Agent 2026-10-06 |  |
+| — — — | You have chosen not to play {them} again, so this is a new game with these rules — not a rematch of your last game against {them}, and the colours are not swapped. | **{them}とは対局しないことを選んだので、この規則での新しい対局になります。{them}との前回の対局の再戦ではなく、色も入れ替わりません。** | You chose not to play {them} again, so this is a new game with these rules. It is not a rematch of your last game against {them}, and the colours are not swapped. | Agent 2026-10-06 |  |
+| — — — | Against {who} | **{who}と対局** | Playing {who} | Agent 2026-10-06 |  |
+| — — — | {who} is who you are playing. Choose the game and the rules, and the game is in their list the moment you start it — there is nothing for them to accept. | **対局する相手は{who}です。ゲームと規則を選んで始めると、すぐ相手の一覧に入ります。相手が承諾する必要はありません。** | Your opponent is {who}. When you choose the game and the rules and start, it goes straight into their list. They do not need to accept. | Agent 2026-10-06 |  |
+| — — — | All games | **すべてのゲーム** | All games | Agent 2026-10-06 |  |
+| — — — | Allowed | **許可** | Allowed | Agent 2026-10-06 |  |
+| — — — | Start another like this one | **同じ設定でもう1局始める** | Start one more with the same settings | Agent 2026-10-06 |  |
+| — — — | Naming a member or a bot offers them a game, which needs an account — an invite code on its own does not make one. A seat for anyone, and two at one screen, work as you are. | **会員やコンピュータを指名すると、その相手に対局を申し込むことになり、アカウントが必要です。招待コードだけではアカウントになりません。誰でも座れる席と、1つの画面で2人で打つ対局は、いまのまま使えます。** | Naming a member or a computer offers them a game, and that needs an account. An invite code alone does not make an account. A seat anyone can take, and a game for two on one screen, work as you are. | Agent 2026-10-06 |  |
+| — — — | Waiting for an opponent | **相手を待っています** | Waiting for an opponent | Agent 2026-10-06 |  |
+| — — — | Your seat link is below — send it to somebody, or leave it on the board and you will be told when it is taken. You may play your first move now if you would rather. | **席のリンクは下にあります。誰かに送るか、そのままにしておくと、誰かが座ったときにお知らせします。先に最初の手を打っても構いません。** | Your seat link is below. Send it to somebody, or leave it as it is and you will be told when it is taken. You may play your first move now if you prefer. | Agent 2026-10-06 |  |
+| — — — | Away until {when}; their deadline waits. | **{when}まで不在です。期限は止まっています。** | Away until {when}. Their deadline is waiting. | Agent 2026-10-06 |  |
+| — — — | Nothing is written until you press Start. The next thing you see is the board. | **「始める」を押すまで、何も記録されません。次に見えるのは盤です。** | Nothing is recorded until you press Start. The next thing you see is the board. | Agent 2026-10-06 |  |
+| — — — | Black, and move first | **黒（先手）** | Black (plays first) | Agent 2026-10-06 |  |
+| — — — | Go to game | **対局へ** | To the game | Agent 2026-10-06 |  |
+| — — — | Change settings | **設定を変更** | Change the settings | Agent 2026-10-06 |  |
+| — — — | Time is per move | **持ち時間は1手ごと** | The time limit is per move | Agent 2026-10-06 |  |
+| — — — | Time is for the whole game | **持ち時間は対局全体** | The time limit is for the whole game | Agent 2026-10-06 |  |
+| — — — | Confirm each move before it is sent | **手を送る前に、毎回確認する** | Confirm each move before it is sent | Agent 2026-10-06 |  |
+| — — — | Continue to sit down with {who} | **{who}の向かいに座る** | Sit down opposite {who} | Agent 2026-10-06 |  |
+| — — — | Copied | **コピーしました** | Copied | Agent 2026-10-06 |  |
+| — — — | Copy link | **リンクをコピー** | Copy the link | Agent 2026-10-06 |  |
+| — — — | That could not be claimed. | **請求できませんでした。** | That could not be claimed. | Agent 2026-10-06 |  |
+| — — — | Counts towards ratings | **レーティングに反映される** | Counts towards ratings | Agent 2026-10-06 |  |
+| — — — | This is what will be played. Nothing has been written yet. | **これから打つ内容です。まだ何も記録されていません。** | This is what will be played. Nothing has been recorded yet. | Agent 2026-10-06 |  |
+| — — — | Ready to start | **開始の確認** | Confirm the start | Agent 2026-10-06 |  |
+| — — — | a bot drawn at random from {names} when you press Start | **「始める」を押したときに、{names}からランダムに選ばれるコンピュータ** | a computer chosen at random from {names} when you press Start | Agent 2026-10-06 |  |
+| — — — | Somebody not listed here? Find them on the {link} and press Play: they arrive here already chosen. | **ここにいない人は、{link}で探して「対局する」を押してください。その人が選ばれた状態でここに来ます。** | If someone is not listed here, find them on the {link} and press Play. They will arrive here already chosen. | Agent 2026-10-06 |  |
+| — — — | Players page | **対局者のページ** | players page | Agent 2026-10-06 |  |
+| — — — | Families of games | **ゲームの系統** | Families of games | Agent 2026-10-06 |  |
+| — — — | Finished {when} | **{when}に終了** | Finished at {when} | Agent 2026-10-06 |  |
+| — — — | finished {when} | **{when}に終了** | finished at {when} | Agent 2026-10-06 |  |
+| — — — | {count} to choose from | **{count}件から選べます** | {count} to choose from | Agent 2026-10-06 |  |
+| — — — | Change | **変更** | Change | Agent 2026-10-06 |  |
+| — — — | Done | **完了** | Done | Agent 2026-10-06 |  |
+| — — — | {colour}: {note} | **{colour}は、{note}** | {colour}: {note} | Agent 2026-10-06 |  |
+| — — — | Play on from move {move} | **{move}手目から続ける** | Continue from move {move} | Agent 2026-10-06 |  |
+| — — — | Nobody held the other seat in the game this comes from, so this is a board at one screen: start it and hand the other seat out from there. | **元の対局では、もう一方の席に誰もいなかったので、1つの画面で打つ盤になります。始めてから、もう一方の席を渡してください。** | Nobody was in the other seat in the original game, so this becomes a board on one screen. Start it, and then hand the other seat to someone. | Agent 2026-10-06 |  |
+| — — — | A second game from the position after move {move}, against {who}. The game it comes from is left as it is. The board, the game and the opening come with the position and cannot change; the clock and whether it counts are this game's own. | **{move}手目の局面から、{who}と2つ目の対局を始めます。元の対局はそのまま残ります。盤、ゲーム、開局ルールは局面とともに引き継がれ、変えられません。時計とレーティングに数えるかどうかは、この対局で決められます。** | A second game starts from the position after move {move}, against {who}. The original game stays as it is. The board, the game and the opening come with the position and cannot be changed. The clock and whether it counts for rating are decided for this game. | Agent 2026-10-06 |  |
+| — — — | Free turns | **先行の手数** | Number of head-start moves | Agent 2026-10-06 |  |
+| — — — | {colour} plays this many turns at the very start before the other side answers. Each one is shown on the record as the other side's pass. | **最初に、相手が応じる前に、{colour}がこの手数だけ続けて打ちます。それぞれ、棋譜には相手のパスとして記録されます。** | At the very start, {colour} plays this many moves in a row before the other side answers. Each one appears in the record as a pass by the other side. | Agent 2026-10-06 |  |
+| — — — | Friendly — ratings unaffected | **親善対局（レーティングに影響なし）** | Friendly game (ratings are not affected) | Agent 2026-10-06 |  |
+| — — — | Games | **局数** | Number of games | Agent 2026-10-06 |  |
+| — — — | {count}, colours alternating | **{count}局、色を交互に** | {count} games, colours alternating | Agent 2026-10-06 |  |
+| — — — | One | **1局** | One game | Agent 2026-10-06 |  |
+| — — — | A match of {count} games: you take each colour in turn. | **{count}局の番勝負。色は1局ごとに交代します。** | A match of {count} games. The colours alternate every game. | Agent 2026-10-06 |  |
+| — — — | Give more time | **時間を足す** | Give more time | Agent 2026-10-06 |  |
+| — — — | Add time to the other side's clock for this move. Nobody has to win on the clock. | **この手について、相手の時計に時間を足します。時計で勝つ必要は誰にもありません。** | Adds time to the other side's clock for this move. Nobody has to win on the clock. | Agent 2026-10-06 |  |
+| — — — | Your group at {at} ({stones}) has one liberty left, at {liberty}. Give it room or it is taken. | **{at}の自分のかたまり（{stones}）は、呼吸点があと1つ（{liberty}）です。広げないと取られます。** | Your group at {at} ({stones}) has one liberty left, at {liberty}. Give it room or it will be captured. | Agent 2026-10-06 |  |
+| — — — | {them}'s group at {at} ({stones}) has one liberty left: play {liberty} to take it. | **{them}の{at}のかたまり（{stones}）は、呼吸点があと1つです。{liberty}に打つと取れます。** | {them}'s group at {at} ({stones}) has one liberty left. Play {liberty} to capture it. | Agent 2026-10-06 |  |
+| — — — | {placed} fills one of your own eyes — the empty points a group lives by. A group with two eyes can never be taken; with one, it can. Start over unless you mean it. | **{placed}は、自分の眼の1つを埋めます。眼は、石のかたまりが生きるための空点です。眼が2つあるかたまりは決して取られませんが、1つだと取られます。意図したのでなければ、やり直してください。** | {placed} fills one of your own eyes, the empty points a group lives by. A group with two eyes can never be captured, but with one it can. Redo it unless you meant it. | Agent 2026-10-06 |  |
+| — — — | Go help | **囲碁の手引き** | Guide to Go | Agent 2026-10-06 |  |
+| — — — | How Go is won: place stones to wall off more of the board than your opponent. A group with no empty point beside it is taken off. A group with two separate eyes can never be taken. When neither side has anything useful left, both pass, and each counts their stones plus the ground they walled in; White gets 6.5 for moving second. | **囲碁の勝ち方：石を置いて、相手より広く盤を囲います。隣に空点のないかたまりは、盤から取り除かれます。別々の眼が2つあるかたまりは、決して取られません。どちらにも有効な手がなくなったら、双方がパスし、それぞれ自分の石と囲んだ地を数えます。白は後手なので、6.5目のコミがつきます。** | How Go is won: place stones to surround more of the board than your opponent. A group with no empty point next to it is removed from the board. A group with two separate eyes can never be captured. When neither side has anything useful left, both pass, and each counts their stones plus the territory they surrounded. White moves second, so it receives 6.5 points of komi. | Agent 2026-10-06 |  |
+| — — — | That game has finished, so there is no seat at it to take. | **その対局はすでに終わっているので、座れる席はありません。** | That game has finished, so there is no seat to take. | Agent 2026-10-06 |  |
+| — — — | That seat is no longer on the noticeboard, so this would be a new game of your own instead. | **その席は掲示板になくなったので、このままでは自分の新しい対局になります。** | That seat is no longer on the noticeboard, so this would become a new game of your own. | Agent 2026-10-06 |  |
+| — — — | That seat is at a different game from this one, so it is not the seat this page is about. | **その席は別のゲームのものなので、このページの席ではありません。** | That seat is for a different game, so it is not the seat this page is about. | Agent 2026-10-06 |  |
+| — — — | That seat's game is set up differently from the one chosen here, so this would be a new game of your own instead. | **その席の対局は、ここで選んだものと設定が違うので、このままでは自分の新しい対局になります。** | That seat's game is set up differently from the one chosen here, so this would become a new game of your own. | Agent 2026-10-06 |  |
+| — — — | Somebody else took that seat first, so this would be a new game of your own instead. | **先にほかの人がその席に座ったので、このままでは自分の新しい対局になります。** | Somebody else took that seat first, so this would become a new game of your own. | Agent 2026-10-06 |  |
+| — — — | {them} passed. If you pass too, the game ends and is counted — do that when there is nothing left worth playing. A stone inside your own ground gains nothing. | **{them}がパスしました。こちらもパスすると、対局が終わって数えられます。打つ価値のある場所がなくなったら、そうしてください。自分の地の中に打っても得はありません。** | {them} passed. If you pass too, the game ends and is counted. Do that when there is nothing left worth playing. A stone inside your own territory gains nothing. | Agent 2026-10-06 |  |
+| — — — | After {placed}, your group has one liberty left, and the other side takes it with the next stone. Start over unless you mean it. | **{placed}のあと、自分のかたまりは呼吸点があと1つになり、相手が次の1手で取ります。意図したのでなければ、やり直してください。** | After {placed}, your group has one liberty left, and the other side captures it with the next stone. Redo it unless you meant it. | Agent 2026-10-06 |  |
+| — — — | Harder rules for | **厳しい規則を課す側** | The side given harder rules | Agent 2026-10-06 |  |
+| — — — | One colour plays under extra restrictions and the other plays the plain game — how the elder sites let a stronger player give a weaker one a start. Leave it at none for an even game. | **片方の色には追加の制限がかかり、もう片方は通常の規則で打ちます。昔のサイトで、強い人が弱い人に有利な条件を与えていた方法です。互角の対局にするときは「なし」のままにしてください。** | One colour plays under extra restrictions and the other plays the plain game. It is how the old sites let a stronger player give a weaker one an advantage. Leave it at None for an even game. | Agent 2026-10-06 |  |
+| — — — | The handicapped colour plays under those extra restrictions; the other colour plays the plain game. | **ハンデのある色にはその追加制限がかかり、もう一方の色は通常の規則で打ちます。** | The colour with the handicap plays under those extra restrictions, and the other colour plays the plain game. | Agent 2026-10-06 |  |
+| — — — | {colour} plays under every restriction switched on below; the other colour plays the game as it comes. Switch on only what you mean — each one makes {lower}'s game harder. | **{colour}は、下で入れた制限をすべて受けて打ちます。もう一方の色は通常の規則で打ちます。必要なものだけを入れてください。どれも{lower}の側を不利にします。** | {colour} plays under every restriction switched on below, and the other colour plays the game as it is. Switch on only what you mean, because each one puts {lower} at a disadvantage. | Agent 2026-10-06 |  |
+| — — — | Head start for | **先行を与える側** | The side given a head start | Agent 2026-10-06 |  |
+| — — — | The weaker player's start: turns in hand at the beginning, and the game's own traditional head start where it has one. A game with a head start does not count towards ratings. Leave it at none for an even game. | **弱いほうの側に与えるスタートです。最初に打てる手数と、そのゲーム固有の伝統的な先行があればそれを含みます。先行のある対局はレーティングに数えません。互角の対局にするときは「なし」のままにしてください。** | A start for the weaker side. It includes moves in hand at the beginning, and the game's own traditional head start if it has one. A game with a head start does not count for rating. Leave it at None for an even game. | Agent 2026-10-06 |  |
+| — — — | The colour given a head start plays its free turns before the other side answers, with any traditional head start on the board from the first move. | **先行を与えられた色は、相手が応じる前に先行の手を打ちます。伝統的な先行がある場合は、最初の手から盤上に置かれています。** | The colour given a head start plays its head-start moves before the other side answers. A traditional head start, if there is one, is on the board from the first move. | Agent 2026-10-06 |  |
+| — — — | Send a player their own link. Whoever opens it plays that colour, so it is only shown while the seat is still waiting for somebody — once they have sat down it is their credential, not an invitation. | **対局者に、それぞれ専用のリンクを送ります。リンクを開いた人がその色を持つので、席がまだ誰かを待っている間だけ表示されます。着席したあとは、招待ではなく、その人の認証情報になります。** | Send each player their own link. Whoever opens it takes that colour, so it is shown only while the seat is still waiting for somebody. After they sit down, it is their credential rather than an invitation. | Agent 2026-10-06 |  |
+| — — — | Your seat in our gomoku game ({colour}): {url} | **五目並べの自分の席（{colour}）：{url}** | Your seat in our gomoku game ({colour}): {url} | Agent 2026-10-06 |  |
+| — — — | Invite links | **招待リンク** | Invitation links | Agent 2026-10-06 |  |
+| — — — | Random | **ランダム** | Random | Agent 2026-10-06 |  |
+| — — — | You have already begun this game. The button below opens its board rather than making a second one. | **この対局はすでに始めています。下のボタンは、2つ目を作らずに、その盤を開きます。** | You have already begun this game. The button below opens its board instead of making a second one. | Agent 2026-10-06 |  |
+| — — — | Black won | **黒の勝ち** | Black won | Agent 2026-10-06 |  |
+| — — — | declined | **断られた** | turned down | Agent 2026-10-06 |  |
+| — — — | drawn | **引き分け** | drawn | Agent 2026-10-06 |  |
+| — — — | Game {index} | **第{index}局** | Game {index} | Agent 2026-10-06 |  |
+| — — — | this game | **この対局** | this game | Agent 2026-10-06 |  |
+| — — — | One of {size} games between the same two players, the colours alternating. | **同じ2人による{size}局のうちの1局です。色は交互に入れ替わります。** | One of {size} games between the same two players, with the colours alternating. | Agent 2026-10-06 |  |
+| — — — | waiting for an answer | **返事待ち** | waiting for an answer | Agent 2026-10-06 |  |
+| — — — | in play | **対局中** | in progress | Agent 2026-10-06 |  |
+| — — — | Match | **番勝負** | Match | Agent 2026-10-06 |  |
+| — — — | White won | **白の勝ち** | White won | Agent 2026-10-06 |  |
+| — — — | withdrawn | **取り下げ** | withdrawn | Agent 2026-10-06 |  |
+| — — — | you play {colour} | **自分は{colour}** | I am {colour} | Agent 2026-10-06 |  |
+| — — — | {colour} may not play the points marked ✕. | **{colour}は、✕の印の点には打てません。** | {colour} may not play the points marked ✕. | Agent 2026-10-06 |  |
+| — — — | Measured here: level with {them} at this game. | **このゲームでの計測：{them}と互角です。** | Measured on this game: level with {them}. | Agent 2026-10-06 |  |
+| — — — | Measured here: {winner} beats {loser} at this game. | **このゲームでの計測：{winner}は{loser}に勝ち越しています。** | Measured on this game: {winner} beats {loser}. | Agent 2026-10-06 |  |
+| — — — | More rules | **そのほかの規則** | More rules | Agent 2026-10-06 |  |
+| — — — | That move could not be played. | **その手は打てませんでした。** | That move could not be played. | Agent 2026-10-06 |  |
+| — — — | Mute this opponent's messages in this game | **この対局では、この相手のメッセージを非表示にする** | Hide this opponent's messages in this game | Agent 2026-10-06 |  |
+| — — — | No head start, no handicap — an even game | **先行なし、ハンデなし。互角の対局** | No head start, no handicap: an even game | Agent 2026-10-06 |  |
+| — — — | Not allowed | **不可** | Not allowed | Agent 2026-10-06 |  |
+| — — — | {who} does not play {game}, so this would post a seat for anyone instead. Change the game back, or pick somebody else. | **{who}は{game}を遊ばないので、このままでは誰でも座れる席が作られます。ゲームを戻すか、ほかの人を選んでください。** | {who} does not play {game}, so this would put up a seat anyone can take. Change the game back or choose someone else. | Agent 2026-10-06 |  |
+| — — — | No note | **メモなし** | No note | Agent 2026-10-06 |  |
+| — — — | A note with this move | **この手のメモ** | A note with this move | Agent 2026-10-06 |  |
+| — — — | Add a note ✎ | **メモを添える ✎** | Add a note ✎ | Agent 2026-10-06 |  |
+| — — — | Say something with the move (optional) | **この手にひとこと添える（任意）** | Add a few words to this move (optional) | Agent 2026-10-06 |  |
+| — — — | Nothing played yet. | **まだ何も打たれていません。** | Nothing has been played yet. | Agent 2026-10-06 |  |
+| — — — | A new game, not a rematch of your last game against {them}: you chose somebody else to play, so the colours are not swapped. | **新しい対局で、{them}との前回の対局の再戦ではありません。別の相手を選んだので、色は入れ替わりません。** | A new game, not a rematch of your last game against {them}. You chose a different opponent, so the colours are not swapped. | Agent 2026-10-06 |  |
+| — — — | Move it a point | **1点動かす** | Move it one point | Agent 2026-10-06 |  |
+| — — — | Down one point | **1点下へ** | Down one point | Agent 2026-10-06 |  |
+| — — — | Left one point | **1点左へ** | Left one point | Agent 2026-10-06 |  |
+| — — — | Right one point | **1点右へ** | Right one point | Agent 2026-10-06 |  |
+| — — — | Up one point | **1点上へ** | Up one point | Agent 2026-10-06 |  |
+| — — — | Offered to {who} | **{who}に申し込み中** | Offered to {who} | Agent 2026-10-06 |  |
+| — — — | Waiting on {who}. No clock is running and neither of you can move until they accept. Withdrawing costs nobody anything — you can offer it again. | **{who}の返事を待っています。時計は動いておらず、相手が承諾するまで、どちらも手を打てません。取り下げても誰にも不利益はなく、また申し込めます。** | Waiting for {who}. No clock is running, and neither of you can move until they accept. Withdrawing costs nobody anything, and you can offer again. | Agent 2026-10-06 |  |
+| — — — | Nothing starts until they accept, and no clock is running. You can withdraw it at any time. | **相手が承諾するまで何も始まらず、時計も動きません。いつでも取り下げられます。** | Nothing starts until they accept, and no clock is running. You can withdraw it at any time. | Agent 2026-10-06 |  |
+| — — — | Your offer | **自分の申し込み** | My offer | Agent 2026-10-06 |  |
+| — — — | {who} has offered you this game | **{who}からこの対局の申し込みです** | {who} has offered you this game | Agent 2026-10-06 |  |
+| — — — | {who} has asked you for this game. The board and the rules below are what you would be playing — no move can be made by either of you until you accept. Declining ends it with no result, no rating and nothing on either record, and {who} can always ask again. | **{who}からこの対局の申し込みがありました。下の盤と規則が、これから打つ内容です。承諾するまで、どちらも手を打てません。断ると、結果もレーティングもどちらの戦績にも残さずに終わり、{who}はいつでもまた申し込めます。** | {who} has offered you this game. The board and rules below are what you would play. Neither of you can make a move until you accept. If you decline, it ends with no result, no rating and nothing on either record, and {who} can always offer again. | Agent 2026-10-06 |  |
+| — — — | Look at the board, then accept or decline. Declining costs you nothing — no result, no rating, and nothing on your record. | **盤を見てから、承諾するか断ってください。断っても何も失わず、結果もレーティングも戦績にも残りません。** | Look at the board, and then accept or decline. Declining costs you nothing: no result, no rating, and nothing on your record. | Agent 2026-10-06 |  |
+| — — — | This game is an offer | **この対局は申し込みです** | This game is an offer | Agent 2026-10-06 |  |
+| — — — | The {colour} seat is posted on the games page for anyone to take. | **{colour}の席は、ゲームのページに掲示されていて、誰でも座れます。** | The {colour} seat is put up on the games page, and anyone can take it. | Agent 2026-10-06 |  |
+| — — — | Asked for from their page. Change it here if you meant somebody else. | **相手のページから指定されています。別の人にしたいときは、ここで変更してください。** | Chosen from their page. Change it here if you meant someone else. | Agent 2026-10-06 |  |
+| — — — | The game's own stones | **このゲームの標準の石** | The game's standard stones | Agent 2026-10-06 |  |
+| — — — | Your own view of this board. The other player's board does not move. | **この盤の自分用の向きです。相手の盤は動きません。** | Your own view of this board. The other player's board does not move. | Agent 2026-10-06 |  |
+| — — — | Check now | **今すぐ確認** | Check now | Agent 2026-10-06 |  |
+| — — — | Checking for a move… | **手を確認しています…** | Checking for a move… | Agent 2026-10-06 |  |
+| — — — | Nothing has happened here for a while, so this board has stopped checking for moves. | **しばらく動きがないため、この盤は手の確認を止めています。** | Nothing has happened here for a while, so this board has stopped checking for moves. | Agent 2026-10-06 |  |
+| — — — | Checks for a move in {seconds}s | **{seconds}秒後に手を確認します** | It will check for a move in {seconds} seconds | Agent 2026-10-06 |  |
+| — — — | The colour of your pieces | **自分の駒の色** | The colour of my pieces | Agent 2026-10-06 |  |
+| — — — | Placed at {point} | **{point}に置きました** | Placed at {point} | Agent 2026-10-06 |  |
+| — — — | You are playing {colour} against {name}. | **自分は{colour}で、{name}と対局しています。** | You are playing {colour} against {name}. | Agent 2026-10-06 |  |
+| — — — | You are playing {colour} against {name} from {country}. | **自分は{colour}で、{country}の{name}と対局しています。** | You are playing {colour} against {name} from {country}. | Agent 2026-10-06 |  |
+| — — — | It waits on the Games page until somebody takes it. | **誰かが座るまで、ゲームのページで待っています。** | It waits on the Games page until somebody takes it. | Agent 2026-10-06 |  |
+| — — — | Posting a seat: start the game and the other seat goes on the games page for whoever answers first. To change the game or the board first, use Set up, under the board. | **席を掲示します。対局を始めると、もう一方の席が、最初に応じた人のためにゲームのページに載ります。先にゲームや盤を変えるには、盤の下の「設定」を使ってください。** | Putting up a seat. When you start the game, the other seat goes on the games page for whoever answers first. To change the game or the board first, use Settings under the board. | Agent 2026-10-06 |  |
+| — — — | A deal of {game}, the stock turned once. Nothing is played yet. | **{game}の配り方の一例で、山札を1回めくった状態です。まだ何も遊んでいません。** | An example of a deal of {game}, with the stock turned once. Nothing has been played yet. | Agent 2026-10-06 |  |
+| — — — | This game scatters its board, so the one you play will be different. | **このゲームは盤面をランダムに散らすので、実際に遊ぶ盤とは違います。** | This game scatters its board at random, so the board you play will be different. | Agent 2026-10-06 |  |
+| — — — | A preview of the {game} board. Nothing here is a move. | **{game}の盤のプレビューです。ここでの操作は手になりません。** | A preview of the board of {game}. Nothing done here counts as a move. | Agent 2026-10-06 |  |
+| — — — | A deal of this layout, for a look. Yours is dealt when you start. | **この配置の一例です。実際の配牌は、始めるときに行われます。** | An example of this layout. The real deal is made when you start. | Agent 2026-10-06 |  |
+| — — — | A preview of the {puzzle} grid. Nothing is written yet. | **{puzzle}の盤面のプレビューです。まだ何も書き込まれていません。** | A preview of the grid of {puzzle}. Nothing has been written yet. | Agent 2026-10-06 |  |
+| — — — | That game has fewer moves than the position asked for. | **その対局は、指定された局面より手数が少ないです。** | That game has fewer moves than the position asked for. | Agent 2026-10-06 |  |
+| — — — | There is no such game to play again. | **もう一度対局できるそのような対局はありません。** | There is no such game to play again. | Agent 2026-10-06 |  |
+| — — — | There is no such game to play on from. | **続きを打てるそのような対局はありません。** | There is no such game to continue from. | Agent 2026-10-06 |  |
+| — — — | You did not play that game, so there is no rematch of it to offer. | **その対局は自分が打ったものではないので、再戦を申し込めません。** | You did not play that game, so there is no rematch to offer. | Agent 2026-10-06 |  |
+| — — — | Whoever you played that game against cannot be reached for another. | **その対局の相手とは、もう対局できません。** | The person you played that game against cannot be played against again. | Agent 2026-10-06 |  |
+| — — — | Whoever that link named cannot be reached for a game, so this is still against {name}. | **リンクで指定された人とは対局できないので、{name}との対局のままです。** | The person named by that link cannot be played against, so this is still against {name}. | Agent 2026-10-06 |  |
+| — — — | That game is still being played, so there is nothing to play again yet. | **その対局はまだ続いているので、もう一度対局するものはありません。** | That game is still being played, so there is nothing to play again yet. | Agent 2026-10-06 |  |
+| — — — | Whoever that link named cannot be reached for a game. Pick somebody below. | **リンクで指定された人とは対局できません。下から別の人を選んでください。** | The person named by that link cannot be played against. Choose somebody below. | Agent 2026-10-06 |  |
+| — — — | a puzzle for one | **ひとり用のパズル** | a puzzle for one person | Agent 2026-10-06 |  |
+| — — — | QR code for the {name} seat | **{name}の席のQRコード** | QR code for the {name} seat | Agent 2026-10-06 |  |
+| — — — | Against a random bot | **ランダムなコンピュータと対局** | Playing a random computer | Agent 2026-10-06 |  |
+| — — — | One of the programs above, drawn once, when you press Start. | **上のコンピュータのうち1つが、「始める」を押したときに選ばれます。** | One of the computers above is chosen when you press Start. | Agent 2026-10-06 |  |
+| — — — | A random bot | **ランダムなコンピュータ** | A random computer | Agent 2026-10-06 |  |
+| — — — | Game will affect ratings | **この対局はレーティングに反映されます** | This game will affect ratings | Agent 2026-10-06 |  |
+| — — — | Game will NOT affect ratings | **この対局はレーティングに反映されません** | This game will NOT affect ratings | Agent 2026-10-06 |  |
+| — — — | Ratings | **レーティング** | Ratings | Agent 2026-10-06 |  |
+| — — — | {colour}, move {move} | **{colour}、{move}手目** | {colour}, move {move} | Agent 2026-10-06 |  |
+| — — — | Message to send with an emoji | **絵文字といっしょに送るメッセージ** | A message to send with an emoji | Agent 2026-10-06 |  |
+| — — — | move {move} | **{move}手目** | move {move} | Agent 2026-10-06 |  |
+| — — — | Say something with it… | **ひとこと添える…** | Add a few words… | Agent 2026-10-06 |  |
+| — — — | Send {label} | **{label}を送る** | Send {label} | Agent 2026-10-06 |  |
+| — — — | You | **自分** | Me | Agent 2026-10-06 |  |
+| — — — | That game could not be started. | **その対局を始められませんでした。** | That game could not be started. | Agent 2026-10-06 |  |
+| — — — | A new game against {them}, not a rematch: the rules differ from your last game, so the colours are not swapped. | **{them}との新しい対局で、再戦ではありません。前回と規則が違うので、色は入れ替わりません。** | A new game against {them}, not a rematch. The rules differ from your last game, so the colours are not swapped. | Agent 2026-10-06 |  |
+| — — — | A rematch of your last game against {them}, with the colours swapped. | **{them}との前回の対局の再戦です。色は入れ替わります。** | A rematch of your last game against {them}, with the colours swapped. | Agent 2026-10-06 |  |
+| — — — | the same opponent | **同じ相手** | the same opponent | Agent 2026-10-06 |  |
+| — — — | {name} for {colour}. Change it now or any time. | **{colour}は{name}です。いまでも、いつでも変えられます。** | {colour} is {name}. You can change it now or at any time. | Agent 2026-10-06 |  |
+| — — — | That colour could not be kept. Try again. | **その色を保存できませんでした。もう一度試してください。** | That colour could not be saved. Please try again. | Agent 2026-10-06 |  |
+| — — — | choose a colour for your {colour} stones before your first move, or keep them as they are. | **最初の手の前に、{colour}の石の色を選べます。そのままにもできます。** | before your first move you can choose a colour for the {colour} stones. You can also leave them as they are. | Agent 2026-10-06 |  |
+| — — — | Your pieces · {colour} | **自分の駒・{colour}** | My pieces, {colour} | Agent 2026-10-06 |  |
+| — — — | Your pieces · {colour}, {name} | **自分の駒・{colour}、{name}** | My pieces, {colour}, {name} | Agent 2026-10-06 |  |
+| — — — | Your colour, playing {colour} | **{colour}番としての自分の色** | My colour, as {colour} | Agent 2026-10-06 |  |
+| — — — | {colour} stones, as usual | **{colour}の石（通常）** | {colour} stones (usual) | Agent 2026-10-06 |  |
+| — — — | Somebody else took that seat first. Press Start again for a game of your own instead. | **先にほかの人がその席に座りました。もう一度「始める」を押すと、自分の対局が始まります。** | Somebody else took that seat first. Press Start again to begin a game of your own. | Agent 2026-10-06 |  |
+| — — — | {name} seat link | **{name}の席のリンク** | Link to the {name} seat | Agent 2026-10-06 |  |
+| — — — | Opponent | **対戦相手** | Opponent | Agent 2026-10-06 |  |
+| — — — | Agreed before this game was written. Nothing here can change them now. | **この対局が作られる前に決めたものです。いまは何も変更できません。** | These were agreed before this game was created. Nothing here can be changed now. | Agent 2026-10-06 |  |
+| — — — | Everything the game will be played under, settled here before it exists. Nothing is started until you say so. | **対局の条件をすべて、対局が作られる前にここで決めます。「始める」を押すまで、何も始まりません。** | Everything the game will be played under is decided here, before the game is made. Nothing starts until you press "Start". | Agent 2026-10-06 |  |
+| — — — | The board here is a local game and stays in this browser. A shared game gets its own address and a QR code for each player, so you can take turns from two devices. | **ここの盤はこのブラウザだけの対局で、このブラウザの中にとどまります。共有する対局には専用のアドレスと、各対局者用のQRコードがつくので、2台の端末から交代で打てます。** | The board here is a game on this browser only, and it stays in this browser. A shared game gets its own address and a QR code for each player, so you can take turns from two devices. | Agent 2026-10-06 |  |
+| — — — | Play on two devices | **2台の端末で対局** | Play on two devices | Agent 2026-10-06 |  |
+| — — — | Sign in to start a game against somebody. | **サインインすると、誰かとの対局を始められます。** | Sign in to start a game against somebody. | Agent 2026-10-06 |  |
+| — — — | Sit down with {who} | **{who}の向かいに座る** | Sit down opposite {who} | Agent 2026-10-06 |  |
+| — — — | Back a letter | **1文字戻す** | Back one letter | Agent 2026-10-06 |  |
+| — — — | Those four words are yours now. They will let you play as yourself on any device — nobody has to sign out. | **この4つの合言葉は、これで自分のものです。どの端末でも自分として対局でき、誰もサインアウトする必要はありません。** | These four words are now yours. They let you play as yourself on any device, and nobody has to sign out. | Agent 2026-10-06 |  |
+| — — — | Empty | **空き** | Empty | Agent 2026-10-06 |  |
+| — — — | Could not take that seat. | **その席に着けませんでした。** | That seat could not be taken. | Agent 2026-10-06 |  |
+| — — — | Find your name, then tap your four words — nothing to type. The seat becomes yours on this device, and if your account has no words yet these become them. | **自分の名前を探し、4つの合言葉をタップしてください。入力は不要です。席はこの端末で自分のものになり、アカウントに合言葉がまだない場合は、これが合言葉になります。** | Find your name and then tap your four words. There is nothing to type. The seat becomes yours on this device, and if your account has no words yet, these become its words. | Agent 2026-10-06 |  |
+| — — — | Not you signed in? Sit in here as yourself with four words — and if you have none yet, the four you pick become yours. | **サインインしているのが自分ではありませんか？4つの合言葉で、自分としてここに着席できます。まだ合言葉がない場合は、選んだ4つが自分のものになります。** | Is the person signed in not you? You can sit in here as yourself with four words, and if you have none yet, the four you choose become yours. | Agent 2026-10-06 |  |
+| — — — | Nobody here has an account that can take a seat this way yet. | **この方法で席に着けるアカウントを持つ人は、まだここにいません。** | Nobody here has an account that can take a seat this way yet. | Agent 2026-10-06 |  |
+| — — — | Nothing starts that way. Start the word over. | **その文字で始まる言葉はありません。最初からやり直してください。** | No word starts that way. Start the word over. | Agent 2026-10-06 |  |
+| — — — | {who} — tap to pick somebody else | **{who}（タップして別の人を選ぶ）** | {who} (tap to choose somebody else) | Agent 2026-10-06 |  |
+| — — — | Tap a letter to start the {ordinal} word. | **{ordinal}の言葉の最初の文字をタップしてください。** | Tap a letter to start {ordinal} word. | Agent 2026-10-06 |  |
+| — — — | Starting with "{prefix}" | **「{prefix}」で始まる言葉** | Words starting with "{prefix}" | Agent 2026-10-06 |  |
+| — — — | Sit down | **着席する** | Sit down | Agent 2026-10-06 |  |
+| — — — | Tap to take this word back out | **タップすると、この言葉を取り消せます** | Tap to remove this word | Agent 2026-10-06 |  |
+| — — — | {description} From {from}. | **{description}由来：{from}。** | {description} It comes from {from}. | Agent 2026-10-06 |  |
+| — — — | Start | **始める** | Start | Agent 2026-10-06 |  |
+| — — — | Start alone | **ひとりで始める** | Start alone | Agent 2026-10-06 |  |
+| — — — | Started {when} | **{when}に開始** | Started at {when} | Agent 2026-10-06 |  |
+| — — — | Start with a friend | **友だちと始める** | Start with a friend | Agent 2026-10-06 |  |
+| — — — | Starting… | **開始しています…** | Starting… | Agent 2026-10-06 |  |
+| — — — | Their seat is at exactly this game. Press, and you are sitting opposite them on the board. | **相手の席は、まさにこのゲームです。押すと、盤の向かい側に着席します。** | Their seat is at exactly this game. Press, and you sit opposite them at the board. | Agent 2026-10-06 |  |
+| — — — | Start this move over | **この手をやり直す** | Redo this move | Agent 2026-10-06 |  |
+| — — — | Set a game up from scratch instead | **最初から設定し直す** | Set up again from the beginning | Agent 2026-10-06 |  |
+| — — — | Continue | **続ける** | Continue | Agent 2026-10-06 |  |
+| — — — | Start a shared game | **共有する対局を始める** | Start a shared game | Agent 2026-10-06 |  |
+| — — — | Could not start a shared game. Try again. | **共有する対局を始められませんでした。もう一度試してください。** | A shared game could not be started. Please try again. | Agent 2026-10-06 |  |
+| — — — | The first stone is down, so these are the rules the game is played under. | **最初の石が置かれたので、これがこの対局の規則です。** | The first stone has been placed, so these are the rules the game is played under. | Agent 2026-10-06 |  |
+| — — — | {count} stone | **{count}子** | {count} stone | Agent 2026-10-06 |  |
+| — — — | {count} stones | **{count}子** | {count} stones | Agent 2026-10-06 |  |
+| — — — | Submit this move | **この手を確定** | Confirm this move | Agent 2026-10-06 |  |
+| — — — | Submit, then my games | **確定して対局中の一覧へ** | Confirm, then go to my games | Agent 2026-10-06 |  |
+| — — — | Submit, then the next game | **確定して次の対局へ** | Confirm, then go to the next game | Agent 2026-10-06 |  |
+| — — — | Submit, then the next {game} | **確定して次の{game}へ** | Confirm, then go to the next {game} | Agent 2026-10-06 |  |
+| — — — | you take {colour} | **今回は自分が{colour}** | this time you take {colour} | Agent 2026-10-06 |  |
+| — — — | Text it | **SMSで送る** | Send by text message | Agent 2026-10-06 |  |
+| — — — | them | **相手** | the other player | Agent 2026-10-06 |  |
+| — — — | Thinking… | **考え中…** | Thinking… | Agent 2026-10-06 |  |
+| — — — | Time left for the whole game · {black} {blackTime} · {white} {whiteTime} | **対局全体の残り時間：{black} {blackTime}・{white} {whiteTime}** | Time left for the whole game: {black} {blackTime}, {white} {whiteTime} | Agent 2026-10-06 |  |
+| — — — | Time could not be given. | **時間を足せませんでした。** | The time could not be added. | Agent 2026-10-06 |  |
+| — — — | Part of this address is not something this game offers, so they were left at the usual setting: {names}. | **このアドレスの一部は、このゲームにない設定だったので、通常の設定のままにしました：{names}。** | Part of this address is a setting this game does not have, so they were left at the usual setting: {names}. | Agent 2026-10-06 |  |
+| — — — | Part of this address is not something this game offers, so it was left at the usual setting: {names}. | **このアドレスの一部は、このゲームにない設定だったので、通常の設定のままにしました：{names}。** | Part of this address is a setting this game does not have, so it was left at the usual setting: {names}. | Agent 2026-10-06 |  |
+| — — — | Waiting for {colour}… | **{colour}の手番を待っています…** | Waiting for {colour}'s move… | Agent 2026-10-06 |  |
+| — — — | You are watching. {colour} to play. | **観戦中です。{colour}の手番です。** | You are watching. It is {colour}'s turn. | Agent 2026-10-06 |  |
+| — — — | White, and move second | **白（後手）** | White (plays second) | Agent 2026-10-06 |  |
+| — — — | {colour} wins: the other side has no move left. | **{colour}の勝ちです。相手に打てる手がなくなりました。** | {colour} wins. The other side has no move left. | Agent 2026-10-06 |  |
+| — — — | {colour} wins: the far camp is full. | **{colour}の勝ちです。向こう側の陣地が埋まりました。** | {colour} wins. The far camp is full. | Agent 2026-10-06 |  |
+| — — — | {colour} wins: their two sides are joined. | **{colour}の勝ちです。盤の両側がつながりました。** | {colour} wins. Their two sides are joined. | Agent 2026-10-06 |  |
+| — — — | {colour} wins on discs, {black} to {white}. | **{colour}が石の数で勝ちました（{black}対{white}）。** | {colour} wins on discs ({black} to {white}). | Agent 2026-10-06 |  |
+| — — — | {colour} wins in {moves}. | **{colour}の勝ちです（{moves}）。** | {colour} wins ({moves}). | Agent 2026-10-06 |  |
+| — — — | {colour} wins. The game is over. | **{colour}の勝ちです。対局は終わりました。** | {colour} wins. The game is over. | Agent 2026-10-06 |  |
+| — — — | {colour} wins by resignation. | **{colour}の勝ちです（相手が投了）。** | {colour} wins (the other side resigned). | Agent 2026-10-06 |  |
+| — — — | the first | **1つ目** | the first | Agent 2026-10-06 |  |
+| — — — | the fourth | **4つ目** | the fourth | Agent 2026-10-06 |  |
+| — — — | the next | **次** | the next | Agent 2026-10-06 |  |
+| — — — | the second | **2つ目** | the second | Agent 2026-10-06 |  |
+| — — — | the third | **3つ目** | the third | Agent 2026-10-06 |  |
+| — — — | You play | **自分の色** | My colour | Agent 2026-10-06 |  |
+| — — — | Your move — you are {colour}. | **自分の手番です。自分は{colour}です。** | It is your move. You are {colour}. | Agent 2026-10-06 |  |
+| — — — | Your pieces | **自分の駒** | My pieces | Agent 2026-10-06 |  |
+| — — — | Make it again | **作り直す** | Make it again | Agent 2026-10-06 |  |
+| — — — | Every position of this game, {count} | **この対局のすべての局面（{count}）** | Every position of this game ({count}) | Agent 2026-10-06 |  |
+| — — — | Every position of this game so far, {count} | **この対局のここまでのすべての局面（{count}）** | Every position of this game so far ({count}) | Agent 2026-10-06 |  |
+| — — — | Every position of this game, in order, on one image the size of your screen. Made in your browser; nothing is sent anywhere. | **この対局のすべての局面を、順番に、画面の大きさの1枚の画像に並べます。ブラウザで作るので、どこにも送信されません。** | Every position of this game is lined up in order on one image the size of your screen. It is made in your browser, so nothing is sent anywhere. | Agent 2026-10-06 |  |
+| — — — | Download | **ダウンロード** | Download | Agent 2026-10-06 |  |
+| — — — | The picture could not be drawn in this browser. | **このブラウザでは画像を描けませんでした。** | The picture could not be drawn in this browser. | Agent 2026-10-06 |  |
+| — — — | View full screen | **全画面で見る** | View full screen | Agent 2026-10-06 |  |
+| — — — | Game wallpaper | **対局の壁紙** | Game wallpaper | Agent 2026-10-06 |  |
+| — — — | In play | **対局中** | In play | Agent 2026-10-06 |  |
+| — — — | Landscape | **横長** | Landscape | Agent 2026-10-06 |  |
+| — — — | 1920×1080, a desktop or TV | **1920×1080、パソコンやテレビ向け** | 1920×1080, for a computer or a television | Agent 2026-10-06 |  |
+| — — — | Make the picture | **画像を作る** | Make the picture | Agent 2026-10-06 |  |
+| — — — | Drawing… | **描いています…** | Drawing… | Agent 2026-10-06 |  |
+| — — — | Every position | **すべての局面** | Every position | Agent 2026-10-06 |  |
+| — — — | the ending, counted back from the last move | **終盤（最後の手から数える）** | the ending (counted back from the last move) | Agent 2026-10-06 |  |
+| — — — | More positions than the picture holds. Show ({count} positions, {tiles} tiles): | **画像に入りきらない局面があります。表示する部分を選んでください（{count}局面、{tiles}枚）：** | There are more positions than the picture holds. Choose which part to show ({count} positions, {tiles} tiles): | Agent 2026-10-06 |  |
+| — — — | the opening, counted from the first move | **序盤（最初の手から数える）** | the opening (counted from the first move) | Agent 2026-10-06 |  |
+| — — — | the whole game, skipping evenly | **対局全体（等間隔に間引く）** | the whole game (thinned out evenly) | Agent 2026-10-06 |  |
+| — — — | Portrait | **縦長** | Portrait | Agent 2026-10-06 |  |
+| — — — | 1170×2532, an iPhone | **1170×2532、iPhone向け** | 1170×2532, for an iPhone | Agent 2026-10-06 |  |
+| — — — | Shape | **形** | Shape | Agent 2026-10-06 |  |
+| — — — | {shown} of {total} positions | **{total}局面のうち{shown}局面** | {shown} of {total} positions | Agent 2026-10-06 |  |
+| — — — | {black} vs {white} | **{black}対{white}** | {black} against {white} | Agent 2026-10-06 |  |
+| — — — | The finished board of {name}, as a wallpaper | **{name}の終局図を壁紙にしたもの** | The finished board of {name}, made as a wallpaper | Agent 2026-10-06 |  |
+| — — — | Drawing the board… | **盤を描いています…** | Drawing the board… | Agent 2026-10-06 |  |
+| — — — | The board could not be drawn in this browser. | **このブラウザでは盤を描けませんでした。** | The board could not be drawn in this browser. | Agent 2026-10-06 |  |
 | — — — | {colour} is free. | **{colour}なら空いています。** | {colour} is free. | Agent 2026-10-06 |  |
 | — — — | That colour is too like the other side's pieces to tell apart. | **その色は、相手側の駒と似すぎていて、見分けがつきません。** | That colour is too similar to the other side's pieces to tell them apart. | Agent 2026-10-06 |  |
 | — — — | The other side already plays in that colour. | **相手側はすでにその色で打っています。** | The other side is already playing in that colour. | Agent 2026-10-06 |  |
 | — — — | That colour is too like another player's marbles to tell apart. | **その色は、別の人のビー玉と似すぎていて、見分けがつきません。** | That colour is too similar to another person's marbles to tell them apart. | Agent 2026-10-06 |  |
 | — — — | Another player's marble carries that colour's letter. | **別の人のビー玉に、その色の文字がついています。** | Another person's marble carries that colour's letter. | Agent 2026-10-06 |  |
 | — — — | Another player at the table has that colour. | **卓にいる別の人が、すでにその色を使っています。** | Another person at the table is already using that colour. | Agent 2026-10-06 |  |
+| — — — | Astonishing | **驚いた** | I was astonished | Agent 2026-10-06 |  |
+| — — — | A beautiful game | **美しい対局** | A beautiful game | Agent 2026-10-06 |  |
+| — — — | Brilliant | **素晴らしい** | Wonderful | Agent 2026-10-06 |  |
+| — — — | Anybody who has seen this game may leave one mark on it. There is no way to boo. | **この対局を見た人は誰でも、印を1つ残せます。ブーイングはできません。** | Anybody who has seen this game can leave one mark on it. Booing is not possible. | Agent 2026-10-06 |  |
+| — — — | Leaving a mark needs an account — an invite code on its own does not make one. | **印を残すにはアカウントが必要です。招待コードだけではアカウントになりません。** | Leaving a mark needs an account. An invite code alone does not make an account. | Agent 2026-10-06 |  |
+| — — — | No applause yet. Be the first to say the game was worth playing. | **まだ拍手はありません。いちばん乗りで、この対局がよかったと伝えましょう。** | There is no applause yet. Be the first to say this game was good. | Agent 2026-10-06 |  |
+| — — — | Respect | **敬意** | Respect | Agent 2026-10-06 |  |
+| — — — | Sign in to leave a mark on this game. | **印を残すにはサインインしてください。** | Please sign in to leave a mark. | Agent 2026-10-06 |  |
+| — — — | Applause | **拍手** | Applause | Agent 2026-10-06 |  |
+| — — — | Well played | **お見事** | Well done | Agent 2026-10-06 |  |
+| — — — | Yours | **自分の印** | My mark | Agent 2026-10-06 |  |
+| — — — | {count} day | **{count}日** | {count} day | Agent 2026-10-06 |  |
+| — — — | {count} days | **{count}日** | {count} days | Agent 2026-10-06 |  |
+| — — — | All finished | **終わった対局すべて** | All finished games | Agent 2026-10-06 |  |
+| — — — | The last position of each game of one kind, side by side on one picture the size of your screen. Drawn in your browser, newest game first. | **1種類のゲームについて、各対局の最後の局面を、画面の大きさの1枚の絵に並べます。ブラウザで描き、新しい対局から順に並びます。** | The last position of every game of one kind, lined up on one picture the size of your screen. It is drawn in your browser, newest game first. | Agent 2026-10-06 |  |
+| — — — | The picture could not be made. | **絵を作れませんでした。** | The picture could not be made. | Agent 2026-10-06 |  |
+| — — — | Every game, as it ended | **すべての対局の終局図** | The ending of every game | Agent 2026-10-06 |  |
+| — — — | Lost | **負け** | Lost | Agent 2026-10-06 |  |
+| — — — | Make the picture | **絵を作る** | Make the picture | Agent 2026-10-06 |  |
+| — — — | No finished games of that kind to draw. | **その種類の終わった対局がなく、描けません。** | There are no finished games of that kind, so nothing can be drawn. | Agent 2026-10-06 |  |
+| — — — | 1 game on other board sizes left out. | **ほかの盤の大きさの対局1局は含めていません。** | 1 game on another board size is not included. | Agent 2026-10-06 |  |
+| — — — | {count} games on other board sizes left out. | **ほかの盤の大きさの対局{count}局は含めていません。** | {count} games on other board sizes are not included. | Agent 2026-10-06 |  |
+| — — — | Which games | **対象** | Which | Agent 2026-10-06 |  |
+| — — — | Won | **勝ち** | Won | Agent 2026-10-06 |  |
+| — — — | Friendly | **親善対局** | Friendly game | Agent 2026-10-06 |  |
+| — — — | {count} hour | **{count}時間** | {count} hour | Agent 2026-10-06 |  |
+| — — — | {count} hours | **{count}時間** | {count} hours | Agent 2026-10-06 |  |
+| — — — | Judged | **評価済み** | Judged | Agent 2026-10-06 |  |
+| — — — | {days}d {hours}h | **{days}日{hours}時間** | {days} days {hours} hours | Agent 2026-10-06 |  |
+| — — — | {hours}h {minutes}m | **{hours}時間{minutes}分** | {hours} hours {minutes} minutes | Agent 2026-10-06 |  |
+| — — — | {minutes}m {seconds}s | **{minutes}分{seconds}秒** | {minutes} minutes {seconds} seconds | Agent 2026-10-06 |  |
+| — — — | {seconds}s | **{seconds}秒** | {seconds} seconds | Agent 2026-10-06 |  |
+| — — — | {count} minute | **{count}分** | {count} minute | Agent 2026-10-06 |  |
+| — — — | {count} minutes | **{count}分** | {count} minutes | Agent 2026-10-06 |  |
+| — — — | No clock | **無制限** | Unlimited | Agent 2026-10-06 |  |
+| — — — | the other seat | **相手の席** | the other seat | Agent 2026-10-06 |  |
+| — — — | overdue | **期限切れ** | overdue | Agent 2026-10-06 |  |
+| — — — | Paid IP | **IPを獲得** | Earned IP | Agent 2026-10-06 |  |
+| — — — | {time} each for the whole game | **対局全体で各{time}** | {time} each for the whole game | Agent 2026-10-06 |  |
+| — — — | {time} a move | **1手{time}** | {time} per move | Agent 2026-10-06 |  |
+| — — — | {name}'s games | **{name}さんの対局** | {name}'s games | Agent 2026-10-06 |  |
+| — — — | Against bots | **対コンピュータ** | Against computers | Agent 2026-10-06 |  |
+| — — — | Against people | **対人** | Against people | Agent 2026-10-06 |  |
+| — — — | Have to go — back later | **席を外します。あとで戻ります** | I am stepping away. I will be back later | Agent 2026-10-06 |  |
+| — — — | Good game, thank you | **いい対局でした、ありがとうございました** | It was a good game, thank you very much | Agent 2026-10-06 |  |
+| — — — | Hello, good luck | **こんにちは、よろしくお願いします** | Hello, I look forward to playing with you | Agent 2026-10-06 |  |
+| — — — | Sorry, misclick | **すみません、押し間違えました** | Sorry, I pressed the wrong place | Agent 2026-10-06 |  |
+| — — — | No rush | **ゆっくりで大丈夫です** | Taking it slowly is fine | Agent 2026-10-06 |  |
+| — — — | Need to think about this one | **ここは少し考えさせてください** | Please let me think about this one a little | Agent 2026-10-06 |  |
+| — — — | Rated | **レーティング対局** | Rated game | Agent 2026-10-06 |  |
+| — — — | Close one | **危なかった** | That was close | Agent 2026-10-06 |  |
+| — — — | On fire | **絶好調** | In top form | Agent 2026-10-06 |  |
+| — — — | Ha | **はは** | Ha ha | Agent 2026-10-06 |  |
+| — — — | Hello | **こんにちは** | Hello | Agent 2026-10-06 |  |
+| — — — | Nice move | **いい手** | A good move | Agent 2026-10-06 |  |
+| — — — | Oh no | **あらら** | Oh dear | Agent 2026-10-06 |  |
+| — — — | Did not see that coming | **その手は読めなかった** | I did not read that move | Agent 2026-10-06 |  |
+| — — — | Take your time | **ごゆっくり** | Take your time | Agent 2026-10-06 |  |
+| — — — | Thinking | **考え中** | Thinking | Agent 2026-10-06 |  |
+| — — — | Somebody | **だれか** | Somebody | Agent 2026-10-06 |  |
+| — — — | Length | **手数** | Number of moves | Agent 2026-10-06 |  |
+| — — — | Date played | **対局日** | Date played | Agent 2026-10-06 |  |
+| — — — | Time taken | **所要時間** | Time taken | Agent 2026-10-06 |  |
+| — — — | Date | **日付** | Date | Agent 2026-10-06 |  |
+| — — — | No games yet. | **対局はまだありません。** | There are no games yet. | Agent 2026-10-06 |  |
+| — — — | {shown} of {total} games; the rest are on the site. | **{total}局のうち{shown}局です。残りはサイトで見られます。** | {shown} of {total} games; the rest can be seen on the site. | Agent 2026-10-06 |  |
+| — — — | This game did not count | **この対局はレーティングに反映されませんでした** | This game was not reflected in ratings | Agent 2026-10-06 |  |
+| — — — | One side took a handicap, so the two of you are not playing by the same rules. A rating is an exchange between two players on equal terms, and a handicap game cannot give the site one — so it is filed and replayed like any other, but no rating moves. | **片方がハンデを受けているため、2人は同じ規則で打っていません。レーティングは対等な2人のあいだでやりとりするものなので、ハンデ戦には反映できません。対局はほかの対局と同じように記録され、再生もできますが、レーティングは動きません。** | One side has a handicap, so the two of you are not playing by the same rules. A rating is exchanged between two players on equal terms, so it cannot be applied to a handicap game. The game is recorded and can be replayed like any other, but no rating moves. | Agent 2026-10-06 |  |
+| — — — | Will not count — a handicap | **レーティング対象外（ハンデ戦）** | Not counted for rating (a handicap game) | Agent 2026-10-06 |  |
+| — — — | One side has a head start, so the two of you are not playing on equal terms. A rating is an exchange between two players on equal terms, and a head-start game cannot give the site one — so it is filed and replayed like any other, but no rating moves. | **片方に先行があるため、2人は対等な条件で打っていません。レーティングは対等な2人のあいだでやりとりするものなので、先行のある対局には反映できません。対局はほかの対局と同じように記録され、再生もできますが、レーティングは動きません。** | One side has a head start, so the two of you are not playing on equal terms. A rating is exchanged between two players on equal terms, so it cannot be applied to a game with a head start. The game is recorded and can be replayed like any other, but no rating moves. | Agent 2026-10-06 |  |
+| — — — | Will not count — a head start | **レーティング対象外（先行あり）** | Not counted for rating (with a head start) | Agent 2026-10-06 |  |
+| — — — | Both seats were played from one screen, so there is no way to tell the two of you apart from a login. A rating is an exchange between two separate players, and hot-seat play cannot give the site one — however the two names read. | **両方の席を1つの画面で打ったため、サインインからは2人を区別できません。レーティングは別々の2人のあいだでやりとりするものなので、1台で交代しながら打つ対局には反映できません。名前が2つあっても同じです。** | Both seats were played on one screen, so the two of you cannot be told apart from a sign-in. A rating is exchanged between two separate people, so it cannot be applied to a game played in turns on one device. It is the same even if there are two names. | Agent 2026-10-06 |  |
+| — — — | Will not count — one screen | **レーティング対象外（1つの画面で対局）** | Not counted for rating (played on one screen) | Agent 2026-10-06 |  |
+| — — — | One of these names belongs to a record kept from before this site, which nobody plays under here. The game is filed, but the ladder is left alone. | **どちらかの名前は、このサイトより前の記録として残されているもので、ここでは誰も使っていません。対局は記録されますが、順位表は変わりません。** | One of the names is a record kept from before this site, which nobody uses here. The game is recorded, but the standings do not change. | Agent 2026-10-06 |  |
+| — — — | Will not count — a kept record | **レーティング対象外（残された記録の名前）** | Not counted for rating (the name of a kept record) | Agent 2026-10-06 |  |
+| — — — | Both seats are the same player. A rating says how two people compare, and there is only one person here — so the game is filed and replayed like any other, but no rating moves. | **両方の席が同じ対局者です。レーティングは2人を比べる数字ですが、ここには1人しかいません。対局はほかの対局と同じように記録され、再生もできますが、レーティングは動きません。** | Both seats are the same player. A rating is a number that compares two people, but there is only one person here. The game is recorded and can be replayed like any other, but no rating moves. | Agent 2026-10-06 |  |
+| — — — | Will not count — one player | **レーティング対象外（対局者が1人）** | Not counted for rating (one player) | Agent 2026-10-06 |  |
+| — — — | A seat here has no name on it, so there is nobody for the result to belong to. A name on both seats is what makes a game count. | **名前のない席があり、結果を記録する相手がいません。両方の席に名前があると、対局がレーティングに反映されます。** | A seat has no name, so there is nobody to record the result for. When both seats have a name, the game is reflected in ratings. | Agent 2026-10-06 |  |
+| — — — | Will not count — a seat has no name | **レーティング対象外（席に名前がありません）** | Not counted for rating (a seat has no name) | Agent 2026-10-06 |  |
+| — — — | Will not count | **レーティング対象外** | Not counted for rating | Agent 2026-10-06 |  |
+| — — — | {count} drawn in a row. | **{count}連続で引き分け。** | {count} draws in a row. | Agent 2026-10-06 |  |
+| — — — | {count} lost in a row. | **{count}連敗。** | {count} losses in a row. | Agent 2026-10-06 |  |
+| — — — | {count} won in a row. | **{count}連勝。** | {count} wins in a row. | Agent 2026-10-06 |  |
+| — — — | Twenty rated games or more. | **レーティング対局が20局以上あります。** | There are twenty or more rated games. | Agent 2026-10-06 |  |
+| — — — | Still finding its level; moves quickly. | **まだ実力が定まっておらず、レーティングが大きく動きます。** | Its level is not settled yet, and the rating moves a lot. | Agent 2026-10-06 |  |
+| — — — | Fewer than four rated games. | **レーティング対局が4局に満たない状態です。** | Fewer than four rated games. | Agent 2026-10-06 |  |
+| — — — | This game will not count | **この対局はレーティングに反映されません** | This game will not be reflected in ratings | Agent 2026-10-06 |  |
+| — — — | Could not read any moves in that. Try a list like H8 K10 J9, or an SGF game. | **手を読み取れませんでした。「H8 K10 J9」のような並びか、SGFの棋譜を試してください。** | No moves could be read. Try a list like "H8 K10 J9", or an SGF record. | Agent 2026-10-06 |  |
+| — — — | "{word}" is not a point on a {size}×{size} board. | **「{word}」は、{size}×{size}の盤上の点ではありません。** | "{word}" is not a point on a {size}×{size} board. | Agent 2026-10-06 |  |
+| — — — | That list has a pass in it, which this board cannot take yet. | **この手順にパスが含まれていますが、この盤はまだパスに対応していません。** | This list of moves contains a pass, but this board does not support passes yet. | Agent 2026-10-06 |  |
+| — — — | Could not read "{text}". | **「{text}」を読み取れませんでした。** | "{text}" could not be read. | Agent 2026-10-06 |  |
+| — — — | All {games} shown. | **{games}すべてを表示しました。** | All {games} are shown. | Agent 2026-10-06 |  |
+| — — — | Back | **戻る** | Back | Agent 2026-10-06 |  |
+| — — — | Before the game | **対局の前** | Before the game | Agent 2026-10-06 |  |
+| — — — | Copy it all | **すべてコピー** | Copy everything | Agent 2026-10-06 |  |
+| — — — | Copy as text | **テキストでコピー** | Copy as text | Agent 2026-10-06 |  |
+| — — — | No games match these filters yet. | **この条件に合う対局は、まだありません。** | No game matches these filters yet. | Agent 2026-10-06 |  |
+| — — — | End | **最後へ** | To the end | Agent 2026-10-06 |  |
+| — — — | ended {when} | **{when}に終局** | ended at {when} | Agent 2026-10-06 |  |
+| — — — | Those filters were not valid, so this is the unfiltered record. | **その絞り込みは使えないので、絞り込まない全体の記録を表示しています。** | Those filters could not be used, so the whole unfiltered record is shown. | Agent 2026-10-06 |  |
+| — — — | Flip the board back | **盤を元に戻す** | Flip the board back | Agent 2026-10-06 |  |
+| — — — | Step back to an earlier move, and you can play a new game on from that position against the same player. | **前の手まで戻すと、その局面から同じ相手と新しい対局を続けられます。** | If you step back to an earlier move, you can continue a new game from that position against the same player. | Agent 2026-10-06 |  |
+| — — — | A new game from the position on the board, move {move}, against the same player, each of you keeping your colour. You set the clock first, and this game stays as it ended. | **盤の{move}手目の局面から、同じ相手と新しい対局を始めます。色はそのままで、最初に時計を決めます。この対局は終わったままの形で残ります。** | A new game starts from the position at move {move} on the board, against the same player. The colours stay as they are, and the clock is set first. This game stays as it ended. | Agent 2026-10-06 |  |
+| — — — | GT style | **GT形式** | GT style | Agent 2026-10-06 |  |
+| — — — | IYT style | **IYT形式** | IYT style | Agent 2026-10-06 |  |
+| — — — | Forward | **進む** | Forward | Agent 2026-10-06 |  |
+| — — — | Hide from my list | **一覧から隠す** | Hide from my list | Agent 2026-10-06 |  |
+| — — — | Hidden games still count in your totals; they just leave your public list. | **非表示にした対局も合計には入ります。公開の一覧から外れるだけです。** | Hidden games still count in the totals. They only leave the public list. | Agent 2026-10-06 |  |
+| — — — | Hide move numbers | **手数を隠す** | Hide move numbers | Agent 2026-10-06 |  |
+| — — — | How it went for {name} | **{name}さんの結果** | {name}'s result | Agent 2026-10-06 |  |
+| — — — | Every finished game, newest first. Open one to replay it stone by stone. | **終わったすべての対局を、新しい順に並べています。開くと、1手ずつ再生できます。** | Every finished game, newest first. Open one to replay it move by move. | Agent 2026-10-06 |  |
+| — — — | Every finished game of {game}, newest first. Open one to replay it stone by stone. | **{game}の終わったすべての対局を、新しい順に並べています。開くと、1手ずつ再生できます。** | Every finished game of {game}, newest first. Open one to replay it move by move. | Agent 2026-10-06 |  |
+| — — — | made {when} | **{when}に着手** | made at {when} | Agent 2026-10-06 |  |
+| — — — | That member could not be found, so this is the unfiltered record. | **その会員が見つからないので、絞り込まない全体の記録を表示しています。** | That member could not be found, so the whole unfiltered record is shown. | Agent 2026-10-06 |  |
+| — — — | Move {move} of {last} | **{last}手中{move}手目** | Move {move} of {last} | Agent 2026-10-06 |  |
+| — — — | Moves as text | **テキストの棋譜** | Record of moves as text | Agent 2026-10-06 |  |
+| — — — | Next | **次へ** | Next | Agent 2026-10-06 |  |
+| — — — | No moves yet. | **まだ手がありません。** | There are no moves yet. | Agent 2026-10-06 |  |
+| — — — | No stones were played in this game. | **この対局では、石が打たれていません。** | No stones were played in this game. | Agent 2026-10-06 |  |
+| — — — | Page {page} of {pages} · {games} | **{pages}ページ中{page}ページ目・{games}** | Page {page} of {pages} · {games} | Agent 2026-10-06 |  |
+| — — — | Pagination | **ページ送り** | Page navigation | Agent 2026-10-06 |  |
+| — — — | Pause | **一時停止** | Pause | Agent 2026-10-06 |  |
+| — — — | Play | **再生** | Play | Agent 2026-10-06 |  |
+| — — — | Previous | **前へ** | Previous | Agent 2026-10-06 |  |
+| — — — | {shown} of {total} shown — reading more… | **{total}局中{shown}局を表示しています。続きを読み込み中…** | {shown} of {total} games are shown. Loading more… | Agent 2026-10-06 |  |
+| — — — | {shown} of {total} shown. Keep scrolling for more. | **{total}局中{shown}局を表示しています。下へスクロールすると続きが出ます。** | {shown} of {total} games are shown. Keep scrolling for more. | Agent 2026-10-06 |  |
+| — — — | — remove | **— 外す** | — remove | Agent 2026-10-06 |  |
+| — — — | Replay: {black} vs {white} | **再生：{black}対{white}** | Replay: {black} against {white} | Agent 2026-10-06 |  |
+| — — — | What they said | **交わした言葉** | What they said | Agent 2026-10-06 |  |
+| — — — | More games could not be loaded just now — the pages below still work. | **いまは続きを読み込めませんでした。下のページ送りは使えます。** | More could not be loaded just now. The page links below still work. | Agent 2026-10-06 |  |
+| — — — | Move | **手** | Move | Agent 2026-10-06 |  |
+| — — — | Not well | **うまくいかなかった** | Did not go well | Agent 2026-10-06 |  |
+| — — — | Private; only you see it. | **非公開です。自分だけに見えます。** | It is private. Only you can see it. | Agent 2026-10-06 |  |
+| — — — | How do you think you played? | **自分の対局はどうでしたか？** | How was your own game? | Agent 2026-10-06 |  |
+| — — — | Well | **よくできた** | Went well | Agent 2026-10-06 |  |
+| — — — | What they sent | **送ったスタンプ** | The stamps they sent | Agent 2026-10-06 |  |
+| — — — | Show move numbers | **手数を表示** | Show move numbers | Agent 2026-10-06 |  |
+| — — — | Show on my list | **一覧に表示する** | Show on my list | Agent 2026-10-06 |  |
+| — — — | Start | **最初へ** | To the start | Agent 2026-10-06 |  |
+| — — — | started {when} | **{when}に開始** | started at {when} | Agent 2026-10-06 |  |
+| — — — | Stop narrowing to {label} | **絞り込みを外す：{label}** | Remove the narrowing: {label} | Agent 2026-10-06 |  |
+| — — — | {site} — every finished game | **{site} — 終わったすべての対局** | {site} — every finished game | Agent 2026-10-06 |  |
+| — — — | {site} — every finished game of {game} | **{site} — {game}の終わったすべての対局** | {site} — every finished game of {game} | Agent 2026-10-06 |  |
+| — — — | vs | **対** | against | Agent 2026-10-06 |  |
+| — — — | Yours | **自分の対局** | My games | Agent 2026-10-06 |  |
+| — — — | Play again | **もう一局** | Another game | Agent 2026-10-06 |  |
+| — — — | {who} had no move left. | **{who}は打てる手がなくなりました。** | {who} had no move left. | Agent 2026-10-06 |  |
+| — — — | You had no move left. | **打てる手がなくなりました。** | You had no move left. | Agent 2026-10-06 |  |
+| — — — | The board filled with nobody winning. | **どちらも勝たないまま、盤が埋まりました。** | The board filled up with nobody winning. | Agent 2026-10-06 |  |
+| — — — | Both made a line at once. | **双方が同時に並びを作りました。** | Both made a line at the same time. | Agent 2026-10-06 |  |
+| — — — | {who} filled the far camp first. | **{who}が向こう側の陣地を先に埋めました。** | {who} filled the far camp first. | Agent 2026-10-06 |  |
+| — — — | You filled the far camp first. | **向こう側の陣地を先に埋めました。** | You filled the far camp first. | Agent 2026-10-06 |  |
+| — — — | {who} captured enough to win. | **{who}が勝ちに必要な数の石を取りました。** | {who} captured the number of stones needed to win. | Agent 2026-10-06 |  |
+| — — — | You captured enough to win. | **勝ちに必要な数の石を取りました。** | You captured the number of stones needed to win. | Agent 2026-10-06 |  |
+| — — — | {who} joined both sides of the board. | **{who}が盤の両側をつなぎました。** | {who} joined both sides of the board. | Agent 2026-10-06 |  |
+| — — — | You joined both sides of the board. | **盤の両側をつなぎました。** | You joined both sides of the board. | Agent 2026-10-06 |  |
+| — — — | {who} had more discs at the end. | **終了時に、{who}の石のほうが多くなりました。** | At the end, {who} had more discs. | Agent 2026-10-06 |  |
+| — — — | You had more discs at the end. | **終了時に、石のほうが多くなりました。** | At the end, you had more discs. | Agent 2026-10-06 |  |
+| — — — | {colour} wins | **{colour}の勝ち** | {colour} wins | Agent 2026-10-06 |  |
+| — — — | Neither side won. | **どちらも勝ちませんでした。** | Neither side won. | Agent 2026-10-06 |  |
+| — — — | The ending was not won within the moves its rules allow. | **規則で認められている手数のうちに、終盤で勝負がつきませんでした。** | The ending was not won within the number of moves the rules allow. | Agent 2026-10-06 |  |
+| — — — | {who} led when the board filled. | **{who}が、盤が埋まった時点でリードしていました。** | {who} was leading when the board filled up. | Agent 2026-10-06 |  |
+| — — — | You led when the board filled. | **盤が埋まった時点でリードしていました。** | You were leading when the board filled up. | Agent 2026-10-06 |  |
+| — — — | The game ran to the length it was given. | **決められた手数まで進みました。** | The game went on to the number of moves it was given. | Agent 2026-10-06 |  |
+| — — — | Level up: {name} | **昇級：{name}** | Promotion: {name} | Agent 2026-10-06 |  |
+| — — — | {who} completed a winning line. | **{who}が勝ちの並びを完成させました。** | {who} completed a winning line. | Agent 2026-10-06 |  |
+| — — — | You completed a winning line. | **勝ちの並びを完成させました。** | You completed a winning line. | Agent 2026-10-06 |  |
+| — — — | Neither side had a move left. | **どちらにも打てる手がなくなりました。** | Neither side had a move left. | Agent 2026-10-06 |  |
+| — — — | Every piece was down, and the sliding went on longer than its rules allow. | **駒をすべて置き終えたあと、規則で認められている期間を超えて、駒を滑らせ続けました。** | After every piece was placed, the sliding went on for longer than the rules allow. | Agent 2026-10-06 |  |
+| — — — | Nobody got a piece any nearer home for longer than its rules allow. | **規則で認められている期間、どちらの駒も陣地に近づきませんでした。** | For longer than the rules allow, no piece got any nearer to its camp. | Agent 2026-10-06 |  |
+| — — — | Nothing was taken and no man moved for longer than its rules allow. | **規則で認められている期間、駒が取られず、動いた通常の駒もありませんでした。** | For longer than the rules allow, no piece was taken and no ordinary piece moved. | Agent 2026-10-06 |  |
+| — — — | Rating {mine} · opponent {theirs} | **レーティング {mine}・相手 {theirs}** | Rating {mine}, opponent {theirs} | Agent 2026-10-06 |  |
+| — — — | Rematch | **再戦** | Rematch | Agent 2026-10-06 |  |
+| — — — | The same position came round again, with the same side to move. | **同じ手番で、同じ局面がもう一度現れました。** | The same position appeared again, with the same side to move. | Agent 2026-10-06 |  |
+| — — — | {who} resigned. | **{who}が投了しました。** | {who} resigned. | Agent 2026-10-06 |  |
+| — — — | You resigned. | **投了しました。** | You resigned. | Agent 2026-10-06 |  |
+| — — — | Review the moves | **棋譜を見る** | Look at the record of moves | Agent 2026-10-06 |  |
+| — — — | Area | **地** | Territory | Agent 2026-10-06 |  |
+| — — — | Discs | **石の数** | Number of discs | Agent 2026-10-06 |  |
+| — — — | {label}: {black} {blackScore} · {white} {whiteScore} | **{label}：{black} {blackScore}・{white} {whiteScore}** | {label}: {black} {blackScore}, {white} {whiteScore} | Agent 2026-10-06 |  |
+| — — — | Pairs captured | **取った組数** | Pairs captured | Agent 2026-10-06 |  |
+| — — — | {who} made the winning square. | **{who}が勝ちとなる正方形を作りました。** | {who} made the square that wins. | Agent 2026-10-06 |  |
+| — — — | You made the winning square. | **勝ちとなる正方形を作りました。** | You made the square that wins. | Agent 2026-10-06 |  |
+| — — — | {who} held more of the board. | **{who}が盤をより広く押さえました。** | {who} held more of the board. | Agent 2026-10-06 |  |
+| — — — | You held more of the board. | **盤をより広く押さえました。** | You held more of the board. | Agent 2026-10-06 |  |
+| — — — | {who} ran out of time. | **{who}が時間切れになりました。** | {who} ran out of time. | Agent 2026-10-06 |  |
+| — — — | You ran out of time. | **時間切れになりました。** | You ran out of time. | Agent 2026-10-06 |  |
+| — — — | {who} had no way out. | **{who}は逃げ場がありませんでした。** | {who} had no way out. | Agent 2026-10-06 |  |
+| — — — | You had no way out. | **逃げ場がありませんでした。** | You had no way out. | Agent 2026-10-06 |  |
+| — — — | Your move in 1 game | **1局で手番が来ています** | It is your move in 1 game | Agent 2026-10-06 |  |
+| — — — | Your move in {count} games | **{count}局で手番が来ています** | It is your move in {count} games | Agent 2026-10-06 |  |
+| — — — | +{points} XP from this game | **この対局で経験値+{points}** | Experience points +{points} from this game | Agent 2026-10-06 |  |
+| — — — | Against whoever you hand the seat to | **席を渡した相手と対局** | Playing whoever the seat is handed to | Agent 2026-10-06 |  |
+| — — — | Against {player} | **{player}と対局** | Playing {player} | Agent 2026-10-06 |  |
+| — — — | {name} (a computer) | **{name}（コンピュータ）** | {name} (a computer) | Agent 2026-10-06 |  |
+| — — — | {name} on {board}. | **{board}の{name}。** | {name} on {board}. | Agent 2026-10-06 |  |
+| — — — | {name} on {board}, with the star points blocked. | **{board}の{name}（星の点をふさぐ）。** | {name} on {board} (with the star points blocked). | Agent 2026-10-06 |  |
+| — — — | {colour} handicap | **{colour}にハンデ** | Handicap for {colour} | Agent 2026-10-06 |  |
+| — — — | {colour} handicap: {parts} | **{colour}にハンデ：{parts}** | Handicap for {colour}: {parts} | Agent 2026-10-06 |  |
+| — — — | Against {against}. Who plays black is drawn by lot as you press Start. | **{against}と対局します。どちらが黒を持つかは、「始める」を押したときに抽選で決まります。** | Playing {against}. Who plays black is decided by lot when you press Start. | Agent 2026-10-06 |  |
+| — — — | Who plays black is drawn by lot as the game is made. | **どちらが黒を持つかは、対局が作られるときに抽選で決まります。** | Who plays black is decided by lot when the game is made. | Agent 2026-10-06 |  |
+| — — — | move first | **先手** | first | Agent 2026-10-06 |  |
+| — — — | move second | **後手** | second | Agent 2026-10-06 |  |
+| — — — | No resigning | **投了なし** | No resigning | Agent 2026-10-06 |  |
+| — — — | This is an offer: {them} can accept or decline it, and declining costs nobody anything. | **これは申し込みです。{them}は承諾することも断ることもでき、断っても誰にも不利益はありません。** | This is an offer. {them} can accept or decline, and declining costs nobody anything. | Agent 2026-10-06 |  |
+| — — — | {opening} opening | **開局ルール：{opening}** | Opening rule: {opening} | Agent 2026-10-06 |  |
+| — — — | Against {against}. The {opening} opening decides who plays which colour, once the first stones are down. | **{against}と対局します。開局ルール「{opening}」により、最初の数手が打たれたあとで、どちらがどの色を持つかが決まります。** | Playing {against}. Under the opening rule "{opening}", who plays which colour is decided once the first few moves are made. | Agent 2026-10-06 |  |
+| — — — | The {opening} opening decides who plays which colour, once the first stones are down. The other seat is posted for whoever answers it. | **開局ルール「{opening}」により、最初の数手が打たれたあとで、どちらがどの色を持つかが決まります。もう一方の席は、応じた人のために掲示されます。** | Under the opening rule "{opening}", who plays which colour is decided once the first few moves are made. The other seat is put up for whoever answers. | Agent 2026-10-06 |  |
+| — — — | Post the seat for anyone | **誰でも座れる席として掲示する** | Put the seat up for anyone | Agent 2026-10-06 |  |
+| — — — | Resigning allowed | **投了できる** | Resigning is allowed | Agent 2026-10-06 |  |
+| — — — | Both seats are yours: two people at one screen, taking turns on this device. | **両方の席は自分たちのものです。1台の端末で、2人が交代で打ちます。** | Both seats are yours: two people play in turns on this one device. | Agent 2026-10-06 |  |
+| — — — | Against {against}, who plays {theirs}; you are {mine} and {order}. | **{against}と対局します。相手は{theirs}、自分は{mine}で、{order}です。** | Playing {against}, who plays {theirs}. You are {mine} and play {order}. | Agent 2026-10-06 |  |
+| — — — | You are {mine} and {order}. The {theirs} seat is posted on the games page for whoever answers it. | **自分は{mine}で、{order}です。{theirs}の席は、応じた人のために、ゲームのページに掲示されます。** | You are {mine} and play {order}. The {theirs} seat is put up on the games page for whoever answers. | Agent 2026-10-06 |  |
+| — — — | second stone {where} | **2手目は{where}** | the second stone: {where} | Agent 2026-10-06 |  |
+| — — — | Against {against}. The colours are settled when the game is made. | **{against}と対局します。色は、対局が作られるときに決まります。** | Playing {against}. The colours are decided when the game is made. | Agent 2026-10-06 |  |
+| — — — | The seat is posted for whoever answers it; the colours are settled when the game is made. | **席は、応じた人のために掲示されます。色は、対局が作られるときに決まります。** | The seat is put up for whoever answers. The colours are decided when the game is made. | Agent 2026-10-06 |  |
+| — — — |  in {time} | **（所要{time}）** | (taking {time}) | Agent 2026-10-06 |  |
+| — — — |  in {time}, in {moves} | **（所要{time}、{moves}）** | (taking {time}, {moves}) | Agent 2026-10-06 |  |
+| — — — | Play again, same players | **同じ顔ぶれでもう一局** | Another game with the same players | Agent 2026-10-06 |  |
+| — — — | The computer | **コンピュータ** | The computer | Agent 2026-10-06 |  |
+| — — — | See the board | **盤を見る** | See the board | Agent 2026-10-06 |  |
+| — — — | {who} share the win | **{who}で勝ちを分け合いました** | {who} shared the win | Agent 2026-10-06 |  |
+| — — — | Solved | **解決** | Solved | Agent 2026-10-06 |  |
+| — — — | {who} wins | **{who}の勝ち** | {who} wins | Agent 2026-10-06 |  |
+| — — — | You win | **勝ちです** | You win | Agent 2026-10-06 |  |
 
 `{game}`, `{name}`, `{names}` and `{country}` are filled in when the page is
 drawn — a game's name, a country. They have to survive a correction exactly as

@@ -2,10 +2,14 @@
 
 import { useMemo } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { variantName } from "@/lib/gomoku/variantCopy";
+
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { slugFor } from "@/lib/gomoku/slugs";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { framesOf, mosaicDraws } from "@/lib/record/mosaic";
@@ -18,16 +22,16 @@ import { MosaicDialog } from "./MosaicDialog";
  * what, and how it ended — worked out in the handler, where there is only the
  * browser (see `SgfDownload` for why).
  */
-function titleOf(game: GameDetail, variant: RuleVariant): MosaicTitle {
+function titleOf(game: GameDetail, variant: RuleVariant, say: Speaker): MosaicTitle {
   const at = new Date(game.lastMoveAt ?? game.playedAt);
   const pad = (value: number) => String(value).padStart(2, "0");
   const day = Number.isNaN(at.getTime()) ? null : `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`;
   return {
-    name: `${game.blackName || "Black"} vs ${game.whiteName || "White"}`,
+    name: say.say("mosaic.vs", { black: game.blackName || stoneName(say, "black"), white: game.whiteName || stoneName(say, "white") }),
     details: [
       ...(day === null ? [] : [day]),
-      `${RULE_VARIANT_DISPLAY[variant].label} ${game.size}×${game.size}`,
-      `${GAME_RESULT_DISPLAY[game.result].label}, ${game.moveCount} moves`,
+      `${variantName(variant, say)} ${game.size}×${game.size}`,
+      `${say.pairName(GAME_RESULT_DISPLAY[game.result].label, GAME_RESULT_DISPLAY[game.result].kanji).text}, ${say.count("count.move", game.moveCount)}`,
       MOSAIC_COPY.site,
     ],
   };
@@ -47,6 +51,7 @@ function titleOf(game: GameDetail, variant: RuleVariant): MosaicTitle {
  * drawn on a square grid would be a wrong picture, which is worse than none.
  */
 export function GameMosaic({ game, timeline }: { game: GameDetail; timeline: readonly GameState[] }) {
+  const say = useSpeaker();
   const frames = useMemo(() => framesOf(timeline), [timeline]);
   const variant = game.variant as RuleVariant;
   if (!mosaicDraws(variant) || frames.length === 0) return null;
@@ -58,9 +63,9 @@ export function GameMosaic({ game, timeline }: { game: GameDetail; timeline: rea
       frames={() => frames}
       size={game.size}
       grid={VARIANT_SPECS[variant].grid}
-      title={() => titleOf(game, variant)}
+      title={() => titleOf(game, variant, say)}
       fileName={`itsutsu-${slugFor(variant)}-${game.id}.png`}
-      alt={`Every position of this game, ${frames.length} moves`}
+      alt={say.say("mosaic.altGame", { count: say.count("count.move", frames.length) })}
     />
   );
 }

@@ -7,7 +7,7 @@ import { RATING_REFUSAL_DISPLAY } from "@/lib/rating/rateable.constants";
 
 import { PickMark } from "./PickMark";
 import { SetUpFold } from "./SetUpFold";
-import { SET_UP_COPY } from "./live.constants";
+import { SET_UP_KANJI } from "./live.constants";
 import { PICK_CARD, PICK_FACT, PICK_ICON, PICK_PAIR, RATED_TILES } from "./picker.constants";
 import type { RatedPickerProps } from "./picker.types";
 
@@ -26,7 +26,8 @@ import type { RatedPickerProps } from "./picker.types";
  * the words the rating notice already uses, where the tiles would have been.
  */
 export function RatedPicker({ value, refused, onChange, disabled = false }: RatedPickerProps) {
-  const say = useSpeaker().say;
+  const speaker = useSpeaker();
+  const say = speaker.say;
 
   if (refused !== null) {
     const copy = RATING_REFUSAL_DISPLAY[refused];
@@ -37,9 +38,10 @@ export function RatedPicker({ value, refused, onChange, disabled = false }: Rate
           <LevelIcon size="regular" />
           <span className="flex min-w-0 flex-col gap-0.5">
             <span className="text-sm font-medium">
-              {copy.playing} <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span>
+              {say(copy.playing)}
+              {speaker.pairsWithKanji ? <> <span className="font-mincho text-xs font-normal opacity-70">{copy.kanji}</span></> : null}
             </span>
-            <span className="text-xs leading-snug text-muted">{copy.sentence}</span>
+            <span className="text-xs leading-snug text-muted">{say(copy.sentence)}</span>
           </span>
         </div>
       </div>
@@ -88,7 +90,7 @@ export function RatedPicker({ value, refused, onChange, disabled = false }: Rate
   return (
     <SetUpFold
       title={say("setup.ratings")}
-      kanji={SET_UP_COPY.ratingsKanji}
+      kanji={SET_UP_KANJI.ratings}
       testId="set-up-rated-fold"
       summary={
         <>

@@ -8,8 +8,11 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { boardPhrase } from "@/lib/gomoku/boardWords";
 import { GameTrail } from "@/components/games/GameTrail";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 import { gamePath } from "@/lib/gomoku/slugs";
 
 /**
@@ -44,40 +47,37 @@ export async function RefusedOfferPage({ game }: { game: GameDetail }) {
    * be told, and a single timestamp would have meant both.
    */
   const declined = game.declinedAt !== null;
+  const say = await currentSpeaker();
   return (
     <Page>
       <SiteHeader />
       {/* The title and the notice together carry `refused-offer`: what happened is said in the title. */}
       <section className="flex flex-col gap-6" data-testid="refused-offer">
         <PageTitle
-          title={declined ? "This offer was declined" : "This offer was withdrawn"}
+          title={say.say(declined ? "gamepages.offerDeclined" : "gamepages.offerWithdrawn")}
           kanji={declined ? "辞退" : "取消"}
           crumb={
             <GameTrail
-              game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
-              steps={[{ label: "Game" }]}
+              game={{ label: variantName(game.variant, say), href: gamePath(game.variant as RuleVariant) }}
+              steps={[{ label: say.say("gamepages.game") }]}
             />
           }
         />
         <div className={`${PANEL_CLASS} flex flex-col gap-3`}>
           <p className="text-sm text-ink-soft">
-            A game of <GameName variant={game.variant} /> on {boardPhrase(game.variant, game.size)} was
-            offered here and{" "}
-            {declined
-              ? "the other player chose not to play it"
-              : "the offer was taken back before it was answered"}
-            . It was never started, so there is no result: nobody won, nobody lost, and no rating
-            moved for either of them.
+            {weave(say.say(declined ? "gamepages.offerBodyDeclined" : "gamepages.offerBodyWithdrawn", { board: boardPhrase(game.variant, game.size, say) }), {
+              game: <GameName variant={game.variant} />,
+            })}
           </p>
           <p className="text-xs text-muted">
-            Offers cost nothing to refuse, which is the point of them — ask again whenever you like.
+            {say.say("gamepages.offerNote")}
           </p>
           <p className="flex flex-wrap gap-4 text-sm">
             <Link href="/play" className="font-medium underline underline-offset-4">
-              Your games
+              {say.say("gamepages.yourGames")}
             </Link>
             <Link href="/games/new" className="font-medium underline underline-offset-4">
-              New game 新規対局
+              <Paired en={say.say("gamepages.newGame")} kanji="新規対局" />
             </Link>
           </p>
         </div>

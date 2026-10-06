@@ -1,4 +1,5 @@
 import Link from "@/components/ui/Link";
+import { ElsewhereCount } from "./ElsewhereCount";
 
 import { RAISED_LINK } from "@/components/ui/ui.constants";
 import { historyPath } from "@/lib/gomoku/slugs";
@@ -160,13 +161,10 @@ export function GameCount({
    * can already see all of, and an empty list reached by a link reads as a
    * page that has broken rather than as an answer.
    */
-  if (!here || count === 0 || count === "0") {
+  if (!here) return <ElsewhereCount count={count} className={className} testId={testId} />;
+  if (count === 0 || count === "0") {
     return (
-      <span
-        className={className}
-        data-testid={testId}
-        title={here ? title : "Counted on another site — no game here to open."}
-      >
+      <span className={className} data-testid={testId} title={title}>
         {count}
       </span>
     );

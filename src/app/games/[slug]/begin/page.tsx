@@ -7,7 +7,7 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Doorstep, type BeginAction } from "@/components/live/Doorstep";
-import { DOORSTEP_COPY } from "@/components/live/live.constants";
+import { doorstepCopy } from "@/components/live/live.constants";
 import { ANYONE, RANDOM_COMPUTER } from "@/components/live/opponentOptions";
 import { botsFor } from "@/lib/bots/bots.constants";
 import { describeGameProse, describeLineage, describeSeating, playerWord } from "@/components/live/doorstepSays";
@@ -21,9 +21,8 @@ import { gameDefaultsFor } from "@/lib/auth/members";
 import { gamePath, rulesPath, variantFor } from "@/lib/gomoku/slugs";
 import { fixedOpener } from "@/lib/gomoku/rules/creation";
 import { draftRatingRefusal } from "@/lib/rating/handicapRefusal";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { variantCopy } from "@/lib/gomoku/variantCopy";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { variantCopy, variantName } from "@/lib/gomoku/variantCopy";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { GameTrail } from "@/components/games/GameTrail";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +30,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/begin">): Promise<Metadata> {
   const { slug } = await params;
   const variant = variantFor(slug);
+  const say = await currentSpeaker();
   return {
     /*
      * The heading the page itself draws, rather than the same words typed again:
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/begi
      * tab and the heading naming one page are the case where a second copy shows
      * up as the site disagreeing with itself in a browser's own tab strip.
      */
-    title: variant === null ? DOORSTEP_COPY.title : `Start ${RULE_VARIANT_DISPLAY[variant].label}`,
+    title: variant === null ? doorstepCopy(say).title : say.say("gamepages.startGame", { game: variantName(variant, say) }),
   };
 }
 
@@ -73,11 +73,13 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
   const [{ slug }, asked] = await Promise.all([params, searchParams]);
   const variant = variantFor(slug);
   if (variant === null) notFound();
+  const say = await currentSpeaker();
+  const DOORSTEP_COPY = doorstepCopy(say);
 
   // Where a new game starts for this member, by id: an invite-code member keeps defaults too.
   const defaults = await gameDefaultsFor((await currentReader()).memberId);
   const want = readSetUpAsked(asked);
-  const from = await setUpFrom({ variant, asked, defaults });
+  const from = await setUpFrom({ variant, asked, defaults, say });
 
   /*
    * A seat somebody has already posted, where the address names one. Read here
@@ -85,7 +87,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
    * and says plainly when it has gone, which is a race two people asking for the
    * same game will lose sometimes.
    */
-  const noticeboard = want.sit === null ? null : await sittingAt(want.sit, variant, from.initial);
+  const noticeboard = want.sit === null ? null : await sittingAt(want.sit, variant, from.initial, say);
   const seat = noticeboard?.seat ?? null;
   const gone = noticeboard?.gone ?? null;
 
@@ -158,7 +160,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
       fixedOpener(rules.variant, rules.opening, { headStart: rules.headStart, size: rules.size }) ??
       openerIn(from.carry),
     screen,
-  });
+  }, say);
   /*
    * And whether this is playing that game again at all, where it came from a
    * rematch: still one, changed by its rules, or a new game against somebody else.
@@ -166,7 +168,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
   const lineage = describeLineage(from.again, {
     repeat: creation.repeat,
     sameOpponent: from.again !== null && from.opponent?.id === from.again.opponent.id,
-  });
+  }, say);
 
   /*
    * WHY THIS GAME COULD NEVER COUNT, WHERE THAT IS ALREADY SETTLED.
@@ -189,12 +191,12 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
 
   const begin: BeginAction =
     seat !== null
-      ? { kind: "sit", id: seat.id, who: playerWord(seat.who, false), instead: creation.body }
+      ? { kind: "sit", id: seat.id, who: playerWord(seat.who, false, say), instead: creation.body }
       : from.drawComputer && pool.length > 0
         ? { kind: "draw", body: creation.body, pool }
         : { kind: "create", body: creation.body };
 
-  const copy = variantCopy(variant, await currentLocale());
+  const copy = variantCopy(variant, say.locale);
   /*
    * Why the address could not be honoured in full. `setUpFrom`'s own problem
    * first — a rematch of a swept game, a fork past the end of one — then a posted
@@ -214,13 +216,13 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
       */}
       <PageTitle
         testId="doorstep-title"
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Begin" }]} />}
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: say.say("gamepages.begin") }]} />}
         title={<GameName variant={variant} kanji className="no-underline hover:underline" />}
         lead={
           <>
             {copy.tagline}{" "}
             <Link href={rulesPath(variant)} className="underline underline-offset-4">
-              How to play
+              {say.say("gamepages.howToPlay")}
             </Link>
             .
           </>
@@ -231,7 +233,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
         address={beginLink(from.initial, known)}
         rules={rules}
         refused={refused}
-        prose={describeGameProse(rules, refused)}
+        prose={describeGameProse(rules, refused, say)}
         seating={seating}
         change={changeLink(from.initial, known)}
         begin={begin}

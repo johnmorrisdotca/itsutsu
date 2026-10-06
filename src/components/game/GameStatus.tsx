@@ -1,9 +1,9 @@
 "use client";
 
-import {
-  FATAL_MOVE_DISPLAY,
-  OUTLOOK_DISPLAY,
-} from "@/lib/gomoku/analysis.constants";
+import { fatalMoveCopy, outlookCopy } from "@/lib/gomoku/analysisCopy";
+import { useLocale, useSpeaker } from "@/components/i18n/LocaleProvider";
+import { pairedText, seatName, stoneName } from "@/lib/gomoku/seatWords";
+import { handicapCopy, secondStoneLabel } from "@/lib/gomoku/openingCopy";
 import { stalledDrawOf } from "@/lib/gomoku/rules/noProgress";
 import { endingRanOut, repeatedTooOften } from "@/lib/gomoku/rules/checkersDraws";
 import { endedWithNoMoves } from "@/lib/gomoku/rules/forcedPass";
@@ -24,26 +24,26 @@ import {
   GAME_STATUS,
   HANDICAP_RULES,
   PLACEMENTS,
-  SEAT_DISPLAY,
   STONES,
   STONE_DISPLAY,
   VARIANT_SPECS,
   WIN_REASONS,
 } from "@/lib/gomoku/gomoku.constants";
-import { SECOND_STONE_EXCLUSION_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { describeHeadStart } from "@/lib/gomoku/headStartWords";
-import { FORBIDDEN_PATTERN_DISPLAY, HANDICAP_RULE_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { FORBIDDEN_PATTERN_DISPLAY } from "@/lib/gomoku/openings.constants";
 import { StoneMark } from "@/components/board/StoneMark";
 import { STONE_SETS } from "@/components/board/Board.constants";
 import { seatStones } from "@/components/board/seatStones";
 import { useStoneColours } from "@/components/board/seatColourContext";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
-import { AWARENESS_LEVELS, GAME_COPY } from "./game.constants";
+import { AWARENESS_LEVELS, gameCopy } from "./game.constants";
 import { openingPrompt } from "./openingCopy";
 import type { GameSession } from "./game.types";
 
 /** Whose move it is, drawn with the stone they are actually holding. */
 function ToPlay({ session }: { session: GameSession }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const { state, names } = session;
   // The reader's stones with each seat's chosen colour over its side, as the board draws them (`seatStones`).
   const stones = seatStones(STONE_SETS[session.appearance.stoneSet], useStoneColours());
@@ -74,7 +74,7 @@ function ToPlay({ session }: { session: GameSession }) {
             ? GAME_COPY.drawByLength
             : state.board.includes(null)
               ? GAME_COPY.drawBothLines
-              : "Draw. The board is full.";
+              : say.say("gamescreen.drawFull");
     return (
       <p className="text-lg font-semibold" data-testid="to-play">
         {why}
@@ -87,33 +87,26 @@ function ToPlay({ session }: { session: GameSession }) {
 
   const { label, kanji } = STONE_DISPLAY[stone];
   const seat = state.seats[stone];
-  const who = names[seat].trim() || SEAT_DISPLAY[seat].label;
-  const text =
-    state.status === GAME_STATUS.won
-      ? state.winBy === WIN_REASONS.time || session.lostOnTime !== null
-        ? `${who} wins on time`
-        : state.winBy === WIN_REASONS.captures
-          ? `${who} ${GAME_COPY.winsByCaptures(state.settings.capturesToWin)}`
-          : state.winBy === WIN_REASONS.trap
-            ? GAME_COPY.winsByTrap(
-                who,
-                names[state.seats[state.winner === STONES.black ? STONES.white : STONES.black]].trim() ||
-                  SEAT_DISPLAY[state.seats[state.winner === STONES.black ? STONES.white : STONES.black]].label,
-              )
-            : state.winBy === WIN_REASONS.square
-              ? GAME_COPY.winsBySquare(who)
-              : state.winBy === WIN_REASONS.count
-                ? `${who} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}`
-                : state.winBy === WIN_REASONS.camp
-                  ? `${who} wins: the far camp is full`
-                : state.winBy === WIN_REASONS.connection
-                  ? `${who} wins: ${state.winner === STONES.black ? "top and bottom are joined" : "left and right are joined"}`
-                : state.winBy === WIN_REASONS.blocked
-                  ? `${who} wins: the other side has no move left`
-                : state.winBy === WIN_REASONS.resign
-                  ? `${who} wins by resignation`
-                  : `${who} wins in ${state.moves.length} moves`
-      : `${who} to play`;
+  const loserSeat = state.seats[state.winner === STONES.black ? STONES.white : STONES.black];
+  const who = names[seat].trim() || seatName(say, seat);
+  const winLine = (): string => {
+    if (state.winBy === WIN_REASONS.time || session.lostOnTime !== null) return say.say("gamescreen.winsOnTime", { who });
+    if (state.winBy === WIN_REASONS.captures) return GAME_COPY.winsByCaptures(who, state.settings.capturesToWin);
+    if (state.winBy === WIN_REASONS.trap) return GAME_COPY.winsByTrap(who, names[loserSeat].trim() || seatName(say, loserSeat));
+    if (state.winBy === WIN_REASONS.square) return GAME_COPY.winsBySquare(who);
+    if (state.winBy === WIN_REASONS.count) {
+      const discs = discCount(state.board);
+      return say.say("gamescreen.winsOnDiscs", { who, black: String(discs.black), white: String(discs.white) });
+    }
+    if (state.winBy === WIN_REASONS.camp) return say.say("gamescreen.winsCamp", { who });
+    if (state.winBy === WIN_REASONS.connection) {
+      return say.say(state.winner === STONES.black ? "gamescreen.winsTopBottom" : "gamescreen.winsLeftRight", { who });
+    }
+    if (state.winBy === WIN_REASONS.blocked) return say.say("gamescreen.winsBlocked", { who });
+    if (state.winBy === WIN_REASONS.resign) return say.say("gamescreen.winsResign", { who });
+    return say.say("gamescreen.winsIn", { who, moves: say.count("count.move", state.moves.length) });
+  };
+  const text = state.status === GAME_STATUS.won ? winLine() : say.say("gamescreen.whoToPlay", { who });
 
   return (
     <p className="flex items-center gap-2.5 text-lg font-semibold" data-testid="to-play">
@@ -122,13 +115,15 @@ function ToPlay({ session }: { session: GameSession }) {
       </span>
       <span className="leading-tight">
         {text}
-        <span className="ml-2 text-sm font-normal text-muted">
-          {label} {kanji}
-        </span>
+        {say.pairsWithKanji ? (
+          <span className="ml-2 text-sm font-normal text-muted">
+            {label} {kanji}
+          </span>
+        ) : null}
         {/* Two people at one screen, or one against the computer: whose turn passed, by colour. */}
-        {passedTurnWords(state, null) !== null ? (
+        {passedTurnWords(state, null, say) !== null ? (
           <span className="block text-sm font-normal" data-testid="turn-passed">
-            {passedTurnWords(state, null)}
+            {passedTurnWords(state, null, say)}
           </span>
         ) : null}
       </span>
@@ -142,12 +137,13 @@ function ToPlay({ session }: { session: GameSession }) {
  * says what is happening without saying where.
  */
 function Outlook({ session }: { session: GameSession }) {
+  const locale = useLocale();
   const { assessment, settings, state } = session;
   if (settings.awareness === AWARENESS_LEVELS.off) return null;
   if (state.status !== GAME_STATUS.playing) return null;
 
   const outlook = assessment.outlook[state.toPlay];
-  const { label, kanji, tone, detail } = OUTLOOK_DISPLAY[outlook];
+  const { label, kanji, tone, detail } = outlookCopy(outlook, locale);
 
   return (
     <div
@@ -173,6 +169,7 @@ function Outlook({ session }: { session: GameSession }) {
  * on the same terms — a warning given to one side would just be an advantage.
  */
 function BuildingNotice({ session }: { session: GameSession }) {
+  const GAME_COPY = gameCopy(useSpeaker());
   const { assessment, settings, state } = session;
   if (!settings.earlyWarning) return null;
   if (settings.awareness === AWARENESS_LEVELS.off) return null;
@@ -202,6 +199,8 @@ function BuildingNotice({ session }: { session: GameSession }) {
 
 /** 敗着 — the move the analysis says threw the game away. */
 function FatalNotice({ session }: { session: GameSession }) {
+  const say = useSpeaker();
+  const fatal = fatalMoveCopy(say.locale);
   const latest = session.fatalMoves[session.fatalMoves.length - 1];
   if (latest === undefined) return null;
   if (session.settings.awareness === AWARENESS_LEVELS.off) return null;
@@ -213,15 +212,14 @@ function FatalNotice({ session }: { session: GameSession }) {
       data-fatal-move={latest.moveNumber}
     >
       <span aria-hidden="true" className="mt-0.5 text-xl leading-none font-semibold">
-        {FATAL_MOVE_DISPLAY.kanji}
+        {fatal.kanji}
       </span>
       <span className="flex flex-col gap-0.5">
         <span className="text-sm font-semibold">
-          {FATAL_MOVE_DISPLAY.label} — {STONE_DISPLAY[latest.stone].label}, move{" "}
-          {latest.moveNumber}
+          {say.say("gamescreen.fatalLine", { label: fatal.label, colour: stoneName(say, latest.stone), move: String(latest.moveNumber) })}
         </span>
         <span className="text-xs leading-snug opacity-85">
-          {FATAL_MOVE_DISPLAY.detail}
+          {fatal.detail}
         </span>
       </span>
     </div>
@@ -234,6 +232,8 @@ function FatalNotice({ session }: { session: GameSession }) {
  * All of it is read from the engine; nothing here decides anything.
  */
 function VariantLine({ session }: { session: GameSession }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const { state } = session;
   const { settings } = state;
   const spec = VARIANT_SPECS[settings.variant];
@@ -271,36 +271,42 @@ function VariantLine({ session }: { session: GameSession }) {
   }
   if (spec.captures) {
     lines.push(
-      `${GAME_COPY.captures.label} · ${STONE_DISPLAY.black.label} ${state.captures.black} · ${STONE_DISPLAY.white.label} ${state.captures.white} · ${GAME_COPY.capturesToWin(settings.capturesToWin)}`,
+      say.say("gamescreen.captureLine", {
+        label: GAME_COPY.captures.label,
+        black: stoneName(say, "black"),
+        blackCount: String(state.captures.black),
+        white: stoneName(say, "white"),
+        whiteCount: String(state.captures.white),
+        rule: GAME_COPY.capturesToWin(settings.capturesToWin),
+      }),
     );
   }
   if (spec.makerBreaker) {
     const nameOf = (stone: "black" | "white") =>
-      session.names[state.seats[stone]].trim() || SEAT_DISPLAY[state.seats[stone]].label;
+      session.names[state.seats[stone]].trim() || seatName(say, state.seats[stone]);
     lines.push(GAME_COPY.makerBreakerRoles(nameOf(STONES.black), nameOf(STONES.white)));
   }
   const { handicap } = settings;
   if (handicap.stone !== null) {
     const parts = HANDICAP_RULES.filter((rule) => handicap[rule]).map(
-      (rule) => HANDICAP_RULE_DISPLAY[rule].label.toLowerCase(),
+      (rule) => handicapCopy(rule, say.locale).label.toLowerCase(),
     );
     if (handicap.secondStoneExclusion > 0) {
       parts.push(
-        `second stone ${SECOND_STONE_EXCLUSION_DISPLAY[handicap.secondStoneExclusion].label.toLowerCase()}`,
+        say.say("gamescreen.secondStone", { name: secondStoneLabel(handicap.secondStoneExclusion, say.locale).toLowerCase() }),
       );
     }
-    lines.push(
-      `${GAME_COPY.handicapFor(STONE_DISPLAY[handicap.stone].label)}${parts.length > 0 ? `: ${parts.join(", ")}` : ""}.`,
-    );
+    const lead = GAME_COPY.handicapFor(stoneName(say, handicap.stone));
+    lines.push(parts.length > 0 ? say.say("gamescreen.handicapLead", { lead, parts: say.joined(parts) }) : say.sentence(lead));
   }
-  const given = describeHeadStart(settings);
-  if (given !== null) lines.push(`${given}.`);
+  const given = describeHeadStart(settings, say);
+  if (given !== null) lines.push(say.sentence(given));
   const forbidden = rules.forbidden;
   if (forbidden.length > 0 && state.status === GAME_STATUS.playing) {
-    const shapes = forbidden
-      .map((pattern) => `${FORBIDDEN_PATTERN_DISPLAY[pattern].label} ${FORBIDDEN_PATTERN_DISPLAY[pattern].kanji}`)
-      .join(", ");
-    lines.push(GAME_COPY.forbiddenNote(STONE_DISPLAY[state.toPlay].label, shapes));
+    const shapes = say.joined(
+      forbidden.map((pattern) => pairedText(say, FORBIDDEN_PATTERN_DISPLAY[pattern].label, FORBIDDEN_PATTERN_DISPLAY[pattern].kanji)),
+    );
+    lines.push(GAME_COPY.forbiddenNote(stoneName(say, state.toPlay), shapes));
   }
 
   if (lines.length === 0) return null;
@@ -317,9 +323,11 @@ function VariantLine({ session }: { session: GameSession }) {
 
 /** What the opening asks for right now, while it still asks for anything. */
 function OpeningNotice({ session }: { session: GameSession }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const { state, names } = session;
   if (state.status !== GAME_STATUS.playing) return null;
-  const prompt = openingPrompt(state, names);
+  const prompt = openingPrompt(state, names, say);
   if (prompt === null) return null;
 
   return (
@@ -340,6 +348,7 @@ function OpeningNotice({ session }: { session: GameSession }) {
 }
 
 export function GameStatus({ session }: { session: GameSession }) {
+  const say = useSpeaker();
   return (
     /*
       ROOM FOR TWO NOTES WHETHER OR NOT THEY ARE THERE. The outlook and a
@@ -356,7 +365,7 @@ export function GameStatus({ session }: { session: GameSession }) {
             <span className="font-mono tabular-nums">● {piecesHome(session.state.board, session.state.settings.size, STONES.black)}</span>
             <span className="px-2 text-muted">·</span>
             <span className="font-mono tabular-nums">○ {piecesHome(session.state.board, session.state.settings.size, STONES.white)}</span>
-            <span className="ml-2 text-muted">of {campSize(session.state.settings.size)} home</span>
+            <span className="ml-2 text-muted">{say.say("gamescreen.homeOf", { count: String(campSize(session.state.settings.size)) })}</span>
           </p>
         ) : null}
         {VARIANT_SPECS[session.state.settings.variant].chineseCheckers ? (
@@ -368,7 +377,7 @@ export function GameStatus({ session }: { session: GameSession }) {
             <span className="font-mono tabular-nums">
               ○ {starPiecesHome(session.state.board, session.state.settings.size, STAR_RADIUS, STONES.white)}
             </span>
-            <span className="ml-2 text-muted">of {starCampSize(STAR_RADIUS)} home</span>
+            <span className="ml-2 text-muted">{say.say("gamescreen.homeOf", { count: String(starCampSize(STAR_RADIUS)) })}</span>
           </p>
         ) : null}
         {VARIANT_SPECS[session.state.settings.variant].flips ? (
@@ -379,10 +388,13 @@ export function GameStatus({ session }: { session: GameSession }) {
           </p>
         ) : null}
         <p className="text-sm text-muted">
-          Move {session.state.moves.length + 1}
           {session.moveIndex < session.moveTotal
-            ? ` · reviewing ${session.moveIndex} of ${session.moveTotal}`
-            : ""}
+            ? say.say("gamescreen.reviewingAt", {
+                move: say.say("gamescreen.nextMove", { move: String(session.state.moves.length + 1) }),
+                index: String(session.moveIndex),
+                total: String(session.moveTotal),
+              })
+            : say.say("gamescreen.nextMove", { move: String(session.state.moves.length + 1) })}
         </p>
         <VariantLine session={session} />
       </div>

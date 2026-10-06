@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { STONES, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
+import { speaker } from "@/lib/i18n/i18n";
 import { RESULT_DRAW_REASONS } from "@/lib/history/gameResult.constants";
 import type { GameResultFacts, ResultReason } from "@/lib/history/gameResult.types";
 
@@ -60,6 +61,33 @@ describe("the reason", () => {
         expect(said, `${reason} ${outcome}`).not.toContain("undefined");
       }
     }
+  });
+});
+
+describe("every ending in Japanese", () => {
+  const ja = speaker("ja");
+  const draws: readonly string[] = RESULT_DRAW_REASONS;
+
+  it("reads in one language: the headline is the kanji and no sentence keeps an English word", () => {
+    expect(headlineOf(facts({ outcome: "won" }), ja).kanji).toBe("勝ち");
+    expect(headlineOf(facts({ outcome: "decided", winner: STONES.white }), ja).label).toBe("白の勝ち");
+    for (const reason of Object.keys(RESULT_REASONS) as ResultReason[]) {
+      for (const outcome of ["won", "lost", "decided"] as const) {
+        const said = reasonOf(facts({ outcome, reason, winner: draws.includes(reason) ? null : STONES.black }), { black: "黒の人", white: "白の人" }, ja);
+        expect(said, `${reason} ${outcome}`).toMatch(/。$/);
+        expect(said, `${reason} ${outcome}`).not.toMatch(/[A-Za-z]/);
+      }
+    }
+  });
+
+  it("says the viewer's own part with no subject", () => {
+    expect(reasonOf(facts({ outcome: "won" }), names, ja)).toBe("勝ちの並びを完成させました。");
+    expect(reasonOf(facts({ outcome: "lost", reason: WIN_REASONS.resign }), names, ja)).toBe("投了しました。");
+    expect(reasonOf(facts({ outcome: "decided", reason: WIN_REASONS.time }), names, ja)).toBe("白が時間切れになりました。");
+  });
+
+  it("writes the score with the colours' kanji", () => {
+    expect(scoreWords({ kind: "discs", black: 10, white: 6 }, ja)).toBe("石の数：黒 10・白 6");
   });
 });
 

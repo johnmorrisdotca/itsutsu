@@ -1,3 +1,4 @@
+import type { Speaker } from "@/lib/i18n/i18n";
 import "server-only";
 
 import { STONES } from "@/lib/gomoku/gomoku.constants";
@@ -55,6 +56,7 @@ export async function sittingAt(
   variant: RuleVariant,
   /** The game the reader chose, which the seat's own game has to be. */
   asked: RulesDraft,
+  say: Speaker,
 ): Promise<{ seat: SittingAt; gone: null } | { seat: null; gone: SeatGone }> {
   const row = await prisma.game.findUnique({
     where: { id },
@@ -115,7 +117,7 @@ export async function sittingAt(
       id: row.id,
       rules: draftFromGame({ ...row, handicap: parseHandicap(row.handicap), headStart: parseHeadStart(row.handicap) }),
       mine,
-      who: theirs.trim() || "Somebody",
+      who: theirs.trim() || say.say("played.somebody"),
       opener: row.opener === STONES.white ? STONES.white : STONES.black,
     },
     gone: null,

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { BoardFocus } from "@/components/board/BoardFocus";
 import type { BoardStory } from "@/components/board/board.types";
@@ -61,6 +62,7 @@ export function BoardColumn({
   story: BoardStory;
   children: ReactNode;
 }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const column = useRef<HTMLDivElement>(null);
   const [room, setRoom] = useState<number | null>(null);
@@ -98,7 +100,7 @@ export function BoardColumn({
       {...readyMark(hydrated)}
     >
       {/* The board and the controls for the move being made, openable on their own (`BoardFocus`). */}
-      <BoardFocus label="this game" layout="flex w-full flex-col gap-2" story={story}>
+      <BoardFocus label={say.say("replay.boardLabel")} layout="flex w-full flex-col gap-2" story={story}>
         {children}
       </BoardFocus>
     </div>

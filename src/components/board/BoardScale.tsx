@@ -6,7 +6,6 @@ import {
   BOARD_SCALES,
   BOARD_SCALE_LIST,
   BOARD_SCALE_STORAGE,
-  BOARD_SCALE_WORDS,
   boardScaleName,
   deviceClassOf,
   scaleFor,
@@ -17,8 +16,11 @@ import {
 } from "@/lib/preferences/boardScale";
 import { SCALE_TOP_PX, scaledPlayWidths } from "@/lib/preferences/boardScaleFit";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BareBoard } from "@/components/layout/BareBoard";
 
+import { BOARD_PLAY_WIDTH_REASON } from "./boardWidth.constants";
+import { scaleWords } from "./boardNames";
 import { boardColumnIn, measurePlay, reachRunsOff, regularDrawingIn } from "./boardScaleMeasure";
 
 /** The window's kind of screen, followed as it is resized; null on the server and below a laptop's width. */
@@ -93,6 +95,7 @@ export function BoardScale({
   children: ReactNode;
 }) {
   const hydrated = useHydrated();
+  const say = useSpeaker();
   const device = useSyncExternalStore(subscribeResize, deviceNow, noDevice);
   const stored = useSyncExternalStore(noSubscription, storedNow, nothingStored);
   const [picked, setPicked] = useState<KeptScales>({});
@@ -228,7 +231,7 @@ export function BoardScale({
       data-board-scale-chosen={chosen}
       data-device-class={device ?? "none"}
       data-scale-settled={layout.settled ? "true" : "false"}
-      data-width-reason={widthReason ?? "the play is as wide as its board and the controls beside it, at the size the reader chose"}
+      data-width-reason={widthReason ?? BOARD_PLAY_WIDTH_REASON}
       {...readyMark(hydrated && device !== null ? layout.settled : hydrated)}
     >
       {/*
@@ -240,15 +243,18 @@ export function BoardScale({
       */}
       <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1" data-board-scale-chooser>
         <fieldset data-chrome data-board-scale-sizes className="hidden items-center gap-1 lg:flex" data-testid="board-scale">
-          <legend className="sr-only">Board size</legend>
+          <legend className="sr-only">{say.say("boardlook.scaleGroup")}</legend>
           <span className="mr-1 text-xs text-muted" aria-hidden="true">
-            Board <span className="font-mincho">盤</span>
+            {say.say("boardlook.scaleHeading")}
+            {say.pairsWithKanji ? <span className="font-mincho"> 盤</span> : null}
           </span>
-          {BOARD_SCALE_LIST.map((option) => (
+          {BOARD_SCALE_LIST.map((option) => {
+            const words = scaleWords(say, option);
+            return (
             <label
               key={option}
               className="cursor-pointer rounded-md border border-rule px-2 py-0.5 text-xs text-ink-soft hover:border-rule-strong has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-paper has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-moss"
-              title={BOARD_SCALE_WORDS[option].whole}
+              title={words.whole}
               data-testid="board-scale-option"
               data-scale={option}
             >
@@ -262,13 +268,15 @@ export function BoardScale({
                   if (device !== null) choose(option, device);
                 }}
                 className="sr-only"
-                aria-label={BOARD_SCALE_WORDS[option].whole}
+                aria-label={words.whole}
               />
               <span aria-hidden="true">
-                {BOARD_SCALE_WORDS[option].label} <span className="font-mincho">{BOARD_SCALE_WORDS[option].kanji}</span>
+                {words.label}
+                {words.kanji === "" ? null : <span className="font-mincho"> {words.kanji}</span>}
               </span>
             </label>
-          ))}
+            );
+          })}
         </fieldset>
         <BareBoard compact />
       </div>

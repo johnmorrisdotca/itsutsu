@@ -1,9 +1,11 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { MOVE_KINDS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
 import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 import { capturePaths, slideWord, type SlideMove } from "@/lib/gomoku/notation";
-import type { Point } from "@/lib/gomoku/gomoku.types";
+import type { Point, Stone } from "@/lib/gomoku/gomoku.types";
 import type { GameMove } from "@/lib/history/gameHistory.types";
 import { MOVE_FORMAT_DISPLAY, linesOf, pointIn, type MoveFormatChoice } from "@/lib/record/moveFormats";
 import { SELECTABLE } from "@/components/ui/ui.constants";
@@ -34,7 +36,7 @@ export function PlayedMoves({
   moves,
   at,
   onJump,
-  emptyNote = "No moves yet.",
+  emptyNote,
   testId = "played-moves",
   nameOf,
   format = "itsutsu",
@@ -66,10 +68,11 @@ export function PlayedMoves({
    */
   format?: MoveFormatChoice;
 }) {
+  const say = useSpeaker();
   if (moves.length === 0) {
     return (
       <p className="text-xs text-muted" data-testid={`${testId}-empty`}>
-        {emptyNote}
+        {emptyNote ?? say.say("replay.noMoves")}
       </p>
     );
   }
@@ -106,7 +109,7 @@ export function PlayedMoves({
                 />
                 <span className="font-mono">{said}</span>
                 <span className="sr-only">
-                  {STONE_DISPLAY[move.stone as keyof typeof STONE_DISPLAY]?.label ?? move.stone}
+                  {STONE_DISPLAY[move.stone as keyof typeof STONE_DISPLAY] === undefined ? move.stone : stoneName(say, move.stone as Stone)}
                 </span>
               </>
             );

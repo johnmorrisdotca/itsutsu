@@ -1,4 +1,6 @@
 import { isRefusal } from "@/lib/api/paging";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import { GameName } from "@/components/games/GameName";
 import { PageTitle } from "@/components/layout/Headings";
 import { PAGE_TITLE_KANJI } from "@/components/ui/ui.constants";
@@ -17,6 +19,7 @@ import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
 import { type ImpliedPlayer, recordAddress } from "@/lib/history/recordAddress";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 import { RivalryPanel } from "./RivalryPanel";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 import { GameTrail } from "@/components/games/GameTrail";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
 
@@ -58,6 +61,7 @@ export async function RecordPage({
    */
   impliedPlayer?: ImpliedPlayer;
 }) {
+  const say = await currentSpeaker();
   const base = at ?? (variant === undefined ? "/history" : historyPath(variant));
   const { query: queryParams, flat } = recordAddress(params, { variant, impliedPlayer });
 
@@ -173,25 +177,32 @@ export async function RecordPage({
         title={
           variant !== undefined && copy !== null ? (
             <>
-              Game history<span className={PAGE_TITLE_KANJI}>棋譜</span>
+              {say.pairsWithKanji ? (
+                <>
+                  {say.say("nav.record")}
+                  <span className={PAGE_TITLE_KANJI}>棋譜</span>
+                </>
+              ) : (
+                <span className="font-mincho">{say.say("nav.record")}</span>
+              )}
               <span className="text-lg font-normal" data-testid="record-game">
                 <GameName variant={variant} kanji />
               </span>
             </>
           ) : (
-            "Game history"
+            say.say("nav.record")
           )
         }
         kanji={variant !== undefined && copy !== null ? "" : "棋譜"}
         crumb={
           variant !== undefined && copy !== null ? (
-            <GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: impliedPlayer === undefined ? "Game history" : "Yours" }]} />
+            <GameTrail game={{ label: variantName(variant, say), href: gamePath(variant) }} steps={[{ label: say.say(impliedPlayer === undefined ? "nav.record" : "replay.yours") }]} />
           ) : undefined
         }
         lead={
-          copy === null
-            ? "Every finished game, newest first. Open one to replay it stone by stone."
-            : `Every finished game of ${copy.label}, newest first. Open one to replay it stone by stone.`
+          variant === undefined || copy === null
+            ? say.say("replay.leadAll")
+            : say.say("replay.leadGame", { game: variantName(variant, say) })
         }
       />
 
@@ -247,8 +258,8 @@ export async function RecordPage({
                * saying so — either way the reader cannot tell what they are
                * looking at.
                */
-              "That member could not be found, so this is the unfiltered record."
-            : "Those filters were not valid, so this is the unfiltered record."}
+              say.say("replay.memberUnknown")
+            : say.say("replay.filtersInvalid")}
         </p>
       ) : null}
       <LiveRecord
@@ -267,11 +278,11 @@ export async function RecordPage({
       <RecordText
         text={recordAsText(whole.items, {
           heading:
-            copy === null
-              ? "Itsutsu \u2014 every finished game"
-              : `Itsutsu \u2014 every finished game of ${copy.label}`,
+            variant === undefined || copy === null
+              ? say.say("replay.textHeadingAll", { site: SITE_NAME })
+              : say.say("replay.textHeadingGame", { game: variantName(variant, say), site: SITE_NAME }),
           total: whole.total,
-        })}
+        }, say)}
       />
   </Page>
   );

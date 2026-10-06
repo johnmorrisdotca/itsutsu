@@ -2,11 +2,13 @@
 
 import { SectionTitle } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
-import { GAME_COPY } from "./game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { gameCopy } from "./game.constants";
 import { useGameNotes } from "./useGameNotes";
 
 /** Private notes on this game. Yours, in this browser, and nobody else's. */
 export function NotesPanel({ gameKey }: { gameKey: string }) {
+  const GAME_COPY = gameCopy(useSpeaker());
   const notes = useGameNotes(gameKey);
 
   return (

@@ -3,9 +3,11 @@ import { OPENING_RULES } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { variantCopy } from "@/lib/gomoku/variantCopy";
 import { openingCopy } from "@/lib/gomoku/openingCopy";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { weave } from "@/lib/i18n/weave";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
-import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
+import type { OpeningRule, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 
 import { SectionTitle } from "@/components/ui/Controls";
@@ -13,7 +15,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
 import { MoreSettings } from "./MoreSettings";
 import { RulesStatement } from "./RulesStatement";
-import { SHARED_RULES_COPY } from "./live.constants";
+import { sharedRulesCopy } from "./live.constants";
 import { draftFromGame } from "./rulesDraft";
 import { describeHandicap, describeRules, describeSettings } from "./rulesSummary";
 import { describeHeadStart } from "@/lib/gomoku/headStartWords";
@@ -66,16 +68,18 @@ export async function SharedRules({
   refusal: RatingRefusal | null;
 }) {
   const variant = game.variant as RuleVariant;
-  const locale = await currentLocale();
+  const say = await currentSpeaker();
+  const locale = say.locale;
+  const SHARED_RULES_COPY = sharedRulesCopy(say);
   const copy = RULE_VARIANT_DISPLAY[variant] === undefined ? undefined : variantCopy(variant, locale);
-  const handicap = describeHandicap(game.handicap);
-  const headStart = describeHeadStart(game);
+  const handicap = describeHandicap(game.handicap, say);
+  const headStart = describeHeadStart(game, say);
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="shared-rules">
-      <SectionTitle kanji="規則">Rules</SectionTitle>
+      <SectionTitle kanji="規則">{say.say("live.sectionRules")}</SectionTitle>
       <p className="text-sm font-semibold" data-testid="shared-rules-line">
-        {describeRules(game)}
+        {describeRules(game, say)}
       </p>
       {/*
         A seat still on the noticeboard, and a game that will count for nothing.
@@ -85,7 +89,7 @@ export async function SharedRules({
       */}
       {game.openSeat !== null ? (
         <p className="text-xs text-moss" data-testid="shared-open-line">
-          The {game.openSeat} seat is posted on the games page for anyone to take.
+          {say.say("live.openSeatLine", { colour: stoneName(say, game.openSeat as Stone) })}
         </p>
       ) : null}
       {refusal !== null ? (
@@ -93,10 +97,10 @@ export async function SharedRules({
           className="rounded-lg border border-ochre/60 bg-ochre-soft px-3 py-2 text-xs text-ink"
           data-testid="shared-unrated-line"
         >
-          <span className="font-semibold">{RATING_REFUSAL_DISPLAY[refusal].playing}</span>{" "}
-          <span className="font-mincho">{RATING_REFUSAL_DISPLAY[refusal].kanji}</span>
-          {". "}
-          {RATING_REFUSAL_DISPLAY[refusal].sentence}
+          <span className="font-semibold">
+            {say.sentence(say.pairsWithKanji ? `${say.say(RATING_REFUSAL_DISPLAY[refusal].playing)} ${RATING_REFUSAL_DISPLAY[refusal].kanji}` : say.say(RATING_REFUSAL_DISPLAY[refusal].playing))}
+          </span>{" "}
+          {say.say(RATING_REFUSAL_DISPLAY[refusal].sentence)}
         </p>
       ) : null}
 
@@ -108,14 +112,14 @@ export async function SharedRules({
         one screen, three lines apart, and twelve production rows displayed it.
         The refusal is already computed on the server; both places take it.
       */}
-      <MoreSettings summary={describeSettings(game, refusal)}>
+      <MoreSettings summary={describeSettings(game, refusal, say)} say={say}>
         {copy !== undefined ? <p className="text-xs text-muted">{copy.tagline}</p> : null}
         {game.opening !== OPENING_RULES.free && game.opening in OPENING_DISPLAY ? (
           <p className="text-xs text-muted">{openingCopy(game.opening as OpeningRule, locale).tagline}</p>
         ) : null}
         {headStart !== null ? (
           <p className="text-xs text-muted" data-testid="shared-head-start-line">
-            {headStart}. {SHARED_RULES_COPY.headStartMeans}
+            {say.sentences([say.sentence(headStart), SHARED_RULES_COPY.headStartMeans])}
           </p>
         ) : null}
         {handicap !== null ? (
@@ -127,12 +131,12 @@ export async function SharedRules({
           different reason from the one that used to be given here and the true
           one now that nothing after the doorstep can change them.
         */}
-        <RulesStatement rules={draftFromGame(game)} note={SHARED_RULES_COPY.settled} refusal={refusal} />
+        <RulesStatement rules={draftFromGame(game)} note={SHARED_RULES_COPY.settled} refusal={refusal} say={say} />
         <p className="text-xs text-muted" data-testid="shared-times-line">
-          Started <LocalTime at={game.playedAt} />
+          {weave(say.say("live.startedAt"), { when: <LocalTime at={game.playedAt} /> })}
           {game.status === "finished" && game.lastMoveAt !== null ? (
             <>
-              {" "}· finished <LocalTime at={game.lastMoveAt} />
+              {" "}· {weave(say.say("live.finishedAt"), { when: <LocalTime at={game.lastMoveAt} /> })}
             </>
           ) : null}
         </p>

@@ -50,10 +50,10 @@ export function MovesFold({
       data-testid="moves-fold"
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
-        <SectionTitle kanji="棋譜">Moves</SectionTitle>
+        <SectionTitle kanji="棋譜">{say.say("replay.moves")}</SectionTitle>
         <span className="text-xs text-muted">
-          {say.count("count.move", count)} · <span className="group-open:hidden">show</span>
-          <span className="hidden group-open:inline">hide</span>
+          {say.count("count.move", count)} · <span className="group-open:hidden">{say.say("replay.show")}</span>
+          <span className="hidden group-open:inline">{say.say("replay.hide")}</span>
         </span>
       </summary>
       <div className="mt-2 flex flex-col gap-2">{children}</div>

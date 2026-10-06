@@ -3,6 +3,8 @@ import Link from "@/components/ui/Link";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { ACTIVE_GAME_LIMIT, activeGameCount } from "@/lib/history/activeGames";
 import { SEATED_LIVE_PATH } from "@/lib/history/myFinished";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { weave } from "@/lib/i18n/weave";
 
 /**
  * Why a seat link did not seat you, on the page it sent you to.
@@ -24,6 +26,7 @@ export async function SeatFullNotice({ shown }: { shown: boolean }) {
    * so the page would be quoting them back their own guess. One extra count,
    * only ever on this path.
    */
+  const say = await currentSpeaker();
   const mine = await currentMemberId();
   const held = mine === null ? null : await activeGameCount(mine);
   return (
@@ -32,9 +35,9 @@ export async function SeatFullNotice({ shown }: { shown: boolean }) {
       role="status"
       data-testid="seat-full-notice"
     >
-      <strong className="font-semibold">Your seat is still waiting.</strong>{" "}
+      <strong className="font-semibold">{say.say("gamepages.seatWaiting")}</strong>{" "}
       {held === null ? (
-        <>You already have as many games on the go as this site allows at once, so it was not claimed for you.</>
+        <>{say.say("gamepages.seatLimit")}</>
       ) : (
         <>
           {/*
@@ -50,24 +53,27 @@ export async function SeatFullNotice({ shown }: { shown: boolean }) {
             `seatedLive`, the same where this count reads, and says on the page
             what it was narrowed to.
           */}
-          You are seated at{" "}
-          <Link
-            href={SEATED_LIVE_PATH}
-            className="font-medium underline underline-offset-4"
-            title="The games still being played with you in a seat — the ones the limit counts."
-            data-testid="seat-full-held"
-          >
-            {held} games still being played
-          </Link>
-          {/* The cap no longer moves with the suite's relief, so the constant is the number the check used. */}
-          , and {ACTIVE_GAME_LIMIT} at once is the limit here, so it was not claimed for you.
+          {weave(say.say("gamepages.seatHeldLine", { limit: String(ACTIVE_GAME_LIMIT) }), {
+            held: (
+              <Link
+                href={SEATED_LIVE_PATH}
+                className="font-medium underline underline-offset-4"
+                title={say.say("gamepages.heldTitle")}
+                data-testid="seat-full-held"
+              >
+                {say.say(say.form("gamepages.heldLink", held), { count: say.number(held) })}
+              </Link>
+            ),
+          })}
         </>
       )}{" "}
-      Finish or resign one in{" "}
-      <Link href="/play" className="font-medium underline underline-offset-4">
-        your games
-      </Link>{" "}
-      and follow the same link again — it has not been used up.
+      {weave(say.say("gamepages.seatFinish"), {
+        link: (
+          <Link href="/play" className="font-medium underline underline-offset-4">
+            {say.say("gamepages.yourGames")}
+          </Link>
+        ),
+      })}
     </p>
   );
 }

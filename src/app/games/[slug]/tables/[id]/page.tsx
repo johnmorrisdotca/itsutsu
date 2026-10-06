@@ -12,6 +12,7 @@ import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { appearanceFor } from "@/lib/auth/members";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { gamePath, partyKindFor, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { isOnlineGame } from "@/lib/party/online/onlineGames";
 import { tablePath } from "@/lib/party/online/onlinePaths";
@@ -20,11 +21,13 @@ import { SEATING_REFUSALS, type SeatingRefusal } from "@/lib/party/online/server
 import { liveBoardIntervals } from "@/lib/site/liveBoardIntervals";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 
-export const metadata = {
-  title: "Online table",
-  // A table can be reached from a seat link; neither should be indexed.
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata() {
+  return {
+    title: (await currentSpeaker()).say("gamepages.titleOnlineTable"),
+    // A table can be reached from a seat link; neither should be indexed.
+    robots: { index: false, follow: false },
+  };
+}
 
 /** Why a seat link sent the reader here rather than seating them, from `?seat=`. */
 function seatNotice(said: string | string[] | undefined, reason: string | string[] | undefined): string | null {

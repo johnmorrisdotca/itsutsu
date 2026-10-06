@@ -10,10 +10,14 @@ import { EVERY_GAME_KEY, gameCopyOf, isRuleVariant } from "@/lib/catalogue/gameK
 import { gameKeyFor, gamePath, rulesPath, slugFor } from "@/lib/gomoku/slugs";
 import { backgroundFor } from "@/lib/gomoku/backgrounds";
 import { GameTrail } from "@/components/games/GameTrail";
+import { titleWithKanji } from "@/components/games/pageTitles";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/background">): Promise<Metadata> {
-  const copy = gameCopyOf(gameKeyFor((await params).slug) ?? "");
-  return { title: copy === null ? "Background" : `${copy.label} · Background 背景` };
+  const say = await currentSpeaker();
+  const copy = gameCopyOf(gameKeyFor((await params).slug) ?? "", say.locale);
+  const page = titleWithKanji(say, "gamepages.background", "背景");
+  return { title: copy === null ? say.say("gamepages.background") : `${copy.label} · ${page}` };
 }
 
 export function generateStaticParams() {
@@ -42,32 +46,31 @@ export function generateStaticParams() {
 export default async function BackgroundPage({ params }: PageProps<"/games/[slug]/background">) {
   const variant = gameKeyFor((await params).slug);
   if (variant === null) notFound();
-  const copy = gameCopyOf(variant)!;
+  const say = await currentSpeaker();
+  const copy = gameCopyOf(variant, say.locale)!;
   const art = isRuleVariant(variant) ? backgroundFor(variant) : null;
 
   return (
     <Page>
       <SiteHeader />
       <PageTitle
-        title="Background"
+        title={say.say("gamepages.background")}
         kanji="背景"
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant), testId: "background-up" }} steps={[{ label: "Background" }]} />}
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant), testId: "background-up" }} steps={[{ label: say.say("gamepages.background") }]} />}
       />
 
       {art === null ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="background-none">
           <p className="text-sm">
-            There is no background art for {copy.label} yet.
+            {say.say("gamepages.noBackground", { game: copy.label })}
           </p>
           <p className="text-sm text-muted">
-            This is where it will go when there is. The page exists ahead of the pictures on
-            purpose: the address is part of how a game is laid out here, so it is kept whether or
-            not anything has been drawn — and saying plainly that nothing has been is better than
-            filling the space with something that was made for another purpose.
+            {say.say("gamepages.backgroundWhere")}
           </p>
           <p className="pt-1 text-sm">
             <Link href={rulesPath(variant)} className="underline underline-offset-4">
-              The rules of {copy.label} <span className="font-mincho">規則</span>
+              {say.say("gamepages.rulesOf", { game: copy.label })}
+              {say.pairsWithKanji ? <span className="font-mincho"> 規則</span> : null}
             </Link>
           </p>
         </section>

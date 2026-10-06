@@ -1,4 +1,5 @@
 import { ALSO_LISTED_COPY_JA, FAMILY_COPY_JA } from "./dictionaries/families.ja.constants";
+import { FATAL_MOVE_COPY_JA, OUTLOOK_COPY_JA } from "./dictionaries/analysis.ja.constants";
 import { rulesAttributionJa } from "./dictionaries/attribution.ja.constants";
 import { BOT_COPY_JA } from "./dictionaries/bots.ja.constants";
 import { HANDICAP_COPY_JA, OPENING_COPY_JA, SECOND_STONE_COPY_JA } from "./dictionaries/openings.ja.constants";
@@ -60,6 +61,12 @@ function rows(): Row[] {
     out.push({ where: `computer ${tier}: blurb`, line: copy.blurb, review: copy.review });
     out.push({ where: `computer ${tier}: bio`, line: copy.bio, review: copy.review, ask: copy.ask });
   }
+  for (const [outlook, copy] of Object.entries(OUTLOOK_COPY_JA)) {
+    out.push({ where: `threat reading ${outlook}: heading`, line: copy.label, review: copy.review });
+    out.push({ where: `threat reading ${outlook}: detail`, line: copy.detail, review: copy.review });
+  }
+  out.push({ where: "losing move: heading", line: FATAL_MOVE_COPY_JA.label, review: FATAL_MOVE_COPY_JA.review });
+  out.push({ where: "losing move: detail", line: FATAL_MOVE_COPY_JA.detail, review: FATAL_MOVE_COPY_JA.review });
   for (const [key, copy] of Object.entries(FAMILY_COPY_JA)) {
     out.push({ where: `family ${key}: blurb`, line: copy.blurb, review: copy.review, ask: copy.ask });
   }

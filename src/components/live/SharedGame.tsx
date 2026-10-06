@@ -11,7 +11,8 @@ import {
   pieceMoves,
 } from "@/lib/gomoku/engine";
 import { AskIfAway } from "@/components/game/AskIfAway";
-import { GAME_COPY } from "@/components/game/game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { gameCopy } from "@/components/game/game.constants";
 import { PieceTray } from "@/components/game/PieceTray";
 import { useAdvanceToNextGame } from "./useAdvanceToNextGame";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -86,6 +87,8 @@ export function SharedGame({
   poll = DEFAULT_POLL,
   keepsColour = false,
 }: SharedGameProps) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const [error, setError] = useState<string | null>(null);
   // Mute this opponent's messages for this game only; remembered in this browser.
   const quiet = useSyncExternalStore(
@@ -208,7 +211,7 @@ export function SharedGame({
       const payload = (await response.json().catch(() => null)) as {
         error?: string;
       } | null;
-      setError(payload?.error ?? "That move could not be played.");
+      setError(payload?.error ?? say.say("live.moveCouldNotBePlayed"));
       await mutate();
       return;
     }
@@ -452,7 +455,7 @@ export function SharedGame({
           nudges={nudges}
           placedAt={placedAt}
           sending={false}
-          where={submitWords(turnFlow.afterMove, state.settings.variant)}
+          where={submitWords(turnFlow.afterMove, state.settings.variant, say)}
         />
       ) : null}
 

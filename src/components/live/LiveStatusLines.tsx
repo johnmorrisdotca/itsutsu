@@ -1,9 +1,10 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Controls";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 
-import { BOT_SEAT_COPY, LIVE_PAUSED_COPY } from "./live.constants";
+import { botSeatCopy, livePausedCopy } from "./live.constants";
 import { NextCheck } from "./NextCheck";
 
 /**
@@ -32,6 +33,8 @@ export function LiveStatusLines({
   error: string | null;
   thinking: boolean;
 }) {
+  const say = useSpeaker();
+  const paused_ = livePausedCopy(say);
   return (
     <>
       {/* And while it IS asking, when the next check is due — so quiet and broken look different. */}
@@ -41,8 +44,8 @@ export function LiveStatusLines({
       {/* A board that has stopped asking says so, rather than showing an old position as the current one. */}
       {paused ? (
         <p className="flex flex-wrap items-center gap-2 text-sm text-muted" data-testid="live-paused">
-          <span>{LIVE_PAUSED_COPY.line}</span>
-          <Button onClick={onResume}>{LIVE_PAUSED_COPY.check}</Button>
+          <span>{paused_.line}</span>
+          <Button onClick={onResume}>{paused_.check}</Button>
         </p>
       ) : null}
 
@@ -57,7 +60,7 @@ export function LiveStatusLines({
       */}
       {thinking ? (
         <p className="text-sm text-muted" data-testid="bot-thinking" role="status">
-          {BOT_SEAT_COPY.thinking}
+          {botSeatCopy(say).thinking}
         </p>
       ) : null}
     </>

@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-import { LIVE_PAUSED_COPY } from "./live.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { livePausedCopy } from "./live.constants";
 
 /**
  * WHEN THE BOARD WILL NEXT ASK, so quiet and broken look different.
@@ -29,6 +31,7 @@ import { LIVE_PAUSED_COPY } from "./live.constants";
  * which says so itself with its own Check now.
  */
 export function NextCheck({ asking, answeredAt, every }: { asking: boolean; answeredAt: () => number; every: number }) {
+  const say = useSpeaker();
   const line = useRef<HTMLParagraphElement>(null);
   useEffect(() => {
     if (!asking) return;
@@ -37,12 +40,12 @@ export function NextCheck({ asking, answeredAt, every }: { asking: boolean; answ
       if (node === null) return;
       const left = Math.max(0, Math.ceil((answeredAt() + every - Date.now()) / 1000));
       node.dataset.seconds = String(left);
-      node.textContent = left === 0 ? LIVE_PAUSED_COPY.checking : LIVE_PAUSED_COPY.nextIn(left);
+      node.textContent = left === 0 ? livePausedCopy(say).checking : livePausedCopy(say).nextIn(left);
     };
     draw();
     const tick = setInterval(draw, 1000);
     return () => clearInterval(tick);
-  }, [asking, answeredAt, every]);
+  }, [asking, answeredAt, every, say]);
   if (!asking) return null;
   return <p ref={line} className="text-xs text-muted" data-testid="next-check" />;
 }

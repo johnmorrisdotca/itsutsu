@@ -225,20 +225,3 @@ export function familyOf(variant: GameKey): (typeof GAME_FAMILIES)[number] | nul
 export function familyKeyOf(variant: GameKey): string | null {
   return familyOf(variant)?.key ?? null;
 }
-
-/**
- * HOW MANY GAMES A FAMILY'S SHELF HOLDS, in words: its own, then any listed
- * from other families said apart, since a guest is counted once, at home. A
- * shelf of guests alone says so rather than "0 games".
- */
-export function familyCountWords(family: GameFamily): string {
-  return shelfCountWords(family.games.length, gamesShownIn(family).length - family.games.length);
-}
-
-/** The same words from the two counts, for a caller holding a family's copy rather than the family. */
-export function shelfCountWords(home: number, guests: number): string {
-  const games = (count: number) => `${count} ${count === 1 ? "game" : "games"}`;
-  if (guests === 0) return games(home);
-  if (home === 0) return `${games(guests)} from other families`;
-  return `${games(home)}, and ${guests} from other families`;
-}

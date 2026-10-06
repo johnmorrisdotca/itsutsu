@@ -1,4 +1,6 @@
 import { pointName } from "@/lib/gomoku/notation";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import type { Point } from "@/lib/gomoku/gomoku.types";
 
 /**
@@ -23,11 +25,17 @@ import type { Point } from "@/lib/gomoku/gomoku.types";
 export const MOVE_FORMAT_CHOICES = ["itsutsu", "itsYourTurn", "goldToken"] as const;
 export type MoveFormatChoice = (typeof MOVE_FORMAT_CHOICES)[number];
 
-export const MOVE_FORMAT_DISPLAY: Record<MoveFormatChoice, { label: string; example: string; pairs: boolean }> = {
-  itsutsu: { label: "Itsutsu", example: "1 F6", pairs: false },
-  itsYourTurn: { label: "IYT style", example: "1. f6 g7", pairs: true },
-  goldToken: { label: "GT style", example: "1 F6 G7", pairs: true },
+export const MOVE_FORMAT_DISPLAY: Record<MoveFormatChoice, { label: PhraseKey | null; example: string; pairs: boolean }> = {
+  itsutsu: { label: null, example: "1 F6", pairs: false },
+  itsYourTurn: { label: "replay.formatIyt", example: "1. f6 g7", pairs: true },
+  goldToken: { label: "replay.formatGt", example: "1 F6 G7", pairs: true },
 };
+
+/** A way of writing moves, named for the reader: this site's own is its name, the others' are phrases. */
+export function moveFormatLabel(say: Speaker, choice: MoveFormatChoice): string {
+  const label = MOVE_FORMAT_DISPLAY[choice].label;
+  return label === null ? "Itsutsu" : say.say(label);
+}
 
 /** Columns WITH the letter I, as both other sites write them. */
 const WITH_I = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

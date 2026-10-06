@@ -1,5 +1,7 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import { ReplayButtons } from "./ReplayButtons";
 
 /**
@@ -25,6 +27,7 @@ export function ReplayScrubber({
   /** The slider is `${testId}-scrubber` and the buttons carry `testId` as their prefix, as `ReplayButtons` does. */
   testId: string;
 }) {
+  const say = useSpeaker();
   return (
     <div className="flex flex-col gap-3">
       <input
@@ -34,7 +37,7 @@ export function ReplayScrubber({
         value={index}
         onChange={(event) => onGo(Number(event.target.value))}
         className="w-full accent-ink"
-        aria-label="Move"
+        aria-label={say.say("replay.scrubber")}
         data-testid={`${testId}-scrubber`}
       />
       <ReplayButtons index={index} last={last} onGo={onGo} testId={testId} />

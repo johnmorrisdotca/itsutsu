@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { readTurned, subscribeTurned, turnedFor, writeTurned } from "@/components/board/turned";
 import { Button } from "@/components/ui/Controls";
 import { LocalTime } from "@/components/ui/LocalTime";
+import { weave } from "@/lib/i18n/weave";
 import { ReplayAdvanced } from "./ReplayAdvanced";
 import { PlayedMoves } from "./PlayedMoves";
 import { MoveCount } from "./MoveCount";
@@ -48,6 +50,7 @@ function MoveList({
   /** How the moves are written, the reader's choice over the record above (`MoveFormatPicker`), so the text copied is the text shown. */
   format: MoveFormatChoice;
 }) {
+  const say = useSpeaker();
   const [copied, setCopied] = useState(false);
   const names = useMemo(() => game.moves.map((move) => stonelessWord(move.kind) ?? pointIn(format, game.size, move)), [game, format]);
   // A pair a turn; GoldToken writes the turn's number with no stop after it.
@@ -73,7 +76,13 @@ function MoveList({
   return (
     <details className="group flex flex-col gap-2" data-testid="move-list">
       <summary className="cursor-pointer list-none text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase select-none hover:text-ink">
-        Moves <span className="font-mincho normal-case tracking-normal">棋譜</span>
+        {say.pairsWithKanji ? (
+          <>
+            {say.say("replay.moves")} <span className="font-mincho normal-case tracking-normal">棋譜</span>
+          </>
+        ) : (
+          <span className="font-mincho normal-case tracking-normal">{say.say("replay.moves")}</span>
+        )}
         <span className="ml-1 opacity-60 group-open:hidden">+</span>
         <span className="ml-1 hidden opacity-60 group-open:inline">−</span>
       </summary>
@@ -94,7 +103,7 @@ function MoveList({
       </p>
       <span className="flex flex-wrap gap-2">
         <Button onClick={copy} data-testid="copy-moves">
-          {copied ? "Copied" : "Copy as text"}
+          {say.say(copied ? "replay.copied" : "replay.copyAsText")}
         </Button>
         {/* The same record as a file other programs open, where SGF has a type for the game. */}
         {offerSgf ? <SgfDownload game={game} /> : null}
@@ -166,6 +175,7 @@ export function GameReplay({
   /** Offer the game as one picture of every position, made in the browser — see `GameMosaic`. */
   offerMosaic?: boolean;
 }) {
+  const say = useSpeaker();
   const timeline = useMemo(() => replayTimeline(game), [game]);
   /*
    * `initialIndex` is a MOVE NUMBER, handed down from the address
@@ -244,7 +254,7 @@ export function GameReplay({
   const current = game.moves[moveNumber - 1];
 
   return (
-    <BoardFocus label="this game" story={story}>
+    <BoardFocus label={say.say("replay.boardLabel")} story={story}>
     <div
       className="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-stretch"
       data-testid="game-replay"
@@ -287,8 +297,9 @@ export function GameReplay({
       <aside className="flex w-full flex-col gap-4 lg:w-72">
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted">
-            Move <span className="font-mono tabular-nums">{moveNumber}</span> of{" "}
-            <span className="font-mono tabular-nums">{game.moveCount}</span>
+            <span className="tabular-nums">
+              {say.say("replay.moveOf", { move: String(moveNumber), last: String(game.moveCount) })}
+            </span>
             {current !== undefined ? (
               <>
                 {" · "}
@@ -300,7 +311,9 @@ export function GameReplay({
                 <span className="block text-xs" data-testid="move-made-at">
                   {current.createdAt ? (
                     <>
-                      {moveNumber === game.moveCount ? "ended" : "made"} <LocalTime at={current.createdAt} />
+                      {weave(say.say(moveNumber === game.moveCount ? "replay.ended" : "replay.made"), {
+                        when: <LocalTime at={current.createdAt} />,
+                      })}
                     </>
                   ) : (
                     "\u00a0"
@@ -309,7 +322,7 @@ export function GameReplay({
               </>
             ) : (
               <span className="block text-xs" data-testid="replay-started-at">
-                started <LocalTime at={game.playedAt} />
+                {weave(say.say("replay.started"), { when: <LocalTime at={game.playedAt} /> })}
               </span>
             )}
           </p>
@@ -336,7 +349,7 @@ export function GameReplay({
             // PlayedMoves hands back a MOVE NUMBER (move.number), the same
             // thing it was given as `at` — never a timeline position.
             onJump={(number) => setIndex(timelineIndexForMove(timeline, number))}
-            emptyNote="No stones were played in this game."
+            emptyNote={say.say("replay.noStones")}
             // The engine's moves, for a draughts capture's colon (`capturePaths`).
             played={timeline[timeline.length - 1]?.moves}
             format={format}
@@ -344,10 +357,10 @@ export function GameReplay({
         </MovesFold>
 
         <Button onClick={() => writeTurned(game.id, !turned)} strong={turned} data-testid="turn-board">
-          {turned ? "Flip the board back" : "Flip the board"}
+          {say.say(turned ? "replay.flipBack" : "replay.flip")}
         </Button>
         <Button onClick={() => setShowNumbers(!showNumbers)} strong={showNumbers} data-testid="show-move-numbers">
-          {showNumbers ? "Hide" : "Show"} move numbers
+          {say.say(showNumbers ? "replay.hideNumbers" : "replay.showNumbers")}
         </Button>
         {/* The whole game as one picture, in a window on demand — see `GameMosaic`. */}
         {offerMosaic ? <GameMosaic game={game} timeline={timeline} /> : null}

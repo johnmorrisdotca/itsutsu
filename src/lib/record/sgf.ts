@@ -20,6 +20,7 @@ import {
 import type { DrawLimit, Handicap, ObstacleLayout, OpeningRule, Point, RuleVariant, Stone } from "@/lib/gomoku/gomoku.types";
 import { HANDICAP_RULE_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
 import { describeHeadStart } from "@/lib/gomoku/headStartWords";
+import { speaker } from "@/lib/i18n/i18n";
 import { replayGame } from "@/lib/gomoku/replay";
 import { startingDiscs } from "@/lib/gomoku/rules/flips";
 import { headStartPieces, komiFor } from "@/lib/gomoku/rules/headStart";
@@ -198,15 +199,15 @@ function commentFor(game: SgfSource, spec: SgfTypeSpec, unwrittenPasses: number,
   }
   const handicap = handicapLine(game.handicap);
   if (handicap !== null) lines.push(handicap);
-  const headStart = describeHeadStart(game);
+  const headStart = describeHeadStart(game, speaker("en"));
   if (headStart !== null) lines.push(`${headStart}.`);
   if (game.obstacles !== OBSTACLE_LAYOUTS.none) {
     const layout = OBSTACLE_LAYOUT_DISPLAY[game.obstacles as ObstacleLayout];
-    lines.push(`${layout.label}: ${layout.description}`);
+    lines.push(`${layout.label}: ${speaker("en").say(layout.description)}`);
   }
   if (game.drawLimit !== DRAW_LIMITS.none) {
     const limit = DRAW_LIMIT_DISPLAY[game.drawLimit as DrawLimit];
-    lines.push(`Length: ${limit.label}. ${limit.blurb}`);
+    lines.push(`Length: ${limit.label}. ${speaker("en").say(limit.blurb)}`);
   }
   if (unwrittenPasses > 0) {
     lines.push(

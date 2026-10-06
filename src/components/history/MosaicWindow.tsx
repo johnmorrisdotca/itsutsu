@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { SECTION_TITLE, TAP_HEIGHT } from "@/components/ui/ui.constants";
@@ -60,6 +61,7 @@ export function MosaicWindow({
   testId?: string;
   children: ReactNode;
 }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -130,7 +132,7 @@ export function MosaicWindow({
                 className="min-h-11 rounded-full border border-rule-strong px-4 text-sm font-semibold text-ink hover:bg-shade"
                 data-testid="close-mosaic"
               >
-                Close <span aria-hidden="true">×</span>
+                {say.say("mosaic.close")} <span aria-hidden="true">×</span>
               </button>
             </div>
             {children}

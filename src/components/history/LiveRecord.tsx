@@ -89,13 +89,13 @@ export function LiveRecord({
           <div ref={sentinel} className="h-8" aria-hidden data-testid="record-sentinel" />
           <p className="text-sm text-muted" aria-live="polite" data-testid="record-progress">
             {next === null ? (
-              <>
-                All {say.count("count.gamePlayed", pagination.total)} shown.
-              </>
+              <>{say.say("replay.allShown", { games: say.count("count.gamePlayed", pagination.total) })}</>
             ) : (
               <>
-                {countText(shown, locale)} of {countText(pagination.total, locale)} shown
-                {loading ? " — reading more…" : ". Keep scrolling for more."}
+                {say.say(loading ? "replay.progressLoading" : "replay.progressMore", {
+                  shown: countText(shown, locale),
+                  total: countText(pagination.total, locale),
+                })}
               </>
             )}
           </p>
@@ -109,7 +109,7 @@ export function LiveRecord({
           */}
           {failed ? (
             <p className="text-sm text-muted" data-testid="record-scroll-failed">
-              More games could not be loaded just now — the pages below still work.
+              {say.say("replay.scrollFailed")}
             </p>
           ) : null}
           <Pager pagination={pagination} params={params} basePath={at} />

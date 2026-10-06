@@ -4,14 +4,16 @@ import { notFound } from "next/navigation";
 import { PuzzleSolvePage } from "@/components/puzzles/PuzzleSolvePage";
 import { puzzleFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 // Who is reading, and whether they may see this solve, is read on every request.
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/history/[id]">): Promise<Metadata> {
   const puzzle = puzzleFor((await params).slug);
-  return { title: puzzle === null ? "A solve" : `A solve of ${PUZZLE_DISPLAY[puzzle].label}`, robots: { index: false, follow: false } };
+  const say = await currentSpeaker();
+  return { title: puzzle === null ? say.say("gamepages.titleSolve") : say.say("gamepages.titleSolveOf", { game: gameCopyOf(puzzle, say.locale)?.label ?? "" }), robots: { index: false, follow: false } };
 }
 
 /**

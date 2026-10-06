@@ -1,4 +1,4 @@
-import GamesPage, { metadata as pageMetadata } from "../page";
+import GamesPage from "../page";
 import { withTabFromPath } from "@/lib/ui/tabs";
 
 /*
@@ -6,7 +6,7 @@ import { withTabFromPath } from "@/lib/ui/tabs";
  * its own rather than `[view]`, because /games/[slug] holds that level: this
  * name wins over a game's slug, and no game is called "list".
  */
-export const metadata = pageMetadata;
+export { generateMetadata } from "../page";
 export const dynamic = "force-dynamic";
 
 export default async function GamesTab({ searchParams }: PageProps<"/games/list">) {

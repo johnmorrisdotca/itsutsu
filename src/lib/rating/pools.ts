@@ -1,4 +1,6 @@
 import { RATING_START } from "./elo";
+
+export { OVERALL_DISPLAY, RATING_POOL_DISPLAY } from "./ratingNames.constants";
 import { streakIn, type Streak } from "./streak";
 
 /**
@@ -33,29 +35,6 @@ export const RATING_POOL_LIST: readonly RatingPool[] = [
   RATING_POOLS.people,
   RATING_POOLS.computer,
 ];
-
-export const RATING_POOL_DISPLAY: Record<
-  RatingPool,
-  { label: string; kanji: string; blurb: string }
-> = {
-  people: {
-    label: "Against people",
-    kanji: "対人",
-    blurb: "Rated games against other members. This is the ladder.",
-  },
-  computer: {
-    label: "Against bots",
-    kanji: "対コンピュータ",
-    blurb: "Rated games against Kyu, Dan and Meijin, kept apart from the ladder.",
-  },
-};
-
-/** The overall figure, which is both pools read together. */
-export const OVERALL_DISPLAY = {
-  label: "Overall",
-  kanji: "総合",
-  blurb: "Both pools together, weighted by how many games are in each.",
-};
 
 /** Which pool a finished game belongs in. */
 export function poolFor(againstComputer: boolean): RatingPool {

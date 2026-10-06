@@ -13,7 +13,8 @@ import { Button, SectionTitle } from "@/components/ui/Controls";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { BUTTON_BASE, BUTTON_QUIET, SECTION_HEADING } from "@/components/ui/ui.constants";
-import { GAME_COPY } from "./game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { gameCopy } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
 
 /**
@@ -23,6 +24,8 @@ import type { GamePanelProps } from "./game.types";
  * long-form version, for someone who wants to know what they are agreeing to.
  */
 export function GameBrowserButton(props: GamePanelProps) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -39,6 +42,8 @@ function GameBrowser({
   actions,
   onClose,
 }: GamePanelProps & { onClose: () => void }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const dialog = useRef<HTMLDialogElement>(null);
   const locale = useLocale();
   const { settings } = session.state;
@@ -143,7 +148,7 @@ function GameBrowser({
                     </p>
                     {copy.inspiredBy !== undefined ? (
                       <p className="text-xs text-muted" data-testid={`inspired-${option}`}>
-                        Inspired by {copy.inspiredBy}
+                        {say.say("gamescreen.inspiredBy", { name: copy.inspiredBy })}
                       </p>
                     ) : null}
                     <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-snug text-ink-soft">

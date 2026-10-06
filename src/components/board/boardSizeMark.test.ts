@@ -8,8 +8,8 @@ import { describe, expect, it } from "vitest";
 import { PICTURE_PX } from "@/components/games/games.constants";
 import type { PictureSize } from "@/components/games/games.types";
 import { ALL_BOARD_SIZES } from "@/lib/gomoku/gomoku.constants";
+import { speaker } from "@/lib/i18n/i18n";
 
-import { boardSizeWords } from "./Board.constants";
 import type { BoardSizeMarkWords } from "./board.types";
 import { BoardSizeMark } from "./BoardSizeMark";
 import { longBoardOf } from "./boardShape";
@@ -49,7 +49,8 @@ describe("boardSizeMarkVoice", () => {
 
   it("names the size in words where nothing beside it does", () => {
     expect(boardSizeMarkVoice(19, "none")).toEqual({ role: "img", "aria-label": "19 by 19 board" });
-    expect(boardSizeWords(3)).toBe("3 by 3 board");
+    expect(boardSizeMarkVoice(3, "none")).toEqual({ role: "img", "aria-label": "3 by 3 board" });
+    expect(boardSizeMarkVoice(3, "none", speaker("ja"))).toEqual({ role: "img", "aria-label": "3×3の盤" });
   });
 });
 

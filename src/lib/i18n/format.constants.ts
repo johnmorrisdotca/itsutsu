@@ -57,6 +57,10 @@ export type FormatSpec = {
   hasSingular: boolean;
   /** What joins a list: two items, the gaps before the last, and the gap before the last of three or more. */
   list: { pair: string; between: string; last: string };
+  /** What goes between two sentences: a space where words are spaced, nothing where they are not. */
+  sentenceGap: string;
+  /** What ends a sentence: a full stop where one is written, the Japanese one where that is. */
+  sentenceEnd: string;
   /**
    * Whole numbers said in words ("sixty-four"), for the sentences that spell a
    * small count out. Null for a language that writes the digits there.
@@ -94,6 +98,8 @@ const EN: FormatSpec = {
   decimal: ".",
   hasSingular: true,
   list: { pair: " and ", between: ", ", last: " and " },
+  sentenceGap: " ",
+  sentenceEnd: ".",
   numberWords: {
     small: [
       "no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
@@ -123,6 +129,8 @@ const JA: FormatSpec = {
   decimal: ".",
   hasSingular: false,
   list: { pair: "と", between: "、", last: "、" },
+  sentenceGap: "",
+  sentenceEnd: "。",
   numberWords: null,
 };
 

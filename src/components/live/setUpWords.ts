@@ -1,8 +1,9 @@
 import type { Handicap, HeadStart } from "@/lib/gomoku/gomoku.types";
 import { describeHeadStart } from "@/lib/gomoku/headStartWords";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 import { playerWord } from "./doorstepSays";
-import { RANDOM_COMPUTER_WORDS } from "./picker.constants";
+import { randomComputerWords } from "./picker.constants";
 import { describeHandicap, type SettingWord } from "./rulesSummary";
 import type { SetUpFork, SetUpOpponent } from "./setUp.types";
 
@@ -27,7 +28,7 @@ import type { SetUpFork, SetUpOpponent } from "./setUp.types";
  * Said once because it is said twice — on the tile, and in the line over the
  * button. Two copies of it would be two things to keep in step.
  */
-export const POST_FOR_ANYONE = "Post the seat for anyone";
+export const postForAnyone = (say: Speaker): string => say.say("summary.postForAnyone");
 
 /**
  * The setup screen's own words, in the order its fields appear.
@@ -54,6 +55,7 @@ export function recapWords({
   handicap,
   game,
   random = false,
+  say,
 }: {
   /**
    * Who this game will actually be against: the player chosen for an ordinary
@@ -69,18 +71,19 @@ export function recapWords({
   game: { variant: string; headStart: HeadStart };
   /** A computer player is to be drawn at random. */
   random?: boolean;
+  say: Speaker;
 }): SettingWord[] {
   const against: SettingWord =
     opponent !== null
-      ? { text: `Against ${playerWord(opponent.name, opponent.computer)}`, notable: true }
+      ? { text: say.say("summary.againstPlayer", { player: playerWord(opponent.name, opponent.computer, say) }), notable: true }
       : random && fork === null
-        ? { text: RANDOM_COMPUTER_WORDS.against, notable: true }
+        ? { text: randomComputerWords(say).against, notable: true }
         : fork !== null
-          ? { text: "Against whoever you hand the seat to", notable: true }
-          : { text: POST_FOR_ANYONE, notable: false };
+          ? { text: say.say("summary.againstHandOver"), notable: true }
+          : { text: postForAnyone(say), notable: false };
 
-  const given = describeHeadStart(game);
-  const carried = describeHandicap(handicap);
+  const given = describeHeadStart(game, say);
+  const carried = describeHandicap(handicap, say);
   return [
     against,
     ...(given === null ? [] : [{ text: given, notable: true }]),

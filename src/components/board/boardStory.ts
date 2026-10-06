@@ -1,6 +1,7 @@
 import { boardWords } from "@/lib/gomoku/boardWords";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { variantName } from "@/lib/gomoku/variantCopy";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import { SITE_NAME } from "@/lib/i18n/siteName";
 
 import type { BoardStory } from "./board.types";
 
@@ -12,12 +13,18 @@ import type { BoardStory } from "./board.types";
 export function playedHereStory(
   game: { blackName: string; whiteName: string; variant: string; size: number; playedAt: Date | string },
   kind: { label: string; kanji: string },
+  say: Speaker = speaker("en"),
 ): BoardStory {
   const day = new Date(game.playedAt).toISOString().slice(0, 10);
   return {
     kind: kind.label,
     kanji: kind.kanji,
-    title: `${game.blackName} vs ${game.whiteName} · ${RULE_VARIANT_DISPLAY[game.variant as RuleVariant]?.label ?? game.variant}, ${boardWords(game.variant, game.size)}`,
-    source: `Played on Itsutsu · ${day}`,
+    title: say.say("boardlook.storyTitle", {
+      black: game.blackName,
+      white: game.whiteName,
+      game: variantName(game.variant, say),
+      board: boardWords(game.variant, game.size, say),
+    }),
+    source: say.say("boardlook.playedOn", { day, site: SITE_NAME }),
   };
 }

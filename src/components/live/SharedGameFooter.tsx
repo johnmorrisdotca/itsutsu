@@ -3,7 +3,10 @@ import { GameEnding, NewGameLink } from "@/components/play/GameEnding";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { otherStone } from "@/lib/gomoku/engine";
-import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { weave } from "@/lib/i18n/weave";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { shownName } from "@/lib/rating/shownName";
 
@@ -33,6 +36,7 @@ export function SharedGameFooter({
   onAsking,
   mutate,
 }: SharedGameFooterProps) {
+  const say = useSpeaker();
   return (
     <>
       {/*
@@ -105,17 +109,22 @@ export function SharedGameFooter({
             className="size-3.5 accent-ink"
             data-testid="mute-game"
           />
-          Mute this opponent&apos;s messages in this game
+          {say.say("live.mute")}
         </label>
       ) : null}
       {opponent !== null && seat !== null ? (
         <p className="text-xs text-muted" data-testid="opponent-line">
-          You are playing {STONE_DISPLAY[seat].label.toLowerCase()} against{" "}
-          <span className="font-medium text-ink">{shownName(opponent.name)}</span>
-          {opponent.country !== "" ? ` from ${opponent.country}` : ""}.
+          {weave(
+            say.say(opponent.country !== "" ? "live.playingAgainstFrom" : "live.playingAgainst", {
+              colour: stoneName(say, seat).toLowerCase(),
+              country: opponent.country,
+            }),
+            { name: <span className="font-medium text-ink">{shownName(opponent.name)}</span> },
+          )}
           {opponent.awayUntil ? (
             <>
-              {" "}Away until <LocalTime at={opponent.awayUntil} style="date" />; their deadline waits.
+              {say.sentences(["", ""])}
+              {weave(say.say("live.awayUntil"), { when: <LocalTime at={opponent.awayUntil} style="date" /> })}
             </>
           ) : null}
         </p>

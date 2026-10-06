@@ -1,3 +1,6 @@
+"use client";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { SectionTitle } from "@/components/ui/Controls";
 import { forkOffered } from "@/lib/history/fork";
@@ -19,29 +22,29 @@ import { forkOffered } from "@/lib/history/fork";
  * follows it from here into the game it makes.
  */
 export function ReplayAdvanced({ gameId, variant, move, last, seated }: { gameId: string; variant: string; move: number; last: number; seated: boolean }) {
+  const say = useSpeaker();
   if (!seated) return null;
   const offered = forkOffered({ move, last, seated });
   return (
     <details className="group flex flex-col gap-2" data-testid="replay-advanced">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
-        <SectionTitle kanji="詳細">Advanced</SectionTitle>
+        <SectionTitle kanji="詳細">{say.say("replay.advanced")}</SectionTitle>
         <span className="text-xs text-muted">
-          <span className="group-open:hidden">show</span>
-          <span className="hidden group-open:inline">hide</span>
+          <span className="group-open:hidden">{say.say("replay.show")}</span>
+          <span className="hidden group-open:inline">{say.say("replay.hide")}</span>
         </span>
       </summary>
       <div className="mt-2 flex flex-col items-start gap-2">
         {offered ? (
           <>
             <p className="text-xs text-muted" data-testid="replay-advanced-says">
-              A new game from the position on the board, move {move}, against the same player, each of you keeping your
-              colour. You set the clock first, and this game stays as it ended.
+              {say.say("replay.forkSays", { move: String(move) })}
             </p>
-            <ChallengeButton from={{ id: gameId, move }} variant={variant} label={`Play from move ${move} 分岐`} />
+            <ChallengeButton from={{ id: gameId, move }} variant={variant} label={`${say.say("replay.forkLabel", { move: String(move) })}${say.pairsWithKanji ? " 分岐" : ""}`} />
           </>
         ) : (
           <p className="text-xs text-muted" data-testid="replay-advanced-hint">
-            Step back to an earlier move, and you can play a new game on from that position against the same player.
+            {say.say("replay.forkHint")}
           </p>
         )}
       </div>

@@ -2,7 +2,9 @@
 
 import type { ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { MOSAIC_COPY } from "@/lib/record/mosaic.constants";
+import { mosaicWords } from "@/lib/record/mosaicWords";
 import type { MosaicFrame, MosaicTitle } from "@/lib/record/mosaic.types";
 
 import { MosaicMaker } from "./MosaicMaker";
@@ -42,12 +44,13 @@ export function MosaicDialog({
   /** A small picture to open the window from, with an expand icon over its corner. */
   thumb?: ReactNode;
 }) {
+  const words = mosaicWords(useSpeaker());
   if (count === 0) return null;
   return (
     <MosaicWindow
       id={id}
-      label={MOSAIC_COPY.openLabel}
-      heading={MOSAIC_COPY.heading}
+      label={words.openLabel}
+      heading={words.heading}
       kanji={MOSAIC_COPY.kanji}
       alt={alt}
       // Whose game it is, read from the picture's own title only while the window is open.

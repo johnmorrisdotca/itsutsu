@@ -1,5 +1,7 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import { layoutOrder } from "./flip";
 
 /**
@@ -20,6 +22,7 @@ export function TwistControls({
   /** The board is turned round for this reader, so these turn with it. */
   flipped?: boolean;
 }) {
+  const say = useSpeaker();
   const across = size / quadrantSize;
   /*
    * Laid out in the board's own order, so a quadrant's arrows sit on the
@@ -51,13 +54,13 @@ export function TwistControls({
               className={`pointer-events-auto absolute ${vertical} ${horizontal} flex gap-1`}
             >
               <TwistButton
-                label={`Turn quadrant ${quadrant + 1} anticlockwise`}
+                label={say.say("boardlook.twistAnti", { quadrant: String(quadrant + 1) })}
                 glyph="↺"
                 onClick={() => onTwist(quadrant, false)}
                 testId={`twist-${quadrant}-ccw`}
               />
               <TwistButton
-                label={`Turn quadrant ${quadrant + 1} clockwise`}
+                label={say.say("boardlook.twistClock", { quadrant: String(quadrant + 1) })}
                 glyph="↻"
                 onClick={() => onTwist(quadrant, true)}
                 testId={`twist-${quadrant}-cw`}

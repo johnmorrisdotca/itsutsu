@@ -28,14 +28,14 @@ export function Pager({
   const say = useSpeaker();
 
   return (
-    <nav className="flex items-center justify-between gap-4" aria-label="Pagination">
+    <nav className="flex items-center justify-between gap-4" aria-label={say.say("replay.pagination")}>
       <p className="text-sm text-muted">
-        Page {page} of {totalPages} · {say.count("count.gamePlayed", total)}
+        {say.say("replay.pageOf", { page: String(page), pages: String(totalPages), games: say.count("count.gamePlayed", total) })}
       </p>
       <div className="flex gap-2">
         {page > 1 ? (
           <Link href={href(page - 1)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-            Previous
+            {say.say("replay.previous")}
           </Link>
         ) : null}
         {page < totalPages ? (
@@ -44,7 +44,7 @@ export function Pager({
             className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
             data-testid="next-page"
           >
-            Next
+            {say.say("replay.next")}
           </Link>
         ) : null}
       </div>

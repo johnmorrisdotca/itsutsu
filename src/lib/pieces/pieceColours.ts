@@ -128,7 +128,12 @@ export function nextFreeColour(wanted: PieceColour, others: readonly string[]): 
  * by its kanji, which is its name to a Japanese reader. English joins a second
  * sentence with a space and Japanese does not.
  */
+/** A colour's name in the reader's language: its English label, or its kanji for a Japanese reader. */
+export function pieceColourName(say: Speaker, colour: PieceColour): string {
+  return say.pairName(PIECE_COLOURS[colour].label, PIECE_COLOURS[colour].kanji).text;
+}
+
 export function offerWords(colour: PieceColour, say: Speaker): string {
-  const name = say.pairName(PIECE_COLOURS[colour].label, PIECE_COLOURS[colour].kanji).text;
+  const name = pieceColourName(say, colour);
   return `${say.locale === "ja" ? "" : " "}${say.say("pieces.refusal.free", { colour: name })}`;
 }

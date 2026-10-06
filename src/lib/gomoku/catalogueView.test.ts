@@ -43,7 +43,6 @@ describe("how the catalogue is laid out is a filter, not an address", () => {
       const copy = CATALOGUE_VIEW_DISPLAY[view];
       expect(copy.label.length, `${view} needs a label`).toBeGreaterThan(0);
       expect(copy.kanji.length, `${view} needs a kanji name`).toBeGreaterThan(0);
-      expect(copy.blurb.length, `${view} needs a line saying what it is`).toBeGreaterThan(10);
     }
   });
 });

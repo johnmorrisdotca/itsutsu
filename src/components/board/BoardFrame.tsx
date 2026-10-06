@@ -6,6 +6,7 @@ import { columnLetter, rowNumber } from "@/lib/gomoku/notation";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
 import { BOARD_ASPECTS, BOARD_FRAME, COORDINATE_GAP, LABEL_GUTTER } from "./Board.constants";
+import { surfaceTestName } from "./boardNames";
 import { layoutOrder } from "./flip";
 import { labelTracks, latticeLabelTracks, type LatticeShape } from "./margin";
 import type { BoardAspect, BoardThemeTokens } from "./board.types";
@@ -207,7 +208,7 @@ export function BoardFrame({
         className={`relative rounded-md ${oblong ? "" : BOARD_ASPECTS[shapeOfWood]}`}
         // Which surface is drawn, by name, for a test to read: a gradient is no way to ask.
         data-testid="board-surface"
-        data-surface={theme.label}
+        data-surface={surfaceTestName(theme)}
         style={{
           ...(oblong ? { aspectRatio: `1 / ${aspect}` } : {}),
           background: theme.surface,

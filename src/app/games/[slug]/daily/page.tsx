@@ -5,7 +5,9 @@ import { DailyArchivePage } from "@/components/puzzles/DailyArchivePage";
 import { puzzleFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { titleWithKanji } from "@/components/games/pageTitles";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 // Which days have passed is a question for the moment of asking, never the build.
 export const dynamic = "force-dynamic";
@@ -13,8 +15,9 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/daily">): Promise<Metadata> {
   const { slug } = await params;
   const kind = puzzleFor(slug);
-  if (kind === null || dailyLanguageOf(kind) === null) return { title: "Daily words" };
-  return { title: `${PUZZLE_DISPLAY[kind].label} daily words 毎日の言葉` };
+  const say = await currentSpeaker();
+  if (kind === null || dailyLanguageOf(kind) === null) return { title: say.say("gamepages.titleDailyWords") };
+  return { title: `${gameCopyOf(kind, say.locale)?.label ?? ""} ${titleWithKanji(say, "gamepages.titleDailyWords", "毎日の言葉")}` };
 }
 
 /**

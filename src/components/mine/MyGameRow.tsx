@@ -3,7 +3,9 @@ import Link from "@/components/ui/Link";
 
 import { RowMenu } from "@/components/ui/RowMenu";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
-import { SEAT_DISPLAY, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
+import { speaker } from "@/lib/i18n/i18n";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { STALE_AFTER_DAYS, type MyGame } from "@/lib/history/myGames";
 import { MY_GAMES_COPY } from "./mine.constants";
@@ -59,6 +61,9 @@ export function ago(iso: string, now: Date): string {
   return days === 1 ? "yesterday" : `${days} days ago`;
 }
 
+/** This page is not yet read in two languages (the My games ticket), so its fallback names are English. */
+const ENGLISH = speaker("en");
+
 export function Row({
   item,
   now,
@@ -74,15 +79,15 @@ export function Row({
   starred?: boolean | null;
 }) {
   const { game, seat, group, offer, offerSide } = item;
-  const black = game.blackName.trim() || SEAT_DISPLAY.one.label;
-  const white = game.whiteName.trim() || SEAT_DISPLAY.two.label;
+  const black = game.blackName.trim() || seatName(ENGLISH, "one");
+  const white = game.whiteName.trim() || seatName(ENGLISH, "two");
   /*
    * The other person's name, for the sentences an offer's row says. Read off
    * the seat this reader is NOT in, which on an offer is the other person
    * whichever colour they hold — a rematch swaps them, so "white" would be
    * wrong about half of them.
    */
-  const them = (seat === STONES.black ? white : black).trim() || SEAT_DISPLAY.two.label;
+  const them = (seat === STONES.black ? white : black).trim() || seatName(ENGLISH, "two");
   /*
    * One address either way. A match kept its identity when it finished and the
    * link to it did not: a finished game went to /history/<slug>/<id> and a
@@ -154,9 +159,9 @@ export function Row({
         */}
         {named ? (
           <span className="truncate font-medium">
-            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} className={RAISED_LINK} tag={tagOf(tags, game.blackMemberId)} />
+            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={seatName(ENGLISH, "one")} linkable={named} className={RAISED_LINK} tag={tagOf(tags, game.blackMemberId)} />
             <span className="px-1 text-muted">vs</span>
-            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} className={RAISED_LINK} tag={tagOf(tags, game.whiteMemberId)} />
+            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={seatName(ENGLISH, "two")} linkable={named} className={RAISED_LINK} tag={tagOf(tags, game.whiteMemberId)} />
           </span>
         ) : (
           <span className="truncate font-medium">

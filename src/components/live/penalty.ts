@@ -1,4 +1,5 @@
-import { GAME_COPY } from "@/components/game/game.constants";
+import { gameCopy } from "@/components/game/game.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
 
 /**
  * What running out of time costs, said two ways.
@@ -10,14 +11,16 @@ import { GAME_COPY } from "@/components/game/game.constants";
  * control, and in the statement of a game already being played, there is room
  * to say what it actually means.
  */
-export function penaltyName(penalty: string): string {
+export function penaltyName(penalty: string, say: Speaker = speaker("en")): string {
+  const GAME_COPY = gameCopy(say);
   if (penalty === "game") return GAME_COPY.penaltyGameShort;
   if (penalty === "game-strict") return GAME_COPY.penaltyStrictShort;
   return GAME_COPY.penaltyTurnShort;
 }
 
 /** The same rule as a sentence, for a hint or a statement. */
-export function penaltyMeans(penalty: string): string {
+export function penaltyMeans(penalty: string, say: Speaker = speaker("en")): string {
+  const GAME_COPY = gameCopy(say);
   if (penalty === "game") return GAME_COPY.penaltyGame;
   if (penalty === "game-strict") return GAME_COPY.penaltyStrict;
   return GAME_COPY.penaltyTurn;

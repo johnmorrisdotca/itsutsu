@@ -1,4 +1,6 @@
 import type { GamePoolFilter } from "@/lib/history/gameHistory.types";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 
 /**
  * A streak: consecutive results of the same kind, most recent first.
@@ -57,10 +59,10 @@ export type StreakOutcome = "win" | "loss" | "draw";
 /** A run: what kind, and how long. Never length nought — see above. */
 export type Streak = { kind: StreakKind; count: number };
 
-export const STREAK_DISPLAY: Record<StreakKind, { letter: string; label: string; kanji: string }> = {
-  win: { letter: "W", label: "won in a row", kanji: "連勝" },
-  loss: { letter: "L", label: "lost in a row", kanji: "連敗" },
-  draw: { letter: "D", label: "drawn in a row", kanji: "連分" },
+export const STREAK_DISPLAY: Record<StreakKind, { letter: string; label: PhraseKey; kanji: string }> = {
+  win: { letter: "W", label: "rating.streakWon", kanji: "連勝" },
+  loss: { letter: "L", label: "rating.streakLost", kanji: "連敗" },
+  draw: { letter: "D", label: "rating.streakDrawn", kanji: "連分" },
 };
 
 /** What nothing looks like, everywhere a streak is printed. */
@@ -88,9 +90,9 @@ export function streakText(streak: Streak | null): string {
  * finished games to make a streak of yet" for all three, which was a false
  * statement on a row showing 511 games. See `StreakMark`, which decides.
  */
-export function streakLabel(streak: Streak | null): string {
+export function streakLabel(streak: Streak | null, say: Speaker): string {
   if (streak === null || streak.count <= 0) return "";
-  return `${streak.count} ${STREAK_DISPLAY[streak.kind].label}.`;
+  return say.say(STREAK_DISPLAY[streak.kind].label, { count: say.number(streak.count) });
 }
 
 /** What a result counts as. A draw is its own kind, which is the whole decision. */

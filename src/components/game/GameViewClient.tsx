@@ -4,6 +4,8 @@ import { MoveFormatProvider } from "./MoveFormatContext";
 import type { MoveFormatChoice } from "@/lib/record/moveFormats";
 import dynamic from "next/dynamic";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import type { Appearance } from "@/components/board/board.types";
@@ -17,15 +19,21 @@ import type { GameDefaults } from "./gameDefaults";
  * lets the restore happen in one pass instead of rendering an empty board and
  * then correcting it.
  */
+/** What the board's own place says while the board loads. */
+function SettingOut() {
+  const say = useSpeaker();
+  return (
+    <div className="flex min-h-[24rem] w-full items-center justify-center text-sm text-muted">
+      {say.say("gamescreen.settingUp")}
+    </div>
+  );
+}
+
 const GameView = dynamic(
   () => import("./GameView").then((module) => module.GameView),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex min-h-[24rem] w-full items-center justify-center text-sm text-muted">
-        Setting out the board…
-      </div>
-    ),
+    loading: () => <SettingOut />,
   },
 );
 

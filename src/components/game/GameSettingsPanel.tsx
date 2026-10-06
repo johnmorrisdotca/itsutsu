@@ -17,10 +17,11 @@ import {
 } from "@/lib/gomoku/gomoku.constants";
 import { openingFor } from "@/lib/gomoku/rules/flips";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { dottedText, pairedText } from "@/lib/gomoku/seatWords";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import { variantCopy } from "@/lib/gomoku/variantCopy";
 import { openingCopy } from "@/lib/gomoku/openingCopy";
-import { useLocale } from "@/components/i18n/LocaleProvider";
+import { useLocale, useSpeaker } from "@/components/i18n/LocaleProvider";
 import { availableOpenings } from "@/lib/gomoku/engine";
 import type {
   DrawLimit,
@@ -40,22 +41,26 @@ import { HandicapPanel } from "./HandicapPanel";
 import { HeadStartChoice } from "@/components/live/HeadStartChoice";
 import { settingsLocks } from "./settingsLocks";
 import {
-  AWARENESS_DISPLAY,
   AWARENESS_LEVELS,
-  GAME_COPY,
+  awarenessDisplay,
+  gameCopy,
   HINT_POLICIES,
-  HINT_POLICY_DISPLAY,
+  hintPolicyDisplay,
 } from "./game.constants";
 import type { AwarenessLevel, GamePanelProps, HintPolicy } from "./game.types";
 import { boardWords } from "@/lib/gomoku/boardWords";
 
 export function GameSettingsPanel({ session, actions }: GamePanelProps) {
   const locale = useLocale();
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
+  const AWARENESS_DISPLAY = awarenessDisplay(say);
+  const HINT_POLICY_DISPLAY = hintPolicyDisplay(say);
   const { settings } = session.state;
   const { variant, size, firstPlayer, obstacles, opening } = settings;
   const spec = VARIANT_SPECS[variant];
   const openings = availableOpenings(settings);
-  const locks = settingsLocks(settings);
+  const locks = settingsLocks(settings, say);
   /*
    * "Fixed by Reversi." was under every setting Reversi fixes — four times on
    * one panel, ten places in this file that could say it. Said once, above,
@@ -66,7 +71,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
    * the same statement as a board this game fixes — and those still speak for
    * themselves where they apply.
    */
-  const fixedBy = GAME_COPY.fixedBy(RULE_VARIANT_DISPLAY[variant].label);
+  const fixedBy = GAME_COPY.fixedBy(variantName(variant, say));
   const said = (lock: string | null, otherwise?: string) =>
     lock === null ? otherwise : lock === fixedBy ? undefined : lock;
   /*
@@ -87,9 +92,9 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
     // "8×8" and not "8×8 eight": the size names are for choosing between
     // boards, and there is no choosing here.
     locks.size === null ? null : `${size}×${size}`,
-    locks.opening === null ? null : `${OPENING_DISPLAY[opening].label.toLowerCase()} opening`,
-    locks.winLength === null ? null : `${settings.winLength} in a row`,
-    locks.obstacles === null ? null : OBSTACLE_LAYOUT_DISPLAY[obstacles].label.toLowerCase(),
+    locks.opening === null ? null : say.say("gamescreen.openingNamed", { name: openingCopy(opening, locale).label.toLowerCase() }),
+    locks.winLength === null ? null : say.say("gamescreen.inARow", { count: String(settings.winLength) }),
+    locks.obstacles === null ? null : say.pairName(OBSTACLE_LAYOUT_DISPLAY[obstacles].label.toLowerCase(), OBSTACLE_LAYOUT_DISPLAY[obstacles].kanji).text,
   ].filter((one): one is string => one !== null);
   // Lines the reading cannot help with are greyed rather than hidden, so the rule is visible.
   const reading = locks.reading === null;
@@ -122,7 +127,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
 
       <fieldset disabled={begun} className="flex min-w-0 flex-col gap-4">
       {locks.size === null ? (
-      <Field label="Board" hint={said(locks.size)}>
+      <Field label={say.say("gamescreen.boardGroup")} hint={said(locks.size)}>
         <Select
           value={size}
           disabled={locks.size !== null}
@@ -131,14 +136,14 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         >
           {boardSizesFor(variant).map((option) => (
             <option key={option} value={option}>
-              {boardWords(variant, option)} · {BOARD_SIZE_DISPLAY[option].label}
+              {boardWords(variant, option, say)} · {say.pairName(BOARD_SIZE_DISPLAY[option].label, BOARD_SIZE_DISPLAY[option].kanji).text}
             </option>
           ))}
         </Select>
       </Field>
       ) : null}
 
-      <Field label="Rules" hint={variantCopy(variant, locale).tagline}>
+      <Field label={say.say("gamescreen.rules")} hint={variantCopy(variant, locale).tagline}>
         <Select
           value={variant}
           onChange={(event) =>
@@ -148,7 +153,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         >
           {RULE_VARIANT_LIST.map((option) => (
             <option key={option} value={option}>
-              {RULE_VARIANT_DISPLAY[option].label} · {RULE_VARIANT_DISPLAY[option].kanji}
+              {dottedText(say, RULE_VARIANT_DISPLAY[option].label, RULE_VARIANT_DISPLAY[option].kanji)}
             </option>
           ))}
         </Select>
@@ -169,7 +174,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         >
           {openings.map((option) => (
             <option key={option} value={option}>
-              {OPENING_DISPLAY[option].label}
+              {openingCopy(option, locale).label}
             </option>
           ))}
         </Select>
@@ -191,7 +196,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
             : WIN_LENGTHS
           ).map((option) => (
             <option key={option} value={option}>
-              {option} in a row
+              {say.say("gamescreen.inARow", { count: String(option) })}
             </option>
           ))}
         </Select>
@@ -199,11 +204,11 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
       ) : null}
 
       <Field
-        label="First stone"
+        label={say.say("gamescreen.firstStone")}
         hint={
           canChooseOpener
             ? undefined
-            : `${RULE_VARIANT_DISPLAY[variant].label} always opens with black.`
+            : say.say("gamescreen.alwaysBlack", { game: variantName(variant, say) })
         }
       >
         <Select
@@ -216,14 +221,14 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         >
           {Object.values(FIRST_PLAYERS).map((option) => (
             <option key={option} value={option}>
-              {FIRST_PLAYER_DISPLAY[option].label} · {FIRST_PLAYER_DISPLAY[option].kanji}
+              {dottedText(say, FIRST_PLAYER_DISPLAY[option].label, FIRST_PLAYER_DISPLAY[option].kanji)}
             </option>
           ))}
         </Select>
       </Field>
 
       {locks.obstacles === null ? (
-      <Field label="Obstacles" hint={said(locks.obstacles, OBSTACLE_LAYOUT_DISPLAY[obstacles].description)}>
+      <Field label={say.say("gamescreen.obstacles")} hint={said(locks.obstacles, say.say(OBSTACLE_LAYOUT_DISPLAY[obstacles].description))}>
         <Select
           value={obstacles}
           disabled={locks.obstacles !== null}
@@ -234,7 +239,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
         >
           {Object.values(OBSTACLE_LAYOUTS).map((option) => (
             <option key={option} value={option}>
-              {OBSTACLE_LAYOUT_DISPLAY[option].label}
+              {say.pairName(OBSTACLE_LAYOUT_DISPLAY[option].label, OBSTACLE_LAYOUT_DISPLAY[option].kanji).text}
             </option>
           ))}
         </Select>
@@ -275,26 +280,26 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           <HandicapPanel session={session} actions={actions} />
 
           <Toggle
-            label="Allow taking moves back"
+            label={say.say("gamescreen.allowUndo")}
             checked={settings.allowUndo}
             onChange={(next) => actions.reset({ allowUndo: next })}
-            hint="Switch off for a game where every stone is final."
+            hint={say.say("gamescreen.allowUndoHint")}
           />
           <Toggle
-            label="Allow skipping a turn"
+            label={say.say("gamescreen.allowSkip")}
             checked={locks.allowSkip === null && settings.allowSkip}
             disabled={locks.allowSkip !== null}
             onChange={(next) => actions.reset({ allowSkip: next })}
             hint={said(locks.allowSkip, GAME_COPY.skipHint)}
           />
           <Toggle
-            label="Allow swapping colours"
+            label={say.say("gamescreen.allowSwap")}
             checked={settings.allowSwap}
             onChange={(next) => actions.reset({ allowSwap: next })}
             hint={GAME_COPY.swapHint}
           />
           <Toggle
-            label="Allow resizing the board"
+            label={say.say("gamescreen.allowResize")}
             checked={settings.allowResize}
             onChange={(next) => actions.reset({ allowResize: next })}
             hint={GAME_COPY.resizeHint}
@@ -306,8 +311,8 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
             every size and nobody has to work anything out.
           */}
           <Field
-            label="Length"
-            hint={said(locks.drawLimit, DRAW_LIMIT_DISPLAY[settings.drawLimit].blurb)}
+            label={say.say("gamescreen.length")}
+            hint={said(locks.drawLimit, say.say(DRAW_LIMIT_DISPLAY[settings.drawLimit].blurb))}
           >
             <Select
               value={settings.drawLimit}
@@ -319,7 +324,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
             >
               {DRAW_LIMIT_LIST.map((limit) => (
                 <option key={limit} value={limit}>
-                  {DRAW_LIMIT_DISPLAY[limit].label} {DRAW_LIMIT_DISPLAY[limit].kanji}
+                  {pairedText(say, DRAW_LIMIT_DISPLAY[limit].label, DRAW_LIMIT_DISPLAY[limit].kanji)}
                 </option>
               ))}
             </Select>
@@ -327,8 +332,8 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           </fieldset>
 
           <Field
-            label="Clock"
-            hint={TIME_CONTROL_DISPLAY[session.settings.timeControl].description}
+            label={say.say("gamescreen.clock")}
+            hint={say.say(TIME_CONTROL_DISPLAY[session.settings.timeControl].description)}
           >
             <Select
               value={session.settings.timeControl}
@@ -341,14 +346,14 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
             >
               {Object.keys(TIME_CONTROLS).map((option) => (
                 <option key={option} value={option}>
-                  {TIME_CONTROL_DISPLAY[option as TimeControlName].label}
+                  {say.pairName(TIME_CONTROL_DISPLAY[option as TimeControlName].label, TIME_CONTROL_DISPLAY[option as TimeControlName].kanji).text}
                 </option>
               ))}
             </Select>
           </Field>
 
           <Field
-            label="Analysis"
+            label={say.say("gamescreen.analysis")}
             hint={locks.reading ?? AWARENESS_DISPLAY[session.settings.awareness].description}
           >
             <Select
@@ -370,7 +375,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           </Field>
 
           <Field
-            label="Hints"
+            label={say.say("gamescreen.hints")}
             hint={locks.reading ?? HINT_POLICY_DISPLAY[session.settings.hintPolicy].description}
           >
             <Select
@@ -391,7 +396,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           </Field>
 
           <Toggle
-            label="Warn before a three forms"
+            label={say.say("gamescreen.warnBeforeThree")}
             checked={reading && session.settings.earlyWarning}
             disabled={!reading}
             onChange={(next) => actions.setSessionSettings({ earlyWarning: next })}
@@ -407,7 +412,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
           />
 
           {session.settings.hintPolicy === HINT_POLICIES.limited ? (
-            <Field label="Hints per player">
+            <Field label={say.say("gamescreen.hintsPerPlayer")}>
               <Select
                 value={session.settings.hintsPerSeat}
                 onChange={(event) =>
@@ -428,7 +433,7 @@ export function GameSettingsPanel({ session, actions }: GamePanelProps) {
       </details>
 
       <p className="text-xs text-muted">
-        Changing a rule starts a new game.
+        {say.say("gamescreen.changingRule")}
       </p>
     </section>
   );

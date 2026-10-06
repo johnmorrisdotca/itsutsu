@@ -8,7 +8,8 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import Link from "@/components/ui/Link";
 import { CASUAL_FAMILY_KEY } from "@/lib/casual/casual.constants";
-import { GAME_FAMILIES, familyCountWords, gamesShownIn } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, gamesShownIn } from "@/lib/gomoku/families";
+import { familyCountWords } from "@/lib/gomoku/familyWords";
 
 /** The one family this page is for: Karakuri, whose games are casual and recorded nowhere, so no game's family page can be its address (`familyPagePath`). */
 const KARAKURI = GAME_FAMILIES.find((family) => family.key === CASUAL_FAMILY_KEY);

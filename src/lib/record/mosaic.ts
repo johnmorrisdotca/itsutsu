@@ -3,7 +3,10 @@ import type { GameState, RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { pointName } from "@/lib/gomoku/notation";
 import { stonelessWord } from "@/lib/gomoku/rules/stoneless";
 
+import { speaker } from "../i18n/i18n";
+
 import { MOSAIC_ART, MOSAIC_COPY, MOSAIC_MOST_TILES, MOSAIC_PICKS, type MosaicPick } from "./mosaic.constants";
+import { mosaicWords } from "./mosaicWords";
 import type { MosaicFrame, MosaicPicture, MosaicTitle } from "./mosaic.types";
 import { MOSAIC_WORDMARK } from "./mosaicLogo.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -332,7 +335,7 @@ export function mosaicSvg(picture: MosaicPicture): string {
   const top = bar + (height - bar - rows * side) / 2;
   const tiles = chosen.map((frame, i) => tileSvg(frame, size, cells, left + (i % columns) * side, top + Math.floor(i / columns) * side, side));
   // First, so a long line of details can never push it off the end.
-  const details = shown < frames.length ? [MOSAIC_COPY.shownOf(shown, frames.length), ...title.details] : title.details;
+  const details = shown < frames.length ? [mosaicWords(picture.say ?? speaker("en")).shownOf(shown, frames.length), ...title.details] : title.details;
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
     `<rect width="${width}" height="${height}" fill="${MOSAIC_ART.ground}"/>` +

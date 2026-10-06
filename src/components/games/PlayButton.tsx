@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "@/components/ui/Link";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { PLAY_BUTTON } from "@/components/ui/ui.constants";
 
@@ -14,10 +18,11 @@ import { PLAY_BUTTON } from "@/components/ui/ui.constants";
  * is about one game. Whether to play alone, a friend or the computer is
  * chosen on the set-up screen, not here.
  */
-export function PlayButton({ href, testId = "game-set-up", label = "Play →" }: { href: string; testId?: string; /** Said in the reader's language where the page is translated. */ label?: string }) {
+export function PlayButton({ href, testId = "game-set-up", label }: { href: string; testId?: string; /** Said in the reader's language where the page is translated. */ label?: string }) {
+  const say = useSpeaker();
   return (
     <Link href={href} className={PLAY_BUTTON} data-testid={testId}>
-      {label}
+      {label ?? say.say("gamepages.playButton")}
     </Link>
   );
 }

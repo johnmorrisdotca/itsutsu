@@ -7,7 +7,7 @@
 export function PressLabel({ words, kanji }: { words: string; kanji: string }) {
   return (
     <>
-      {words} <span className="font-mincho text-base font-normal opacity-70">{kanji}</span> →
+      {words}{kanji === "" ? null : <> <span className="font-mincho text-base font-normal opacity-70">{kanji}</span></>} →
     </>
   );
 }

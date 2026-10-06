@@ -1,6 +1,8 @@
 import { OfferButtons } from "@/components/mine/OfferButtons";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { OFFER_PANEL_COPY } from "./live.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+
+import { offerPanelCopy } from "./live.constants";
 
 /**
  * WHAT TO DO ABOUT AN OFFER, beside the board it is about.
@@ -20,7 +22,7 @@ import { OFFER_PANEL_COPY } from "./live.constants";
  * which of the two people is reading is decided on the server from their member
  * id — `offerIsMine` in `offers.ts`. Only the three buttons are interactive.
  */
-export function OfferPanel({
+export async function OfferPanel({
   id,
   side,
   who,
@@ -32,12 +34,13 @@ export function OfferPanel({
   who: string;
 }) {
   const mine = side === "to-me";
-  const copy = mine ? OFFER_PANEL_COPY.toMe : OFFER_PANEL_COPY.fromMe;
+  const panel = offerPanelCopy(await currentSpeaker());
+  const copy = mine ? panel.toMe : panel.fromMe;
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="offer-panel">
       <h2 className={SECTION_TITLE}>
-        {copy.title}{" "}
-        <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span>
+        {copy.title}
+        {copy.kanji === "" ? null : <> <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span></>}
       </h2>
       <p className="text-xs text-muted">{copy.lead(who)}</p>
       <div className="flex justify-start">

@@ -1,10 +1,11 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
-import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
 import type { Piece, PieceCell, Point } from "@/lib/gomoku/gomoku.types";
 import { Button, SectionTitle } from "@/components/ui/Controls";
-import { GAME_COPY } from "./game.constants";
+import { gameCopy } from "./game.constants";
 import type { PieceHand } from "./usePieceHand";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
@@ -22,6 +23,7 @@ export function PieceGlyph({
   scale?: number;
   paint?: { fill: string; label: string };
 }) {
+  const say = useSpeaker();
   const rows = Math.max(...cells.map((cell) => cell.row)) + 1;
   const cols = Math.max(...cells.map((cell) => cell.col)) + 1;
   const size = `${1.1 * scale}rem`;
@@ -32,7 +34,7 @@ export function PieceGlyph({
         gridTemplateColumns: `repeat(${cols}, ${size})`,
         gridTemplateRows: `repeat(${rows}, ${size})`,
       }}
-      aria-label={paint?.label ?? cells.map((cell) => (cell.stone === undefined ? "" : STONE_DISPLAY[cell.stone].label)).join(", ")}
+      aria-label={paint?.label ?? cells.map((cell) => (cell.stone === undefined ? "" : stoneName(say, cell.stone))).join(", ")}
       role="img"
     >
       {Array.from({ length: rows * cols }, (_, index) => {
@@ -80,6 +82,8 @@ export function PieceTray({
   onToggleSingle: () => void;
   onPass: () => void;
 }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   if (hand.piece === null) return null;
 
   return (
@@ -97,7 +101,7 @@ export function PieceTray({
           <Button onClick={onFlip} disabled={disabled || hand.layingSingle} data-testid="flip-piece">
             {GAME_COPY.flipPiece.label}
           </Button>
-          <span className="w-full text-[0.7rem] text-muted">Keys: R turns, F flips, S lays a single stone.</span>
+          <span className="w-full text-[0.7rem] text-muted">{say.say("gamescreen.keys")}</span>
         </div>
       </div>
 

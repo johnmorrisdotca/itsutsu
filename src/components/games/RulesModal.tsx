@@ -2,16 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { Paired } from "@/components/i18n/Paired";
 import { SECTION_HEADING, SECTION_HEADING_KANJI, SECTION_TITLE } from "@/components/ui/ui.constants";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /** The four parts of a rules page, the same headings as `/games/<slug>/rules`. */
 const PARTS = [
-  { key: "object", heading: "Objective", kanji: "目的" },
-  { key: "board", heading: "Board", kanji: "盤" },
-  { key: "play", heading: "How to play", kanji: "手順" },
-  { key: "house", heading: "House rules", kanji: "細則" },
+  { key: "object", heading: "gamepages.rulesObjective", kanji: "目的" },
+  { key: "board", heading: "gamepages.rulesBoard", kanji: "盤" },
+  { key: "play", heading: "gamepages.rulesPlay", kanji: "手順" },
+  { key: "house", heading: "gamepages.rulesHouse", kanji: "細則" },
 ] as const;
 
 /** What of a rules page the modal carries: the name and the four parts, no more. */
@@ -28,6 +30,7 @@ export type RulesInModal = Pick<RulesPage, "title" | "kanji" | "object" | "board
  * Closing it (×, Escape, or outside it) leaves the board exactly as it was.
  */
 export function RulesModal({ rules }: { rules: RulesInModal }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -48,7 +51,7 @@ export function RulesModal({ rules }: { rules: RulesInModal }) {
         data-testid="open-rules"
         {...readyMark(hydrated)}
       >
-        Rules
+        {say.say("gamepages.rulesOpen")}
       </button>
       {open ? (
         <dialog
@@ -65,13 +68,14 @@ export function RulesModal({ rules }: { rules: RulesInModal }) {
           <div className="flex flex-col gap-5">
             <div className="flex items-center justify-between gap-3">
               <h2 id="rules-modal-title" className={SECTION_HEADING}>
-                {rules.title} <span className={SECTION_HEADING_KANJI}>{rules.kanji}</span>
+                {rules.title}
+                {say.pairsWithKanji ? <span className={SECTION_HEADING_KANJI}> {rules.kanji}</span> : null}
               </h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 className="rounded-full px-2 text-2xl leading-none text-muted hover:text-ink"
-                aria-label="Close"
+                aria-label={say.say("gamepages.rulesClose")}
                 data-testid="close-rules"
               >
                 ×
@@ -80,8 +84,7 @@ export function RulesModal({ rules }: { rules: RulesInModal }) {
             {PARTS.map((part) => (
               <section key={part.key} className="flex flex-col gap-2">
                 <h3 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
-                  {part.heading}
-                  <span className="font-mincho text-xs normal-case tracking-normal">{part.kanji}</span>
+                  <Paired en={say.say(part.heading)} kanji={part.kanji} kanjiClassName="font-mincho text-xs normal-case tracking-normal" />
                 </h3>
                 <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
                   {rules[part.key].map((line) => (

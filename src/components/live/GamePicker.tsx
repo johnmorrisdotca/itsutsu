@@ -234,7 +234,7 @@ export function GamePicker({
       <span aria-hidden="true" className="mb-0.5 hidden text-sm text-ink-soft lg:block">
         {label}
       </span>
-      <div role="tablist" aria-label="Families of games" className={FAMILY_TILES}>
+      <div role="tablist" aria-label={speaker.say("live.familiesLabel")} className={FAMILY_TILES}>
         {shelves.map((entry, at) => {
           const showing = entry.title === opened.title;
           return (

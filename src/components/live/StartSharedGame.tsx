@@ -8,7 +8,8 @@ import { hasHeadStart } from "@/lib/gomoku/rules/headStart";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
 import { seatPath } from "@/lib/gomoku/slugs";
 import { Button, SectionTitle } from "@/components/ui/Controls";
-import { GAME_COPY } from "@/components/game/game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { gameCopy } from "@/components/game/game.constants";
 import type { GameDefaults } from "@/components/game/gameDefaults";
 import { SHARED_OPENINGS } from "@/lib/history/sharedOpenings.constants";
 import type { CreatedGame } from "@/lib/history/liveGame.types";
@@ -40,6 +41,7 @@ export function StartSharedGame({
   /** Where a new game starts for this member: the clock, and whether it counts. */
   defaults: GameDefaults;
 }) {
+  const say = useSpeaker();
   const router = useRouter();
   const panel = useRef<HTMLElement>(null);
   const [starting, setStarting] = useState(false);
@@ -104,33 +106,30 @@ export function StartSharedGame({
         }),
       });
 
-      if (!response.ok) throw new Error("The game could not be started.");
+      if (!response.ok) throw new Error("create refused");
 
       const created = (await response.json()) as CreatedGame;
       router.push(seatPath(settings.variant, created.id, created.blackToken));
     } catch {
-      setError("Could not start a shared game. Try again.");
+      setError(say.say("live.startSharedFailed"));
       setStarting(false);
     }
   }
 
   return (
     <section ref={panel} id="post-seat" className="flex scroll-mt-6 flex-col gap-2">
-      <SectionTitle kanji="通信対局">Play on two devices</SectionTitle>
+      <SectionTitle kanji="通信対局">{say.say("live.sharedTitle")}</SectionTitle>
       {postSeat ? (
         <p className="text-xs text-moss" data-testid="post-seat-note">
-          Posting a seat: start the game and the other seat goes on the games page for whoever
-          answers first. To change the game or the board first, use Set up, under the board.
+          {say.say("live.postSeatNote")}
         </p>
       ) : null}
       <p className="text-xs text-muted">
-        The board here is a local game and stays in this browser. A shared game
-        gets its own address and a QR code for each player, so you can take
-        turns from two devices.
+        {say.say("live.sharedHere")}
       </p>
       <p className="text-xs text-ink-soft" data-testid="shared-rules-summary">
-        {describeRules(rules)}
-        {sharedOpening !== settings.opening ? ` ${GAME_COPY.sharedOpeningNote}` : ""}
+        {describeRules(rules, say)}
+        {sharedOpening !== settings.opening ? ` ${gameCopy(say).sharedOpeningNote}` : ""}
       </p>
       <RulesForm
         value={rules}
@@ -159,7 +158,7 @@ export function StartSharedGame({
         refused={null}
       />
       <Button onClick={start} disabled={starting} data-testid="start-shared-game">
-        {starting ? "Starting…" : "Start a shared game"}
+        {say.say(starting ? "live.starting" : "live.startShared")}
       </Button>
       {error !== null ? (
         <p className="text-xs text-shu">{error}</p>

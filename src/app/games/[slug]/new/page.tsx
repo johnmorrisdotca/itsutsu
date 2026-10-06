@@ -12,6 +12,7 @@ import { appearanceFor } from "@/lib/auth/memberAccount";
 import { PuzzleSetUpPage } from "@/components/puzzles/PuzzleSetUpPage";
 import { CasualSetUpPage } from "@/components/casual/CasualSetUpPage";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { casualKindFor, puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
@@ -23,8 +24,9 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/new">): Promise<Metadata> {
   const { slug } = await params;
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? casualKindFor(slug) ?? "");
-  return { title: copy === null ? "New game" : `New game of ${copy.label}` };
+  const say = await currentSpeaker();
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? casualKindFor(slug) ?? "", say.locale);
+  return { title: copy === null ? say.say("gamepages.newGame") : say.say("gamepages.newGameOf", { game: copy.label }) };
 }
 
 /**
@@ -73,7 +75,7 @@ export default async function SetUpPage({ params, searchParams }: PageProps<"/ga
    * extra, which is the same promise the page made before it could be
    * pre-filled at all.
    */
-  const from = await setUpFrom({ variant, asked, defaults });
+  const from = await setUpFrom({ variant, asked, defaults, say: await currentSpeaker() });
 
   return (
     <Page>

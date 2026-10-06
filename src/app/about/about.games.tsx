@@ -1,6 +1,7 @@
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { FigureTable as Table } from "@/components/about/FigureTable";
-import { GAME_FAMILIES, familyCountWords, familyPagePath } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, familyPagePath } from "@/lib/gomoku/families";
+import { familyCountWords } from "@/lib/gomoku/familyWords";
 import { RULE_VARIANT_LIST, VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { isSettingKind } from "@/lib/catalogue/gameSettings";

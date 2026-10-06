@@ -5,7 +5,7 @@ import { penaltyMeans, penaltyName } from "./penalty";
 
 describe("what running out of time costs", () => {
   it("names each of the three, differently", () => {
-    const names = TIMEOUT_PENALTIES.map(penaltyName);
+    const names = TIMEOUT_PENALTIES.map((penalty) => penaltyName(penalty));
     expect(new Set(names).size).toBe(TIMEOUT_PENALTIES.length);
   });
 

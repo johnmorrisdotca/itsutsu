@@ -3,7 +3,9 @@
 import { matchPath, seatPath } from "@/lib/gomoku/slugs";
 
 import { colourToTake, type ColourChoice } from "./colourChoice";
-import { DOORSTEP_COPY } from "./live.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+
+import { doorstepCopy } from "./live.constants";
 import { drawnCreation } from "./setUpStart";
 
 /**
@@ -76,6 +78,7 @@ export type BeginAction =
 export async function create(
   body: Record<string, unknown>,
   variant: string,
+  say: Speaker,
 ): Promise<string | { error: string }> {
   const response = await fetch("/api/games/live", {
     method: "POST",
@@ -86,7 +89,7 @@ export async function create(
   });
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    return { error: body?.error ?? DOORSTEP_COPY.refused };
+    return { error: body?.error ?? doorstepCopy(say).refused };
   }
   const created = (await response.json()) as { id: string; blackToken?: string };
   /*
@@ -103,11 +106,11 @@ export async function create(
 }
 
 /** Taking a seat somebody already posted, rather than posting a second one beside it. */
-export async function takeSeat(begin: { id: string }): Promise<string | { error: string }> {
+export async function takeSeat(begin: { id: string }, say: Speaker): Promise<string | { error: string }> {
   const sat = await fetch(`/api/games/${begin.id}/sit`, { method: "POST" });
   if (!sat.ok) {
     const body = (await sat.json().catch(() => null)) as { error?: string } | null;
-    return { error: body?.error ?? DOORSTEP_COPY.seatGone };
+    return { error: body?.error ?? doorstepCopy(say).seatGone };
   }
   const { path } = (await sat.json()) as { path: string };
   return path;
@@ -128,19 +131,21 @@ export async function beginGame({
   begin,
   variant,
   taking,
+  say,
   roll = Math.random(),
 }: {
   begin: BeginAction;
   variant: string;
   taking: boolean;
+  say: Speaker;
   /** The draw, made as the game is created and never before. */
   roll?: number;
 }): Promise<string | { error: string }> {
   if (begin.kind === "sit") {
-    return taking ? takeSeat(begin) : create(begin.instead, variant);
+    return taking ? takeSeat(begin, say) : create(begin.instead, variant, say);
   }
   const seated = (body: Record<string, unknown>) =>
     begin.colour === undefined ? body : { ...body, asColour: colourToTake(begin.colour, roll) };
-  if (begin.kind === "draw") return create(seated(drawnCreation(begin.body, begin.pool, roll)), variant);
-  return create(seated(begin.body), variant);
+  if (begin.kind === "draw") return create(seated(drawnCreation(begin.body, begin.pool, roll)), variant, say);
+  return create(seated(begin.body), variant, say);
 }

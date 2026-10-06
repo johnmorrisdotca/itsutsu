@@ -3,10 +3,12 @@
 import { readClock } from "@/lib/clock/clock";
 import { CLOCK_URGENT_MS } from "@/lib/clock/clock.constants";
 import { seatToPlay } from "@/lib/gomoku/engine";
-import { GAME_STATUS, SEAT_DISPLAY, SEATS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, SEATS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { Seat } from "@/lib/gomoku/gomoku.types";
 import { SectionTitle } from "@/components/ui/Controls";
-import { GAME_COPY } from "./game.constants";
+import { gameCopy } from "./game.constants";
 import type { GameSession } from "./game.types";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 
@@ -18,6 +20,7 @@ import { PLAY_SURFACE } from "@/components/ui/ui.constants";
  * before the flag falls.
  */
 export function GameClock({ session }: { session: GameSession }) {
+  const GAME_COPY = gameCopy(useSpeaker());
   const active = seatToPlay(session.state);
   const running = session.state.status === GAME_STATUS.playing;
 
@@ -49,10 +52,12 @@ function ClockFace({
   seat: Seat;
   active: boolean;
 }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const clock = session.clocks[seat];
   const { time, byoyomi, periodsLeft } = readClock(clock);
   const stone = session.state.seats.black === seat ? "black" : "white";
-  const name = session.names[seat].trim() || SEAT_DISPLAY[seat].label;
+  const name = session.names[seat].trim() || seatName(say, seat);
 
   const urgent =
     !clock.flagged &&
@@ -80,7 +85,7 @@ function ClockFace({
           }`}
         />
         <span className="truncate">{name}</span>
-        <span className="font-mincho">{STONE_DISPLAY[stone].kanji}</span>
+        {say.pairsWithKanji ? <span className="font-mincho">{STONE_DISPLAY[stone].kanji}</span> : null}
       </span>
 
       <span
@@ -97,7 +102,7 @@ function ClockFace({
 
       {byoyomi && !clock.flagged ? (
         <span className="text-[0.65rem] text-muted">
-          {GAME_COPY.byoyomi.kanji} × {periodsLeft}
+          {say.pairsWithKanji ? GAME_COPY.byoyomi.kanji : GAME_COPY.byoyomi.label} × {periodsLeft}
         </span>
       ) : null}
       {clock.flagged ? (

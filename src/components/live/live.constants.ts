@@ -1,4 +1,7 @@
 
+import type { Speaker } from "../../lib/i18n/i18n";
+import { PHRASES, type PhraseKey } from "../../lib/i18n/i18n.constants";
+
 /**
  * The words the screens around a shared game use.
  *
@@ -135,13 +138,13 @@ export const POLL_RELIEF_FLOOR_MS = 2_500;
  * never do. Any press or key on the page wakes it too; the button is there so
  * nobody has to know that.
  */
-export const LIVE_PAUSED_COPY = {
-  line: "Nothing has happened here for a while, so this board has stopped checking for moves.",
-  check: "Check now",
+export const livePausedCopy = (say: Speaker) => ({
+  line: say.say("live.pausedLine"),
+  check: say.say("live.pausedCheck"),
   /* The countdown while the board IS asking — see `NextCheck`. */
-  nextIn: (seconds: number) => `Checks for a move in ${seconds}s`,
-  checking: "Checking for a move…",
-} as const;
+  nextIn: (seconds: number) => say.say("live.pausedNextIn", { seconds: String(seconds) }),
+  checking: say.say("live.pausedChecking"),
+});
 
 /**
  * SETTLING A GAME BEFORE IT EXISTS, IN WORDS.
@@ -158,35 +161,39 @@ export const LIVE_PAUSED_COPY = {
  * because a link that asked for something and quietly got the usual setting looks
  * exactly like a link that asked for nothing.
  */
-export const SET_UP_UNREAD = (names: readonly string[]) =>
-  `Part of this address is not something this game offers, so ${
-    names.length === 1 ? "it was" : "they were"
-  } left at the usual setting: ${names.join(", ")}.`;
+export const setUpUnread = (say: Speaker, names: readonly string[]) =>
+  say.say(names.length > 1 ? "live.unreadMany" : "live.unreadOne", { names: say.list(names) });
 
-export const SET_UP_COPY = {
+/** The kanji beside the folded rows' headings (an English reader's second script). */
+export const SET_UP_KANJI = { opening: "定石", ratings: "評価" } as const;
+
+export const setUpCopy = (say: Speaker) => {
+  /** An English label and the kanji beside it, said as one in the reader's language. */
+  const pairText = (key: PhraseKey, kanji: string) => {
+    const pair = say.pair(key, kanji);
+    return pair.kanji === null ? pair.text : `${pair.text} ${pair.kanji}`;
+  };
+  return {
   /** Under the sample board on the set-up screen, so nobody takes it for a game in progress. */
-  previewIs: (game: string) => `A preview of the ${game} board. Nothing here is a move.`,
+  previewIs: (game: string) => say.say("live.previewIs", { game }),
   // A puzzle's, in the same shape and length, so the line under the board is the same height whichever is chosen.
-  previewMahjong: "A deal of this layout, for a look. Yours is dealt when you start.",
-  previewPuzzle: (puzzle: string) => `A preview of the ${puzzle} grid. Nothing is written yet.`,
+  previewMahjong: say.say("live.previewMahjong"),
+  previewPuzzle: (puzzle: string) => say.say("live.previewPuzzle", { puzzle }),
   /** A card game's, which has a deal and not a grid. */
-  previewCards: (game: string) => `A deal of ${game}, the stock turned once. Nothing is played yet.`,
+  previewCards: (game: string) => say.say("live.previewCards", { game }),
   /** Added where the board is dealt from a seed, so this arrangement is one of many. */
-  previewDealt: "This game scatters its board, so the one you play will be different.",
+  previewDealt: say.say("live.previewDealt"),
   /** The heading and lead, where nothing but the opponent is known. */
-  against: (who: string) => `Against ${who}`,
-  againstHint: (who: string) =>
-    `${who} is who you are playing. Choose the game and the rules, and the game is in their list the moment you start it — there is nothing for them to accept.`,
+  against: (who: string) => say.say("live.against", { who }),
+  againstHint: (who: string) => say.say("live.againstHint", { who }),
   /** The heading and lead for a game being played again. */
-  again: (who: string) => `Play ${who} again`,
+  again: (who: string) => say.say("live.again", { who }),
   // `who` is said, not merely accepted: a confirmation that does not name the
   // person is a confirmation of nothing. The spec that caught it asks for the
   // name here, and the signature had promised it all along.
-  againHint: (who: string, colour: string) =>
-    `The same board, the same rules and the same clock as last time against ${who}, with the colours swapped — you take ${colour}. Everything below is already filled in, so this is a confirmation; change anything you would rather play differently.`,
+  againHint: (who: string, colour: string) => say.say("live.againHint", { who, colour }),
   /** Said when a rematch has been altered, because then it is not one. */
-  againChanged:
-    "You have changed something, so this starts a new game against the same player rather than a repeat of the last one. The colours are drawn the ordinary way: you open.",
+  againChanged: say.say("live.againChanged"),
   /**
    * Said when a rematch's player has been changed. Then it is a new game with
    * these rules and not a rematch, and nothing a rematch is — the swap, the award —
@@ -194,30 +201,24 @@ export const SET_UP_COPY = {
    * random, neither of which has a name yet.
    */
   againElsewhere: (them: string, chosen: string | null) =>
-    `You have chosen ${chosen ?? `not to play ${them} again`}, so this is a new game with these rules — not a rematch of your last game against ${them}, and the colours are not swapped.`,
+    chosen === null ? say.say("live.againNobody", { them }) : say.say("live.againElsewhere", { them, chosen }),
   /** The heading and lead for a fork. */
-  fork: (move: number) => `Play on from move ${move}`,
-  forkHint: (move: number, who: string) =>
-    `A second game from the position after move ${move}, against ${who}. The game it comes from is left as it is. The board, the game and the opening come with the position and cannot change; the clock and whether it counts are this game's own.`,
-  forkAlone:
-    "Nobody held the other seat in the game this comes from, so this is a board at one screen: start it and hand the other seat out from there.",
+  fork: (move: number) => say.say("live.fork", { move: String(move) }),
+  forkHint: (move: number, who: string) => say.say("live.forkHint", { move: String(move), who }),
+  forkAlone: say.say("live.forkAlone"),
   /** The head start's colour select, first under the Handicap heading: who is given a start. */
-  headStartFor: "Head start for",
+  headStartFor: say.say("live.headStartFor"),
   /** What a head start is for, where somebody is choosing one. */
-  headStartHint:
-    "The weaker player's start: turns in hand at the beginning, and the game's own traditional head start where it has one. A game with a head start does not count towards ratings. Leave it at none for an even game.",
+  headStartHint: say.say("live.headStartHint"),
   /** The answer that gives nobody anything. */
-  headStartNone: "None",
-  freeTurns: "Free turns",
-  freeTurnsHint: (colour: string) =>
-    `${colour} plays this many turns at the very start before the other side answers. Each one is shown on the record as the other side's pass.`,
+  headStartNone: say.say("live.headStartNone"),
+  freeTurns: say.say("live.freeTurns"),
+  freeTurnsHint: (colour: string) => say.say("live.freeTurnsHint", { colour }),
   /** The handicap's colour select, under the Handicap heading: who takes on the harder rules. */
-  handicapFor: "Harder rules for",
+  handicapFor: say.say("live.handicapFor"),
   /** What a handicap is for, where somebody is choosing one. */
-  handicapHint:
-    "One colour plays under extra restrictions and the other plays the plain game — how the elder sites let a stronger player give a weaker one a start. Leave it at none for an even game.",
-  handicapOpen: (colour: string) =>
-    `${colour} plays under every restriction switched on below; the other colour plays the game as it comes. Switch on only what you mean — each one makes ${colour.toLowerCase()}'s game harder.`,
+  handicapHint: say.say("live.handicapHint"),
+  handicapOpen: (colour: string) => say.say("live.handicapOpen", { colour, lower: colour.toLowerCase() }),
   /**
    * SAID OUT LOUD WHEN A NAMED PLAYER IS NOT OFFERED AT THIS GAME.
    *
@@ -231,12 +232,11 @@ export const SET_UP_COPY = {
    * So it says which. This is the shape the lobby sentence already had a rule
    * about — fall back, and say you have.
    */
-  notAtThisGame: (who: string, game: string) =>
-    `${who} does not play ${game}, so this would post a seat for anyone instead. Change the game back, or pick somebody else.`,
+  notAtThisGame: (who: string, game: string) => say.say("live.notAtThisGame", { who, game }),
   /** Said where the opponent came in on the address rather than being chosen. */
-  opponentFixed: "Asked for from their page. Change it here if you meant somebody else.",
+  opponentFixed: say.say("live.opponentFixed"),
   /** The way back out of a pre-filled screen to a blank one. */
-  startOver: "Set a game up from scratch instead",
+  startOver: say.say("live.startOver"),
   /**
    * What the button at the bottom now does, since it no longer makes anything.
    *
@@ -245,9 +245,9 @@ export const SET_UP_COPY = {
    * to be played. Somebody who has used this screen before needs telling once.
    */
   /* Sitting down at a matched seat IS the start: the rules are the ones just chosen, and the name is on the button. */
-  startLeads: "Their seat is at exactly this game. Press, and you are sitting opposite them on the board.",
+  startLeads: say.say("live.startLeads"),
   /** What Begin does here: it writes the game, and the next thing you see is the board. */
-  beginHere: "Nothing is written until you press Start. The next thing you see is the board.",
+  beginHere: say.say("live.beginHere"),
   /**
    * THE BUTTON AT THE BOTTOM, named for what it does — and what it does has
    * changed twice.
@@ -268,15 +268,15 @@ export const SET_UP_COPY = {
    * the doorstep, because the rules being agreed to there are somebody else's.
    */
   /** The press after a game has already been begun from this address, in this tab. */
-  board: "Go to game 対局へ",
+  board: pairText("live.board", "対局へ"),
   /** The same press where somebody is already asking for exactly this game. */
-  continueToSeat: (who: string) => `Continue to sit down with ${who} 次へ`,
+  continueToSeat: (who: string) => say.say("live.continueToSeat", { who }) + (say.pairsWithKanji ? " 次へ" : ""),
   /* Which seat the asker takes, where it is theirs to choose — see `colourChoice.ts`. */
   colour: {
-    label: "You play",
-    black: "Black, and move first",
-    white: "White, and move second",
-    lot: "Random",
+    label: say.say("live.youPlay"),
+    black: say.say("live.black"),
+    white: say.say("live.white"),
+    lot: say.say("live.lot"),
   },
   /**
    * How many games at once, as GoldToken asks it: No / Two-game / Four-game /
@@ -284,17 +284,17 @@ export const SET_UP_COPY = {
    * advantage of moving first evens out over it.
    */
   games: {
-    label: "Games",
-    one: "One",
-    many: (count: number) => `${count}, colours alternating`,
+    label: say.say("live.gamesLabel"),
+    one: say.say("live.gamesOne"),
+    many: (count: number) => say.say("live.gamesMany", { count: String(count) }),
     /** Added to the seating sentence, so the press says what it will make. */
-    said: (count: number) => `A match of ${count} games: you take each colour in turn.`,
+    said: (count: number) => say.say("live.gamesSaid", { count: String(count) }),
   },
   /** The headings over the screen's groups, in the order they are drawn. */
   sections: {
-    opponent: { title: "Opponent", kanji: "対戦相手" },
-    rules: { title: "Rules", kanji: "規則" },
-    handicap: { title: "Handicap", kanji: "ハンデ" },
+    opponent: { title: say.say("live.sectionOpponent"), kanji: "対戦相手" },
+    rules: { title: say.say("live.sectionRules"), kanji: "規則" },
+    handicap: { title: say.say("live.sectionHandicap"), kanji: "ハンデ" },
   },
   /**
    * The handicap group's folded row when neither side has been given anything
@@ -304,7 +304,7 @@ export const SET_UP_COPY = {
    * fold that is hiding a question, which is the fault `SetUpFold` exists to
    * not be. "None" is the answer, and it is the true one.
    */
-  noHandicap: "No head start, no handicap — an even game",
+  noHandicap: say.say("live.noHandicap"),
   /**
    * The two words on a folded choice.
    *
@@ -313,27 +313,28 @@ export const SET_UP_COPY = {
    * see `SetUpFold`, which exists to not be that.
    */
   fold: {
-    change: "Change 変更",
-    done: "Done 完了",
+    change: pairText("live.foldChange", "変更"),
+    done: pairText("live.foldDone", "完了"),
     /**
      * What a folded list of opponents says when the chosen one is not in it: how
      * many are, and nothing else. A name would read as the answer, and this list
      * has not been answered — it is the way to change your mind about one that
      * has. See `SetUpFold` on never summarising a question.
      */
-    among: (count: number) => `${count} to choose from`,
+    among: (count: number) => say.say("live.foldAmong", { count: String(count) }),
   },
   /** The opening's own kanji, for the folded row's heading. */
   openingKanji: "定石",
   /** And the ratings', for the same row. */
   ratingsKanji: "評価",
   /** Where a posted seat can be found by whoever takes it. */
-  postedWhere: "It waits on the Games page until somebody takes it.",
+  postedWhere: say.say("live.postedWhere"),
   /** The way to anybody the lists here do not hold. */
-  elsewhere: "Somebody not listed here? Find them on the",
-  elsewhereLink: "Players page",
-  elsewhereAfter: "and press Play: they arrive here already chosen.",
-} as const;
+  /** With a `{link}` standing where the link to the players page falls; `weave` puts it there. */
+  elsewhere: say.say("live.elsewhere"),
+  elsewhereLink: say.say("live.elsewhereLink"),
+  };
+};
 
 /**
  * THE RULES BESIDE A BOARD, IN WORDS.
@@ -342,7 +343,7 @@ export const SET_UP_COPY = {
  * used to be decided beside a board is decided on the doorstep now, so the panel
  * states rather than offers — see `SharedRules`.
  */
-export const SHARED_RULES_COPY = {
+export const sharedRulesCopy = (say: Speaker) => ({
   /**
    * Why the rows are answers.
    *
@@ -351,12 +352,10 @@ export const SHARED_RULES_COPY = {
    * change these, stone or no stone. A note that gives an out-of-date reason is
    * worse than a note giving none, because a reader believes it.
    */
-  settled: "Agreed before this game was written. Nothing here can change them now.",
-  handicapMeans:
-    "The handicapped colour plays under those extra restrictions; the other colour plays the plain game.",
-  headStartMeans:
-    "The colour given a head start plays its free turns before the other side answers, with any traditional head start on the board from the first move.",
-} as const;
+  settled: say.say("live.settled"),
+  handicapMeans: say.say("live.handicapMeans"),
+  headStartMeans: say.say("live.headStartMeans"),
+});
 
 /**
  * WHAT A READER WITH NO ACCOUNT IS TOLD, ON BOTH SCREENS THAT TELL THEM.
@@ -373,7 +372,7 @@ export const SHARED_RULES_COPY = {
  * reading the DOORSTEP's words for its own paragraph is the sort of borrowing
  * that makes the next rewording miss one of the two.
  */
-export const SIGN_IN_TO_PLAY = "Sign in to start a game against somebody.";
+export const signInToPlay = (say: Speaker) => say.say("live.signInToPlay");
 
 /**
  * WHAT A READER WHO CAME IN BY INVITE CODE IS TOLD, where the choices they are
@@ -389,8 +388,7 @@ export const SIGN_IN_TO_PLAY = "Sign in to start a game against somebody.";
  * /join sends anybody already in straight back where they were going, so a
  * link there from here would be a press that lands on this same page.
  */
-export const ASK_NEEDS_ACCOUNT =
-  "Naming a member or a bot offers them a game, which needs an account — an invite code on its own does not make one. A seat for anyone, and two at one screen, work as you are.";
+export const askNeedsAccount = (say: Speaker) => say.say("live.askNeedsAccount");
 
 /**
  * THE DOORSTEP, IN WORDS: the page between choosing a game and playing one.
@@ -405,32 +403,34 @@ export const ASK_NEEDS_ACCOUNT =
  * which is how a confirmation screen becomes a step people click through without
  * reading.
  */
-export const DOORSTEP_COPY = {
-  title: "Ready to start",
-  kanji: "確認",
+export const doorstepCopy = (say: Speaker) => {
+  const pairText = (key: PhraseKey, kanji: string) => {
+    const pair = say.pair(key, kanji);
+    return pair.kanji === null ? pair.text : `${pair.text} ${pair.kanji}`;
+  };
+  return {
+  title: say.say("live.doorstepTitle"),
+  kanji: say.pairsWithKanji ? "確認" : "",
   /** Above the table of rows, saying why nothing on this page can be changed here. */
-  note: "This is what will be played. Nothing has been written yet.",
+  note: say.say("live.doorstepNote"),
   /** Taking a seat somebody has already posted, rather than making a second game. */
-  sit: (who: string) => `Sit down with ${who} 着席`,
-  change: "Change settings 変更",
+  sit: (who: string) => say.say("live.sit", { who }) + (say.pairsWithKanji ? " 着席" : ""),
+  change: pairText("live.change", "変更"),
   /** Who a game against a computer player drawn at random is against, before the draw. */
-  drawnFrom: (names: readonly string[]) =>
-    `a bot drawn at random from ${names.join(", ")} when you press Start`,
+  drawnFrom: (names: readonly string[]) => say.say("live.drawnFrom", { names: names.join(say.locale === "ja" ? "、" : ", ") }),
   /** Once this doorstep has made its game, the same control opens its board. */
-  board: "Go to game 対局へ",
-  made: "You have already begun this game. The button below opens its board rather than making a second one.",
-  another: "Start another like this one",
-  refused: "That game could not be started.",
+  board: pairText("live.board", "対局へ"),
+  made: say.say("live.made"),
+  another: say.say("live.another"),
+  refused: say.say("live.refused"),
   /*
    * WHERE THE GAME CAME FROM A REMATCH, what it is now — see `describeLineage`.
    * `them` is always the player from last time: the one a rematch repeats, and the
    * one a new game against somebody else is not a rematch of.
    */
-  rematchOf: (them: string) => `A rematch of your last game against ${them}, with the colours swapped.`,
-  rematchChanged: (them: string) =>
-    `A new game against ${them}, not a rematch: the rules differ from your last game, so the colours are not swapped.`,
-  notRematch: (them: string) =>
-    `A new game, not a rematch of your last game against ${them}: you chose somebody else to play, so the colours are not swapped.`,
+  rematchOf: (them: string) => say.say("live.rematchOf", { them }),
+  rematchChanged: (them: string) => say.say("live.rematchChanged", { them }),
+  notRematch: (them: string) => say.say("live.notRematch", { them }),
   /**
    * The seat went between this page being drawn and Begin being pressed.
    *
@@ -438,20 +438,18 @@ export const DOORSTEP_COPY = {
    * one used to do it silently — a press naming one person quietly posting a game
    * for anyone. The destination was right; doing it without saying so was not.
    */
-  seatGone: "Somebody else took that seat first. Press Start again for a game of your own instead.",
+  seatGone: say.say("live.seatGone"),
   /** Why a posted seat is no longer there to be taken — one line per reason. */
   gone: {
-    taken: "Somebody else took that seat first, so this would be a new game of your own instead.",
-    finished: "That game has finished, so there is no seat at it to take.",
-    missing:
-      "That seat is no longer on the noticeboard, so this would be a new game of your own instead.",
-    "other-game":
-      "That seat is at a different game from this one, so it is not the seat this page is about.",
+    taken: say.say("live.goneTaken"),
+    finished: say.say("live.goneFinished"),
+    missing: say.say("live.goneMissing"),
+    "other-game": say.say("live.goneOtherGame"),
     /** A seat whose game is set up differently — another opening, rated where friendly was chosen. */
-    "other-rules":
-      "That seat's game is set up differently from the one chosen here, so this would be a new game of your own instead.",
+    "other-rules": say.say("live.goneOtherRules"),
   },
-} as const;
+  };
+};
 
 /**
  * WHAT THE OFFER PANEL BESIDE THE BOARD SAYS, to each of the two people.
@@ -469,41 +467,36 @@ export const DOORSTEP_COPY = {
  * rebuff. John: "no penalties for refusing."
  */
 /** The panel beside a game that is one of a match; see `MatchPanel`. */
-export const MATCH_PANEL_COPY = {
-  title: "Match",
-  kanji: "番勝負",
-  lead: (size: number) => `One of ${size} games between the same two players, the colours alternating.`,
-  game: (index: number) => `Game ${index}`,
-  you: (colour: string) => `you play ${colour.toLowerCase()}`,
-  here: "this game",
+export const matchPanelCopy = (say: Speaker) => ({
+  title: say.say("live.matchTitle"),
+  kanji: say.pairsWithKanji ? "番勝負" : "",
+  lead: (size: number) => say.say("live.matchLead", { size: String(size) }),
+  game: (index: number) => say.say("live.matchGame", { index: String(index) }),
+  you: (colour: string) => say.say("live.matchYou", { colour: colour.toLowerCase() }),
+  here: say.say("live.matchHere"),
   state: {
-    offered: "waiting for an answer",
-    playing: "in play",
-    black: "Black won",
-    white: "White won",
-    drawn: "drawn",
-    declined: "declined",
-    withdrawn: "withdrawn",
+    offered: say.say("live.matchOffered"),
+    playing: say.say("live.matchPlaying"),
+    black: say.say("live.matchBlack"),
+    white: say.say("live.matchWhite"),
+    drawn: say.say("live.matchDrawn"),
+    declined: say.say("live.matchDeclined"),
+    withdrawn: say.say("live.matchWithdrawn"),
   },
-} as const;
+});
 
-export const OFFER_PANEL_COPY = {
+export const offerPanelCopy = (say: Speaker) => ({
   toMe: {
-    title: "This game is an offer",
-    kanji: "申込",
-    lead: (who: string) =>
-      `${who} has asked you for this game. The board and the rules below are what you would be ` +
-      `playing — no move can be made by either of you until you accept. Declining ends it with ` +
-      `no result, no rating and nothing on either record, and ${who} can always ask again.`,
+    title: say.say("live.offerToMeTitle"),
+    kanji: say.pairsWithKanji ? "申込" : "",
+    lead: (who: string) => say.say("live.offerToMeLead", { who }),
   },
   fromMe: {
-    title: "Your offer",
-    kanji: "申込済",
-    lead: (who: string) =>
-      `Waiting on ${who}. No clock is running and neither of you can move until they accept. ` +
-      `Withdrawing costs nobody anything — you can offer it again.`,
+    title: say.say("live.offerFromMeTitle"),
+    kanji: say.pairsWithKanji ? "申込済" : "",
+    lead: (who: string) => say.say("live.offerFromMeLead", { who }),
   },
-} as const;
+});
 
 /**
  * What the board says while the computer opposite is thinking.
@@ -514,9 +507,9 @@ export const OFFER_PANEL_COPY = {
  * take a couple of seconds, and a board that sits still is indistinguishable
  * from one that has stopped working.
  */
-export const BOT_SEAT_COPY = {
-  thinking: "Thinking…",
-} as const;
+export const botSeatCopy = (say: Speaker) => ({
+  thinking: say.say("live.thinking"),
+});
 
 /**
  * The words on a move that has been placed and not yet sent.
@@ -525,12 +518,12 @@ export const BOT_SEAT_COPY = {
  * is a setting rather than a question asked every turn — a button that moves
  * you somewhere should say where before it is pressed, not after.
  */
-export const LIVE_MOVE_COPY = {
-  submit: "Submit this move",
-  submitToNext: "Submit, then the next game",
-  submitToSame: (game: string) => `Submit, then the next ${game}`,
-  submitToMyGames: "Submit, then my games",
-  startOver: "Start this move over",
+export const liveMoveCopy = (say: Speaker) => ({
+  submit: say.say("live.submit"),
+  submitToNext: say.say("live.submitToNext"),
+  submitToSame: (game: string) => say.say("live.submitToSame", { game }),
+  submitToMyGames: say.say("live.submitToMyGames"),
+  startOver: say.say("live.startMoveOver"),
   /*
    * WHERE THE STONE ACTUALLY WENT, said in words. On a phone the point a
    * finger lands on and the point it meant are a few pixels apart, and the
@@ -538,16 +531,16 @@ export const LIVE_MOVE_COPY = {
    * says it, which are two different ways of being told and one of them
    * survives a thumb being in the way.
    */
-  placedAt: (point: string) => `Placed at ${point}`,
+  placedAt: (point: string) => say.say("live.placedAt", { point }),
   /** The arrows that move it a point at a time, before it is sent. */
   nudge: {
-    label: "Move it a point",
-    up: "Up one point",
-    down: "Down one point",
-    left: "Left one point",
-    right: "Right one point",
+    label: say.say("live.nudge"),
+    up: say.say("live.nudgeUp"),
+    down: say.say("live.nudgeDown"),
+    left: say.say("live.nudgeLeft"),
+    right: say.say("live.nudgeRight"),
   },
-} as const;
+});
 
 /**
  * THE BOARD'S COLUMN, AND HOW WIDE IT IS ON A DESK AT REGULAR.
@@ -595,30 +588,26 @@ export const BOARD_FIT_ROOM = "--board-room";
 export const BOARD_FIT_BELOW_PX = 72;
 
 /** What the Go help under the board says; see `GoHelp`. */
-export const GO_HELP_COPY = {
-  title: "Go help",
-  kanji: "手引",
-  passed: (them: string) =>
-    `${them} passed. If you pass too, the game ends and is counted — do that when there is nothing left worth playing. A stone inside your own ground gains nothing.`,
+export const goHelpCopy = (say: Speaker) => ({
+  title: say.say("live.goHelpTitle"),
+  kanji: say.pairsWithKanji ? "手引" : "",
+  passed: (them: string) => say.say("live.goPassed", { them }),
   atariMine: (at: string, liberty: string, stones: number) =>
-    `Your group at ${at} (${stones} ${stones === 1 ? "stone" : "stones"}) has one liberty left, at ${liberty}. Give it room or it is taken.`,
+    say.say("live.goAtariMine", { at, liberty, stones: say.count("live.stones", stones) }),
   atariTheirs: (them: string, at: string, liberty: string, stones: number) =>
-    `${them}'s group at ${at} (${stones} ${stones === 1 ? "stone" : "stones"}) has one liberty left: play ${liberty} to take it.`,
-  fillsOwnEye: (placed: string) =>
-    `${placed} fills one of your own eyes — the empty points a group lives by. A group with two eyes can never be taken; with one, it can. Start over unless you mean it.`,
-  selfAtari: (placed: string) =>
-    `After ${placed}, your group has one liberty left, and the other side takes it with the next stone. Start over unless you mean it.`,
-  howToWin:
-    "How Go is won: place stones to wall off more of the board than your opponent. A group with no empty point beside it is taken off. A group with two separate eyes can never be taken. When neither side has anything useful left, both pass, and each counts their stones plus the ground they walled in; White gets 6.5 for moving second.",
-} as const;
+    say.say("live.goAtariTheirs", { them, at, liberty, stones: say.count("live.stones", stones) }),
+  fillsOwnEye: (placed: string) => say.say("live.goFillsOwnEye", { placed }),
+  selfAtari: (placed: string) => say.say("live.goSelfAtari", { placed }),
+  howToWin: say.say("live.goHowToWin"),
+});
 
 /** The note that can go with a move, offered where the move is sent; see `MoveNoteField`. */
-export const MOVE_NOTE_COPY = {
-  open: "Add a note ✎",
-  label: "A note with this move",
-  placeholder: "Say something with the move (optional)",
-  close: "No note",
-} as const;
+export const moveNoteCopy = (say: Speaker) => ({
+  open: say.say("live.noteOpen"),
+  label: say.say("live.noteLabel"),
+  placeholder: say.say("live.notePlaceholder"),
+  close: say.say("live.noteClose"),
+});
 
 /**
  * The box a set-up preview is drawn in: the board of a game (`BoardPreview`)
@@ -657,10 +646,23 @@ export const SET_UP_PREVIEW_CAPTION = "min-h-[calc(3lh+0.5rem)] text-center text
  * `PLAY_BUTTON`'s size, with `PressLabel`.
  */
 export const START_PRESS = {
-  start: { words: "Start", kanji: "始" },
-  alone: { words: "Start alone", kanji: "独" },
-  friend: { words: "Start with a friend", kanji: "友" },
+  start: { words: PHRASES["live.start"], kanji: "始" },
+  alone: { words: PHRASES["live.startAlone"], kanji: "独" },
+  friend: { words: PHRASES["live.startFriend"], kanji: "友" },
   /** The puzzle already going, first on its set-up screen as on its front door (`PuzzlePlayOrResume`). */
-  resume: { words: "Continue", kanji: "続" },
-  starting: "Starting…",
+  resume: { words: PHRASES["live.startResume"], kanji: "続" },
+  starting: PHRASES["live.starting"],
 } as const;
+
+/**
+ * The same presses in the reader's language. A Japanese reader's words are
+ * Japanese and the kanji beside them is dropped: it is the English reader's
+ * second script, and theirs is already the first.
+ */
+export const startPress = (say: Speaker) => ({
+  start: { words: say.say("live.start"), kanji: say.pairsWithKanji ? "始" : "" },
+  alone: { words: say.say("live.startAlone"), kanji: say.pairsWithKanji ? "独" : "" },
+  friend: { words: say.say("live.startFriend"), kanji: say.pairsWithKanji ? "友" : "" },
+  resume: { words: say.say("live.startResume"), kanji: say.pairsWithKanji ? "続" : "" },
+  starting: say.say("live.starting"),
+});

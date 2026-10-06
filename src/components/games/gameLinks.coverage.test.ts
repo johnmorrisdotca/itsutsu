@@ -464,6 +464,8 @@ const PHRASE_EXCEPTIONS: Record<string, string> = {
    */
   "catalogue.familyPlayed.one": "a family's matches: /history filters by one game, so no page can show the set this counts",
   "catalogue.familyPlayed.other": "a family's matches: /history filters by one game, so no page can show the set this counts",
+  "gamepages.listIntro": "a count of the catalogue's rule sets, not of games anybody played: there is no set of finished games for it to open",
+  "gamepages.realLead": "the number of tiles drawn just below it, each of which leads to its own game; the games it counts are the tiles",
 };
 
 describe("a count of games said through a phrase is still the way into those games", () => {

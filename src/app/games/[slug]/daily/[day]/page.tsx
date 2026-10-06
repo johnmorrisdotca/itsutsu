@@ -7,7 +7,8 @@ import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { DAILY_WORDS_EPOCH, dayKeyOf, isDayKey } from "@/lib/puzzles/dailyWords/dailyDay";
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
 import { loadDailyPoolsFromModule } from "@/lib/puzzles/dailyWords/dailyPoolsModule";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 // Which day is today is a question for the moment of asking, and the times are read then too.
 export const dynamic = "force-dynamic";
@@ -15,8 +16,9 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/daily/[day]">): Promise<Metadata> {
   const { slug, day } = await params;
   const kind = puzzleFor(slug);
-  if (kind === null || dailyLanguageOf(kind) === null) return { title: "Daily words" };
-  return { title: `${PUZZLE_DISPLAY[kind].label}, ${day}` };
+  const say = await currentSpeaker();
+  if (kind === null || dailyLanguageOf(kind) === null) return { title: say.say("gamepages.titleDailyWords") };
+  return { title: say.joined([gameCopyOf(kind, say.locale)?.label ?? "", day]) };
 }
 
 /**

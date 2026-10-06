@@ -4,7 +4,9 @@ import { useState } from "react";
 
 import { Paired } from "@/components/i18n/Paired";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
-import { SET_UP_COPY } from "./live.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { setUpCopy } from "./live.constants";
 import { ANSWER_BODY_GAP, ANSWER_PART, ANSWER_SPREAD } from "./picker.constants";
 import type { SetUpFoldProps } from "./setUp.types";
 
@@ -60,6 +62,7 @@ export function SetUpFold({
   place,
   children,
 }: SetUpFoldProps) {
+  const SET_UP_COPY = setUpCopy(useSpeaker());
   const [open, setOpen] = useState(openInitially);
 
   return (

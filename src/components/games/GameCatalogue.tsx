@@ -10,6 +10,7 @@ import { FamilyStatsLine, GameStatsStrip } from "@/components/games/GameStats";
 import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
 import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
+import { weave } from "@/lib/i18n/weave";
 import { Tabs } from "@/components/ui/Tabs";
 import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
@@ -23,9 +24,11 @@ import { CasualLine } from "@/components/casual/CasualLine";
 import { PartyLine } from "@/components/party/PartyLine";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { rulesAttribution } from "@/lib/gomoku/attributionCopy";
-import { shelfCountWords } from "@/lib/gomoku/families";
+import { shelfCountWords } from "@/lib/gomoku/familyWords";
 import { familyPath } from "@/lib/gomoku/slugs";
 import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import { pairedText } from "@/lib/gomoku/seatWords";
 import type { Locale } from "@/lib/i18n/i18n.types";
 
 import { FamilyFold } from "@/components/games/FamilyFold";
@@ -73,9 +76,10 @@ export function GameCatalogue({
   /** The reader's language: a game's tagline is read in it. */
   locale?: Locale;
 }) {
+  const say = speaker(locale);
   return (
     <section className="flex flex-col gap-4" data-testid="game-catalogue">
-      <Tabs tabs={GAMES_TABS} active={view} base="/games" label="How to show the games" />
+      <Tabs tabs={GAMES_TABS} active={view} base="/games" label={say.say("gamepages.catalogueTabs")} />
       {view === CATALOGUE_VIEWS.list ? <GameList stats={stats} signedIn={signedIn} /> : null}
       {view === CATALOGUE_VIEWS.cards ? (
         // The filters read the query on the client, so they render once that is known.
@@ -83,7 +87,7 @@ export function GameCatalogue({
           <GameCards cards={cardsFor(locale)} stats={stats} signedIn={signedIn} />
         </Suspense>
       ) : null}
-      {view === CATALOGUE_VIEWS.families ? <Families families={families} stats={stats} signedIn={signedIn} folds={folds} keepsFolds={keepsFolds} /> : null}
+      {view === CATALOGUE_VIEWS.families ? <Families families={families} stats={stats} signedIn={signedIn} folds={folds} keepsFolds={keepsFolds} say={say} /> : null}
 
       {/*
         WHOSE NAMES THESE GAMES ARE, and it is here because the page that
@@ -111,12 +115,14 @@ function Families({
   signedIn,
   folds,
   keepsFolds,
+  say,
 }: {
   families: CatalogueFamily[];
   stats: CatalogueStats;
   signedIn: boolean;
   folds: KeptFolds;
   keepsFolds: boolean;
+  say: Speaker;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -134,15 +140,15 @@ function Families({
               <FamilyMark family={family.title} size="regular" />
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="flex items-baseline gap-2 font-semibold">
-                  {family.title}
-                  <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
+                  {say.pairsWithKanji ? family.title : family.kanji}
+                  {say.pairsWithKanji ? <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span> : null}
                   {/*
                     The family's own games. A guest from another family is
                     shown on the shelf but counted at home, so it is said
                     apart rather than added in.
                   */}
                   <span className="text-xs font-normal text-muted" data-testid="lobby-family-count">
-                    {shelfCountWords(family.games.length, family.guests.length)}
+                    {shelfCountWords(family.games.length, family.guests.length, say)}
                   </span>
                 </span>
                 {/*
@@ -159,19 +165,19 @@ function Families({
                 )}
               </span>
             </span>
-            <span className="text-xs text-muted group-open:hidden">show</span>
-            <span className="hidden text-xs text-muted group-open:inline">hide</span>
+            <span className="text-xs text-muted group-open:hidden">{say.say("gamepages.show")}</span>
+            <span className="hidden text-xs text-muted group-open:inline">{say.say("gamepages.hide")}</span>
           </summary>
           }
         >
           <p className="mt-2 text-sm text-muted">{family.blurb}</p>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {family.games.map((game) => (
-              <FamilyGameCard key={game.variant} game={game} stats={stats} signedIn={signedIn} />
+              <FamilyGameCard key={game.variant} game={game} stats={stats} signedIn={signedIn} say={say} />
             ))}
             {/* Guests from other families, after the family's own: see ALSO_LISTED_IN. */}
             {family.guests.map((guest) => (
-              <FamilyGameCard key={guest.variant} game={guest} stats={stats} signedIn={signedIn} />
+              <FamilyGameCard key={guest.variant} game={guest} stats={stats} signedIn={signedIn} say={say} />
             ))}
           </ul>
         </FamilyFold>
@@ -206,10 +212,12 @@ function FamilyGameCard({
   game,
   stats,
   signedIn,
+  say,
 }: {
   game: CatalogueGame | CatalogueGuest;
   stats: CatalogueStats;
   signedIn: boolean;
+  say: Speaker;
 }) {
   const guest = "home" in game;
   return (
@@ -232,10 +240,13 @@ function FamilyGameCard({
         </span>
         {guest ? (
           <span className="text-[0.7rem] text-muted" data-testid="family-game-home">
-            also under{" "}
-            <Link href={familyPath(game.variant)} className={`${RAISED_LINK} underline underline-offset-2`}>
-              {game.home.title}
-            </Link>
+            {weave(say.say("gamepages.alsoUnder"), {
+              family: (
+                <Link href={familyPath(game.variant)} className={`${RAISED_LINK} underline underline-offset-2`}>
+                  {pairedText(say, game.home.title, game.home.kanji)}
+                </Link>
+              ),
+            })}
           </span>
         ) : null}
         {/* And why it is on this shelf too: the reason `ALSO_LISTED_IN` gives beside it. */}
@@ -248,7 +259,7 @@ function FamilyGameCard({
         {/* Whether this device can play it with no connection (`ReadyOffline`). */}
         <ReadyOffline game={game.variant} />
         {game.inspiredBy !== undefined ? (
-          <span className="text-[0.7rem] text-muted italic">Inspired by {game.inspiredBy}</span>
+          <span className="text-[0.7rem] text-muted italic">{say.say("gamescreen.inspiredBy", { name: game.inspiredBy })}</span>
         ) : null}
         {/*
           What has been played of it, and who is best at it. It replaces "12

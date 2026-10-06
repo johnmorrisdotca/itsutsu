@@ -6,6 +6,7 @@ import { SetUpGame } from "@/components/live/SetUpGame";
 import { SetUpHeading } from "@/components/live/SetUpHeading";
 import { setUpFrom } from "@/components/live/setUpFrom";
 import { currentReader } from "@/lib/auth/currentReader";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { gameDefaultsFor } from "@/lib/auth/members";
 import { appearanceFor } from "@/lib/auth/memberAccount";
 import { seatsToSitAt } from "@/lib/history/seatsToSitAt";
@@ -15,7 +16,9 @@ import { preferredColour } from "@/lib/pieces/pieceColours";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "New game" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await currentSpeaker()).say("gamepages.newGame") };
+}
 
 /**
  * Setting a game up when no game has been chosen yet, at /games/new.
@@ -59,7 +62,7 @@ export default async function SetUpAnyGamePage({ searchParams }: PageProps<"/gam
    * Reads a row only where the address asked for one — a game to repeat, a
    * position to carry, a player to name. An ordinary visit costs nothing extra.
    */
-  const from = await setUpFrom({ variant: null, asked, defaults });
+  const from = await setUpFrom({ variant: null, asked, defaults, say: await currentSpeaker() });
 
   return (
     <Page>

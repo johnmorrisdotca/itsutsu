@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { pairedText } from "@/lib/gomoku/seatWords";
+
 import type { Appearance, Felt } from "@/components/board/board.types";
 import { PuzzleBoardAndSizes, PuzzleSetUp } from "@/components/puzzles/PuzzleSetUp";
 import { WordStyleProvider } from "@/components/puzzles/WordStyleContext";
@@ -52,6 +55,7 @@ export function PuzzleHere({
   wordStyle?: WordStyle | null;
 }) {
   // A Gomoji's language is a setting of it: the summary names the one game.
+  const say = useSpeaker();
   const copy = PUZZLE_DISPLAY[listedGameOf(puzzle)];
   // The size belongs to the puzzle it was chosen for: another puzzle starts at its own usual size.
   const [chosen, setChosen] = useState<{ kind: PuzzleKind; size: number } | null>(null);
@@ -62,7 +66,7 @@ export function PuzzleHere({
     // A Gomoji's style is chosen in its Options and drawn on its preview, as on its own set-up page.
     <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={hasAccount}>
       <p className={SET_UP_SUMMARY} data-testid="set-up-summary">
-        {copy.label} <span className="font-mincho">{copy.kanji}</span> · a puzzle for one
+        {pairedText(say, copy.label, copy.kanji)} · {say.say("live.puzzleForOne")}
       </p>
       <div className="mt-1 flex flex-col gap-3 border-t border-rule pt-3">
         <GamePicker
@@ -72,7 +76,7 @@ export function PuzzleHere({
             onGame(next);
           }}
           disabled={disabled}
-          label="Game"
+          label={say.say("gamepages.game")}
           puzzle={puzzle}
           onPuzzle={onPuzzle}
           underFamilies={

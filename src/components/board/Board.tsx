@@ -19,6 +19,7 @@ import {
   SQUARE_GUIDES,
   STONE_SETS,
 } from "./Board.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { boardThemeFor, gridFor } from "./appearance";
 import { seatStones } from "./seatStones";
 import { BoardLines } from "./BoardLines";
@@ -95,6 +96,7 @@ export function Board({
   viewer = null,
   colours,
 }: BoardProps) {
+  const say = useSpeaker();
   const [hovered, setHovered] = useState<Point | null>(null);
   const { size } = state.settings;
   const spec = VARIANT_SPECS[state.settings.variant];
@@ -277,7 +279,7 @@ export function Board({
               label={squareLabel(size, point, cell, {
                 forbidden: forbidden.has(index),
                 king: spec.checkers && kings.has(index),
-              })}
+              }, say)}
               isLast={index === lastIndex}
               isWinning={winningIndices.has(index)}
               ghost={(playable || target) && !piecing ? ghost : null}

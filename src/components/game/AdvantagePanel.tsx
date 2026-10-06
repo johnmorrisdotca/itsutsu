@@ -10,7 +10,8 @@ import {
 } from "@/lib/gomoku/advantage.constants";
 import { STONE_DISPLAY, STONES } from "@/lib/gomoku/gomoku.constants";
 import { SectionTitle } from "@/components/ui/Controls";
-import { GAME_COPY } from "./game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { gameCopy } from "./game.constants";
 import type { Advantage } from "@/lib/gomoku/advantage.types";
 import type { GameSession } from "./game.types";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
@@ -23,6 +24,8 @@ import type { Stone } from "@/lib/gomoku/gomoku.types";
  * space: a game that cannot be weighed says so, in a sentence about that game.
  */
 export function AdvantagePanel({ session }: { session: GameSession }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const { advantage } = session;
 
   return (
@@ -85,6 +88,7 @@ function Sides({
  * board, which speaks only to the player to move, does not.
  */
 function Threats({ advantage }: { advantage: Extract<Advantage, { kind: "threats" }> }) {
+  const say = useSpeaker();
   const { outlook, lead, decided } = advantage;
   const heading = decided
     ? LEAD_DISPLAY.decided
@@ -112,7 +116,7 @@ function Threats({ advantage }: { advantage: Extract<Advantage, { kind: "threats
           </>
         }
       />
-      <p className="text-[0.7rem] leading-snug text-muted">{THREATS_NOTE}</p>
+      <p className="text-[0.7rem] leading-snug text-muted">{say.say(THREATS_NOTE)}</p>
     </>
   );
 }
@@ -122,6 +126,7 @@ function Threats({ advantage }: { advantage: Extract<Advantage, { kind: "threats
  * number is and — as much to the point — what it is not.
  */
 function Count({ advantage }: { advantage: Extract<Advantage, { kind: "count" }> }) {
+  const say = useSpeaker();
   const copy = MEASURE_DISPLAY[advantage.measure];
 
   return (
@@ -135,7 +140,7 @@ function Count({ advantage }: { advantage: Extract<Advantage, { kind: "count" }>
         white={<span className="tabular-nums">{advantage.white}</span>}
       />
       <p className="text-[0.7rem] leading-snug text-muted">
-        {advantage.fewer ? copy.fewerNote : copy.note}
+        {say.say(advantage.fewer ? copy.fewerNote : copy.note)}
       </p>
     </>
   );
@@ -147,6 +152,7 @@ function Count({ advantage }: { advantage: Extract<Advantage, { kind: "count" }>
  * made without looking at the board.
  */
 function Unreadable({ advantage }: { advantage: Extract<Advantage, { kind: "unreadable" }> }) {
+  const say = useSpeaker();
   const copy = UNREADABLE_DISPLAY[advantage.reason];
 
   return (
@@ -155,8 +161,8 @@ function Unreadable({ advantage }: { advantage: Extract<Advantage, { kind: "unre
         {copy.kanji}
       </span>
       <span className="flex flex-col gap-0.5">
-        <span className="text-sm font-semibold text-ink">{copy.label}</span>
-        <span className="text-xs leading-snug text-muted">{copy.sentence}</span>
+        <span className="text-sm font-semibold text-ink">{say.say(copy.label)}</span>
+        <span className="text-xs leading-snug text-muted">{say.say(copy.sentence)}</span>
       </span>
     </div>
   );

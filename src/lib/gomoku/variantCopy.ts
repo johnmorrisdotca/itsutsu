@@ -1,3 +1,4 @@
+import type { Speaker } from "../i18n/i18n";
 import type { Locale } from "../i18n/i18n.types";
 import { jaText } from "../i18n/jaText";
 
@@ -25,4 +26,15 @@ export function variantCopy(variant: RuleVariant, locale: Locale): VariantCopy {
   const copy: VariantCopy = { ...english, tagline: ja.tagline, origin: ja.origin, rules: ja.rules, board: ja.board };
   IN_JAPANESE.set(variant, copy);
   return copy;
+}
+
+/**
+ * A game's name as one string in the reader's language: "Gomoku" for an
+ * English reader, 五目並べ for a Japanese one. For a line of text, an option or
+ * a label that cannot hold the name's component (`GameName`). A name this build
+ * does not know comes back as it was stored.
+ */
+export function variantName(variant: string, say: Speaker): string {
+  const copy = RULE_VARIANT_DISPLAY[variant as RuleVariant];
+  return copy === undefined ? variant : say.pairName(copy.label, copy.kanji).text;
 }

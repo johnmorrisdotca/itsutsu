@@ -1,14 +1,16 @@
 "use client";
 
 import { MosaicDialog } from "@/components/history/MosaicDialog";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { replayTimeline } from "@/lib/gomoku/replay";
 import { slugFor } from "@/lib/gomoku/slugs";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { framesOf, mosaicDraws } from "@/lib/record/mosaic";
-import { MOSAIC_COPY, VISUAL_MOVES_COPY } from "@/lib/record/mosaic.constants";
+import { MOSAIC_COPY } from "@/lib/record/mosaic.constants";
 
 /**
  * THE MOVE LIST AS PICTURES: every position of a game still being played, from
@@ -20,6 +22,7 @@ import { MOSAIC_COPY, VISUAL_MOVES_COPY } from "@/lib/record/mosaic.constants";
  * could disagree with the first, and redrawing it takes a moment.
  */
 export function VisualMoves({ detail }: { detail: GameDetail }) {
+  const say = useSpeaker();
   const variant = detail.variant as RuleVariant;
   if (!mosaicDraws(variant) || detail.moves.length === 0) return null;
   return (
@@ -30,15 +33,15 @@ export function VisualMoves({ detail }: { detail: GameDetail }) {
       size={detail.size}
       grid={VARIANT_SPECS[variant].grid}
       title={() => ({
-        name: `${detail.blackName || "Black"} vs ${detail.whiteName || "White"}`,
+        name: say.say("mosaic.vs", { black: detail.blackName || stoneName(say, "black"), white: detail.whiteName || stoneName(say, "white") }),
         details: [
-          `${RULE_VARIANT_DISPLAY[variant].label} ${detail.size}×${detail.size}`,
-          `${VISUAL_MOVES_COPY.soFar}, ${detail.moves.length} moves`,
+          `${variantName(variant, say)} ${detail.size}×${detail.size}`,
+          `${say.say("mosaic.inPlay")}, ${say.count("count.move", detail.moves.length)}`,
           MOSAIC_COPY.site,
         ],
       })}
       fileName={`itsutsu-${slugFor(variant)}-${detail.id}-move-${detail.moves.length}.png`}
-      alt={`Every position of this game so far, ${detail.moves.length} moves`}
+      alt={say.say("mosaic.altSoFar", { count: say.count("count.move", detail.moves.length) })}
     />
   );
 }

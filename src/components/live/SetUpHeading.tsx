@@ -5,9 +5,9 @@ import { PageTitle } from "@/components/layout/Headings";
 import { PAGE_TITLE_KANJI } from "@/components/ui/ui.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { gamePath, rulesPath, setUpLink } from "@/lib/gomoku/slugs";
-import { variantCopy } from "@/lib/gomoku/variantCopy";
-import { currentLocale } from "@/lib/i18n/currentLocale";
-import { SET_UP_COPY } from "./live.constants";
+import { variantCopy, variantName } from "@/lib/gomoku/variantCopy";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { setUpCopy } from "./live.constants";
 import { RematchSwap, RematchTitle } from "./RematchHeading";
 import { stillARematch } from "./setUpStart";
 import type { HeadingTitle, RematchHeadingState, SetUpFrom } from "./setUp.types";
@@ -45,8 +45,10 @@ export async function SetUpHeading({
   /** The game the address names, or null at /games/new. */
   variant: RuleVariant | null;
 }) {
-  const copy = variant === null ? null : variantCopy(variant, await currentLocale());
-  const plain: HeadingTitle = copy !== null ? { en: copy.label, kanji: copy.kanji } : { en: "New game", kanji: "新規対局" };
+  const say = await currentSpeaker();
+  const SET_UP_COPY = setUpCopy(say);
+  const copy = variant === null ? null : variantCopy(variant, say.locale);
+  const plain: HeadingTitle = copy !== null ? { en: copy.label, kanji: copy.kanji } : { en: say.say("live.newGame"), kanji: "新規対局" };
 
   const title: HeadingTitle =
     from.fork !== null
@@ -76,16 +78,16 @@ export async function SetUpHeading({
       ? null
       : copy !== null
         ? copy.tagline
-        : "Everything the game will be played under, settled here before it exists. Nothing is started until you say so.";
+        : say.say("live.setUpLead");
 
   return (
     <PageTitle
       testId="set-up-title"
       crumb={
         variant !== null && copy !== null ? (
-          <GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Set up" }]} />
+          <GameTrail game={{ label: variantName(variant, say), href: gamePath(variant) }} steps={[{ label: say.say("live.setUp") }]} />
         ) : (
-          <GameTrail game={{ label: "Set up" }} />
+          <GameTrail game={{ label: say.say("live.setUp") }} />
         )
       }
       title={
@@ -101,11 +103,11 @@ export async function SetUpHeading({
             {lead}{" "}
             {variant !== null ? (
               <Link href={rulesPath(variant)} className="underline underline-offset-4">
-                How to play
+                {say.say("live.howToPlay")}
               </Link>
             ) : (
               <Link href="/games" className="underline underline-offset-4">
-                All games
+                {say.say("live.allGames")}
               </Link>
             )}
             .

@@ -74,7 +74,7 @@ export function useComputerOpponent({
 
     made.addEventListener("error", (event) => {
       setThinking(false);
-      setFailed(event.message || "the bot stopped");
+      setFailed(event.message);
     });
 
     return () => {

@@ -1,5 +1,6 @@
 import type { SeatOnBoard } from "@/components/mine/startGame.types";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
 
 import type { GameSummary } from "./gameHistory.types";
 
@@ -11,7 +12,7 @@ import type { GameSummary } from "./gameHistory.types";
  * Pure and on its own, so the lobby's choice of seat can be tested without the
  * session reads `seatsToSitAt` makes.
  */
-export function seatOnBoard(game: GameSummary): SeatOnBoard {
+export function seatOnBoard(game: GameSummary, say: Speaker = speaker("en")): SeatOnBoard {
   return {
     id: game.id,
     variant: game.variant,
@@ -24,6 +25,6 @@ export function seatOnBoard(game: GameSummary): SeatOnBoard {
     headStart: game.headStart,
     clockMode: game.clockMode,
     timeoutPenalty: game.timeoutPenalty,
-    who: (game.openSeat === STONES.black ? game.whiteName : game.blackName).trim() || "Somebody",
+    who: (game.openSeat === STONES.black ? game.whiteName : game.blackName).trim() || say.say("played.somebody"),
   };
 }

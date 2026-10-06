@@ -5,7 +5,8 @@ import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/Controls";
 import { BUTTON_BASE, BUTTON_QUIET, SECTION_HEADING } from "@/components/ui/ui.constants";
-import { GAME_COPY } from "./game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { gameCopy } from "./game.constants";
 
 /**
  * "Are you still there?" — shown when nothing has moved for a while, with the
@@ -22,8 +23,8 @@ import { GAME_COPY } from "./game.constants";
 export function IdleModal({
   open,
   onConfirm,
-  detail = GAME_COPY.idleDetail,
-  kept = GAME_COPY.idleKept,
+  detail,
+  kept,
 }: {
   open: boolean;
   onConfirm: () => void;
@@ -32,6 +33,7 @@ export function IdleModal({
   /** What leaving costs here: nothing for a game that is kept, the run for a puzzle. */
   kept?: string;
 }) {
+  const GAME_COPY = gameCopy(useSpeaker());
   const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -62,7 +64,7 @@ export function IdleModal({
         <h2 id="idle-title" className={SECTION_HEADING}>
           {GAME_COPY.idle.label}
         </h2>
-        <p className="text-sm text-muted">{detail}</p>
+        <p className="text-sm text-muted">{detail ?? GAME_COPY.idleDetail}</p>
         <div className="flex w-full flex-col items-stretch gap-2">
           <Button onClick={onConfirm} strong data-testid="idle-confirm">
             {GAME_COPY.idleConfirm}
@@ -80,7 +82,7 @@ export function IdleModal({
             {GAME_COPY.idleLeave}
           </Link>
         </div>
-        <p className="text-xs text-muted">{kept}</p>
+        <p className="text-xs text-muted">{kept ?? GAME_COPY.idleKept}</p>
       </div>
     </dialog>
   );

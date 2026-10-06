@@ -10,6 +10,7 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { IpBoard } from "@/components/points/IpBoard";
+import { pairedText } from "@/lib/gomoku/seatWords";
 import { EVERY_GAME_KEY, gameCopyFor, isCasualKind, isPartyKind } from "@/lib/catalogue/gameKeys";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { familyOf, gamesShownIn } from "@/lib/gomoku/families";
@@ -17,11 +18,14 @@ import { familyBlurb } from "@/lib/gomoku/familyCopy";
 import { gameKeyFor, gamePath, setUpPath, slugFor } from "@/lib/gomoku/slugs";
 import { scopeOfFamily } from "@/lib/points/ipBoards";
 import { GameTrail } from "@/components/games/GameTrail";
+import { Paired } from "@/components/i18n/Paired";
+import { weave } from "@/lib/i18n/weave";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/family">): Promise<Metadata> {
   const variant = gameKeyFor((await params).slug);
   const family = variant === null ? null : familyOf(variant);
-  return { title: family === null ? "Family" : `${family.title} ${family.kanji}` };
+  const say = await currentSpeaker();
+  return { title: family === null ? say.say("gamepages.family") : pairedText(say, family.title, family.kanji) };
 }
 
 export function generateStaticParams() {
@@ -72,20 +76,19 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
         title={family.title}
         kanji={family.kanji}
         lead={familyBlurb(family, locale)}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant), testId: "family-up" }} steps={[{ label: "Family" }]} />}
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant), testId: "family-up" }} steps={[{ label: say.say("gamepages.family") }]} />}
       />
 
       <div className="flex items-center gap-4">
         <FamilyMark family={family.title} size="regular" />
         <p className="text-sm text-muted">
-          {say.count("count.gameKind", family.games.length)} in this family, including{" "}
           {/* The game you came from, named and still clickable — it is a game like the rest. */}
-          <GameName variant={variant} />.
+          {weave(say.say("gamepages.inThisFamily", { count: say.count("count.gameKind", family.games.length) }), { game: <GameName variant={variant} /> })}
         </p>
       </div>
       {guests > 0 ? (
         <p className="-mt-3 text-sm text-muted" data-testid="family-guest-count">
-          And {say.count("count.gameKind", guests)} from other families, listed here too.
+          {say.say("gamepages.fromOtherFamilies", { count: say.count("count.gameKind", guests) })}
         </p>
       ) : null}
 
@@ -106,7 +109,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
 
       <p className="text-sm">
         <Link href="/games" className="underline underline-offset-4" data-testid="family-all-games">
-          Every family, and every game <span className="font-mincho">全種目</span> →
+          <Paired en={say.say("gamepages.everyFamily")} kanji="全種目" kanjiClassName="font-mincho" /> →
         </Link>
       </p>
   </Page>

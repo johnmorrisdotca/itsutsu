@@ -1,3 +1,5 @@
+import { PHRASES } from "../i18n/i18n.constants";
+
 /**
  * How a move mosaic chooses its positions when a game has more than fit — see
  * `pickFrames` in mosaic.ts.
@@ -28,8 +30,8 @@ export const MOSAIC_MOST_TILES = 120;
  * on every other, and one shared looks as it did to whoever made it.
  */
 export const MOSAIC_SHAPES = {
-  landscape: { width: 1920, height: 1080, label: "Landscape", note: "1920×1080, a desktop or TV" },
-  portrait: { width: 1170, height: 2532, label: "Portrait", note: "1170×2532, an iPhone" },
+  landscape: { width: 1920, height: 1080 },
+  portrait: { width: 1170, height: 2532 },
 } as const;
 
 export type MosaicShape = keyof typeof MOSAIC_SHAPES;
@@ -55,53 +57,38 @@ export const MOSAIC_ART = {
   labelFrom: 60,
 } as const;
 
-/** The words on the panel that makes one. */
+/**
+ * The words of a mosaic in English: the dialog's and the picture's, read
+ * straight from the phrase catalogue, and the two names that are the same in
+ * every language. A reader's own language is `mosaicWords` (`mosaicWords.ts`);
+ * this is for the places that have no speaker, and for the tests.
+ * Relative imports only: the browser specs import this file.
+ */
 export const MOSAIC_COPY = {
-  /** The window's name. John, 2026-09-26: "call it Game Background Viewer or something better": the picture is sized to be a screen's background. */
-  heading: "Game wallpaper",
-  /** The quiet button beside a move list that opens the picture in a window. */
-  openLabel: "Every position",
+  heading: PHRASES["mosaic.heading"],
+  openLabel: PHRASES["mosaic.openLabel"],
   kanji: "棋譜絵",
-  blurb: "Every position of this game, in order, on one image the size of your screen. Made in your browser; nothing is sent anywhere.",
-  make: "Make the picture",
-  making: "Drawing…",
-  download: "Download",
-  /** The press that opens the picture at the size of the screen. */
-  fullScreen: "View full screen",
-  again: "Make it again",
-  pickLabel: "More positions than the picture holds. Show",
-  picks: {
-    opening: "the opening, counted from the first move",
-    spread: "the whole game, skipping evenly",
-    ending: "the ending, counted back from the last move",
-  },
-  failed: "The picture could not be drawn in this browser.",
-  shapeLabel: "Shape",
-  /** The name the logo on the title bar carries for anything reading the picture as text. */
+  blurb: PHRASES["mosaic.blurb"],
+  make: PHRASES["mosaic.make"],
+  making: PHRASES["mosaic.making"],
+  download: PHRASES["mosaic.download"],
+  fullScreen: PHRASES["mosaic.fullScreen"],
+  again: PHRASES["mosaic.again"],
+  failed: PHRASES["mosaic.failed"],
+  shapeLabel: PHRASES["mosaic.shapeLabel"],
   brand: "Itsutsu",
   site: "itsutsu.com",
   /** The bar's note when the grid holds fewer positions than the game has: "120 of 211 positions". */
-  shownOf: (shown: number, total: number) => `${shown} of ${total} positions`,
+  shownOf: (shown: number, total: number) =>
+    PHRASES["mosaic.shownOf"].replace("{shown}", String(shown)).replace("{total}", String(total)),
 } as const;
 
-/** The words on a live board's picture of its positions so far — see `VisualMoves`. */
+/** What the live board's picture of its positions so far is called, beside its kanji. */
 export const VISUAL_MOVES_COPY = {
-  summary: "Every position so far",
   kanji: "局面",
-  soFar: "In play",
 } as const;
 
-/**
- * THE WORDS OF A FINISHED BOARD'S WALLPAPER — every game that is not a board
- * game: its board as it was finished, in the game wallpaper's frame
- * (`BoardWallpaper`). John, 2026-09-29, on a finished Solitaire: "where is the
- * option to see the Desktop / Mobile image of the game?"
- */
+/** The kanji beside a finished board's wallpaper — every game that is not a board game (`BoardWallpaper`). */
 export const BOARD_WALLPAPER_COPY = {
-  /** The quiet press beside a finished game's way on, and the window's name. */
-  openLabel: "Game wallpaper",
   kanji: "壁紙",
-  drawing: "Drawing the board…",
-  failed: "The board could not be drawn in this browser.",
-  alt: (name: string) => `The finished board of ${name}, as a wallpaper`,
 } as const;

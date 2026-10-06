@@ -1,4 +1,6 @@
-import { BLOCKED, HOT, STONE_DISPLAY, WORM } from "@/lib/gomoku/gomoku.constants";
+import { BLOCKED, HOT, WORM } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
 import { pointName } from "@/lib/gomoku/notation";
 import type { Cell, Point } from "@/lib/gomoku/gomoku.types";
 
@@ -16,14 +18,15 @@ export function squareLabel(
   point: Point,
   cell: Cell,
   facts: { forbidden: boolean; king: boolean },
+  say: Speaker = speaker("en"),
 ): string {
-  return `${pointName(size, point)}, ${describe(cell, facts)}`;
+  return say.say("boardlook.squareLine", { point: pointName(size, point), what: describe(cell, facts, say) });
 }
 
-function describe(cell: Cell, { forbidden, king }: { forbidden: boolean; king: boolean }): string {
-  if (cell === BLOCKED) return "blocked";
-  if (cell === HOT) return "hotspot";
-  if (cell === WORM) return "wormhole";
-  if (cell === null) return forbidden ? "forbidden" : "empty";
-  return `${STONE_DISPLAY[cell].label} ${king ? "king" : "stone"}`;
+function describe(cell: Cell, { forbidden, king }: { forbidden: boolean; king: boolean }, say: Speaker): string {
+  if (cell === BLOCKED) return say.say("boardlook.squareBlocked");
+  if (cell === HOT) return say.say("boardlook.squareHot");
+  if (cell === WORM) return say.say("boardlook.squareWorm");
+  if (cell === null) return say.say(forbidden ? "boardlook.squareForbidden" : "boardlook.squareEmpty");
+  return say.say(king ? "boardlook.squareKing" : "boardlook.squareStone", { colour: stoneName(say, cell) });
 }

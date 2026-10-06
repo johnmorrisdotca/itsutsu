@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 
 import { rematchTitle, swapNote } from "./setUpHeadingWords";
+import { speaker } from "@/lib/i18n/i18n";
+
+const say = speaker("en");
 
 /**
  * A REMATCH'S HEADING, FROM WHERE THE CHOICES STAND.
@@ -17,19 +20,19 @@ const plain = { en: "Gomoku", kanji: "五目並べ" };
 describe("the heading of a rematch", () => {
   it("says play them again, and the swapped colour, while it is still a rematch", () => {
     const state = { repeat: true, opponent: { name: "Foe Tester" } };
-    expect(rematchTitle({ againName: "Foe Tester", state, plain })).toEqual({ en: "Play Foe Tester again", kanji: "再戦" });
-    expect(swapNote(state, STONES.white)).toBe("you take White");
+    expect(rematchTitle({ say, againName: "Foe Tester", state, plain })).toEqual({ en: "Play Foe Tester again", kanji: "再戦" });
+    expect(swapNote(state, STONES.white, say)).toBe("you take White");
   });
 
   it("names the player chosen instead, and swaps nothing, once it is a new game", () => {
     const state = { repeat: false, opponent: { name: "Razryad" } };
-    expect(rematchTitle({ againName: "Foe Tester", state, plain })).toEqual({ en: "Against Razryad", kanji: "対局" });
-    expect(swapNote(state, STONES.white)).toBeNull();
+    expect(rematchTitle({ say, againName: "Foe Tester", state, plain })).toEqual({ en: "Against Razryad", kanji: "対局" });
+    expect(swapNote(state, STONES.white, say)).toBeNull();
   });
 
   it("falls back to the game's own title when nobody in particular is chosen", () => {
     const state = { repeat: false, opponent: null };
-    expect(rematchTitle({ againName: "Foe Tester", state, plain })).toEqual(plain);
-    expect(swapNote(state, STONES.black)).toBeNull();
+    expect(rematchTitle({ say, againName: "Foe Tester", state, plain })).toEqual(plain);
+    expect(swapNote(state, STONES.black, say)).toBeNull();
   });
 });

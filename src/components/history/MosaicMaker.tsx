@@ -3,7 +3,9 @@
 import { useState } from "react";
 
 import { mosaicPlan, mosaicSvg } from "@/lib/record/mosaic";
-import { MOSAIC_COPY, MOSAIC_PICKS, MOSAIC_SHAPES, type MosaicPick } from "@/lib/record/mosaic.constants";
+import { MOSAIC_PICKS, MOSAIC_SHAPES, type MosaicPick } from "@/lib/record/mosaic.constants";
+import { mosaicWords } from "@/lib/record/mosaicWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { MosaicFrame, MosaicTitle } from "@/lib/record/mosaic.types";
 
 import { MosaicPanel } from "./MosaicPanel";
@@ -42,12 +44,14 @@ export function MosaicMaker({
   alt: string;
   auto?: boolean;
 }) {
+  const say = useSpeaker();
+  const words = mosaicWords(say);
   const [pick, setPick] = useState<MosaicPick>(MOSAIC_PICKS.spread);
 
   return (
     <MosaicPanel
       id={id}
-      svgOf={(shape) => mosaicSvg({ frames: frames(), pick, size, grid, ...MOSAIC_SHAPES[shape], title: title() })}
+      svgOf={(shape) => mosaicSvg({ frames: frames(), pick, size, grid, ...MOSAIC_SHAPES[shape], title: title(), say })}
       redraw={`${count} ${pick} ${size} ${grid}`}
       fileName={fileName}
       alt={alt}
@@ -57,7 +61,7 @@ export function MosaicMaker({
         return count > holds ? (
           <fieldset className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm">
             <legend className="mb-1 w-full text-center">
-              {MOSAIC_COPY.pickLabel} ({count} positions, {holds} tiles):
+              {words.pickLegend(count, holds)}
             </legend>
             {([MOSAIC_PICKS.opening, MOSAIC_PICKS.spread, MOSAIC_PICKS.ending] as const).map((choice) => (
               <label key={choice} className="flex min-h-11 cursor-pointer items-center gap-2">
@@ -68,7 +72,7 @@ export function MosaicMaker({
                   onChange={() => setPick(choice)}
                   data-testid={`mosaic-pick-${choice}`}
                 />
-                {MOSAIC_COPY.picks[choice]}
+                {words.picks[choice]}
               </label>
             ))}
           </fieldset>

@@ -1,13 +1,16 @@
 import {
   BOARD_SIZE_DISPLAY,
   HANDICAP_RULES,
+  OBSTACLE_LAYOUT_DISPLAY,
   OBSTACLE_LAYOUTS,
   OPENING_RULES,
-  STONE_DISPLAY,
   sizeForVariant,
 } from "@/lib/gomoku/gomoku.constants";
-import { RULE_VARIANT_DISPLAY, SECOND_STONE_EXCLUSION_DISPLAY, variantLabel } from "@/lib/gomoku/variants.constants";
-import { HANDICAP_RULE_DISPLAY, OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { RULE_VARIANT_DISPLAY, variantLabel } from "@/lib/gomoku/variants.constants";
+import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { handicapCopy, openingCopy, secondStoneLabel } from "@/lib/gomoku/openingCopy";
+import { pairedText, stoneName } from "@/lib/gomoku/seatWords";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { describeHeadStart } from "@/lib/gomoku/headStartWords";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import type { Handicap, HeadStart, OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
@@ -64,19 +67,15 @@ export type SettingsLike = {
  * wrap twice costs back the height this whole disclosure is for. It is one
  * tap away, with everything else.
  */
-export function describeSettings(rules: SettingsLike, refusal: RatingRefusal | null = null): SettingWord[] {
-  const opening =
-    rules.opening in OPENING_DISPLAY
-      ? OPENING_DISPLAY[rules.opening as OpeningRule].label
-      : rules.opening;
+export function describeSettings(rules: SettingsLike, refusal: RatingRefusal | null, say: Speaker): SettingWord[] {
   return [
-    { text: `${opening} opening`, notable: rules.opening !== OPENING_RULES.free },
+    { text: openingWords(say, rules.opening), notable: rules.opening !== OPENING_RULES.free },
     {
-      text: rules.allowResign ? "Resigning allowed" : "No resigning",
+      text: say.say(rules.allowResign ? "summary.resignAllowed" : "summary.noResign"),
       notable: !rules.allowResign,
     },
     {
-      text: describeClock(rules.clockMode, rules.moveTimeMs),
+      text: describeClock(rules.clockMode, rules.moveTimeMs, say),
       notable: rules.moveTimeMs !== null,
     },
     /*
@@ -100,28 +99,34 @@ export function describeSettings(rules: SettingsLike, refusal: RatingRefusal | n
      * choice stands.
      */
     refusal !== null
-      ? { text: RATING_REFUSED_WORD, notable: true }
-      : { text: rules.rated ? "Rated" : "Friendly", notable: !rules.rated },
+      ? { text: say.say(RATING_REFUSED_WORD), notable: true }
+      : { text: say.say(rules.rated ? "played.rated" : "played.friendly"), notable: !rules.rated },
   ];
 }
 
+/** "Pro opening", "開局ルール：五路制限": an opening named for the reader, or the stored word where this build has none. */
+export function openingWords(say: Speaker, opening: string): string {
+  const name = opening in OPENING_DISPLAY ? openingCopy(opening as OpeningRule, say.locale).label : opening;
+  return say.say("summary.opening", { opening: name });
+}
+
 /** The handicap in a sentence, or null when there is none. */
-export function describeHandicap(handicap: Handicap): string | null {
+export function describeHandicap(handicap: Handicap, say: Speaker): string | null {
   if (handicap.stone === null) return null;
   const parts = HANDICAP_RULES.filter((rule) => handicap[rule]).map((rule) =>
-    HANDICAP_RULE_DISPLAY[rule].label.toLowerCase(),
+    handicapCopy(rule, say.locale).label.toLowerCase(),
   );
   if (handicap.secondStoneExclusion > 0) {
     parts.push(
-      `second stone ${SECOND_STONE_EXCLUSION_DISPLAY[handicap.secondStoneExclusion].label.toLowerCase()}`,
+      say.say("summary.secondStone", { where: secondStoneLabel(handicap.secondStoneExclusion, say.locale).toLowerCase() }),
     );
   }
-  const who = STONE_DISPLAY[handicap.stone].label;
-  return parts.length > 0 ? `${who} handicap: ${parts.join(", ")}` : `${who} handicap`;
+  const who = stoneName(say, handicap.stone);
+  return parts.length > 0 ? say.say("summary.handicapWith", { colour: who, parts: say.joined(parts) }) : say.say("summary.handicap", { colour: who });
 }
 
 /** One line: "Renju 連珠 · 15×15 · Pro opening · Black handicap: no double three". */
-export function describeRules(rules: RulesLike): string {
+export function describeRules(rules: RulesLike, say: Speaker): string {
   const variant = rules.variant in RULE_VARIANT_DISPLAY
     ? RULE_VARIANT_DISPLAY[rules.variant as RuleVariant]
     : null;
@@ -142,24 +147,26 @@ export function describeRules(rules: RulesLike): string {
    */
   const size = variant === null ? rules.size : sizeForVariant(rules.variant as RuleVariant, rules.size);
   const parts = [
-    variant ? `${variant.label} ${variant.kanji}` : variantLabel(rules.variant),
+    variant ? pairedText(say, variant.label, variant.kanji) : variantLabel(rules.variant),
     /*
      * The board in the shape it really is: "8×8" for a square, "91 cells"
      * for the hexagon — see `boardWords`. The size's own name ("Mini",
      * "Eleven") follows it where there is one.
      */
-    `${boardWords(rules.variant as RuleVariant, size)}${
-      BOARD_SIZE_DISPLAY[size] ? ` ${BOARD_SIZE_DISPLAY[size].label}` : ""
+    `${boardWords(rules.variant as RuleVariant, size, say)}${
+      BOARD_SIZE_DISPLAY[size] ? ` ${say.pairName(BOARD_SIZE_DISPLAY[size].label, BOARD_SIZE_DISPLAY[size].kanji).text}` : ""
     }`,
   ];
   if (rules.opening !== OPENING_RULES.free && rules.opening in OPENING_DISPLAY) {
-    parts.push(`${OPENING_DISPLAY[rules.opening as OpeningRule].label} opening`);
+    parts.push(openingWords(say, rules.opening));
   }
-  if (rules.obstacles === OBSTACLE_LAYOUTS.hoshi) parts.push("Star blocks");
+  if (rules.obstacles === OBSTACLE_LAYOUTS.hoshi) {
+    parts.push(say.pairName(OBSTACLE_LAYOUT_DISPLAY.hoshi.label, OBSTACLE_LAYOUT_DISPLAY.hoshi.kanji).text);
+  }
   // The head start first, then the harder rules: the order the set-up screen asks them in.
-  const headStart = describeHeadStart(rules);
+  const headStart = describeHeadStart(rules, say);
   if (headStart !== null) parts.push(headStart);
-  const handicap = describeHandicap(rules.handicap);
+  const handicap = describeHandicap(rules.handicap, say);
   if (handicap !== null) parts.push(handicap);
   return parts.join(" · ");
 }

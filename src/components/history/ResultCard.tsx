@@ -46,8 +46,12 @@ export function ResultCard({ gameId, facts, names, headStart, xp, settling, rati
   const described = useId();
   if (!open) return null;
 
-  const headline = headlineOf(facts);
-  const score = scoreWords(facts.score);
+  const headline = headlineOf(facts, say);
+  const score = scoreWords(facts.score, say);
+  const button = (key: keyof typeof RESULT_CARD_COPY) => {
+    const { text, kanji } = say.pair(RESULT_CARD_COPY[key].phrase, RESULT_CARD_COPY[key].kanji);
+    return kanji === null ? text : `${text} ${kanji}`;
+  };
   const tone = RESULT_CARD_TONE[facts.outcome];
   const quiet = `${BUTTON_BASE} ${BUTTON_QUIET}`;
 
@@ -74,7 +78,7 @@ export function ResultCard({ gameId, facts, names, headStart, xp, settling, rati
           </span>
         </h2>
         <div id={described} className="flex flex-col gap-1 text-sm">
-          <p data-testid="result-card-reason">{reasonOf(facts, names)}</p>
+          <p data-testid="result-card-reason">{reasonOf(facts, names, say)}</p>
           {/* Said with the result, because a win with a head start is a different win: and it did not count. */}
           {headStart !== null ? (
             <p className="text-xs text-ink-soft" data-testid="result-card-head-start">
@@ -92,16 +96,16 @@ export function ResultCard({ gameId, facts, names, headStart, xp, settling, rati
               data-testid="result-card-xp"
               data-level={xp.level === null ? undefined : xp.level.reached ? "reached" : "next"}
             >
-              {RESULT_CARD_COPY.xp(xp.points)}
+              {say.say("result.xp", { points: String(xp.points) })}
               {xp.level === null
                 ? null
-                : ` · ${xp.level.reached ? RESULT_CARD_COPY.levelUp(xp.level.name) : RESULT_CARD_COPY.nextLevel(xp.level.name)}`}
+                : ` · ${say.say(xp.level.reached ? "result.levelUp" : "result.nextLevel", { name: xp.level.name })}`}
             </p>
           ) : null}
           {/* What the game did to both ratings at this game, +7 / −7 (John, 2026-09-25: "that 1600 thingy like +10, -10"). */}
           {rating !== null ? (
             <p className="font-mono text-xs font-semibold tabular-nums" data-testid="result-card-rating" data-mine={rating.mine}>
-              {RESULT_CARD_COPY.rating(signed(rating.mine), signed(rating.theirs))}
+              {say.say("result.rating", { mine: signed(rating.mine), theirs: signed(rating.theirs) })}
             </p>
           ) : null}
           {rivalry !== null ? (
@@ -119,15 +123,15 @@ export function ResultCard({ gameId, facts, names, headStart, xp, settling, rati
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="result-card-rematch"
             >
-              {rematch.again ? RESULT_CARD_COPY.again : RESULT_CARD_COPY.rematch}
+              {button(rematch.again ? "again" : "rematch")}
             </Link>
           ) : null}
           <Link href={newGame} onClick={seen} className={quiet} data-testid="result-card-new">
-            {RESULT_CARD_COPY.newGame}
+            {button("newGame")}
           </Link>
           {waiting !== null ? (
             <Link href={waiting.href} onClick={seen} className={quiet} data-testid="result-card-waiting">
-              {RESULT_CARD_COPY.waiting(waiting.count)}
+              {say.count("result.waiting", waiting.count)}
             </Link>
           ) : null}
           <button
@@ -136,10 +140,10 @@ export function ResultCard({ gameId, facts, names, headStart, xp, settling, rati
             className={quiet}
             data-testid="result-card-review"
           >
-            {RESULT_CARD_COPY.review}
+            {button("review")}
           </button>
           <button type="button" onClick={() => close()} className={quiet} data-testid="result-card-close">
-            {RESULT_CARD_COPY.close}
+            {button("close")}
           </button>
         </div>
       </div>

@@ -6,12 +6,12 @@ import { describe, expect, it } from "vitest";
 import { CASUAL_FAMILY_KEY } from "../casual/casual.constants";
 import { isCasualKind, isPartyKind } from "../catalogue/gameKeys";
 
+import { familyCountWords } from "./familyWords";
 import { gameKeyFor } from "./slugs";
 import {
   GAME_FAMILIES,
   HOME_FAMILIES,
   RECORDED_FAMILIES,
-  familyCountWords,
   familyKeepsRecords,
   familyPagePath,
   gamesShownIn,

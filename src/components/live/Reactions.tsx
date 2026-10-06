@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
 
-import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { stoneName } from "@/lib/gomoku/seatWords";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import type { GameReaction } from "@/lib/history/gameHistory.types";
 import {
   MESSAGE_MAX,
   QUICK_PHRASES,
+  messageIn,
   REACTIONS,
   type ReactionEmoji,
 } from "@/lib/history/reactions.constants";
@@ -29,6 +31,7 @@ export function ReactionBar({
   disabled: boolean;
   onSend: (emoji: ReactionEmoji, moveNumber: number | null, text: string | null) => void;
 }) {
+  const say = useSpeaker();
   const [text, setText] = useState("");
 
   const send = (emoji: ReactionEmoji) => {
@@ -46,8 +49,8 @@ export function ReactionBar({
             type="button"
             onClick={() => send(reaction.emoji)}
             disabled={disabled}
-            title={reaction.label}
-            aria-label={`Send ${reaction.label}`}
+            title={say.say(reaction.label)}
+            aria-label={say.say("live.reactSend", { label: say.say(reaction.label) })}
             className="rounded-full border border-rule bg-ivory/70 px-2 py-1 text-lg leading-none transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {reaction.emoji}
@@ -64,14 +67,14 @@ export function ReactionBar({
       <div className="flex flex-wrap gap-1.5" data-testid="quick-phrases">
         {QUICK_PHRASES.map((phrase) => (
           <button
-            key={phrase.text}
+            key={phrase.phrase}
             type="button"
             onClick={() => onSend(phrase.emoji, lastMove, phrase.text)}
             disabled={disabled}
             className="rounded-full border border-rule bg-ivory/70 px-2.5 py-1 text-xs text-ink-soft transition-colors hover:bg-ivory disabled:cursor-not-allowed disabled:opacity-40"
             data-testid="quick-phrase"
           >
-            <span aria-hidden="true">{phrase.emoji}</span> {phrase.text}
+            <span aria-hidden="true">{phrase.emoji}</span> {say.say(phrase.phrase)}
           </button>
         ))}
       </div>
@@ -85,8 +88,8 @@ export function ReactionBar({
         onKeyDown={(event) => {
           if (event.key === "Enter" && text.trim() !== "") send(REACTIONS[0].emoji);
         }}
-        placeholder="Say something with it…"
-        aria-label="Message to send with an emoji"
+        placeholder={say.say("live.reactPlaceholder")}
+        aria-label={say.say("live.reactMessage")}
         className={`${INPUT_CLASS} text-xs`}
         data-testid="reaction-text"
       />
@@ -106,6 +109,7 @@ export function ReactionBubbles({
   reactions: GameReaction[];
   yourStone: Stone | null;
 }) {
+  const say = useSpeaker();
   const [tick, setTick] = useState(() => Date.now());
 
   // Tick while anything is showing, so bubbles fade on time between polls.
@@ -136,7 +140,8 @@ export function ReactionBubbles({
     >
       {showing.map((reaction) => {
         const mine = reaction.stone === yourStone;
-        const label = REACTIONS.find((entry) => entry.emoji === reaction.emoji)?.label ?? "";
+        const found = REACTIONS.find((entry) => entry.emoji === reaction.emoji)?.label;
+        const label = found === undefined ? "" : say.say(found);
         return (
           <span
             key={reaction.id}
@@ -149,13 +154,13 @@ export function ReactionBubbles({
           >
             <span className="text-xl leading-none">{reaction.emoji}</span>
             <span className="text-xs text-muted">
-              {mine ? "You" : STONE_DISPLAY[reaction.stone as Stone]?.label ?? reaction.stone}
-              {reaction.moveNumber !== null ? ` · move ${reaction.moveNumber}` : ""}
+              {mine ? say.say("live.reactYou") : (reaction.stone === "black" || reaction.stone === "white" ? stoneName(say, reaction.stone) : reaction.stone)}
+              {reaction.moveNumber !== null ? ` · ${say.say("live.reactMove", { move: String(reaction.moveNumber) })}` : ""}
               {reaction.text ? "" : label ? ` · ${label}` : ""}
             </span>
             {reaction.text ? (
               <span className="max-w-[16rem] text-sm" data-testid="reaction-message">
-                {reaction.text}
+                {messageIn(say, reaction.text)}
               </span>
             ) : null}
           </span>
@@ -167,6 +172,7 @@ export function ReactionBubbles({
 
 /** The last few reactions, kept on the page after their bubbles have gone. */
 export function ReactionLog({ reactions }: { reactions: GameReaction[] }) {
+  const say = useSpeaker();
   const recent = reactions.slice(-8);
   if (recent.length === 0) return null;
   return (
@@ -174,7 +180,7 @@ export function ReactionLog({ reactions }: { reactions: GameReaction[] }) {
       {recent.map((reaction) => (
         <span
           key={reaction.id}
-          title={`${reaction.stone}${reaction.moveNumber !== null ? `, move ${reaction.moveNumber}` : ""}${reaction.text ? `: ${reaction.text}` : ""}`}
+          title={`${reaction.moveNumber !== null ? say.say("live.reactLog", { colour: reaction.stone === "black" || reaction.stone === "white" ? stoneName(say, reaction.stone) : reaction.stone, move: String(reaction.moveNumber) }) : reaction.stone}${reaction.text ? `: ${messageIn(say, reaction.text)}` : ""}`}
         >
           <span
             aria-hidden="true"
@@ -185,7 +191,7 @@ export function ReactionLog({ reactions }: { reactions: GameReaction[] }) {
             }`}
           />
           {reaction.emoji}
-          {reaction.text ? <span className="ml-1 text-ink-soft">{reaction.text}</span> : null}
+          {reaction.text ? <span className="ml-1 text-ink-soft">{messageIn(say, reaction.text)}</span> : null}
         </span>
       ))}
     </p>

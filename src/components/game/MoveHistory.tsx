@@ -2,19 +2,20 @@
 
 import { linesOf, pointIn } from "@/lib/record/moveFormats";
 import { capturePaths, slideWord } from "@/lib/gomoku/notation";
-import { MOVE_KINDS, STONE_DISPLAY, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { MOVE_KINDS, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
+import { seatName, stoneName } from "@/lib/gomoku/seatWords";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import { slugFor } from "@/lib/gomoku/slugs";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { MosaicDialog } from "@/components/history/MosaicDialog";
 import { ReplayButtons } from "@/components/history/ReplayButtons";
 import { framesOf, mosaicDraws } from "@/lib/record/mosaic";
 import { MOSAIC_COPY } from "@/lib/record/mosaic.constants";
-import { FATAL_MOVE_DISPLAY } from "@/lib/gomoku/analysis.constants";
+import { fatalMoveCopy } from "@/lib/gomoku/analysisCopy";
 import { SectionTitle, Select } from "@/components/ui/Controls";
 import {
-  GAME_COPY,
+  gameCopy,
   HISTORY_MODES,
-  HISTORY_MODE_DISPLAY,
+  historyModeDisplay,
 } from "./game.constants";
 import type { HistoryMode } from "./game.types";
 import type { GamePanelProps } from "./game.types";
@@ -30,6 +31,9 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  */
 export function MoveHistory({ session, actions }: GamePanelProps) {
   const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
+  const HISTORY_MODE_DISPLAY = historyModeDisplay(say);
+  const fatalCopy = fatalMoveCopy(say.locale);
   const { state, fatalMoves, moveIndex, record } = session;
   // Each capture's squares so far, for a draughts jump's colon (`capturePaths`).
   const paths = capturePaths(record);
@@ -49,7 +53,7 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
               historyMode: event.target.value as HistoryMode,
             })
           }
-          aria-label="What clicking a move does"
+          aria-label={say.say("gamescreen.historyAria")}
           data-testid="history-mode"
         >
           {Object.values(HISTORY_MODES).map((option) => (
@@ -73,8 +77,8 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
             <span>
               {say.count("count.move", record.length)}
             </span>
-            <span className="group-open:hidden">show</span>
-            <span className="hidden group-open:inline">hide</span>
+            <span className="group-open:hidden">{say.say("replay.show")}</span>
+            <span className="hidden group-open:inline">{say.say("replay.hide")}</span>
           </summary>
           {/* How the moves are written, ours or the other sites' (`MoveFormatPicker`). */}
           <div className="mt-1">
@@ -133,11 +137,11 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
                         : ""}
                     </span>
                     <span className="sr-only">
-                      {STONE_DISPLAY[move.stone].label}
+                      {stoneName(say, move.stone)}
                     </span>
                     {move.kind === MOVE_KINDS.skip ? (
                       <span className="text-xs text-muted">
-                        {GAME_COPY.skip.kanji}
+                        {say.pairsWithKanji ? GAME_COPY.skip.kanji : GAME_COPY.skip.label}
                       </span>
                     ) : null}
                     {move.captured !== undefined ? (
@@ -145,15 +149,15 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
                         className="text-xs text-muted"
                         title={`${GAME_COPY.captures.label}: ${move.captured.length / 2}`}
                       >
-                        {GAME_COPY.captures.kanji}×{move.captured.length / 2}
+                        {say.pairsWithKanji ? GAME_COPY.captures.kanji : GAME_COPY.captures.label}×{move.captured.length / 2}
                       </span>
                     ) : null}
                     {fatal ? (
                       <span
                         className="ml-auto rounded px-1.5 py-0.5 text-[0.65rem] font-semibold text-shu ring-1 ring-shu/40"
-                        title={FATAL_MOVE_DISPLAY.detail}
+                        title={fatalCopy.detail}
                       >
-                        {FATAL_MOVE_DISPLAY.kanji}
+                        {fatalCopy.kanji}
                       </span>
                     ) : null}
                   </button>
@@ -179,7 +183,7 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
           value={moveIndex}
           onChange={(event) => actions.jumpTo(Number(event.target.value))}
           className="w-full accent-ink"
-          aria-label="Move"
+          aria-label={say.say("replay.scrubber")}
           data-testid="history-scrubber"
         />
       ) : null}
@@ -195,15 +199,15 @@ export function MoveHistory({ session, actions }: GamePanelProps) {
           size={state.settings.size}
           grid={VARIANT_SPECS[state.settings.variant].grid}
           title={() => ({
-            name: `${session.names.one || "Player 1"} vs ${session.names.two || "Player 2"}`,
+            name: say.say("mosaic.vs", { black: session.names.one || seatName(say, "one"), white: session.names.two || seatName(say, "two") }),
             details: [
-              `${RULE_VARIANT_DISPLAY[state.settings.variant].label} ${state.settings.size}×${state.settings.size}`,
+              `${variantName(state.settings.variant, say)} ${state.settings.size}×${state.settings.size}`,
               say.count("count.move", record.length),
               MOSAIC_COPY.site,
             ],
           })}
           fileName={`itsutsu-${slugFor(state.settings.variant)}-${record.length}-moves.png`}
-          alt={`Every position of this game, ${record.length} moves`}
+          alt={say.say("mosaic.altGame", { count: say.count("count.move", record.length) })}
         />
       ) : null}
     </section>

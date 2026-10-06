@@ -8,14 +8,20 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import Link from "@/components/ui/Link";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { Paired } from "@/components/i18n/Paired";
+import { pairedText } from "@/lib/gomoku/seatWords";
 import { familyBlurb } from "@/lib/gomoku/familyCopy";
-import { GAME_FAMILIES, familyCountWords, gamesShownIn } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, gamesShownIn } from "@/lib/gomoku/families";
+import { familyCountWords } from "@/lib/gomoku/familyWords";
 
 /** The one family this page is for: a family no recorded game calls home, which no game's family page can be (`familyPagePath`). */
 const PARTY = GAME_FAMILIES.find((family) => family.key === "party");
 
-export const metadata: Metadata = { title: PARTY === undefined ? "Party games" : `${PARTY.title} ${PARTY.kanji}` };
+export async function generateMetadata(): Promise<Metadata> {
+  const say = await currentSpeaker();
+  return { title: PARTY === undefined ? say.say("gamepages.games") : pairedText(say, PARTY.title, PARTY.kanji) };
+}
 
 /**
  * PARTY GAMES, AT /games/party.
@@ -34,7 +40,8 @@ export const metadata: Metadata = { title: PARTY === undefined ? "Party games" :
  * everybody, prerendered.
  */
 export default async function PartyGamesPage() {
-  const locale = await currentLocale();
+  const say = await currentSpeaker();
+  const locale = say.locale;
   if (PARTY === undefined) notFound();
   return (
     <Page>
@@ -49,8 +56,7 @@ export default async function PartyGamesPage() {
       <div className="flex items-center gap-4" data-testid="party-family">
         <FamilyMark family={PARTY.title} size="regular" />
         <p className="text-sm text-muted" data-testid="family-guest-count">
-          {familyCountWords(PARTY)}, each played by passing one phone or tablet round the table. A game from another
-          family says where it lives.
+          {say.say("gamepages.partyNote", { count: familyCountWords(PARTY, say) })}
         </p>
       </div>
 
@@ -58,7 +64,7 @@ export default async function PartyGamesPage() {
 
       <p className="text-sm">
         <Link href="/games" className="underline underline-offset-4" data-testid="family-all-games">
-          Every family, and every game <span className="font-mincho">全種目</span> →
+          <Paired en={say.say("gamepages.everyFamily")} kanji="全種目" kanjiClassName="font-mincho" /> →
         </Link>
       </p>
     </Page>

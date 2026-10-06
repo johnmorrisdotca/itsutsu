@@ -1,11 +1,13 @@
 "use client";
 
 import { NO_HEAD_START, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { dottedText, stoneName } from "@/lib/gomoku/seatWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { TRADITIONAL_HEAD_START_DISPLAY, freeTurnsWords } from "@/lib/gomoku/headStartWords";
 import { freeTurnsOffered, traditionalCounts, traditionalKind } from "@/lib/gomoku/rules/headStart";
 import type { HeadStart, Stone } from "@/lib/gomoku/gomoku.types";
 import { Field, Select } from "@/components/ui/Controls";
-import { SET_UP_COPY } from "./live.constants";
+import { setUpCopy } from "./live.constants";
 
 /** Nobody is given a start: the even game. */
 const NONE = "none";
@@ -49,6 +51,8 @@ export function HeadStartChoice({
   disabled?: boolean;
   testPrefix?: string;
 }) {
+  const say = useSpeaker();
+  const SET_UP_COPY = setUpCopy(say);
   const stone = value.stone;
   const kind = traditionalKind(variant);
   const counts = traditionalCounts(variant, size);
@@ -76,7 +80,7 @@ export function HeadStartChoice({
           <option value={NONE}>{SET_UP_COPY.headStartNone}</option>
           {Object.values(STONES).map((option) => (
             <option key={option} value={option}>
-              {STONE_DISPLAY[option].label} · {STONE_DISPLAY[option].kanji}
+              {dottedText(say, stoneName(say, option), STONE_DISPLAY[option].kanji)}
             </option>
           ))}
         </Select>
@@ -85,7 +89,7 @@ export function HeadStartChoice({
       {stone !== null ? (
         <div className="flex flex-col gap-3 rounded-xl border border-rule p-3">
           {turnsOffered.length > 0 ? (
-            <Field label={SET_UP_COPY.freeTurns} hint={SET_UP_COPY.freeTurnsHint(STONE_DISPLAY[stone].label)}>
+            <Field label={SET_UP_COPY.freeTurns} hint={SET_UP_COPY.freeTurnsHint(stoneName(say, stone))}>
               <Select
                 value={turnsOffered.includes(value.freeTurns) ? value.freeTurns : 0}
                 disabled={disabled}
@@ -94,7 +98,7 @@ export function HeadStartChoice({
               >
                 {[0, ...turnsOffered].map((turns) => (
                   <option key={turns} value={turns}>
-                    {turns === 0 ? SET_UP_COPY.headStartNone : freeTurnsWords(turns)}
+                    {turns === 0 ? SET_UP_COPY.headStartNone : freeTurnsWords(turns, say)}
                   </option>
                 ))}
               </Select>
@@ -102,7 +106,7 @@ export function HeadStartChoice({
           ) : null}
 
           {tradition !== null && counts.length > 0 ? (
-            <Field label={`${tradition.label} · ${tradition.kanji}`} hint={`${tradition.description} From ${tradition.from}.`}>
+            <Field label={dottedText(say, tradition.label, tradition.kanji)} hint={say.say("live.sourceLine", { description: say.say(tradition.description), from: say.say(tradition.from) })}>
               <Select
                 value={counts.includes(value.traditional) ? value.traditional : 0}
                 disabled={disabled}
@@ -112,7 +116,7 @@ export function HeadStartChoice({
                 <option value={0}>{SET_UP_COPY.headStartNone}</option>
                 {counts.map((given) => (
                   <option key={given} value={given}>
-                    {tradition.count(given)}
+                    {say.count(tradition.count, given)}
                   </option>
                 ))}
               </Select>

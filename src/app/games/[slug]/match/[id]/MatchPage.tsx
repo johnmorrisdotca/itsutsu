@@ -7,7 +7,10 @@ import { GameViewClient } from "@/components/game/GameViewClient";
 import { BoardScaled } from "@/components/board/BoardScaled";
 import { FiledMatchPage } from "./FiledMatchPage";
 import { LiveMatch } from "./LiveMatch";
-import { SEAT_DISPLAY, STONES } from "@/lib/gomoku/gomoku.constants";
+import { STONES } from "@/lib/gomoku/gomoku.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import { isOffered, offerIsMine, offeredSeat, offererSeat, wasRefused } from "@/lib/history/offers";
 import { acrossTheBoard, mutedColours } from "@/lib/history/acrossTheBoard";
 import { RefusedOfferPage } from "./RefusedOfferPage";
@@ -26,7 +29,6 @@ import { appearanceFor, gameDefaultsFor } from "@/lib/auth/members";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { prisma } from "@/lib/prisma";
 import { GameTrailNav } from "@/components/games/GameTrail";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 /**
  * A match, at /games/<slug>/match/<id>.
@@ -69,6 +71,7 @@ export async function MatchPage({
    */
   seatFull?: boolean;
 }) {
+  const say = await currentSpeaker();
   // A puzzle's match is a race: two people, one grid, two clocks. See `PuzzleRacePage`.
   const puzzle = puzzleFor(slug);
   if (puzzle !== null) return <PuzzleRacePage kind={puzzle} id={id} />;
@@ -139,8 +142,8 @@ export async function MatchPage({
       <Page board="play">
         <SiteHeader />
         <GameTrailNav
-          game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
-          steps={[{ label: "Game" }]}
+          game={{ label: variantName(game.variant, say), href: gamePath(game.variant as RuleVariant) }}
+          steps={[{ label: say.say("gamepages.game") }]}
         />
         <SeatFullNotice shown={seatFull} />
         {/* The board and its sidebar at the size this reader keeps for this kind of screen (`BoardScaled`). */}
@@ -200,7 +203,7 @@ export async function MatchPage({
           side,
           who: shownName(
             (theirSeat === STONES.black ? game.blackName : game.whiteName).trim() ||
-              SEAT_DISPLAY.two.label,
+              seatName(say, "two"),
           ),
         };
 

@@ -1,7 +1,8 @@
-import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import type { Speaker } from "@/lib/i18n/i18n";
 
-import { SET_UP_COPY } from "./live.constants";
+import { setUpCopy } from "./live.constants";
 import type { HeadingTitle, RematchHeadingState } from "./setUp.types";
 
 /**
@@ -17,11 +18,14 @@ export function rematchTitle({
   againName,
   state,
   plain,
+  say,
 }: {
   againName: string;
   state: RematchHeadingState;
   plain: HeadingTitle;
+  say: Speaker;
 }): HeadingTitle {
+  const SET_UP_COPY = setUpCopy(say);
   if (state.repeat) return { en: SET_UP_COPY.again(againName), kanji: "再戦" };
   if (state.opponent !== null) return { en: SET_UP_COPY.against(state.opponent.name), kanji: "対局" };
   return plain;
@@ -32,6 +36,6 @@ export function rematchTitle({
  * against somebody else, is a new game that swaps nothing, and naming the swap
  * over it would be the promise Begin broke.
  */
-export function swapNote(state: RematchHeadingState, colour: Stone): string | null {
-  return state.repeat ? `you take ${STONE_DISPLAY[colour].label}` : null;
+export function swapNote(state: RematchHeadingState, colour: Stone, say: Speaker): string | null {
+  return state.repeat ? say.say("live.swapNote", { colour: stoneName(say, colour) }) : null;
 }

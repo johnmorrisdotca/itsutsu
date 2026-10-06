@@ -1,4 +1,5 @@
 import { botName } from "@/lib/bots/bots";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { builtLadderFingerprint } from "@/lib/gomoku/ladderFingerprint.built";
 import { ladderNeighbours, readsAsLevel } from "@/lib/gomoku/ladderNeighbours";
 import { measuredLadder } from "@/lib/gomoku/ladderStrength";
@@ -25,7 +26,7 @@ import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
  * anybody touches how a grade chooses a move, and a confidently wrong strength
  * is worse than none.
  */
-export function measuredLine(tier: BotTier | null, variant: string): string | null {
+export function measuredLine(tier: BotTier | null, variant: string, say: Speaker): string | null {
   if (tier === null) return null;
   /*
    * The chooser holds the game as a string — it comes from an address — and
@@ -41,8 +42,8 @@ export function measuredLine(tier: BotTier | null, variant: string): string | nu
 
   const them = botName(above.tier);
   const me = botName(tier);
-  if (readsAsLevel(above)) return `Measured here: level with ${them} at this game.`;
+  if (readsAsLevel(above)) return say.say("live.measured", { them });
   return above.wins > above.losses
-    ? `Measured here: ${me} beats ${them} at this game.`
-    : `Measured here: ${them} beats ${me} at this game.`;
+    ? say.say("live.measuredBeats", { winner: me, loser: them })
+    : say.say("live.measuredBeats", { winner: them, loser: me });
 }

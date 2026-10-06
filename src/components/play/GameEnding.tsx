@@ -9,7 +9,9 @@ import type { Asking } from "@/components/ui/ui.types";
 import { resignedBy } from "@/lib/party/resign";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { ENDINGS, GAME_ENDING_COPY, type Ending } from "./gameEnding.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { ENDINGS, gameEndingCopy, type Ending } from "./gameEnding.constants";
 
 const LOOK = `${BUTTON_BASE} ${BUTTON_QUIET}`;
 
@@ -59,6 +61,7 @@ export function EndGameButton({
   onAsking?: (asking: Asking) => void;
   testId: string;
 }) {
+  const GAME_ENDING_COPY = gameEndingCopy(useSpeaker());
   const resign = ending === ENDINGS.resign;
   const word = resign ? GAME_ENDING_COPY.resign : GAME_ENDING_COPY.giveUp;
   return (
@@ -84,7 +87,7 @@ export function EndGameButton({
 export function NewGameButton({
   going,
   onNewGame,
-  question = GAME_ENDING_COPY.newGameAsk,
+  question,
   disabled = false,
   onAsking,
   testId,
@@ -97,11 +100,12 @@ export function NewGameButton({
   testId: string;
 }) {
   const hydrated = useHydrated();
+  const GAME_ENDING_COPY = gameEndingCopy(useSpeaker());
   if (going) {
     return (
       <ConfirmButton
         label={GAME_ENDING_COPY.newGame}
-        question={question}
+        question={question ?? GAME_ENDING_COPY.newGameAsk}
         confirm={GAME_ENDING_COPY.newGameYes}
         cancel={GAME_ENDING_COPY.keepPlaying}
         onConfirm={onNewGame}
@@ -125,6 +129,7 @@ export function NewGameButton({
  * asked, and the title says where the one in progress will be.
  */
 export function NewGameLink({ href, testId, className = LOOK }: { href: string; testId: string; className?: string }) {
+  const GAME_ENDING_COPY = gameEndingCopy(useSpeaker());
   return (
     <Link href={href} className={className} title={GAME_ENDING_COPY.newGameKeeps} data-testid={testId}>
       {GAME_ENDING_COPY.newGame}
@@ -136,7 +141,7 @@ export function NewGameLink({ href, testId, className = LOOK }: { href: string; 
  * THE ROW UNDER A TABLE ROUND ONE DEVICE: Resign for the player to move while
  * the game is going, New game beside it, and, once somebody has resigned, who
  * did. The rule for what resigning does is `lib/party/resign.ts`; the words are
- * `GAME_ENDING_COPY`. `prefix` names the table's test ids (`<prefix>-resign`,
+ * `gameEndingCopy`. `prefix` names the table's test ids (`<prefix>-resign`,
  * `<prefix>-new`).
  */
 export function TableEnding({
@@ -160,6 +165,7 @@ export function TableEnding({
   onResign: (seat: number) => void;
   onNewGame: () => void;
 }) {
+  const GAME_ENDING_COPY = gameEndingCopy(useSpeaker());
   const resigned = resignedBy(game);
   return (
     <GameEnding>

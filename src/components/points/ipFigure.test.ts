@@ -58,7 +58,7 @@ describe("the record's ip and month filters", () => {
   it("say themselves as chips that can be taken off", () => {
     const none = { player: null, outcome: "", pool: "", rated: "", verdict: "", locale: "en" as const };
     expect(appliedNarrowings({ ...none, ip: "paid", month: "2026-09" })).toEqual([
-      { key: "ip", label: "Paid IP" },
+      { key: "ip", label: "Paid IP", phrase: { key: "played.paidIp", vars: {} } },
       {
         key: "month",
         label: "Finished in September 2026",

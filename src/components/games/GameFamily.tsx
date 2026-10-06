@@ -1,4 +1,8 @@
 import { FamilyMark } from "@/components/games/FamilyMark";
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
+import { weave } from "@/lib/i18n/weave";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
@@ -28,7 +32,8 @@ import { ALSO_LISTED_IN } from "@/lib/gomoku/familyShelves";
  * behalf of a reader who has not said yet. Its own page is where it says what
  * it is and offers all of it.
  */
-export function GameFamily({ variant }: { variant: GameKey }) {
+export async function GameFamily({ variant }: { variant: GameKey }) {
+  const say = await currentSpeaker();
   const siblings = siblingsOf(variant);
   if (siblings === null) return null;
   const { family } = siblings;
@@ -52,16 +57,16 @@ export function GameFamily({ variant }: { variant: GameKey }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-family">
       <h2 className={SECTION_TITLE}>
-        {alone ? "Family" : siblings.games.length > 0 ? "Also in this family" : "Also on its shelf"} <span className="font-mincho normal-case tracking-normal">同族</span>
+        <Paired en={say.say(alone ? "gamepages.family" : siblings.games.length > 0 ? "gamepages.titleAlsoInFamily" : "gamepages.titleAlsoOnShelf")} kanji="同族" kanjiClassName="font-mincho normal-case tracking-normal" />
       </h2>
       <div className="flex items-center gap-3">
         <FamilyMark family={family.title} size="regular" />
         <span className="flex min-w-0 flex-col">
           <span className="flex items-baseline gap-2 text-sm font-semibold">
-            {family.title}
-            <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span>
+            {say.pairsWithKanji ? family.title : family.kanji}
+            {say.pairsWithKanji ? <span className="font-mincho text-xs font-normal opacity-70">{family.kanji}</span> : null}
           </span>
-          <span className="text-xs text-muted">{family.blurb}</span>
+          <span className="text-xs text-muted">{familyBlurb(family, say.locale)}</span>
         </span>
       </div>
       {/*
@@ -74,21 +79,20 @@ export function GameFamily({ variant }: { variant: GameKey }) {
       */}
       {alone ? (
         <p className="text-xs text-muted" data-testid="game-family-alone">
-          The only one in its family so far.
+          {say.say("gamepages.familyAlone")}
         </p>
       ) : null}
       {shelves.length > 0 ? (
         <p className="text-xs text-muted" data-testid="game-family-shelves">
-          Also shown under{" "}
-          {shelves.map((shelf, index) => (
-            <span key={shelf.key}>
-              {index > 0 ? ", " : null}
-              <Link href={familyPagePath(shelf)} className="underline underline-offset-2" data-testid="game-family-shelf">
-                {shelf.title}
-              </Link>
-            </span>
-          ))}
-          .
+          {weave(say.say("gamepages.alsoShownUnder"), {
+            shelves: say.listPieces(
+              shelves.map((shelf) => (
+                <Link key={shelf.key} href={familyPagePath(shelf)} className="underline underline-offset-2" data-testid="game-family-shelf">
+                  {say.pairsWithKanji ? shelf.title : shelf.kanji}
+                </Link>
+              )),
+            ),
+          })}
         </p>
       ) : null}
       <ul className="-mx-2 flex flex-col text-sm">

@@ -5,6 +5,7 @@ import type { Appearance } from "@/components/board/board.types";
 import { PieceColourPicker } from "@/components/board/PieceColourPicker";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import type { PieceColour } from "@/lib/pieces/pieceColours";
 import { refusalWords, seatColourRefusal, type SeatColours } from "@/lib/pieces/seatColours";
@@ -31,18 +32,20 @@ export function SeatColoursPanel({
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="seat-colours">
       <h2 className={SECTION_TITLE}>
-        Piece colours <span className="font-mincho normal-case tracking-normal">色</span>
+        {say.say("gamescreen.pieceColours")}
+        {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal"> 色</span> : null}
       </h2>
       {([STONES.black, STONES.white] as Stone[]).map((side) => (
         <div key={side} className="flex flex-col gap-1" data-testid="seat-colours-side" data-side={side} data-colour={colours[side] ?? "usual"}>
           <span className="text-xs text-muted">
-            {STONE_DISPLAY[side].label} <span className="font-mincho">{STONE_DISPLAY[side].kanji}</span>
+            {stoneName(say, side)}
+            {say.pairsWithKanji ? <span className="font-mincho"> {STONE_DISPLAY[side].kanji}</span> : null}
           </span>
           <PieceColourPicker
             value={colours[side] ?? null}
             onChoose={(colour) => onChoose(side, colour)}
-            usual={{ face: side === STONES.black ? set.black : set.white, name: `${STONE_DISPLAY[side].label} stones, as usual` }}
-            label={`${STONE_DISPLAY[side].label}'s colour`}
+            usual={{ face: side === STONES.black ? set.black : set.white, name: say.say("gamescreen.stonesAsUsual", { colour: stoneName(say, side) }) }}
+            label={say.say("gamescreen.colourOf", { colour: stoneName(say, side) })}
             unavailable={(colour) => {
               const refusal = seatColourRefusal(side, colour, colours);
               return refusal === null ? null : refusalWords(refusal, say);

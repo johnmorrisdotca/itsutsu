@@ -1,21 +1,22 @@
 "use client";
 
 import { formatDuration } from "@/lib/clock/clock";
-import { SEAT_DISPLAY, SEATS } from "@/lib/gomoku/gomoku.constants";
+import { SEATS } from "@/lib/gomoku/gomoku.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
 import { SectionTitle } from "@/components/ui/Controls";
-import { GAME_COPY } from "./game.constants";
+import { gameCopy } from "./game.constants";
 import type { GameSession } from "./game.types";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** The rows shown for each player, in the order a post-game glance wants them. */
 const ROWS = [
-  { key: "moves", label: "Moves" },
-  { key: "thinkingMs", label: "Time used", time: true },
-  { key: "slowestMoveMs", label: "Longest think", time: true },
-  { key: "missedThreats", label: "Threats ignored" },
-  { key: "blunders", label: "Losing moves" },
-  { key: "hintsUsed", label: "Hints used" },
+  { key: "moves", label: "gamescreen.statMoves" },
+  { key: "thinkingMs", label: "gamescreen.statTime", time: true },
+  { key: "slowestMoveMs", label: "gamescreen.statLongest", time: true },
+  { key: "missedThreats", label: "gamescreen.statThreats" },
+  { key: "blunders", label: "gamescreen.statLosing" },
+  { key: "hintsUsed", label: "gamescreen.statHints" },
 ] as const;
 
 /**
@@ -28,6 +29,7 @@ const ROWS = [
  */
 export function GameStatsPanel({ session }: { session: GameSession }) {
   const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const { stats } = session;
   /*
    * The sum of both players' thinking time rather than the wall clock. It is
@@ -45,8 +47,10 @@ export function GameStatsPanel({ session }: { session: GameSession }) {
       </SectionTitle>
 
       <p className="text-xs text-muted">
-        {say.count("count.move", session.state.moves.length)} · {formatDuration(totalThinking)} at
-        the board
+        {say.say("gamescreen.statsLine", {
+          moves: say.count("count.move", session.state.moves.length),
+          time: formatDuration(totalThinking),
+        })}
       </p>
 
       {/* Two player columns and a row of numbers: on a phone this is wider than the screen. */}
@@ -57,7 +61,7 @@ export function GameStatsPanel({ session }: { session: GameSession }) {
               <th className="pb-1 font-medium">&nbsp;</th>
               {Object.values(SEATS).map((seat) => (
                 <th key={seat} className="pb-1 text-right font-medium">
-                  {session.names[seat].trim() || SEAT_DISPLAY[seat].label}
+                  {session.names[seat].trim() || seatName(say, seat)}
                 </th>
               ))}
             </tr>
@@ -65,7 +69,7 @@ export function GameStatsPanel({ session }: { session: GameSession }) {
           <tbody>
             {ROWS.map((row) => (
               <tr key={row.key} className="border-t border-rule">
-                <td className="py-1 text-muted">{row.label}</td>
+                <td className="py-1 text-muted">{say.say(row.label)}</td>
                 {Object.values(SEATS).map((seat) => {
                   const value = stats.bySeat[seat][row.key];
                   return (

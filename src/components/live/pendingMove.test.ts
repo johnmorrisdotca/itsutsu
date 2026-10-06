@@ -5,6 +5,9 @@ import { MOVE_KINDS, RULE_VARIANTS, STONES } from "@/lib/gomoku/gomoku.constants
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import { AFTER_MOVE } from "@/lib/preferences/turnFlow";
 import { pendingMove, submitWords } from "./pendingMove";
+import { speaker } from "@/lib/i18n/i18n";
+
+const say = speaker("en");
 
 /**
  * A MOVE PLACED BUT NOT SENT.
@@ -58,18 +61,18 @@ describe("a move placed but not sent", () => {
 
 describe("what Submit says", () => {
   it("names where it is about to take you", () => {
-    expect(submitWords(AFTER_MOVE.myGames, RULE_VARIANTS.freestyle)).toContain("my games");
-    expect(submitWords(AFTER_MOVE.nextWaiting, RULE_VARIANTS.freestyle)).toContain("next game");
+    expect(submitWords(AFTER_MOVE.myGames, RULE_VARIANTS.freestyle, say)).toContain("my games");
+    expect(submitWords(AFTER_MOVE.nextWaiting, RULE_VARIANTS.freestyle, say)).toContain("next game");
     // The game is NAMED, because "the next Ninuki" is the sentence somebody
     // means — read from the display table rather than spelled here, so a game
     // that is renamed does not leave this test asserting an old name.
-    expect(submitWords(AFTER_MOVE.sameGame, RULE_VARIANTS.ninuki)).toContain(
+    expect(submitWords(AFTER_MOVE.sameGame, RULE_VARIANTS.ninuki, say)).toContain(
       RULE_VARIANT_DISPLAY[RULE_VARIANTS.ninuki].label,
     );
   });
 
   it("promises no journey when the setting is to stay put", () => {
-    const words = submitWords(AFTER_MOVE.stay, RULE_VARIANTS.freestyle);
+    const words = submitWords(AFTER_MOVE.stay, RULE_VARIANTS.freestyle, say);
     expect(words).toBe("Submit this move");
     expect(words).not.toContain("then");
   });

@@ -1,4 +1,5 @@
 import { COLUMN_LETTERS } from "@/lib/gomoku/board.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
 import { SGF_POINT_LETTERS } from "./sgf.constants";
 import type { Point } from "@/lib/gomoku/gomoku.types";
 
@@ -132,7 +133,7 @@ function pointOfCoordinate(column: number, row: number, size: number): Point | n
  * `H8 K10`, `h8k10`, `8,8`. A column letter and a row number, or two numbers
  * separated by anything that is not a digit.
  */
-function readCoordinates(text: string, size: number): MovesRead {
+function readCoordinates(text: string, size: number, say: Speaker): MovesRead {
   const points: Point[] = [];
   const words = digitsFixed(text).match(/[A-Za-z]\s?\d{1,2}|\d{1,2}\s*[,.\-x]\s*\d{1,2}/g) ?? [];
   // Whatever is left once the moves are taken out: if it is not punctuation, it is a word nobody read.
@@ -147,25 +148,25 @@ function readCoordinates(text: string, size: number): MovesRead {
           // person writing "8,8" means the centre of a fifteen board.
           pointOfCoordinate(Number(pair[1]) - 1, Number(pair[2]), size)
         : null;
-    if (point === null) return { points, format: MOVE_FORMATS.coordinates, problem: offBoard(word, size) };
+    if (point === null) return { points, format: MOVE_FORMATS.coordinates, problem: offBoard(word, size, say) };
     points.push(point);
   }
   if (points.length === 0) return { points, format: null, problem: null };
   return {
     points,
     format: MOVE_FORMATS.coordinates,
-    problem: rest === "" ? null : `Could not read "${rest.slice(0, 12)}".`,
+    problem: rest === "" ? null : say.say("readmoves.unreadable", { text: rest.slice(0, 12) }),
   };
 }
 
 /** `f5d6c3` — two characters a square, run together, as Othello is published. */
-function readSquares(text: string, size: number): MovesRead {
+function readSquares(text: string, size: number, say: Speaker): MovesRead {
   const bare = digitsFixed(text).replace(/[\s,;.]/g, "");
   if (!/^(?:[A-Za-z]\d){2,}$/.test(bare)) return { points: [], format: null, problem: null };
   const points: Point[] = [];
   for (const square of bare.match(/[A-Za-z]\d/g) ?? []) {
     const point = pointOfCoordinate(columnOf(square[0]!), Number(square[1]), size);
-    if (point === null) return { points, format: MOVE_FORMATS.squares, problem: offBoard(square, size) };
+    if (point === null) return { points, format: MOVE_FORMATS.squares, problem: offBoard(square, size, say) };
     points.push(point);
   }
   return { points, format: MOVE_FORMATS.squares, problem: null };
@@ -179,19 +180,19 @@ function readSquares(text: string, size: number): MovesRead {
  * An empty pair — `B[]` — is a pass, which this reader refuses rather than
  * guesses at, because a pass is a turn and this returns points.
  */
-function readSgf(text: string, size: number): MovesRead {
+function readSgf(text: string, size: number, say: Speaker): MovesRead {
   const nodes = text.match(/;\s*[BW]\s*\[[^\]]*\]/gi) ?? [];
   if (nodes.length === 0) return { points: [], format: null, problem: null };
   const points: Point[] = [];
   for (const node of nodes) {
     const inside = /\[([^\]]*)\]/.exec(node)?.[1]?.trim() ?? "";
     if (inside === "" || inside === "tt") {
-      return { points, format: MOVE_FORMATS.sgf, problem: "That list has a pass in it, which this board cannot take yet." };
+      return { points, format: MOVE_FORMATS.sgf, problem: say.say("readmoves.pass") };
     }
     const col = SGF_POINT_LETTERS.indexOf(inside[0] ?? "");
     const row = SGF_POINT_LETTERS.indexOf(inside[1] ?? "");
     if (col < 0 || row < 0 || col >= size || row >= size) {
-      return { points, format: MOVE_FORMATS.sgf, problem: offBoard(inside, size) };
+      return { points, format: MOVE_FORMATS.sgf, problem: offBoard(inside, size, say) };
     }
     points.push({ row, col });
   }
@@ -216,13 +217,13 @@ function readSgf(text: string, size: number): MovesRead {
  * is left alone, because the reader was told which site it is and the squares
  * are the only thing in the paste written in that site's case.
  */
-function readSite(text: string, size: number, format: MoveFormat, square: RegExp, fromTop: boolean): MovesRead {
+function readSite(text: string, size: number, say: Speaker, format: MoveFormat, square: RegExp, fromTop: boolean): MovesRead {
   const points: Point[] = [];
   for (const [word, letter, digits] of text.matchAll(square)) {
     const col = letter!.toLowerCase().charCodeAt(0) - "a".charCodeAt(0);
     const row = Number(digits);
     const arrayRow = fromTop ? row - 1 : size - row;
-    if (col >= size || row < 1 || row > size) return { points, format, problem: offBoard(word, size) };
+    if (col >= size || row < 1 || row > size) return { points, format, problem: offBoard(word, size, say) };
     points.push({ row: arrayRow, col });
   }
   return { points, format: points.length === 0 ? null : format, problem: null };
@@ -248,16 +249,16 @@ export function siteOf(text: string): MoveFormat | null {
 }
 
 /** The same sentence wherever a move lands outside the board, so one wording is read twice. */
-function offBoard(word: string, size: number): string {
-  return `"${word}" is not a point on a ${size}×${size} board.`;
+function offBoard(word: string, size: number, say: Speaker): string {
+  return say.say("readmoves.offBoard", { word, size: String(size) });
 }
 
-const READERS: Record<MoveFormat, (text: string, size: number) => MovesRead> = {
+const READERS: Record<MoveFormat, (text: string, size: number, say: Speaker) => MovesRead> = {
   [MOVE_FORMATS.coordinates]: readCoordinates,
   [MOVE_FORMATS.squares]: readSquares,
   [MOVE_FORMATS.sgf]: readSgf,
-  [MOVE_FORMATS.itsYourTurn]: (text, size) => readSite(text, size, MOVE_FORMATS.itsYourTurn, /\b([a-z])(\d{1,2})\b/g, false),
-  [MOVE_FORMATS.goldToken]: (text, size) => readSite(text, size, MOVE_FORMATS.goldToken, /\b([A-Z])(\d{1,2})\b/g, true),
+  [MOVE_FORMATS.itsYourTurn]: (text, size, say) => readSite(text, size, say, MOVE_FORMATS.itsYourTurn, /\b([a-z])(\d{1,2})\b/g, false),
+  [MOVE_FORMATS.goldToken]: (text, size, say) => readSite(text, size, say, MOVE_FORMATS.goldToken, /\b([A-Z])(\d{1,2})\b/g, true),
 };
 
 /**
@@ -268,18 +269,18 @@ const READERS: Record<MoveFormat, (text: string, size: number) => MovesRead> = {
  * format the list was never in. Only when every reader has come up empty is
  * the list reported as unreadable, once, in one sentence.
  */
-export function readMoves(text: string, size: number, formats: readonly MoveFormat[]): MovesRead {
+export function readMoves(text: string, size: number, formats: readonly MoveFormat[], say: Speaker = speaker("en")): MovesRead {
   const tidied = tidy(text);
   if (tidied === "") return { points: [], format: null, problem: null };
   for (const format of formats) {
     // Another site's reader takes only its own squares, so it is given the paste as it came.
     const site = format === MOVE_FORMATS.itsYourTurn || format === MOVE_FORMATS.goldToken;
-    const read = READERS[format](site ? text : tidied, size);
+    const read = READERS[format](site ? text : tidied, size, say);
     if (read.format !== null) return read;
   }
   return {
     points: [],
     format: null,
-    problem: "Could not read any moves in that. Try a list like H8 K10 J9, or an SGF game.",
+    problem: say.say("readmoves.nothing"),
   };
 }

@@ -3,6 +3,8 @@
 import { useId, useState, type ReactNode } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { speaker as speakerFor } from "@/lib/i18n/i18n";
+import { weave } from "@/lib/i18n/weave";
 import { Paired } from "@/components/i18n/Paired";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import { BOT_PROFILES } from "@/lib/gomoku/opponent.constants";
@@ -12,7 +14,7 @@ import { shownName } from "@/lib/rating/shownName";
 
 import Link from "@/components/ui/Link";
 
-import { ASK_NEEDS_ACCOUNT, SET_UP_COPY } from "./live.constants";
+import { askNeedsAccount, setUpCopy } from "./live.constants";
 import { ANYONE, RANDOM_COMPUTER, capTiles, opponentGroups, shownChoice } from "./opponentOptions";
 import { ANSWER_ROW_OPPONENT, ANSWER_ROW_SEAT, OPPONENT_GROUPS } from "./picker.constants";
 import { answerColumns, answerPlace, answerRowFoot, type AnswerPlace } from "./answerRow";
@@ -22,12 +24,12 @@ import {
   PICK_CARD,
   PICK_MORE,
   PICK_PEOPLE,
-  RANDOM_COMPUTER_WORDS,
+  randomComputerWords,
 } from "./picker.constants";
 import type { OpponentChoiceProps, OpponentGroup, OpponentTile } from "./picker.types";
 import { SetUpFold } from "./SetUpFold";
 import { SeatMark } from "./SeatMark";
-import { POST_FOR_ANYONE } from "./setUpWords";
+import { postForAnyone } from "./setUpWords";
 import { measuredLine } from "./measuredLine";
 
 /**
@@ -64,7 +66,9 @@ export function OpponentChoice({
   signedIn,
   canAsk,
 }: OpponentChoiceProps) {
-  const say = useSpeaker().say;
+  const speaker = useSpeaker();
+  const say = speaker.say;
+  const SET_UP_COPY = setUpCopy(speaker);
   const groups = opponentGroups({ variant, opponents, named });
   const shown = shownChoice(value, groups);
   /*
@@ -105,7 +109,7 @@ export function OpponentChoice({
           disabled={inert}
           onChange={onChange}
           mark={<SeatMark kind="anyone" size="regular" />}
-          title={POST_FOR_ANYONE}
+          title={postForAnyone(speaker)}
           /*
            * WHAT IT MEANS, AND NOT WHERE IT WAITS. `postedWhere` — "It waits on
            * the Games page until somebody takes it" — is said again, in full,
@@ -186,15 +190,17 @@ export function OpponentChoice({
       */}
       {canAsk ? (
         <p className="text-xs text-muted md:pt-3" style={answerRowFoot(answers)} data-testid="set-up-opponent-elsewhere">
-          {SET_UP_COPY.elsewhere}{" "}
-          <Link href="/players" className="underline underline-offset-4 hover:text-ink">
-            {SET_UP_COPY.elsewhereLink}
-          </Link>{" "}
-          {SET_UP_COPY.elsewhereAfter}
+          {weave(SET_UP_COPY.elsewhere, {
+            link: (
+              <Link href="/players" className="underline underline-offset-4 hover:text-ink">
+                {SET_UP_COPY.elsewhereLink}
+              </Link>
+            ),
+          })}
         </p>
       ) : signedIn ? (
         <p className="text-xs text-muted md:pt-3" style={answerRowFoot(answers)} data-testid="set-up-ask-needs-account">
-          {ASK_NEEDS_ACCOUNT}
+          {askNeedsAccount(speaker)}
         </p>
       ) : null}
     </fieldset>
@@ -226,6 +232,7 @@ function Run({
   onChange: (next: string) => void;
 }) {
   const speaker = useSpeaker();
+  const SET_UP_COPY = setUpCopy(speaker);
   const heading = useId();
   const grid = useId();
   /*
@@ -373,7 +380,7 @@ function Run({
  * mark, and a second copy of this is a second place for 国手 to become a G.
  */
 function markLetter(tile: OpponentTile): string {
-  if (tile.value === RANDOM_COMPUTER) return RANDOM_COMPUTER_WORDS.mark;
+  if (tile.value === RANDOM_COMPUTER) return "?";
   const profile = tile.tier === null ? null : BOT_PROFILES[tile.tier];
   const shownAs = tile.computer ? tile.name : shownName(tile.name);
   return Array.from(profile?.native ?? shownAs)[0] ?? "";
@@ -381,9 +388,9 @@ function markLetter(tile: OpponentTile): string {
 
 /** A tile's picture and words, from who it is and which game is being set up. */
 function tileWords(tile: OpponentTile, variant: string, locale: Locale) {
-  const shownAs = tile.computer ? tile.name : shownName(tile.name);
-  const profile = tile.tier === null ? null : botProfile(tile.tier, locale);
   const random = tile.value === RANDOM_COMPUTER;
+  const shownAs = random ? randomComputerWords(speakerFor(locale)).name : tile.computer ? tile.name : shownName(tile.name);
+  const profile = tile.tier === null ? null : botProfile(tile.tier, locale);
   const initial = markLetter(tile);
   return {
     value: tile.value,
@@ -400,7 +407,7 @@ function tileWords(tile: OpponentTile, variant: string, locale: Locale) {
       ) : (
         <Paired en={tile.name} kanji={profile.native ?? ""} kanjiClassName="text-xs font-normal opacity-70" />
       ),
-    line: profile?.strength ?? (random ? RANDOM_COMPUTER_WORDS.means : null),
+    line: profile?.strength ?? (random ? randomComputerWords(speakerFor(locale)).means : null),
     /*
      * What this grade MEASURED at this game, under what it says it tries to
      * do. Two different claims, and the second is the one that has been
@@ -408,7 +415,7 @@ function tileWords(tile: OpponentTile, variant: string, locale: Locale) {
      * drawn where nothing has been measured for this game against the code
      * that is running.
      */
-    measured: measuredLine(tile.tier, variant),
+    measured: measuredLine(tile.tier, variant, speakerFor(locale)),
   };
 }
 

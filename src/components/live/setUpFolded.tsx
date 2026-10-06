@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 
 import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 
-import { SET_UP_COPY } from "./live.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+
+import { setUpCopy } from "./live.constants";
 import { describeSettings } from "./rulesSummary";
 import type { RulesDraft } from "./rulesDraft";
 import { SettingWords } from "./SettingWords";
@@ -30,12 +32,14 @@ export function foldedWords({
   opponent,
   fork,
   random,
+  say,
 }: {
   settled: RulesDraft;
   refused: RatingRefusal | null;
   opponent: SetUpOpponent | null;
   fork: SetUpFork | null;
   random: boolean;
+  say: Speaker;
 }): { rules: ReactNode; handicap: ReactNode } {
   /*
    * `recapWords` is asked for the handicap's words rather than a second
@@ -50,13 +54,14 @@ export function foldedWords({
     handicap: settled.handicap,
     game: settled,
     random,
+    say,
   }).slice(1);
 
   return {
-    rules: <SettingWords words={describeSettings(settled, refused)} testId="set-up-rules-words" />,
+    rules: <SettingWords words={describeSettings(settled, refused, say)} testId="set-up-rules-words" />,
     handicap: (
       <SettingWords
-        words={handicap.length > 0 ? handicap : [{ text: SET_UP_COPY.noHandicap, notable: false }]}
+        words={handicap.length > 0 ? handicap : [{ text: setUpCopy(say).noHandicap, notable: false }]}
         testId="set-up-handicap-words"
       />
     ),

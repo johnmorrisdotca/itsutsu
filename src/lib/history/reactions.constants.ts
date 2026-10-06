@@ -1,3 +1,6 @@
+import type { Speaker } from "../i18n/i18n";
+import { PHRASES, type PhraseKey } from "../i18n/i18n.constants";
+
 /**
  * Emoji a player may send the other during a shared game.
  *
@@ -6,17 +9,17 @@
  * button's accessible name and for the record.
  */
 export const REACTIONS = [
-  { emoji: "👏", label: "Nice move" },
-  { emoji: "🔥", label: "On fire" },
-  { emoji: "😮", label: "Did not see that coming" },
-  { emoji: "🤔", label: "Thinking" },
-  { emoji: "😅", label: "Close one" },
-  { emoji: "😂", label: "Ha" },
-  { emoji: "😱", label: "Oh no" },
-  { emoji: "🙇", label: "Well played" },
-  { emoji: "🍵", label: "Take your time" },
-  { emoji: "👋", label: "Hello" },
-] as const;
+  { emoji: "👏", label: "played.reactionNice" },
+  { emoji: "🔥", label: "played.reactionFire" },
+  { emoji: "😮", label: "played.reactionSurprise" },
+  { emoji: "🤔", label: "played.reactionThinking" },
+  { emoji: "😅", label: "played.reactionClose" },
+  { emoji: "😂", label: "played.reactionHa" },
+  { emoji: "😱", label: "played.reactionOhNo" },
+  { emoji: "🙇", label: "played.reactionWellPlayed" },
+  { emoji: "🍵", label: "played.reactionTakeTime" },
+  { emoji: "👋", label: "played.reactionHello" },
+] as const satisfies readonly { emoji: string; label: PhraseKey }[];
 
 export type ReactionEmoji = (typeof REACTIONS)[number]["emoji"];
 
@@ -41,13 +44,25 @@ export const REACTION_EMOJI = REACTIONS.map((reaction) => reaction.emoji) as [
  * than typing.
  */
 export const QUICK_PHRASES = [
-  { emoji: "👋", text: "Hello, good luck" },
-  { emoji: "🍵", text: "No rush" },
-  { emoji: "🤔", text: "Need to think about this one" },
-  { emoji: "😅", text: "Sorry, misclick" },
-  { emoji: "👋", text: "Have to go — back later" },
-  { emoji: "🙇", text: "Good game, thank you" },
-] as const satisfies readonly { emoji: ReactionEmoji; text: string }[];
+  { emoji: "👋", phrase: "played.quickHello", text: PHRASES["played.quickHello"] },
+  { emoji: "🍵", phrase: "played.quickNoRush", text: PHRASES["played.quickNoRush"] },
+  { emoji: "🤔", phrase: "played.quickThink", text: PHRASES["played.quickThink"] },
+  { emoji: "😅", phrase: "played.quickMisclick", text: PHRASES["played.quickMisclick"] },
+  { emoji: "👋", phrase: "played.quickAway", text: PHRASES["played.quickAway"] },
+  { emoji: "🙇", phrase: "played.quickGoodGame", text: PHRASES["played.quickGoodGame"] },
+] as const satisfies readonly { emoji: ReactionEmoji; phrase: PhraseKey; text: string }[];
+
+/**
+ * A message in the reader's language when it is one of the quick phrases.
+ *
+ * A quick phrase is sent, and kept, as its English text, so it is the same
+ * thing for both players and for the computer's greeting; what a reader sees
+ * is that phrase in their own language. Anything typed is shown as it was.
+ */
+export function messageIn(say: Speaker, text: string): string {
+  const quick = QUICK_PHRASES.find((phrase) => phrase.text === text);
+  return quick === undefined ? text : say.say(quick.phrase);
+}
 
 /** How many recent reactions a game carries to its readers. */
 export const REACTIONS_KEPT = 30;

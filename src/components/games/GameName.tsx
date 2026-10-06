@@ -83,7 +83,7 @@ export function GameName({
     return (
       <span
         className={`text-muted italic ${className}`}
-        title="Not a game played here — this is from a record kept from elsewhere."
+        title={say.say("gamepages.notHere")}
         data-testid="game-not-here"
       >
         {name ?? variant ?? ""}

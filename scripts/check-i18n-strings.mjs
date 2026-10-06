@@ -79,20 +79,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
  */
 export const PENDING_PATHS = [
   // ENJA-05, game copy tables: every game's rules, tagline, openings, bots and family names. Each folder here holds only what is left of it: the games', openings', bots' and families' own words are done, beside their Japanese.
-  { path: "src/lib/gomoku", ticket: "ENJA-05" },
   { path: "src/lib/famous", ticket: "ENJA-05" },
-  { path: "src/app/games", ticket: "ENJA-05" },
   // ENJA-06, set-up screen, game screen and every ending
-  { path: "src/components/live", ticket: "ENJA-06" },
-  { path: "src/components/game", ticket: "ENJA-06" },
-  { path: "src/components/games", ticket: "ENJA-06" },
-  { path: "src/components/history", ticket: "ENJA-06" },
-  { path: "src/components/board", ticket: "ENJA-06" },
-  { path: "src/components/play", ticket: "ENJA-06" },
-  { path: "src/lib/history", ticket: "ENJA-06" },
-  { path: "src/lib/record", ticket: "ENJA-06" },
-  { path: "src/lib/rating", ticket: "ENJA-06" },
-  { path: "src/lib/clock", ticket: "ENJA-06" },
+  { path: "src/lib/history", ticket: "ENJA-13" },
   // ENJA-07, puzzles (folders, so a renamed puzzle file breaks nothing)
   { path: "src/lib/puzzles", ticket: "ENJA-07" },
   { path: "src/components/puzzles", ticket: "ENJA-07" },
@@ -129,8 +118,6 @@ export const PENDING_PATHS = [
   { path: "src/lib/messages", ticket: "ENJA-10" },
   { path: "src/lib/preferences", ticket: "ENJA-10" },
   { path: "src/lib/reports", ticket: "ENJA-10" },
-  { path: "src/lib/feed", ticket: "ENJA-10" },
-  { path: "src/lib/thanks", ticket: "ENJA-10" },
   { path: "src/app/join", ticket: "ENJA-10" },
   { path: "src/app/champions", ticket: "ENJA-10" },
   { path: "src/app/me", ticket: "ENJA-10" },
@@ -229,6 +216,29 @@ export const ALLOWED_FILES = new Map([
   ["src/lib/pieces/pieceColours.ts", "colour names, each an English label beside its own kanji (深紅, 朱, 琥珀…), which a Japanese reader is shown instead of the label (Speaker.pairName); and the one CSS gradient string"],
   ["src/lib/catalogue/gameSettings.ts", "language and word-list names, each an English label beside its own name in Japanese (英語, 仏語, 独語, かな, 日常, ポップ) that a Japanese reader is shown instead"],
   ["src/lib/catalogue/gamesTabs.ts", "the catalogue's tab names, each an English label beside its own kanji (学び, 名局, 賽) that a Japanese reader is shown instead"],
+  ["src/lib/clock/clockNames.constants.ts", "the preset clocks' names, each an English label beside its own kanji (無制限, 早碁, 速碁, 持ち時間) that a Japanese reader is shown instead (Speaker.pairName); each description is a phrase"],
+  ["src/lib/rating/ratingNames.constants.ts", "the rating tiers' and pools' names, each an English label beside its own kanji (未定, 仮, 確定, 対人, 対コンピュータ, 総合) that a Japanese reader is shown instead (Speaker.pairName); each note is a phrase"],
+  ["src/lib/rating/directory.sort.ts", "a sort spec's column labels and the name of the thing sorted, which `paging.ts` only checks are not empty and a sort button's English aria text reads; the visible headings are the table's own"],
+  ["src/lib/rating/ladder.sort.ts", "a sort spec's column labels and the name of the thing sorted, as directory.sort.ts, and a note to the developer on why a column has no index"],
+  ["src/lib/history/gameHistory.sort.ts", "a sort spec's column labels and the name of the thing sorted, as directory.sort.ts, and a note to the developer on why a column has no index"],
+  ["src/lib/history/myFinished.sort.ts", "a sort spec's column label and the name of the thing sorted, as directory.sort.ts"],
+  ["src/lib/gomoku/gomoku.constants.ts", "the colours', first moves', obstacle layouts', board sizes' and draw limits' names, each an English label beside its own kanji (黒, 黒先, 平盤, 十五路…) that a Japanese reader is shown instead (Speaker.pairName); what each does is a phrase"],
+  ["src/lib/gomoku/advantage.constants.ts", "the advantage panel's names, each an English label beside its own kanji (石数, 互角, 必勝…) that a Japanese reader is shown instead (Speaker.pairName); every explanation is a phrase"],
+  ["src/lib/gomoku/headStartNames.constants.ts", "a head start's names, each an English label beside its own kanji (先手, 置き石, 駒落ち) that a Japanese reader is shown instead (Speaker.pairName); every description, source and count is a phrase"],
+  ["src/lib/gomoku/catalogueViewNames.constants.ts", "the catalogue's three views' names, each an English label beside its own kanji (系統, 一覧, 全種目) that a Japanese reader is shown instead (Speaker.pairName)"],
+  ["src/lib/gomoku/analysis.constants.ts", "the English half of the threat reading's words; the Japanese is analysis.ja.constants.ts, read through analysisCopy.ts. The measured ladder's fingerprint hashes this file (ladderFingerprint.ts), so it is never edited to translate it"],
+  ["src/lib/record/sgf.ts", "the text written INTO a downloaded SGF file: the format's own property values (Draw, Void) and the comments other programs read, in English like the format; the button that offers it is a phrase (record.downloadSgf)"],
+  ["src/lib/record/sgf.constants.ts", "the SGF format's game-type names (Go, Othello, Hex, Freestyle, Standard, Renju…) and the developer's notes on why a game has no SGF number, never drawn on a page; the rules comment is written into the file in English like the format"],
+  ["src/lib/record/pdn.ts", "the text written INTO a downloaded PDN file: the format's own tag names (Event, Site, Date, White, Black, Result, GameType) and the comment other programs read, in English like the format; the button that offers it is a phrase (record.downloadPdn)"],
+  ["src/lib/history/gameHistory.constants.ts", "the finished game's results', outcomes' and verdicts' names, each an English label beside its own kanji (黒勝, 勝, 会心…) that a Japanese reader is shown instead (Speaker.pairName); the filters' words are phrases"],
+  ["src/lib/history/retentionNames.constants.ts", "how long a finished game stays on a list: each an English label beside its own kanji (無期限, 一週間…) that a Japanese reader is shown instead (Speaker.pairName)"],
+  ["src/components/history/resultNames.constants.ts", "the result card's headlines, each an English label beside its own kanji (勝ち, 負け, 引き分け) that a Japanese reader is shown instead (Speaker.pairName)"],
+  ["src/lib/history/forfeitRows.ts", "the operator's repair tool for a game row written by a timeout: the reasons it gives for refusing a row are printed by its runner to whoever runs it, never drawn on a page"],
+  ["src/components/board/Board.constants.ts", "the boards' paint: CSS gradients, class lists and sizes; the name of each surface, felt, stone set and view is a phrase (boardNames.ts)"],
+  ["src/components/board/boardPaint.ts", "CSS for a swatch of a board's surface, never read as words"],
+  ["src/components/board/boardWidth.constants.ts", "a note for the developer that the page-width gate reads off the element (`data-width-reason`); never drawn on a page"],
+  ["src/components/games/cardKinds.constants.ts", "what a game can be won by, each an English label beside its own kanji (三目, 四目, 五目, 反転, 詰…) that a Japanese reader is shown instead (Paired)"],
+  ["src/components/games/familyMarks.constants.ts", "the families' names as the keys that pick each family's picture (FamilyMark family=\"Pencil puzzles\"): names that are looked up, not words drawn; a family's Japanese name is its kanji"],
   ["src/lib/famous/famousGames.data.ts", "the names of players, events and places exactly as the sources record them, and the games' moves: a record, not the site's own sentences"],
 ]);
 
@@ -264,11 +274,15 @@ const CODE_IN_A_STRING = /\b(?:SELECT|INSERT INTO|UPDATE|DELETE FROM|WHERE|ORDER
 export const ALLOWED_TERMS = [
   ["Itsutsu", "the site's own name, which is a name rather than a phrase (AGENTS.md: \"the brand is not a phrase\")"],
   ["XP", "the point currency, a bare acronym everywhere it is drawn"],
+  ["Esc", "the name of the Escape key as it is printed on a keyboard, beside the button it presses (BoardFocus, BareBoard): a key's name, the same in every language"],
+  ["Enter", "the name `KeyboardEvent.key` reports for the Enter key, compared and never drawn"],
   ["Escape", "the name `KeyboardEvent.key` reports for the Escape key, compared and never drawn"],
+  ["Arrow(?:Left|Right|Up|Down)|Home|End", "the names `KeyboardEvent.key` reports for the arrow, Home and End keys, compared and never drawn"],
   ["SGF|PDN", "file-format names, the same in every language"],
   ["Google", "the sign-in provider's name"],
   ["Vercel|Neon", "hosting and database providers' names"],
   ["Wikipedia", "a site's name"],
+  ["ItsYourTurn|GoldToken", "the other sites whose move lists can be pasted: names, as they write them"],
   ["CC BY(?:-SA|-NC)?(?:\\s*4\\.0)?|CC0", "a Creative Commons licence identifier"],
   ["[a-h][1-9][0-9]?", "board coordinates such as e5 or h10"],
 ];
@@ -291,13 +305,16 @@ const STOPWORDS = new Set([
   "please", "let's", "let", "never", "always", "keep", "keeps", "kept",
 ]);
 
-/** A whole identifier, never prose: lower-kebab or dotted tokens, no spaces. */
-const IDENTIFIER_SHAPED = /^[a-z][a-z0-9]*(?:[:._/-][a-z0-9]+)+$/;
+/** A whole identifier, never prose: lower-kebab or dotted tokens, no spaces. A phrase key is dotted camelCase (`rivalry.neverGame.you`), so a later segment may carry capitals. */
+const IDENTIFIER_SHAPED = /^[a-z][a-z0-9]*(?:[:._/-][a-zA-Z0-9]+)+$/;
 
 /** Does what remains, once names are taken out, read as English prose? */
 export function looksLikeEnglish(raw) {
   const trimmed = raw.trim();
   if (IDENTIFIER_SHAPED.test(trimmed)) return false;
+  /* A list of utility classes ("has-[:checked]:ring-2 enabled:cursor-pointer"): every token carries a variant colon, a hyphen or a bracket, and a lone token a colon or a bracket. */
+  const classTokens = trimmed.split(/\s+/);
+  if (classTokens.every((token) => /^[a-z0-9!][a-z0-9:\-[\]\/_.%()#,]*$/.test(token) && (classTokens.length > 1 ? /[-:[]/ : /[:[]/).test(token))) return false;
   /* A path, an address, a selector or a media query is never a sentence. */
   if (/^(?:https?:|\/|\.\/|\.\.\/|@\/|#|[a-z-]+:\/\/)/.test(trimmed) && !/\s/.test(trimmed)) return false;
   const stripped = raw.replace(ALLOWED_PATTERN, " ").replace(/\{[^}]*\}/g, " ").replace(/\$\{[^}]*\}/g, " ");

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Controls";
 import { PieceColourPicker } from "@/components/board/PieceColourPicker";
 import type { PieceColour } from "@/lib/pieces/pieceColours";
@@ -10,7 +11,7 @@ import { START_COPY } from "@/components/mine/mine.constants";
 
 import { PressLabel } from "@/components/ui/PressLabel";
 
-import { DOORSTEP_COPY, SET_UP_COPY, SIGN_IN_TO_PLAY, START_PRESS } from "./live.constants";
+import { doorstepCopy, setUpCopy, signInToPlay, startPress } from "./live.constants";
 
 /**
  * THE BOTTOM OF THE SET-UP SCREEN: who will be sitting where, and the one
@@ -68,6 +69,10 @@ export function BeginBar({
   /** How many games at once, offered wherever the colour is: see `liveMatch.ts`. */
   games: { value: MatchSize; onChange: (count: MatchSize) => void } | null;
 }) {
+  const say = useSpeaker();
+  const DOORSTEP_COPY = doorstepCopy(say);
+  const SET_UP_COPY = setUpCopy(say);
+  const START_PRESS = startPress(say);
   return (
     <div className="flex flex-col gap-2 border-t border-rule pt-3" data-testid="set-up-continue">
       {/*
@@ -141,13 +146,13 @@ export function BeginBar({
       {pieceColour !== null ? (
         <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="set-up-piece-colour">
           <span className="text-muted">
-            Your pieces <span className="font-mincho">色</span>
+            {say.say("live.yourPieces")}{say.pairsWithKanji ? <> <span className="font-mincho">色</span></> : null}
           </span>
           <PieceColourPicker
             value={pieceColour.value}
             onChoose={pieceColour.onChange}
-            usual={{ face: pieceColour.usual, name: "The game's own stones" }}
-            label="The colour of your pieces"
+            usual={{ face: pieceColour.usual, name: say.say("live.ownStones") }}
+            label={say.say("live.pieceColourLabel")}
             testId="set-up-piece-colours"
           />
         </div>
@@ -230,7 +235,7 @@ export function BeginBar({
           {START_COPY.matchHint(waiting.who)}
         </p>
       ) : null}
-      {!signedIn ? <p className="text-xs text-muted">{SIGN_IN_TO_PLAY}</p> : null}
+      {!signedIn ? <p className="text-xs text-muted">{signInToPlay(say)}</p> : null}
     </div>
   );
 }

@@ -36,20 +36,9 @@ import {
  */
 const RECORDED = [
   // ENJA-05, game copy tables: every game's rules, tagline, openings, bots and family names. Each folder here holds only what is left of it: the games', openings', bots' and families' own words are done, beside their Japanese.
-  "src/lib/gomoku",
   "src/lib/famous",
-  "src/app/games",
   // ENJA-06, set-up screen, game screen and every ending
-  "src/components/live",
-  "src/components/game",
-  "src/components/games",
-  "src/components/history",
-  "src/components/board",
-  "src/components/play",
   "src/lib/history",
-  "src/lib/record",
-  "src/lib/rating",
-  "src/lib/clock",
   // ENJA-07, puzzles (folders, so a renamed puzzle file breaks nothing)
   "src/lib/puzzles",
   "src/components/puzzles",
@@ -86,8 +75,6 @@ const RECORDED = [
   "src/lib/messages",
   "src/lib/preferences",
   "src/lib/reports",
-  "src/lib/feed",
-  "src/lib/thanks",
   "src/app/join",
   "src/app/champions",
   "src/app/me",

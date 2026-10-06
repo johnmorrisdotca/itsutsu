@@ -3,8 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_QUIET, BUTTON_STRONG, BUTTON_TAP, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { dottedText, stoneName } from "@/lib/gomoku/seatWords";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
@@ -12,7 +15,7 @@ import type { SeatPickMember } from "@/lib/phrase/seatPick.types";
 import { padStep } from "@/lib/phrase/wordIndex";
 
 /** Which word the pad is filling, said as a person would — it read "fourth" for all four. */
-const ORDINAL = ["first", "second", "third", "fourth"] as const;
+const ORDINAL: readonly PhraseKey[] = ["live.wordFirst", "live.wordSecond", "live.wordThird", "live.wordFourth"];
 
 /**
  * The other seat, taken with four words instead of a link — the kitchen
@@ -53,6 +56,7 @@ export function SitAsPanel({
   /** Everyone who could claim a seat here, from `seatPickList`. */
   members: readonly SeatPickMember[];
 }) {
+  const say = useSpeaker();
   const router = useRouter();
   const hydrated = useHydrated();
   const [open, setOpen] = useState(false);
@@ -114,7 +118,7 @@ export function SitAsPanel({
     setBusy(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? "Could not take that seat.");
+      setError(payload?.error ?? say.say("live.sitAsFailed"));
       return;
     }
     /*
@@ -132,7 +136,7 @@ export function SitAsPanel({
   const boundNotice =
     justBound ? (
       <p className="text-sm" data-testid="phrase-just-bound">
-        Those four words are yours now. They will let you play as yourself on any device — nobody has to sign out.
+        {say.say("live.sitAsBound")}
       </p>
     ) : null;
 
@@ -141,8 +145,7 @@ export function SitAsPanel({
       <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="sit-as-closed" {...readyMark(hydrated)}>
         {boundNotice}
         <p className="text-sm text-muted">
-          Not you signed in? Sit in here as yourself with four words — and if you have none yet, the four you pick
-          become yours.
+          {say.say("live.sitAsIntro")}
         </p>
         <button
           type="button"
@@ -150,7 +153,7 @@ export function SitAsPanel({
           className={`${BUTTON_TAP} ${BUTTON_QUIET} self-start`}
           data-testid="sit-as-open"
         >
-          Sit in with your four words
+          {say.say("live.sitAsOpen")}
         </button>
       </div>
     );
@@ -162,8 +165,7 @@ export function SitAsPanel({
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="sit-as-panel" {...readyMark(hydrated)}>
       {boundNotice}
       <p className="text-xs text-muted">
-        Find your name, then tap your four words — nothing to type. The seat becomes yours on this device, and if your
-        account has no words yet these become them.
+        {say.say("live.sitAsHelp")}
       </p>
 
       {who === null ? (
@@ -192,7 +194,7 @@ export function SitAsPanel({
           */}
           {members.length === 0 ? (
             <li className="text-sm text-muted" data-testid="sit-as-nobody">
-              Nobody here has an account that can take a seat this way yet.
+              {say.say("live.sitAsNobody")}
             </li>
           ) : null}
         </ul>
@@ -209,7 +211,7 @@ export function SitAsPanel({
           className={`${BUTTON_TAP} self-start border-moss bg-moss-soft text-ink`}
           data-testid="sit-as-who"
         >
-          {who.shown} — tap to pick somebody else
+          {say.say("live.sitAsPickOther", { who: who.shown })}
         </button>
       )}
 
@@ -223,7 +225,7 @@ export function SitAsPanel({
               data-testid={`sit-as-seat-${stone}`}
               className={`${BUTTON_TAP} ${seat === stone ? BUTTON_STRONG : BUTTON_QUIET}`}
             >
-              {STONE_DISPLAY[stone].label} <span className="font-mincho">{STONE_DISPLAY[stone].kanji}</span>
+              {dottedText(say, stoneName(say, stone), STONE_DISPLAY[stone].kanji)}
             </button>
           ))}
         </div>
@@ -241,7 +243,7 @@ export function SitAsPanel({
                 className={`min-h-12 min-w-24 rounded-xl border px-4 py-3 text-base ${
                   word === null ? "border-dashed border-rule text-muted" : "border-moss bg-moss-soft text-ink"
                 }`}
-                title={word === null ? "Empty" : "Tap to take this word back out"}
+                title={word === null ? say.say("live.sitAsEmpty") : say.say("live.sitAsTakeBack")}
               >
                 {word ?? "—"}
               </button>
@@ -253,7 +255,9 @@ export function SitAsPanel({
       {who === null ? null : step !== null ? (
         <div className="flex flex-col gap-2">
           <p className="text-xs text-muted" data-testid="sit-as-prefix">
-            {prefix === "" ? `Tap a letter to start the ${ORDINAL[activeSlot] ?? "next"} word.` : `Starting with "${prefix}"`}
+            {prefix === ""
+              ? say.say("live.sitAsPrefix", { ordinal: say.say(ORDINAL[activeSlot] ?? "live.wordNext") })
+              : say.say("live.sitAsStarting", { prefix })}
           </p>
           {step.kind === "letters" ? (
             <div className="flex flex-wrap gap-2" data-testid="sit-as-letters">
@@ -284,7 +288,7 @@ export function SitAsPanel({
               ))}
             </div>
           ) : (
-            <p className="text-xs text-shu">Nothing starts that way. Start the word over.</p>
+            <p className="text-xs text-shu">{say.say("live.sitAsNothing")}</p>
           )}
           {prefix !== "" ? (
             <button
@@ -293,7 +297,7 @@ export function SitAsPanel({
               className={`${BUTTON_TAP} ${BUTTON_QUIET} self-start`}
               data-testid="sit-as-back"
             >
-              Back a letter
+              {say.say("live.sitAsBack")}
             </button>
           ) : null}
         </div>
@@ -305,7 +309,7 @@ export function SitAsPanel({
           className={`${BUTTON_TAP} ${BUTTON_STRONG} self-start`}
           data-testid="sit-as-submit"
         >
-          Sit down
+          {say.say("live.sitAsSubmit")}
         </button>
       )}
 
@@ -315,7 +319,7 @@ export function SitAsPanel({
         className="min-h-12 self-start px-1 py-2 text-sm text-muted underline underline-offset-4"
         data-testid="sit-as-cancel"
       >
-        Cancel
+        {say.say("live.sitAsCancel")}
       </button>
 
       {error !== null ? (

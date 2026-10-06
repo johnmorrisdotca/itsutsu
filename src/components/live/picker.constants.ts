@@ -1,4 +1,6 @@
 import { OPENING_RULES, STONES } from "@/lib/gomoku/gomoku.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { PHRASES } from "@/lib/i18n/i18n.constants";
 import type { OpeningRule, Stone } from "@/lib/gomoku/gomoku.types";
 import { LONG_PRO_EXCLUSION, PRO_EXCLUSION } from "@/lib/gomoku/rules/opening";
 
@@ -486,12 +488,20 @@ export const DOORSTEP_FIGURE = "m-0 flex min-w-0 flex-col items-center gap-1.5";
 
 export const DOORSTEP_FIGURE_NAME = "text-center text-xs leading-snug text-ink-soft";
 
-/** The tile for a computer player drawn at random, under the programs it is drawn from. */
+/** The tile for a computer player drawn at random, under the programs it is drawn from. In English; `randomComputerWords` is the reader's. */
 export const RANDOM_COMPUTER_WORDS = {
-  name: "A random bot",
+  name: PHRASES["live.randomName"],
   /** How the line over Continue names it. */
-  against: "Against a random bot",
+  against: PHRASES["live.randomAgainst"],
   /** The mark on its black stone, where a program carries its own script. */
   mark: "?",
-  means: "One of the programs above, drawn once, when you press Start.",
+  means: PHRASES["live.randomMeans"],
 } as const;
+
+/** The same words in the reader's language. */
+export const randomComputerWords = (say: Speaker) => ({
+  name: say.say("live.randomName"),
+  against: say.say("live.randomAgainst"),
+  mark: "?",
+  means: say.say("live.randomMeans"),
+});

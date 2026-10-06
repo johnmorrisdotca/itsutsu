@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import { HANDICAP_RULES, STONES, VARIANT_SPECS } from "./gomoku.constants";
 import type { RuleVariant } from "./gomoku.types";
 import { handicapOffer } from "./handicapOffer";
+import { speaker } from "@/lib/i18n/i18n";
+
+const say = speaker("en");
 
 /**
  * Whether a handicap toggle is a choice at this game, for this colour.
@@ -13,7 +16,7 @@ import { handicapOffer } from "./handicapOffer";
  */
 describe("what a handicap can be asked for", () => {
   it("offers a restriction the plain game does not impose", () => {
-    const offer = handicapOffer("doubleThree", "freestyle", STONES.black);
+    const offer = handicapOffer("doubleThree", "freestyle", STONES.black, say);
     expect(offer.available).toBe(true);
     expect(offer.imposed).toBe(false);
     expect(offer.note).toBeNull();
@@ -29,7 +32,7 @@ describe("what a handicap can be asked for", () => {
     const forbidden = VARIANT_SPECS.renju.forbidden[STONES.black];
     expect(forbidden, "renju forbids black the double three").toContain("doubleThree");
 
-    const offer = handicapOffer("doubleThree", "renju", STONES.black);
+    const offer = handicapOffer("doubleThree", "renju", STONES.black, say);
     expect(offer.available).toBe(false);
     expect(offer.imposed).toBe(true);
     expect(offer.note).toContain("Renju");
@@ -37,7 +40,7 @@ describe("what a handicap can be asked for", () => {
 
   /* And for the OTHER colour of the same game it is a real choice again. */
   it("answers per colour, not per game", () => {
-    expect(handicapOffer("doubleThree", "renju", STONES.white).available).toBe(true);
+    expect(handicapOffer("doubleThree", "renju", STONES.white, say).available).toBe(true);
   });
 
   /*
@@ -47,12 +50,12 @@ describe("what a handicap can be asked for", () => {
    * the game has never heard of.
    */
   it("says when a toggle is about a mechanism the game does not have", () => {
-    const captures = handicapOffer("noCaptures", "freestyle", STONES.black);
+    const captures = handicapOffer("noCaptures", "freestyle", STONES.black, say);
     expect(captures.available).toBe(false);
     expect(captures.imposed).toBe(false);
     expect(captures.note).toContain("captures");
 
-    const two = handicapOffer("singleStone", "freestyle", STONES.black);
+    const two = handicapOffer("singleStone", "freestyle", STONES.black, say);
     expect(two.available).toBe(false);
     expect(two.imposed).toBe(false);
     expect(two.note).toContain("two stones");
@@ -60,15 +63,15 @@ describe("what a handicap can be asked for", () => {
 
   it("offers both of those where the game does have the mechanism", () => {
     expect(VARIANT_SPECS.ninuki.captures, "ninuki captures").toBe(true);
-    expect(handicapOffer("noCaptures", "ninuki", STONES.black).available).toBe(true);
+    expect(handicapOffer("noCaptures", "ninuki", STONES.black, say).available).toBe(true);
     expect(VARIANT_SPECS.connect6.stonesPerTurn, "connect six places two a turn").toBeGreaterThan(1);
-    expect(handicapOffer("singleStone", "connect6", STONES.black).available).toBe(true);
+    expect(handicapOffer("singleStone", "connect6", STONES.black, say).available).toBe(true);
   });
 
   /* A longer line can always be asked for: every game here has a line length. */
   it("always offers a longer line", () => {
     for (const variant of ["freestyle", "renju", "reversi", "halma"] as RuleVariant[]) {
-      expect(handicapOffer("longerLine", variant, STONES.black).available).toBe(true);
+      expect(handicapOffer("longerLine", variant, STONES.black, say).available).toBe(true);
     }
   });
 
@@ -81,7 +84,7 @@ describe("what a handicap can be asked for", () => {
     for (const variant of Object.keys(VARIANT_SPECS) as RuleVariant[]) {
       for (const stone of Object.values(STONES)) {
         for (const rule of HANDICAP_RULES) {
-          const offer = handicapOffer(rule, variant, stone);
+          const offer = handicapOffer(rule, variant, stone, say);
           expect(typeof offer.available, `${variant}/${stone}/${rule}`).toBe("boolean");
           // A toggle that is not a choice always says why; one that is says nothing.
           expect(offer.available ? offer.note === null : offer.note !== null).toBe(true);

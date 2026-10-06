@@ -50,7 +50,7 @@ import { ageBandOf } from "@/lib/auth/ageBandStore";
 import { closedToReader } from "@/lib/social/childReach";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { botBio } from "@/lib/gomoku/botCopy";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { currentLocale, currentSpeaker } from "@/lib/i18n/currentLocale";
 
 export const metadata = { title: "Player" };
 
@@ -415,7 +415,7 @@ export default async function PlayerPage({ params, searchParams }: PageProps<"/p
         {tier !== null ? (
           <p className="text-xs text-muted" data-testid="player-tier">
             <span className="font-medium text-ink-soft">{tier.label}</span>{" "}
-            <span className="font-mincho">{tier.kanji}</span> · {tier.note}
+            <span className="font-mincho">{tier.kanji}</span> · {(await currentSpeaker()).say(tier.note)}
           </p>
         ) : null}
         {linked.length > 0 ? (

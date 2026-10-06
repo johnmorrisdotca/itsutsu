@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import { MESSAGE_MAX, REACTIONS, type ReactionEmoji } from "@/lib/history/reactions.constants";
 
-import { MOVE_NOTE_COPY } from "./live.constants";
+import { moveNoteCopy } from "./live.constants";
 
 /** A note to send with a move: an emoji, and a line of text if there is one. */
 export type MoveNote = { emoji: ReactionEmoji; text: string | null };
@@ -23,6 +25,8 @@ export type MoveNote = { emoji: ReactionEmoji; text: string | null };
  * nothing typed. Typing without picking sends 👋, the plain "hello" of the set.
  */
 export function MoveNoteField({ onChange, disabled }: { onChange: (note: MoveNote | null) => void; disabled: boolean }) {
+  const say = useSpeaker();
+  const MOVE_NOTE_COPY = moveNoteCopy(say);
   const [open, setOpen] = useState(false);
   const [emoji, setEmoji] = useState<ReactionEmoji | null>(null);
   const [text, setText] = useState("");
@@ -54,8 +58,8 @@ export function MoveNoteField({ onChange, disabled }: { onChange: (note: MoveNot
             type="button"
             role="radio"
             aria-checked={emoji === reaction.emoji}
-            aria-label={reaction.label}
-            title={reaction.label}
+            aria-label={say.say(reaction.label)}
+            title={say.say(reaction.label)}
             disabled={disabled}
             onClick={() => {
               const next = emoji === reaction.emoji ? null : reaction.emoji;

@@ -71,6 +71,11 @@ describe("and the rating choice is worded in one file", () => {
     const wording = filesUnder("src")
       .filter((path) => readFileSync(path, "utf8").includes("Game will affect ratings"))
       .map((path) => path.split("/").pop());
-    expect(wording).toEqual(["RulesForm.tsx"]);
+    // The words are one phrase in the catalogue, and the one file that says that phrase is the form.
+    expect(wording).toEqual(["phrases.live.constants.ts"]);
+    const saying = filesUnder("src")
+      .filter((path) => !path.includes("/i18n/") && readFileSync(path, "utf8").includes('"live.ratedAffects"'))
+      .map((path) => path.split("/").pop());
+    expect(saying).toEqual(["RulesForm.tsx"]);
   });
 });

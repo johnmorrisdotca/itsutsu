@@ -5,14 +5,16 @@ import type { GameDefaults } from "@/components/game/gameDefaults";
 import { isBotId } from "@/lib/bots/bots";
 import { listable } from "@/lib/social/listable";
 import { gamesPlayedBy } from "@/lib/bots/bots.constants";
-import { DEFAULT_SETTINGS, boardSizesFor, defaultBoardFor, sizeForVariant } from "@/lib/gomoku/gomoku.constants";
+import { DEFAULT_SETTINGS, defaultBoardFor } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { parseHandicap, parseHeadStart } from "@/lib/history/gameSettingsSchema";
 import { colourAfterSwap, opponentOf, seatOf } from "@/lib/history/rematch";
 import { prisma } from "@/lib/prisma";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import type { StoredGame } from "@/lib/gomoku/replay";
-import { SET_UP_UNREAD } from "./live.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+
+import { setUpUnread } from "./live.constants";
 import { ANYONE, RANDOM_COMPUTER } from "./opponentOptions";
 import { plainDraft, silentDraft } from "./plainDraft";
 import { draftFromGame, type RulesDraft } from "./rulesDraft";
@@ -44,7 +46,9 @@ export async function setUpFrom({
   variant,
   asked,
   defaults,
+  say,
 }: {
+  say: Speaker;
   /** The game the address names, or null at /games/new where it is still a choice. */
   variant: RuleVariant | null;
   asked: Query;
@@ -57,8 +61,8 @@ export async function setUpFrom({
    * first: what they find decides the game, the board and every rule, and the
    * plain path below only has the member's own defaults to go on.
    */
-  if (want.rematch !== null) return await fromFinishedGame(want.rematch, variant, want, asked);
-  if (want.from !== null) return await fromPosition(want.from, variant, want, asked);
+  if (want.rematch !== null) return await fromFinishedGame(want.rematch, variant, want, asked, say);
+  if (want.from !== null) return await fromPosition(want.from, variant, want, asked, say);
 
   /*
    * A computer player drawn at random is asked for by a word, not an id: nobody
@@ -110,8 +114,9 @@ export async function setUpFrom({
     fork: null,
     carry: {},
     problem: withUnread(
+      say,
       want.against !== null && !drawComputer && opponent === null
-        ? "Whoever that link named cannot be reached for a game. Pick somebody below."
+        ? say.say("live.problemUnreachable")
         : null,
       unreadAsked(asked, want, initial, false),
     ),
@@ -188,23 +193,24 @@ async function fromFinishedGame(
   variant: RuleVariant | null,
   want: SetUpAsked,
   asked: Query,
+  say: Speaker,
 ): Promise<SetUpFrom> {
   const blank = blankFrom(variant);
   const origin = await prisma.game.findUnique({ where: { id }, select: GAME_FOR_SET_UP });
-  if (origin === null) return { ...blank, problem: "There is no such game to play again." };
+  if (origin === null) return { ...blank, problem: say.say("live.problemNoGame") };
   if (origin.status === "active") {
-    return { ...blank, problem: "That game is still being played, so there is nothing to play again yet." };
+    return { ...blank, problem: say.say("live.problemStillPlaying") };
   }
 
   const mineId = await currentMemberId();
   const theirId = opponentOf(origin, mineId);
   const colour = colourAfterSwap(origin, mineId);
   if (theirId === null || colour === null) {
-    return { ...blank, problem: "You did not play that game, so there is no rematch of it to offer." };
+    return { ...blank, problem: say.say("live.problemNotYours") };
   }
   const them = await personNamed(theirId);
   if (them === null) {
-    return { ...blank, problem: "Whoever you played that game against cannot be reached for another." };
+    return { ...blank, problem: say.say("live.problemOpponentGone") };
   }
 
   const again: SetUpAgain = { id: origin.id, colour, opponent: them };
@@ -217,7 +223,7 @@ async function fromFinishedGame(
    * now, and anybody but `them` makes this a new game with the same rules rather
    * than a rematch: `stillARematch` decides, from the same two values.
    */
-  const chosen = await opponentChosen(want.against, them);
+  const chosen = await opponentChosen(want.against, them, say);
   /*
    * TWO DRAFTS, ANSWERING DIFFERENT QUESTIONS.
    *
@@ -249,7 +255,7 @@ async function fromFinishedGame(
     again,
     fork: null,
     carry: carriedFrom(origin),
-    problem: withUnread(chosen.problem, unreadAsked(asked, want, initial, false)),
+    problem: withUnread(say, chosen.problem, unreadAsked(asked, want, initial, false)),
   };
 }
 
@@ -266,6 +272,7 @@ async function fromFinishedGame(
 async function opponentChosen(
   against: string | null,
   them: SetUpOpponent,
+  say: Speaker,
 ): Promise<{ opponent: SetUpOpponent | null; drawComputer: boolean; problem: string | null }> {
   if (against === null || against === them.id) return { opponent: them, drawComputer: false, problem: null };
   if (against === ANYONE) return { opponent: null, drawComputer: false, problem: null };
@@ -275,7 +282,7 @@ async function opponentChosen(
     return {
       opponent: them,
       drawComputer: false,
-      problem: `Whoever that link named cannot be reached for a game, so this is still against ${them.name}.`,
+      problem: say.say("live.problemStillAgainst", { name: them.name }),
     };
   }
   return { opponent: named, drawComputer: false, problem: null };
@@ -295,12 +302,13 @@ async function fromPosition(
   variant: RuleVariant | null,
   want: SetUpAsked,
   asked: Query,
+  say: Speaker,
 ): Promise<SetUpFrom> {
   const blank = blankFrom(variant);
   const origin = await prisma.game.findUnique({ where: { id: from.id }, select: GAME_FOR_SET_UP });
-  if (origin === null) return { ...blank, problem: "There is no such game to play on from." };
+  if (origin === null) return { ...blank, problem: say.say("live.problemNoPosition") };
   if (from.move > origin.moveCount) {
-    return { ...blank, problem: "That game has fewer moves than the position asked for." };
+    return { ...blank, problem: say.say("live.problemFewMoves") };
   }
 
   const mineId = await currentMemberId();
@@ -339,7 +347,7 @@ async function fromPosition(
     again: null,
     fork,
     carry: carriedFrom(origin),
-    problem: withUnread(null, unreadAsked(asked, want, initial, true)),
+    problem: withUnread(say, null, unreadAsked(asked, want, initial, true)),
   };
 }
 
@@ -418,10 +426,10 @@ function carriedFrom(origin: {
  * A problem with the address, and the parts of it that could not be used, said
  * together. Either alone is said alone; neither is silence.
  */
-function withUnread(problem: string | null, unread: readonly string[]): string | null {
-  const note = unread.length === 0 ? null : SET_UP_UNREAD(unread);
+function withUnread(say: Speaker, problem: string | null, unread: readonly string[]): string | null {
+  const note = unread.length === 0 ? null : setUpUnread(say, unread);
   if (problem === null) return note;
-  return note === null ? problem : `${problem} ${note}`;
+  return note === null ? problem : say.sentences([problem, note]);
 }
 
 /**
@@ -434,7 +442,6 @@ function withUnread(problem: string | null, unread: readonly string[]): string |
  */
 function blankFrom(variant: RuleVariant | null): SetUpFrom {
   const chosen = variant ?? (DEFAULT_SETTINGS.variant as RuleVariant);
-  const sizes = boardSizesFor(chosen);
   return {
     initial: plainDraft({ variant: chosen, size: defaultBoardFor(chosen), moveTimeMs: null }),
     asPlayed: null,

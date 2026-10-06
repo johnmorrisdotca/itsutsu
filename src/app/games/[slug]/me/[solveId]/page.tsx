@@ -4,14 +4,16 @@ import { notFound } from "next/navigation";
 import { PuzzleSolvePage } from "@/components/puzzles/PuzzleSolvePage";
 import { puzzleFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 // Whose solve this is is read from the session on every request.
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/me/[solveId]">): Promise<Metadata> {
   const puzzle = puzzleFor((await params).slug);
-  return { title: puzzle === null ? "Your puzzle" : `Your ${PUZZLE_DISPLAY[puzzle].label}`, robots: { index: false, follow: false } };
+  const say = await currentSpeaker();
+  return { title: puzzle === null ? say.say("gamepages.titleYourPuzzle") : say.say("gamepages.titleYourPuzzleOf", { game: gameCopyOf(puzzle, say.locale)?.label ?? "" }), robots: { index: false, follow: false } };
 }
 
 /** One of the reader's own finished puzzles, at /games/<slug>/me/<id>: see `PuzzleSolvePage`. */

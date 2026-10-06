@@ -1,5 +1,8 @@
 // Relative: the engine boundary (`boundary.coverage.test.ts`) allows no alias under src/lib/gomoku.
+import { speaker, type Speaker } from "../../i18n/i18n";
+
 import type { Point } from "../gomoku.types";
+import { playerNumberName } from "../seatWords";
 import { indexOf, pointOf } from "../rules/board";
 
 import type { PartyRaceState, PartyStatus } from "./partyRace.types";
@@ -28,9 +31,9 @@ export function cleanPartyName(name: string): string {
 }
 
 /** A player's name as the table reads it: the one they gave, or "Player 3". */
-export function partyPlayerName(players: readonly { name: string }[], player: number): string {
+export function partyPlayerName(players: readonly { name: string }[], player: number, say: Speaker = speaker("en")): string {
   const given = players[player]?.name.trim() ?? "";
-  return given === "" ? `Player ${player + 1}` : given;
+  return given === "" ? playerNumberName(say, player + 1) : given;
 }
 
 /**

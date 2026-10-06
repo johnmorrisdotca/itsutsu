@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { TAP_HEIGHT } from "@/components/ui/ui.constants";
 
@@ -20,6 +21,7 @@ import { TAP_HEIGHT } from "@/components/ui/ui.constants";
  * waits for `data-ready="true"` before it opens the fold.
  */
 export function RecordText({ text }: { text: string }) {
+  const say = useSpeaker();
   const [copied, setCopied] = useState(false);
   const hydrated = useHydrated();
 
@@ -38,7 +40,13 @@ export function RecordText({ text }: { text: string }) {
   return (
     <details className="group flex flex-col gap-2" data-testid="record-text" {...readyMark(hydrated)}>
       <summary className="cursor-pointer list-none text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase select-none hover:text-ink">
-        Moves as text <span className="font-mincho normal-case tracking-normal">記録</span>
+        {say.pairsWithKanji ? (
+          <>
+            {say.say("replay.movesAsText")} <span className="font-mincho normal-case tracking-normal">記録</span>
+          </>
+        ) : (
+          <span className="font-mincho normal-case tracking-normal">{say.say("replay.movesAsText")}</span>
+        )}
         <span className="ml-1 opacity-60 group-open:hidden">+</span>
         <span className="ml-1 hidden opacity-60 group-open:inline">−</span>
       </summary>
@@ -49,7 +57,7 @@ export function RecordText({ text }: { text: string }) {
           className={`self-start inline-flex items-center rounded-lg border border-rule px-3 py-1.5 text-xs transition-colors hover:bg-shade ${TAP_HEIGHT}`}
           data-testid="record-text-copy"
         >
-          {copied ? "Copied" : "Copy it all"}
+          {say.say(copied ? "replay.copied" : "replay.copyAll")}
         </button>
         {/*
           Scrolls in its own box rather than stretching the page: the listing

@@ -15,10 +15,11 @@ import { PlayerLink } from "@/components/players/Standings";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { PANEL_CLASS, RAISED_LINK, SECTION_TITLE, STRETCHED_LINK, STRETCHED_ROW } from "@/components/ui/ui.constants";
-import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { matchPath, playPath } from "@/lib/gomoku/slugs";
 import { fetchPlayedCounts, recentGamesOf } from "@/lib/history/gameCounts";
-import { currentLocale } from "@/lib/i18n/currentLocale";
 import { countText } from "@/lib/rating/figures";
 import { closedToReader } from "@/lib/social/childReach";
 
@@ -59,7 +60,8 @@ import { closedToReader } from "@/lib/social/childReach";
  */
 export async function PlayedHere({ variant, title }: { variant: string; title: string }) {
   await connection();
-  const locale = await currentLocale();
+  const say = await currentSpeaker();
+  const locale = say.locale;
 
   /*
    * Documentation for a stranger; a record for anybody who is in.
@@ -138,7 +140,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="rules-played-here">
       <h2 className={`flex items-baseline justify-between gap-2 ${SECTION_TITLE}`}>
         <span>
-          Game history <span className="font-mincho normal-case tracking-normal">棋譜</span>
+          <Paired en={say.say("gamepages.gameHistory")} kanji="棋譜" kanjiClassName="font-mincho normal-case tracking-normal" />
         </span>
         {/*
           The count leads to all of them, which is this site's own rule about a
@@ -148,19 +150,19 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
           count={countText(total, locale)}
           variant={variant}
           className="normal-case tracking-normal"
-          title={`Every game of ${title} played here`}
+          title={say.say("gamepages.everyGameHere", { game: title })}
         />
       </h2>
       {played.length === 0 ? (
         <div className="flex flex-col gap-2 text-sm" data-testid="played-here-empty">
-          <p className="text-muted">No games of {title} have been played here yet.</p>
+          <p className="text-muted">{say.say("gamepages.playedHereEmpty", { game: title })}</p>
           <p>
             <Link
               href={playPath(variant)}
               className="font-semibold underline-offset-2 hover:underline"
               data-testid="played-here-be-first"
             >
-              Be the first to play {title} →
+              {say.say("gamepages.beFirst", { game: title })}
             </Link>
           </p>
         </div>
@@ -177,9 +179,9 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
           */
           <li key={game.id} className={`${STRETCHED_ROW} flex items-center justify-between gap-2 rounded-md py-1.5`}>
             <span className="min-w-0 truncate">
-              <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} className={RAISED_LINK} tag={tagOf(game.blackMemberId)} />
-              <span className="px-1 text-muted">vs</span>
-              <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} className={RAISED_LINK} tag={tagOf(game.whiteMemberId)} />
+              <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={seatName(say, "one")} className={RAISED_LINK} tag={tagOf(game.blackMemberId)} />
+              <span className="px-1 text-muted">{say.say("replay.vs")}</span>
+              <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={seatName(say, "two")} className={RAISED_LINK} tag={tagOf(game.whiteMemberId)} />
             </span>
             <span className="flex shrink-0 items-center gap-2">
               <Link
@@ -187,7 +189,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
                 data-card-link=""
                 className={`${STRETCHED_LINK} text-xs text-muted underline-offset-2 hover:underline`}
               >
-                {game.moveCount} moves
+                {say.count("count.move", game.moveCount)}
               </Link>
               <CardArrow className="size-6" />
             </span>
@@ -198,7 +200,7 @@ export async function PlayedHere({ variant, title }: { variant: string; title: s
       {people.length > 0 ? (
         <div className="flex flex-col gap-1.5 border-t border-rule pt-2" data-testid="played-here-people">
           <h3 className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-            Looking for a game <span className="font-mincho normal-case tracking-normal">対局募集</span>
+            <Paired en={say.say("gamepages.lookingForGame")} kanji="対局募集" kanjiClassName="font-mincho normal-case tracking-normal" />
           </h3>
           <ul className="flex flex-col gap-1 text-sm">
             {people.map(({ name, member }) => (

@@ -14,6 +14,9 @@ import { createGame } from "./engine";
 import { fromDiagram } from "@johnmorrisdotca/narabe/test-support";
 import { KOMI } from "./rules/go";
 import type { Advantage } from "./advantage.types";
+import { speaker } from "@/lib/i18n/i18n";
+
+const say = speaker("en");
 
 /**
  * Who is ahead while the game is on.
@@ -265,8 +268,8 @@ describe("the copy", () => {
       expect(copy, measure).toBeDefined();
       expect(copy.label.length, measure).toBeGreaterThan(3);
       expect(copy.kanji.length, measure).toBeGreaterThan(0);
-      expect(copy.note.length, measure).toBeGreaterThan(20);
-      expect(copy.fewerNote.length, measure).toBeGreaterThan(20);
+      expect(say.say(copy.note).length, measure).toBeGreaterThan(20);
+      expect(say.say(copy.fewerNote).length, measure).toBeGreaterThan(20);
     }
   });
 
@@ -276,7 +279,7 @@ describe("the copy", () => {
       expect(copy, reason).toBeDefined();
       expect(copy.kanji.length, reason).toBeGreaterThan(0);
       // Long enough to actually say why, not just that.
-      expect(copy.sentence.length, reason).toBeGreaterThan(60);
+      expect(say.say(copy.sentence).length, reason).toBeGreaterThan(60);
     }
   });
 

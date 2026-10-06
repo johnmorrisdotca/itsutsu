@@ -4,7 +4,9 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/Controls";
 import { MoveNoteField, type MoveNote } from "./MoveNoteField";
-import { LIVE_MOVE_COPY } from "./live.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { liveMoveCopy } from "./live.constants";
 import { NUDGE_DIRECTIONS, type NudgeDirection } from "./nudgeMove";
 
 /**
@@ -59,6 +61,7 @@ export function PendingMoveControls({
   /** Whether a note may go with this move: a person across the board, not a program. */
   noteable?: boolean;
 }) {
+  const LIVE_MOVE_COPY = liveMoveCopy(useSpeaker());
   const [note, setNote] = useState<MoveNote | null>(null);
   const arrows = onNudge !== undefined && nudges !== undefined && nudges.size > 0;
   return (

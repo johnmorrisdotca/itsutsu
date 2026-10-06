@@ -3,7 +3,9 @@
 import { pointName } from "@/lib/gomoku/notation";
 import { Button } from "@/components/ui/Controls";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
-import { GAME_COPY } from "./game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { weave } from "@/lib/i18n/weave";
+import { gameCopy } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
 
 /**
@@ -18,6 +20,8 @@ import type { GamePanelProps } from "./game.types";
  * banner at all times."
  */
 export function ReviewBanner({ session, actions }: GamePanelProps) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   if (!session.reviewing) {
     return (
       <div
@@ -31,7 +35,7 @@ export function ReviewBanner({ session, actions }: GamePanelProps) {
         </span>
         <span className="flex flex-col gap-0.5">
           <span className="text-sm font-semibold">
-            {GAME_COPY.atLatest.label} — move {session.moveTotal}
+            {say.say("gamescreen.atLatestLine", { label: GAME_COPY.atLatest.label, move: String(session.moveTotal) })}
           </span>
           <span className="text-xs text-muted">{GAME_COPY.atLatestDetail}</span>
         </span>
@@ -56,13 +60,12 @@ export function ReviewBanner({ session, actions }: GamePanelProps) {
       </span>
       <span className="flex flex-col gap-0.5">
         <span className="text-sm font-semibold">
-          {GAME_COPY.reviewing.label} — move {session.moveIndex} of{" "}
-          {session.moveTotal}
+          {say.say("gamescreen.reviewingLine", { label: GAME_COPY.reviewing.label, index: String(session.moveIndex), total: String(session.moveTotal) })}
         </span>
         <span className="text-xs opacity-85">
           {session.boardReadOnly
             ? GAME_COPY.reviewingDetail
-            : `${GAME_COPY.reviewingDetail} Playing here starts a new line.`}
+            : say.sentences([GAME_COPY.reviewingDetail, say.say("gamescreen.startsNewLine")])}
         </span>
       </span>
       <span className="ml-auto">
@@ -81,6 +84,8 @@ export function ReviewBanner({ session, actions }: GamePanelProps) {
  * because "are you sure?" without a number is not a decision anyone can make.
  */
 export function BranchPrompt({ session, actions }: GamePanelProps) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const { pendingBranch, branchDiscards, state } = session;
   if (pendingBranch === null) return null;
 
@@ -93,13 +98,9 @@ export function BranchPrompt({ session, actions }: GamePanelProps) {
     >
       <p className="text-sm font-semibold">{GAME_COPY.branchTitle}</p>
       <p className="text-xs leading-snug">
-        Playing{" "}
-        <span className="font-mono font-semibold">
-          {pointName(state.settings.size, pendingBranch)}
-        </span>{" "}
-        from here discards the {branchDiscards} move
-        {branchDiscards === 1 ? "" : "s"} that came after this position. This
-        cannot be undone.
+        {weave(say.say(say.form("gamescreen.branchDiscards", branchDiscards), { count: say.number(branchDiscards) }), {
+          point: <span className="font-mono font-semibold">{pointName(state.settings.size, pendingBranch)}</span>,
+        })}
       </p>
       <div className="flex gap-2">
         <Button onClick={actions.confirmBranch} strong data-testid="confirm-branch">

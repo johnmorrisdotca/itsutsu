@@ -2,14 +2,18 @@
 
 import type { KeyedMutator } from "swr";
 
-import { GAME_COPY } from "@/components/game/game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { gameCopy } from "@/components/game/game.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { weave } from "@/lib/i18n/weave";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { Button } from "@/components/ui/Controls";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { TONE_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
-import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { describeRemaining } from "@/lib/history/deadline";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { FORFEITS_TO_LOSE } from "@/lib/history/moveTime.constants";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { useMatchClock } from "./useMatchClock";
@@ -43,6 +47,8 @@ export function MatchClock({
   onError: (message: string | null) => void;
   mutate: KeyedMutator<GameDetail>;
 }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const { deadline, now, overdue, canClaim, endsTheGame, give, claim } = useMatchClock({
     detail,
     state,
@@ -63,10 +69,14 @@ export function MatchClock({
         data-testid="deadline"
       >
         <span>
-          {STONE_DISPLAY[state.toPlay].label} {GAME_COPY.mustMoveBy}{" "}
-          <span className="font-mono tabular-nums">
-            <LocalTime at={deadline.toISOString()} style="time" />
-          </span>
+          {weave(GAME_COPY.mustMoveBy, {
+            name: stoneName(say, state.toPlay),
+            when: (
+              <span className="font-mono tabular-nums">
+                <LocalTime at={deadline.toISOString()} style="time" />
+              </span>
+            ),
+          })}
           {" · "}
           {/*
             Blank, at the width it will have, until the browser has the page.
@@ -78,16 +88,15 @@ export function MatchClock({
             className="inline-block min-w-[7ch] font-mono tabular-nums"
             data-testid="deadline-remaining"
           >
-            {now === null ? "\u00a0" : describeRemaining(deadline, new Date(now))}
+            {now === null ? "\u00a0" : describeRemaining(deadline, new Date(now), say)}
           </span>
           {detail.timeoutPenalty === "turn" &&
           (detail.forfeits.black > 0 || detail.forfeits.white > 0) ? (
             <span className="ml-2 text-xs opacity-80">
-              {STONE_DISPLAY[state.toPlay].label}:{" "}
-              {GAME_COPY.forfeitsNote(
-                detail.forfeits[state.toPlay],
-                FORFEITS_TO_LOSE,
-              )}
+              {say.say("live.forfeitLine", {
+                colour: stoneName(say, state.toPlay),
+                note: GAME_COPY.forfeitsNote(detail.forfeits[state.toPlay], FORFEITS_TO_LOSE),
+              })}
             </span>
           ) : null}
         </span>
@@ -125,26 +134,28 @@ export function MatchClock({
         state.status === GAME_STATUS.playing ? (
           <Button
             onClick={give}
-            title="Add time to the other side's clock for this move. Nobody has to win on the clock."
+            title={say.say("live.giveTimeHint")}
             data-testid="give-time"
           >
-            Give more time
+            {say.say("live.giveTime")}
           </Button>
         ) : null}
       </div>
     ) : null}
     {detail.clockMode === "game" && detail.moveTimeMs !== null ? (
       <p className={`${PLAY_SURFACE} text-xs text-muted`} data-testid="time-budgets">
-        Time left for the whole game · {STONE_DISPLAY.black.label}{" "}
-        {describeBudget(detail.blackTimeMs ?? detail.moveTimeMs)} ·{" "}
-        {STONE_DISPLAY.white.label}{" "}
-        {describeBudget(detail.whiteTimeMs ?? detail.moveTimeMs)}
+        {say.say("live.timeBudgets", {
+          black: stoneName(say, "black"),
+          blackTime: describeBudget(detail.blackTimeMs ?? detail.moveTimeMs, say),
+          white: stoneName(say, "white"),
+          whiteTime: describeBudget(detail.whiteTimeMs ?? detail.moveTimeMs, say),
+        })}
       </p>
     ) : null}
     </>
   );
 }
 /** A budget in words: "1h 20m", "45s". */
-function describeBudget(ms: number): string {
-  return describeRemaining(new Date(ms), new Date(0));
+function describeBudget(ms: number, say: Speaker): string {
+  return describeRemaining(new Date(ms), new Date(0), say);
 }

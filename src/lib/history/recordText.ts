@@ -1,7 +1,9 @@
 import { GAME_RESULT_DISPLAY } from "./gameHistory.constants";
 import type { GameSummary } from "./gameHistory.types";
-import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
+import { variantName } from "@/lib/gomoku/variantCopy";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 
 /**
  * The whole record as plain text.
@@ -25,13 +27,13 @@ import { variantLabel } from "@/lib/gomoku/variants.constants";
  * and the eye can compare them without reading them.
  */
 const COLUMNS = [
-  { heading: "Date", numeric: false },
-  { heading: "Game", numeric: false },
-  { heading: "Black", numeric: false },
-  { heading: "White", numeric: false },
-  { heading: "Result", numeric: false },
-  { heading: "Moves", numeric: true },
-] as const;
+  { heading: "played.textDate", numeric: false },
+  { heading: "played.textGame", numeric: false },
+  { heading: "played.textBlack", numeric: false },
+  { heading: "played.textWhite", numeric: false },
+  { heading: "played.textResult", numeric: false },
+  { heading: "played.textMoves", numeric: true },
+] as const satisfies readonly { heading: PhraseKey; numeric: boolean }[];
 
 const GAP = "  ";
 
@@ -39,13 +41,13 @@ function nameOr(name: string, fallback: string): string {
   return name.trim() === "" ? fallback : name.trim();
 }
 
-function rowFor(game: GameSummary): string[] {
+function rowFor(game: GameSummary, say: Speaker): string[] {
   return [
     game.playedAt.slice(0, 10),
-    variantLabel(game.variant),
-    nameOr(game.blackName, SEAT_DISPLAY.one.label),
-    nameOr(game.whiteName, SEAT_DISPLAY.two.label),
-    GAME_RESULT_DISPLAY[game.result].label,
+    variantName(game.variant, say),
+    nameOr(game.blackName, seatName(say, "one")),
+    nameOr(game.whiteName, seatName(say, "two")),
+    say.pairName(GAME_RESULT_DISPLAY[game.result].label, GAME_RESULT_DISPLAY[game.result].kanji).text,
     String(game.moveCount),
   ];
 }
@@ -57,17 +59,41 @@ function rowFor(game: GameSummary): string[] {
  * here we do not get to choose the length of, and truncating it would throw
  * away the very thing somebody is keeping the file for.
  */
-function widthsFor(rows: string[][]): number[] {
-  return COLUMNS.map(({ heading }, column) =>
-    rows.reduce((widest, row) => Math.max(widest, row[column].length), heading.length),
+function widthsFor(rows: string[][], headings: string[]): number[] {
+  return headings.map((heading, column) =>
+    rows.reduce((widest, row) => Math.max(widest, widthOf(row[column])), widthOf(heading)),
   );
+}
+
+/**
+ * How many columns of a monospaced listing a text takes: a Japanese character
+ * is two, so a column of names that mixes scripts still lines up.
+ */
+function widthOf(text: string): number {
+  let width = 0;
+  for (const char of text) {
+    const code = char.codePointAt(0) ?? 0;
+    const wide =
+      (code >= 0x1100 && code <= 0x115f) ||
+      (code >= 0x2e80 && code <= 0xa4cf) ||
+      (code >= 0xac00 && code <= 0xd7a3) ||
+      (code >= 0xf900 && code <= 0xfaff) ||
+      (code >= 0xfe30 && code <= 0xfe6f) ||
+      (code >= 0xff00 && code <= 0xff60) ||
+      (code >= 0xffe0 && code <= 0xffe6);
+    width += wide ? 2 : 1;
+  }
+  return width;
+}
+
+function pad(cell: string, width: number, end: boolean): string {
+  const fill = " ".repeat(Math.max(0, width - widthOf(cell)));
+  return end ? cell + fill : fill + cell;
 }
 
 function line(cells: string[], widths: number[]): string {
   return cells
-    .map((cell, column) =>
-      COLUMNS[column].numeric ? cell.padStart(widths[column]) : cell.padEnd(widths[column]),
-    )
+    .map((cell, column) => pad(cell, widths[column], !COLUMNS[column].numeric))
     .join(GAP)
     // Trailing spaces on every line are litter in a file somebody is keeping.
     .trimEnd();
@@ -76,19 +102,21 @@ function line(cells: string[], widths: number[]): string {
 export function recordAsText(
   games: GameSummary[],
   { heading, total }: { heading: string; total: number },
+  say: Speaker = speaker("en"),
 ): string {
-  if (games.length === 0) return `${heading}\n\nNo games yet.\n`;
+  if (games.length === 0) return `${heading}\n\n${say.say("played.textNone")}\n`;
 
-  const rows = games.map(rowFor);
-  const widths = widthsFor(rows);
+  const rows = games.map((game) => rowFor(game, say));
+  const headings = COLUMNS.map((column) => say.say(column.heading));
+  const widths = widthsFor(rows, headings);
 
   const out = [
     heading,
     games.length === total
-      ? `${total} ${total === 1 ? "game" : "games"}.`
-      : `${games.length} of ${total} games; the rest are on the site.`,
+      ? say.sentence(say.count("count.gamePlayed", total))
+      : say.say("played.textPartial", { shown: String(games.length), total: String(total) }),
     "",
-    line(COLUMNS.map(({ heading }) => heading), widths),
+    line(headings, widths),
     line(
       widths.map((width) => "-".repeat(width)),
       widths,

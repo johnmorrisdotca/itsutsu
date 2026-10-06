@@ -55,13 +55,6 @@ export const BOARD_SCALE_LIST = [BOARD_SCALES.regular, BOARD_SCALES.large, BOARD
 
 export type BoardScale = (typeof BOARD_SCALE_LIST)[number];
 
-/** What the chooser says: the short name, its kanji, and the whole of it for a screen reader. */
-export const BOARD_SCALE_WORDS: Record<BoardScale, { label: string; kanji: string; whole: string }> = {
-  regular: { label: "Regular", kanji: "標準", whole: "Regular board size, as the page draws it" },
-  large: { label: "Large", kanji: "大", whole: "Large board, halfway to full screen" },
-  full: { label: "Full", kanji: "全画面", whole: "Full screen board, as large as the window allows" },
-};
-
 /**
  * KINDS OF SCREEN, EACH WITH A CHOICE OF ITS OWN. John: "must have memory when
  * on similar devices" — so a laptop and a big monitor each keep their own

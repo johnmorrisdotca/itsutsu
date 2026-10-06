@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 
 export type Verdict = "up" | "down" | null;
 
 /** "How do you think you did?" Private, one tap, changeable. Not who won: how you played. */
 export function SelfVerdict({ id, initial }: { id: string; initial: Verdict }) {
+  const say = useSpeaker();
   const [verdict, setVerdict] = useState<Verdict>(initial);
   const [busy, setBusy] = useState(false);
 
@@ -27,15 +29,15 @@ export function SelfVerdict({ id, initial }: { id: string; initial: Verdict }) {
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm" data-testid="self-verdict">
       <span className="text-muted">
-        How do you think you played? <span className="font-mincho text-xs">自己評価</span>
+        {say.say("replay.selfVerdict")}{say.pairsWithKanji ? <> <span className="font-mincho text-xs">自己評価</span></> : null}
       </span>
-      <button type="button" onClick={() => choose("up")} disabled={busy} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 ${tone("up")}`} aria-pressed={verdict === "up"} title="Well">
+      <button type="button" onClick={() => choose("up")} disabled={busy} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 ${tone("up")}`} aria-pressed={verdict === "up"} title={say.say("replay.selfWell")}>
         👍
       </button>
-      <button type="button" onClick={() => choose("down")} disabled={busy} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 ${tone("down")}`} aria-pressed={verdict === "down"} title="Not well">
+      <button type="button" onClick={() => choose("down")} disabled={busy} className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 py-1 ${tone("down")}`} aria-pressed={verdict === "down"} title={say.say("replay.selfNotWell")}>
         👎
       </button>
-      <span className="text-xs text-muted">Private; only you see it.</span>
+      <span className="text-xs text-muted">{say.say("replay.selfPrivate")}</span>
     </div>
   );
 }

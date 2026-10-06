@@ -14,31 +14,7 @@ export const TIME_CONTROLS = {
 
 export type TimeControlName = keyof typeof TIME_CONTROLS;
 
-export const TIME_CONTROL_DISPLAY: Record<
-  TimeControlName,
-  { label: string; kanji: string; description: string }
-> = {
-  none: {
-    label: "No clock",
-    kanji: "無制限",
-    description: "Take as long as you like.",
-  },
-  blitz: {
-    label: "Blitz",
-    kanji: "早碁",
-    description: "3 minutes, then three 10-second periods.",
-  },
-  rapid: {
-    label: "Rapid",
-    kanji: "速碁",
-    description: "10 minutes, then three 30-second periods.",
-  },
-  classical: {
-    label: "Classical",
-    kanji: "持ち時間",
-    description: "30 minutes, then five 1-minute periods.",
-  },
-};
+export { TIME_CONTROL_DISPLAY } from "./clockNames.constants";
 
 /** How often the clock is recomputed while a player is thinking. */
 export const CLOCK_TICK_MS = 200;

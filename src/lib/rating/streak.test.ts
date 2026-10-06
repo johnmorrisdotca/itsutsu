@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { speaker } from "@/lib/i18n/i18n";
+
 import {
   MEMBER_STREAK_SCOPES,
   NO_STREAK_TEXT,
@@ -73,8 +75,9 @@ describe("how a streak is written", () => {
   });
 
   it("says in words what the letter means", () => {
-    expect(streakLabel({ kind: "loss", count: 2 })).toContain("lost in a row");
-    expect(streakLabel(null)).not.toContain("0");
+    expect(streakLabel({ kind: "loss", count: 2 }, speaker("en"))).toContain("lost in a row");
+    expect(streakLabel({ kind: "loss", count: 2 }, speaker("ja"))).toBe("2連敗。");
+    expect(streakLabel(null, speaker("en"))).not.toContain("0");
   });
 });
 

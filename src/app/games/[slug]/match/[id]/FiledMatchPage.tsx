@@ -16,7 +16,12 @@ import { Page } from "@/components/layout/Page";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerName } from "@/components/players/PlayerName";
-import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { pairedText, seatName } from "@/lib/gomoku/seatWords";
+import { variantName } from "@/lib/gomoku/variantCopy";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { weave } from "@/lib/i18n/weave";
 import { gamePath, historyPath, matchPath } from "@/lib/gomoku/slugs";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
 import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
@@ -51,7 +56,6 @@ import { RivalryPanel } from "@/components/history/RivalryPanel";
 import { RIVALRY_MOMENTS } from "@/lib/record/rivalry.constants";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import { GameTrail } from "@/components/games/GameTrail";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 
 /**
  * A match that has been filed: the replay, at the address the match has always
@@ -70,6 +74,7 @@ import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 export async function FiledMatchPage({ id, move }: { id: string; move?: number }) {
   // The whole conversation, not the last thirty of it. This is the page it is
   // kept on, and a record that quietly begins in the middle is not a record.
+  const say = await currentSpeaker();
   const game = await fetchGameDetail(id, { whole: true });
   if (game === null) notFound();
   if (move !== undefined && (!Number.isInteger(move) || move < 0 || move > game.moveCount)) {
@@ -222,6 +227,7 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
 
   return (
     <FiledMatch
+      say={say}
       game={game}
       move={move ?? game.moveCount}
       againIn={againIn}
@@ -244,6 +250,7 @@ export async function FiledMatchPage({ id, move }: { id: string; move?: number }
 }
 
 function FiledMatch({
+  say,
   game,
   move,
   againIn,
@@ -262,6 +269,7 @@ function FiledMatch({
   match,
   starred,
 }: {
+  say: Speaker;
   /** Whether this reader starred the game, for one who played it; null for anybody else. */
   starred: boolean | null;
   game: GameDetail;
@@ -315,21 +323,21 @@ function FiledMatch({
       */}
       {/* Just the board's header: what this is and where it was played (`BoardMasthead`), drawn only in that mode. */}
       <div data-bare-only>
-        <BoardMasthead story={playedHereStory(game, { label: "Game review", kanji: "棋譜" })} />
+        <BoardMasthead story={playedHereStory(game, { label: say.say("gamepages.gameReview"), kanji: say.pairsWithKanji ? "棋譜" : "" }, say)} />
       </div>
       <div data-chrome className="contents">
       <PageTitle
         crumb={
           <GameTrail
-            game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
-            steps={[{ label: "Game history", href: historyPath(game.variant) }, { label: "Game" }]}
+            game={{ label: variantName(game.variant, say), href: gamePath(game.variant as RuleVariant) }}
+            steps={[{ label: say.say("gamepages.gameHistory"), href: historyPath(game.variant) }, { label: say.say("gamepages.game") }]}
           />
         }
         title={
           <>
-            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={named} />
-            <span className="px-1 text-muted">vs</span>
-            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={named} />
+            <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={seatName(say, "one")} linkable={named} />
+            <span className="px-1 text-muted">{say.say("replay.vs")}</span>
+            <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={seatName(say, "two")} linkable={named} />
           </>
         }
         lead={
@@ -340,18 +348,18 @@ function FiledMatch({
               mismatched; it printed the server's zone as though it were the
               reader's, which in production is UTC for everybody.
             */}
-            Started <LocalTime at={game.playedAt} />
+            {weave(say.say("gamepages.started"), { when: <LocalTime at={game.playedAt} /> })}
             {game.lastMoveAt !== null ? (
               <>
-                {" "}· finished <LocalTime at={game.lastMoveAt} />
+                {" "}· {weave(say.say("gamepages.finishedAt"), { when: <LocalTime at={game.lastMoveAt} /> })}
               </>
             ) : null}{" "}
             ·{" "}
-            {boardWords(game.variant, game.size)} ·{" "}
+            {boardWords(game.variant, game.size, say)} ·{" "}
             <GameName variant={game.variant} />{" "}
-            · <ResultMark kind={seatResult(game.result, null, result.label).mark} className="mr-1" />
+            · <ResultMark kind={seatResult(game.result, null, result.label, say).mark} className="mr-1" />
             <Paired en={result.label} kanji={result.kanji} kanjiClassName="" />
-            {!game.rated ? <span className="ml-2 rounded-full border border-rule px-2 py-0.5 text-xs">Friendly · unrated</span> : null}
+            {!game.rated ? <span className="ml-2 rounded-full border border-rule px-2 py-0.5 text-xs">{say.say("gamepages.friendlyUnrated")}</span> : null}
           </>
         }
         aside={
@@ -380,13 +388,13 @@ function FiledMatch({
             {againIn !== null ? (
               <ChallengeButton
                 rematch={game.id}
-                label={`Play again as ${againIn === "black" ? "Black 黒" : "White 白"}`}
+                label={say.say("gamepages.playAgainAs", { colour: pairedText(say, STONE_DISPLAY[againIn].label, STONE_DISPLAY[againIn].kanji) })}
                 strong
               />
             ) : null}
             {seated ? <HideGameButton id={game.id} hidden={hidden} /> : null}
             <Link href={historyPath(game.variant)} className="text-sm underline underline-offset-4">
-              Back to game history
+              {say.say("gamepages.backToHistory")}
             </Link>
           </span>
         }
@@ -418,10 +426,10 @@ function FiledMatch({
           className="rounded-lg border border-ochre/60 bg-ochre-soft px-3 py-2 text-sm text-ink"
           data-testid="record-unrated"
         >
-          <span className="font-semibold">{RATING_REFUSAL_DISPLAY[refusal].filed}</span>{" "}
-          <span className="font-mincho">{RATING_REFUSAL_DISPLAY[refusal].kanji}</span>
-          {". "}
-          {RATING_REFUSAL_DISPLAY[refusal].sentence}
+          <span className="font-semibold">
+            {say.sentence(say.pairsWithKanji ? `${say.say(RATING_REFUSAL_DISPLAY[refusal].filed)} ${RATING_REFUSAL_DISPLAY[refusal].kanji}` : say.say(RATING_REFUSAL_DISPLAY[refusal].filed))}
+          </span>{" "}
+          {say.say(RATING_REFUSAL_DISPLAY[refusal].sentence)}
         </p>
       ) : null}
 
@@ -448,7 +456,7 @@ function FiledMatch({
         overlay={card === null ? null : <ResultCard {...card} />}
         savesToAccount={hasAccount}
         movesShown={movesShown}
-        story={playedHereStory(game, { label: "Game review", kanji: "棋譜" })}
+        story={playedHereStory(game, { label: say.say("gamepages.gameReview"), kanji: say.pairsWithKanji ? "棋譜" : "" }, say)}
       />
       </MoveFormatProvider>
 

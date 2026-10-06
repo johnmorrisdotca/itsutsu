@@ -1,7 +1,10 @@
-import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
+"use client";
 
-import { SET_UP_COPY } from "./live.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { variantName } from "@/lib/gomoku/variantCopy";
+
+import { setUpCopy } from "./live.constants";
 import type { SetUpNoticesProps } from "./setUp.types";
 
 /**
@@ -28,6 +31,8 @@ export function SetUpNotices({
   dropped,
   variant,
 }: SetUpNoticesProps) {
+  const say = useSpeaker();
+  const SET_UP_COPY = setUpCopy(say);
   return (
     <>
       {problem !== null ? (
@@ -46,7 +51,7 @@ export function SetUpNotices({
       {again !== null ? (
         <p className="text-xs text-moss" data-testid="set-up-again">
           {repeat
-            ? SET_UP_COPY.againHint(chosenName ?? "them", STONE_DISPLAY[again.colour].label)
+            ? SET_UP_COPY.againHint(chosenName ?? say.say("live.them"), stoneName(say, again.colour))
             : sameOpponent
               ? SET_UP_COPY.againChanged
               : SET_UP_COPY.againElsewhere(again.opponent.name, chosenName)}
@@ -55,8 +60,8 @@ export function SetUpNotices({
       {fork !== null ? (
         <p className="text-xs text-moss" data-testid="set-up-fork">
           {fork.alone
-            ? `${SET_UP_COPY.fork(fork.move)}. ${SET_UP_COPY.forkAlone}`
-            : SET_UP_COPY.forkHint(fork.move, opponent?.name ?? "the same opponent")}
+            ? say.sentences([say.sentence(SET_UP_COPY.fork(fork.move)), SET_UP_COPY.forkAlone])
+            : SET_UP_COPY.forkHint(fork.move, opponent?.name ?? say.say("live.sameOpponent"))}
         </p>
       ) : null}
       {again === null && fork === null && opponent !== null ? (
@@ -73,7 +78,7 @@ export function SetUpNotices({
       */}
       {dropped !== null ? (
         <p className="text-xs text-shu" data-testid="set-up-not-offered">
-          {SET_UP_COPY.notAtThisGame(dropped, variantLabel(variant))}
+          {SET_UP_COPY.notAtThisGame(dropped, variantName(variant, say))}
         </p>
       ) : null}
     </>

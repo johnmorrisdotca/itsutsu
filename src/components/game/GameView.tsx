@@ -8,12 +8,15 @@ import { boardSettingsFrom, type GameDefaults } from "./gameDefaults";
 import { Board } from "@/components/board/Board";
 import { FeltUnderBoard } from "@/components/board/FeltPatches";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
-import { GAME_STATUS, SEATS, SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, SEATS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { seatName, stoneName } from "@/lib/gomoku/seatWords";
+import { SITE_NAME } from "@/lib/i18n/siteName";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { RuleVariant, Seat } from "@/lib/gomoku/gomoku.types";
 import { markResultSeen } from "@/components/history/useResultCard";
 import { WinCoverOver, useWinMoment } from "./WinCover";
-import { GAME_COPY } from "./game.constants";
-import { WIN_COVER_COPY } from "./winCover.constants";
+import { gameCopy } from "./game.constants";
+import { winCoverCopy } from "./winCover.constants";
 import { tableNews } from "./winNews";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { matchPath, playPath } from "@/lib/gomoku/slugs";
@@ -29,7 +32,7 @@ import { useGameRecording } from "./useGameRecording";
 import { useGameSession } from "./useGameSession";
 import { BoardFocus } from "@/components/board/BoardFocus";
 import { boardWords } from "@/lib/gomoku/boardWords";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 
 export function GameView({
@@ -55,6 +58,8 @@ export function GameView({
   /** Where a new game starts for this member. */
   defaults: GameDefaults;
 }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   // Nothing moving for a couple of minutes pauses the clock behind a modal.
   const { idle, confirm } = useIdleWatch();
   // /games/<slug>/play#post-seat: an address that lands on the sharing panel, already open.
@@ -161,18 +166,18 @@ export function GameView({
   useEffect(() => {
     if (moment.open && kept.matchId !== null) markResultSeen(kept.matchId);
   }, [moment.open, kept.matchId]);
-  const seatName = (seat: Seat) =>
-    session.names[seat].trim() || (seat === computerSeat ? WIN_COVER_COPY.computer : SEAT_DISPLAY[seat].label);
+  const nameOf = (seat: Seat) =>
+    session.names[seat].trim() || (seat === computerSeat ? winCoverCopy(say).computer : seatName(say, seat));
   const winnerSeat = latest.status === GAME_STATUS.won && latest.winner !== null ? latest.seats[latest.winner] : null;
   const news = moment.open
     ? tableNews({
-        names: [seatName(SEATS.one), seatName(SEATS.two)],
+        names: [nameOf(SEATS.one), nameOf(SEATS.two)],
         winners: winnerSeat === null ? [] : [winnerSeat === SEATS.one ? 0 : 1],
         you: computerSeat === null ? null : computerSeat === SEATS.one ? 1 : 0,
         draw: latest.status === GAME_STATUS.draw,
-        detail: latest.winner === null ? null : `${STONE_DISPLAY[latest.winner].label} ${STONE_DISPLAY[latest.winner].kanji}`,
+        detail: latest.winner === null ? null : say.pairsWithKanji ? `${stoneName(say, latest.winner)} ${STONE_DISPLAY[latest.winner].kanji}` : stoneName(say, latest.winner),
         next: { label: GAME_COPY.newGame.label, onPress: () => actions.reset() },
-      })
+      }, say)
     : null;
 
   /*
@@ -220,12 +225,11 @@ export function GameView({
       {/* The board and everything that plays it, openable on their own (`BoardFocus`). */}
       <StoneColoursProvider colours={seatColours.colours}>
       <BoardFocus
-        label="this board"
         story={{
-          kind: match === null ? "Practice board" : "Pass and play",
-          kanji: match === null ? "試し打ち" : "対面",
-          title: `${RULE_VARIANT_DISPLAY[session.state.settings.variant].label}, ${boardWords(session.state.settings.variant, session.state.settings.size)}`,
-          source: match === null ? "On Itsutsu: both sides are yours, and nothing here is rated" : "Played on Itsutsu, at one screen",
+          kind: say.say(match === null ? "gamescreen.practiceBoard" : "gamescreen.passAndPlay"),
+          kanji: say.pairsWithKanji ? (match === null ? "試し打ち" : "対面") : "",
+          title: say.joined([variantName(session.state.settings.variant, say), boardWords(session.state.settings.variant, session.state.settings.size, say)]),
+          source: say.say(match === null ? "gamescreen.sourcePractice" : "gamescreen.sourcePass", { site: SITE_NAME }),
         }}
       >
       <div className="flex w-full flex-col items-start gap-8 lg:flex-row">

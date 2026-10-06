@@ -7,7 +7,9 @@ import type { BeginAction } from "./beginGame";
 import { COLOUR_CHOICES, colourIsChosen, type ColourChoice } from "./colourChoice";
 import type { PieceColour } from "@/lib/pieces/pieceColours";
 import { describeSeating } from "./doorstepSays";
-import { DOORSTEP_COPY, SET_UP_COPY } from "./live.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+
+import { doorstepCopy, setUpCopy } from "./live.constants";
 import type { MatchSize } from "@/lib/history/liveMatch";
 import type { RulesDraft } from "./rulesDraft";
 import type { SetUpAgain, SetUpFork, SetUpOpponent } from "./setUp.types";
@@ -34,7 +36,9 @@ export function setUpBegin({
   colour = COLOUR_CHOICES.black,
   games = 1,
   pieceColour = null,
+  say,
 }: {
+  say: Speaker;
   /** The colour the asker chose for their own pieces, or null for the game's own (`pieceColours.ts`). */
   pieceColour?: PieceColour | null;
   /** The form as it stands, with any posted seat's board already settled into it. */
@@ -135,7 +139,7 @@ export function setUpBegin({
    */
   const sitting = describeSeating(settled, {
     opponent: random
-      ? DOORSTEP_COPY.drawnFrom(pool.map((program) => program.name))
+      ? doorstepCopy(say).drawnFrom(pool.map((program) => program.name))
       : (opponent?.name ?? null),
     computer: random || (opponent?.computer ?? false),
     /*
@@ -155,6 +159,6 @@ export function setUpBegin({
       fixedOpener(settled.variant, settled.opening, { headStart: settled.headStart, size: settled.size }) ??
       openerIn(carry),
     screen: seating.screen,
-  });
-  return { begin, sitting: match > 1 ? `${sitting} ${SET_UP_COPY.games.said(match)}` : sitting };
+  }, say);
+  return { begin, sitting: match > 1 ? say.sentences([sitting, setUpCopy(say).games.said(match)]) : sitting };
 }

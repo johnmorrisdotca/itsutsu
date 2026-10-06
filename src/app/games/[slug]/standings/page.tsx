@@ -12,7 +12,9 @@ import { siblingsOf } from "@/lib/gomoku/families";
 import { gamePath, historyPath, playPath, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { PuzzleStandingsPage } from "@/components/puzzles/PuzzleStandingsPage";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { titleWithKanji } from "@/components/games/pageTitles";
+import { pairedText } from "@/lib/gomoku/seatWords";
 import { variantCopy } from "@/lib/gomoku/variantCopy";
 import { fetchVariantLeaders, type VariantStanding } from "@/lib/rating/variantRatings";
 import { LISTED_ALREADY, ipTotalsOf, scopeOfGame } from "@/lib/points/ipBoards";
@@ -27,7 +29,9 @@ import { closedToReader } from "@/lib/social/childReach";
 import { GameTrail } from "@/components/games/GameTrail";
 import { currentTestModeReader } from "@/lib/testMode/testMode";
 
-export const metadata = { title: "Leaderboard 番付" };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "gamepages.leaderboard", "番付") };
+}
 
 // The ladder is read from the database on every request, never at build time.
 export const dynamic = "force-dynamic";
@@ -51,7 +55,8 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
   if (puzzle !== null) return <PuzzleStandingsPage kind={puzzle} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
-  const copy = variantCopy(variant, await currentLocale());
+  const say = await currentSpeaker();
+  const copy = variantCopy(variant, say.locale);
   const siblings = siblingsOf(variant);
   const testMode = await currentTestModeReader();
   const [standings, againstComputers] = await Promise.all([
@@ -120,20 +125,18 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
       <PageTitle
         title={copy.label}
         kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Leaderboard" }]} />}
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: say.say("gamepages.leaderboard") }]} />}
       >
         <p className="text-sm font-medium">{copy.tagline}</p>
         <p className="flex flex-wrap gap-x-3 text-xs">
-          <Link href={rulesPath(variant)} className="text-muted underline-offset-2 hover:underline">rules</Link>
-          <Link href={historyPath(variant)} className="text-muted underline-offset-2 hover:underline">history</Link>
-          <Link href={gamePath(variant)} className="text-muted underline-offset-2 hover:underline">the game</Link>
+          <Link href={rulesPath(variant)} className="text-muted underline-offset-2 hover:underline">{say.say("gamepages.linkRules")}</Link>
+          <Link href={historyPath(variant)} className="text-muted underline-offset-2 hover:underline">{say.say("gamepages.linkHistory")}</Link>
+          <Link href={gamePath(variant)} className="text-muted underline-offset-2 hover:underline">{say.say("gamepages.linkGame")}</Link>
         </p>
       </PageTitle>
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="game-champions">
         <p className="text-sm text-muted">
-          Ratings here are this game&apos;s own Elo, starting at 1600 and moved only by games of {copy.label} between
-          two named members. A standing is unrated for the first few games, provisional while it settles, and
-          established after twenty.
+          {say.say("gamepages.eloNote", { game: copy.label })}
         </p>
         {/*
           THE TABLE IS DRAWN EITHER WAY. It used to be replaced by a sentence
@@ -142,14 +145,14 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
           yet... and that's a change to have a link saying - be the first to
           play!" See Show The Data, Not The Way To It in AGENTS.md.
         */}
-        <StandingsTable standings={standings} game={variant} ip={ip} actions={reader.hasAccount ? actionsFor : undefined} actionsLabel="Ask" />
+        <StandingsTable standings={standings} game={variant} ip={ip} actions={reader.hasAccount ? actionsFor : undefined} actionsLabel={say.say("gamepages.ask")} />
         {standings.length === 0 ? (
           <p className="flex flex-wrap items-baseline gap-x-2 text-sm" data-testid="standings-empty">
             <span className="text-muted">
-              No rated games of {copy.label} between members yet.
+              {say.say("gamepages.noRatedGames", { game: copy.label })}
             </span>
             <Link href={playPath(variant)} className="font-semibold underline-offset-2 hover:underline" data-testid="standings-be-first">
-              Be the first to play {copy.label} →
+              {say.say("gamepages.beFirst", { game: copy.label })}
             </Link>
           </p>
         ) : null}
@@ -171,8 +174,8 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
         */}
         <section className="flex flex-col gap-3" data-testid="computer-standings">
             <h2 className={`flex items-baseline gap-2 ${SECTION_TITLE}`}>
-              Against the bots{" "}
-              <span className="font-mincho text-[0.8rem] font-normal tracking-normal">機械</span>
+              {say.say("gamepages.againstBots")}
+              {say.pairsWithKanji ? <span className="font-mincho text-[0.8rem] font-normal tracking-normal"> 機械</span> : null}
             </h2>
             <p className="text-xs text-muted">
               {/*
@@ -183,10 +186,7 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
                 the grade order as a result would be reporting a plan rather
                 than what happened.
               */}
-              A separate ladder, on this game alone, for the games where one seat was a program.
-              These ratings are not the ones above and the two are never added together. A grade
-              is a name for how a program plays, not a promise about how it does: read the
-              standing and the games behind it, which is what a ladder is for.
+              {say.say("gamepages.botLadderNote")}
             </p>
           <StandingsTable
             standings={againstComputers}
@@ -195,28 +195,25 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
             pool="computer"
             testId="computer-standings-table"
             actions={reader.hasAccount ? actionsFor : undefined}
-            actionsLabel="Ask"
+            actionsLabel={say.say("gamepages.ask")}
           />
           {againstComputers.length === 0 ? (
             <p className="flex flex-wrap items-baseline gap-x-2 text-sm" data-testid="computer-standings-empty">
               <span className="text-muted">
-                Nobody has finished a rated game of {copy.label} against a program yet.
+                {say.say("gamepages.noBotGames", { game: copy.label })}
               </span>
               <Link href={playPath(variant)} className="font-semibold underline-offset-2 hover:underline">
-                Play one →
+                {say.say("gamepages.playOne")}
               </Link>
             </p>
           ) : null}
         </section>
         {siblings !== null && siblings.games.length > 0 ? (
           <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 pt-2 text-xs text-muted" data-testid="sibling-champions">
-            <span>
-              Also in {siblings.family.title}{" "}
-              <span className="font-mincho opacity-70">{siblings.family.kanji}</span>:
-            </span>
+            <span>{say.say("gamepages.alsoIn", { family: pairedText(say, siblings.family.title, siblings.family.kanji) })}</span>
             {siblings.games.map((game) => (
               <Link key={game} href={standingsPath(game)} className="underline-offset-2 hover:underline">
-                {gameCopyFor(game).label}
+                {gameCopyFor(game, say.locale).label}
               </Link>
             ))}
           </p>

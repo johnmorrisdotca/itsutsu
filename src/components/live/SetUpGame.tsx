@@ -16,6 +16,7 @@ import { HandicapChoice } from "./HandicapChoice";
 import { HeadStartChoice } from "./HeadStartChoice";
 import { OpponentChoice } from "./OpponentChoice";
 import { ANYONE, RANDOM_COMPUTER, againstFromAddress, idIn, valueFor, whoIs } from "./opponentOptions";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BeginBar } from "./BeginBar";
 import { BoardPreview } from "./BoardPreview";
 import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
@@ -150,6 +151,7 @@ export function SetUpGame({
   /** Why the address could not be honoured, when it could not. */
   problem?: string | null;
 }) {
+  const say = useSpeaker();
   /*
    * EVERY CHOICE STARTS FROM THE ADDRESS AND IS WRITTEN BACK TO IT. John: "We
    * need Memory when viewing Gaming pages... a refresh loses the Checkers
@@ -299,6 +301,7 @@ export function SetUpGame({
    * the board.
    */
   const { begin, sitting } = setUpBegin({
+    say,
     settled,
     asPlayed,
     /*
@@ -371,7 +374,7 @@ export function SetUpGame({
       ) : (
       <>
       <p className={SET_UP_SUMMARY} data-testid="set-up-summary">
-        {describeRules(settled)}
+        {describeRules(settled, say)}
       </p>
 
       {/*
@@ -399,7 +402,7 @@ export function SetUpGame({
           disabled={busy}
           showOpen={false}
           showVariant={chooseGame}
-          variantLabel="Game"
+          variantLabel={say.say("live.gameLabel")}
           chooser={RULES_CHOOSERS.pictures}
           positionFixed={fork !== null}
           preview={<BoardPreview rules={settled} appearance={{ ...appearance, felt }} onFelt={chooseFelt} position={fork?.position ?? null} />}
@@ -463,7 +466,7 @@ export function SetUpGame({
            * the doorstep said it a third time. Said once, on the row that
            * holds the control, it is a summary rather than an echo.
            */
-          folded={foldedWords({ settled, refused, opponent: fork !== null ? opponent : chosen, fork, random })}
+          folded={foldedWords({ settled, refused, opponent: fork !== null ? opponent : chosen, fork, random, say })}
           onSizeChosen={setBoardChosen}
           onPuzzle={chooseGame ? setPuzzle : undefined}
         />

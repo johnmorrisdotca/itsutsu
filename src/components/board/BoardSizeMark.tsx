@@ -1,3 +1,6 @@
+"use client";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { pictureBox } from "@/components/games/picture";
 
 import { BOARD_SIZE_LATTICE, BOARD_SIZE_MARK_CLASS, BOARD_SIZE_NUMERAL_CLASS } from "./Board.constants";
@@ -49,13 +52,14 @@ import { boardSizeMarkVoice, boardSizeNumeralPx } from "./boardSizeVoice";
  * size John chose for every picture on the site.
  */
 export function BoardSizeMark({ side, size, words, className = "" }: BoardSizeMarkProps) {
+  const say = useSpeaker();
   const box = pictureBox(size);
   // A Meikyuu maze over a solid: the solid, with its step big in the middle (`SolidMark`).
   const solid = meikyuuSolidOf(side);
   if (solid !== null) {
     const step = MEIKYUU_SOLID_STEPS.indexOf(solid.step) + 1;
     const drawing = SOLID_LINES[solid.kind];
-    const voice = words === "beside" ? ({ "aria-hidden": "true" } as const) : ({ role: "img", "aria-label": `${MEIKYUU_SOLID_NAMES[solid.kind]}, size ${step} of 3` } as const);
+    const voice = words === "beside" ? ({ "aria-hidden": "true" } as const) : ({ role: "img", "aria-label": say.say("boardlook.solidStep", { name: MEIKYUU_SOLID_NAMES[solid.kind], step: String(step) }) } as const);
     return (
       <span {...voice} className={className === "" ? BOARD_SIZE_MARK_CLASS : `${BOARD_SIZE_MARK_CLASS} ${className}`} style={box} data-testid="board-size-mark" data-solid={solid.kind} data-step={step} data-picture={size}>
         <svg viewBox="0 0 100 100" className="absolute inset-0 size-full text-rule-strong" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -84,7 +88,7 @@ export function BoardSizeMark({ side, size, words, className = "" }: BoardSizeMa
     const across = (box.width * long.width) / longest;
     const down = (box.height * long.height) / longest;
     return (
-      <span {...boardSizeMarkVoice(side, words)} className="inline-flex shrink-0 items-center justify-center" style={box} data-testid="board-size-mark" data-size={side} data-picture={size}>
+      <span {...boardSizeMarkVoice(side, words, say)} className="inline-flex shrink-0 items-center justify-center" style={box} data-testid="board-size-mark" data-size={side} data-picture={size}>
         <span
           className={className === "" ? BOARD_SIZE_MARK_CLASS : `${BOARD_SIZE_MARK_CLASS} ${className}`}
           style={{ width: across, height: down, backgroundImage: BOARD_SIZE_LATTICE, backgroundSize: `${100 / long.width}% ${100 / long.height}%` }}
@@ -98,7 +102,7 @@ export function BoardSizeMark({ side, size, words, className = "" }: BoardSizeMa
   }
   return (
     <span
-      {...boardSizeMarkVoice(side, words)}
+      {...boardSizeMarkVoice(side, words, say)}
       className={className === "" ? BOARD_SIZE_MARK_CLASS : `${BOARD_SIZE_MARK_CLASS} ${className}`}
       style={{
         ...box,

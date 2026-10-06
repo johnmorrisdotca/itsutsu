@@ -18,7 +18,8 @@ import { GAME_SORT_COLUMNS } from "@/lib/history/gameHistory.sort";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { historyPath } from "@/lib/gomoku/slugs";
 import { type AppliedPlayer, appliedNarrowings } from "@/lib/history/narrowings";
-import { variantLabel } from "@/lib/gomoku/variants.constants";
+import { variantName } from "@/lib/gomoku/variantCopy";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { Field, Select } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
 
@@ -31,6 +32,14 @@ import { INPUT_CLASS } from "@/components/ui/ui.constants";
  * other way — a control that disagrees with the page it is on, which is worse
  * than one that does nothing.
  */
+/** What each sort the record offers is called, by the word the address uses for it. */
+const SORT_WORDS: Record<string, PhraseKey> = {
+  played: "played.sortPlayed",
+  moves: "played.sortLength",
+  size: "played.sortBoard",
+  duration: "played.sortTime",
+};
+
 function sortValue(sort: string, order: string): string {
   const [word, attached] = sort.split(":", 2);
   const column = word === "" ? GAME_SORT_COLUMNS[0].param : word;
@@ -140,7 +149,7 @@ export function HistoryFilters({
           <span className="text-muted">{say.say("filter.narrowedTo")}</span>
           {narrowings.map((chip) => ({
             ...chip,
-            label: chip.phrase === undefined ? chip.label : say.say(chip.phrase.key, chip.phrase.vars),
+            label: chip.phrase !== undefined ? say.say(chip.phrase.key, chip.phrase.vars) : (chip.said ?? chip.label),
           })).map((one) =>
             one.href !== undefined ? (
               // The address itself is applying this one (/games/<slug>/me),
@@ -163,7 +172,7 @@ export function HistoryFilters({
                 // who arrived by a count's link is `member`, not `player`.
                 onClick={() => remove([one.clears ?? one.key, ...(one.alsoClears ?? [])])}
                 className="flex items-center gap-1.5 rounded-full border border-rule px-2.5 py-1 hover:border-ink-soft"
-                title={`Stop narrowing to ${one.label}`}
+                title={say.say("replay.stopNarrowing", { label: one.label })}
                 data-testid="history-narrowing"
                 data-narrowing={one.key}
               >
@@ -171,7 +180,7 @@ export function HistoryFilters({
                 <span aria-hidden className="text-muted">
                   ×
                 </span>
-                <span className="sr-only">— remove</span>
+                <span className="sr-only">{say.say("replay.remove")}</span>
               </button>
             ),
           )}
@@ -214,13 +223,13 @@ export function HistoryFilters({
             >
               {GAME_RESULT_FILTERS.map((option) => (
                 <option key={option} value={option}>
-                  {option === "all" ? say.say("filter.any") : GAME_RESULT_DISPLAY[option].label}
+                  {option === "all" ? say.say("filter.any") : say.pairName(GAME_RESULT_DISPLAY[option].label, GAME_RESULT_DISPLAY[option].kanji).text}
                 </option>
               ))}
             </Select>
           </Field>
         ) : (
-          <Field label={`How it went for ${player}`}>
+          <Field label={say.say("replay.howItWent", { name: player })}>
             <Select
               value={value("outcome", "all")}
               onChange={(event) => update("outcome", event.target.value)}
@@ -230,7 +239,7 @@ export function HistoryFilters({
                 <option key={option} value={option}>
                   {option === "all"
                     ? say.say("filter.any")
-                    : GAME_OUTCOME_DISPLAY[option].label}
+                    : say.pairName(GAME_OUTCOME_DISPLAY[option].label, GAME_OUTCOME_DISPLAY[option].kanji).text}
                 </option>
               ))}
             </Select>
@@ -258,7 +267,7 @@ export function HistoryFilters({
           >
             {GAME_VARIANT_FILTERS.map((option) => (
               <option key={option} value={option}>
-                {option === "all" ? say.say("filter.any") : variantLabel(option)}
+                {option === "all" ? say.say("filter.any") : variantName(option, say)}
               </option>
             ))}
           </Select>
@@ -292,7 +301,7 @@ export function HistoryFilters({
             {GAME_SORT_COLUMNS.flatMap((column) =>
               (["desc", "asc"] as const).map((dir) => (
                 <option key={`${column.param}:${dir}`} value={`${column.param}:${dir}`}>
-                  {column.label} {dir === "desc" ? "↓" : "↑"}
+                  {say.say(SORT_WORDS[column.param] ?? "played.sortPlayed")} {dir === "desc" ? "↓" : "↑"}
                 </option>
               )),
             )}

@@ -1,3 +1,4 @@
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
 import { streakLabel, streakText, type Streak } from "@/lib/rating/streak";
 
 import { blankOf, streakCounts } from "./recordScopeWords";
@@ -27,8 +28,11 @@ export function StreakMark({
   of = {},
   played,
   blankBecause,
+  say = speaker("en"),
 }: {
   streak: Streak | null;
+  /** The reader's language for the hover note; the surrounding table words are still English. */
+  say?: Speaker;
   of?: RecordOf;
   /** How many games the row counted, which tells "none yet" from "not known". */
   played?: number;
@@ -50,7 +54,7 @@ export function StreakMark({
    * "...no site's row is a run of anything. Over the games finished here by
    * Razryad" read as two answers disagreeing.
    */
-  const reason = streakLabel(streak);
+  const reason = streakLabel(streak, say);
   const title =
     reason === "" && blankBecause !== undefined
       ? blankBecause

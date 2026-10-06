@@ -33,23 +33,7 @@ export const CATALOGUE_VIEW_LIST: readonly CatalogueView[] = [
   CATALOGUE_VIEWS.list,
 ];
 
-export const CATALOGUE_VIEW_DISPLAY: Record<CatalogueView, { label: string; kanji: string; blurb: string }> = {
-  families: {
-    label: "Families",
-    kanji: "系統",
-    blurb: "Grouped by what they have in common, with a line on each family.",
-  },
-  cards: {
-    label: "Cards",
-    kanji: "一覧",
-    blurb: "One card each, narrowed by first letter or by what wins.",
-  },
-  list: {
-    label: "List",
-    kanji: "全種目",
-    blurb: "Every game as text: its names elsewhere, and everywhere it lives here.",
-  },
-};
+export { CATALOGUE_VIEW_DISPLAY } from "./catalogueViewNames.constants";
 
 /**
  * The view an address asks for: a tab, so a segment of the path (/games/cards,

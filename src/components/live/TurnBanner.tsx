@@ -1,11 +1,14 @@
 "use client";
 
 import { discCount } from "@/lib/gomoku/engine";
-import { STONE_DISPLAY, WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
+import { WIN_REASONS } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { weave } from "@/lib/i18n/weave";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import type { replayGame } from "@/lib/gomoku/replay";
 import { endedWithNoMoves } from "@/lib/gomoku/rules/forcedPass";
-import { GAME_COPY } from "@/components/game/game.constants";
+import { gameCopy } from "@/components/game/game.constants";
 import { passedTurnWords } from "@/components/game/passedTurn";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
@@ -47,30 +50,33 @@ export function TurnBanner({
   /** When the last move landed, once the game is over; shown so nobody has to go to the record for it. */
   finishedAt?: string | null;
 }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   if (finished) {
     const won = state.winner;
+    const colour = won === null ? "" : stoneName(say, won);
     return (
       <p className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${TONE_CLASS.great}`} data-testid="turn-banner">
         {won === null
           ? endedWithNoMoves(state)
             ? GAME_COPY.drawNoMoves
-            : "Draw. The board is full."
+            : say.say("game.drawFull")
           : state.winBy === WIN_REASONS.resign
-            ? `${STONE_DISPLAY[won].label} wins by resignation.`
+            ? say.say("live.winsResign", { colour })
             : state.winBy === null
-              ? `${STONE_DISPLAY[won].label} wins. The game is over.`
+              ? say.say("live.winsOver", { colour })
             : state.winBy === WIN_REASONS.count
-              ? `${STONE_DISPLAY[won].label} wins on discs, ${discCount(state.board).black} to ${discCount(state.board).white}.`
+              ? say.say("live.winsDiscs", { colour, black: String(discCount(state.board).black), white: String(discCount(state.board).white) })
               : state.winBy === WIN_REASONS.camp
-                ? `${STONE_DISPLAY[won].label} wins: the far camp is full.`
+                ? say.say("live.winsCamp", { colour })
                 : state.winBy === WIN_REASONS.connection
-                  ? `${STONE_DISPLAY[won].label} wins: their two sides are joined.`
+                  ? say.say("live.winsConnection", { colour })
                 : state.winBy === WIN_REASONS.blocked
-                  ? `${STONE_DISPLAY[won].label} wins: the other side has no move left.`
-                : `${STONE_DISPLAY[won].label} wins in ${state.moves.length} moves.`}
+                  ? say.say("live.winsBlocked", { colour })
+                : say.say("live.winsIn", { colour, moves: say.count("count.move", state.moves.length) })}
         {finishedAt !== null ? (
           <span className="block text-xs font-normal opacity-80" data-testid="finished-at">
-            Finished <LocalTime at={finishedAt} />
+            {weave(say.say("live.finished"), { when: <LocalTime at={finishedAt} /> })}
           </span>
         ) : null}
       </p>
@@ -110,14 +116,19 @@ export function TurnBanner({
       >
         {offer.side === "to-me" ? (
           <>
-            <span className="font-semibold">{offer.who} has offered you this game 申込.</span>{" "}
-            Look at the board, then accept or decline. Declining costs you nothing — no result, no
-            rating, and nothing on your record.
+            <span className="font-semibold">
+              {say.say("live.offerToMeBold", { who: offer.who })}
+              {say.pairsWithKanji ? " 申込" : ""}.
+            </span>{" "}
+            {say.say("live.offerToMeRest")}
           </>
         ) : (
           <>
-            <span className="font-semibold">Offered to {offer.who} 申込済.</span> Nothing starts until
-            they accept, and no clock is running. You can withdraw it at any time.
+            <span className="font-semibold">
+              {say.say("live.offerFromMeBold", { who: offer.who })}
+              {say.pairsWithKanji ? " 申込済" : ""}.
+            </span>{" "}
+            {say.say("live.offerFromMeRest")}
           </>
         )}
       </p>
@@ -131,9 +142,11 @@ export function TurnBanner({
         data-testid="turn-banner"
         data-awaiting="true"
       >
-        <span className="font-semibold">Waiting for an opponent 募集中.</span>{" "}
-        Your seat link is below — send it to somebody, or leave it on the board and you will be
-        told when it is taken. You may play your first move now if you would rather.
+        <span className="font-semibold">
+          {say.say("live.awaitingBold")}
+          {say.pairsWithKanji ? " 募集中" : ""}.
+        </span>{" "}
+        {say.say("live.awaitingRest")}
       </p>
     );
   }
@@ -141,7 +154,7 @@ export function TurnBanner({
   if (seat === null) {
     return (
       <p className={`rounded-xl border px-3 py-2.5 text-sm ${TONE_CLASS.calm}`}>
-        You are watching. {STONE_DISPLAY[state.toPlay].label} to play.
+        {say.say("live.watching", { colour: stoneName(say, state.toPlay) })}
       </p>
     );
   }
@@ -154,12 +167,12 @@ export function TurnBanner({
       data-testid="turn-banner"
     >
       {yourTurn
-        ? `Your move — you are ${STONE_DISPLAY[seat].label}.`
-        : `Waiting for ${STONE_DISPLAY[state.toPlay].label}…`}
+        ? say.say("live.yourMove", { colour: stoneName(say, seat) })
+        : say.say("live.waitingFor", { colour: stoneName(say, state.toPlay) })}
       {/* A turn that passed itself is said on both boards, so neither player is left wondering where it went. */}
-      {passedTurnWords(state, seat) !== null ? (
+      {passedTurnWords(state, seat, say) !== null ? (
         <span className="block text-xs font-normal" data-testid="turn-passed">
-          {passedTurnWords(state, seat)}
+          {passedTurnWords(state, seat, say)}
         </span>
       ) : null}
     </p>

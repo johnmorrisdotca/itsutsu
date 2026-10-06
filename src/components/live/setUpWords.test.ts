@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { NO_HANDICAP, NO_HEAD_START, STONES } from "@/lib/gomoku/gomoku.constants";
 import type { SetUpFork, SetUpOpponent } from "./setUp.types";
-import { POST_FOR_ANYONE, recapWords } from "./setUpWords";
+import { speaker } from "@/lib/i18n/i18n";
+import { postForAnyone, recapWords } from "./setUpWords";
+
+const say = speaker("en");
+const POST_FOR_ANYONE = postForAnyone(say);
 
 /**
  * The words the setup screen's own fields say in the line over Continue.
@@ -21,7 +25,7 @@ const texts = (words: ReturnType<typeof recapWords>) => words.map((word) => word
 
 describe("what the set-up screen's own fields say", () => {
   it("names the opponent the press will actually bind, shortened as this site prints names", () => {
-    expect(texts(recapWords({ game: even, opponent: them, fork: null, handicap: NO_HANDICAP }))).toEqual(["Against Bob T."]);
+    expect(texts(recapWords({ say, game: even, opponent: them, fork: null, handicap: NO_HANDICAP }))).toEqual(["Against Bob T."]);
   });
 
   /*
@@ -30,20 +34,20 @@ describe("what the set-up screen's own fields say", () => {
    * not be reading two different accounts of who is playing.
    */
   it("marks a computer player as one, as the doorstep does", () => {
-    expect(texts(recapWords({ game: even, opponent: machine, fork: null, handicap: NO_HANDICAP }))).toEqual([
+    expect(texts(recapWords({ say, game: even, opponent: machine, fork: null, handicap: NO_HANDICAP }))).toEqual([
       "Against Hidemasa Tamenoki 機械",
     ]);
   });
 
   it("says the seat is posted where nobody is named, and does not shout about it", () => {
-    const words = recapWords({ game: even, opponent: null, fork: null, handicap: NO_HANDICAP });
+    const words = recapWords({ say, game: even, opponent: null, fork: null, handicap: NO_HANDICAP });
     expect(texts(words)).toEqual([POST_FOR_ANYONE]);
     // The ordinary answer: a line where every word shouts is a line where none does.
     expect(words[0].notable).toBe(false);
   });
 
   it("says a computer player is still to be drawn, rather than naming one or posting the seat", () => {
-    const words = recapWords({ game: even, opponent: null, fork: null, handicap: NO_HANDICAP, random: true });
+    const words = recapWords({ say, game: even, opponent: null, fork: null, handicap: NO_HANDICAP, random: true });
     expect(texts(words)).toEqual(["Against a random bot"]);
     expect(words[0].notable).toBe(true);
   });
@@ -54,17 +58,17 @@ describe("what the set-up screen's own fields say", () => {
    * the screen is holding that player already.
    */
   it("names the player who was in the position a fork came out of", () => {
-    expect(texts(recapWords({ game: even, opponent: them, fork, handicap: NO_HANDICAP }))).toEqual(["Against Bob T."]);
+    expect(texts(recapWords({ say, game: even, opponent: them, fork, handicap: NO_HANDICAP }))).toEqual(["Against Bob T."]);
   });
 
   it("names a computer player a position was played against", () => {
-    expect(texts(recapWords({ game: even, opponent: machine, fork, handicap: NO_HANDICAP }))).toEqual([
+    expect(texts(recapWords({ say, game: even, opponent: machine, fork, handicap: NO_HANDICAP }))).toEqual([
       "Against Hidemasa Tamenoki 機械",
     ]);
   });
 
   it("says a lone fork is against whoever the seat is handed to", () => {
-    expect(texts(recapWords({ game: even, opponent: null, fork: { ...fork, alone: true }, handicap: NO_HANDICAP }))).toEqual([
+    expect(texts(recapWords({ say, game: even, opponent: null, fork: { ...fork, alone: true }, handicap: NO_HANDICAP }))).toEqual([
       "Against whoever you hand the seat to",
     ]);
   });
@@ -74,13 +78,13 @@ describe("what the set-up screen's own fields say", () => {
    * anyone" or a random program: a fork is never posted, and never drawn.
    */
   it("never says a fork is posted for anyone, or drawn", () => {
-    expect(texts(recapWords({ game: even, opponent: null, fork, handicap: NO_HANDICAP, random: true }))).toEqual([
+    expect(texts(recapWords({ say, game: even, opponent: null, fork, handicap: NO_HANDICAP, random: true }))).toEqual([
       "Against whoever you hand the seat to",
     ]);
   });
 
   it("says a handicap after the opponent, in the order the fields appear", () => {
-    const words = recapWords({ game: even,
+    const words = recapWords({ say, game: even,
       opponent: them,
       fork: null,
       handicap: { ...NO_HANDICAP, stone: STONES.black, doubleThree: true },
@@ -90,6 +94,6 @@ describe("what the set-up screen's own fields say", () => {
   });
 
   it("says nothing at all about a handicap where there is none", () => {
-    expect(recapWords({ game: even, opponent: them, fork: null, handicap: NO_HANDICAP })).toHaveLength(1);
+    expect(recapWords({ say, game: even, opponent: them, fork: null, handicap: NO_HANDICAP })).toHaveLength(1);
   });
 });

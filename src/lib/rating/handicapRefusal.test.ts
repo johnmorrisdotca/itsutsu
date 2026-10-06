@@ -7,6 +7,9 @@ import { hasHandicap } from "@/lib/gomoku/rules/handicap";
 
 import { draftRatingRefusal, handicapRefusal } from "./handicapRefusal";
 import { RATING_REFUSALS, RATING_REFUSAL_DISPLAY } from "./rateable.constants";
+import { speaker } from "@/lib/i18n/i18n";
+
+const say = speaker("en");
 
 /**
  * A HANDICAP GAME MOVES NOBODY'S RATING.
@@ -60,10 +63,10 @@ describe("handicapRefusal", () => {
 
   it("has words for the set-up screen, the board and the filed game", () => {
     const display = RATING_REFUSAL_DISPLAY[RATING_REFUSALS.handicap];
-    expect(display.playing).toBe("This game will not count");
-    expect(display.filed).toBe("This game did not count");
-    expect(display.sentence).toMatch(/handicap/);
-    expect(display.short).toMatch(/handicap/);
+    expect(say.say(display.playing)).toBe("This game will not count");
+    expect(say.say(display.filed)).toBe("This game did not count");
+    expect(say.say(display.sentence)).toMatch(/handicap/);
+    expect(say.say(display.short)).toMatch(/handicap/);
   });
 });
 
@@ -105,9 +108,9 @@ describe("a head start", () => {
 
   it("has words that say head start, on every page that says why", () => {
     const display = RATING_REFUSAL_DISPLAY[RATING_REFUSALS.headStart];
-    expect(display.playing).toBe("This game will not count");
-    expect(display.filed).toBe("This game did not count");
-    expect(display.sentence).toMatch(/head start/);
-    expect(display.short).toMatch(/head start/);
+    expect(say.say(display.playing)).toBe("This game will not count");
+    expect(say.say(display.filed)).toBe("This game did not count");
+    expect(say.say(display.sentence)).toMatch(/head start/);
+    expect(say.say(display.short)).toMatch(/head start/);
   });
 });

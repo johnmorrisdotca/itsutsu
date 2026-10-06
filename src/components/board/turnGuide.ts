@@ -2,7 +2,8 @@ import { TURN_CHOICE_KINDS } from "@/lib/gomoku/gomoku.constants";
 import { indexOf } from "@/lib/gomoku/engine";
 import { pointName } from "@/lib/gomoku/notation";
 import type { Cell, GameState, TurnChoices } from "@/lib/gomoku/gomoku.types";
-import { FEW_LEGAL_MOVES, SQUARE_GUIDES, TURN_GUIDE_COPY } from "./Board.constants";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import { FEW_LEGAL_MOVES, SQUARE_GUIDES } from "./Board.constants";
 import type { SquareGuide, TurnGuide } from "./board.types";
 
 /**
@@ -77,13 +78,14 @@ export function squareGuide(guide: TurnGuide | null, index: number, cell: Cell):
  * The guide in words: the rule, shown on screen, when a rule narrowed the
  * choice; and the choices by name, for a screen reader, always.
  */
-export function turnGuideWords(guide: TurnGuide, size: number): { shown: string | null; spoken: string } {
+export function turnGuideWords(guide: TurnGuide, size: number, say: Speaker = speaker("en")): { shown: string | null; spoken: string } {
   const names = guide.choices.map((point) => pointName(size, point));
-  const listed = names.length <= 1 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
-  return {
-    shown: guide.reason === null ? null : TURN_GUIDE_COPY[guide.reason],
-    spoken: guide.veiled
-      ? TURN_GUIDE_COPY.onlyMoves(names.length, listed)
-      : TURN_GUIDE_COPY.piecesThatMayMove(names.length, listed),
-  };
+  const moves = say.list(names);
+  const shown =
+    guide.reason === null ? null : say.say(guide.reason === "capture" ? "boardlook.guideCapture" : "boardlook.guideMost");
+  const spoken = say.say(say.form(guide.veiled ? "boardlook.guideOnly" : "boardlook.guidePieces", names.length), {
+    count: say.number(names.length),
+    moves,
+  });
+  return { shown, spoken };
 }

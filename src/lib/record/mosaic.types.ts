@@ -1,3 +1,5 @@
+import type { Speaker } from "../i18n/i18n";
+
 import type { MosaicPick } from "./mosaic.constants";
 
 /**
@@ -23,4 +25,6 @@ export type MosaicPicture = {
   width: number;
   height: number;
   title: MosaicTitle;
+  /** The language of the words drawn in the title bar; English where nobody says. */
+  say?: Speaker;
 };

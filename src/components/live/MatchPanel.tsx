@@ -4,11 +4,12 @@ import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { markOfSeat } from "@/components/game/resultMarks";
 
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { matchGames } from "@/lib/history/matchGames";
 
-import { MATCH_PANEL_COPY } from "./live.constants";
+import { matchPanelCopy } from "./live.constants";
 
 /**
  * THE REST OF THE MATCH, beside each game of it.
@@ -33,11 +34,12 @@ export async function MatchPanel({
   if (matchId === null) return null;
   const games = await matchGames(matchId, memberId);
   if (games.length < 2) return null;
-  const copy = MATCH_PANEL_COPY;
+  const say = await currentSpeaker();
+  const copy = matchPanelCopy(say);
   return (
     <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="match-panel">
       <h2 className={SECTION_TITLE}>
-        {copy.title} <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span>
+        {copy.title}{copy.kanji === "" ? null : <> <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span></>}
       </h2>
       <p className="text-xs text-muted">{copy.lead(games.length)}</p>
       <ol className="flex flex-col gap-1 text-sm">
@@ -51,7 +53,7 @@ export async function MatchPanel({
               </Link>
             )}
             <span className="text-muted">
-              {game.mine !== null ? ` · ${copy.you(STONE_DISPLAY[game.mine].label)}` : ""} ·{" "}
+              {game.mine !== null ? ` · ${copy.you(stoneName(say, game.mine))}` : ""} ·{" "}
               {/* Only a game that ended has a mark: one waiting, in play or refused has no result yet. */}
               {game.state === "black" || game.state === "white" ? (
                 <ResultMark kind={game.mine === null ? RESULT_MARKS.success : markOfSeat(game.state, game.mine, true)} className="mr-0.5" />

@@ -1,10 +1,15 @@
 import { expect, test, type Locator } from "@playwright/test";
 
-import { SET_UP_COPY } from "../src/components/live/live.constants";
-import { SEAT_DISPLAY, SEATS, STONE_DISPLAY } from "../src/lib/gomoku/gomoku.constants";
+import { setUpCopy } from "../src/components/live/live.constants";
+import { SEATS, STONE_DISPLAY } from "../src/lib/gomoku/gomoku.constants";
+import { seatName } from "../src/lib/gomoku/seatWords";
+import { speaker } from "../src/lib/i18n/i18n";
 
 import { memberContext } from "./members";
 import { openMoreSettings, openSetUpPage, ready } from "./support";
+
+const say = speaker("en");
+const SET_UP_COPY = setUpCopy(say);
 
 /**
  * WHAT EACH CONTROL IS CALLED, AND WHAT IS MERELY SAID ABOUT IT.
@@ -254,7 +259,7 @@ test.describe("a hand-written label names its control too", () => {
 
     const said: string[] = [];
     for (const seat of Object.values(SEATS)) {
-      const label = SEAT_DISPLAY[seat].label;
+      const label = seatName(say, seat);
       /*
        * `combobox`, not `textbox`: the box completes names from a datalist,
        * and a text input with a `list` is a combo box to the accessibility

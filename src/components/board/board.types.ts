@@ -59,8 +59,6 @@ export type BoardAspect = "square" | "map";
 
 /** The CSS custom properties a board theme sets on its container. */
 export type BoardThemeTokens = {
-  label: string;
-  kanji: string;
   /** Painted behind the grid — a gradient or a flat colour. */
   surface: string;
   /** Sits under `surface` to give the wood an edge and a shadow. */
@@ -102,8 +100,6 @@ export type BoardThemeTokens = {
 };
 
 export type StoneSetTokens = {
-  label: string;
-  kanji: string;
   /** Backgrounds for the two colours, in the order black then white. */
   black: string;
   white: string;

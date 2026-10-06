@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { MOVE_CONFIRM, type MoveConfirm } from "@/lib/preferences/turnFlow";
 
 /**
@@ -28,6 +29,7 @@ export function ConfirmMovesSwitch({
   value: MoveConfirm;
   onChange: (next: MoveConfirm) => void;
 }) {
+  const say = useSpeaker();
   const confirming = value === MOVE_CONFIRM.preview;
   return (
     <label className="flex items-center gap-2 self-end text-xs text-muted" data-testid="confirm-moves-switch">
@@ -38,7 +40,7 @@ export function ConfirmMovesSwitch({
         className="size-4 accent-ink"
         data-testid="confirm-moves"
       />
-      <span>Confirm each move before it is sent</span>
+      <span>{say.say("live.confirmMoves")}</span>
     </label>
   );
 }

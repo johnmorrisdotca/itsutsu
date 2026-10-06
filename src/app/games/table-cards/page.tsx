@@ -8,14 +8,20 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import Link from "@/components/ui/Link";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { Paired } from "@/components/i18n/Paired";
+import { pairedText } from "@/lib/gomoku/seatWords";
 import { familyBlurb } from "@/lib/gomoku/familyCopy";
-import { GAME_FAMILIES, familyCountWords, gamesShownIn } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, gamesShownIn } from "@/lib/gomoku/families";
+import { familyCountWords } from "@/lib/gomoku/familyWords";
 
 /** The one family this page is for: Table cards, whose games are played round one device or on several and never recorded, so no game's family page can be it (`familyPagePath`). */
 const TABLE_CARDS = GAME_FAMILIES.find((family) => family.key === "table-cards");
 
-export const metadata: Metadata = { title: TABLE_CARDS === undefined ? "Table cards" : `${TABLE_CARDS.title} ${TABLE_CARDS.kanji}` };
+export async function generateMetadata(): Promise<Metadata> {
+  const say = await currentSpeaker();
+  return { title: TABLE_CARDS === undefined ? say.say("gamepages.games") : pairedText(say, TABLE_CARDS.title, TABLE_CARDS.kanji) };
+}
 
 /**
  * TABLE CARDS, AT /games/table-cards: the family of card games a table plays a
@@ -26,7 +32,8 @@ export const metadata: Metadata = { title: TABLE_CARDS === undefined ? "Table ca
  * gate already opens to anybody: it names games and nobody who plays them.
  */
 export default async function TableCardsPage() {
-  const locale = await currentLocale();
+  const say = await currentSpeaker();
+  const locale = say.locale;
   if (TABLE_CARDS === undefined) notFound();
   return (
     <Page>
@@ -41,7 +48,7 @@ export default async function TableCardsPage() {
       <div className="flex items-center gap-4" data-testid="table-cards-family">
         <FamilyMark family={TABLE_CARDS.title} size="regular" />
         <p className="text-sm text-muted" data-testid="family-guest-count">
-          {familyCountWords(TABLE_CARDS)}, played by passing one phone or tablet round the table, or on several devices at Hitotsu, with a computer in any seat.
+          {say.say("gamepages.tableCardsNote", { count: familyCountWords(TABLE_CARDS, say) })}
         </p>
       </div>
 
@@ -49,7 +56,7 @@ export default async function TableCardsPage() {
 
       <p className="text-sm">
         <Link href="/games" className="underline underline-offset-4" data-testid="family-all-games">
-          Every family, and every game <span className="font-mincho">全種目</span> →
+          <Paired en={say.say("gamepages.everyFamily")} kanji="全種目" kanjiClassName="font-mincho" /> →
         </Link>
       </p>
     </Page>

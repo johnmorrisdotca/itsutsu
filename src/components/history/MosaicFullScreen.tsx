@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 /**
  * A WALLPAPER AT THE SIZE OF THE SCREEN. John, 2026-10-02, on a solved Meikyuu
  * level's wallpaper window: "They should be able to see full screen the game
@@ -18,6 +20,7 @@ import { useEffect, useRef, type ReactNode } from "react";
  * Mounted only while open, by the panel that holds the picture.
  */
 export function MosaicFullScreen({ url, alt, shape, onClose, children }: { url: string; alt: string; shape: string; onClose: () => void; children: ReactNode }) {
+  const say = useSpeaker();
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const element = dialog.current;
@@ -43,7 +46,7 @@ export function MosaicFullScreen({ url, alt, shape, onClose, children }: { url: 
       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-t border-white/15 bg-black/60 px-3 py-2 text-sm" data-testid="mosaic-full-controls">
         {children}
         <button type="button" onClick={onClose} className="min-h-11 rounded-full border border-white/40 px-4 font-semibold text-ivory hover:bg-white/10" data-testid="mosaic-full-close">
-          Close <span aria-hidden="true">×</span>
+          {say.say("mosaic.close")} <span aria-hidden="true">×</span>
         </button>
       </div>
     </dialog>

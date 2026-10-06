@@ -1,10 +1,14 @@
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+
 import { MatchPage } from "./MatchPage";
 
-export const metadata = {
-  title: "Game",
-  // A match page can be reached from a seat link; neither should be indexed.
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata() {
+  return {
+    title: (await currentSpeaker()).say("gamepages.game"),
+    // A match page can be reached from a seat link; neither should be indexed.
+    robots: { index: false, follow: false },
+  };
+}
 
 /** One match of a game, at one address: live while it is played, a replay once it is filed. */
 export default async function MatchRoute({ params, searchParams }: PageProps<"/games/[slug]/match/[id]">) {

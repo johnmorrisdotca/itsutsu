@@ -4,8 +4,9 @@ import { useState } from "react";
 
 import { BOT_PROFILES, BOT_TIER_LIST } from "@/lib/gomoku/opponent.constants";
 import { botProfile } from "@/lib/gomoku/botCopy";
-import { useLocale } from "@/components/i18n/LocaleProvider";
-import { SEAT_DISPLAY, SEATS } from "@/lib/gomoku/gomoku.constants";
+import { useLocale, useSpeaker } from "@/components/i18n/LocaleProvider";
+import { SEATS } from "@/lib/gomoku/gomoku.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import type { BotTier } from "@/lib/gomoku/opponent.types";
 import type { Seat } from "@/lib/gomoku/gomoku.types";
@@ -36,6 +37,7 @@ export function ComputerOpponentPanel({
   computer?: { seat: Seat | null; choose: (seat: Seat | null) => void };
 }) {
   const locale = useLocale();
+  const say = useSpeaker();
   const [own, setOwn] = useState<Seat | null>(null);
   const seat = computer === undefined ? own : computer.seat;
   const setSeat = computer === undefined ? setOwn : computer.choose;
@@ -46,10 +48,10 @@ export function ComputerOpponentPanel({
   return (
     <div className="flex flex-col gap-3" data-testid="computer-opponent" {...readyMark(hydrated)}>
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className={SECTION_TITLE}>Computer opponent</h2>
+        <h2 className={SECTION_TITLE}>{say.say("gamescreen.computer")}</h2>
         {thinking ? (
           <span className="text-xs text-muted" data-testid="computer-thinking">
-            thinking…
+            {say.say("gamescreen.thinking")}
           </span>
         ) : null}
       </div>
@@ -64,7 +66,7 @@ export function ComputerOpponentPanel({
         as a label that got greedy. htmlFor keeps the name to the words meant.
       */}
       <div className="flex flex-col gap-1 text-xs text-muted">
-        <label htmlFor="computer-seat">Plays as</label>
+        <label htmlFor="computer-seat">{say.say("gamescreen.playsAs")}</label>
         <select
           id="computer-seat"
           className="rounded-lg border border-rule bg-transparent px-2 py-1 text-sm text-ink"
@@ -79,14 +81,14 @@ export function ComputerOpponentPanel({
           onChange={(event) => setSeat(event.target.value === "" ? null : (event.target.value as Seat))}
           data-testid="computer-seat"
         >
-          <option value="">Nobody — two people</option>
-          <option value={SEATS.one}>{SEAT_DISPLAY[SEATS.one].label}</option>
-          <option value={SEATS.two}>{SEAT_DISPLAY[SEATS.two].label}</option>
+          <option value="">{say.say("gamescreen.nobody")}</option>
+          <option value={SEATS.one}>{seatName(say, SEATS.one)}</option>
+          <option value={SEATS.two}>{seatName(say, SEATS.two)}</option>
         </select>
       </div>
 
       <div className="flex flex-col gap-1 text-xs text-muted">
-        <label htmlFor="computer-tier">Strength</label>
+        <label htmlFor="computer-tier">{say.say("gamescreen.strength")}</label>
         <select
           id="computer-tier"
           className="rounded-lg border border-rule bg-transparent px-2 py-1 text-sm text-ink"
@@ -105,8 +107,7 @@ export function ComputerOpponentPanel({
 
       {failed === null ? (
         <p className="text-xs text-muted">
-          Thinks on this device, so it can take seconds over a move instead of the quarter second a
-          server reply allows. The game itself is still recorded, as any practice game is.
+          {say.say("gamescreen.computerNote")}
         </p>
       ) : (
         /*
@@ -115,7 +116,7 @@ export function ComputerOpponentPanel({
          * here, and the player would wait for a move that is never coming.
          */
         <p className="text-xs text-shu" role="alert" data-testid="computer-failed">
-          The bot stopped: {failed}. Choose “Nobody” and back again to restart it.
+          {say.say("gamescreen.botStopped", { why: failed === "" ? say.say("gamescreen.botStoppedWhy") : failed })}
         </p>
       )}
     </div>

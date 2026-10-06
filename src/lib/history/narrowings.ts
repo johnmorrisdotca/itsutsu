@@ -7,7 +7,9 @@ import {
   GAME_POOL_DISPLAY,
   GAME_RATED_DISPLAY,
   GAME_IP_DISPLAY,
+  outcomeIn,
   outcomeLabel,
+  verdictIn,
   verdictLabel,
 } from "./gameHistory.constants";
 import { outcomeNeedsPlayer } from "./gameHistoryClauses";
@@ -69,6 +71,8 @@ export type Narrowing = {
    * itself without that, and `label` stays beside it as the English form.
    */
   phrase?: { key: PhraseKey; vars: Vars };
+  /** The chip's words in the reader's language where they come from a name's own kanji rather than a phrase: it is shown instead of `label`. */
+  said?: string;
   /** Present when this chip leads to the player's own page instead of removing anything. */
   href?: string;
 };
@@ -113,6 +117,9 @@ export function appliedNarrowings(input: {
     label: english.say("record.finishedIn", { when: when(english) }),
     phrase: { key: "record.finishedIn", vars: { when: when(reader) } },
   });
+  /** A chip whose words are one phrase, the English beside the reader's. */
+  const withPhrase = (key: string, phrase: PhraseKey | undefined): Narrowing | null =>
+    phrase === undefined ? null : { key, label: english.say(phrase), phrase: { key: phrase, vars: {} } };
   const list: (Narrowing | null)[] = [
     player === null
       ? null
@@ -126,7 +133,8 @@ export function appliedNarrowings(input: {
            * so the chip asks it rather than spelling it out a second time; the
            * full name still narrows the query, which is not what is shown.
            */
-          label: `${shownName(player.name)}'s games`,
+          label: english.say("played.playersGames", { name: shownName(player.name) }),
+          phrase: { key: "played.playersGames", vars: { name: shownName(player.name) } },
           href: player.removable ? undefined : playerPath(player.name, player.memberId),
           ...(player.via === "member" ? { clears: "member" } : {}),
           ...(player.against !== undefined ? { alsoClears: ["against"] } : {}),
@@ -134,14 +142,14 @@ export function appliedNarrowings(input: {
     player === null || player.against === undefined ? null : againstChip(player.against.name),
     outcome === "" || (player === null && outcomeNeedsPlayer(outcome))
       ? null
-      : named("outcome", outcomeLabel(outcome)),
-    named("pool", pool === "" ? null : (GAME_POOL_DISPLAY[pool]?.label ?? null)),
-    named("rated", rated === "" ? null : (GAME_RATED_DISPLAY[rated]?.label ?? null)),
-    named("ip", ip === "" ? null : (GAME_IP_DISPLAY[ip]?.label ?? null)),
+      : named("outcome", outcomeLabel(outcome), outcomeIn(reader, outcome)),
+    withPhrase("pool", pool === "" ? undefined : GAME_POOL_DISPLAY[pool]?.label),
+    withPhrase("rated", rated === "" ? undefined : GAME_RATED_DISPLAY[rated]?.label),
+    withPhrase("ip", ip === "" ? undefined : GAME_IP_DISPLAY[ip]?.label),
     monthRead === null ? null : finishedIn("month", (say) => monthWords(monthRead, say)),
     weekRead === null ? null : finishedIn("week", (say) => weekWords(weekRead, say)),
     // Unlike outcome, verdict has no player-independent reading at all — see verdictWhere.
-    verdict === "" || player === null ? null : named("verdict", verdictLabel(verdict)),
+    verdict === "" || player === null ? null : named("verdict", verdictLabel(verdict), verdictIn(reader, verdict)),
   ];
   return list.filter((one): one is Narrowing => one !== null);
 }
@@ -175,6 +183,6 @@ function againstChip(name: string): Narrowing {
  * answer: the query did not narrow anything, so there is nothing to announce
  * and nothing for a "×" to take off.
  */
-function named(key: string, label: string | null): Narrowing | null {
-  return label === null ? null : { key, label };
+function named(key: string, label: string | null, said: string | null = null): Narrowing | null {
+  return label === null ? null : { key, label, ...(said === null || said === label ? {} : { said }) };
 }

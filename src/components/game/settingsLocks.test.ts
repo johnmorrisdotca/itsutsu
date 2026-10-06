@@ -3,13 +3,14 @@ import { describe, expect, it } from "vitest";
 import { settingsLocks } from "./settingsLocks";
 import { GAME_COPY } from "./game.constants";
 import { createGame } from "@/lib/gomoku/engine";
+import { speaker } from "@/lib/i18n/i18n";
 import { RULE_VARIANT_LIST, VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { advantageReadingFor } from "@/lib/gomoku/advantage";
 import { UNREADABLE_DISPLAY } from "@/lib/gomoku/advantage.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 function locksFor(variant: RuleVariant) {
-  return settingsLocks(createGame({ variant }).settings);
+  return settingsLocks(createGame({ variant }).settings, speaker("en"));
 }
 
 /**
@@ -48,7 +49,7 @@ describe("the who-is-ahead lock", () => {
       const reading = advantageReadingFor(VARIANT_SPECS[variant]);
       if (reading.kind !== "unreadable") continue;
       const lock = locksFor(variant).advantage;
-      expect(lock, variant).toBe(UNREADABLE_DISPLAY[reading.reason].sentence);
+      expect(lock, variant).toBe(speaker("en").say(UNREADABLE_DISPLAY[reading.reason].sentence));
       /*
        * The bug this replaces. Hex, Notakto, maker-breaker and the square
        * game all borrowed the line reading's sentence, which says stones move

@@ -1,7 +1,11 @@
+"use client";
+
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { resignedBy, resignWinners } from "@/lib/party/resign";
 
-import { GAME_ENDING_COPY } from "./gameEnding.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { gameEndingCopy } from "./gameEnding.constants";
 
 /**
  * HOW A TABLE ENDED WHEN SOMEBODY RESIGNED, in the place its turn line stood:
@@ -10,6 +14,7 @@ import { GAME_ENDING_COPY } from "./gameEnding.constants";
  * engine's own ending line says how its game is won, which this was not.
  */
 export function ResignedResult({ game, seats, nameOf }: { game: object; seats: number; nameOf: (seat: number) => string }) {
+  const GAME_ENDING_COPY = gameEndingCopy(useSpeaker());
   const resigned = resignedBy(game);
   if (resigned === null) return null;
   const winners = resignWinners(seats, resigned).map(nameOf);

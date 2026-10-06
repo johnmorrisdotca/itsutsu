@@ -14,11 +14,14 @@ import { storedPreferencesFor } from "@/lib/preferences/memberPreferences";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { currentReader } from "@/lib/auth/currentReader";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { titleWithKanji } from "@/components/games/pageTitles";
 import { KeepAllOffline } from "@/components/offline/KeepAllOffline";
 
 import { PublicCatalogue, catalogueFamilies } from "./PublicCatalogue";
 
-export const metadata = { title: "Games 種目" };
+export async function generateMetadata() {
+  return { title: titleWithKanji(await currentSpeaker(), "gamepages.games", "種目") };
+}
 
 // Read from the database on every request, never at build time.
 export const dynamic = "force-dynamic";
@@ -75,7 +78,7 @@ export default async function GamesPage({ searchParams }: PageProps<"/games">) {
       <PageTitle
         title={say.say("nav.games")}
         kanji="種目"
-        lead="Almost every game here is five in a row with one idea changed. Every name leads to that game — its rules, its record, its standings and a board."
+        lead={say.say("gamepages.gamesLead")}
       />
       <InstallHint />
       {/* Every game kept for offline at once, like a region saved in a maps app (`KeepAllOffline`); drawn only where the keeper runs. */}

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { deadlineFor, isOverdue } from "@/lib/history/deadline";
@@ -37,6 +39,7 @@ export function useMatchClock({
   onError: (said: string | null) => void;
   mutate: (next?: GameDetail, options?: { revalidate: boolean }) => Promise<unknown>;
 }) {
+  const say = useSpeaker();
   /*
    * A once-a-second tick keeps the countdown honest between polls, and stops
    * when there is nothing to count: a finished game with a timer still running
@@ -98,12 +101,12 @@ export function useMatchClock({
     canClaim,
     endsTheGame,
     /** More time for the other side, which is theirs to be given. */
-    give: () => ask("time", "Time could not be given.", false),
+    give: () => ask("time", say.say("live.timeCouldNotBeGiven"), false),
     /*
      * A flag claimed. Refreshing on a refusal is the point of the difference:
      * the usual reason a claim is refused is that they moved while you were
      * reading, and the board in front of you is the stale thing.
      */
-    claim: () => ask("timeout", "That could not be claimed.", true),
+    claim: () => ask("timeout", say.say("live.couldNotClaim"), true),
   };
 }

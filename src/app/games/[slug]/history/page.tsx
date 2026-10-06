@@ -3,18 +3,21 @@ import { notFound } from "next/navigation";
 
 import { puzzleFor, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { titleWithKanji } from "@/components/games/pageTitles";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { RecordPage } from "@/components/history/RecordPage";
 import { PuzzleRecordPage } from "@/components/puzzles/PuzzleRecordPage";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/history">): Promise<Metadata> {
   const { slug } = await params;
   const puzzle = puzzleFor(slug);
-  if (puzzle !== null) return { title: `${PUZZLE_DISPLAY[puzzle].label} · All solves 棋譜` };
+  const say = await currentSpeaker();
+  if (puzzle !== null) return { title: `${gameCopyOf(puzzle, say.locale)?.label ?? ""} · ${titleWithKanji(say, "gamepages.titleAllSolves", "棋譜")}` };
   const variant = variantFor(slug);
+  const history = titleWithKanji(say, "gamepages.gameHistory", "棋譜");
   return {
-    title: variant === null ? "Game history 棋譜" : `${RULE_VARIANT_DISPLAY[variant].label} · Game history 棋譜`,
+    title: variant === null ? history : `${gameCopyOf(variant, say.locale)?.label ?? ""} · ${history}`,
   };
 }
 

@@ -8,6 +8,7 @@ import type { Seat, Stone } from "@/lib/gomoku/gomoku.types";
 import type { GameDefaults } from "./gameDefaults";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { describeRules } from "@/components/live/rulesSummary";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { AppearancePanel } from "./AppearancePanel";
 import { GameClock } from "./GameClock";
 import { GameControls } from "./GameControls";
@@ -148,7 +149,8 @@ export function GameOptions({
    * The rules in one line, so folding the set-up away does not fold away what
    * game this is. The same sentence a shared game states beside its board.
    */
-  const rules = describeRules(props.session.state.settings);
+  const say = useSpeaker();
+  const rules = describeRules(props.session.state.settings, say);
   return (
     // Furniture, for the reader who has asked for the board alone: these sit
     // under the board rather than beside it, so `aside` does not catch them.
@@ -182,13 +184,14 @@ export function GameOptions({
       <details className={`${PANEL_CLASS} group`} data-testid="game-setup">
         <summary className="flex cursor-pointer list-none flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <span className={SECTION_TITLE}>
-            Set up <span className="font-mincho text-[0.8rem] font-normal tracking-normal">設定</span>
+            {say.say("gamescreen.setUpTitle")}
+            {say.pairsWithKanji ? <span className="font-mincho text-[0.8rem] font-normal tracking-normal"> 設定</span> : null}
           </span>
           <span className="order-last w-full text-xs text-muted sm:order-none sm:w-auto sm:flex-1" data-testid="setup-rules">
             {rules}
           </span>
-          <span className="text-xs text-muted group-open:hidden">show</span>
-          <span className="hidden text-xs text-muted group-open:inline">hide</span>
+          <span className="text-xs text-muted group-open:hidden">{say.say("replay.show")}</span>
+          <span className="hidden text-xs text-muted group-open:inline">{say.say("replay.hide")}</span>
         </summary>
         {/*
          * grid-cols-1 is not decoration. sm:grid-cols-2 is repeat(2,

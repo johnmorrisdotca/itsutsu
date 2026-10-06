@@ -7,7 +7,8 @@ import { SectionTitle } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { MOVE_FORMATS, formatsFor, readMoves, siteOf, type MoveFormat } from "@/lib/record/readMoves";
-import { PRACTICE_COPY } from "./game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { practiceCopy } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
 
 /**
@@ -32,6 +33,7 @@ import type { GamePanelProps } from "./game.types";
  * result theirs.
  */
 export function PasteMoves({ session, actions }: GamePanelProps) {
+  const PRACTICE_COPY = practiceCopy(useSpeaker());
   const [text, setText] = useState("");
   const [said, setSaid] = useState<string | null>(null);
   // Which site the list came from, or null for anywhere — see `PRACTICE_COPY.paste.from`.

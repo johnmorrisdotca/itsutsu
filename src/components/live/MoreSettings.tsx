@@ -1,5 +1,6 @@
 "use client";
 
+import type { Speaker } from "@/lib/i18n/i18n";
 import type { ReactNode } from "react";
 
 import { CardArrow } from "@/components/ui/CardArrow";
@@ -43,8 +44,11 @@ import { SettingWords } from "./SettingWords";
  */
 export function MoreSettings({
   summary,
+  say,
   children,
 }: {
+  /** The reader's language, said by whoever draws this, which may be a server component. */
+  say: Speaker;
   /** What the folded controls currently say, in the order they appear inside. */
   summary: SettingWord[];
   /** The controls themselves, moved here unchanged. */
@@ -68,7 +72,8 @@ export function MoreSettings({
       >
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className={SECTION_TITLE}>
-            More rules <span className="font-mincho normal-case tracking-normal">残りの規則</span>
+            {say.say("live.moreRules")}
+            {say.pairsWithKanji ? <> <span className="font-mincho normal-case tracking-normal">残りの規則</span></> : null}
           </span>
           <SettingWords words={summary} testId="more-settings-summary" />
         </span>

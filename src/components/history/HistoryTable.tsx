@@ -1,3 +1,6 @@
+"use client";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Paired } from "@/components/i18n/Paired";
 import Link from "@/components/ui/Link";
 
@@ -15,15 +18,16 @@ import { GAME_RESULT_DISPLAY } from "@/lib/history/gameHistory.constants";
 import { ResultMark } from "@/components/game/ResultMark";
 import { seatResult } from "@/components/game/resultMarks";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
-import { SEAT_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 import { boardWords } from "@/lib/gomoku/boardWords";
 /** One row per game. The whole row is the link into the replay. */
 export function HistoryTable({ items }: { items: GameSummary[] }) {
+  const say = useSpeaker();
   if (items.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-rule px-4 py-10 text-center text-sm text-muted">
-        No games match these filters yet.
+        {say.say("replay.empty")}
       </p>
     );
   }
@@ -51,7 +55,7 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
                 href={matchPath(game.variant, game.id)}
                 data-card-link=""
                 className="absolute inset-0 rounded-xl"
-                aria-label={`Replay: ${game.blackName.trim() || SEAT_DISPLAY.one.label} vs ${game.whiteName.trim() || SEAT_DISPLAY.two.label}`}
+                aria-label={say.say("replay.rowAria", { black: game.blackName.trim() || seatName(say, "one"), white: game.whiteName.trim() || seatName(say, "two") })}
                 /*
                   When it was played is the row's own date, pointed at rather
                   than copied into the name: an attribute cannot wait for the
@@ -65,9 +69,9 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
                 <GameThumb variant={game.variant} size="small" />
                 <span className="flex min-w-0 flex-col">
                   <span className="font-medium">
-                    <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={SEAT_DISPLAY.one.label} linkable={linkable} className={RAISED_LINK} testId="history-player" tag={game.blackTag} />
-                    <span className="px-2 text-muted">vs</span>
-                    <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={SEAT_DISPLAY.two.label} linkable={linkable} className={RAISED_LINK} testId="history-player" tag={game.whiteTag} />
+                    <PlayerName name={game.blackName} memberId={game.blackMemberId} fallback={seatName(say, "one")} linkable={linkable} className={RAISED_LINK} testId="history-player" tag={game.blackTag} />
+                    <span className="px-2 text-muted">{say.say("replay.vs")}</span>
+                    <PlayerName name={game.whiteName} memberId={game.whiteMemberId} fallback={seatName(say, "two")} linkable={linkable} className={RAISED_LINK} testId="history-player" tag={game.whiteTag} />
                   </span>
                   <span className="text-xs text-muted" id={`played-${game.id}`}>
                     <LocalTime at={game.playedAt} />
@@ -76,19 +80,19 @@ export function HistoryTable({ items }: { items: GameSummary[] }) {
               </span>
 
               <span className="text-sm text-muted">
-                {boardWords(game.variant as RuleVariant, game.size)}
+                {boardWords(game.variant as RuleVariant, game.size, say)}
                 <span className="px-2">·</span>
                 <GameName variant={game.variant as RuleVariant} raised />
                 {hasHeadStart(game) ? (
                   <>
                     <span className="px-2">·</span>
-                    <span data-testid="history-head-start">{HEAD_START_DISPLAY.label}</span>
+                    <span data-testid="history-head-start">{say.pairName(HEAD_START_DISPLAY.label, HEAD_START_DISPLAY.kanji).text}</span>
                   </>
                 ) : null}
               </span>
 
               <span className="text-sm text-muted tabular-nums">
-                {game.moveCount} moves
+                {say.count("count.move", game.moveCount)}
               </span>
 
               {/* The archive is nobody's side of a game, so a win is a tick and the colour is named. */}

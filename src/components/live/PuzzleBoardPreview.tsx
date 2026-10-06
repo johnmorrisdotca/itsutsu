@@ -1,6 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useMemo } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
@@ -52,7 +54,7 @@ import { JiraiPreview, PencilPreview } from "@/components/puzzles/pencilPreviews
 import { CLASSIC_JIRAI, type JiraiVariant } from "@/lib/puzzles/jirai/variants";
 import { isPencilKind } from "@/lib/puzzles/pencil/pencil.constants";
 
-import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
+import { setUpCopy, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 /* Suido's preview is made in the browser only: a board is not worth making on the server that draws the set-up page. */
@@ -125,6 +127,8 @@ export function PuzzleBoardPreview({
   /** Suido's kind of board and squares, as chosen on the set-up: the preview is a board of that kind. */
   suido?: SuidoWay;
 }) {
+  const say = useSpeaker();
+  const SET_UP_COPY = setUpCopy(say);
   const spec = PUZZLE_SPECS[kind];
   const words = spec.wordGrid;
   // A lattice is drawn on the board as a word grid is, with the board's colour chosen under it.
@@ -166,7 +170,7 @@ export function PuzzleBoardPreview({
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
-        {spec.cards === true ? SET_UP_COPY.previewCards(PUZZLE_DISPLAY[kind].label) : kind === "mahjong" ? SET_UP_COPY.previewMahjong : SET_UP_COPY.previewPuzzle(PUZZLE_DISPLAY[kind].label)}
+        {spec.cards === true ? SET_UP_COPY.previewCards(say.pairName(PUZZLE_DISPLAY[kind].label, PUZZLE_DISPLAY[kind].kanji).text) : kind === "mahjong" ? SET_UP_COPY.previewMahjong : SET_UP_COPY.previewPuzzle(say.pairName(PUZZLE_DISPLAY[kind].label, PUZZLE_DISPLAY[kind].kanji).text)}
         {/* The board's colour, in the room the caption keeps, as under a Reversi's preview: only where the puzzle is drawn on the board itself. */}
         {(!onBoard && spec.tiles !== true) || onFelt === undefined ? null : (
           <span className="mt-1 block">

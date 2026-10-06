@@ -7,7 +7,7 @@ import type { OpeningRule } from "@/lib/gomoku/gomoku.types";
 
 import { OpeningMark } from "./OpeningMark";
 import { SetUpFold } from "./SetUpFold";
-import { SET_UP_COPY } from "./live.constants";
+import { SET_UP_KANJI } from "./live.constants";
 import { PickMark } from "./PickMark";
 import { PICK_CARD, PICK_TILES } from "./picker.constants";
 import type { OpeningPickerProps } from "./picker.types";
@@ -108,7 +108,7 @@ export function OpeningPicker({ value, variant, size, onChange, disabled = false
   return (
     <SetUpFold
       title={say("setup.opening")}
-      kanji={SET_UP_COPY.openingKanji}
+      kanji={SET_UP_KANJI.opening}
       testId="set-up-opening-fold"
       summary={
         <>

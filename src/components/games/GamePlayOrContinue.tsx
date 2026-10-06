@@ -1,8 +1,9 @@
 import { PlayButton } from "@/components/games/PlayButton";
 import { GameInProgressOffer } from "@/components/play/GameInProgressOffer";
-import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+import { gameEndingCopy } from "@/components/play/gameEnding.constants";
 import Link from "@/components/ui/Link";
 import { currentMemberId } from "@/lib/auth/currentSession";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { matchPath, setUpPath } from "@/lib/gomoku/slugs";
 import { goingAt } from "@/lib/history/goingAt";
@@ -26,7 +27,8 @@ export async function GamePlayOrContinue({ variant }: { variant: string }) {
   const memberId = await currentMemberId();
   const going = memberId === null ? null : await goingAt(memberId, variant);
   if (going === null) return <PlayButton href={setUpPath(variant)} />;
-  const label = gameCopyOf(variant)?.label ?? variant;
+  const say = await currentSpeaker();
+  const label = gameCopyOf(variant, say.locale)?.label ?? variant;
   return (
     <>
       <GameInProgressOffer
@@ -39,7 +41,7 @@ export async function GamePlayOrContinue({ variant }: { variant: string }) {
       {going.others > 0 ? (
         <p className="text-center text-xs text-muted" data-testid="game-others" data-count={going.others}>
           <Link href="/play" className="underline underline-offset-4">
-            {GAME_ENDING_COPY.othersGoing(going.others, going.more, label)}
+            {gameEndingCopy(say).othersGoing(going.others, going.more, label)}
           </Link>
         </p>
       ) : null}

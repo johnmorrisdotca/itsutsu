@@ -1,3 +1,5 @@
+import { speaker, type Speaker } from "../i18n/i18n";
+
 import { VARIANT_SPECS } from "./gomoku.constants";
 import type { RuleVariant } from "./gomoku.types";
 import type { VariantSpec } from "./variantSpec.types";
@@ -35,10 +37,10 @@ function specOf(variant: RuleVariant | string): VariantSpec | null {
   return variant in VARIANT_SPECS ? VARIANT_SPECS[variant as RuleVariant] : null;
 }
 
-export function boardWords(variant: RuleVariant | string, size: number): string {
+export function boardWords(variant: RuleVariant | string, size: number, say: Speaker = speaker("en")): string {
   const spec = specOf(variant);
-  if (spec?.hexagon) return `${hexagonCells(size)} cells`;
-  if (spec?.chineseCheckers) return `${starCells(size)} cells`;
+  if (spec?.hexagon) return say.say("gomoku.cells", { count: say.number(hexagonCells(size)) });
+  if (spec?.chineseCheckers) return say.say("gomoku.cells", { count: say.number(starCells(size)) });
   return `${size}×${size}`;
 }
 
@@ -50,11 +52,11 @@ export function boardWords(variant: RuleVariant | string, size: number): string 
  * jobs. A chip in a row of chips wants the shortest true thing; a sentence
  * wants a noun with a shape in it, and "a 91 cells board" is neither.
  */
-export function boardPhrase(variant: RuleVariant | string, size: number): string {
+export function boardPhrase(variant: RuleVariant | string, size: number, say: Speaker = speaker("en")): string {
   const spec = specOf(variant);
-  if (spec?.hexagon) return `a hexagon of ${hexagonCells(size)} cells`;
-  if (spec?.chineseCheckers) return `a hexagram of ${starCells(size)} cells`;
+  if (spec?.hexagon) return say.say("gomoku.hexagon", { count: say.number(hexagonCells(size)) });
+  if (spec?.chineseCheckers) return say.say("gomoku.hexagram", { count: say.number(starCells(size)) });
   // 8, 11, 18 — the sizes an English speaker says "an" before.
-  const article = /^(8|11|18)/.test(String(size)) ? "an" : "a";
-  return `${article} ${size}×${size} board`;
+  const an = /^(8|11|18)/.test(String(size));
+  return say.say(an ? "gomoku.squareAn" : "gomoku.squareA", { size: String(size) });
 }

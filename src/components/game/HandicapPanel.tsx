@@ -7,12 +7,13 @@ import {
   STONES,
   STONE_DISPLAY,
 } from "@/lib/gomoku/gomoku.constants";
-import { SECOND_STONE_EXCLUSION_DISPLAY } from "@/lib/gomoku/variants.constants";
-import { HANDICAP_RULE_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { handicapCopy, secondStoneLabel } from "@/lib/gomoku/openingCopy";
+import { dottedText, stoneName } from "@/lib/gomoku/seatWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { handicapOffer } from "@/lib/gomoku/handicapOffer";
 import type { Handicap, Stone } from "@/lib/gomoku/gomoku.types";
 import { Field, Select, Toggle } from "@/components/ui/Controls";
-import { GAME_COPY } from "./game.constants";
+import { gameCopy } from "./game.constants";
 import type { GamePanelProps } from "./game.types";
 
 const NONE = "none";
@@ -23,6 +24,8 @@ const NONE = "none";
  * plays the plain one. Changing any of it starts a new game.
  */
 export function HandicapPanel({ session, actions }: GamePanelProps) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const { settings } = session.state;
   const { handicap } = settings;
   const stone = handicap.stone;
@@ -45,7 +48,7 @@ export function HandicapPanel({ session, actions }: GamePanelProps) {
           <option value={NONE}>{GAME_COPY.handicapNone}</option>
           {Object.values(STONES).map((option) => (
             <option key={option} value={option}>
-              {STONE_DISPLAY[option].label} · {STONE_DISPLAY[option].kanji}
+              {dottedText(say, stoneName(say, option), STONE_DISPLAY[option].kanji)}
             </option>
           ))}
         </Select>
@@ -54,15 +57,15 @@ export function HandicapPanel({ session, actions }: GamePanelProps) {
       {stone !== null ? (
         <div className="flex flex-col gap-3 rounded-xl border border-rule p-3">
           {HANDICAP_RULES.map((rule) => {
-            const copy = HANDICAP_RULE_DISPLAY[rule];
-            const { available, imposed, note } = handicapOffer(rule, settings.variant, stone);
+            const copy = handicapCopy(rule, say.locale);
+            const { available, imposed, note } = handicapOffer(rule, settings.variant, stone, say);
             return (
               <div key={rule} className={available ? undefined : "opacity-60"}>
                 <Toggle
-                  label={`${copy.label} · ${copy.kanji}`}
+                  label={dottedText(say, copy.label, copy.kanji)}
                   checked={available ? handicap[rule] : imposed}
                   onChange={(next) => (available ? update({ [rule]: next }) : undefined)}
-                  hint={`${copy.description} From ${copy.from}.${note !== null ? ` ${note}` : ""}`}
+                  hint={say.sentences([say.say("live.sourceLine", { description: copy.description, from: copy.from }), ...(note !== null ? [note] : [])])}
                 />
               </div>
             );
@@ -81,7 +84,7 @@ export function HandicapPanel({ session, actions }: GamePanelProps) {
             >
               {SECOND_STONE_EXCLUSIONS.map((option) => (
                 <option key={option} value={option}>
-                  {SECOND_STONE_EXCLUSION_DISPLAY[option].label}
+                  {secondStoneLabel(option, say.locale)}
                 </option>
               ))}
             </Select>

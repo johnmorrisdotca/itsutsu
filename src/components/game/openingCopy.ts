@@ -1,10 +1,11 @@
 import {
   OPENING_RULES,
   OPENING_STAGES,
-  SEAT_DISPLAY,
 } from "@/lib/gomoku/gomoku.constants";
 import type { GameState } from "@/lib/gomoku/gomoku.types";
-import { GAME_COPY } from "./game.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { gameCopy } from "./game.constants";
 import type { SeatNames } from "./game.types";
 
 /**
@@ -12,21 +13,22 @@ import type { SeatNames } from "./game.types";
  * it asks nothing. This reads the opening state the engine keeps and never
  * decides anything itself.
  */
-export function openingPrompt(state: GameState, names: SeatNames): string | null {
+export function openingPrompt(state: GameState, names: SeatNames, say: Speaker): string | null {
+  const GAME_COPY = gameCopy(say);
   const { settings, opening, moves } = state;
   const who = (seat: NonNullable<typeof opening.actor>) =>
-    names[seat].trim() || SEAT_DISPLAY[seat].label;
+    names[seat].trim() || seatName(say, seat);
 
   if (opening.stage === OPENING_STAGES.choosing && opening.actor !== null) {
     const extend =
       settings.opening === OPENING_RULES.swap2 && moves.length === 3;
-    return `${who(opening.actor)}, ${extend ? GAME_COPY.chooseColourOrExtend : GAME_COPY.chooseColour}.`;
+    return (extend ? GAME_COPY.chooseColourOrExtend : GAME_COPY.chooseColour)(who(opening.actor));
   }
   if (opening.stage === OPENING_STAGES.placing && opening.actor !== null) {
-    return `${who(opening.actor)} ${GAME_COPY.laysThree}`;
+    return GAME_COPY.laysThree(who(opening.actor));
   }
   if (opening.stage === OPENING_STAGES.extending && opening.actor !== null) {
-    return `${who(opening.actor)} ${GAME_COPY.laysTwo}`;
+    return GAME_COPY.laysTwo(who(opening.actor));
   }
 
   switch (settings.opening) {

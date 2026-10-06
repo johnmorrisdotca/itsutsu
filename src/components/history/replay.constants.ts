@@ -1,3 +1,5 @@
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+
 /**
  * How long autoplay shows each position before the next: long enough to see
  * where the stone went and what it took, short enough that a sixty-move game
@@ -7,13 +9,13 @@ export const REPLAY_STEP_MS = 800;
 
 /** The names of the replay's buttons, the same under a finished game and beside a board on one screen: what a screen reader says, and the hover note. */
 export const REPLAY_BUTTONS = {
-  start: "Start",
-  back: "Back",
-  play: "Play",
-  pause: "Pause",
-  forward: "Forward",
-  end: "End",
-} as const;
+  start: "replay.start",
+  back: "replay.back",
+  play: "replay.play",
+  pause: "replay.pause",
+  forward: "replay.forward",
+  end: "replay.end",
+} as const satisfies Record<string, PhraseKey>;
 
 /**
  * What the four stepping buttons DRAW. John, 2026-09-25: "Scrubber should

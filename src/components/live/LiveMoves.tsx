@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { SectionTitle } from "@/components/ui/Controls";
 import { replayGame } from "@/lib/gomoku/replay";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
@@ -18,6 +19,7 @@ import { PlayedMoves } from "@/components/history/PlayedMoves";
  * gate.
  */
 export function LiveMoves({ detail }: { detail: GameDetail }) {
+  const say = useSpeaker();
   // The record replayed in the browser, for a draughts capture's colon (`capturePaths`); again only when the record changes.
   const played = useMemo(() => {
     try {
@@ -28,8 +30,8 @@ export function LiveMoves({ detail }: { detail: GameDetail }) {
   }, [detail]);
   return (
     <div className="flex flex-col gap-2">
-      <SectionTitle kanji="棋譜">Moves</SectionTitle>
-      <PlayedMoves size={detail.size} moves={detail.moves} emptyNote="Nothing played yet." testId="live-moves" played={played} />
+      <SectionTitle kanji="棋譜">{say.say("live.moves")}</SectionTitle>
+      <PlayedMoves size={detail.size} moves={detail.moves} emptyNote={say.say("live.nothingPlayed")} testId="live-moves" played={played} />
     </div>
   );
 }

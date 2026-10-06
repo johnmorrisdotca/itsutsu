@@ -162,7 +162,7 @@ describe("every door offers Continue and New game", () => {
 
 describe("no table asks its own question about starting again", () => {
   it("keeps the question, its answers and its words in the shared controls", () => {
-    const own = FILES.filter((path) => !SHARED_FILES.has(path) && /\b(confirmNew|confirmYes|newGameConfirm|newGameYes|newGameNo)\b|-confirm-new"/.test(code(read(path))));
+    const own = FILES.filter((path) => !SHARED_FILES.has(path) && !path.startsWith("src/lib/i18n/") && /\b(confirmNew|confirmYes|newGameConfirm|newGameYes|newGameNo)\b|-confirm-new"/.test(code(read(path))));
     expect(own, "a New game's question is GAME_ENDING_COPY.newGameAsk, asked by NewGameButton").toEqual([]);
   });
 

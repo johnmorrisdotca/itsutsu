@@ -1,8 +1,10 @@
+import type { Speaker } from "../i18n/i18n";
+
 import {
   LINE_RULES,
-  STONE_DISPLAY,
   VARIANT_SPECS,
 } from "./gomoku.constants";
+import { stoneName } from "./seatWords";
 import { RULE_VARIANT_DISPLAY } from "./variants.constants";
 import type { HandicapRule, RuleVariant, Stone } from "./gomoku.types";
 
@@ -40,15 +42,17 @@ export function handicapOffer(
   rule: HandicapRule,
   variant: RuleVariant,
   stone: Stone,
+  say: Speaker,
 ): HandicapOffer {
   const spec = VARIANT_SPECS[variant];
   const open: HandicapOffer = { available: true, imposed: false, note: null };
   const already: HandicapOffer = {
     available: false,
     imposed: true,
-    note: `Already a rule of ${RULE_VARIANT_DISPLAY[variant].label} for ${STONE_DISPLAY[
-      stone
-    ].label.toLowerCase()}.`,
+    note: say.say("handicapoffer.already", {
+      game: say.pairName(RULE_VARIANT_DISPLAY[variant].label, RULE_VARIANT_DISPLAY[variant].kanji).text,
+      colour: stoneName(say, stone).toLowerCase(),
+    }),
   };
   const elsewhere = (note: string): HandicapOffer => ({ available: false, imposed: false, note });
 
@@ -64,9 +68,9 @@ export function handicapOffer(
     case "singleStone":
       return spec.stonesPerTurn > 1
         ? open
-        : elsewhere("Only in a game that places two stones a turn.");
+        : elsewhere(say.say("handicapoffer.twoStones"));
     case "noCaptures":
-      return spec.captures ? open : elsewhere("Only in a game with captures.");
+      return spec.captures ? open : elsewhere(say.say("handicapoffer.captures"));
     case "longerLine":
       return open;
   }

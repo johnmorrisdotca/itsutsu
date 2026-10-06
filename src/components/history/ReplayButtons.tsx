@@ -2,6 +2,7 @@
 
 import { useEffect, useEffectEvent, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Controls";
 
 import { REPLAY_BUTTONS, REPLAY_GLYPHS, REPLAY_STEP_MS } from "./replay.constants";
@@ -36,6 +37,7 @@ export function ReplayButtons({
   /** Prefix for each button's test id, so a page with two records can tell them apart. */
   testId: string;
 }) {
+  const say = useSpeaker();
   const [playing, setPlaying] = useState(false);
   const running = playing && index < last;
 
@@ -66,19 +68,19 @@ export function ReplayButtons({
 
   return (
     <div className="flex flex-nowrap items-center gap-1.5" data-testid={`${testId}-buttons`}>
-      <Button onClick={() => go(0)} disabled={index === 0} aria-label={REPLAY_BUTTONS.start} title={REPLAY_BUTTONS.start} data-testid={`${testId}-start`}>
+      <Button onClick={() => go(0)} disabled={index === 0} aria-label={say.say(REPLAY_BUTTONS.start)} title={say.say(REPLAY_BUTTONS.start)} data-testid={`${testId}-start`}>
         {REPLAY_GLYPHS.start}
       </Button>
-      <Button onClick={() => go(index - 1)} disabled={index === 0} aria-label={REPLAY_BUTTONS.back} title={REPLAY_BUTTONS.back} data-testid={`${testId}-back`}>
+      <Button onClick={() => go(index - 1)} disabled={index === 0} aria-label={say.say(REPLAY_BUTTONS.back)} title={say.say(REPLAY_BUTTONS.back)} data-testid={`${testId}-back`}>
         {REPLAY_GLYPHS.back}
       </Button>
       <Button onClick={toggle} disabled={last === 0} strong={running} data-testid={`${testId}-play`}>
-        {running ? REPLAY_BUTTONS.pause : REPLAY_BUTTONS.play}
+        {say.say(running ? REPLAY_BUTTONS.pause : REPLAY_BUTTONS.play)}
       </Button>
-      <Button onClick={() => go(index + 1)} disabled={index >= last} aria-label={REPLAY_BUTTONS.forward} title={REPLAY_BUTTONS.forward} data-testid={`${testId}-forward`}>
+      <Button onClick={() => go(index + 1)} disabled={index >= last} aria-label={say.say(REPLAY_BUTTONS.forward)} title={say.say(REPLAY_BUTTONS.forward)} data-testid={`${testId}-forward`}>
         {REPLAY_GLYPHS.forward}
       </Button>
-      <Button onClick={() => go(last)} disabled={index >= last} aria-label={REPLAY_BUTTONS.end} title={REPLAY_BUTTONS.end} data-testid={`${testId}-end`}>
+      <Button onClick={() => go(last)} disabled={index >= last} aria-label={say.say(REPLAY_BUTTONS.end)} title={say.say(REPLAY_BUTTONS.end)} data-testid={`${testId}-end`}>
         {REPLAY_GLYPHS.end}
       </Button>
     </div>

@@ -2,6 +2,9 @@ import { connection } from "next/server";
 import Link from "@/components/ui/Link";
 
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 import { LadderSideView, PlayerLink } from "@/components/players/Standings";
 import { RecordLine } from "@/components/players/PlayerRecord";
@@ -53,6 +56,7 @@ const SHOWN = 25;
 
 export async function GameLadder({ variant, title }: { variant: string; title: string }) {
   await connection();
+  const say = await currentSpeaker();
 
   /*
    * WHO IS ASKING — the session, not the address.
@@ -73,10 +77,9 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
   if (session === null) {
     return (
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-ladder">
-        <Heading />
+        <Heading say={say} />
         <p className="text-sm text-muted" data-testid="game-ladder-shut">
-          Reading about {title} is open to anybody. Who is winning at it is the playing half of
-          this site, and that needs an invite.
+          {say.say("gamepages.ladderRead", { game: title })}
         </p>
         {/*
           The same words the catalogue uses for the same door, so a reader who
@@ -85,11 +88,11 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
         */}
         <p className="text-sm">
           <Link href="/join" className="font-semibold underline-offset-2 hover:underline" data-testid="ladder-join">
-            I have an invite →
+            {say.say("gamepages.haveInvite")}
           </Link>{" "}
           <span className="text-muted">·</span>{" "}
           <Link href={ASK_FOR_INVITE_PATH} className="underline-offset-2 hover:underline" data-testid="ladder-ask-for-invite">
-            No invite? Ask for one
+            {say.say("gamepages.askInvite")}
           </Link>
         </p>
       </section>
@@ -129,7 +132,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
 
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="game-ladder">
-      <Heading />
+      <Heading say={say} />
 
       {/*
         Said in a sentence as well as shown in a table, because "who's the best
@@ -138,14 +141,14 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
       */}
       {leader === undefined ? null : (
         <p className="text-sm" data-testid="game-champion">
-          <span className="text-muted">Champion:</span> <PlayerLink name={leader.name} memberId={leader.memberId} tag={leader.tag} />{" "}
+          <span className="text-muted">{say.say("gamepages.champion")}</span> <PlayerLink name={leader.name} memberId={leader.memberId} tag={leader.tag} />{" "}
           <span className="font-mono text-muted tabular-nums">{leader.rating}</span>
         </p>
       )}
 
       <LadderSideView
         standings={standings}
-        emptyNote={`Nobody holds a standing at ${title} yet. A standing comes from a rated game between two members.`}
+        emptyNote={say.say("gamepages.ladderEmpty", { game: title })}
         invitation={
           leader !== undefined ? undefined : (
             <p className="text-sm">
@@ -154,13 +157,13 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
                 className="font-semibold underline-offset-2 hover:underline"
                 data-testid="ladder-be-first"
               >
-                Be the first to play {title} →
+                {say.say("gamepages.beFirst", { game: title })}
               </Link>
             </p>
           )
         }
       />
-      <WholeLadder variant={variant} />
+      <WholeLadder variant={variant} say={say} />
 
       {/*
         Where the reader stands at this game, under the ladder they are
@@ -174,7 +177,7 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
           className="flex flex-col gap-1 border-t border-rule pt-2 text-sm"
           data-testid="your-game-record"
         >
-          <span className="text-muted">Your record at {title}:</span>
+          <span className="text-muted">{say.say("gamepages.yourRecordAt", { game: title })}</span>
           {/*
             The run over those same games — every finished game of this one,
             rated or not — which came back from the same read that counted
@@ -195,10 +198,10 @@ export async function GameLadder({ variant, title }: { variant: string; title: s
 }
 
 /** The panel's name. */
-function Heading() {
+function Heading({ say }: { say: Speaker }) {
   return (
     <h2 className={SECTION_TITLE}>
-      Leaderboard <span className="font-mincho normal-case tracking-normal">番付</span>
+      <Paired en={say.say("gamepages.leaderboard")} kanji="番付" kanjiClassName="font-mincho normal-case tracking-normal" />
     </h2>
   );
 }
@@ -215,7 +218,7 @@ function Heading() {
  * nowhere would be the dead end this site has a gate against, and an empty one
  * that led nowhere would be a dead end with nothing in it.
  */
-function WholeLadder({ variant }: { variant: string }) {
+function WholeLadder({ variant, say }: { variant: string; say: Speaker }) {
   return (
     <p className="text-xs">
       <Link
@@ -223,7 +226,7 @@ function WholeLadder({ variant }: { variant: string }) {
         className="text-muted underline-offset-2 hover:underline"
         data-testid="game-ladder-all"
       >
-        Full leaderboard →
+        {say.say("gamepages.fullLeaderboard")}
       </Link>
     </p>
   );

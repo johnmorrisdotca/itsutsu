@@ -13,6 +13,25 @@ import { PHRASES_COUNT } from "./phrases.count.constants";
 import { PHRASES_POINTS } from "./phrases.points.constants";
 import { PHRASES_RULESPAGE } from "./phrases.rulespage.constants";
 import { PHRASES_PIECES } from "./phrases.pieces.constants";
+import { PHRASES_GAMEPAGES } from "./phrases.gamepages.constants";
+import { PHRASES_ENDING } from "./phrases.ending.constants";
+import { PHRASES_BOARDLOOK } from "./phrases.boardlook.constants";
+import { PHRASES_WINCOVER } from "./phrases.wincover.constants";
+import { PHRASES_GAMESCREEN } from "./phrases.gamescreen.constants";
+import { PHRASES_GAME } from "./phrases.game.constants";
+import { PHRASES_SUMMARY } from "./phrases.summary.constants";
+import { PHRASES_LIVE } from "./phrases.live.constants";
+import { PHRASES_READMOVES } from "./phrases.readmoves.constants";
+import { PHRASES_RESULT } from "./phrases.result.constants";
+import { PHRASES_MOSAIC } from "./phrases.mosaic.constants";
+import { PHRASES_REPLAY } from "./phrases.replay.constants";
+import { PHRASES_PLAYED } from "./phrases.played.constants";
+import { PHRASES_HANDICAPOFFER } from "./phrases.handicapoffer.constants";
+import { PHRASES_HEADSTART } from "./phrases.headstart.constants";
+import { PHRASES_ADVANTAGE } from "./phrases.advantage.constants";
+import { PHRASES_GOMOKU } from "./phrases.gomoku.constants";
+import { PHRASES_RATING } from "./phrases.rating.constants";
+import { PHRASES_CLOCK } from "./phrases.clock.constants";
 
 /**
  * The languages the site knows about, and the English it speaks in by default.
@@ -115,6 +134,25 @@ export const PHRASE_AREAS = {
   points: PHRASES_POINTS,
   rulespage: PHRASES_RULESPAGE,
   pieces: PHRASES_PIECES,
+  gamepages: PHRASES_GAMEPAGES,
+  ending: PHRASES_ENDING,
+  boardlook: PHRASES_BOARDLOOK,
+  wincover: PHRASES_WINCOVER,
+  gamescreen: PHRASES_GAMESCREEN,
+  game: PHRASES_GAME,
+  summary: PHRASES_SUMMARY,
+  live: PHRASES_LIVE,
+  readmoves: PHRASES_READMOVES,
+  result: PHRASES_RESULT,
+  mosaic: PHRASES_MOSAIC,
+  replay: PHRASES_REPLAY,
+  played: PHRASES_PLAYED,
+  handicapoffer: PHRASES_HANDICAPOFFER,
+  headstart: PHRASES_HEADSTART,
+  advantage: PHRASES_ADVANTAGE,
+  gomoku: PHRASES_GOMOKU,
+  clock: PHRASES_CLOCK,
+  rating: PHRASES_RATING,
 } as const;
 
 /**
@@ -158,6 +196,25 @@ export const PHRASES = {
   ...PHRASES_POINTS,
   ...PHRASES_RULESPAGE,
   ...PHRASES_PIECES,
+  ...PHRASES_GAMEPAGES,
+  ...PHRASES_ENDING,
+  ...PHRASES_BOARDLOOK,
+  ...PHRASES_WINCOVER,
+  ...PHRASES_GAMESCREEN,
+  ...PHRASES_GAME,
+  ...PHRASES_SUMMARY,
+  ...PHRASES_LIVE,
+  ...PHRASES_READMOVES,
+  ...PHRASES_RESULT,
+  ...PHRASES_MOSAIC,
+  ...PHRASES_REPLAY,
+  ...PHRASES_PLAYED,
+  ...PHRASES_HANDICAPOFFER,
+  ...PHRASES_HEADSTART,
+  ...PHRASES_ADVANTAGE,
+  ...PHRASES_GOMOKU,
+  ...PHRASES_CLOCK,
+  ...PHRASES_RATING,
 } as const;
 
 /** A phrase the site can say. */

@@ -1,11 +1,14 @@
 import { FigureTable } from "@/components/about/FigureTable";
 import { Screenshot, ScreenshotRow } from "@/components/about/Screenshot";
 import { BOARD_THEMES } from "@/components/board/Board.constants";
+import { themeName } from "@/components/board/boardNames";
+import { speaker } from "@/lib/i18n/i18n";
 import { MATCH_SIZES } from "@/lib/history/liveMatch";
 import { MESSAGE_MAX } from "@/lib/history/reactions.constants";
 import { INBOX_KEEP_DAYS } from "@/lib/inbox/inbox.constants";
 import { MESSAGE_TEXT_MAX } from "@/lib/messages/messages.constants";
-import { MOSAIC_COPY, MOSAIC_MOST_TILES, MOSAIC_SHAPES } from "@/lib/record/mosaic.constants";
+import { MOSAIC_COPY, MOSAIC_MOST_TILES } from "@/lib/record/mosaic.constants";
+import { shapeWords } from "@/lib/record/mosaicWords";
 
 import { ABOUT_CHAPTERS } from "./about.chapters";
 import type { AboutSection } from "./about.constants";
@@ -25,7 +28,11 @@ import { SHOTS } from "./about.shots";
  * enforces it.
  */
 
-const THEMES = Object.values(BOARD_THEMES).map((theme) => theme.label);
+// The About page is written in English, whichever language the reader is in (its copy is a later ticket's).
+const ENGLISH = speaker("en");
+const THEMES = (Object.keys(BOARD_THEMES) as (keyof typeof BOARD_THEMES)[]).map((theme) => themeName(ENGLISH, theme).label);
+const LANDSCAPE = shapeWords(ENGLISH, "landscape");
+const PORTRAIT = shapeWords(ENGLISH, "portrait");
 const PAIRED = MATCH_SIZES.filter((size) => size > 1);
 
 /** "two, four or six", from the sizes a paired match allows. */
@@ -170,9 +177,9 @@ export const PICTURE_SECTION: AboutSection = {
     <>
       Beside every game&rsquo;s move list is a quiet button, <em>{MOSAIC_COPY.openLabel}</em>. It opens the game as
       one picture: every position in order, one small board per move, under a bar naming the game, when it was
-      played and how it ended. It comes in two shapes: {MOSAIC_SHAPES.landscape.label.toLowerCase()} at{" "}
-      {MOSAIC_SHAPES.landscape.note}, and {MOSAIC_SHAPES.portrait.label.toLowerCase()} at{" "}
-      {MOSAIC_SHAPES.portrait.note}. It starts on the one your screen is, so the picture fits as a wallpaper.{" "}
+      played and how it ended. It comes in two shapes: {LANDSCAPE.label.toLowerCase()} at{" "}
+      {LANDSCAPE.note}, and {PORTRAIT.label.toLowerCase()} at{" "}
+      {PORTRAIT.note}. It starts on the one your screen is, so the picture fits as a wallpaper.{" "}
       <em>{MOSAIC_COPY.download}</em> saves it as a PNG. Your own browser draws it from the moves the page
       already has. Nothing is sent anywhere and nothing is stored, so a refresh simply draws it again.
     </>,

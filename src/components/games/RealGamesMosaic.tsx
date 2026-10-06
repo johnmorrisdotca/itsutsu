@@ -10,7 +10,8 @@ import { matchPath, playPath } from "@/lib/gomoku/slugs";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
 
 import { MosaicTile } from "./MosaicTile";
-import { MOSAIC_COPY } from "./games.constants";
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 /**
  * THE GAME, MADE OF ITS OWN GAMES: the final positions of the last dozen played
@@ -29,11 +30,11 @@ export async function RealGamesMosaic({ variant }: { variant: string }) {
   if (spec === undefined || spec.connects || spec.hexagon || spec.chineseCheckers) return null;
   await connection();
   const session = await currentSession();
-  const copy = MOSAIC_COPY;
+  const say = await currentSpeaker();
 
   const heading = (
     <h2 className={SECTION_TITLE}>
-      {copy.title} <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span>
+      <Paired en={say.say("gamepages.realTitle")} kanji="実戦" kanjiClassName="font-mincho normal-case tracking-normal" />
     </h2>
   );
 
@@ -42,9 +43,9 @@ export async function RealGamesMosaic({ variant }: { variant: string }) {
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="real-games">
         {heading}
         <p className="text-sm text-muted" data-testid="real-games-shut">
-          {copy.shut}{" "}
+          {say.say("gamepages.realShut")}{" "}
           <Link href={ASK_FOR_INVITE_PATH} className="underline underline-offset-4" data-testid="real-games-ask">
-            {copy.join}
+            {say.say("gamepages.realJoin")}
           </Link>
         </p>
       </section>
@@ -55,18 +56,18 @@ export async function RealGamesMosaic({ variant }: { variant: string }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="real-games">
       {heading}
-      <p className="text-xs text-muted">{copy.lead(MOSAIC_TILES)}</p>
+      <p className="text-xs text-muted">{say.say("gamepages.realLead", { count: String(MOSAIC_TILES) })}</p>
       {tiles.length === 0 ? (
         <p className="text-sm text-muted" data-testid="real-games-empty">
-          {copy.empty}{" "}
+          {say.say("gamepages.realEmpty")}{" "}
           <Link href={playPath(variant)} className="underline underline-offset-4">
-            {copy.first}
+            {say.say("gamepages.realFirst")}
           </Link>
         </p>
       ) : (
         <div className="flex flex-wrap gap-2" data-testid="real-games-tiles">
           {tiles.map((tile) => (
-            <Link key={tile.id} href={matchPath(variant, tile.id)} data-testid="real-game" title={copy.open}>
+            <Link key={tile.id} href={matchPath(variant, tile.id)} data-testid="real-game" title={say.say("gamepages.realOpen")}>
               <MosaicTile tile={tile} grid={spec.grid} />
             </Link>
           ))}

@@ -1,9 +1,11 @@
 import { boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { openingCopy } from "@/lib/gomoku/openingCopy";
 import type { OpeningRule, RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import { describeMoveTime } from "@/lib/history/deadline";
-import { GAME_COPY } from "@/components/game/game.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { gameCopy } from "@/components/game/game.constants";
 import { RATING_REFUSAL_DISPLAY, type RatingRefusal } from "@/lib/rating/rateable.constants";
 import { penaltyMeans } from "./penalty";
 import type { RulesDraft } from "./rulesDraft";
@@ -27,9 +29,11 @@ import type { RulesDraft } from "./rulesDraft";
  */
 export function RulesStatement({
   rules,
-  note = "The first stone is down, so these are the rules the game is played under.",
+  note,
   refusal = null,
+  say,
 }: {
+  say: Speaker;
   rules: RulesDraft;
   /**
    * Why this game cannot move a rating, when it cannot — so the Ratings row
@@ -57,28 +61,29 @@ export function RulesStatement({
    */
   note?: string;
 }) {
+  const GAME_COPY = gameCopy(say);
   const variant = rules.variant as RuleVariant;
   const timed = rules.moveTimeMs !== null;
   const said: { label: string; value: string }[] = [
-    { label: "Rules", value: RULE_VARIANT_DISPLAY[variant]?.label ?? rules.variant },
+    { label: say.say("live.sectionRules"), value: variantName(rules.variant, say) },
   ];
   // Only where there was a choice, the same rule the form follows.
   if (boardSizesFor(variant).length > 1) {
-    said.push({ label: "Board", value: `${rules.size}×${rules.size}` });
+    said.push({ label: say.say("live.boardLabel"), value: `${rules.size}×${rules.size}` });
   }
   said.push({
-    label: "Opening",
-    value: OPENING_DISPLAY[rules.opening as OpeningRule]?.label ?? rules.opening,
+    label: say.say("live.openingLabel"),
+    value: OPENING_DISPLAY[rules.opening as OpeningRule] === undefined ? rules.opening : openingCopy(rules.opening as OpeningRule, say.locale).label,
   });
   said.push({
     label: GAME_COPY.allowResign.label,
-    value: rules.allowResign ? "Allowed" : "Not allowed",
+    value: say.say(rules.allowResign ? "live.allowed" : "live.notAllowed"),
   });
-  said.push({ label: GAME_COPY.moveTime.label, value: describeMoveTime(rules.moveTimeMs) });
+  said.push({ label: GAME_COPY.moveTime.label, value: describeMoveTime(rules.moveTimeMs, say) });
   if (timed) {
     said.push({
-      label: "Clock",
-      value: rules.clockMode === "game" ? "Time is for the whole game" : "Time is per move",
+      label: GAME_COPY.clock.label,
+      value: say.say(rules.clockMode === "game" ? "live.clockWholeGame" : "live.clockPerMove"),
     });
   }
   /*
@@ -90,21 +95,19 @@ export function RulesStatement({
    * verdict, so the short form carries both.
    */
   said.push({
-    label: "Ratings",
+    label: say.say("live.ratingsLabel"),
     value:
       refusal !== null
-        ? RATING_REFUSAL_DISPLAY[refusal].short
-        : rules.rated
-          ? "Counts towards ratings"
-          : "Friendly — ratings unaffected",
+        ? say.say(RATING_REFUSAL_DISPLAY[refusal].short)
+        : say.say(rules.rated ? "live.countsTowards" : "live.friendlyUnaffected"),
   });
   if (timed && rules.clockMode !== "game") {
-    said.push({ label: GAME_COPY.penalty.label, value: penaltyMeans(rules.timeoutPenalty) });
+    said.push({ label: GAME_COPY.penalty.label, value: penaltyMeans(rules.timeoutPenalty, say) });
   }
 
   return (
     <div className="mt-1 flex flex-col gap-2 border-t border-rule pt-3" data-testid="rules-statement">
-      <p className="text-xs text-muted">{note}</p>
+      <p className="text-xs text-muted">{note ?? say.say("live.statementNote")}</p>
       <dl className="flex flex-col gap-1.5">
         {said.map((row) => (
           <div key={row.label} className="flex min-w-0 items-baseline justify-between gap-3 text-sm">

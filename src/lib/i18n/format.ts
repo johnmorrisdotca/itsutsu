@@ -62,6 +62,21 @@ export function listPiecesIn<T>(locale: Locale, items: readonly T[]): (T | strin
   return out;
 }
 
+/** Items joined by the language's plain separator, with no "and": "a, b, c" in English, "a、b、c" in Japanese. */
+export function joinedIn(locale: Locale, items: readonly string[]): string {
+  return items.join(formatSpecFor(locale).list.between);
+}
+
+/** Sentences set one after another: a space between them where words are spaced, none where they are not. */
+/** A sentence with its stop on: "Won on time" as "Won on time." or "時間切れの勝ち。". */
+export function sentenceIn(locale: Locale, text: string): string {
+  return `${text}${formatSpecFor(locale).sentenceEnd}`;
+}
+
+export function sentencesIn(locale: Locale, sentences: readonly string[]): string {
+  return sentences.join(formatSpecFor(locale).sentenceGap);
+}
+
 /** A list of words, joined as the language joins one. */
 export function listIn(locale: Locale, items: readonly string[]): string {
   return listPiecesIn(locale, items).join("");

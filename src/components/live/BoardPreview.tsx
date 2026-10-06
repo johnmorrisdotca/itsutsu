@@ -2,6 +2,8 @@
 
 import { useMemo } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import { Board } from "@/components/board/Board";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { FeltUnderBoard } from "@/components/board/FeltPatches";
@@ -10,7 +12,7 @@ import { createGame } from "@/lib/gomoku/engine";
 import { replayGame, type StoredGame } from "@/lib/gomoku/replay";
 import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
 import type { GameSettings, RuleVariant } from "@/lib/gomoku/gomoku.types";
-import { SET_UP_COPY, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
+import { setUpCopy, SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "./live.constants";
 
 /** What the set-up form holds, narrowed to the parts that change the picture. */
 export type PreviewRules = { variant: string; size: number; obstacles: string };
@@ -55,6 +57,8 @@ export function BoardPreview({
   /** Choosing a Reversi board's felt here, on the patches under it; none where it cannot be chosen. */
   onFelt?: (felt: Felt) => void;
 }) {
+  const say = useSpeaker();
+  const SET_UP_COPY = setUpCopy(say);
   /*
    * Only the three choices that change the PICTURE, and taken loosely on
    * purpose. The set-up form holds a draft whose `variant` and `obstacles` are
@@ -140,8 +144,8 @@ export function BoardPreview({
         />
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
-        {SET_UP_COPY.previewIs(RULE_VARIANT_DISPLAY[variant].label)}
-        {dealt ? ` ${SET_UP_COPY.previewDealt}` : ""}
+        {SET_UP_COPY.previewIs(variantName(variant, say))}
+        {dealt ? say.sentences(["", SET_UP_COPY.previewDealt]) : ""}
         {/*
           A Reversi board's felt, in the room the caption keeps: no game that
           wears felt scatters its board, so the patches take the line the

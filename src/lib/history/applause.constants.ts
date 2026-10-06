@@ -1,3 +1,5 @@
+import type { PhraseKey } from "../i18n/i18n.constants";
+
 /**
  * The marks a reader may leave on a finished game.
  *
@@ -7,12 +9,12 @@
  * glance rather than becoming a keyboard.
  */
 export const APPLAUSE = [
-  { emoji: "👏", label: "Well played" },
-  { emoji: "🔥", label: "Brilliant" },
-  { emoji: "😮", label: "Astonishing" },
-  { emoji: "🙇", label: "Respect" },
-  { emoji: "🌸", label: "A beautiful game" },
-] as const;
+  { emoji: "👏", label: "played.applauseWell", slug: "well-played" },
+  { emoji: "🔥", label: "played.applauseBrilliant", slug: "brilliant" },
+  { emoji: "😮", label: "played.applauseAstonishing", slug: "astonishing" },
+  { emoji: "🙇", label: "played.applauseRespect", slug: "respect" },
+  { emoji: "🌸", label: "played.applauseBeautiful", slug: "a-beautiful-game" },
+] as const satisfies readonly { emoji: string; label: PhraseKey; slug: string }[];
 
 export type ApplauseEmoji = (typeof APPLAUSE)[number]["emoji"];
 
@@ -20,15 +22,15 @@ export const APPLAUSE_EMOJI = APPLAUSE.map((one) => one.emoji) as [ApplauseEmoji
 
 /** What the reader is told the row is for. */
 export const APPLAUSE_COPY = {
-  title: { label: "Applause", kanji: "拍手" },
-  hint: "Anybody who has seen this game may leave one mark on it. There is no way to boo.",
-  yours: "Yours",
-  none: "No applause yet. Be the first to say the game was worth playing.",
-  signedOut: "Sign in to leave a mark on this game.",
+  title: { label: "played.applauseTitle", kanji: "拍手" },
+  hint: "played.applauseHint",
+  yours: "played.applauseYours",
+  none: "played.applauseNone",
+  signedOut: "played.applauseSignedOut",
   /*
    * For somebody who came in by invite code: signed in, so "sign in" would be
    * false, and with no address, which the applause route needs to know whose
    * mark is whose.
    */
-  noAccount: "Leaving a mark needs an account — an invite code on its own does not make one.",
-} as const;
+  noAccount: "played.applauseNoAccount",
+} as const satisfies Record<string, PhraseKey | { label: PhraseKey; kanji: string }>;

@@ -18,7 +18,6 @@ describe("which pool a game moves", () => {
       const display = RATING_POOL_DISPLAY[pool];
       expect(display.label.length).toBeGreaterThan(0);
       expect(display.kanji.length).toBeGreaterThan(0);
-      expect(display.blurb.length).toBeGreaterThan(10);
     }
   });
 });

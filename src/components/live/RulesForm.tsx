@@ -1,15 +1,16 @@
 "use client";
 
-import { OPENING_DISPLAY } from "@/lib/gomoku/openings.constants";
+import { openingCopy } from "@/lib/gomoku/openingCopy";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { MOVE_TIME_OPTIONS, TIMEOUT_PENALTIES } from "@/lib/history/moveTime.constants";
 import { SHARED_OPENINGS } from "@/lib/history/sharedOpenings.constants";
 import { describeMoveTime } from "@/lib/history/deadline";
-import { GAME_COPY } from "@/components/game/game.constants";
+import { gameCopy } from "@/components/game/game.constants";
 import type { RatingRefusal } from "@/lib/rating/rateable.constants";
 import { Field, Select, Toggle } from "@/components/ui/Controls";
 import type { ReactNode } from "react";
 import { GameAndBoardChooser } from "./GameAndBoardChooser";
-import { SET_UP_COPY } from "./live.constants";
+import { setUpCopy } from "./live.constants";
 import { OpeningPicker } from "./OpeningPicker";
 import { RatedPicker } from "./RatedPicker";
 import { penaltyName } from "./penalty";
@@ -67,7 +68,7 @@ export function RulesForm({
   showVariant = true,
   settledByBoard = false,
   positionFixed = false,
-  variantLabel = "Rules",
+  variantLabel,
   chooser = RULES_CHOOSERS.select,
   refused,
   sections,
@@ -203,6 +204,9 @@ export function RulesForm({
   /** Choosing a puzzle from the row of families — see `GamePicker`. The set-up screen's own. */
   onPuzzle?: (kind: PuzzleKind | null) => void;
 }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
+  const SET_UP_COPY = setUpCopy(say);
   const change = (next: Partial<RulesDraft>) => onChange(applyRulesChange(value, next));
   /*
    * THE TWO QUESTIONS THE SCREEN EXISTS TO ASK: which game, and what board —
@@ -214,7 +218,7 @@ export function RulesForm({
       value={value}
       disabled={disabled}
       showVariant={showVariant}
-      variantLabel={variantLabel}
+      variantLabel={variantLabel ?? say.say("live.sectionRules")}
       pictures={chooser === RULES_CHOOSERS.pictures}
       preview={preview}
       change={change}
@@ -246,7 +250,7 @@ export function RulesForm({
           onChange={(next) => change({ opening: next })}
         />
       ) : (
-        <Field label="Opening">
+        <Field label={say.say("live.openingLabel")}>
           <Select
             value={value.opening}
             disabled={disabled}
@@ -255,7 +259,7 @@ export function RulesForm({
           >
             {SHARED_OPENINGS.map((option) => (
               <option key={option} value={option}>
-                {OPENING_DISPLAY[option].label}
+                {openingCopy(option, say.locale).label}
               </option>
             ))}
           </Select>
@@ -288,21 +292,21 @@ export function RulesForm({
         >
           {MOVE_TIME_OPTIONS.map((option) => (
             <option key={option ?? "none"} value={option === null ? "none" : option}>
-              {describeMoveTime(option)}
+              {describeMoveTime(option, say)}
             </option>
           ))}
         </Select>
       </Field>
       {value.moveTimeMs !== null ? (
-        <Field label="Clock">
+        <Field label={GAME_COPY.clock.label}>
           <Select
             value={value.clockMode}
             disabled={disabled}
             onChange={(event) => change({ clockMode: event.target.value })}
             data-testid="shared-rules-clock-mode"
           >
-            <option value="move">Time is per move</option>
-            <option value="game">Time is for the whole game</option>
+            <option value="move">{say.say("live.clockPerMove")}</option>
+            <option value="game">{say.say("live.clockWholeGame")}</option>
           </Select>
         </Field>
       ) : null}
@@ -328,15 +332,15 @@ export function RulesForm({
           onChange={(rated) => change({ rated })}
         />
       ) : refused !== null ? null : (
-        <Field label="Ratings">
+        <Field label={say.say("live.ratingsLabel")}>
           <Select
             value={value.rated ? "rated" : "friendly"}
             disabled={disabled}
             onChange={(event) => change({ rated: event.target.value === "rated" })}
             data-testid="shared-rules-rated"
           >
-            <option value="rated">Game will affect ratings</option>
-            <option value="friendly">Game will NOT affect ratings</option>
+            <option value="rated">{say.say("live.ratedAffects")}</option>
+            <option value="friendly">{say.say("live.ratedNot")}</option>
           </Select>
         </Field>
       )}
@@ -356,7 +360,7 @@ export function RulesForm({
           >
             {TIMEOUT_PENALTIES.map((option) => (
               <option key={option} value={option}>
-                {penaltyName(option)}
+                {penaltyName(option, say)}
               </option>
             ))}
           </Select>

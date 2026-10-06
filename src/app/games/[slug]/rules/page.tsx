@@ -25,11 +25,14 @@ import { rulesPageFor } from "@/lib/learn/rulesPage";
 import { CUBE_GUIDE_COPY } from "@/lib/learn/cubeMethod";
 import { guidesFor } from "@/lib/learn/strategy";
 import { GameTrail } from "@/components/games/GameTrail";
+import { titleWithKanji } from "@/components/games/pageTitles";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/rules">): Promise<Metadata> {
   const { slug } = await params;
-  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? "");
-  return { title: copy === null ? "Rules 規則" : `${copy.label} · Rules 規則` };
+  const say = await currentSpeaker();
+  const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? "", say.locale);
+  const rules = titleWithKanji(say, "gamepages.rules", "規則");
+  return { title: copy === null ? rules : `${copy.label} · ${rules}` };
 }
 
 export function generateStaticParams() {

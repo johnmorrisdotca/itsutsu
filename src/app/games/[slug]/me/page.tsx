@@ -12,7 +12,9 @@ import { findMemberById } from "@/lib/auth/members";
 import { gamePath, historyPath, myGamePath, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { PuzzleMePage } from "@/components/puzzles/PuzzleMePage";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { titleWithKanji } from "@/components/games/pageTitles";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { GameTrail } from "@/components/games/GameTrail";
 
 // Whose games these are is read from the session on every request.
@@ -20,8 +22,9 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/me">): Promise<Metadata> {
   const variant = variantFor((await params).slug);
+  const say = await currentSpeaker();
   return {
-    title: variant === null ? "Your games" : `Your ${RULE_VARIANT_DISPLAY[variant].label} 自分の棋譜`,
+    title: variant === null ? say.say("gamepages.yourGames") : titleWithKanji(say, "gamepages.titleYourGame", "自分の棋譜", { game: gameCopyOf(variant, say.locale)?.label ?? "" }),
     robots: { index: false, follow: false },
   };
 }
@@ -50,7 +53,8 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
   if (puzzle !== null) return <PuzzleMePage kind={puzzle} />;
   const variant = variantFor(slug);
   if (variant === null) notFound();
-  const copy = RULE_VARIANT_DISPLAY[variant];
+  const say = await currentSpeaker();
+  const copy = gameCopyOf(variant, say.locale)!;
 
   // By member id: a member who came in with an invite code has games of their own here too.
   const myId = await currentMemberId();
@@ -61,18 +65,18 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
       <Page>
         <SiteHeader />
         <PageTitle
-          title={`Your games of ${copy.label}`}
-          crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: "Yours" }]} />}
+          title={say.say("gamepages.yourGamesTitle", { game: copy.label })}
+          crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: say.say("gamepages.yoursCrumb") }]} />}
           lead={
             myId === null
-              ? "This page counts your own games, and it does not know who you are yet."
-              : "This page counts your own games, and there is no player on this account yet — finish one and it will have something to show."
+              ? say.say("gamepages.meUnknown")
+              : say.say("gamepages.meNoPlayer")
           }
         />
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-unknown">
           <p className="text-sm">
             <Link href={historyPath(variant)} className="underline underline-offset-4">
-              Every game of {copy.label} played here
+              {say.say("gamepages.everyGameHere", { game: copy.label })}
             </Link>
           </p>
         </section>

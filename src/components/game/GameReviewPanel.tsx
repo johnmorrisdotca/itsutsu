@@ -4,20 +4,24 @@ import { useMemo } from "react";
 
 import { reviewAcrossVariants, type ReviewNote } from "@/lib/gomoku/review";
 import { pointName } from "@/lib/gomoku/notation";
-import { GAME_STATUS, SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
+import { pairedText, seatName, stoneName } from "@/lib/gomoku/seatWords";
+import { variantName } from "@/lib/gomoku/variantCopy";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { FORBIDDEN_PATTERN_DISPLAY } from "@/lib/gomoku/openings.constants";
 import type { GameState, Seat, Stone } from "@/lib/gomoku/gomoku.types";
 import { SectionTitle } from "@/components/ui/Controls";
-import { GAME_COPY } from "./game.constants";
+import { gameCopy } from "./game.constants";
 import type { GameSession } from "./game.types";
 
 /** Consecutive wins per seat, as the record knows them; null while unknown. */
 export type WinStreaks = Record<Seat, number | null>;
 
-function describe(note: ReviewNote, state: GameState): string {
-  const variant = RULE_VARIANT_DISPLAY[note.variant].label;
-  const colour = STONE_DISPLAY[note.stone].label;
+function describe(note: ReviewNote, state: GameState, say: Speaker): string {
+  const GAME_COPY = gameCopy(say);
+  const variant = variantName(note.variant, say);
+  const colour = stoneName(say, note.stone);
   const move = state.moves[note.moveNumber - 1];
   const where = `${note.moveNumber} (${pointName(state.settings.size, move)})`;
 
@@ -26,7 +30,7 @@ function describe(note: ReviewNote, state: GameState): string {
       const shape =
         note.pattern === null
           ? ""
-          : `${FORBIDDEN_PATTERN_DISPLAY[note.pattern].label} ${FORBIDDEN_PATTERN_DISPLAY[note.pattern].kanji}`;
+          : pairedText(say, FORBIDDEN_PATTERN_DISPLAY[note.pattern].label, FORBIDDEN_PATTERN_DISPLAY[note.pattern].kanji);
       return GAME_COPY.reviewForbidden(where, colour, variant, shape);
     }
     case "wouldNotWin":
@@ -51,13 +55,15 @@ export function GameReviewPanel({
   session: GameSession;
   streaks: WinStreaks;
 }) {
+  const say = useSpeaker();
+  const GAME_COPY = gameCopy(say);
   const { state, names, fatalMoves } = session;
   const finished = state.status !== GAME_STATUS.playing;
   const notes = useMemo(() => (finished ? reviewAcrossVariants(state) : []), [finished, state]);
 
   const nameFor = (stone: Stone) => {
     const seat = state.seats[stone];
-    return names[seat].trim() || SEAT_DISPLAY[seat].label;
+    return names[seat].trim() || seatName(say, seat);
   };
 
   const winner = state.winner;
@@ -98,7 +104,7 @@ export function GameReviewPanel({
               <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-snug text-ink-soft">
                 {notes.map((note) => (
                   <li key={`${note.variant}-${note.moveNumber}`} data-testid="review-note">
-                    {describe(note, state)}
+                    {describe(note, state, say)}
                   </li>
                 ))}
               </ul>

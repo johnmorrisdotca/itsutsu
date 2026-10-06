@@ -12,7 +12,7 @@ import { SharedRules } from "@/components/live/SharedRules";
 import { SitAsPanel } from "@/components/live/SitAsPanel";
 import { ChallengeButton } from "@/components/mine/ChallengeButton";
 import { NotesPanel } from "@/components/game/NotesPanel";
-import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
 import { isOffered } from "@/lib/history/offers";
 import type { Across } from "@/lib/history/acrossTheBoard";
@@ -39,8 +39,10 @@ import { liveBoardIntervals } from "@/lib/site/liveBoardIntervals";
 import { BoardColumn } from "@/components/live/BoardColumn";
 import { BoardScaled } from "@/components/board/BoardScaled";
 import { GameTrailNav } from "@/components/games/GameTrail";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantName } from "@/lib/gomoku/variantCopy";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { SectionTitle } from "@/components/ui/Controls";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
 /*
  * THE LIVE MATCH: the board being played, and the panel beside it — the offer,
@@ -78,6 +80,7 @@ export async function LiveMatch({
   /** The match this game is one of, if any, and who is reading — see `MatchPanel`. */
   match: { id: string | null; memberId: string | null };
 }) {
+  const say = await currentSpeaker();
   /*
    * Seat links are only handed out to someone who already holds one. A reader
    * with no claim, or the wrong one, gets a board they can watch and not
@@ -266,8 +269,8 @@ export async function LiveMatch({
     <Page board="play">
       <SiteHeader />
       <GameTrailNav
-        game={{ label: RULE_VARIANT_DISPLAY[game.variant as RuleVariant].label, href: gamePath(game.variant as RuleVariant) }}
-        steps={[{ label: "Game" }]}
+        game={{ label: variantName(game.variant, say), href: gamePath(game.variant as RuleVariant) }}
+        steps={[{ label: say.say("gamepages.game") }]}
       />
       <SeatFullNotice shown={seatFull} />
       {/* Before the first stone: who these two are to each other. See RivalryPanel. */}
@@ -277,7 +280,7 @@ export async function LiveMatch({
 
       {/* Just the board's header (`BoardMasthead`), drawn only in that mode. */}
       <div data-bare-only>
-        <BoardMasthead story={playedHereStory(game, { label: "Live game", kanji: "対局" })} />
+        <BoardMasthead story={playedHereStory(game, { label: say.say("gamepages.liveGame"), kanji: say.pairsWithKanji ? "対局" : "" }, say)} />
       </div>
       {/*
         THE BOARD AND ITS PANEL, at the size this reader keeps for this kind of
@@ -293,7 +296,7 @@ export async function LiveMatch({
             `BoardColumn`. It was a fixed 36rem, which on a 27-inch screen is a
             board a quarter of the width of the page.
           */}
-          <BoardColumn story={playedHereStory(game, { label: "Live game", kanji: "対局" })}>
+          <BoardColumn story={playedHereStory(game, { label: say.say("gamepages.liveGame"), kanji: say.pairsWithKanji ? "対局" : "" }, say)}>
             <SharedGame
               initial={game}
               token={token}
@@ -331,17 +334,12 @@ export async function LiveMatch({
           */}
           {offer === null && forkOffered({ move, last: game.moveCount, seated: seat !== null }) ? (
             <div className={`${PANEL_CLASS} flex flex-col gap-2`}>
-              <h2 className={SECTION_TITLE}>
-                Fork <span className="font-mincho normal-case tracking-normal">分岐</span>
-              </h2>
-              <p className="text-xs text-muted">
-                Start a second game from this exact position, against the same opponent. Both games go on. You settle
-                the clock and whether it counts before it starts; the board and the rules come with the position.
-              </p>
+              <SectionTitle kanji="分岐">{say.say("gamepages.fork")}</SectionTitle>
+              <p className="text-xs text-muted">{say.say("gamepages.forkNote")}</p>
               <ChallengeButton
                 from={{ id: game.id, move }}
                 variant={game.variant}
-                label={`Play from move ${move}`}
+                label={say.say("gamepages.forkButton", { move: String(move) })}
               />
             </div>
           ) : null}
@@ -368,7 +366,7 @@ export async function LiveMatch({
             <InvitePanel invites={invites} yourStone={seat} />
           ) : offer === null && seat === null && freeSeats.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-rule px-4 py-6 text-sm text-muted">
-              You are watching this game. Open your own seat link to play.
+              {say.say("gamepages.watching")}
             </p>
           ) : null}
         </aside>

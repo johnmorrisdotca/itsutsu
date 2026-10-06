@@ -4,6 +4,9 @@ import { NO_HANDICAP, NO_HEAD_START, STONES } from "@/lib/gomoku/gomoku.constant
 import { isHotSeat } from "@/lib/history/liveGame";
 import { gameRatingRefusal, isRateable, ratingImpossible, ratingRefusal } from "./rateable";
 import { RATING_REFUSALS, RATING_REFUSAL_DISPLAY, RATING_REFUSED_WORD } from "./rateable.constants";
+import { speaker } from "@/lib/i18n/i18n";
+
+const say = speaker("en");
 
 /** A game played straight: what every case below is, unless it says otherwise. */
 const straight = { headStart: NO_HEAD_START, handicap: NO_HANDICAP };
@@ -49,14 +52,14 @@ describe("ratingRefusal", () => {
   it("has a sentence for every refusal, so none can be shown as a blank", () => {
     for (const refusal of Object.values(RATING_REFUSALS)) {
       const display = RATING_REFUSAL_DISPLAY[refusal];
-      expect(display.playing.length).toBeGreaterThan(0);
-      expect(display.filed.length).toBeGreaterThan(0);
+      expect(say.say(display.playing).length).toBeGreaterThan(0);
+      expect(say.say(display.filed).length).toBeGreaterThan(0);
       expect(display.kanji.length).toBeGreaterThan(0);
-      expect(display.sentence.length).toBeGreaterThan(20);
+      expect(say.say(display.sentence).length).toBeGreaterThan(20);
       // And a short form, for the settings line and the row that used to read
       // "Rated" off the column beneath a notice saying it would not count.
-      expect(display.short.startsWith(RATING_REFUSED_WORD), refusal).toBe(true);
-      expect(display.short.length, refusal).toBeGreaterThan(RATING_REFUSED_WORD.length);
+      expect(say.say(display.short).startsWith(say.say(RATING_REFUSED_WORD)), refusal).toBe(true);
+      expect(say.say(display.short).length, refusal).toBeGreaterThan(say.say(RATING_REFUSED_WORD).length);
     }
   });
 });

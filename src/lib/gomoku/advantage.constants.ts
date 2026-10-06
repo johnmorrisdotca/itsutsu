@@ -1,3 +1,5 @@
+import type { PhraseKey } from "../i18n/i18n.constants";
+
 import { OUTLOOK_DISPLAY } from "./analysis.constants";
 import type { AdvantageMeasure, UnreadableReason } from "./advantage.types";
 import type { Outlook } from "./analysis.types";
@@ -35,32 +37,32 @@ export const UNREADABLE_REASONS = {
  */
 export const MEASURE_DISPLAY: Record<
   AdvantageMeasure,
-  { label: string; kanji: string; note: string; fewerNote: string }
+  { label: string; kanji: string; note: PhraseKey; fewerNote: PhraseKey }
 > = {
   discs: {
     label: "Discs on the board",
     kanji: "石数",
-    note: "A count, not a forecast. The lead in a flipping game changes hands late and often — a board that looks settled at move thirty rarely is.",
+    note: "advantage.discsNote",
     fewerNote:
-      "A count, not a forecast. Here the smaller number is the better one: the object is to finish with fewer discs than your opponent.",
+      "advantage.discsFewerNote",
   },
   home: {
     label: "Pieces home",
     kanji: "上がり",
-    note: "A count of pieces that have reached the far camp. It says how far along the race each side is, not who will get there first — a train of pieces left behind can move faster than one that is already spread out.",
-    fewerNote: "A count of pieces that have reached the far camp.",
+    note: "advantage.homeNote",
+    fewerNote: "advantage.homeFewerNote",
   },
   score: {
     label: "Score",
     kanji: "目",
-    note: "The area score as the board stands, komi included for White. It counts stones and the empty regions only one colour touches — so it cannot know which groups are dead, and a stone that will be captured is still counted until it is. Early on, most of the board belongs to nobody yet.",
-    fewerNote: "The area score as the board stands, komi included for White.",
+    note: "advantage.scoreNote",
+    fewerNote: "advantage.scoreFewerNote",
   },
   material: {
     label: "Pieces left",
     kanji: "駒数",
-    note: "A plain count of pieces still on the board, kings included. Material is most of the game here, but a piece about to be forced into a capture is still counted — the number does not know what happens next.",
-    fewerNote: "A plain count of pieces still on the board, kings included.",
+    note: "advantage.materialNote",
+    fewerNote: "advantage.materialFewerNote",
   },
 };
 
@@ -75,43 +77,43 @@ export const MEASURE_DISPLAY: Record<
  */
 export const UNREADABLE_DISPLAY: Record<
   UnreadableReason,
-  { label: string; kanji: string; sentence: string }
+  { label: PhraseKey; kanji: string; sentence: PhraseKey }
 > = {
   turning: {
-    label: "This game cannot be read that way",
+    label: "advantage.unreadable",
     kanji: "回転",
     sentence:
-      "A quarter of the board turns after every stone. Nothing counted about this position survives the next move intact, so any reading of it would be out of date before it was shown.",
+      "advantage.unreadableTurning",
   },
   queued: {
-    label: "This game cannot be read that way",
+    label: "advantage.unreadable",
     kanji: "駒待ち",
     sentence:
-      "Pieces here cover several points at once, and what you may play next is whatever the queue hands you. A reading of lines assumes single stones placed freely, and neither is true here.",
+      "advantage.unreadableQueued",
   },
   connection: {
-    label: "This game cannot be read that way",
+    label: "advantage.unreadable",
     kanji: "連結",
     sentence:
-      "The whole position is one question — whether a chain reaches side to side — and it is not a question a count of stones can answer. One stone can join two groups and settle a board that looked even.",
+      "advantage.unreadableConnection",
   },
   square: {
-    label: "This game cannot be read that way",
+    label: "advantage.unreadable",
     kanji: "四隅",
     sentence:
-      "The win is a square rather than a line, and both sides keep the same four pieces from first move to last. There is nothing to count that is not equal, and no line to read.",
+      "advantage.unreadableSquare",
   },
   asymmetric: {
-    label: "This game cannot be read that way",
+    label: "advantage.unreadable",
     kanji: "攻守",
     sentence:
-      "The two players do not want the same thing here: one is trying to make a line, the other to prevent every line. There is no single quantity both sides can be ahead on.",
+      "advantage.unreadableAsymmetric",
   },
   shared: {
-    label: "This game cannot be read that way",
+    label: "advantage.unreadable",
     kanji: "共有",
     sentence:
-      "The stones do not belong to a colour in this game, so there is no black position and no white one to weigh against each other — only the shape both players are building together.",
+      "advantage.unreadableShared",
   },
 };
 
@@ -147,6 +149,5 @@ export const OUTLOOK_SIDE_DISPLAY: Record<Outlook, { label: string; kanji: strin
  * rather than hidden: the site does not search, so a percentage would be a
  * guess wearing the clothes of a measurement.
  */
-export const THREATS_NOTE =
-  "A reading of the threats on the board, in words rather than a percentage — this site does not search the position, and a number would suggest it had.";
+export const THREATS_NOTE: PhraseKey = "advantage.threatsNote";
 

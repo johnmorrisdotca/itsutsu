@@ -1,30 +1,42 @@
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+
 /**
  * THE WORDS ON THE COVER OVER A FINISHED BOARD (`WinCover`), one place for
  * every game that draws it: the puzzles, the card games, the tables round
  * one device or several, and the practice board.
  */
-export const WIN_COVER_COPY = {
-  /** Closes the cover: the finished board is often the reward. */
-  seeBoard: "See the board",
-  solved: { label: "Solved", kanji: "解決" },
-  won: { label: "Won", kanji: "勝ち" },
-  youWin: "You win",
-  wins: (who: string) => `${who} wins`,
-  shareWin: (who: string) => `${who} share the win`,
-  /** The kanji beside any win, whoever it is said about. */
-  winKanji: "勝ち",
-  draw: { label: "Draw", kanji: "引き分け" },
-  /** "You" among the names sharing a win. */
-  you: "You",
-  took: (time: string) => ` in ${time}`,
-  moves: (moves: number) => `, in ${moves} ${moves === 1 ? "move" : "moves"}`,
-  /** Kumimoji's pass and play, dealt again to the same players: its finish's press and its cover's. */
-  againSamePlayers: "Play again, same players",
-  /** Mahjong at a table, over: back to its set-up for another deal. */
-  playAgain: "Play again",
-  /** A practice board's computer, when it wins and nobody named its seat. */
-  computer: "The computer",
-} as const;
+export const winCoverCopy = (say: Speaker) => {
+  // The kanji beside the words, for a reader of English only: a Japanese reader's words are Japanese already.
+  const kanji = (word: string) => (say.pairsWithKanji ? word : "");
+  return {
+    /** Closes the cover: the finished board is often the reward. */
+    seeBoard: say.say("wincover.seeBoard"),
+    solved: { label: say.say("wincover.solved"), kanji: kanji("解決") },
+    won: { label: say.say("wincover.won"), kanji: kanji("勝ち") },
+    youWin: say.say("wincover.youWin"),
+    wins: (who: string) => say.say("wincover.wins", { who }),
+    shareWin: (who: string) => say.say("wincover.shareWin", { who }),
+    /** The kanji beside any win, whoever it is said about. */
+    winKanji: kanji("勝ち"),
+    draw: { label: say.say("wincover.draw"), kanji: kanji("引き分け") },
+    /** "You" among the names sharing a win. */
+    you: say.say("wincover.you"),
+    /** What follows the headline: how long it took, and in how many moves where that is told. */
+    after: (time: string, moves?: number) =>
+      moves === undefined
+        ? say.say("wincover.afterTime", { time })
+        : say.say("wincover.afterTimeMoves", { time, moves: say.count("count.move", moves) }),
+    /** Kumimoji's pass and play, dealt again to the same players: its finish's press and its cover's. */
+    againSamePlayers: say.say("wincover.againSamePlayers"),
+    /** Mahjong at a table, over: back to its set-up for another deal. */
+    playAgain: say.say("wincover.playAgain"),
+    /** A practice board's computer, when it wins and nobody named its seat. */
+    computer: say.say("wincover.computer"),
+  };
+};
+
+/** The same words in English, for the tables that have not been given a speaker yet. */
+export const WIN_COVER_COPY = winCoverCopy(speaker("en"));
 
 /** The large kanji at the top of the cover. */
 export const WIN_COVER_MARK = {

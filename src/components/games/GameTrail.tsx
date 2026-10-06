@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "@/components/ui/Link";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Fragment, type ReactNode } from "react";
 
 import type { TrailStep } from "./games.types";
@@ -26,7 +29,7 @@ const STEP = "underline-offset-2 hover:underline";
 export function GameTrail({
   game,
   steps = [],
-  root = "Games",
+  root,
   rootTestId = "trail-games",
   as = "span",
 }: {
@@ -38,12 +41,13 @@ export function GameTrail({
   /** A span inside `PageTitle`'s crumb line; a paragraph where it stands alone (`GameTrailNav`). */
   as?: "p" | "span";
 }) {
+  const say = useSpeaker();
   const all: TrailStep[] = [game, ...steps];
   const Tag = as;
   return (
     <Tag data-testid="game-trail">
       <Link href="/games" className={STEP} data-testid={rootTestId}>
-        {root}
+        {root ?? say.say("gamepages.games")}
       </Link>
       {all.map((step, i) => (
         <Fragment key={i}>
@@ -66,8 +70,9 @@ export function GameTrail({
  * alone, marked as the page's furniture so Just the board leaves it out.
  */
 export function GameTrailNav(props: Parameters<typeof GameTrail>[0]) {
+  const say = useSpeaker();
   return (
-    <nav aria-label="Where this is" data-chrome className="text-xs text-muted">
+    <nav aria-label={say.say("gamepages.whereThisIs")} data-chrome className="text-xs text-muted">
       <GameTrail as="p" {...props} />
     </nav>
   );

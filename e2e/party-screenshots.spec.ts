@@ -2,7 +2,7 @@ import { mkdirSync } from "node:fs";
 
 import { expect, test } from "@playwright/test";
 
-import { DEFAULT_APPEARANCE, FELTS } from "../src/components/board/Board.constants";
+import { DEFAULT_APPEARANCE } from "../src/components/board/Board.constants";
 import { PARTY_SLUGS } from "../src/lib/gomoku/slugs";
 import { encodeDots, replayDots } from "../src/lib/party/dotsAndBoxes/dotsAndBoxes";
 import { encodeGhost, replayGhost } from "../src/lib/party/superghost/superghost";
@@ -373,7 +373,7 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
         key: sugorokuStorageKey(kind),
         table: "sugoroku-game",
         shot: "board-surface",
-        surface: FELTS[DEFAULT_APPEARANCE.felt as keyof typeof FELTS].label,
+        surface: DEFAULT_APPEARANCE.felt.charAt(0).toUpperCase() + DEFAULT_APPEARANCE.felt.slice(1),
         stored: sugorokuScene(kind, kind === "backgammon" || kind === "nackgammon" ? 5 : 1, 20261001 + at, 12 + at),
       }) as const,
   ),

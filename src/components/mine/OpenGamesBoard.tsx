@@ -6,7 +6,9 @@ import { CELL, HEAD, ROW_CLASS, TABLE_CLASS, TABLE_HEAD_CLASS } from "@/componen
 import { IP_HEAD_TITLE, IpCell, XpCell } from "@/components/players/recordTrailing";
 import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { LevelName } from "@/components/xp/LevelName";
-import { SEAT_DISPLAY, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
+import { speaker } from "@/lib/i18n/i18n";
 import { rulesPath } from "@/lib/gomoku/slugs";
 import { describeClock } from "@/lib/history/deadline";
 import type { GameSummary } from "@/lib/history/gameHistory.types";
@@ -179,7 +181,7 @@ function SeatRow({ game, standing }: { game: GameSummary; standing: PosterStandi
         <PlayerName
           name={poster.name}
           memberId={poster.memberId}
-          fallback={game.openSeat === "black" ? SEAT_DISPLAY.two.label : SEAT_DISPLAY.one.label}
+          fallback={game.openSeat === "black" ? seatName(speaker("en"), "two") : seatName(speaker("en"), "one")}
           // Flag beside the name as on every list; the level is drawn after it, below, as it always was here.
           tag={standing === null || poster.memberId === null ? undefined : { country: standing.country, kind: MEMBER_KINDS.member, level: null }}
         />

@@ -1,4 +1,6 @@
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { PHRASES, type PhraseKey } from "@/lib/i18n/i18n.constants";
 
 /**
  * The listing contract for game history. These arrays are the single source of
@@ -101,8 +103,21 @@ export const GAME_VERDICT_ANY = "judged";
 
 /** The same lookup, and null where there is no word for it. See `outcomeLabel`. */
 export function verdictLabel(value: string): string | null {
-  if (value === GAME_VERDICT_ANY) return "Judged";
+  if (value === GAME_VERDICT_ANY) return PHRASES["played.judged"];
   return (GAME_VERDICT_DISPLAY as Record<string, { label: string } | undefined>)[value]?.label ?? null;
+}
+
+/** The verdict filter's chip in the reader's language: the word for "judged", or the verdict's own kanji. */
+export function verdictIn(say: Speaker, value: string): string | null {
+  if (value === GAME_VERDICT_ANY) return say.say("played.judged");
+  const row = (GAME_VERDICT_DISPLAY as Record<string, { label: string; kanji: string } | undefined>)[value];
+  return row === undefined ? null : say.pairName(row.label, row.kanji).text;
+}
+
+/** The outcome filter's chip in the reader's language: the outcome's own kanji for a Japanese reader. */
+export function outcomeIn(say: Speaker, value: string): string | null {
+  const row = (GAME_OUTCOME_DISPLAY as Record<string, { label: string; kanji: string } | undefined>)[value];
+  return row === undefined ? null : say.pairName(row.label, row.kanji).text;
 }
 
 /**
@@ -121,17 +136,17 @@ export function verdictLabel(value: string): string | null {
  */
 export const GAME_POOL_FILTERS = ["all", "people", "computer"] as const;
 
-export const GAME_POOL_DISPLAY: Record<string, { label: string }> = {
-  people: { label: "Against people" },
-  computer: { label: "Against bots" },
+export const GAME_POOL_DISPLAY: Record<string, { label: PhraseKey }> = {
+  people: { label: "played.poolPeople" },
+  computer: { label: "played.poolComputer" },
 };
 
 /** Whether the game moved a rating. The address says yes or no, not true or false. */
 export const GAME_RATED_FILTERS = ["all", "yes", "no"] as const;
 
-export const GAME_RATED_DISPLAY: Record<string, { label: string }> = {
-  yes: { label: "Rated" },
-  no: { label: "Friendly" },
+export const GAME_RATED_DISPLAY: Record<string, { label: PhraseKey }> = {
+  yes: { label: "played.rated" },
+  no: { label: "played.friendly" },
 };
 
 /**
@@ -141,8 +156,8 @@ export const GAME_RATED_DISPLAY: Record<string, { label: string }> = {
  */
 export const GAME_IP_FILTERS = ["all", "paid"] as const;
 
-export const GAME_IP_DISPLAY: Record<string, { label: string }> = {
-  paid: { label: "Paid IP" },
+export const GAME_IP_DISPLAY: Record<string, { label: PhraseKey }> = {
+  paid: { label: "played.paidIp" },
 };
 
 export const GAME_VARIANT_FILTERS = ["all", ...RULE_VARIANT_LIST] as const;

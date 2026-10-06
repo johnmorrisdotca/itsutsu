@@ -8,14 +8,20 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import Link from "@/components/ui/Link";
-import { currentLocale } from "@/lib/i18n/currentLocale";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { Paired } from "@/components/i18n/Paired";
+import { pairedText } from "@/lib/gomoku/seatWords";
 import { familyBlurb } from "@/lib/gomoku/familyCopy";
-import { GAME_FAMILIES, familyCountWords, gamesShownIn } from "@/lib/gomoku/families";
+import { GAME_FAMILIES, gamesShownIn } from "@/lib/gomoku/families";
+import { familyCountWords } from "@/lib/gomoku/familyWords";
 
 /** The one family this page is for: Tables, whose games are played round one device or on two and never recorded, so no game's family page can be it (`familyPagePath`). */
 const TABLES = GAME_FAMILIES.find((family) => family.key === "tables");
 
-export const metadata: Metadata = { title: TABLES === undefined ? "Tables" : `${TABLES.title} ${TABLES.kanji}` };
+export async function generateMetadata(): Promise<Metadata> {
+  const say = await currentSpeaker();
+  return { title: TABLES === undefined ? say.say("gamepages.games") : pairedText(say, TABLES.title, TABLES.kanji) };
+}
 
 /**
  * TABLES, AT /games/tables: backgammon and the games played on its board,
@@ -25,7 +31,8 @@ export const metadata: Metadata = { title: TABLES === undefined ? "Tables" : `${
  * already opens to anybody: it names games and nobody who plays them.
  */
 export default async function TablesPage() {
-  const locale = await currentLocale();
+  const say = await currentSpeaker();
+  const locale = say.locale;
   if (TABLES === undefined) notFound();
   return (
     <Page>
@@ -40,7 +47,7 @@ export default async function TablesPage() {
       <div className="flex items-center gap-4" data-testid="tables-family">
         <FamilyMark family={TABLES.title} size="regular" />
         <p className="text-sm text-muted" data-testid="family-guest-count">
-          {familyCountWords(TABLES)}, played round one device, on two devices or against the computer at four strengths.
+          {say.say("gamepages.tablesNote", { count: familyCountWords(TABLES, say) })}
         </p>
       </div>
 
@@ -48,7 +55,7 @@ export default async function TablesPage() {
 
       <p className="text-sm">
         <Link href="/games" className="underline underline-offset-4" data-testid="family-all-games">
-          Every family, and every game <span className="font-mincho">全種目</span> →
+          <Paired en={say.say("gamepages.everyFamily")} kanji="全種目" kanjiClassName="font-mincho" /> →
         </Link>
       </p>
     </Page>

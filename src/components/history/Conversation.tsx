@@ -1,7 +1,9 @@
 import Link from "@/components/ui/Link";
 
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { messageIn } from "@/lib/history/reactions.constants";
 import { conversationFor, spokenCount } from "@/lib/history/conversation";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 
@@ -18,7 +20,7 @@ import type { GameDetail } from "@/lib/history/gameHistory.types";
  * move somebody was reacting to. That is the whole reason to group by move
  * rather than by the clock.
  */
-export function Conversation({
+export async function Conversation({
   game,
   basePath,
   hidden = new Set<string>(),
@@ -31,11 +33,12 @@ export function Conversation({
 }) {
   const entries = conversationFor(game.reactions, { hidden });
   if (entries.length === 0) return null;
+  const say = await currentSpeaker();
 
   const nameFor = (stone: string) =>
     stone === "black"
-      ? game.blackName.trim() || STONE_DISPLAY.black.label
-      : game.whiteName.trim() || STONE_DISPLAY.white.label;
+      ? game.blackName.trim() || stoneName(say, "black")
+      : game.whiteName.trim() || stoneName(say, "white");
 
   // A row of emoji is a reaction; a game with words typed into it is a talk.
   const spoken = spokenCount(game.reactions);
@@ -43,8 +46,14 @@ export function Conversation({
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="conversation">
       <h2 className={SECTION_TITLE}>
-        {spoken > 0 ? "What they said" : "What they sent"}{" "}
-        <span className="font-mincho text-[0.8rem] font-normal tracking-normal">対話</span>
+        {say.pairsWithKanji ? (
+          <>
+            {say.say(spoken > 0 ? "replay.said" : "replay.sent")}{" "}
+            <span className="font-mincho text-[0.8rem] font-normal tracking-normal">対話</span>
+          </>
+        ) : (
+          say.say(spoken > 0 ? "replay.said" : "replay.sent")
+        )}
       </h2>
 
       <ol className="flex flex-col gap-2">
@@ -56,14 +65,14 @@ export function Conversation({
           >
             <span className="w-24 shrink-0 text-xs text-muted">
               {entry.moveNumber === null ? (
-                "Before the game"
+                say.say("replay.beforeGame")
               ) : (
                 <Link
                   href={`${basePath}/${entry.moveNumber}`}
                   className="underline-offset-4 hover:underline"
                   data-testid="conversation-move"
                 >
-                  Move {entry.moveNumber}
+                  {say.say("replay.moveNumber", { move: String(entry.moveNumber) })}
                 </Link>
               )}
             </span>
@@ -75,7 +84,7 @@ export function Conversation({
                   </span>
                   <span className="font-medium">{nameFor(one.stone)}</span>
                   {(one.text ?? "").trim() !== "" ? (
-                    <span className="min-w-0 text-ink-soft">{one.text}</span>
+                    <span className="min-w-0 text-ink-soft">{messageIn(say, one.text ?? "")}</span>
                   ) : null}
                 </span>
               ))}

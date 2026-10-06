@@ -1,8 +1,11 @@
 // Relative: the engine boundary (`boundary.coverage.test.ts`) allows no alias under src/lib/gomoku.
 import { canPass, createGame, passTurn, playMove, resign, scoreArea } from "../engine";
+import { speaker, type Speaker } from "../../i18n/i18n";
+
 import { GAME_STATUS, MOVE_KINDS, RULE_VARIANTS, STONES, boardSizesFor } from "../gomoku.constants";
 import type { Point, Stone } from "../gomoku.types";
 import { indexOf, pointOf } from "../rules/board";
+import { playerNumberName } from "../seatWords";
 import { komiFor } from "../rules/headStart";
 
 import type { PairGoGame, PairPlace, PairPlayer, PairTeams } from "./pairGo.types";
@@ -60,15 +63,15 @@ function turnOrderOf(stone: Stone, place: PairPlace, opener: Stone): number {
 }
 
 /** One of the four, as the table reads them: the name they gave, or "Player 3" by their place in the order. */
-export function pairPlayer(teams: PairTeams, stone: Stone, place: PairPlace, opener: Stone = STONES.black): PairPlayer {
+export function pairPlayer(teams: PairTeams, stone: Stone, place: PairPlace, opener: Stone = STONES.black, say: Speaker = speaker("en")): PairPlayer {
   const turnOrder = turnOrderOf(stone, place, opener);
   const given = cleanPairName(teams[stone][place] ?? "");
-  return { stone, place, turnOrder, name: given === "" ? `Player ${turnOrder + 1}` : given };
+  return { stone, place, turnOrder, name: given === "" ? playerNumberName(say, turnOrder + 1) : given };
 }
 
 /** All four, in the order their first turns come. */
-export function pairPlayers(game: PairGoGame): PairPlayer[] {
-  return PAIR_SEATS.map(({ stone, place }) => pairPlayer(game.teams, stone, place, game.state.opener))
+export function pairPlayers(game: PairGoGame, say: Speaker = speaker("en")): PairPlayer[] {
+  return PAIR_SEATS.map(({ stone, place }) => pairPlayer(game.teams, stone, place, game.state.opener, say))
     .sort((a, b) => a.turnOrder - b.turnOrder);
 }
 

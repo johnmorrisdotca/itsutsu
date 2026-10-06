@@ -2,6 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, FOCUS_RING } from "@/components/ui/ui.constants";
 import { BARE_ATTRIBUTE, readBare, subscribeBare, writeBare } from "./bare";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -30,6 +31,7 @@ export function BareBoard({
    */
   compact?: boolean;
 } = {}) {
+  const say = useSpeaker();
   const bare = useSyncExternalStore(subscribeBare, readBare, () => false);
 
   useEffect(() => {
@@ -42,13 +44,13 @@ export function BareBoard({
     if (bare) {
       panel.setAttribute("role", "dialog");
       panel.setAttribute("aria-modal", "true");
-      panel.setAttribute("aria-label", "Just the board");
+      panel.setAttribute("aria-label", say.say("boardlook.bareLabel"));
     } else {
       panel.removeAttribute("role");
       panel.removeAttribute("aria-modal");
       panel.removeAttribute("aria-label");
     }
-  }, [bare]);
+  }, [bare, say]);
 
   /*
    * Esc leaves, as it leaves every modal. John: "ESC key should take us out."
@@ -93,16 +95,16 @@ export function BareBoard({
         data-testid="bare-board-toggle"
         title={
           bare
-            ? "Close, and bring back the rest of the page (Esc)"
-            : "Read this page as the board and the moves alone"
+            ? say.say("boardlook.bareCloseTitle")
+            : say.say("boardlook.bareEnterTitle")
         }
       >
         {bare ? (
           <>
-            <span aria-hidden="true">× </span>Close <span className="ml-1 text-xs text-muted">Esc</span>
+            <span aria-hidden="true">× </span>{say.say("boardlook.bareClose")} <span className="ml-1 text-xs text-muted">Esc</span>
           </>
         ) : (
-          "Just the board"
+          say.say("boardlook.bareEnter")
         )}
       </button>
     </div>

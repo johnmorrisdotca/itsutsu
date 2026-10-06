@@ -2,7 +2,9 @@
 
 import { useId } from "react";
 
-import { SEAT_DISPLAY, SEATS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { SEATS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { seatName } from "@/lib/gomoku/seatWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { Seat } from "@/lib/gomoku/gomoku.types";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
 import { SectionTitle } from "@/components/ui/Controls";
@@ -16,9 +18,10 @@ function colourOf(seats: Record<string, Seat>, seat: Seat) {
 
 export function PlayerNames({ session, actions }: GamePanelProps) {
   const ids = useId();
+  const say = useSpeaker();
   return (
     <section className="flex flex-col gap-3">
-      <SectionTitle kanji="対局者">Players</SectionTitle>
+      <SectionTitle kanji="対局者">{say.say("gamescreen.players")}</SectionTitle>
       {Object.values(SEATS).map((seat) => {
         const stone = colourOf(session.state.seats, seat);
         const inputId = `${ids}-${seat}-name`;
@@ -42,7 +45,7 @@ export function PlayerNames({ session, actions }: GamePanelProps) {
                     : "border border-rule-strong bg-ivory"
                 }`}
               />
-              <label htmlFor={inputId}>{SEAT_DISPLAY[seat].label}</label>
+              <label htmlFor={inputId}>{seatName(say, seat)}</label>
               <span id={stoneId} className="text-xs text-muted">
                 {STONE_DISPLAY[stone].kanji}
               </span>
@@ -52,7 +55,7 @@ export function PlayerNames({ session, actions }: GamePanelProps) {
               describedBy={stoneId}
               className={INPUT_CLASS}
               value={session.names[seat]}
-              placeholder={SEAT_DISPLAY[seat].label}
+              placeholder={seatName(say, seat)}
               onChange={(name) => actions.setName(seat, name)}
             />
           </div>

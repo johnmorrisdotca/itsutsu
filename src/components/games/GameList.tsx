@@ -51,8 +51,7 @@ export async function GameList({ stats, signedIn }: { stats: CatalogueStats; sig
           ten families" is a fact about the catalogue, and the catalogue is the
           page it is printed on.
         */}
-        {RULE_VARIANT_LIST.length} games in {HOME_FAMILIES.length} families. Each one has a page of its
-        own, and under it the rules, the record, the standings and a board.
+        {say.say("gamepages.listIntro", { games: String(RULE_VARIANT_LIST.length), families: String(HOME_FAMILIES.length) })}
       </p>
       {/*
         Each game once, under its home: Party games lists only its own party
@@ -85,10 +84,10 @@ export async function GameList({ stats, signedIn }: { stats: CatalogueStats; sig
                     <span>{copy.tagline}</span>
                     <ReadyOffline game={variant} />
                     {copy.inspiredBy !== undefined ? (
-                      <span className="text-xs text-muted italic">Inspired by {copy.inspiredBy}</span>
+                      <span className="text-xs text-muted italic">{say.say("gamescreen.inspiredBy", { name: copy.inspiredBy })}</span>
                     ) : null}
                     {aliases.length > 0 ? (
-                      <span className="text-xs text-muted">Also known as {aliases.join(", ")}</span>
+                      <span className="text-xs text-muted">{say.say("gamepages.alsoKnownAs", { names: say.joined(aliases) })}</span>
                     ) : null}
                     {/*
                       The row's own figures. John: "The List View shows no row
@@ -101,9 +100,9 @@ export async function GameList({ stats, signedIn }: { stats: CatalogueStats; sig
                       <>
                         <PuzzleLine kind={variant} signedIn={signedIn} />
                         <span className="flex flex-wrap gap-x-3 text-xs">
-                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
-                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
-                          <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>family</Link>
+                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
+                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>
+                          <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetFamily")}</Link>
                         </span>
                       </>
                     ) : isPartyKind(variant) ? (
@@ -111,9 +110,9 @@ export async function GameList({ stats, signedIn }: { stats: CatalogueStats; sig
                       <>
                         <PartyLine kind={variant} signedIn={signedIn} />
                         <span className="flex flex-wrap gap-x-3 text-xs">
-                          <Link href={passAndPlayPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
-                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
-                          <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>family</Link>
+                          <Link href={passAndPlayPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
+                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>
+                          <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetFamily")}</Link>
                         </span>
                       </>
                     ) : isCasualKind(variant) ? (
@@ -121,20 +120,20 @@ export async function GameList({ stats, signedIn }: { stats: CatalogueStats; sig
                       <>
                         <CasualLine kind={variant} signedIn={signedIn} />
                         <span className="flex flex-wrap gap-x-3 text-xs">
-                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
-                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
-                          <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>family</Link>
+                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
+                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>
+                          <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetFamily")}</Link>
                         </span>
                       </>
                     ) : (
                       <>
                         <GameStatsStrip stats={stats.games[variant]} signedIn={signedIn} standings={false} />
                         <span className="flex flex-wrap gap-x-3 text-xs">
-                          <Link href={playPath(variant)} className={CATALOGUE_LINK_CLASS}>play</Link>
-                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>rules</Link>
-                          <Link href={historyPath(variant)} className={CATALOGUE_LINK_CLASS}>history</Link>
-                          <Link href={standingsPath(variant)} className={CATALOGUE_LINK_CLASS}>leaderboard</Link>
-                          <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>family</Link>
+                          <Link href={playPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
+                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>
+                          <Link href={historyPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkHistory")}</Link>
+                          <Link href={standingsPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetLeaderboard")}</Link>
+                          <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetFamily")}</Link>
                         </span>
                       </>
                     )}

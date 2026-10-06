@@ -21,13 +21,7 @@ export const KEEP_FINISHED_DAYS = [0, 7, 14, 30, 90] as const;
 
 export type KeepFinishedDays = (typeof KEEP_FINISHED_DAYS)[number];
 
-export const KEEP_FINISHED_DISPLAY: Record<number, { label: string; kanji: string }> = {
-  0: { label: "For ever", kanji: "無期限" },
-  7: { label: "A week", kanji: "一週間" },
-  14: { label: "A fortnight", kanji: "二週間" },
-  30: { label: "A month", kanji: "一月" },
-  90: { label: "Three months", kanji: "三月" },
-};
+export { KEEP_FINISHED_DISPLAY } from "./retentionNames.constants";
 
 /** The default: nothing disappears from anybody's list unless they ask. */
 export const KEEP_FINISHED_DEFAULT = 0;

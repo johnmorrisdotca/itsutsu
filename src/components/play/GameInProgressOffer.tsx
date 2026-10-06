@@ -9,7 +9,9 @@ import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { GAME_ENDING_COPY } from "./gameEnding.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { gameEndingCopy } from "./gameEnding.constants";
 
 /** What New game does to the game in progress: ends it (a game kept only in this browser) or leaves it where it is. */
 export type NewGameOnTheDoor = { ends: () => void } | { keeps: string };
@@ -39,7 +41,7 @@ export function GameInProgressOffer({
   going,
   newGame,
   playLabel,
-  continueLabel = GAME_ENDING_COPY.continue,
+  continueLabel,
   idle,
   testId = "party-kind-offer",
   mainTestId = "game-set-up",
@@ -55,12 +57,13 @@ export function GameInProgressOffer({
   mainTestId?: string;
 }) {
   const hydrated = useHydrated();
+  const GAME_ENDING_COPY = gameEndingCopy(useSpeaker());
   const router = useRouter();
   return (
     <div className="flex flex-col gap-2" data-testid={testId} data-going={going ? "true" : undefined} {...readyMark(hydrated)}>
       {going ? (
         <>
-          <PlayButton href={href} label={continueLabel} testId={mainTestId} />
+          <PlayButton href={href} label={continueLabel ?? GAME_ENDING_COPY.continue} testId={mainTestId} />
           {"ends" in newGame ? (
             <ConfirmButton
               label={GAME_ENDING_COPY.newGame}

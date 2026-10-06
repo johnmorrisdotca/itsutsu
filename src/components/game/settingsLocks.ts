@@ -3,19 +3,13 @@ import {
   VARIANT_SPECS,
   boardSizesFor,
 } from "@/lib/gomoku/gomoku.constants";
-import { RULE_VARIANT_DISPLAY } from "@/lib/gomoku/variants.constants";
+import { variantName } from "@/lib/gomoku/variantCopy";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { advantageReadingFor } from "@/lib/gomoku/advantage";
 import { UNREADABLE_DISPLAY } from "@/lib/gomoku/advantage.constants";
 import type { GameSettings } from "@/lib/gomoku/gomoku.types";
 import { lengthReason } from "@/lib/gomoku/rules/drawLimit";
-import { GAME_COPY } from "./game.constants";
-
-/** Why a length is not on offer, in the player's words. */
-const LENGTH_REFUSALS: Record<string, string | null> = {
-  "cannot-draw": GAME_COPY.noDrawLimitCannotDraw,
-  "too-small": GAME_COPY.noDrawLimitTooSmall,
-  none: null,
-};
+import { gameCopy } from "./game.constants";
 
 /**
  * Which settings the current game has taken out of the players' hands, and
@@ -40,9 +34,16 @@ export type SettingsLocks = {
   drawLimit: string | null;
 };
 
-export function settingsLocks(settings: GameSettings): SettingsLocks {
+export function settingsLocks(settings: GameSettings, say: Speaker): SettingsLocks {
   const spec = VARIANT_SPECS[settings.variant];
-  const fixed = GAME_COPY.fixedBy(RULE_VARIANT_DISPLAY[settings.variant].label);
+  const GAME_COPY = gameCopy(say);
+  const fixed = GAME_COPY.fixedBy(variantName(settings.variant, say));
+  // Why a length is not on offer, in the player's words.
+  const lengthRefusals: Record<string, string | null> = {
+    "cannot-draw": GAME_COPY.noDrawLimitCannotDraw,
+    "too-small": GAME_COPY.noDrawLimitTooSmall,
+    none: null,
+  };
   const ownBoard = spec.boardSizes !== null;
   const stonesMove = spec.quadrantSize !== null || spec.pieces !== null;
 
@@ -62,7 +63,7 @@ export function settingsLocks(settings: GameSettings): SettingsLocks {
      */
     advantage: (() => {
       const kind = advantageReadingFor(spec);
-      return kind.kind === "unreadable" ? UNREADABLE_DISPLAY[kind.reason].sentence : null;
+      return kind.kind === "unreadable" ? say.say(UNREADABLE_DISPLAY[kind.reason].sentence) : null;
     })(),
     /*
      * Two reasons a game may not be given a length, and the player is told
@@ -71,6 +72,6 @@ export function settingsLocks(settings: GameSettings): SettingsLocks {
      * it has been played. The engine refuses both either way; this is so the
      * control says why rather than sitting there doing nothing.
      */
-    drawLimit: LENGTH_REFUSALS[lengthReason(settings) ?? "none"],
+    drawLimit: lengthRefusals[lengthReason(settings) ?? "none"],
   };
 }

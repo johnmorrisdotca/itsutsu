@@ -1,5 +1,7 @@
 import "server-only";
 
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { replayGame } from "@/lib/gomoku/replay";
 import { describeHeadStart } from "@/lib/gomoku/headStartWords";
@@ -43,6 +45,8 @@ export async function resultCardFor(input: {
   rematchable: boolean;
   claims: Map<string, string>;
   keepFinishedDays: number;
+  /** The reader's language, for the head start said in words; English where nobody says. */
+  say?: Speaker;
   now?: Date;
 }): Promise<ResultCardData | null> {
   const { game, seat } = input;
@@ -89,7 +93,7 @@ export async function resultCardFor(input: {
     gameId: game.id,
     facts,
     names: { black: game.blackName, white: game.whiteName },
-    headStart: describeHeadStart(game),
+    headStart: describeHeadStart(game, input.say ?? speaker("en")),
     /*
      * The game-end batch, where it has not been shown yet, so the card and the
      * toasts it stands in for are one announcement; the ledger rows keyed to this

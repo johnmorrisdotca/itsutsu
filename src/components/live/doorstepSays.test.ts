@@ -9,6 +9,9 @@ import {
 import { RATING_REFUSALS, RATING_REFUSED_WORD } from "@/lib/rating/rateable.constants";
 import { describeGameProse, describeLineage, describeSeating, type DoorstepWho } from "./doorstepSays";
 import type { RulesDraft } from "./rulesDraft";
+import { speaker } from "@/lib/i18n/i18n";
+
+const say = speaker("en");
 
 /**
  * WHAT THE DOORSTEP TELLS SOMEBODY BEFORE THEY COMMIT TO A GAME.
@@ -46,20 +49,20 @@ const who: DoorstepWho = {
 
 describe("the game a doorstep is about, in sentences", () => {
   it("names the game, its kanji and the board it is on", () => {
-    expect(describeGameProse(draft, null)).toContain("Gomoku 五目並べ on a 19×19 board.");
+    expect(describeGameProse(draft, null, say)).toContain("Gomoku 五目並べ on a 19×19 board.");
   });
 
   it("says an 8×8 board with the right article, because a person reads it aloud", () => {
-    expect(describeGameProse({ ...draft, variant: "reversi", size: 8 }, null)).toContain("on an 8×8 board");
+    expect(describeGameProse({ ...draft, variant: "reversi", size: 8 }, null, say)).toContain("on an 8×8 board");
   });
 
   it("leaves a free opening unsaid, and says any other one", () => {
-    expect(describeGameProse(draft, null)).not.toContain("opening");
-    expect(describeGameProse({ ...draft, opening: OPENING_RULES.pro }, null)).toContain("Pro opening.");
+    expect(describeGameProse(draft, null, say)).not.toContain("opening");
+    expect(describeGameProse({ ...draft, opening: OPENING_RULES.pro }, null, say)).toContain("Pro opening.");
   });
 
   it("says the clock, the ratings and resigning, in the words the setup screen used", () => {
-    const said = describeGameProse({ ...draft, moveTimeMs: 300_000, rated: false, allowResign: false }, null);
+    const said = describeGameProse({ ...draft, moveTimeMs: 300_000, rated: false, allowResign: false }, null, say);
     expect(said).toContain("No resigning.");
     expect(said).toContain("5 minutes a move.");
     expect(said).toContain("Friendly.");
@@ -69,12 +72,13 @@ describe("the game a doorstep is about, in sentences", () => {
     const said = describeGameProse(
       { ...draft, handicap: { ...NO_HANDICAP, stone: STONES.black, doubleThree: true } },
       null,
+      say,
     );
     expect(said).toContain("Black handicap: no double three.");
   });
 
   it("says the star points are blocked, where they are", () => {
-    expect(describeGameProse({ ...draft, obstacles: OBSTACLE_LAYOUTS.hoshi }, null)).toContain(
+    expect(describeGameProse({ ...draft, obstacles: OBSTACLE_LAYOUTS.hoshi }, null, say)).toContain(
       "with the star points blocked",
     );
   });
@@ -85,7 +89,7 @@ describe("the game a doorstep is about, in sentences", () => {
      * nobody will ever see. The engine snaps it on the way in; this snaps it on the
      * way to the page, so the sentence and the board cannot disagree.
      */
-    expect(describeGameProse({ ...draft, variant: "reversi", size: 19 }, null)).toContain("8×8");
+    expect(describeGameProse({ ...draft, variant: "reversi", size: 19 }, null, say)).toContain("8×8");
   });
 
   /*
@@ -100,29 +104,29 @@ describe("the game a doorstep is about, in sentences", () => {
    * never reaches `recordResult` at all.
    */
   it("says a game at one screen will not count, rather than reading the draft's flag", () => {
-    const said = describeGameProse({ ...draft, rated: true }, RATING_REFUSALS.hotSeat);
-    expect(said).toContain(`${RATING_REFUSED_WORD}.`);
+    const said = describeGameProse({ ...draft, rated: true }, RATING_REFUSALS.hotSeat, say);
+    expect(said).toContain(`${say.say(RATING_REFUSED_WORD)}.`);
     expect(said).not.toContain("Rated.");
   });
 
   it("and does not contradict the seating sentence beside it", () => {
     const screen: DoorstepWho = { ...who, opponent: null, mine: null, screen: true };
-    expect(describeSeating(draft, screen)).toContain("two people at one screen");
+    expect(describeSeating(draft, screen, say)).toContain("two people at one screen");
     // The doorstep hands both halves the same answer, read off the same `screen`.
     const refused = screen.screen ? RATING_REFUSALS.hotSeat : null;
-    expect(describeGameProse({ ...draft, rated: true }, refused)).toContain(RATING_REFUSED_WORD);
+    expect(describeGameProse({ ...draft, rated: true }, refused, say)).toContain(say.say(RATING_REFUSED_WORD));
   });
 
   it("leaves the rating to the draft for a fork against a person, which is an offer and counts", () => {
     // Since offers, a fork naming somebody binds one seat and offers the
     // other, so it is a game between two people like any other.
-    expect(describeGameProse({ ...draft, rated: true }, null)).toContain("Rated.");
+    expect(describeGameProse({ ...draft, rated: true }, null, say)).toContain("Rated.");
   });
 });
 
 describe("who plays which colour, said on the doorstep", () => {
   it("names both colours and who moves first", () => {
-    expect(describeSeating(draft, who)).toContain(
+    expect(describeSeating(draft, who, say)).toContain(
       "Against Bob T., who plays black; you are white and move second.",
     );
   });
@@ -141,14 +145,14 @@ describe("who plays which colour, said on the doorstep", () => {
    * gets forgotten — so it is asserted on the branches too.
    */
   it("says an opponent can accept or decline, and that refusing costs nothing", () => {
-    const said = describeSeating(draft, who);
+    const said = describeSeating(draft, who, say);
     expect(said).toContain("This is an offer");
     expect(said).toContain("Bob T. can accept or decline");
     expect(said).toContain("costs nobody anything");
   });
 
   it("says it under a swap opening too, where the colours are not settled", () => {
-    const said = describeSeating({ opening: OPENING_RULES.swap }, who);
+    const said = describeSeating({ opening: OPENING_RULES.swap }, who, say);
     expect(said).toContain("This is an offer");
   });
 
@@ -159,16 +163,16 @@ describe("who plays which colour, said on the doorstep", () => {
    * program would be untrue of the one opponent that never does.
    */
   it("says nothing of the sort about a computer, which has nothing to accept with", () => {
-    expect(describeSeating(draft, { ...who, computer: true })).not.toContain("an offer");
+    expect(describeSeating(draft, { ...who, computer: true }, say)).not.toContain("an offer");
   });
 
   it("says nothing of the sort about two people at one screen, or a posted seat", () => {
-    expect(describeSeating(draft, { ...who, screen: true })).not.toContain("an offer");
-    expect(describeSeating(draft, { ...who, opponent: null })).not.toContain("an offer");
+    expect(describeSeating(draft, { ...who, screen: true }, say)).not.toContain("an offer");
+    expect(describeSeating(draft, { ...who, opponent: null }, say)).not.toContain("an offer");
   });
 
   it("says you move first when the colour you hold is the one that opens", () => {
-    expect(describeSeating(draft, { ...who, mine: STONES.black })).toContain(
+    expect(describeSeating(draft, { ...who, mine: STONES.black }, say)).toContain(
       "you are black and move first",
     );
   });
@@ -176,17 +180,17 @@ describe("who plays which colour, said on the doorstep", () => {
   it("reads the opener rather than assuming black", () => {
     // A carried game may have been set the other way round, and then "move first"
     // belongs to white. Assuming black here would be a sentence nobody checked.
-    expect(describeSeating(draft, { ...who, opener: STONES.white })).toContain(
+    expect(describeSeating(draft, { ...who, opener: STONES.white }, say)).toContain(
       "you are white and move first",
     );
   });
 
   it("marks a computer player as one", () => {
-    expect(describeSeating(draft, { ...who, opponent: "Kyu", computer: true })).toContain("Kyu 機械");
+    expect(describeSeating(draft, { ...who, opponent: "Kyu", computer: true }, say)).toContain("Kyu 機械");
   });
 
   it("says a seat posted for anyone is posted, and where", () => {
-    const said = describeSeating(draft, { ...who, opponent: null, mine: STONES.black });
+    const said = describeSeating(draft, { ...who, opponent: null, mine: STONES.black }, say);
     expect(said).toContain("You are black and move first");
     expect(said).toContain("posted on the games page");
   });
@@ -197,7 +201,7 @@ describe("who plays which colour, said on the doorstep", () => {
    */
   it("declines to name a colour when a swap opening will decide it", () => {
     for (const opening of [OPENING_RULES.swap, OPENING_RULES.swap2, OPENING_RULES.rif]) {
-      const said = describeSeating({ ...draft, opening }, who);
+      const said = describeSeating({ ...draft, opening }, who, say);
       expect(said, opening).toContain("decides who plays which colour");
       expect(said, opening).not.toContain("you are white");
       expect(said, opening).not.toContain("you are black");
@@ -207,16 +211,16 @@ describe("who plays which colour, said on the doorstep", () => {
   it("still names the opponent when the opening decides the colours", () => {
     // Declining one fact is not declining the paragraph: who it is against is
     // known, and dropping it would answer a question nobody asked.
-    expect(describeSeating({ ...draft, opening: OPENING_RULES.swap2 }, who)).toContain("Bob T.");
+    expect(describeSeating({ ...draft, opening: OPENING_RULES.swap2 }, who, say)).toContain("Bob T.");
   });
 
   it("says both seats are yours at one screen, rather than naming a colour", () => {
-    const said = describeSeating(draft, { ...who, opponent: null, mine: null, screen: true });
+    const said = describeSeating(draft, { ...who, opponent: null, mine: null, screen: true }, say);
     expect(said).toContain("Both seats are yours");
   });
 
   it("declines rather than guessing when nothing has settled a colour", () => {
-    const said = describeSeating(draft, { ...who, mine: null });
+    const said = describeSeating(draft, { ...who, mine: null }, say);
     expect(said).toContain("settled when the game is made");
     expect(said).not.toContain("you are black");
   });
@@ -231,24 +235,24 @@ describe("what the doorstep says about a game set up from a rematch", () => {
   const again = { opponent: { name: "Bob Tester", computer: false } };
 
   it("says nothing where the game did not come from one", () => {
-    expect(describeLineage(null, { repeat: false, sameOpponent: false })).toBeNull();
+    expect(describeLineage(null, { repeat: false, sameOpponent: false }, say)).toBeNull();
   });
 
   it("calls a rematch a rematch, with the colours swapped", () => {
-    const said = describeLineage(again, { repeat: true, sameOpponent: true });
+    const said = describeLineage(again, { repeat: true, sameOpponent: true }, say);
     expect(said).toContain("A rematch");
     expect(said).toContain("swapped");
   });
 
   it("says a rematch set up against somebody else is a new game and not a rematch", () => {
-    const said = describeLineage(again, { repeat: false, sameOpponent: false });
+    const said = describeLineage(again, { repeat: false, sameOpponent: false }, say);
     expect(said).toContain("not a rematch");
     expect(said).toContain("somebody else");
     expect(said).toContain("not swapped");
   });
 
   it("says a changed rematch against the same player is not a rematch either", () => {
-    const said = describeLineage(again, { repeat: false, sameOpponent: true });
+    const said = describeLineage(again, { repeat: false, sameOpponent: true }, say);
     expect(said).toContain("not a rematch");
     expect(said).toContain("rules differ");
   });
