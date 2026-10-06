@@ -466,6 +466,29 @@ describe("a stop link needs no sign-in, and opens nothing else", () => {
     expect(route.status).toBe(200);
   });
 
+  /*
+   * A language asked for on the page the link opens is remembered, as anywhere else (ENJA-12): the page reads the
+   * member's saved language, and a reader who wants the other one must be able to say so. It is the yes side only:
+   * a wrong token asking for a language is still sent the ordinary way, and a good one still continues.
+   */
+  it("remembers a language asked for on a stop link, and still only continues", async () => {
+    production();
+    const token = await signStopToken("m-1", "your-turn");
+    const asked = await proxy(new NextRequest(`https://itsutsu.com/stop/${token}?lang=en`));
+    // The same page, with the language out of its address and kept in cookies; never anywhere else.
+    expect(new URL(asked.headers.get("location") ?? "").pathname).toBe(`/stop/${token}`);
+    expect(new URL(asked.headers.get("location") ?? "").searchParams.has("lang")).toBe(false);
+    expect(asked.cookies.get("lang")?.value).toBe("en");
+    expect(asked.cookies.get("lang-chosen")?.value).toBe("en");
+
+    const plain = await proxy(new NextRequest(`https://itsutsu.com/stop/${token}`));
+    expect(plain.status).toBe(200);
+    expect(plain.headers.get("location")).toBeNull();
+
+    const wrong = await proxy(new NextRequest(`https://itsutsu.com/stop/nonsense?lang=en`));
+    expect(wrong.headers.get("location") ?? "").toContain("/join");
+  });
+
   it("sends a stranger with no token, or a wrong one, the ordinary way", async () => {
     production();
     const token = (await signStopToken("m-1", "your-turn"))!;

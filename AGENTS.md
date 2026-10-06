@@ -214,7 +214,9 @@ of every such email that works without signing in, so the link carries a token
 of its own kind naming one member and one kind of email, checked by
 `verifyStopToken`, and the page and route re-check it and can do nothing but
 switch that member's email off or back on. Neither exception is shuttered for
-maintenance.
+maintenance. The page reads the language of the member its token names, and a
+language asked for there (`?lang=`) is remembered like anywhere else, on the yes
+side of the decision (`rememberLanguage` wraps the `next()`); it decides nothing.
 
 There was a third, until the board moved to Sumilabu: the board token for
 `/api/backlog` and `/api/backlog/[id]` (board convergence ITS-02), so an agent's

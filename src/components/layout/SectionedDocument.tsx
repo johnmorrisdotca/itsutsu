@@ -41,7 +41,7 @@ export function SectionedDocument({
       {sections.map((section, index) => (
         <section key={section.id} id={section.id} className="flex flex-col gap-3" data-testid={testId}>
           {index > 0 ? <BrandStones className="mb-2 opacity-70" /> : null}
-          <SectionHeading title={section.heading} kanji={section.kanji} />
+          <SectionHeading title={section.heading} kanji={section.kanji} inReadersLanguage />
           {section.paragraphs.map((paragraph) => (
             <p key={paragraph} className="text-[0.95rem] leading-relaxed text-ink-soft">
               {withContactLink(paragraph, contact)}

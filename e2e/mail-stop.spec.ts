@@ -115,9 +115,18 @@ test.describe("stopping email from its own link", () => {
     await expect(page.getByTestId("stop-done")).toHaveText("完了しました。対局の終了をお知らせするメールは届かなくなります。");
     expect(await wanted(memberId)).toEqual({ gameOver: "off", all: true });
 
-    // The way back: the picker, by clicking, and the page answers in English with the same state behind it.
+    /*
+     * The way back, by clicking. The frame around the page (header, footer, picker) follows the browser, which asks
+     * for English here, so the picker shows English as the language it is already in and offers 日本語 to click; once
+     * it has been clicked the frame and the page agree, and English is a click away. Both clicks go through the gate
+     * (a stop link remembers a language like any page), and the page answers each in kind with the same state behind it.
+     */
+    await page.getByTestId("language-picker").locator('[data-locale="ja"]').click();
+    await expect(page.getByTestId("language-picker").locator('[data-current="true"]')).toHaveAttribute("data-locale", "ja");
     await page.getByTestId("language-picker").locator('[data-locale="en"]').click();
     await expect(page.getByTestId("stop-language")).toHaveAttribute("data-locale", "en");
+    await expect(page.getByTestId("stop-language")).toHaveAttribute("lang", "en");
     await expect(page.getByTestId("stop-kind-press")).toHaveText("Turn them back on");
+    expect(await wanted(memberId)).toEqual({ gameOver: "off", all: true });
   });
 });

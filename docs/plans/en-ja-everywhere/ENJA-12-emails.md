@@ -46,8 +46,15 @@ footer and the stop link's page) is English for everyone, though
   or a choice beside the Email button; it is one line in `inviteMail.ts` either way.
 - **The stop page reads the member's saved language before the browser's own** (a language chosen on that page a moment
   ago still wins). The frame around it (header, footer, picker) follows the browser, as every page does; only the
-  body is the member's. Reading the frame in the member's language too would need the gate (`src/proxy.ts`) to know a
-  language before the page does, which is not this ticket's to change.
+  body is the member's, so for a member who saved Japanese and reads on a browser that asks for English the picker
+  shows English as the language it is already in, and English is two clicks away (日本語, then English). Reading the
+  frame in the member's language too would need the gate (`src/proxy.ts`) to know a language before the page does,
+  which is not this ticket's to change.
+- **The gate remembers a language asked for on a stop link.** One line in `src/proxy.ts`, on the yes side of a decision
+  already made (`rememberLanguage(request) ?? NextResponse.next()`), as AGENTS.md's gate section allows: without it
+  the picker on that page did nothing at all, since a request carrying its own credential never reached the place the
+  language is remembered. `proxy.test.ts` pins that a good token still only continues and a wrong one is still sent
+  the ordinary way.
 - **The Japanese emails name a game by its kanji and a colour by its own word, and a person's name takes さん.** A
   game with no Japanese name of its own (Caro is "Cờ ca-rô") is named as the site names it.
 - **Othello is リバーシ in the Japanese invitation**, as it is everywhere else on the site; the English still says

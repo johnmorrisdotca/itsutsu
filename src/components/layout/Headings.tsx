@@ -82,10 +82,16 @@ export function SectionHeading({
   title,
   kanji = "",
   className = "",
+  inReadersLanguage = false,
   children,
 }: {
   title: ReactNode;
   kanji?: string;
+  /**
+   * `title` is already a phrase in the reader's language, so a reader of Japanese is shown it and not the kanji in its
+   * place (`Paired inReadersLanguage`): for a heading whose kanji alone would be cryptic, as on a legal page.
+   */
+  inReadersLanguage?: boolean;
   /** Layout added to the heading — `justify-between` for one with a control on its right. */
   className?: string;
   /** Drawn inside the h2 after the name: a count, a control. */
@@ -94,7 +100,7 @@ export function SectionHeading({
   return (
     <h2 className={className === "" ? SECTION_HEADING : `${SECTION_HEADING} ${className}`}>
       {typeof title === "string" ? (
-        <Paired en={title} kanji={kanji} kanjiClassName={SECTION_HEADING_KANJI} />
+        <Paired en={title} kanji={kanji} kanjiClassName={SECTION_HEADING_KANJI} inReadersLanguage={inReadersLanguage} />
       ) : (
         <>
           {title}

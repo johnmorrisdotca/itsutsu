@@ -47,7 +47,8 @@ export default async function StopPage({ params, searchParams }: PageProps<"/sto
     <Page>
       <SiteHeader />
       <div lang={say.tag} className="flex flex-col gap-6" data-testid="stop-language" data-locale={say.locale}>
-        <PageTitle title={say.say("auth.stop.title")} kanji={say.pairsWithKanji ? "配信停止" : ""} lead={say.say("auth.stop.lead", { site: SITE_NAME })} />
+        {/* The title is a node, so it is drawn as the member's language says it whatever the frame is in (a string would be paired by the frame's). */}
+        <PageTitle title={<>{say.say("auth.stop.title")}</>} kanji={say.pairsWithKanji ? "配信停止" : ""} lead={say.say("auth.stop.lead", { site: SITE_NAME })} />
 
         {stop === null || state === null ? (
           <p className="text-sm" data-testid="stop-unknown">

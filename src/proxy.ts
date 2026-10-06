@@ -385,8 +385,12 @@ export async function proxy(request: NextRequest) {
    * than a session: see `ownCredentials.ts`, where both are reasoned. Only
    * ever "continue", and a wrong or missing token falls through to the
    * session check below exactly as before.
+   *
+   * The one addition, and it is on the yes side: a language asked for on the page the stop link opens is
+   * remembered like anywhere else (`rememberLanguage` reads no database and decides nothing), so a reader of that
+   * page can change its language with the picker. It wraps the `next()` this decision had already reached.
    */
-  if (await carriesOwnCredential(request)) return NextResponse.next();
+  if (await carriesOwnCredential(request)) return rememberLanguage(request) ?? NextResponse.next();
 
   /*
    * THE TICKET THIS BLOCK IS FOR: a gate with no key cannot verify a
