@@ -48,7 +48,7 @@ function without(filter: DirectoryFilter, one: Narrowing): DirectoryFilter {
 }
 
 function chipName(filter: DirectoryFilter, one: Narrowing, say: Speaker): string {
-  return one === "who" ? WHO_DISPLAY[filter.who].label : say.say(NARROWING_WORDS[one].chip);
+  return one === "who" ? say.pairName(WHO_DISPLAY[filter.who].label, WHO_DISPLAY[filter.who].kanji).text : say.say(NARROWING_WORDS[one].chip);
 }
 
 /** The sentence an empty list prints: who nobody here is. */

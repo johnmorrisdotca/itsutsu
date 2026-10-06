@@ -32,7 +32,7 @@ export async function HousekiSetUpPage({ kind }: { kind: HousekiKind }) {
       <PageTitle
         title={copy.label}
         kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: say.say("pset.crumb.setUp") }]} />}
+        crumb={<GameTrail game={{ label: say.pairName(copy.label, copy.kanji).text, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: say.say("pset.crumb.setUp") }]} />}
         lead={
           <>
             {/* The gap and the stop are the language's own: a space and "." in English, nothing and "。" in Japanese. */}

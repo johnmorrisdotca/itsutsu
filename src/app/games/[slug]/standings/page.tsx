@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { StandingsTable } from "@/components/players/Standings";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { gameCopyFor, gameNameFor } from "@/lib/catalogue/gameKeys";
+import { gameNameFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
 import { gamePath, historyPath, playPath, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
@@ -214,7 +214,7 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
             <span>{say.say("gamepages.alsoIn", { family: pairedText(say, siblings.family.title, siblings.family.kanji) })}</span>
             {siblings.games.map((game) => (
               <Link key={game} href={standingsPath(game)} className="underline-offset-2 hover:underline">
-                {gameCopyFor(game, say.locale).label}
+                {gameNameFor(game, say)}
               </Link>
             ))}
           </p>

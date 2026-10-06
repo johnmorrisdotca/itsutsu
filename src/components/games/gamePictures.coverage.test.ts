@@ -110,7 +110,7 @@ const NOT_A_LIST: Record<string, { line: string; why: string }[]> = {
   ],
   "src/app/games/[slug]/standings/page.tsx": [
     {
-      line: "{gameCopyFor(game, say.locale).label}",
+      line: "{gameNameFor(game, say)}",
       why: 'a caption-size sentence under the ladder: "Also in Captures: Ninuki-renju, Sannuki-renju"',
     },
   ],

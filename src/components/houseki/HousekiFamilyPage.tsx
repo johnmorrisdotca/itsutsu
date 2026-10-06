@@ -38,10 +38,12 @@ export async function HousekiFamilyPage() {
   const say = await currentSpeaker();
   const scope = scopeOfFamily(HOUSEKI_FAMILY_KEY);
   const first = HOUSEKI.games[0]!;
+  // A reader of Japanese is shown the family's kanji name where it is named in a trail or a sentence.
+  const familyName = say.pairName(HOUSEKI.title, HOUSEKI.kanji).text;
   return (
     <Page>
       <SiteHeader />
-      <PageTitle title={HOUSEKI.title} kanji={HOUSEKI.kanji} lead={familyBlurb(HOUSEKI, say.locale)} crumb={<GameTrail game={{ label: HOUSEKI.title }} />} />
+      <PageTitle title={HOUSEKI.title} kanji={HOUSEKI.kanji} lead={familyBlurb(HOUSEKI, say.locale)} crumb={<GameTrail game={{ label: familyName }} />} />
 
       <div className="flex items-center gap-4" data-testid="houseki-family">
         <FamilyMark family={HOUSEKI.title} size="regular" />
@@ -54,7 +56,7 @@ export async function HousekiFamilyPage() {
 
       {scope === null ? null : (
         <Suspense fallback={null}>
-          <IpBoard scope={scope} title={HOUSEKI.title} playHref={setUpPath(first)} testId="houseki-family-ip-board" />
+          <IpBoard scope={scope} title={familyName} playHref={setUpPath(first)} testId="houseki-family-ip-board" />
         </Suspense>
       )}
 

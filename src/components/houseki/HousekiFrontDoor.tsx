@@ -41,18 +41,20 @@ export async function HousekiFrontDoor({ kind }: { kind: HousekiKind }) {
   const page = housekiRulesPage(kind, say);
   const spec = HOUSEKI_SPECS[kind];
   const family = familyOf(kind);
+  // A reader of Japanese is shown the game's kanji name, which is its Japanese name, where a sentence or a trail names it.
+  const name = say.pairName(page.title, page.kanji).text;
   return (
     <Page>
       <SiteHeader />
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <p className="text-xs text-muted" data-testid="game-crumb">
-            <GameTrail game={{ label: page.title }} />
+            <GameTrail game={{ label: name }} />
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="houseki">
             <div className={`${GAME_PICTURE_BOX} flex flex-col gap-2`}>
               {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
-              <img src={page.image} alt={say.say("houseki.door.picture", { title: page.title })} className="w-full rounded-xl border border-rule" data-testid="game-picture" />
+              <img src={page.image} alt={say.say("houseki.door.picture", { title: name })} className="w-full rounded-xl border border-rule" data-testid="game-picture" />
               {/* The one big Play, under the picture, as on every game's page: to the set-up, where a level, a lesson, the Daily or a free game is chosen. */}
               <Suspense fallback={<PlayButton href={setUpPath(kind)} />}>
                 <HousekiOffer kind={kind} />
@@ -79,7 +81,7 @@ export async function HousekiFrontDoor({ kind }: { kind: HousekiKind }) {
             </ul>
             <p className="pt-1 text-sm">
               <Link href={rulesPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="game-rules-link">
-                <Paired en={say.say("pset.front.fullRules", { title: page.title })} kanji="規則" kanjiClassName="" inReadersLanguage /> →
+                <Paired en={say.say("pset.front.fullRules", { title: name })} kanji="規則" kanjiClassName="" inReadersLanguage /> →
               </Link>
             </p>
           </section>
@@ -88,7 +90,7 @@ export async function HousekiFrontDoor({ kind }: { kind: HousekiKind }) {
         <aside className={`${GAME_SIDE_COLUMN} flex w-full flex-col gap-4`}>
           {/* The leaderboard first, where a reader looks first: who has won the most points at this game. Request time, in a component of its own. */}
           <Suspense fallback={null}>
-            <IpBoard scope={scopeOfGame(kind)} title={page.title} playHref={setUpPath(kind)} stacked testId="houseki-ip-board" />
+            <IpBoard scope={scopeOfGame(kind)} title={name} playHref={setUpPath(kind)} stacked testId="houseki-ip-board" />
           </Suspense>
 
           <GameFamily variant={kind} />

@@ -663,6 +663,14 @@ for in `SURFACE_SIZES` — a new file that draws a picture fails until it is
 classified — and for a retired per-surface size coming back. A page title, a
 heading or a sentence naming a game, and a picture that must differ from its
 file's size, are exceptions written there by line, with their reason.
+**A word beside its kanji is drawn by `Paired`, `OneName` or the speaker's
+`pairName`, never by hand.** A `font-mincho` span written next to an English
+word shows a reader of Japanese the same word twice, so the components choose:
+English and its kanji for an English reader, the Japanese once for a Japanese
+one. `src/components/games/handPairs.coverage.test.ts` fails on a hand-written
+span the speaker did not decide, and each file it allows (a glyph drawn as a
+picture, the site's name in a sentence, the operator's pages) is listed there
+with its count and why none of its spans is a pair.
 
 ### Every Game Offers Just The Board
 
