@@ -10,7 +10,7 @@ import {
   encodePairGo,
   pairPass,
   pairPlay,
-  pairPlayerToMove,
+  pairTurnToMove,
   pairResign,
   startPairGo,
 } from "@/lib/gomoku/party/pairGo";
@@ -53,7 +53,7 @@ export const PAIR_GO_ONLINE: OnlineRules<PairGoGame, PairGoMove> = {
   start: (size, count) => (count === PAIR_GO_PLAYERS && PAIR_GO_SIZES.includes(size) ? startPairGo(size, { black: ["", ""], white: ["", ""] }) : null),
   encode: encodePairGo,
   decode: (text) => decodePairGo(text),
-  toPlay: (game) => pairPlayerToMove(game)?.turnOrder ?? null,
+  toPlay: (game) => pairTurnToMove(game),
   // The winning team's two seats; a count that comes out level names nobody.
   winners: (game) => {
     const { winner, status } = game.state;

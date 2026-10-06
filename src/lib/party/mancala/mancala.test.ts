@@ -4,6 +4,10 @@ import { MANCALA_RULES, MANCALA_STATUS, decodeMancala, encodeMancala, legalPits,
 import { partyPlayerName } from "../partyNames";
 import { MANCALA_BOARDS } from "./mancala.constants";
 import type { MancalaGame, MancalaSeat } from "./mancala.types";
+import { speaker } from "@/lib/i18n/i18n";
+
+/** The English speaker: these tests read the rules' English words. */
+const EN = speaker("en");
 
 /**
  * Mancala's rules (party kind "mancala"), both rule sets: Kalah, the default,
@@ -61,8 +65,8 @@ describe("mancala: a new game", () => {
 
   it("calls a seat left blank by its place", () => {
     const game = startMancala(KALAH, ["  Ann   Lee ", ""])!;
-    expect(partyPlayerName(game, 0)).toBe("Ann Lee");
-    expect(partyPlayerName(game, 1)).toBe("Player 2");
+    expect(partyPlayerName(game, 0, EN)).toBe("Ann Lee");
+    expect(partyPlayerName(game, 1, EN)).toBe("Player 2");
   });
 });
 

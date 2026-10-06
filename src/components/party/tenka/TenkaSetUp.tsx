@@ -11,15 +11,15 @@ import type { TenkaMapKey, TenkaPlacing } from "@/lib/party/tenka/tenka.types";
 import { TENKA_MAP_LIST } from "@/lib/party/tenka/tenkaMap";
 import { startTenka } from "@/lib/party/tenka/tenkaStart";
 
-import { PARTY_COPY } from "../party.constants";
-import { TENKA_COPY } from "./tenka.constants";
 import type { TenkaSetUpProps } from "./tenka.types";
 import { TenkaMap } from "./TenkaMap";
 import { NO_CHOICE, marksFor } from "./tenkaTaps";
 import { freshTenkaSeed } from "./tenkaStore";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "../online/OnlineSetUpParts";
-import { ONLINE_COPY } from "../online/online.constants";
 import type { SeatChoice } from "../online/online.types";
+import { onlineWords, partyScreenWords, seatColourName, tenkaWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { tenkaLengthNote, tenkaLengthWords } from "./tenkaWords";
 
 const SPEC = PARTY_SPECS.tenka;
 const COUNTS = Array.from({ length: SPEC.mostPlayers - SPEC.fewestPlayers + 1 }, (_, index) => SPEC.fewestPlayers + index);
@@ -64,6 +64,10 @@ function Choices<T extends string | number>({ label, options, value, onChange, w
  * chosen kept in their place and hidden.
  */
 export function TenkaSetUp({ appearance, onStart, ready, online }: TenkaSetUpProps) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const TENKA_COPY = tenkaWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const [count, setCount] = useState(SPEC.defaultPlayers);
@@ -85,7 +89,7 @@ export function TenkaSetUp({ appearance, onStart, ready, online }: TenkaSetUpPro
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
       <div className="flex min-w-0 flex-col gap-2" data-testid="tenka-preview">
         <TenkaMap game={preview} appearance={appearance} marks={marksFor(preview, NO_CHOICE)} readOnly />
-        <p className="text-xs text-muted">{TENKA_COPY.lengthNote(rounds, TENKA_WORLD_ROUNDS, map)}</p>
+        <p className="text-xs text-muted">{tenkaLengthNote(say, rounds, TENKA_WORLD_ROUNDS, map)}</p>
       </div>
       <form
         className={`${PANEL_CLASS} flex min-w-0 flex-col gap-4`}
@@ -100,7 +104,7 @@ export function TenkaSetUp({ appearance, onStart, ready, online }: TenkaSetUpPro
         <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <Choices label={PARTY_COPY.howMany} options={COUNTS} value={count} onChange={setCount} words={String} testId="tenka-count" columns="grid-cols-5" />
         <Choices label={TENKA_COPY.mapChoice} options={TENKA_MAP_LIST} value={map} onChange={setMap} words={(option) => TENKA_COPY.mapWords(option)} testId="tenka-map" columns="grid-cols-2" />
-        <Choices label={TENKA_COPY.length} options={SPEC.sizes} value={rounds} onChange={setRounds} words={(option) => TENKA_COPY.lengthWords(option, TENKA_WORLD_ROUNDS, map)} testId="tenka-length" columns="grid-cols-3" />
+        <Choices label={TENKA_COPY.length} options={SPEC.sizes} value={rounds} onChange={setRounds} words={(option) => tenkaLengthWords(say, option, TENKA_WORLD_ROUNDS, map)} testId="tenka-length" columns="grid-cols-3" />
         <Choices
           label={TENKA_COPY.placing}
           options={[TENKA_PLACING.auto, TENKA_PLACING.hand]}
@@ -119,7 +123,7 @@ export function TenkaSetUp({ appearance, onStart, ready, online }: TenkaSetUpPro
               <label key={index} className={`flex items-center gap-2 text-sm ${sitting ? "" : "invisible"}`} aria-hidden={sitting ? undefined : true}>
                 <SeatColourButton player={index} playing={count} />
                 <span className="sr-only">
-                  Player {index + 1}, {marbles[index].label}
+                  {seatColourName(say, index, marbles[index])}
                 </span>
                 {severalOffer !== undefined ? (
                   <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} disabled={!sitting} />

@@ -1,4 +1,7 @@
 // Free of the package, like the rest of the party constants: the rules page, the catalogue and the set-up's own words import this, and a page's server function must not carry the rules for it (`sugoroku.test.ts` holds these to the package's own limits).
+import { playerNumberName } from "../../gomoku/seatWords";
+import type { Speaker } from "../../i18n/i18n";
+import { partyTable } from "../../i18n/partyTables";
 
 /**
  * THE SEVEN GAMES PLAYED ON THE BACKGAMMON BOARD, each a party game of its own
@@ -88,6 +91,11 @@ export const SUGOROKU_STRENGTH_NAMES: Record<SugorokuStrength, string> = {
   strong: "Strong",
 };
 
+/** The strengths' names in the speaker's language: Beginner, Casual, Careful, Strong, or their Japanese (`party.ja.tables.constants.ts`). */
+export function sugorokuStrengthWords(say: Speaker): Record<SugorokuStrength, string> {
+  return partyTable(SUGOROKU_STRENGTH_NAMES, "sugorokuStrengthNames", say.locale);
+}
+
 /** One line under the chosen strength: what it does, as the package describes it. */
 export const SUGOROKU_STRENGTH_LINES: Record<SugorokuStrength, string> = {
   random: "Plays any legal move, never doubles, and takes every double.",
@@ -108,10 +116,10 @@ export function sugorokuComputerName(strength: SugorokuStrength): string {
   return `Computer-${SUGOROKU_STRENGTH_NAMES[strength]}`;
 }
 
-/** A seat's name as a table says it: a computer's as "Computer (Careful)", any other name as it is. */
-export function sugorokuComputerShown(name: string): string {
+/** A seat's name as a table says it: a computer's as "Computer (Careful)" (コンピュータ（慎重）), any other name as it is. */
+export function sugorokuComputerShown(name: string, say: Speaker): string {
   const strength = SUGOROKU_STRENGTHS.find((one) => name === sugorokuComputerName(one));
-  return strength === undefined ? name : `Computer (${SUGOROKU_STRENGTH_NAMES[strength]})`;
+  return strength === undefined ? name : say.say("party.sugoroku.computerShown", { strength: sugorokuStrengthWords(say)[strength] });
 }
 
 /** The strength a seat's name says, or null for a name that is no computer's of this game. */
@@ -128,8 +136,8 @@ export function sugorokuStorageKey(kind: SugorokuKind): string {
 export const SUGOROKU_SEATS = ["white", "black"] as const;
 
 /** A seat's name as the table says it: the one typed, or "Computer" or "Player 2". */
-export function sugorokuSeatName(players: readonly string[], computers: readonly boolean[], seat: number): string {
+export function sugorokuSeatName(players: readonly string[], computers: readonly boolean[], seat: number, say: Speaker): string {
   const given = players[seat]?.trim() ?? "";
-  if (given !== "") return given;
-  return computers[seat] === true ? "Computer" : `Player ${seat + 1}`;
+  if (given !== "") return sugorokuComputerShown(given, say);
+  return computers[seat] === true ? say.say("party.sugoroku.computerPlain") : playerNumberName(say, seat + 1);
 }

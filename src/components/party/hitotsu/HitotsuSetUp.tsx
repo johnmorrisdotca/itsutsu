@@ -7,16 +7,17 @@ import { PICK_CHIP_OPEN, PICK_CHIP_SHUT } from "@/components/live/picker.constan
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { HITOTSU_CLASSIC, HITOTSU_DEFAULT_SIZE, HITOTSU_ONE_HAND, HITOTSU_PARTY, type HitotsuGame, type HitotsuOptions, startHitotsu } from "@johnmorrisdotca/hitotsu";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
-import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
+import { PARTY_NAME_MOST, computerNumberName } from "@/lib/party/partyNames";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { freshSeed } from "@/lib/puzzles/random";
 
 import { freshCardSeed } from "../cards/cardTableStores";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "../online/OnlineSetUpParts";
-import { ONLINE_COPY } from "../online/online.constants";
 import type { OnlineOffer, SeatChoice } from "../online/online.types";
 import { SeatColourButton } from "../SeatColourButton";
-import { HITOTSU_COPY, HITOTSU_HOUSE_COPY } from "./hitotsu.constants";
 import { HitotsuTableTop } from "./HitotsuTableTop";
+import { hitotsuHouseWords, hitotsuScreenWords, onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const SPEC = PARTY_SPECS.hitotsu;
 const COUNTS = Array.from({ length: SPEC.mostPlayers - SPEC.fewestPlayers + 1 }, (_, at) => SPEC.fewestPlayers + at);
@@ -85,7 +86,6 @@ function Tiles<K extends string>({
 const ON_OFF = ["on", "off"] as const;
 type OnOff = (typeof ON_OFF)[number];
 const onOff = (value: boolean): OnOff => (value ? "on" : "off");
-const onOffNames: Record<OnOff, string> = { on: HITOTSU_COPY.on, off: HITOTSU_COPY.off };
 
 /**
  * THE TABLE, BEFORE THE FIRST CARD: Classic or Party, how many are playing,
@@ -106,6 +106,11 @@ const onOffNames: Record<OnOff, string> = { on: HITOTSU_COPY.on, off: HITOTSU_CO
  * rows are always laid out, those nobody sits in kept invisible.
  */
 export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearance: Appearance; onStart: (game: HitotsuGame) => void; ready: { "data-ready": string }; online?: OnlineOffer }) {
+  const say = useSpeaker();
+  const HITOTSU_COPY = hitotsuScreenWords(say.locale);
+  const onOffNames: Record<OnOff, string> = { on: HITOTSU_COPY.on, off: HITOTSU_COPY.off };
+  const HITOTSU_HOUSE_COPY = hitotsuHouseWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
   const [mode, setMode] = useState<Mode>("classic");
   const [count, setCount] = useState(SPEC.defaultPlayers);
   const [size, setSize] = useState<number>(HITOTSU_DEFAULT_SIZE);
@@ -209,12 +214,12 @@ export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearanc
                 ) : (
                   <>
                     <label className="min-w-0 flex-1">
-                      <span className="sr-only">Player {seat + 1}</span>
+                      <span className="sr-only">{playerNumberName(say, seat + 1)}</span>
                       <input
                         type="text"
                         value={name}
                         maxLength={PARTY_NAME_MOST}
-                        placeholder={computers[seat] ? HITOTSU_COPY.computerName(seat) : `Player ${seat + 1}`}
+                        placeholder={computers[seat] ? computerNumberName(say, seat + 1) : playerNumberName(say, seat + 1)}
                         onChange={(event) => setNames((was) => was.map((one, at) => (at === seat ? event.target.value : one)))}
                         className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                         data-testid="hitotsu-name"

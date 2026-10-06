@@ -15,9 +15,10 @@ import { leaveLevel, startLevel, winLevel, wonLevels } from "@/lib/casual/casual
 import { casualPlayPath, gamePath, rulesPath, setUpPath } from "@/lib/gomoku/slugs";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { CASUAL_COPY } from "./casual.constants";
 import { CasualBoardClient } from "./CasualBoardClient";
 import { keepCasual, useCasualSave } from "./casualStore";
+import { casualWords } from "@/components/casual/casualWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 type Phase = "playing" | "won" | "lost" | "gaveUp";
 
@@ -37,6 +38,8 @@ type Phase = "playing" | "won" | "lost" | "gaveUp";
  * experience (docs/plans/casual-games/README.md).
  */
 export function CasualPlay({ kind, level }: { kind: CasualKind; level: number }) {
+  const say = useSpeaker();
+  const CASUAL_COPY = casualWords(say.locale);
   const hydrated = useHydrated();
   const save = useCasualSave();
   const spec = CASUAL_SPECS[kind];

@@ -21,9 +21,10 @@ import { freshSeed } from "@/lib/puzzles/random";
 
 import { usePartyMarbles } from "../partyMarbles";
 import { SeatColourButton } from "../SeatColourButton";
-import { DICE_WAR_COPY } from "./diceWar.constants";
 import { DiceWarBoard } from "./DiceWarBoard";
 import type { DiceWarGame } from "@johnmorrisdotca/korokoro";
+import { diceWarScreenWords, seatColourName } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const COUNTS = Array.from({ length: DICE_WAR_LIMITS_HERE.mostPlayers - DICE_WAR_LIMITS_HERE.fewestPlayers + 1 }, (_, at) => DICE_WAR_LIMITS_HERE.fewestPlayers + at);
 /** Every way the set-up offers to end a game, one tile each: a score, or a number of rounds. */
@@ -50,6 +51,8 @@ function percent(chance: number): string {
  * rows are all eight places.
  */
 export function DiceWarSetUp({ onStart, ready }: { onStart: (game: DiceWarGame) => void; ready: { "data-ready": string } }) {
+  const say = useSpeaker();
+  const DICE_WAR_COPY = diceWarScreenWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const [count, setCount] = useState<number>(DICE_WAR_DEFAULTS.players);
@@ -141,7 +144,7 @@ export function DiceWarSetUp({ onStart, ready }: { onStart: (game: DiceWarGame) 
                 <SeatColourButton player={seat} playing={count} />
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">
-                    Player {seat + 1}, {marbles[seat].label}
+                    {seatColourName(say, seat, marbles[seat])}
                   </span>
                   <input
                     type="text"

@@ -10,7 +10,8 @@ import type { OnlineSeatView, OnlineTableView } from "@/lib/party/online/online.
 import type { NameTag } from "@/lib/xp/nameTag.types";
 
 import { MarbleChip } from "../MarbleChip";
-import { ONLINE_COPY } from "./online.constants";
+import { onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * WHO SITS AT THE TABLE, in seat order, with their colour, how each stands in
@@ -31,6 +32,8 @@ export function OnlineSeats({
   /** Each member's flag and badge, read where the page rendered; a member seated since has none until the next load. */
   tags: Readonly<Record<string, NameTag>>;
 }) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   const open = view.status === ONLINE_STATUS.playing ? view.seats.filter((seat) => seat.link !== null) : [];
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="online-seats">
@@ -72,6 +75,8 @@ export function OnlineSeats({
 
 /** A seat's name: the member's, leading to their page; or what an open or a computer's seat is. */
 function SeatName({ seat, tag }: { seat: OnlineSeatView; tag: NameTag | undefined }) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   // A member's seat, or a computer that is one of the site's programs: the name leads to their page.
   if (seat.kind === ONLINE_SEAT_KINDS.member || (seat.kind === ONLINE_SEAT_KINDS.computer && seat.memberId !== null)) {
     return <PlayerName name={seat.name} memberId={seat.memberId} fallback={`Player ${seat.seat + 1}`} tag={tag} testId="online-seat-name" />;
@@ -87,6 +92,8 @@ function SeatName({ seat, tag }: { seat: OnlineSeatView; tag: NameTag | undefine
  * never drew.
  */
 function SeatLink({ seat, gameLabel }: { seat: OnlineSeatView; gameLabel: string }) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   const [qr, setQr] = useState<{ for: string; data: string } | null>(null);
   const [origin, setOrigin] = useState<string | null>(null);
   const url = origin === null || seat.link === null ? null : `${origin}${seat.link}`;

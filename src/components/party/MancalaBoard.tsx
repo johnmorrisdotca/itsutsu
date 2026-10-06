@@ -10,8 +10,10 @@ import { MANCALA_HOLES, pitOwner, storeOf } from "@/lib/party/mancala/sowing";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 import { BOARD_UNITS, COUNT_SIZE, NAME_BOTTOM, NAME_TOP, SEED_RADIUS, countAt, holeBox, pitCell, seedSpots } from "./mancalaLayout";
-import { MANCALA_COPY, MANCALA_SEED_TONES } from "./party.constants";
+import { MANCALA_SEED_TONES } from "./party.constants";
 import type { MancalaBoardProps } from "./party.types";
+import { mancalaWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const NAME_SIZE = 5.2;
 const HOLES = Array.from({ length: MANCALA_HOLES }, (_, hole) => hole);
@@ -33,6 +35,8 @@ const HOLES = Array.from({ length: MANCALA_HOLES }, (_, hole) => hole);
  * it is and how many seeds it holds.
  */
 export function MancalaBoard({ game, appearance, holes: drawn = null, landing = null, onPit, readOnly = false }: MancalaBoardProps) {
+  const say = useSpeaker();
+  const MANCALA_COPY = mancalaWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const theme = BOARD_THEMES[appearance.boardTheme];
@@ -55,13 +59,13 @@ export function MancalaBoard({ game, appearance, holes: drawn = null, landing = 
         data-testid="mancala-board"
         data-rules={game.ruleSet}
         role="group"
-        aria-label={`Mancala by ${ruleSet} rules`}
+        aria-label={say.say("party.mancala.ruleAria", { rules: ruleSet })}
       >
         {/* EACH PLAYER'S NAME ALONG THEIR OWN EDGE, with their colour and the way their seeds go. */}
         {[1, 0].map((seat) => {
           const marble = marbles[seat];
           const y = seat === 0 ? NAME_BOTTOM : NAME_TOP;
-          const name = `${partyPlayerName(game, seat)} ${seat === 0 ? "→" : "←"}`;
+          const name = `${partyPlayerName(game, seat, say)} ${seat === 0 ? "→" : "←"}`;
           return (
             <g key={seat} data-testid="mancala-edge" data-seat={seat} aria-hidden="true">
               <circle cx={8} cy={y} r={3.2} fill={marble.fill} stroke="rgba(0,0,0,0.35)" strokeWidth={0.3} />
@@ -122,7 +126,7 @@ export function MancalaBoard({ game, appearance, holes: drawn = null, landing = 
               >
                 {seeds}
               </text>
-              <title>{store ? `${partyPlayerName(game, seat)}'s ${game.ruleSet === MANCALA_RULE_SETS.kalah ? MANCALA_COPY.store : MANCALA_COPY.taken}: ${MANCALA_COPY.seeds(seeds)}` : `${partyPlayerName(game, seat)}'s pit: ${MANCALA_COPY.seeds(seeds)}`}</title>
+              <title>{store ? say.say("party.mancala.storeOf", { name: partyPlayerName(game, seat, say), store: game.ruleSet === MANCALA_RULE_SETS.kalah ? MANCALA_COPY.store : MANCALA_COPY.taken, seeds: MANCALA_COPY.seeds(seeds) }) : say.say("party.mancala.pitOf", { name: partyPlayerName(game, seat, say), seeds: MANCALA_COPY.seeds(seeds) })}</title>
             </g>
           );
         })}
@@ -151,7 +155,7 @@ export function MancalaBoard({ game, appearance, holes: drawn = null, landing = 
                   role="button"
                   tabIndex={may ? 0 : -1}
                   aria-disabled={may ? undefined : true}
-                  aria-label={`${partyPlayerName(game, owner)}'s pit ${place}, ${MANCALA_COPY.seeds(holes[hole])}`}
+                  aria-label={say.say("party.mancala.pitAria", { name: partyPlayerName(game, owner, say), place: String(place), seeds: MANCALA_COPY.seeds(holes[hole]) })}
                   data-testid="mancala-pit"
                   data-pit={hole}
                   data-seeds={holes[hole]}

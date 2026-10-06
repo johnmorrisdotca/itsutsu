@@ -22,6 +22,10 @@ import {
   viewOf,
 } from "./sugorokuTable";
 import { sugorokuEnding, sugorokuNews, sugorokuStanding, sugorokuStatus } from "./sugorokuWords";
+import { speaker } from "@/lib/i18n/i18n";
+
+/** The English speaker: these tests read the rules' English words. */
+const EN = speaker("en");
 
 /** A random number from a seed, the same every run: a test must never pass or fail by luck. */
 function seeded(start: number): () => number {
@@ -222,7 +226,7 @@ describe("the cube, gammons and the match", () => {
     const table = afterOpening(start("backgammon", 5, 3));
     expect(viewOf(table).game!.cube).toEqual({ value: 1, owner: null });
     const doubled = playSugoroku(table, { t: "double" })!;
-    expect(sugorokuStatus(doubled)).toMatch(/doubles to 2/);
+    expect(sugorokuStatus(doubled, EN)).toMatch(/doubles to 2/);
     expect(sugorokuToPlay(doubled)).not.toBe(sugorokuToPlay(table));
     expect(playSugoroku(doubled, { t: "double" })).toBeNull();
     const taken = playSugoroku(doubled, { t: "take" })!;
@@ -240,7 +244,7 @@ describe("the cube, gammons and the match", () => {
     expect(match.score.reduce((a, b) => a + b, 0)).toBe(1);
     expect(match.over).toBe(false);
     expect(game!.phase === "before-roll" || game!.phase === "playing").toBe(true);
-    expect(sugorokuNews(dropped)).toMatch(/dropped|begins/);
+    expect(sugorokuNews(dropped, EN)).toMatch(/dropped|begins/);
   });
 
   it("a single game has no cube to offer, and a match to five has one", () => {
@@ -257,16 +261,16 @@ describe("the cube, gammons and the match", () => {
     expect(gammon.points).toBe(2);
     const { match } = viewOf(end);
     expect(Math.max(...match.score)).toBeGreaterThanOrEqual(3);
-    expect(sugorokuEnding(end)).toMatch(/wins the match \d+ to \d+\./);
-    expect(sugorokuStanding(end, 0)).toMatch(/points?$/);
+    expect(sugorokuEnding(end, EN)).toMatch(/wins the match \d+ to \d+\./);
+    expect(sugorokuStanding(end, 0, EN)).toMatch(/points?$/);
   });
 
   it("a single game says how it was won, and a gammon in it is still one point", () => {
     const end = playOut(start("hypergammon", 1, 4), seeded(4), 20_000, noCube);
     expect(sugorokuOver(end)).toBe(true);
     expect(viewOf(end).match.score.reduce((a, b) => a + b, 0)).toBe(1);
-    expect(sugorokuEnding(end)).toMatch(/wins\b/);
-    expect(sugorokuNews(end)).toMatch(/won the game/);
+    expect(sugorokuEnding(end, EN)).toMatch(/wins\b/);
+    expect(sugorokuNews(end, EN)).toMatch(/won the game/);
   });
 
   it("giving up ends the game at the most the position could cost, and a match goes on", () => {
@@ -274,7 +278,7 @@ describe("the cube, gammons and the match", () => {
     const gave = playSugoroku(table, { t: "concede" })!;
     const { match } = viewOf(gave);
     expect(match.score.reduce((a, b) => a + b, 0)).toBeGreaterThanOrEqual(2);
-    expect(sugorokuNews(gave)).toMatch(/gave up/);
+    expect(sugorokuNews(gave, EN)).toMatch(/gave up/);
     const single = playSugoroku(start("backgammon", 1, 12), { t: "concede" })!;
     expect(sugorokuOver(single)).toBe(true);
     expect(sugorokuWinners(single)).toEqual([viewOf(start("backgammon", 1, 12)).game!.turn === "white" ? 1 : 0]);

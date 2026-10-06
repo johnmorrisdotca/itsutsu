@@ -12,8 +12,6 @@ import {
   SUGOROKU_LENGTHS,
   SUGOROKU_MOST_LENGTHS,
   SUGOROKU_STRENGTHS,
-  SUGOROKU_STRENGTH_LINES,
-  SUGOROKU_STRENGTH_NAMES,
   type SugorokuKind,
   type SugorokuStrength,
 } from "@/lib/party/sugoroku/sugoroku.constants";
@@ -23,10 +21,12 @@ import { sugorokuLengthWords } from "@/lib/party/sugoroku/sugorokuWords";
 import { freshSeed } from "@/lib/puzzles/random";
 
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "../online/OnlineSetUpParts";
-import { ONLINE_COPY } from "../online/online.constants";
 import type { OnlineOffer, SeatChoice } from "../online/online.types";
-import { SUGOROKU_COPY } from "./sugoroku.constants";
 import { SugorokuBoard } from "./SugorokuBoard";
+import { onlineWords, sugorokuScreenWords, sugorokuStrengthLines, sugorokuStrengthNames } from "@/components/party/partyWords";
+import { gameNameFor } from "@/lib/catalogue/gameKeys";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 function Section({ legend, children }: { legend: string; children: ReactNode }) {
   return (
@@ -49,6 +49,11 @@ function Section({ legend, children }: { legend: string; children: ReactNode }) 
  * in the room of five.
  */
 export function SugorokuSetUp({ kind, appearance, onStart, ready, online }: { kind: SugorokuKind; appearance: Appearance; onStart: (table: SugorokuTable) => void; ready: { "data-ready": string }; online?: OnlineOffer }) {
+  const say = useSpeaker();
+  const strengthNames = sugorokuStrengthNames(say.locale);
+  const strengthLines = sugorokuStrengthLines(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
+  const SUGOROKU_COPY = sugorokuScreenWords(say.locale);
   const lengths = SUGOROKU_LENGTHS[kind];
   // The match length a link from a kept record asked for (`?points=7`), if this game is played to it.
   const [length, setLength] = useState<number>(() => {
@@ -79,7 +84,7 @@ export function SugorokuSetUp({ kind, appearance, onStart, ready, online }: { ki
             dice={null}
             highlight={null}
             appearance={appearance}
-            label={`The ${kind} board as the game begins`}
+            label={say.say("party.sugoroku.boardAsBegins", { game: gameNameFor(kind, say) })}
           />
         )}
       </div>
@@ -116,13 +121,13 @@ export function SugorokuSetUp({ kind, appearance, onStart, ready, online }: { ki
                   data-points={option}
                   className={`min-h-11 rounded-lg border px-1 text-sm font-semibold ${option === length ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
                 >
-                  {option === 1 ? "Single" : `To ${option}`}
+                  {option === 1 ? say.say("party.sugoroku.single") : say.say("party.sugoroku.toLength", { points: String(option) })}
                 </button>
               ),
             )}
           </div>
           <p className="min-h-8 text-xs leading-snug text-muted" data-testid="sugoroku-length-line">
-            {length === 1 ? "One game, no cube." : `${sugorokuLengthWords(length)} points, with the doubling cube, gammons and the Crawford rule.`}
+            {length === 1 ? say.say("party.sugoroku.lengthLineSingle") : say.say("party.sugoroku.lengthLineMatch", { length: sugorokuLengthWords(length, say) })}
           </p>
         </Section>
 
@@ -135,12 +140,12 @@ export function SugorokuSetUp({ kind, appearance, onStart, ready, online }: { ki
                 <SeatChoiceSelect offer={severalOffer} seat={0} choices={choices} onChoose={onChoose} />
               ) : (
                 <label className="block">
-                  <span className="sr-only">{SUGOROKU_COPY.nameOf(0)}</span>
+                  <span className="sr-only">{playerNumberName(say, 1)}</span>
                   <input
                     type="text"
                     value={names[0]}
                     maxLength={PARTY_NAME_MOST}
-                    placeholder={SUGOROKU_COPY.nameOf(0)}
+                    placeholder={playerNumberName(say, 1)}
                     onChange={(event) => setNames((was) => [event.target.value, was[1]])}
                     className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                     data-testid="sugoroku-name"
@@ -157,12 +162,12 @@ export function SugorokuSetUp({ kind, appearance, onStart, ready, online }: { ki
                 <SeatChoiceSelect offer={severalOffer} seat={1} choices={choices} onChoose={onChoose} />
               ) : (
                 <label className="block">
-                  <span className="sr-only">{SUGOROKU_COPY.nameOf(1)}</span>
+                  <span className="sr-only">{playerNumberName(say, 2)}</span>
                   <input
                     type="text"
                     value={names[1]}
                     maxLength={PARTY_NAME_MOST}
-                    placeholder={computer ? SUGOROKU_COPY.computer : SUGOROKU_COPY.nameOf(1)}
+                    placeholder={computer ? SUGOROKU_COPY.computer : playerNumberName(say, 2)}
                     onChange={(event) => setNames((was) => [was[0], event.target.value])}
                     className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                     data-testid="sugoroku-name"
@@ -197,11 +202,11 @@ export function SugorokuSetUp({ kind, appearance, onStart, ready, online }: { ki
                   tabIndex={severalOffer === undefined && computer ? 0 : -1}
                   className={`min-h-11 rounded-lg border px-1 text-xs font-semibold ${option === strength ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
                 >
-                  {SUGOROKU_STRENGTH_NAMES[option]}
+                  {strengthNames[option]}
                 </button>
               ))}
             </div>
-            <span className="min-h-8 text-xs leading-snug text-muted">{SUGOROKU_STRENGTH_LINES[strength]}</span>
+            <span className="min-h-8 text-xs leading-snug text-muted">{strengthLines[strength]}</span>
           </div>
         </Section>
 

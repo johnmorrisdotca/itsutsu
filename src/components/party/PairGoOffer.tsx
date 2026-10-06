@@ -5,8 +5,9 @@ import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 
-import { PAIR_GO_COPY } from "./pairGo.constants";
 import { useKeptPairGo } from "./pairGoStore";
+import { pairGoWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE WAY TO PAIR GO'S TABLE, on the game's own page: a second way on, beside
@@ -14,6 +15,8 @@ import { useKeptPairGo } from "./pairGoStore";
  * game under it that says what it ends (`GameInProgressOffer`).
  */
 export function PairGoOffer({ href }: { href: string }) {
+  const say = useSpeaker();
+  const PAIR_GO_COPY = pairGoWords(say.locale);
   const [game, keep] = useKeptPairGo();
   const going = game !== undefined && game !== null && game.state.status === GAME_STATUS.playing;
   return (

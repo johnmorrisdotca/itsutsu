@@ -5,8 +5,9 @@ import type { SugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
 import { sugorokuOver } from "@/lib/party/sugoroku/sugorokuTable";
 import { useHydrated } from "@/lib/ui/hydrated";
 
-import { SUGOROKU_COPY } from "./sugoroku.constants";
 import { useKeptSugoroku } from "./sugorokuStore";
+import { sugorokuScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE PLAY BUTTON on a game's own page and its rules page, under the picture as
@@ -15,6 +16,8 @@ import { useKeptSugoroku } from "./sugorokuStore";
  * (`GameInProgressOffer`).
  */
 export function SugorokuOffer({ kind, href }: { kind: SugorokuKind; href: string }) {
+  const say = useSpeaker();
+  const SUGOROKU_COPY = sugorokuScreenWords(say.locale);
   const hydrated = useHydrated();
   const [table, keep] = useKeptSugoroku(kind);
   // A name from a kept record that carries a match length ("Backgammon (7 Point)") arrives with it, and the set-up opens on it.

@@ -22,7 +22,6 @@ export const PACHISI_COPY = {
   choose: "Choose a number, then tap a ringed pawn to move it that far.",
   both: (sum: number) => `${sum}: both dice`,
   bonus: (value: number) => `${value} bonus`,
-  rolled: (name: string, a: number, b: number) => `${name} threw ${a} and ${b}${a === b ? ": doubles, and another throw after" : ""}.`,
   noMove: "Nothing could move.",
   moved: (name: string, by: number) => `${name} moved a pawn ${by}.`,
   entered: (name: string) => `${name} brought a pawn out of the nest.`,

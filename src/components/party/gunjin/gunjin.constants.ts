@@ -21,7 +21,6 @@ export const GUNJIN_COPY = {
   seats: "Who plays",
   red: "Red, at the near side, arranges and moves first",
   blue: "Blue, at the far side",
-  nameOf: (seat: number) => `Player ${seat + 1}`,
   start: "Start",
   play: "Play →",
   kept: "Kept in this browser: leave and come back, and it is here.",

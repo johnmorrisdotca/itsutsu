@@ -12,21 +12,22 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_LEAD, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { YACHT_ROLLS } from "@/lib/party/yacht/yacht.constants";
-import { YACHT_PHASES, isHeld, playYacht, yachtAgain, yachtPeople, yachtPlayerName } from "@/lib/party/yacht/yacht";
+import { YACHT_PHASES, isHeld, playYacht, yachtAgain, yachtPeople } from "@/lib/party/yacht/yacht";
 import type { YachtGame, YachtMove } from "@/lib/party/yacht/yacht.types";
 import { sheetTotal } from "@/lib/party/yacht/yachtScore";
 import { freshSeed } from "@/lib/puzzles/random";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { PARTY_COPY } from "../party.constants";
 import { PartySeatColour } from "../PartySeatColour";
 import { TableWallpaper } from "../TableWallpaper";
 import { DiceTray } from "./DiceTray";
 import { useDiceSound } from "./diceSound";
 import { useYachtComputer } from "./useYachtComputer";
-import { YACHT_COPY } from "./yacht.constants";
 import { YachtSheet } from "./YachtSheet";
 import { YachtTurnLine } from "./YachtTurnLine";
+import { partyScreenWords, yachtWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { seatedName } from "@/lib/party/partyNames";
 
 /** The dice a mask holds, one flag a die. */
 const flags = (game: YachtGame, mask: number) => game.dice.map((_, at) => isHeld(mask, at));
@@ -42,6 +43,9 @@ const flags = (game: YachtGame, mask: number) => game.dice.map((_, at) => isHeld
  * dice as the last roll left them, held ones still held.
  */
 export function YachtPlay({ game, keep, appearance, gameHref }: { game: YachtGame; keep: (game: YachtGame | null) => void; appearance: Appearance; gameHref: string }) {
+  const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const YACHT_COPY = yachtWords(say.locale);
   const hydrated = useHydrated();
   const sound = useDiceSound();
   const [choice, setChoice] = useState<{ at: string; mask: number } | null>(null);
@@ -57,7 +61,7 @@ export function YachtPlay({ game, keep, appearance, gameHref }: { game: YachtGam
   const canHold = personToMove && game.rolls > 0 && game.rolls < YACHT_ROLLS;
   const people = yachtPeople(game);
   const lonePerson = people.length === 1 ? people[0]! : null;
-  const names = game.players.map((_, seat) => yachtPlayerName(game, seat));
+  const names = game.players.map((_, seat) => seatedName(game, seat, say));
   // The dice the last roll threw tumble; the ones it held lie still.
   const lastRoll = game.last !== null && game.last.move.kind === "roll" ? game.last.move.hold : null;
   const rolled = game.dice.map((_, die) => lastRoll !== null && !isHeld(lastRoll, die));
@@ -140,7 +144,7 @@ export function YachtPlay({ game, keep, appearance, gameHref }: { game: YachtGam
         {/* The colour of whoever is to play, on their turn (`PartySeatColour`); a computer's seat keeps its table colour. Furniture in just the board. */}
         {personToMove && game.players.length > 1 ? (
           <div data-chrome>
-            <PartySeatColour seat={game.toPlay} name={yachtPlayerName(game, game.toPlay)} playing={game.players.length} />
+            <PartySeatColour seat={game.toPlay} name={seatedName(game, game.toPlay, say)} playing={game.players.length} />
           </div>
         ) : null}
         <div className="flex flex-wrap gap-2">
@@ -153,7 +157,7 @@ export function YachtPlay({ game, keep, appearance, gameHref }: { game: YachtGam
             playing={playing}
             toPlay={game.toPlay}
             seats={game.players.length}
-            nameOf={(seat) => yachtPlayerName(game, seat)}
+            nameOf={(seat) => seatedName(game, seat, say)}
             onResign={(seat) => keep(resignYacht(game, seat))}
             onNewGame={() => keep(null)}
           />

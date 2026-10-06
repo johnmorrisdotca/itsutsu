@@ -9,9 +9,9 @@ import type { SugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
 import { sugorokuOver, sugorokuToPlay } from "@/lib/party/sugoroku/sugorokuTable";
 import { sugorokuNames, sugorokuScoreWords } from "@/lib/party/sugoroku/sugorokuWords";
 
-import { PARTY_COPY } from "../party.constants";
-import { SUGOROKU_COPY } from "./sugoroku.constants";
 import { useKeptSugoroku } from "./sugorokuStore";
+import { partyScreenWords, sugorokuScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A MATCH OF ONE OF THE SEVEN, WAITING IN MY GAMES. "Anything a person plays is
@@ -20,6 +20,9 @@ import { useKeptSugoroku } from "./sugorokuStore";
  * beside the other tables' games. Only while it is not finished.
  */
 export function SugorokuCard({ kind }: { kind: SugorokuKind }) {
+  const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const SUGOROKU_COPY = sugorokuScreenWords(say.locale);
   const [table] = useKeptSugoroku(kind);
   if (table === undefined || table === null || sugorokuOver(table)) return null;
   const to = sugorokuToPlay(table);
@@ -29,8 +32,8 @@ export function SugorokuCard({ kind }: { kind: SugorokuKind }) {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{SUGOROKU_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={kind} /> · {sugorokuScoreWords(table)}
-          {to === null ? "" : ` · ${sugorokuNames(table)[to]} to play`}
+          <GameName variant={kind} /> · {sugorokuScoreWords(table, say)}
+          {to === null ? "" : ` · ${say.say("party.toPlay", { name: sugorokuNames(table, say)[to] })}`}
         </span>
       </div>
       <Link href={passAndPlayPath(kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

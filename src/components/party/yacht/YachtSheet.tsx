@@ -2,12 +2,14 @@ import { Fragment } from "react";
 
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { YACHT_BOXES, YACHT_UPPER } from "@/lib/party/yacht/yacht.constants";
-import { YACHT_PHASES, yachtPlayerName } from "@/lib/party/yacht/yacht";
+import { YACHT_PHASES } from "@/lib/party/yacht/yacht";
 import { boxScore, sheetTotal, upperBonus, upperTotal } from "@/lib/party/yacht/yachtScore";
 import type { YachtGame } from "@/lib/party/yacht/yacht.types";
 
 import { MarbleChip } from "../MarbleChip";
-import { YACHT_BOX_WORDS, YACHT_COPY } from "./yacht.constants";
+import { yachtBoxWords, yachtWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { seatedName } from "@/lib/party/partyNames";
 
 /**
  * THE SCORE SHEET: a row for every box, a column for every player, the upper
@@ -17,6 +19,9 @@ import { YACHT_BOX_WORDS, YACHT_COPY } from "./yacht.constants";
  * down (`onBox`) — so nobody has to work out a full house in their head.
  */
 export function YachtSheet({ game, onBox }: { game: YachtGame; onBox?: (box: number) => void }) {
+  const say = useSpeaker();
+  const YACHT_BOX_WORDS = yachtBoxWords(say.locale);
+  const YACHT_COPY = yachtWords(say.locale);
   const playing = game.phase === YACHT_PHASES.playing;
   const choosing = playing && game.rolls > 0 && onBox !== undefined;
   const column = (seat: number) => (playing && seat === game.toPlay ? "bg-rule/50" : "");
@@ -34,7 +39,7 @@ export function YachtSheet({ game, onBox }: { game: YachtGame; onBox?: (box: num
                 <th key={seat} className={`px-1 py-1 text-center font-normal ${column(seat)}`} data-testid="yacht-sheet-player" data-seat={seat}>
                   <span className="flex flex-col items-center gap-0.5">
                     <MarbleChip player={seat} />
-                    <span className="max-w-20 truncate">{yachtPlayerName(game, seat)}</span>
+                    <span className="max-w-20 truncate">{seatedName(game, seat, say)}</span>
                   </span>
                 </th>
               ))}

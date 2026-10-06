@@ -5,13 +5,14 @@ import { GameThumb } from "@/components/games/GameThumb";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
-import { pachisiPlayerName, pawnsHome } from "@/lib/party/pachisi/pachisi";
+import { pawnsHome } from "@/lib/party/pachisi/pachisi";
 import { PARTY_KINDS } from "@/lib/party/party.constants";
 
 import { MarbleChip } from "../MarbleChip";
-import { PARTY_COPY } from "../party.constants";
-import { PACHISI_COPY } from "./pachisi.constants";
 import { useKeptPachisiGame } from "./pachisiStore";
+import { pachisiWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { seatedName } from "@/lib/party/partyNames";
 
 /**
  * A GAME OF PACHISI, WAITING IN MY GAMES. "Anything a person plays is kept
@@ -20,6 +21,9 @@ import { useKeptPachisiGame } from "./pachisiStore";
  * the other tables' games. Only while it is not finished.
  */
 export function PachisiCard() {
+  const say = useSpeaker();
+  const PACHISI_COPY = pachisiWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [game] = useKeptPachisiGame();
   if (game === undefined || game === null || game.phase === "finished") return null;
   const variant = PARTY_KINDS.pachisi;
@@ -31,7 +35,7 @@ export function PachisiCard() {
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
           <GameName variant={variant} /> · {PACHISI_COPY.home4(pawnsHome(game, game.toPlay))} ·
           <MarbleChip player={game.toPlay} />
-          {pachisiPlayerName(game, game.toPlay)} to play
+          {seatedName(game, game.toPlay, say)} to play
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

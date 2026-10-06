@@ -2,9 +2,9 @@
 
 import dynamic from "next/dynamic";
 
-import { PLAY_BUTTON } from "@/components/ui/ui.constants";
+import { hitotsuScreenWords } from "@/components/party/partyWords";
+import { PlayLoading } from "@/components/party/PlayLoading";
 
-import { HITOTSU_COPY } from "./hitotsu.constants";
 
 /**
  * HITOTSU'S TABLE, ITS PLAY BUTTON AND ITS MY GAMES CARD, LOADED IN THE
@@ -21,13 +21,7 @@ export const HitotsuTableClient = dynamic(() => import("./HitotsuTable").then((m
 
 export const HitotsuOfferClient = dynamic(() => import("./HitotsuOffer").then((module) => module.HitotsuOffer), {
   ssr: false,
-  loading: () => (
-    <div className="flex flex-col" data-testid="party-kind-offer" data-ready="false">
-      <span className={PLAY_BUTTON} aria-hidden="true">
-        {HITOTSU_COPY.playButton}
-      </span>
-    </div>
-  ),
+  loading: () => <PlayLoading label={(locale) => hitotsuScreenWords(locale).playButton} />,
 });
 
 export const HitotsuCardClient = dynamic(() => import("./HitotsuCard").then((module) => module.HitotsuCard), { ssr: false });

@@ -3,8 +3,10 @@ import { kanaTileCode, tileFace } from "@/lib/puzzles/kumimoji/tileFace";
 import { GHOST_END, GHOST_PHASE } from "@/lib/party/superghost/superghost";
 import type { GhostEnd } from "@/lib/party/superghost/superghost.types";
 
-import { GHOST_COPY, ghostShown } from "./party.constants";
+import { ghostShown } from "./party.constants";
 import type { GhostFragmentProps } from "./party.types";
+import { ghostWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** One letter of the fragment: large, on a tile, a Japanese kana with the other forms it plays as small in its corner. */
 const TILE =
@@ -25,6 +27,8 @@ const SLOT =
  * with ば and ぱ small in its corner, because the fragment's は is all three.
  */
 export function GhostFragment({ game, pending, onEnd, note }: GhostFragmentProps) {
+  const say = useSpeaker();
+  const GHOST_COPY = ghostWords(say.locale);
   const letters = [...game.fragment];
   const turn = game.phase === GHOST_PHASE.adding;
   const shownPending = pending === null ? null : ghostShown(pending, game.language);

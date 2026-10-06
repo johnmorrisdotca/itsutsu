@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
 import Link from "@/components/ui/Link";
@@ -10,7 +11,7 @@ import { DOTS_STATUS, dotsLineCount, dotsPlayerName } from "@/lib/party/dotsAndB
 
 import { MarbleChip } from "./MarbleChip";
 import { useKeptDotsGame } from "./dotsStore";
-import { DOTS_COPY, PARTY_COPY } from "./party.constants";
+import { dotsWords, partyScreenWords } from "./partyWords";
 
 /**
  * A GAME OF DOTS AND BOXES, WAITING IN MY GAMES. "Anything a person plays is
@@ -20,6 +21,9 @@ import { DOTS_COPY, PARTY_COPY } from "./party.constants";
  * a finished one has nothing left to come back to.
  */
 export function DotsCard() {
+  const say = useSpeaker();
+  const DOTS_COPY = dotsWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [game] = useKeptDotsGame();
   if (game === undefined || game === null || game.status !== DOTS_STATUS.playing) return null;
   const variant = PARTY_KINDS.dotsAndBoxes;
@@ -29,9 +33,9 @@ export function DotsCard() {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · {game.players.length} players · {DOTS_COPY.drawn(game.lines.length, dotsLineCount(game.size))} ·
+          <GameName variant={variant} /> · {say.count("count.player", game.players.length)} · {DOTS_COPY.drawn(game.lines.length, dotsLineCount(game.size))} ·
           <MarbleChip player={game.toPlay} />
-          {dotsPlayerName(game, game.toPlay)} to play
+          {say.say("party.toPlay", { name: dotsPlayerName(game, game.toPlay, say) })}
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

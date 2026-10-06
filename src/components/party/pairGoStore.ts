@@ -1,6 +1,7 @@
 "use client";
 
 import { decodePairGo, encodePairGo, pairPlayers } from "@/lib/gomoku/party/pairGo";
+import { speaker } from "@/lib/i18n/i18n";
 import type { PairGoGame } from "@/lib/gomoku/party/pairGo.types";
 
 import { keptInBrowser } from "./keptInBrowser";
@@ -26,9 +27,10 @@ const kept = keptInBrowser<PairGoGame>(
     over: (game) => game.resigned !== null || game.state.status !== GAME_STATUS.playing,
     winners: (game) => {
       const winner = game.resigned !== null ? (game.resigned === STONES.black ? STONES.white : STONES.black) : game.state.status === GAME_STATUS.won ? game.state.winner : null;
-      return winner === null ? [] : pairPlayers(game).filter((player) => player.stone === winner).map((player) => player.turnOrder);
+      return winner === null ? [] : pairPlayers(game, speaker("en")).filter((player) => player.stone === winner).map((player) => player.turnOrder);
     },
-    names: (game) => pairPlayers(game).map((player) => player.name),
+    // A record keeps the table's own English for a seat nobody named; a reader sees it in their own words where it is read.
+    names: (game) => pairPlayers(game, speaker("en")).map((player) => player.name),
   }),
 );
 

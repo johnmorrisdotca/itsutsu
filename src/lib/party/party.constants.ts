@@ -145,7 +145,7 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
       "After the last round, the lowest total wins; players level on the lowest share the win.",
     ],
     board:
-      "Double-twelve is the set the game is sold with, and the one to start with. Double-nine makes a quicker game of larger pips, and double-fifteen a long one for a big table. A short game plays half the rounds, from the highest double down.",
+      "Double-twelve is the set the game is sold with, and the one to start with. Double-nine makes a quicker game with fewer pips, and double-fifteen a long one for a big table. A short game plays half the rounds, from the highest double down.",
   },
   /*
    * YACHT, 2026-09-30. John: "Did we create a dice rolling game [where] you

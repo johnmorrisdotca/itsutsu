@@ -1,5 +1,8 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { marbleLabel } from "./partyWords";
 import { usePartyMarbles } from "./partyMarbles";
 import { BoardFrame } from "@/components/board/BoardFrame";
 import type { PartyMarble } from "./party.types";
@@ -46,6 +49,7 @@ const HOLES = Array.from({ length: PARTY_SIZE * PARTY_SIZE }, (_, index) => ({
  */
 export function PartyStarBoard({ game, appearance, selected, targets, onHole, readOnly = false }: PartyBoardProps<PartyCheckersState>) {
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const say = useSpeaker();
   const marbles = usePartyMarbles();
   const spec = VARIANT_SPECS.chineseCheckers;
   const theme = boardThemeFor(appearance, spec);
@@ -110,7 +114,7 @@ export function PartyStarBoard({ game, appearance, selected, targets, onHole, re
               key={index}
               point={point}
               owner={owner}
-              label={holeLabel(point, owner, game.players, marbles)}
+              label={holeLabel(point, owner, game.players, marbles, say)}
               target={target}
               picked={picked}
               last={last !== null && last.row === point.row && last.col === point.col}
@@ -125,7 +129,7 @@ export function PartyStarBoard({ game, appearance, selected, targets, onHole, re
   );
 }
 
-function holeLabel(point: Point, owner: number | null, players: PartyCheckersState["players"], marbles: readonly PartyMarble[]): string {
-  const where = `row ${point.row + 1}, hole ${point.col + 1}`;
-  return owner === null ? `Empty hole, ${where}` : `${partyPlayerName(players, owner)}'s ${marbles[owner].label.toLowerCase()} piece, ${where}`;
+function holeLabel(point: Point, owner: number | null, players: PartyCheckersState["players"], marbles: readonly PartyMarble[], say: Speaker): string {
+  const where = say.say("party.board.holeWhere", { row: String(point.row + 1), col: String(point.col + 1) });
+  return owner === null ? say.say("party.board.holeEmpty", { where }) : say.say("party.board.holePiece", { name: partyPlayerName(players, owner, say), colour: marbleLabel(marbles[owner], say.locale).toLowerCase(), where });
 }

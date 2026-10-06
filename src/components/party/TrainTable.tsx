@@ -3,13 +3,15 @@
 import { BOARD_THEMES } from "@/components/board/Board.constants";
 import { usePartyMarbles } from "./partyMarbles";
 import { BoardFrame } from "@/components/board/BoardFrame";
-import { TRAIN_PHASES, laidEnds, mayLay, mexicanOf, openEnd, trainPlayerName } from "@johnmorrisdotca/domino";
+import { TRAIN_PHASES, laidEnds, mayLay, mexicanOf, openEnd } from "@johnmorrisdotca/domino";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 import { DominoFace } from "./DominoFace";
-import { TRAIN_COPY } from "./party.constants";
 import { HUB_HEIGHT, TABLE_UNITS, rowBoxes, tileX } from "./trainLayout";
 import type { TrainTableProps } from "./train.types";
+import { trainWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { seatedName } from "@/lib/party/partyNames";
 
 const NAME_SIZE = 3.1;
 const SMALL_SIZE = 2.5;
@@ -41,6 +43,8 @@ function shortName(name: string): string {
  * dropped on it does the same (`data-train`, read by the hand's drag).
  */
 export function TrainTable({ game, appearance, holding = null, onTrain, readOnly = false }: TrainTableProps) {
+  const say = useSpeaker();
+  const TRAIN_COPY = trainWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const theme = BOARD_THEMES[appearance.boardTheme];
@@ -91,8 +95,8 @@ export function TrainTable({ game, appearance, holding = null, onTrain, readOnly
           const hidden = train.laid.length - shown.length;
           const mid = row.y + row.height / 2;
           const tileY = mid - row.tile / 2;
-          const owner = isMexican ? TRAIN_COPY.mexicanTrain : TRAIN_COPY.their(trainPlayerName(game, at));
-          const label = isMexican ? TRAIN_COPY.mexicanTrain : shortName(trainPlayerName(game, at));
+          const owner = isMexican ? TRAIN_COPY.mexicanTrain : TRAIN_COPY.their(seatedName(game, at, say));
+          const label = isMexican ? TRAIN_COPY.mexicanTrain : shortName(seatedName(game, at, say));
           const tap = target && onTrain !== undefined ? () => onTrain(at) : undefined;
           return (
             <g

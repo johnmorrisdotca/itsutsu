@@ -8,8 +8,9 @@ import type { PartySettings } from "@/lib/puzzles/kumimoji/party.types";
 import type { OnlineOffer } from "@/lib/party/online/online.types";
 
 import { SeatChoiceSelect, firstChoices, seatsFillable, useStartTable } from "./OnlineSetUpParts";
-import { ONLINE_COPY } from "./online.constants";
 import type { SeatChoice } from "./online.types";
+import { onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * KUMIMOJI'S SEATS ON SEVERAL DEVICES, where its names screen would be: the
@@ -20,6 +21,8 @@ import type { SeatChoice } from "./online.types";
  * 2026-09-29).
  */
 export function KumimojiOnlineSeats({ offer, count, setup }: { offer: OnlineOffer; count: number; setup: { settings: PartySettings; bag: string } }) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(offer, count));
   const table = useStartTable(offer);
   const fillable = seatsFillable(offer, count);

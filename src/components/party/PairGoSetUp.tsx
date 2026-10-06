@@ -6,6 +6,7 @@ import { BoardPicker } from "@/components/live/BoardPicker";
 import { BoardPreview } from "@/components/live/BoardPreview";
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { OBSTACLE_LAYOUTS, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import {
   PAIR_GO_DEFAULT_SIZE,
@@ -20,10 +21,11 @@ import type { PairTeams } from "@/lib/gomoku/party/pairGo.types";
 
 import { PairStone } from "./PairStone";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
-import { ONLINE_COPY } from "./online/online.constants";
 import type { SeatChoice } from "./online/online.types";
-import { PAIR_GO_COPY } from "./pairGo.constants";
 import type { PairGoSetUpProps } from "./party.types";
+import { onlineWords, pairGoWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { Paired } from "@/components/i18n/Paired";
 
 const NO_NAMES: PairTeams = { black: ["", ""], white: ["", ""] };
 
@@ -41,6 +43,9 @@ const PAIR_PLAYERS = 4;
  * White — is the one thing about Pair Go a table has to agree before it starts.
  */
 export function PairGoSetUp({ appearance, onStart, ready, online }: PairGoSetUpProps) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
+  const PAIR_GO_COPY = pairGoWords(say.locale);
   const [size, setSize] = useState(PAIR_GO_DEFAULT_SIZE);
   const [teams, setTeams] = useState<PairTeams>(NO_NAMES);
   /*
@@ -79,13 +84,13 @@ export function PairGoSetUp({ appearance, onStart, ready, online }: PairGoSetUpP
             <div key={stone} className="flex min-w-0 flex-col gap-1.5" data-testid="pairgo-team" data-stone={stone}>
               <p className="flex items-center gap-2 text-sm font-semibold">
                 <PairStone stone={stone} appearance={appearance} />
-                {STONE_DISPLAY[stone].label} <span className="font-mincho font-normal">{STONE_DISPLAY[stone].kanji}</span>
+                <Paired en={STONE_DISPLAY[stone].label} kanji={STONE_DISPLAY[stone].kanji} kanjiClassName="font-normal" />
               </p>
               {PAIR_SEATS.filter((seat) => seat.stone === stone).map(({ place }) => {
-                const seat = pairPlayer(NO_NAMES, stone, place);
+                const seat = pairPlayer(NO_NAMES, stone, place, STONES.black, say);
                 return (
                   <label key={place} className="flex min-w-0 flex-col gap-0.5 text-xs text-muted">
-                    {PAIR_GO_COPY.seatLabel(STONE_DISPLAY[stone].label, seat.turnOrder)}
+                    {PAIR_GO_COPY.seatLabel(stoneName(say, stone), seat.turnOrder)}
                     {severalOffer !== undefined ? (
                       <SeatChoiceSelect offer={severalOffer} seat={seat.turnOrder} choices={choices} onChoose={onChoose} />
                     ) : (

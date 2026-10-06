@@ -3,8 +3,9 @@
 import { GameInProgressOffer } from "@/components/play/GameInProgressOffer";
 import { TENKA_PHASES } from "@/lib/party/tenka/tenka.constants";
 
-import { TENKA_COPY } from "./tenka.constants";
 import { useKeptTenkaGame } from "./tenkaStore";
+import { tenkaWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE PLAY BUTTON on Tenka's own page and its rules page, under the picture as
@@ -13,6 +14,8 @@ import { useKeptTenkaGame } from "./tenkaStore";
  * (`GameInProgressOffer`).
  */
 export function TenkaOffer({ href }: { href: string }) {
+  const say = useSpeaker();
+  const TENKA_COPY = tenkaWords(say.locale);
   const [game, keep] = useKeptTenkaGame();
   const going = game !== undefined && game !== null && game.phase !== TENKA_PHASES.over;
   return <GameInProgressOffer href={href} going={going} newGame={{ ends: () => keep(null) }} playLabel={TENKA_COPY.play} />;

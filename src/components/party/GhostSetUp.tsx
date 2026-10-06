@@ -13,10 +13,10 @@ import { startGhost } from "@/lib/party/superghost/superghost";
 
 import { GhostPlayers } from "./GhostPlayers";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
-import { ONLINE_COPY } from "./online/online.constants";
 import type { SeatChoice } from "./online/online.types";
-import { GHOST_COPY, PARTY_COPY } from "./party.constants";
 import type { GhostSetUpProps } from "./party.types";
+import { ghostWords, onlineWords, partyScreenWords, seatColourName } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const SPEC = PARTY_SPECS.superghost;
 const COUNTS = Array.from({ length: SPEC.mostPlayers - SPEC.fewestPlayers + 1 }, (_, index) => SPEC.fewestPlayers + index);
@@ -34,6 +34,10 @@ const LANGUAGES: readonly PartyLanguage[] = SPEC.languages ?? [];
  * past the count chosen kept in their place and hidden.
  */
 export function GhostSetUp({ onStart, ready, online }: GhostSetUpProps) {
+  const say = useSpeaker();
+  const GHOST_COPY = ghostWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const [count, setCount] = useState(SPEC.defaultPlayers);
@@ -98,7 +102,7 @@ export function GhostSetUp({ onStart, ready, online }: GhostSetUpProps) {
               <label key={index} className={`flex items-center gap-2 text-sm ${sitting ? "" : "invisible"}`} aria-hidden={sitting ? undefined : true}>
                 <SeatColourButton player={index} playing={count} />
                 <span className="sr-only">
-                  Player {index + 1}, {marbles[index].label}
+                  {seatColourName(say, index, marbles[index])}
                 </span>
                 {severalOffer !== undefined ? (
                   <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} disabled={!sitting} />

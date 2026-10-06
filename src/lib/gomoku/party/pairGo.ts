@@ -63,14 +63,14 @@ function turnOrderOf(stone: Stone, place: PairPlace, opener: Stone): number {
 }
 
 /** One of the four, as the table reads them: the name they gave, or "Player 3" by their place in the order. */
-export function pairPlayer(teams: PairTeams, stone: Stone, place: PairPlace, opener: Stone = STONES.black, say: Speaker = speaker("en")): PairPlayer {
+export function pairPlayer(teams: PairTeams, stone: Stone, place: PairPlace, opener: Stone, say: Speaker): PairPlayer {
   const turnOrder = turnOrderOf(stone, place, opener);
   const given = cleanPairName(teams[stone][place] ?? "");
   return { stone, place, turnOrder, name: given === "" ? playerNumberName(say, turnOrder + 1) : given };
 }
 
 /** All four, in the order their first turns come. */
-export function pairPlayers(game: PairGoGame, say: Speaker = speaker("en")): PairPlayer[] {
+export function pairPlayers(game: PairGoGame, say: Speaker): PairPlayer[] {
   return PAIR_SEATS.map(({ stone, place }) => pairPlayer(game.teams, stone, place, game.state.opener, say))
     .sort((a, b) => a.turnOrder - b.turnOrder);
 }
@@ -84,20 +84,28 @@ function turnsTaken(game: PairGoGame, stone: Stone, upTo: number): number {
  * Whose move it is: the colour the engine says is to play, and which of that
  * colour's two players — or null once the game is over.
  */
-export function pairPlayerToMove(game: PairGoGame): PairPlayer | null {
+export function pairPlayerToMove(game: PairGoGame, say: Speaker): PairPlayer | null {
   const { state } = game;
   if (state.status !== GAME_STATUS.playing) return null;
   const place = (turnsTaken(game, state.toPlay, state.moves.length) % 2) as PairPlace;
-  return pairPlayer(game.teams, state.toPlay, place, state.opener);
+  return pairPlayer(game.teams, state.toPlay, place, state.opener, say);
+}
+
+/** The place in the order of first turns, 0 to 3, whose move it is: what `pairPlayerToMove` knows without a name, or null once the game is over. */
+export function pairTurnToMove(game: PairGoGame): number | null {
+  const { state } = game;
+  if (state.status !== GAME_STATUS.playing) return null;
+  const place = (turnsTaken(game, state.toPlay, state.moves.length) % 2) as PairPlace;
+  return turnOrderOf(state.toPlay, place, state.opener);
 }
 
 /** Who made the move at `index` in the record: the colour that moved, and which of its pair. */
-export function pairPlayerOfMove(game: PairGoGame, index: number): PairPlayer | null {
+export function pairPlayerOfMove(game: PairGoGame, index: number, say: Speaker): PairPlayer | null {
   const move = game.state.moves[index];
   if (move === undefined) return null;
   const stone = move.by ?? move.stone;
   const place = (turnsTaken(game, stone, index) % 2) as PairPlace;
-  return pairPlayer(game.teams, stone, place, game.state.opener);
+  return pairPlayer(game.teams, stone, place, game.state.opener, say);
 }
 
 /** A new game on a board of `size`, Black to move — the engine's own Go, as the board for two starts it. */

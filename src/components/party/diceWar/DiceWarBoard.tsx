@@ -6,8 +6,10 @@ import { diceWarSeatName } from "@/lib/party/diceWar/diceWar.constants";
 import { lastThrow } from "@/lib/party/diceWar/diceWarThrow";
 
 import { MarbleChip } from "../MarbleChip";
-import { DICE_WAR_COPY, dieWidth } from "./diceWar.constants";
+import { dieWidth } from "./diceWar.constants";
 import { DiceWarDie } from "./DiceWarDie";
+import { diceWarScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE TABLE OF A THROW, one row a player: their marble and name, the dice they
@@ -23,6 +25,8 @@ import { DiceWarDie } from "./DiceWarDie";
  * the table itself, with nothing to press.
  */
 export function DiceWarBoard({ game }: { game: DiceWarGame }) {
+  const say = useSpeaker();
+  const DICE_WAR_COPY = diceWarScreenWords(say.locale);
   const throwMade = lastThrow(game);
   const width = dieWidth(game.dice);
   return (

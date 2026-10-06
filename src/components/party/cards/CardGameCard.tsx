@@ -8,10 +8,10 @@ import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 
 import { MarbleChip } from "../MarbleChip";
-import { PARTY_COPY } from "../party.constants";
 import { CARD_ADAPTERS, seatName } from "./cardAdapters";
-import { CARD_TABLE_COPY } from "./cardTable.constants";
 import { CARD_TABLE_STORES } from "./cardTableStores";
+import { cardTableWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A CARD GAME, WAITING IN MY GAMES. "Anything a person plays is kept until it
@@ -20,6 +20,9 @@ import { CARD_TABLE_STORES } from "./cardTableStores";
  * tables' games — a row like theirs. Only while it is going.
  */
 export function CardGameCard({ kind }: { kind: CardGameKind }) {
+  const say = useSpeaker();
+  const CARD_TABLE_COPY = cardTableWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [game] = CARD_TABLE_STORES[kind].useKept();
   if (game === undefined || game === null) return null;
   const rules = CARD_ADAPTERS[kind].rules;

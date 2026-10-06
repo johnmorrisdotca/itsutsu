@@ -9,13 +9,16 @@ import type { GunjinGame, GunjinSquare } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinNewsLines } from "@/lib/party/gunjin/gunjinNews";
 import { gunjinSeatView } from "@/lib/party/gunjin/gunjinView";
 
-import { GUNJIN_COPY } from "./gunjin.constants";
 import { GunjinBoard } from "./GunjinBoard";
+import { gunjinWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const sameSquare = (a: GunjinSquare | null, b: GunjinSquare) => a !== null && a.x === b.x && a.y === b.y;
 
 /** The last few moves, as both players may read them, beside the board. */
 export function MovesPanel({ game, names, note }: { game: GunjinGame; names: readonly string[]; note?: string }) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
   const lines = gunjinNewsLines(game, names, 6);
   return (
     <div className={`${PANEL_CLASS} flex min-w-0 flex-col gap-2`} data-testid="gunjin-moves">
@@ -60,6 +63,8 @@ export function GunjinMoving({
   framed?: boolean;
   onMove: (from: GunjinSquare, to: GunjinSquare) => void;
 }) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
   const [picked, setPicked] = useState<GunjinSquare | null>(null);
   const { view, legal } = useMemo(() => gunjinSeatView(game, seat), [game, seat]);
   const board = GUNJIN_BOARDS[game.size]!;

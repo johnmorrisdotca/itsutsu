@@ -12,12 +12,12 @@ import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { freshSeed } from "@/lib/puzzles/random";
 
-import { PARTY_COPY } from "../party.constants";
 import { usePartyMarbles } from "../partyMarbles";
 import { SeatColourButton } from "../SeatColourButton";
 import { DiceTray } from "./DiceTray";
-import { YACHT_COPY } from "./yacht.constants";
 import { YachtSheet } from "./YachtSheet";
+import { partyScreenWords, seatColourName, yachtWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const COUNTS = Array.from({ length: YACHT_MOST_PLAYERS - YACHT_FEWEST_ALONE + 1 }, (_, at) => YACHT_FEWEST_ALONE + at);
 const BLANK = new Array<number>(YACHT_DICE).fill(0);
@@ -34,6 +34,9 @@ const NONE = new Array<boolean>(YACHT_DICE).fill(false);
  * the sheet's rows are the same thirteen whoever is at the table.
  */
 export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appearance; onStart: (game: YachtGame) => void; ready: { "data-ready": string } }) {
+  const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const YACHT_COPY = yachtWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const [count, setCount] = useState(PARTY_SPECS.yacht.defaultPlayers);
@@ -90,7 +93,7 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
                 <SeatColourButton player={seat} playing={count} />
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">
-                    Player {seat + 1}, {marbles[seat].label}
+                    {seatColourName(say, seat, marbles[seat])}
                   </span>
                   <input
                     type="text"

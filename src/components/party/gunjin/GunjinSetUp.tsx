@@ -9,13 +9,14 @@ import { GUNJIN_BOARDS, GUNJIN_DEFAULT_SIZE, GUNJIN_SIZES } from "@/lib/party/gu
 import type { GunjinGame } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinSeatView } from "@/lib/party/gunjin/gunjinView";
 import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "../online/OnlineSetUpParts";
-import { ONLINE_COPY } from "../online/online.constants";
 import type { OnlineOffer, SeatChoice } from "../online/online.types";
-import { GUNJIN_COPY } from "./gunjin.constants";
 import { GunjinBoard } from "./GunjinBoard";
 import { GunjinSide } from "./GunjinSide";
+import { gunjinWords, onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE TABLE, BEFORE ANY PIECE IS PLACED: which of the four games, and what the
@@ -28,6 +29,9 @@ import { GunjinSide } from "./GunjinSide";
  * line, and the board is the box its game's shape fixes.
  */
 export function GunjinSetUp({ appearance, onStart, ready, online }: { appearance: Appearance; onStart: (game: GunjinGame) => void; ready: { "data-ready": string }; online?: OnlineOffer }) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
   const [size, setSize] = useState<number>(GUNJIN_DEFAULT_SIZE);
   const [names, setNames] = useState<[string, string]>(["", ""]);
   const [several, setSeveral] = useState(false);
@@ -104,7 +108,7 @@ export function GunjinSetUp({ appearance, onStart, ready, online }: { appearance
                   type="text"
                   value={names[seat]}
                   maxLength={PARTY_NAME_MOST}
-                  placeholder={`${GUNJIN_COPY.nameOf(seat)}${seat === 0 ? " (red, moves first)" : " (blue)"}`}
+                  placeholder={say.say(seat === 0 ? "party.gunjin.nameRed" : "party.gunjin.nameBlue", { name: playerNumberName(say, seat + 1) })}
                   onChange={(event) => setNames((was) => (seat === 0 ? [event.target.value, was[1]] : [was[0], event.target.value]))}
                   className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                   data-testid="gunjin-name"

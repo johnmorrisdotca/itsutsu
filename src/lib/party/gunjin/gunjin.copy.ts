@@ -25,7 +25,7 @@ export const GUNJIN_DISPLAY: VariantCopy = {
     "Choose a board, then each side arranges its pieces in secret on its own rows, one player at a time with the phone passed between. The arrangement is the first move: put the flag where it is hard to reach, mines and bombs where they will be struck.",
     "Then take turns moving one piece. Moves are along the rows and columns; how far depends on the piece. Move onto an enemy piece to fight it. Your own ranks are shown to you on your turn and the other side's are never shown.",
     "A fight is decided by rank, with the exceptions of each board: a spy beats a general, an engineer or miner defuses a mine or bomb, and a mine or bomb stops almost everything. Equal pieces remove each other. Only Capture Flag shows both ranks to both players when pieces fight; on the others you are told only what was taken.",
-    "Win by taking the flag (or, on Gunjin Shogi, by reaching a headquarters; on Salpakan, by marching your flag home), or by leaving the other side with no move. Resign at any time, or offer a draw on your turn: the other side accepts it, and the game ends level, or declines it, or just moves, and play goes on.",
+    "Win by taking the flag (or, on Gunjin Shogi, by reaching a headquarters; on Salpakan, by marching your flag to the far end of the enemy's side), or by leaving the other side with no move. Resign at any time, or offer a draw on your turn: the other side accepts it, and the game ends level, or declines it, or just moves, and play goes on.",
     "Between turns the phone is covered: the screen names who to pass it to and shows nothing of the board until they press that it is them.",
   ],
   board:

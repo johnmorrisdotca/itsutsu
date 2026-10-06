@@ -3,13 +3,15 @@
 import { BOARD_THEMES } from "@/components/board/Board.constants";
 import { BoardFrame } from "@/components/board/BoardFrame";
 import type { Appearance } from "@/components/board/board.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PACHISI_HOME_PATH } from "@/lib/party/pachisi/pachisi.constants";
-import { isSafe, pachisiPlayerName, squareOf } from "@/lib/party/pachisi/pachisi";
+import { isSafe, squareOf } from "@/lib/party/pachisi/pachisi";
 import type { PachisiGame } from "@/lib/party/pachisi/pachisi.types";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 import { usePartyMarbles } from "../partyMarbles";
 import { NEST_CORNER, PACHISI_CELLS, TRACK_CELLS, homePathCell, pawnPoint } from "./pachisiLayout";
+import { seatedName } from "@/lib/party/partyNames";
 
 /** The four middle triangles, each pointing into its arm's home path. */
 const MIDDLE: readonly string[] = ["8,11 11,11 9.5,9.5", "8,8 8,11 9.5,9.5", "8,8 11,8 9.5,9.5", "11,8 11,11 9.5,9.5"];
@@ -23,6 +25,7 @@ const MIDDLE: readonly string[] = ["8,11 11,11 9.5,9.5", "8,8 8,11 9.5,9.5", "8,
  * `onPawn` moves it by the value chosen beside the board.
  */
 export function PachisiBoard({ game, appearance, movable = [], onPawn }: { game: PachisiGame; appearance: Appearance; movable?: readonly number[]; onPawn?: (pawn: number) => void }) {
+  const say = useSpeaker();
   const theme = BOARD_THEMES[appearance.boardTheme];
   const marbles = usePartyMarbles();
   const seatOfArm = [0, 1, 2, 3].map((arm) => game.arms.indexOf(arm));
@@ -44,7 +47,7 @@ export function PachisiBoard({ game, appearance, movable = [], onPawn }: { game:
 
   return (
     <BoardFrame size={PACHISI_CELLS} theme={theme} flipped={false} inset={0.02} lattice={false} shape="rhombus" coordinates={false}>
-      <svg viewBox={`0 0 ${PACHISI_CELLS} ${PACHISI_CELLS}`} className="absolute inset-0 h-full w-full touch-manipulation select-none" data-testid="pachisi-board" role="group" aria-label="Pachisi board">
+      <svg viewBox={`0 0 ${PACHISI_CELLS} ${PACHISI_CELLS}`} className="absolute inset-0 h-full w-full touch-manipulation select-none" data-testid="pachisi-board" role="group" aria-label={say.say("party.pachisi.boardAria")}>
         {NEST_CORNER.map((corner, arm) => (
           <rect key={`nest-${arm}`} x={corner.col + 0.4} y={corner.row + 0.4} width={7.2} height={7.2} rx={1.2} {...tint(arm)} stroke={line} strokeWidth={0.05} />
         ))}
@@ -83,7 +86,7 @@ export function PachisiBoard({ game, appearance, movable = [], onPawn }: { game:
                 data-movable={canMove ? "true" : undefined}
                 role={canMove ? "button" : undefined}
                 tabIndex={canMove ? 0 : undefined}
-                aria-label={canMove ? `Move ${pachisiPlayerName(game, seat)}'s pawn ${pawn + 1}` : undefined}
+                aria-label={canMove ? say.say("party.pachisi.pawnAria", { name: seatedName(game, seat, say), n: String(pawn + 1) }) : undefined}
                 onClick={canMove ? () => onPawn?.(pawn) : undefined}
                 onKeyDown={canMove ? (event) => (event.key === "Enter" || event.key === " ") && onPawn?.(pawn) : undefined}
                 className={canMove ? "cursor-pointer" : undefined}

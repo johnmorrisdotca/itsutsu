@@ -14,8 +14,9 @@ import { gunjinSeatView } from "@/lib/party/gunjin/gunjinView";
 import { freshSeed } from "@/lib/puzzles/random";
 import { seededRandom } from "@/lib/party/gunjin/gunjin";
 
-import { GUNJIN_COPY, GUNJIN_PLACING_RULES } from "./gunjin.constants";
 import { GunjinBoard } from "./GunjinBoard";
+import { gunjinPlacingWords, gunjinWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** The pieces of a roster as "General ×1, Colonel ×2": each kind once with how many. */
 function rosterCounts(roster: readonly string[]): { kind: string; count: number }[] {
@@ -52,6 +53,9 @@ export function GunjinArrange({
   /** Whether the screen lays itself out (the board and its presses, side matter beside them), or is a plain column inside a table that does (`GunjinOnline`). */
   framed?: boolean;
 }) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
+  const GUNJIN_PLACING_RULES = gunjinPlacingWords(say.locale);
   const seat = game.match.currentPlayer;
   const board = GUNJIN_BOARDS[game.size]!;
   const [draft, setDraft] = useState<GunjinPlacement[]>(() => randomArrangement(game, seededRandom(freshSeed())));

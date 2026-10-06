@@ -4,8 +4,9 @@ import { GameInProgressOffer } from "@/components/play/GameInProgressOffer";
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { CARD_GAME_RULES } from "@/lib/cardGames/cardGameRules";
 
-import { CARD_TABLE_COPY } from "./cardTable.constants";
 import { CARD_TABLE_STORES } from "./cardTableStores";
+import { cardTableWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE PLAY BUTTON on a card game's own page and its rules page, under the
@@ -14,6 +15,8 @@ import { CARD_TABLE_STORES } from "./cardTableStores";
  * (`GameInProgressOffer`).
  */
 export function CardGameOffer({ kind, href }: { kind: CardGameKind; href: string }) {
+  const say = useSpeaker();
+  const CARD_TABLE_COPY = cardTableWords(say.locale);
   const [game, keep] = CARD_TABLE_STORES[kind].useKept();
   const going = game !== undefined && game !== null && !CARD_GAME_RULES[kind].over(game as never);
   return <GameInProgressOffer href={href} going={going} newGame={{ ends: () => keep(null) }} playLabel={CARD_TABLE_COPY.play} />;

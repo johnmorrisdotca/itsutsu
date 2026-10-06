@@ -1,5 +1,6 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
 import { PARTY_SPECS } from "../party.constants";
+import type { Speaker } from "../../i18n/i18n";
 import { PARTY_NAME_MOST, cleanPartyName, partyPlayerName } from "../partyNames";
 import type { PartyRules } from "../party.types";
 
@@ -28,9 +29,9 @@ export const DOTS_NAME_MOST = PARTY_NAME_MOST;
 /** A name as the table typed it, tidied (`cleanPartyName`). */
 export const cleanDotsName = cleanPartyName;
 
-/** A seat's name as the table reads it: the one given, or "Player 3". */
-export function dotsPlayerName(game: Pick<DotsGame, "players">, seat: DotsSeat): string {
-  return partyPlayerName(game, seat);
+/** A seat's name as the table reads it: the one given, or "Player 3" or "対局者3". */
+export function dotsPlayerName(game: Pick<DotsGame, "players">, seat: DotsSeat, say: Speaker): string {
+  return partyPlayerName(game, seat, say);
 }
 
 /** How many lines across there are on a board of `size` boxes a side; the lines down are numbered after them. */

@@ -7,6 +7,9 @@ import type { TenkaCardKind, TenkaMapKey, TenkaOwner } from "@/lib/party/tenka/t
 
 import { usePartyMarbles } from "../partyMarbles";
 import { ownerMarble } from "./TenkaChips";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { tenkaNeutralMarble } from "@/components/party/partyWords";
+import { tenkaLocale } from "./tenkaWords";
 
 /**
  * TENKA'S DICE AND CARDS, DRAWN BY KOROKORO AND TORANPU through the package's
@@ -56,7 +59,8 @@ function Drawn({ draw, className, style }: { draw: () => TenkaDrawn; className?:
  * already made, or drawn again for any other reason, shows the die at rest.
  */
 export function DressedDie({ face, owner, side, small, tumble, index, count, label }: { face: number; owner: TenkaOwner; side: "attack" | "defend"; small: boolean; tumble: boolean; index: number; count: number; label: string }) {
-  const marble = ownerMarble(owner, usePartyMarbles());
+  const { locale } = useSpeaker();
+  const marble = ownerMarble(owner, usePartyMarbles(), tenkaNeutralMarble(locale));
   const style = {
     "--tk-attack": marble.fill,
     "--tk-attack-ink": marble.ink,
@@ -64,19 +68,21 @@ export function DressedDie({ face, owner, side, small, tumble, index, count, lab
     "--tk-defend-ink": marble.ink,
     "--tk-die-size": small ? "28px" : "36px",
   } as CSSProperties;
-  const draw = useMemo(() => () => dressing().die!(face, { side, tumble, index, count, label, locale: "en" }), [face, side, tumble, index, count, label]);
+  const draw = useMemo(() => () => dressing().die!(face, { side, tumble, index, count, label, locale: tenkaLocale(locale) }), [face, side, tumble, index, count, label, locale]);
   return <Drawn draw={draw} className="flex shrink-0" style={style} />;
 }
 
 /** One card of the hand: the territory's own outline, its name, and the symbol of its army. */
 export function DressedCard({ card, territory, kind, map, name, label }: { card: number; territory: number | null; kind: TenkaCardKind; map: TenkaMapKey; name: string; label: string }) {
+  const { locale } = useSpeaker();
   const style = { "--tk-card-width": "64px" } as CSSProperties;
-  const draw = useMemo(() => () => dressing().card!({ card, territory, kind, map, name, label, locale: "en" }), [card, territory, kind, map, name, label]);
+  const draw = useMemo(() => () => dressing().card!({ card, territory, kind, map, name, label, locale: tenkaLocale(locale) }), [card, territory, kind, map, name, label, locale]);
   return <Drawn draw={draw} className="block w-16 shrink-0" style={style} />;
 }
 
 /** The back of a card, for the deck, with `label` for a screen reader. */
 export function DressedBack({ label }: { label: string }) {
-  const draw = useMemo(() => () => dressing().back!({ label, locale: "en" }), [label]);
+  const { locale } = useSpeaker();
+  const draw = useMemo(() => () => dressing().back!({ label, locale: tenkaLocale(locale) }), [label, locale]);
   return <Drawn draw={draw} className="block w-16 shrink-0" />;
 }

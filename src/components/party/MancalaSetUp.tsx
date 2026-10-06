@@ -8,14 +8,15 @@ import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/compon
 import { MANCALA_RULE_NAMES } from "@/lib/party/mancala/mancala.constants";
 import { ruleSetOf, startMancala } from "@/lib/party/mancala/mancala";
 import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 
 import { MancalaBoard } from "./MancalaBoard";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
-import { ONLINE_COPY } from "./online/online.constants";
 import type { SeatChoice } from "./online/online.types";
-import { MANCALA_COPY, PARTY_COPY } from "./party.constants";
 import type { MancalaSetUpProps } from "./party.types";
+import { marbleLabel, mancalaWords, onlineWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const SPEC = PARTY_SPECS.mancala;
 
@@ -33,6 +34,10 @@ const SPEC = PARTY_SPECS.mancala;
  * each with room for its longest line.
  */
 export function MancalaSetUp({ appearance, onStart, ready, online }: MancalaSetUpProps) {
+  const say = useSpeaker();
+  const MANCALA_COPY = mancalaWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const [board, setBoard] = useState(SPEC.defaultSize);
@@ -82,7 +87,7 @@ export function MancalaSetUp({ appearance, onStart, ready, online }: MancalaSetU
                 >
                   <span className="text-base font-semibold">
                     {MANCALA_RULE_NAMES[ruleSet]}
-                    {option === SPEC.defaultSize ? <span className="ml-1 text-xs font-normal text-muted">(default)</span> : null}
+                    {option === SPEC.defaultSize ? <span className="ml-1 text-xs font-normal text-muted">{say.say("party.mancala.defaultMark")}</span> : null}
                   </span>
                   <span className="text-xs leading-snug text-muted">{MANCALA_COPY.ruleLine[ruleSet]}</span>
                 </button>
@@ -96,7 +101,7 @@ export function MancalaSetUp({ appearance, onStart, ready, online }: MancalaSetU
             <label key={index} className="flex items-center gap-2 text-sm">
               <SeatColourButton player={index} playing={2} />
               <span className="sr-only">
-                Player {index + 1}, {marbles[index].label}, {index === 0 ? "the near row, sowing first" : "the far row"}
+                {say.say(index === 0 ? "party.mancala.seatNear" : "party.mancala.seatFar", { player: playerNumberName(say, index + 1), colour: marbleLabel(marbles[index], say.locale) })}
               </span>
               {severalOffer !== undefined ? (
                 <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} />
@@ -105,7 +110,7 @@ export function MancalaSetUp({ appearance, onStart, ready, online }: MancalaSetU
                   type="text"
                   value={name}
                   maxLength={PARTY_NAME_MOST}
-                  placeholder={`Player ${index + 1}${index === 0 ? " (near row, sows first)" : " (far row)"}`}
+                  placeholder={say.say(index === 0 ? "party.mancala.nameNear" : "party.mancala.nameFar", { player: playerNumberName(say, index + 1) })}
                   onChange={(event) => setNames((was) => was.map((one, at) => (at === index ? event.target.value : one)))}
                   className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                   data-testid="mancala-name"

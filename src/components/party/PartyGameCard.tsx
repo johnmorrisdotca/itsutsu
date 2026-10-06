@@ -9,9 +9,9 @@ import type { PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 
 import { MarbleChip } from "./MarbleChip";
-import { PARTY_COPY } from "./party.constants";
 import type { PartyRaceKind } from "./party.types";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { partyScreenWords } from "@/components/party/partyWords";
 
 /**
  * A TABLE'S GAME, WAITING IN MY GAMES. "Anything a person plays is kept until
@@ -23,6 +23,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  */
 export function PartyGameCard<S extends PartyRaceState, C extends number>({ kind }: { kind: PartyRaceKind<S, C> }) {
   const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [game] = kind.useKept();
   if (game === undefined || game === null || game.status !== PARTY_STATUS.playing) return null;
   const variant = kind.rules.variant;
@@ -34,7 +35,7 @@ export function PartyGameCard<S extends PartyRaceState, C extends number>({ kind
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
           <GameName variant={variant} /> · {game.players.length} players · {say.count("count.move", game.moves.length)} ·
           <MarbleChip player={game.toPlay} />
-          {partyPlayerName(game.players, game.toPlay)} to play
+          {partyPlayerName(game.players, game.toPlay, say)} to play
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

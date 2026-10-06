@@ -15,6 +15,7 @@ import { SUGOROKU_MOST_LENGTHS, isSugorokuKind } from "./sugoroku/sugoroku.const
 import { GAME_ALIASES } from "@/lib/legacy/gameAliases";
 import { PARTY_ART_FINGERPRINT } from "./partyArt.data";
 import { PARTY_ART_FILES, readPartyArtFingerprint } from "./partyArtFingerprint";
+import { speaker } from "../i18n/i18n";
 import { PARTY_DISPLAY, PARTY_KIND_LIST, PARTY_SPECS } from "./party.constants";
 import type { PartyKind, PartyLanguage, PartyRules } from "./party.types";
 import { partyRulesPage } from "./partyRulesPage";
@@ -256,7 +257,7 @@ describe("every party game is finished, not just declared", () => {
   });
 
   it.each(PARTY_KIND_LIST)("%s builds a rules page with every section filled", (kind) => {
-    const page = partyRulesPage(kind);
+    const page = partyRulesPage(kind, speaker("en"));
     for (const section of [page.object, page.board, page.play, page.house]) expect(section.length).toBeGreaterThan(0);
     expect(page.image).toBe(gameArtPath(kind));
   });

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { KanaKeyboard } from "@/components/puzzles/KanaKeyboard";
 import { WordKeyboard } from "@/components/puzzles/WordKeyboard";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, BUTTON_TAP } from "@/components/ui/ui.constants";
+import { DELETE_KEY } from "@/lib/ui/keyNames.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { cycleMark, toggleSize } from "@johnmorrisdotca/kotoba";
 import type { PartyLanguage } from "@/lib/party/party.types";
@@ -12,8 +14,10 @@ import { partyPlayerName } from "@/lib/party/partyNames";
 import { GHOST_END, GHOST_PHASE, answerProblem, foldGhostLetter, foldGhostWord } from "@/lib/party/superghost/superghost";
 import type { GhostAnswerProblem, GhostEnd } from "@/lib/party/superghost/superghost.types";
 
-import { GHOST_COPY, ghostShown } from "./party.constants";
+import { ghostShown } from "./party.constants";
 import type { GhostKeysProps } from "./party.types";
+import { ghostWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const NOTHING: ReadonlyMap<string, never> = new Map<string, never>();
 
@@ -31,6 +35,8 @@ const NOTHING: ReadonlyMap<string, never> = new Map<string, never>();
  * and Backspace as they read.
  */
 export function GhostKeys({ game, pending, onPending, onMove, judge }: GhostKeysProps) {
+  const say = useSpeaker();
+  const GHOST_COPY = ghostWords(say.locale);
   const [typed, setTyped] = useState("");
   const [problem, setProblem] = useState<{ kind: GhostAnswerProblem; word: string } | null>(null);
   const language = game.language;
@@ -70,7 +76,7 @@ export function GhostKeys({ game, pending, onPending, onMove, judge }: GhostKeys
       if (event.key.length === 1 && foldGhostLetter(language, event.key) !== null) {
         event.preventDefault();
         letter(event.key.toLowerCase());
-      } else if (event.key === "Backspace" || event.key === "Delete") {
+      } else if (event.key === "Backspace" || event.key === DELETE_KEY) {
         event.preventDefault();
         back();
       } else if (event.key === "Enter" && answering) {
@@ -104,11 +110,11 @@ export function GhostKeys({ game, pending, onPending, onMove, judge }: GhostKeys
     );
 
   if (answering && game.challenger !== null) {
-    const name = partyPlayerName(game, game.toPlay);
+    const name = partyPlayerName(game, game.toPlay, say);
     const fragment = ghostShown(game.fragment, language);
     return (
       <div className="flex flex-col gap-3" data-testid="ghost-answer">
-        <p className="text-sm font-medium">{GHOST_COPY.answer(name, partyPlayerName(game, game.challenger))}</p>
+        <p className="text-sm font-medium">{GHOST_COPY.answer(name, partyPlayerName(game, game.challenger, say))}</p>
         <div
           className="flex min-h-12 items-center rounded-lg border border-rule-strong bg-paper px-3 text-2xl font-bold tracking-wide"
           data-testid="ghost-typed"
@@ -120,7 +126,7 @@ export function GhostKeys({ game, pending, onPending, onMove, judge }: GhostKeys
         {keyboard}
         {/* Always in its place, so the keyboard never moves under a finger when a word is refused. */}
         <p className={`min-h-10 text-sm font-semibold ${problem === null ? "invisible" : ""}`} data-testid="ghost-problem" data-problem={problem?.kind} role="status">
-          {problem === null ? "\u00a0" : problemWords(problem, fragment, game.shortest, language)}
+          {problem === null ? "\u00a0" : problemWords(problem, fragment, game.shortest, language, say)}
         </p>
         <button type="button" onClick={() => onMove({ kind: "concede" })} className={`${BUTTON_TAP} ${BUTTON_QUIET}`} data-testid="ghost-concede">
           {GHOST_COPY.cannot}
@@ -130,7 +136,7 @@ export function GhostKeys({ game, pending, onPending, onMove, judge }: GhostKeys
   }
 
   const shown = pending === null ? null : ghostShown(pending, language);
-  const last = game.lastBy === null ? null : partyPlayerName(game, game.lastBy);
+  const last = game.lastBy === null ? null : partyPlayerName(game, game.lastBy, say);
   return (
     <div className="flex flex-col gap-3" data-testid="ghost-turn-keys" data-pending={pending ?? ""}>
       <div className="grid grid-cols-2 gap-2">
@@ -165,7 +171,8 @@ function changeLast(typed: string, change: (kana: string) => string): string {
 }
 
 /** Why a word is not taken, in words. */
-function problemWords(problem: { kind: GhostAnswerProblem; word: string }, fragment: string, shortest: number, language: PartyLanguage): string {
+function problemWords(problem: { kind: GhostAnswerProblem; word: string }, fragment: string, shortest: number, language: PartyLanguage, say: Speaker): string {
+  const GHOST_COPY = ghostWords(say.locale);
   switch (problem.kind) {
     case "letters":
       return GHOST_COPY.problems.letters;

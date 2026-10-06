@@ -2,9 +2,9 @@
 
 import dynamic from "next/dynamic";
 
-import { PLAY_BUTTON } from "@/components/ui/ui.constants";
+import { sugorokuScreenWords } from "@/components/party/partyWords";
+import { PlayLoading } from "@/components/party/PlayLoading";
 
-import { SUGOROKU_COPY } from "./sugoroku.constants";
 
 /**
  * THE SEVEN'S TABLE, PLAY BUTTON AND MY GAMES CARD, LOADED IN THE BROWSER ONLY,
@@ -22,13 +22,7 @@ export const SugorokuTableClient = dynamic(() => import("./SugorokuTable").then(
 
 export const SugorokuOfferClient = dynamic(() => import("./SugorokuOffer").then((module) => module.SugorokuOffer), {
   ssr: false,
-  loading: () => (
-    <div className="flex flex-col" data-testid="party-kind-offer" data-ready="false">
-      <span className={PLAY_BUTTON} aria-hidden="true">
-        {SUGOROKU_COPY.play} →
-      </span>
-    </div>
-  ),
+  loading: () => <PlayLoading label={(locale) => `${sugorokuScreenWords(locale).play} →`} />,
 });
 
 export const SugorokuCardClient = dynamic(() => import("./SugorokuCard").then((module) => module.SugorokuCard), { ssr: false });

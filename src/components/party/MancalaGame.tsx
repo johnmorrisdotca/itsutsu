@@ -23,10 +23,12 @@ import { MancalaSetUp } from "./MancalaSetUp";
 import { MancalaTurnLine } from "./MancalaTurnLine";
 import { MarbleChip } from "./MarbleChip";
 import { useKeptMancalaGame } from "./mancalaStore";
-import { MANCALA_COPY, PARTY_COPY } from "./party.constants";
 import type { PartyTableGameProps } from "./party.types";
 import { useSowing } from "./useSowing";
 import { PlayingNow } from "@/components/layout/PlayingNow";
+import { mancalaWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { Paired } from "@/components/i18n/Paired";
 
 /**
  * MANCALA PASSED ACROSS THE TABLE, at /games/mancala/pass-and-play.
@@ -43,6 +45,9 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
  * falling (`useSowing`) on the way to it.
  */
 export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProps) {
+  const say = useSpeaker();
+  const MANCALA_COPY = mancalaWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const hydrated = useHydrated();
   const [game, keep] = useKeptMancalaGame();
   const shown = useSowing(game);
@@ -69,7 +74,7 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
     keep(next);
     shown.start(game, next);
   };
-  const hungry = mustFeed(game) ? partyPlayerName(game, game.toPlay === 0 ? 1 : 0) : null;
+  const hungry = mustFeed(game) ? partyPlayerName(game, game.toPlay === 0 ? 1 : 0, say) : null;
 
   return (
     <section
@@ -91,7 +96,7 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
           news={
             moment.open
               ? tableNews({
-                  names: game.players.map((_, seat) => partyPlayerName(game, seat)),
+                  names: game.players.map((_, seat) => partyPlayerName(game, seat, say)),
                   winners: game.winners,
                   you: null,
                   // Level on seeds is a draw, as the turn line says it.
@@ -115,7 +120,7 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
         {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
         {game.status === MANCALA_STATUS.playing ? (
           <div data-chrome>
-            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game, game.toPlay)} playing={2} />
+            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game, game.toPlay, say)} playing={2} />
           </div>
         ) : null}
         <TableStores game={game} />
@@ -131,13 +136,13 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
             playing={game.status === MANCALA_STATUS.playing}
             toPlay={game.toPlay}
             seats={game.players.length}
-            nameOf={(seat) => partyPlayerName(game, seat)}
+            nameOf={(seat) => partyPlayerName(game, seat, say)}
             onResign={(seat) => keep(resignMancala(game, seat))}
             onNewGame={() => keep(null)}
           />
         </div>
         {game.status === MANCALA_STATUS.playing ? null : (
-          <TableWallpaper game="mancala" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat)), game.winners, game.winners.length > 1)} />
+          <TableWallpaper game="mancala" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat, say)), game.winners, game.winners.length > 1)} />
         )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
@@ -157,10 +162,13 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
 
 /** The two at the table, the one whose turn it is marked, with what each has in their store. */
 function TableStores({ game }: { game: MancalaGameState }) {
+  const say = useSpeaker();
+  const MANCALA_COPY = mancalaWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="mancala-players">
       <h2 className={SECTION_TITLE}>
-        Players <span className="font-mincho normal-case tracking-normal">席</span>
+        <Paired en={say.say("party.players")} kanji="席" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
       </h2>
       <ol className="flex flex-col gap-1.5">
         {game.players.map((_, seat) => (
@@ -174,7 +182,7 @@ function TableStores({ game }: { game: MancalaGameState }) {
             data-store={game.holes[storeOf(seat)]}
           >
             <MarbleChip player={seat} />
-            <span className="min-w-0 flex-1 truncate">{partyPlayerName(game, seat)}</span>
+            <span className="min-w-0 flex-1 truncate">{partyPlayerName(game, seat, say)}</span>
             <span className="shrink-0 text-xs text-muted tabular-nums">{MANCALA_COPY.seeds(game.holes[storeOf(seat)])}</span>
           </li>
         ))}

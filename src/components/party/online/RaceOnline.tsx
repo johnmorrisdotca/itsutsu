@@ -9,10 +9,10 @@ import type { PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 import type { RaceMove } from "@/lib/party/online/onlineGames";
 
 import { RaceTurnLine } from "../PartyRaceGame";
-import { PARTY_COPY } from "../party.constants";
 import type { PartyRaceKind } from "../party.types";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { onlineWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A RACE AT A TABLE ON SEVERAL DEVICES — Chinese Checkers round the star,
@@ -27,6 +27,9 @@ export function RaceOnline<S extends PartyRaceState, C extends number>({
   canMove,
   onMove,
 }: OnlineBoardProps<S, RaceMove> & { kind: PartyRaceKind<S, C> }) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [selected, setSelected] = useState<Point | null>(null);
   const { rules, Board } = kind;
   // A piece picked up stays picked only while it is still the mover's and the reader may move.

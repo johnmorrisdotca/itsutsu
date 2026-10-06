@@ -25,10 +25,11 @@ import { GhostPlayers } from "./GhostPlayers";
 import { GhostSetUp } from "./GhostSetUp";
 import { GhostRoundOver, GhostTurnLine } from "./GhostTurnLine";
 import { useKeptGhostGame } from "./ghostStore";
-import { GHOST_COPY, PARTY_COPY } from "./party.constants";
 import type { PartyTableGameProps } from "./party.types";
 import { useGhostWords } from "./useGhostWords";
 import { PlayingNow } from "@/components/layout/PlayingNow";
+import { ghostWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * SUPERGHOST PASSED ROUND THE TABLE, at /games/superghost/pass-and-play.
@@ -46,6 +47,9 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
  * move does, and draws the answer.
  */
 export function GhostGame({ gameHref, online }: PartyTableGameProps) {
+  const say = useSpeaker();
+  const GHOST_COPY = ghostWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const hydrated = useHydrated();
   const [game, keep] = useKeptGhostGame();
   const [pending, setPending] = useState<string | null>(null);
@@ -103,7 +107,7 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
           news={
             moment.open
               ? tableNews({
-                  names: game.players.map((_, seat) => partyPlayerName(game, seat)),
+                  names: game.players.map((_, seat) => partyPlayerName(game, seat, say)),
                   winners: game.winners,
                   you: null,
                   next: { label: PARTY_COPY.again, onPress: () => keep(ghostAgain(game)) },
@@ -132,7 +136,7 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
         {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
         {playing ? (
           <div data-chrome>
-            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game, game.toPlay)} playing={game.players.length} />
+            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game, game.toPlay, say)} playing={game.players.length} />
           </div>
         ) : null}
         <GhostPlayers game={game} />
@@ -148,12 +152,12 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
             playing={playing}
             toPlay={game.toPlay}
             seats={game.players.length}
-            nameOf={(seat) => partyPlayerName(game, seat)}
+            nameOf={(seat) => partyPlayerName(game, seat, say)}
             onResign={(seat) => keep(resignGhost(game, seat))}
             onNewGame={() => keep(null)}
           />
         </div>
-        {playing ? null : <TableWallpaper game="superghost" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat)), game.winners)} />}
+        {playing ? null : <TableWallpaper game="superghost" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat, say)), game.winners)} />}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {GHOST_COPY.about} →

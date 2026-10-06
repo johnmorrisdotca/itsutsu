@@ -103,7 +103,7 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
   if (puzzle === null && party === null && casual === null && houseki === null && variant === null) notFound();
   const key = puzzle ?? party ?? casual ?? houseki ?? variant!;
   const say = await currentSpeaker();
-  const page = puzzle !== null ? puzzleRulesPage(puzzle, say) : party !== null ? partyRulesPage(party) : casual !== null ? casualRulesPage(casual) : houseki !== null ? housekiRulesPage(houseki, say) : rulesPageFor(variant!, say);
+  const page = puzzle !== null ? puzzleRulesPage(puzzle, say) : party !== null ? partyRulesPage(party, say) : casual !== null ? casualRulesPage(casual) : houseki !== null ? housekiRulesPage(houseki, say) : rulesPageFor(variant!, say);
   // A game's strategy guides; the cube's method, which is a guide of its own (`/learn/cube`).
   const guides =
     variant !== null
@@ -251,7 +251,7 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
         {/* Kumimoji's two sets of tiles, counted and drawn, and every form a kana tile plays as: see `KumimojiTiles`. */}
         {puzzle === PUZZLE_KINDS.kumimoji ? <KumimojiTiles /> : null}
         {/* Tenka's world: its continents, their bonuses and their territories, from the table the rules read. */}
-        {party === PARTY_KINDS.tenka ? <TenkaWorldTable /> : null}
+        {party === PARTY_KINDS.tenka ? <TenkaWorldTable say={say} /> : null}
         </div>
 
         {/*

@@ -17,8 +17,11 @@ import { TenkaPlayers } from "../tenka/TenkaPlayers";
 import { TenkaTurnLine } from "../tenka/TenkaTurnLine";
 import type { TenkaChoice, TenkaMapHandle } from "../tenka/tenka.types";
 import { NO_CHOICE, choiceNow, marksFor, tapTerritory } from "../tenka/tenkaTaps";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { tenkaWords } from "@/components/party/partyWords";
 
 /** A press as it is sent: the short lists a game is kept as (`writeTenkaMove`), which the table's rules read back. */
 type SentPress = readonly (string | number)[][];
@@ -40,6 +43,8 @@ type SentPress = readonly (string | number)[][];
  * (`TenkaPlayers`), as a hand held at a real table is.
  */
 export function TenkaOnline({ game, appearance, canMove, onMove, mySeat }: OnlineBoardProps<TenkaGame, SentPress>) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   const [held, setHeld] = useState<{ at: number; choice: TenkaChoice }>({
     at: -1,
     choice: NO_CHOICE,
@@ -110,8 +115,7 @@ export function TenkaOnline({ game, appearance, canMove, onMove, mySeat }: Onlin
 }
 
 /** A seat's standing at Tenka: the territories it holds, or that it is out. */
-export function tenkaStanding(game: TenkaGame, seat: number): string {
-  if (game.out[seat]) return "Out";
-  const held = territoriesHeld(game.owners, seat);
-  return `${held} ${held === 1 ? "territory" : "territories"}`;
+export function tenkaStanding(game: TenkaGame, seat: number, say: Speaker): string {
+  if (game.out[seat]) return say.say("party.out");
+  return tenkaWords(say.locale).territories(territoriesHeld(game.owners, seat));
 }

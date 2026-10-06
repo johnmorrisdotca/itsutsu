@@ -21,6 +21,10 @@ import {
   startDots,
 } from "./dotsAndBoxes";
 import type { DotsGame } from "./dotsAndBoxes.types";
+import { speaker } from "@/lib/i18n/i18n";
+
+/** The English speaker: these tests read the rules' English words. */
+const EN = speaker("en");
 
 /** A game that must exist: the test is about what comes after, not whether it starts. */
 function start(size: number, count: number, first = 0): DotsGame {
@@ -113,7 +117,7 @@ describe("a new game", () => {
   it("tidies the names and reads a blank one as the seat's number", () => {
     const game = startDots(3, ["  Ann   Lee ", "", "x".repeat(40)])!;
     expect(game.players[0]).toBe("Ann Lee");
-    expect(dotsPlayerName(game, 1)).toBe("Player 2");
+    expect(dotsPlayerName(game, 1, EN)).toBe("Player 2");
     expect(game.players[2]).toHaveLength(DOTS_NAME_MOST);
   });
 });

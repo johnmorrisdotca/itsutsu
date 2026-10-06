@@ -10,12 +10,12 @@ import { PARTY_NAME_MOST } from "@/lib/gomoku/party/partyRace";
 
 import { SeatColourButton } from "./SeatColourButton";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
-import { ONLINE_COPY } from "./online/online.constants";
 import type { SeatChoice } from "./online/online.types";
 import { PartyBlocksBoard } from "./PartyBlocksBoard";
 import { PARTY_MARBLES } from "./party.constants";
 import type { PartyBlocksSetUpProps } from "./party.types";
-import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
+import { blocksWords, onlineWords, seatColourName } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE TABLE, BEFORE A PIECE IS LAID: four names, if the table wants them.
@@ -24,6 +24,9 @@ import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
  * where they start before they choose who sits where.
  */
 export function PartyBlocksSetUp({ appearance, onStart, ready, online }: PartyBlocksSetUpProps) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
+  const PARTY_BLOCKS_COPY = blocksWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const [names, setNames] = useState<string[]>(() => new Array(BLOCKS_PARTY_PLAYERS).fill(""));
@@ -58,7 +61,7 @@ export function PartyBlocksSetUp({ appearance, onStart, ready, online }: PartyBl
             <label key={player.corner} className="flex items-center gap-2 text-sm">
               <SeatColourButton player={index} playing={preview.players.length} />
               <span className="sr-only">
-                Player {index + 1}, {marbles[index].label}
+                {seatColourName(say, index, marbles[index])}
               </span>
               {severalOffer !== undefined ? (
                 <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} />

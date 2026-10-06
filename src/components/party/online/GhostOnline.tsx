@@ -11,10 +11,11 @@ import type { GhostTableMove } from "@/lib/party/online/onlineWordGames";
 import { GhostFragment } from "../GhostFragment";
 import { GhostKeys } from "../GhostKeys";
 import { GhostRoundOver, GhostTurnLine } from "../GhostTurnLine";
-import { GHOST_COPY } from "../party.constants";
 import { useGhostWords } from "../useGhostWords";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { ghostWords, onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 /**
  * SUPERGHOST AT A TABLE ON SEVERAL DEVICES: the turn line, the fragment and
@@ -25,6 +26,9 @@ import type { OnlineBoardProps } from "./online.types";
  * and checks the rest (`onlineWordGames.ts`, John 2026-09-29).
  */
 export function GhostOnline({ game, canMove, onMove }: OnlineBoardProps<GhostGame, GhostTableMove>) {
+  const say = useSpeaker();
+  const GHOST_COPY = ghostWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
   const [pending, setPending] = useState<string | null>(null);
   const words = useGhostWords(game.language);
   const judge = words === "ready" ? ghostJudge(game.language) : null;
@@ -56,7 +60,7 @@ export function GhostOnline({ game, canMove, onMove }: OnlineBoardProps<GhostGam
 }
 
 /** A seat's standing at Superghost: the letters of the ghost it holds, or none. */
-export function ghostStanding(game: GhostGame, seat: number): string {
+export function ghostStanding(game: GhostGame, seat: number, _say: Speaker): string {
   const held = ghostLettersOf(game, seat);
   return held === "" ? "—" : held;
 }

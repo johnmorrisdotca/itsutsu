@@ -22,10 +22,11 @@ import { PartyBlocksSetUp } from "./PartyBlocksSetUp";
 import { PartyBlocksPlayers, PartyBlocksTurnLine } from "./PartyBlocksStatus";
 import { PartyBlocksTray } from "./PartyBlocksTray";
 import type { PartyTableGameProps } from "./party.types";
-import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
 import { useKeptBlocksParty } from "./partyBlocksStore";
 import { useBlocksHand } from "./useBlocksHand";
 import { PlayingNow } from "@/components/layout/PlayingNow";
+import { blocksWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * BLOCK FIVE FOR FOUR, PASSED ROUND THE TABLE.
@@ -43,6 +44,8 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
  * piece (`partyBlocksStore.ts`), and nowhere else.
  */
 export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGameProps) {
+  const say = useSpeaker();
+  const PARTY_BLOCKS_COPY = blocksWords(say.locale);
   const hydrated = useHydrated();
   const [game, keep] = useKeptBlocksParty();
   const hand = useBlocksHand(game ?? null, true, (piece, cells) => {
@@ -83,7 +86,7 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
           news={
             moment.open
               ? tableNews({
-                  names: game.players.map((_, player) => partyPlayerName(game.players, player)),
+                  names: game.players.map((_, player) => partyPlayerName(game.players, player, say)),
                   winners: resignedBy(game) !== null ? [] : blocksLeaders(game),
                   you: null,
                   next: { label: PARTY_BLOCKS_COPY.again, onPress: () => keep(againBlocksParty(game)) },
@@ -108,7 +111,7 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
         {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
         {playing ? (
           <div data-chrome>
-            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game.players, game.toPlay)} playing={game.players.length} />
+            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game.players, game.toPlay, say)} playing={game.players.length} />
           </div>
         ) : null}
         {playing && hold !== null ? (
@@ -136,13 +139,13 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
             playing={playing}
             toPlay={game.toPlay}
             seats={game.players.length}
-            nameOf={(seat) => partyPlayerName(game.players, seat)}
+            nameOf={(seat) => partyPlayerName(game.players, seat, say)}
             onResign={(seat) => keep(resignBlocks(game, seat))}
             onNewGame={() => keep(null)}
           />
         </div>
         {playing ? null : (
-          <TableWallpaper game={RULE_VARIANTS.blockFive} result={resultLine(game.players.map((_, player) => partyPlayerName(game.players, player)), resignedBy(game) !== null ? [] : blocksLeaders(game))} />
+          <TableWallpaper game={RULE_VARIANTS.blockFive} result={resultLine(game.players.map((_, player) => partyPlayerName(game.players, player, say)), resignedBy(game) !== null ? [] : blocksLeaders(game))} />
         )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

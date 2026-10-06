@@ -9,8 +9,9 @@ import type { CasualKind } from "@/lib/casual/casual.types";
 import { goingLevel, hasProgress, nextLevel, wonLevels } from "@/lib/casual/casualProgress";
 import { casualPlayPath } from "@/lib/gomoku/slugs";
 
-import { CASUAL_COPY } from "./casual.constants";
 import { useCasualSave } from "./casualStore";
+import { casualWords } from "@/components/casual/casualWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * EVERY CASUAL GAME WITH SOMETHING KEPT, WAITING IN MY GAMES. "Anything a
@@ -33,6 +34,8 @@ export function CasualCards() {
 }
 
 function CasualCard({ kind, going, won, next }: { kind: CasualKind; going: number | null; won: number; next: number }) {
+  const say = useSpeaker();
+  const CASUAL_COPY = casualWords(say.locale);
   const spec = CASUAL_SPECS[kind];
   const story = kind === "choiceStory";
   const level = going ?? next;

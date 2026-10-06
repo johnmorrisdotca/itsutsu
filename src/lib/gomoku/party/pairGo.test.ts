@@ -22,6 +22,10 @@ import {
   startPairGo,
 } from "./pairGo";
 import type { PairGoGame, PairTeams } from "./pairGo.types";
+import { speaker } from "@/lib/i18n/i18n";
+
+/** The English speaker: these tests read the rules' English words. */
+const EN = speaker("en");
 
 const p = (row: number, col: number): Point => ({ row, col });
 const TEAMS: PairTeams = { black: ["Aiko", "Ben"], white: ["Chloe", "Dev"] };
@@ -39,7 +43,7 @@ function played(moves: (Point | "pass")[], teams: PairTeams = TEAMS, size = 9): 
 
 /** Whose move it is, as the turn line reads it. */
 const toMove = (game: PairGoGame) => {
-  const player = pairPlayerToMove(game);
+  const player = pairPlayerToMove(game, EN);
   return player === null ? null : `${player.name} (${player.stone})`;
 };
 
@@ -70,15 +74,15 @@ describe("Pair Go's order round the table", () => {
     // Aiko plays, Chloe passes, Ben plays: next is Dev, not Chloe again.
     const game = played([p(2, 2), "pass", p(2, 6)]);
     expect(toMove(game)).toBe("Dev (white)");
-    expect(pairPlayerOfMove(game, 1)).toMatchObject({ name: "Chloe", stone: STONES.white, place: 0 });
-    expect(pairPlayerOfMove(game, 2)).toMatchObject({ name: "Ben", stone: STONES.black, place: 1 });
-    expect(pairPlayerOfMove(game, 3)).toBeNull();
+    expect(pairPlayerOfMove(game, 1, EN)).toMatchObject({ name: "Chloe", stone: STONES.white, place: 0 });
+    expect(pairPlayerOfMove(game, 2, EN)).toMatchObject({ name: "Ben", stone: STONES.black, place: 1 });
+    expect(pairPlayerOfMove(game, 3, EN)).toBeNull();
   });
 
   it("names a player who gave no name by their place in the order", () => {
     const game = startPairGo(9, { black: ["Aiko", "  "], white: ["", "Dev"] });
-    expect(pairPlayers(game).map((player) => player.name)).toEqual(["Aiko", "Player 2", "Player 3", "Dev"]);
-    expect(pairPlayers(game).map((player) => player.stone)).toEqual([STONES.black, STONES.white, STONES.black, STONES.white]);
+    expect(pairPlayers(game, EN).map((player) => player.name)).toEqual(["Aiko", "Player 2", "Player 3", "Dev"]);
+    expect(pairPlayers(game, EN).map((player) => player.stone)).toEqual([STONES.black, STONES.white, STONES.black, STONES.white]);
   });
 
   it("keeps a name tidy: spaces made one, trimmed, and no longer than the table keeps", () => {
@@ -118,7 +122,7 @@ describe("Pair Go is the engine's own Go", () => {
     const ended = pairPass(game) as PairGoGame;
     expect(ended.state.status).toBe(GAME_STATUS.won);
     expect(ended.state.winBy).toBe(WIN_REASONS.territory);
-    expect(pairPlayerToMove(ended)).toBeNull();
+    expect(pairPlayerToMove(ended, EN)).toBeNull();
     const count = pairCount(ended);
     expect(count.komi).toBe(KOMI);
     // Two black stones and the corner point they wall in; one white stone, and nothing else is anybody's.

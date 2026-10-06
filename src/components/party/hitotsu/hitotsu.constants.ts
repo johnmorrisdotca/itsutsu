@@ -47,7 +47,6 @@ export const HITOTSU_COPY = {
   off: "Off",
   start: "Start",
   computer: "Computer",
-  computerName: (seat: number) => `Computer ${seat + 1}`,
   onePerson: "Every table needs a person: at least one seat is yours.",
   kept: "Kept in this browser: leave and come back, and it is here.",
   yourHand: "Your hand",

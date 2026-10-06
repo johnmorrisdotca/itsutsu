@@ -5,8 +5,9 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import type { PartyTableGameProps } from "../party.types";
 import { TenkaPlay } from "./TenkaPlay";
 import { TenkaSetUp } from "./TenkaSetUp";
-import { TENKA_COPY } from "./tenka.constants";
 import { useKeptTenkaGame, useOldTenkaSave } from "./tenkaStore";
+import { tenkaWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * TENKA PASSED ROUND THE TABLE, at /games/tenka/pass-and-play.
@@ -18,6 +19,8 @@ import { useKeptTenkaGame, useOldTenkaSave } from "./tenkaStore";
  * games meanwhile. The rules are all in `lib/party/tenka/`.
  */
 export function TenkaTable({ appearance, gameHref, online }: PartyTableGameProps) {
+  const say = useSpeaker();
+  const TENKA_COPY = tenkaWords(say.locale);
   const hydrated = useHydrated();
   const [game, keep] = useKeptTenkaGame();
   const oldSave = useOldTenkaSave();

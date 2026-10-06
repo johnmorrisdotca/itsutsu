@@ -6,9 +6,9 @@ import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 
 import { DotsBoard } from "../DotsBoard";
 import { DotsTurnLine } from "../DotsTurnLine";
-import { DOTS_COPY } from "../party.constants";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { dotsWords, onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * DOTS AND BOXES AT A TABLE ON SEVERAL DEVICES: the same turn line and board
@@ -16,6 +16,9 @@ import type { OnlineBoardProps } from "./online.types";
  * reader's own turn. A line tapped is sent; the table's answer is the board.
  */
 export function DotsOnline({ game, appearance, canMove, onMove }: OnlineBoardProps<DotsGame, number>) {
+  const say = useSpeaker();
+  const DOTS_COPY = dotsWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
   return (
     <div className="flex min-w-0 flex-col gap-3" data-testid="dots-game" data-state={game.status} data-lines={game.lines.length}>
       <DotsTurnLine game={game} />

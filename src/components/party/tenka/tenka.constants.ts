@@ -83,9 +83,6 @@ export const TENKA_TAP_SLOP = 6;
 export const TENKA_COPY = {
   lead: "Tenka for two to six people round one phone or tablet: take the world a territory at a time, then pass it on. Nothing here is rated or kept anywhere but this browser.",
   length: "How long?",
-  lengthWords: (rounds: number, world: number, map: TenkaMapKey = "world") => (rounds === world ? (map === "europe" ? "All of Europe" : "The whole world") : `${rounds} rounds`),
-  lengthNote: (rounds: number, world: number, map: TenkaMapKey = "world") =>
-    rounds === world ? `Play until one player holds ${map === "europe" ? "all of Europe" : "the world"}.` : `Most territories after ${rounds} rounds wins.`,
   mapChoice: "Map",
   mapWords: (map: TenkaMapKey) => (map === "europe" ? "Europe" : "The world"),
   placing: "Starting armies",
@@ -120,7 +117,6 @@ export const TENKA_COPY = {
   hand: "Your cards",
   noCards: "No cards yet: take a territory this turn to earn one.",
   trade: (armies: number) => `Trade for ${armies}`,
-  roundOf: (round: number, rounds: number, world: number) => (rounds === world ? `Round ${round}` : `Round ${round} of ${rounds}`),
   out: "out",
   mapOf: (map: TenkaMapKey | undefined) => (map === "europe" ? "Map of Europe" : "Map of the world"),
   fit: "Move and zoom the map",

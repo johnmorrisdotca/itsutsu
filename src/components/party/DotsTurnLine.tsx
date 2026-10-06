@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { ResignedResult } from "@/components/play/ResignedResult";
 import { resignedBy } from "@/lib/party/resign";
 import { usePartyMarbles } from "./partyMarbles";
@@ -10,7 +11,7 @@ import { DOTS_STATUS, dotsPlayerName, drawsAgain } from "@/lib/party/dotsAndBoxe
 import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 
 import { MarbleChip } from "./MarbleChip";
-import { DOTS_COPY } from "./party.constants";
+import { dotsWords, marbleLabel } from "./partyWords";
 
 /**
  * WHOSE TURN IT IS, by name, colour and letter — and, when the line just drawn
@@ -21,9 +22,11 @@ import { DOTS_COPY } from "./party.constants";
 export function DotsTurnLine({ game }: { game: DotsGame }) {
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
-  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => dotsPlayerName(game, seat)} />;
+  const say = useSpeaker();
+  const DOTS_COPY = dotsWords(say.locale);
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => dotsPlayerName(game, seat, say)} />;
   if (game.status === DOTS_STATUS.finished) {
-    const names = game.winners.map((seat) => dotsPlayerName(game, seat));
+    const names = game.winners.map((seat) => dotsPlayerName(game, seat, say));
     const most = DOTS_COPY.boxes(game.scores[game.winners[0]]);
     return (
       <p className={`${PANEL_CLASS} flex flex-wrap items-center gap-2 text-base font-semibold`} data-testid="dots-winner" data-winners={game.winners.join(",")} aria-live="polite">
@@ -32,9 +35,7 @@ export function DotsTurnLine({ game }: { game: DotsGame }) {
           <MarbleChip key={seat} player={seat} />
         ))}
         <span>
-          {names.length === 1
-            ? `${names[0]} wins, with ${most}.`
-            : `${names.slice(0, -1).join(", ")} and ${names.at(-1)} share the win, with ${most} each.`}
+          {names.length === 1 ? say.say("party.dots.wins", { name: names[0], boxes: most }) : say.say("party.dots.share", { names: say.list(names), boxes: most })}
         </span>
       </p>
     );
@@ -53,10 +54,10 @@ export function DotsTurnLine({ game }: { game: DotsGame }) {
       <span className="flex min-w-0 flex-col">
         <span>
           <span className="font-semibold" data-testid="dots-turn-name">
-            {dotsPlayerName(game, game.toPlay)}
+            {dotsPlayerName(game, game.toPlay, say)}
           </span>
           <span className="text-muted">
-            {"’s turn"} · {marble.label} ({marble.letter})
+            {say.say("party.turnSuffix")} · {say.say("party.turnTrail", { colour: marbleLabel(marble, say.locale), letter: marble.letter })}
           </span>
         </span>
         {/* Always in its place, hidden when there is nothing to say, so the board never moves under a finger. */}

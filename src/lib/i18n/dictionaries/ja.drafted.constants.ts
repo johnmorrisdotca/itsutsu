@@ -29,6 +29,7 @@ import { JA_DRAFTED_PWORD } from "./ja.drafted.pword.constants";
 import { JA_DRAFTED_PSET } from "./ja.drafted.pset.constants";
 import { JA_DRAFTED_PUZZLE } from "./ja.drafted.puzzle.constants";
 import { JA_DRAFTED_HOUSEKI } from "./ja.drafted.houseki.constants";
+import { JA_DRAFTED_PARTY } from "./ja.drafted.party.constants";
 
 import { JA_DRAFTED_XP } from "./ja.drafted.xp.constants";
 
@@ -1028,4 +1029,5 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
   ...JA_DRAFTED_PMAZE,
   ...JA_DRAFTED_PKUMI,
   ...JA_DRAFTED_PCARD,
+  ...JA_DRAFTED_PARTY,
 };

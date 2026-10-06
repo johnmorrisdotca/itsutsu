@@ -24,10 +24,10 @@ import { TableWallpaper } from "./TableWallpaper";
 import { resultLine } from "@/components/game/winNews";
 import { MarbleChip } from "./MarbleChip";
 import { PartySetUp } from "./PartySetUp";
-import { PARTY_COPY } from "./party.constants";
 import type { PartyRaceKind, PartyTableGameProps } from "./party.types";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { partyScreenWords } from "@/components/party/partyWords";
 
 /**
  * A RACE PASSED ROUND THE TABLE: Chinese Checkers on the star, or Halma on
@@ -47,6 +47,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  */
 export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind, appearance, gameHref, online }: PartyTableGameProps & { kind: PartyRaceKind<S, C> }) {
   const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
   const hydrated = useHydrated();
   const [game, keep] = kind.useKept();
   const [selected, setSelected] = useState<Point | null>(null);
@@ -105,7 +106,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
           news={
             moment.open
               ? tableNews({
-                  names: game.players.map((_, index) => partyPlayerName(game.players, index)),
+                  names: game.players.map((_, index) => partyPlayerName(game.players, index, say)),
                   winners: game.status === PARTY_STATUS.won && game.winner !== null ? [game.winner] : [],
                   you: null,
                   next: { label: PARTY_COPY.again, onPress: again },
@@ -123,7 +124,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
         {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
         {game.status === PARTY_STATUS.playing ? (
           <div data-chrome>
-            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game.players, game.toPlay)} playing={game.players.length} />
+            <PartySeatColour seat={game.toPlay} name={partyPlayerName(game.players, game.toPlay, say)} playing={game.players.length} />
           </div>
         ) : null}
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="party-players">
@@ -139,7 +140,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
                 data-player={index}
               >
                 <MarbleChip player={index} />
-                <span className="min-w-0 flex-1 truncate">{partyPlayerName(game.players, index)}</span>
+                <span className="min-w-0 flex-1 truncate">{partyPlayerName(game.players, index, say)}</span>
                 <span className="shrink-0 text-xs text-muted tabular-nums">
                   {rules.piecesHome(game, index)} of {rules.piecesEach(game)} home
                 </span>
@@ -163,7 +164,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
             playing={game.status === PARTY_STATUS.playing}
             toPlay={game.toPlay}
             seats={game.players.length}
-            nameOf={(seat) => partyPlayerName(game.players, seat)}
+            nameOf={(seat) => partyPlayerName(game.players, seat, say)}
             onResign={(seat) => keep(resignRace(game, seat))}
             onNewGame={() => {
               keep(null);
@@ -172,7 +173,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
           />
         </div>
         {game.status === PARTY_STATUS.won && game.winner !== null ? (
-          <TableWallpaper game={kind.variant} result={resultLine(game.players.map((_, index) => partyPlayerName(game.players, index)), [game.winner])} />
+          <TableWallpaper game={kind.variant} result={resultLine(game.players.map((_, index) => partyPlayerName(game.players, index, say)), [game.winner])} />
         ) : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
@@ -192,16 +193,18 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
 
 /** Whose turn it is, by name and colour — or who has won. The same line at a table on several devices (`RaceOnline`). */
 export function RaceTurnLine({ game, farCamp }: { game: PartyRaceState; farCamp: string }) {
+  const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
-  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => partyPlayerName(game.players, seat)} />;
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => partyPlayerName(game.players, seat, say)} />;
   if (game.status === PARTY_STATUS.won && game.winner !== null) {
     return (
       <p className={`${PANEL_CLASS} flex items-center gap-2 text-base font-semibold`} data-testid="party-winner" data-player={game.winner}>
         <ResultMark kind={RESULT_MARKS.success} />
         <MarbleChip player={game.winner} />
         <span>
-          {partyPlayerName(game.players, game.winner)} wins, the first to fill {farCamp}.
+          {partyPlayerName(game.players, game.winner, say)} wins, the first to fill {farCamp}.
         </span>
       </p>
     );
@@ -219,7 +222,7 @@ export function RaceTurnLine({ game, farCamp }: { game: PartyRaceState; farCamp:
       <MarbleChip player={game.toPlay} />
       <span className="min-w-0">
         <span className="font-semibold" data-testid="party-turn-name">
-          {partyPlayerName(game.players, game.toPlay)}
+          {partyPlayerName(game.players, game.toPlay, say)}
         </span>
         <span className="text-muted">
           {"’s turn"} · {marble.label} ({marble.letter})

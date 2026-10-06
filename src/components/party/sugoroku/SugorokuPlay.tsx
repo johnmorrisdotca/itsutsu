@@ -18,9 +18,10 @@ import { freshSeed } from "@/lib/puzzles/random";
 
 import { TableWallpaper } from "../TableWallpaper";
 import { useDiceSound } from "../yacht/diceSound";
-import { SUGOROKU_COPY } from "./sugoroku.constants";
 import { SugorokuStage } from "./SugorokuStage";
 import { useSugorokuComputer } from "./useSugorokuComputer";
+import { sugorokuScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A MATCH OF ONE OF THE SEVEN ROUND ONE DEVICE, with the computer in either
@@ -35,14 +36,16 @@ import { useSugorokuComputer } from "./useSugorokuComputer";
  * board keeps white at the bottom whoever is to play.
  */
 export function SugorokuPlay({ table, keep, appearance, gameHref, ready }: { table: SugorokuTable; keep: (table: SugorokuTable | null) => void; appearance: Appearance; gameHref: string; ready: { "data-ready": string } }) {
+  const say = useSpeaker();
+  const SUGOROKU_COPY = sugorokuScreenWords(say.locale);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const sound = useDiceSound();
   const throwDice = useCallback(() => sound.play(2), [sound]);
   const advance = useCallback((next: SugorokuTable) => keep(next), [keep]);
-  const thinking = useSugorokuComputer(table, advance, throwDice);
+  const thinking = useSugorokuComputer(table, advance, say, throwDice);
   const over = sugorokuOver(table);
   const moment = useWinMoment(over ? "ended" : "playing");
-  const names = sugorokuNames(table);
+  const names = sugorokuNames(table, say);
   const winners = over ? sugorokuWinners(table) : [];
   const people = table.computers.map((computer, seat) => (computer ? -1 : seat)).filter((seat) => seat >= 0);
   // The seat the reader sits in when exactly one person plays: their home board is at the bottom, and "you" is theirs.
@@ -89,7 +92,7 @@ export function SugorokuPlay({ table, keep, appearance, gameHref, ready }: { tab
                       winners,
                       you: alone,
                       draw: winners.length === 2,
-                      detail: sugorokuEnding(table),
+                      detail: sugorokuEnding(table, say),
                       next: { label: `${SUGOROKU_COPY.again} →`, onPress: again },
                     })
                   : null

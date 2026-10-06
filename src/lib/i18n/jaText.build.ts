@@ -16,7 +16,41 @@ import { CUBE_COPY_JA, SUIDO_WORDS_JA, TOBIISHI_JA, TSUNAGI_CHIPS_JA } from "./d
 import { MEIKYUU_WORDS_JA } from "./dictionaries/puzzles.ja.meikyuuUi.constants";
 import { KUMIMOJI_SHOTS_JA, KUMIMOJI_WALLPAPER_COPY_JA, LOOK_COPY_JA, WORD_STYLE_DISPLAY_JA } from "./dictionaries/puzzles.ja.misc.constants";
 import { PHRASE_KEYS } from "./i18n.constants";
-import type { JaCopyText, JaPhraseText, JaPuzzleText } from "./jaText.types";
+import { PARTY_COPY_JA, PARTY_TABLE_WORDS_JA } from "./dictionaries/party.ja.constants";
+import {
+  CARD_TABLE_COPY_JA,
+  DOTS_COPY_JA,
+  GHOST_COPY_JA,
+  KEPT_COPY_JA,
+  MANCALA_COPY_JA,
+  ONLINE_COPY_JA,
+  PAIR_GO_COPY_JA,
+  PARTY_BLOCKS_COPY_JA,
+  PARTY_COPY_JA as PARTY_SCREEN_COPY_JA,
+  PARTY_GAME_COPY_JA,
+  PARTY_MARBLES_JA,
+  TRAIN_COPY_JA,
+} from "./dictionaries/party.ja.screens.constants";
+import {
+  CASUAL_COPY_JA,
+  DICE_WAR_COPY_JA,
+  GUNJIN_BOARDS_JA,
+  GUNJIN_COPY_JA,
+  GUNJIN_PLACING_RULES_JA,
+  GUNJIN_SIDES_JA,
+  HITOTSU_COPY_JA,
+  HITOTSU_HOUSE_COPY_JA,
+  PACHISI_COPY_JA,
+  SUGOROKU_COPY_JA,
+  SUGOROKU_STRENGTH_LINES_JA,
+  SUGOROKU_STRENGTH_NAMES_JA,
+  TENKA_COPY_JA,
+  TENKA_NEUTRAL_MARBLE_JA,
+  TENKA_REGION_NAMES_JA,
+  YACHT_BOX_WORDS_JA,
+  YACHT_COPY_JA,
+} from "./dictionaries/party.ja.tables.constants";
+import type { JaCopyText, JaPartyText, JaPhraseText, JaPuzzleText } from "./jaText.types";
 import { LEVEL_NAMES_JA } from "../xp/levelNames.ja.constants";
 import { IMPORTED_VOLUME_COPY_JA, XP_AWARD_COPY_JA } from "../xp/xpAwardCopy.ja.constants";
 import type { XpEventType } from "../xp/xp.types";
@@ -90,6 +124,47 @@ export const PUZZLE_TABLES_AUTHORED = {
 
 export type PuzzleTablesAuthored = typeof PUZZLE_TABLES_AUTHORED;
 
+/**
+ * Every table of a party, card or casual game's words that sits beside its data, by the name a reader asks for
+ * it (`partyTable`, `src/lib/i18n/partyTables.ts`), each authored as an overlay of its English table with a
+ * back-translation under every line. Each of these is, with the English table it answers, one row of
+ * `partyCopyTables.coverage.test.ts`.
+ */
+export const PARTY_TABLES_AUTHORED = {
+  tableWords: PARTY_TABLE_WORDS_JA,
+  partyScreen: PARTY_SCREEN_COPY_JA,
+  raceCopy: PARTY_GAME_COPY_JA,
+  marbles: PARTY_MARBLES_JA,
+  dots: DOTS_COPY_JA,
+  ghost: GHOST_COPY_JA,
+  mancala: MANCALA_COPY_JA,
+  train: TRAIN_COPY_JA,
+  pairGo: PAIR_GO_COPY_JA,
+  blocks: PARTY_BLOCKS_COPY_JA,
+  kept: KEPT_COPY_JA,
+  cardTable: CARD_TABLE_COPY_JA,
+  online: ONLINE_COPY_JA,
+  hitotsuHouse: HITOTSU_HOUSE_COPY_JA,
+  hitotsu: HITOTSU_COPY_JA,
+  yacht: YACHT_COPY_JA,
+  yachtBoxes: YACHT_BOX_WORDS_JA,
+  sugoroku: SUGOROKU_COPY_JA,
+  sugorokuStrengthNames: SUGOROKU_STRENGTH_NAMES_JA,
+  sugorokuStrengthLines: SUGOROKU_STRENGTH_LINES_JA,
+  diceWar: DICE_WAR_COPY_JA,
+  pachisi: PACHISI_COPY_JA,
+  gunjinSides: GUNJIN_SIDES_JA,
+  gunjinPlacing: GUNJIN_PLACING_RULES_JA,
+  gunjinBoards: GUNJIN_BOARDS_JA,
+  gunjin: GUNJIN_COPY_JA,
+  tenkaNeutral: TENKA_NEUTRAL_MARBLE_JA,
+  tenkaRegions: TENKA_REGION_NAMES_JA,
+  tenka: TENKA_COPY_JA,
+  casual: CASUAL_COPY_JA,
+} as const;
+
+export type PartyTablesAuthored = typeof PARTY_TABLES_AUTHORED;
+
 const isLine = (value: unknown): value is readonly [string, string] => Array.isArray(value) && value.length === 2 && typeof value[0] === "string" && typeof value[1] === "string";
 
 /** An authored overlay as its text alone: each line its sentence, each choice its choices, and no `review` or `ask`. */
@@ -121,6 +196,13 @@ export function buildPuzzleText(): JaPuzzleText {
   } as unknown as JaPuzzleText;
 }
 
+export function buildPartyText(): JaPartyText {
+  return {
+    copy: Object.fromEntries(Object.entries(PARTY_COPY_JA).map(([kind, ja]) => [kind, textOf(ja)])),
+    tables: Object.fromEntries(Object.entries(PARTY_TABLES_AUTHORED).map(([name, ja]) => [name, textOf(ja)])),
+  } as unknown as JaPartyText;
+}
+
 export function buildCopyText(): JaCopyText {
   const variants = Object.fromEntries(
     Object.entries(VARIANT_COPY_JA).map(([variant, ja]) => [
@@ -150,7 +232,7 @@ export function buildCopyText(): JaCopyText {
   const importedVolumes = Object.fromEntries(
     (Object.keys(IMPORTED_VOLUME_COPY_JA) as ImportedVolumeType[]).map((type) => [type, { blurb: IMPORTED_VOLUME_COPY_JA[type].blurb }]),
   );
-  return { variants, openings, handicaps, secondStone, bots, families, alsoListed, attribution, outlooks, fatalMove, levels, awards, importedVolumes, puzzles: buildPuzzleText() } as unknown as JaCopyText;
+  return { variants, openings, handicaps, secondStone, bots, families, alsoListed, attribution, outlooks, fatalMove, levels, awards, importedVolumes, puzzles: buildPuzzleText(), party: buildPartyText() } as unknown as JaCopyText;
 }
 
 /**

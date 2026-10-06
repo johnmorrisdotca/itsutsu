@@ -7,29 +7,33 @@ import { mustTrade } from "@/lib/party/tenka/tenka";
 import { setsIn, tradeValue } from "@/lib/party/tenka/tenkaCards";
 import { mostAttackDice } from "@/lib/party/tenka/tenkaDice";
 import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
-import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
 
 import { MarbleChip } from "../MarbleChip";
 import { TenkaDice } from "./TenkaDice";
-import { TENKA_COPY } from "./tenka.constants";
 import type { TenkaBarProps } from "./tenka.types";
 import { choiceNow } from "./tenkaTaps";
+import { territoryName } from "./tenkaWords";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { tenkaWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { partyPlayerName } from "@/lib/party/partyNames";
 
 /** Which of the four steps a phase is part of. */
 const STEP_OF: Record<TenkaPhase, number> = { setUp: 0, reinforce: 0, attack: 1, occupy: 1, fortify: 2, shift: 2, over: 3 };
 
-const nameIn = (game: TenkaGame, territory: number) => tenkaMapOf(game).territories[territory].name;
+const nameIn = (game: TenkaGame, territory: number, say: Speaker) => territoryName(tenkaMapOf(game).territories[territory], say);
 
 function Stepper({ value, least, most, onChange }: { value: number; least: number; most: number; onChange: (value: number) => void }) {
+  const say = useSpeaker();
   return (
     <span className="inline-flex items-center gap-1" data-testid="tenka-stepper">
-      <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} min-w-11 px-2`} onClick={() => onChange(Math.max(least, value - 1))} disabled={value <= least} aria-label="One fewer">
+      <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} min-w-11 px-2`} onClick={() => onChange(Math.max(least, value - 1))} disabled={value <= least} aria-label={say.say("party.tenka.oneFewer")}>
         −
       </button>
       <span className="min-w-8 text-center text-base font-semibold tabular-nums" data-testid="tenka-count">
         {value}
       </span>
-      <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} min-w-11 px-2`} onClick={() => onChange(Math.min(most, value + 1))} disabled={value >= most} aria-label="One more">
+      <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} min-w-11 px-2`} onClick={() => onChange(Math.min(most, value + 1))} disabled={value >= most} aria-label={say.say("party.tenka.oneMore")}>
         +
       </button>
     </span>
@@ -47,8 +51,10 @@ function Stepper({ value, least, most, onChange }: { value: number; least: numbe
  * by name, before anybody's cards are shown.
  */
 export function TenkaBar({ game, choice, onMove, onArmies, handed, onReady }: TenkaBarProps) {
+  const say = useSpeaker();
+  const TENKA_COPY = tenkaWords(say.locale);
   const now = choiceNow(game, choice);
-  const player = tenkaPlayerName(game, game.toPlay);
+  const player = partyPlayerName(game, game.toPlay, say);
   const step = STEP_OF[game.phase];
 
   if (game.phase === TENKA_PHASES.over) return null;
@@ -60,7 +66,7 @@ export function TenkaBar({ game, choice, onMove, onArmies, handed, onReady }: Te
       data-phase={game.phase}
       aria-live="polite"
     >
-      <ol className="flex items-center gap-1 text-[0.7rem] font-semibold tracking-[0.1em] uppercase" aria-label="The steps of a turn">
+      <ol className="flex items-center gap-1 text-[0.7rem] font-semibold tracking-[0.1em] uppercase" aria-label={say.say("party.tenka.stepsAria")}>
         {TENKA_COPY.steps.map((label, at) => (
           <li key={label} className={`rounded-full px-2 py-0.5 ${at === step ? "bg-ink text-paper" : "text-muted"}`} aria-current={at === step ? "step" : undefined} data-testid="tenka-step" data-current={at === step ? "true" : undefined}>
             {label}
@@ -101,6 +107,8 @@ export function TenkaBar({ game, choice, onMove, onArmies, handed, onReady }: Te
 }
 
 function BarActions({ game, now, onMove, onArmies }: Pick<TenkaBarProps, "game" | "onMove" | "onArmies"> & { now: ReturnType<typeof choiceNow> }) {
+  const say = useSpeaker();
+  const TENKA_COPY = tenkaWords(say.locale);
   const line = (text: string, testId = "tenka-say") => (
     <p className="text-sm" data-testid={testId}>
       {text}
@@ -122,7 +130,7 @@ function BarActions({ game, now, onMove, onArmies }: Pick<TenkaBarProps, "game" 
             ) : null}
             {now.placedOn !== null && !mustTrade(game) && game.reserve > 1 ? (
               <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={() => onMove({ kind: TENKA_MOVES.place, territory: now.placedOn!, armies: game.reserve })} data-testid="tenka-place-all">
-                {TENKA_COPY.placeAll(game.reserve, nameIn(game, now.placedOn))}
+                {TENKA_COPY.placeAll(game.reserve, nameIn(game, now.placedOn, say))}
               </button>
             ) : null}
           </div>
@@ -133,7 +141,7 @@ function BarActions({ game, now, onMove, onArmies }: Pick<TenkaBarProps, "game" 
       const most = now.from === null ? 0 : mostAttackDice(game.armies[now.from]);
       return (
         <div className="flex flex-col gap-2">
-          {line(now.from !== null && now.to !== null ? TENKA_COPY.attackTarget(nameIn(game, now.from), nameIn(game, now.to)) : TENKA_COPY.attackHint)}
+          {line(now.from !== null && now.to !== null ? TENKA_COPY.attackTarget(nameIn(game, now.from, say), nameIn(game, now.to, say)) : TENKA_COPY.attackHint)}
           <div className="flex flex-wrap gap-2">
             {now.from !== null && now.to !== null
               ? [...Array.from({ length: most }, (_, at) => most - at)].map((dice) => (
@@ -165,7 +173,7 @@ function BarActions({ game, now, onMove, onArmies }: Pick<TenkaBarProps, "game" 
       const taking = game.occupying!;
       return (
         <div className="flex flex-col gap-2">
-          {line(TENKA_COPY.occupy(nameIn(game, taking.to)))}
+          {line(TENKA_COPY.occupy(nameIn(game, taking.to, say)))}
           <div className="flex flex-wrap items-center gap-2">
             <Stepper value={now.armies} least={taking.least} most={game.armies[taking.from] - 1} onChange={onArmies} />
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={() => onMove({ kind: TENKA_MOVES.occupy, armies: now.armies })} data-testid="tenka-occupy">
@@ -181,7 +189,7 @@ function BarActions({ game, now, onMove, onArmies }: Pick<TenkaBarProps, "game" 
       const armies = game.shifting !== null ? Math.max(1, Math.min(now.armies || 1, game.armies[game.shifting.from] - 1)) : now.armies;
       return (
         <div className="flex flex-col gap-2">
-          {line(pair !== null ? TENKA_COPY.fortifyPair(nameIn(game, pair.from), nameIn(game, pair.to)) : TENKA_COPY.fortifyHint)}
+          {line(pair !== null ? TENKA_COPY.fortifyPair(nameIn(game, pair.from, say), nameIn(game, pair.to, say)) : TENKA_COPY.fortifyHint)}
           <div className="flex flex-wrap items-center gap-2">
             {pair !== null ? (
               <>

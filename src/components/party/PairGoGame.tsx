@@ -12,7 +12,8 @@ import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { canPass } from "@/lib/gomoku/engine";
-import { GAME_STATUS, RULE_VARIANTS, STONES, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS, RULE_VARIANTS, STONES } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
 import { boardWords } from "@/lib/gomoku/boardWords";
 import { againPairGo, pairPass, pairPlay, pairPlayerToMove, pairPlayers, pairResign } from "@/lib/gomoku/party/pairGo";
 import type { PairGoGame as PairGoGameState } from "@/lib/gomoku/party/pairGo.types";
@@ -23,11 +24,12 @@ import { resultLine } from "@/components/game/winNews";
 import { PairGoSetUp } from "./PairGoSetUp";
 import { PairGoTurnLine, teamWords } from "./PairGoStatus";
 import { PairStone } from "./PairStone";
-import { PAIR_GO_COPY } from "./pairGo.constants";
 import { useKeptPairGo } from "./pairGoStore";
 import type { PartyTableGameProps } from "./party.types";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { Paired } from "@/components/i18n/Paired";
+import { pairGoWords } from "@/components/party/partyWords";
 
 /**
  * PAIR GO, PASSED ROUND THE TABLE: two teams of two on one device.
@@ -42,6 +44,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  */
 export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps) {
   const say = useSpeaker();
+  const PAIR_GO_COPY = pairGoWords(say.locale);
   const hydrated = useHydrated();
   const [game, keep] = useKeptPairGo();
   const teams = useLocalSeatColours("pairgo");
@@ -61,7 +64,7 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
     );
   }
 
-  const toMove = pairPlayerToMove(game);
+  const toMove = pairPlayerToMove(game, say);
   const act = (next: PairGoGameState | null) => {
     if (next !== null) keep(next);
   };
@@ -87,7 +90,7 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
           news={
             moment.open
               ? tableNews({
-                  names: [teamWords(game, STONES.black), teamWords(game, STONES.white)],
+                  names: [teamWords(game, STONES.black, say), teamWords(game, STONES.white, say)],
                   winners: game.state.winner === null ? [] : [game.state.winner === STONES.black ? 0 : 1],
                   you: null,
                   next: { label: PAIR_GO_COPY.again, onPress: () => act(againPairGo(game)) },
@@ -127,10 +130,10 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
         </div>
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="pairgo-players">
           <h2 className={SECTION_TITLE}>
-            Players <span className="font-mincho normal-case tracking-normal">席</span>
+            <Paired en={say.say("party.players")} kanji="席" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
           </h2>
           <ol className="flex flex-col gap-1.5">
-            {pairPlayers(game).map((player) => (
+            {pairPlayers(game, say).map((player) => (
               <li
                 key={player.turnOrder}
                 className={`flex items-center gap-2 rounded-md px-2 py-1 text-sm ${
@@ -142,7 +145,7 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
               >
                 <PairStone stone={player.stone} appearance={appearance} />
                 <span className="min-w-0 flex-1 truncate">{player.name}</span>
-                <span className="shrink-0 text-xs text-muted">{STONE_DISPLAY[player.stone].label}</span>
+                <span className="shrink-0 text-xs text-muted">{stoneName(say, player.stone)}</span>
               </li>
             ))}
           </ol>
@@ -160,13 +163,13 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
           )}
           <GameEnding>
             {playing && toMove !== null ? (
-              <EndGameButton onEnd={() => act(pairResign(game))} question={PAIR_GO_COPY.confirmResign(teamWords(game, toMove.stone))} testId="pairgo-resign" />
+              <EndGameButton onEnd={() => act(pairResign(game))} question={PAIR_GO_COPY.confirmResign(teamWords(game, toMove.stone, say))} testId="pairgo-resign" />
             ) : null}
             <NewGameButton going={playing} onNewGame={() => keep(null)} testId="pairgo-new" />
           </GameEnding>
         </div>
         {playing || game.state.winner === null ? null : (
-          <TableWallpaper game={RULE_VARIANTS.go} result={resultLine([teamWords(game, STONES.black), teamWords(game, STONES.white)], [game.state.winner === STONES.black ? 0 : 1])} />
+          <TableWallpaper game={RULE_VARIANTS.go} result={resultLine([teamWords(game, STONES.black, say), teamWords(game, STONES.white, say)], [game.state.winner === STONES.black ? 0 : 1])} />
         )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

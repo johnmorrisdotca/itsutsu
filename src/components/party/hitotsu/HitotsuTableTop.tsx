@@ -4,8 +4,9 @@ import type { Appearance } from "@/components/board/board.types";
 import { HITOTSU_COLOUR_LOOK, colourWords, type HitotsuGame, hitotsuTop, isWild } from "@johnmorrisdotca/hitotsu";
 
 import { CardTableSurface, TableWords } from "../cards/CardTableParts";
-import { HITOTSU_COPY } from "./hitotsu.constants";
 import { HitotsuCardView, hitotsuCardLabel } from "./HitotsuCardView";
+import { hitotsuScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const cqw = (value: number) => `${value}cqw`;
 /** A card on the table, in hundredths of the table's width, as the family card games lay theirs. */
@@ -36,6 +37,8 @@ const UNDER_CARDS = ROW + 27;
  * cards played before the top one lie under it, turned, as a pile does.
  */
 export function HitotsuTableTop({ game, appearance }: { game: HitotsuGame; appearance?: Appearance }) {
+  const say = useSpeaker();
+  const HITOTSU_COPY = hitotsuScreenWords(say.locale);
   const top = hitotsuTop(game);
   const look = HITOTSU_COLOUR_LOOK[game.colour];
   const under = game.discard.slice(-1 - UNDER.length, -1);

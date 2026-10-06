@@ -7,12 +7,13 @@ import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.const
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { TENKA_PHASES, TENKA_WORLD_ROUNDS } from "@/lib/party/tenka/tenka.constants";
-import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
 
 import { MarbleChip } from "../MarbleChip";
-import { PARTY_COPY } from "../party.constants";
-import { TENKA_COPY } from "./tenka.constants";
 import { useKeptTenkaGame } from "./tenkaStore";
+import { partyScreenWords, tenkaWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { tenkaRoundLine } from "./tenkaWords";
+import { partyPlayerName } from "@/lib/party/partyNames";
 
 /**
  * A GAME OF TENKA, WAITING IN MY GAMES. "Anything a person plays is kept
@@ -22,6 +23,9 @@ import { useKeptTenkaGame } from "./tenkaStore";
  * a finished one has nothing left to come back to.
  */
 export function TenkaCard() {
+  const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const TENKA_COPY = tenkaWords(say.locale);
   const [game] = useKeptTenkaGame();
   if (game === undefined || game === null || game.phase === TENKA_PHASES.over) return null;
   const variant = PARTY_KINDS.tenka;
@@ -31,9 +35,9 @@ export function TenkaCard() {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · {game.players.length} players · {TENKA_COPY.roundOf(game.round, game.rounds, TENKA_WORLD_ROUNDS)} ·
+          <GameName variant={variant} /> · {say.count("count.player", game.players.length)} · {tenkaRoundLine(say, game.round, game.rounds, TENKA_WORLD_ROUNDS)} ·
           <MarbleChip player={game.toPlay} />
-          {tenkaPlayerName(game, game.toPlay)} to play
+          {say.say("party.toPlay", { name: partyPlayerName(game, game.toPlay, say) })}
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

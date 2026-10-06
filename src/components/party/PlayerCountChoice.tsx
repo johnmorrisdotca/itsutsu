@@ -1,8 +1,9 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
 
-import { PARTY_COPY } from "./party.constants";
+import { partyScreenWords } from "./partyWords";
 
 /**
  * HOW MANY ARE PLAYING — one component for every table's set-up. John,
@@ -24,6 +25,7 @@ export function PlayerCountChoice<C extends number>({
   /** The id each button carries, with its count as `data-count`. */
   testId: string;
 }) {
+  const PARTY_COPY = partyScreenWords(useSpeaker().locale);
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className={SECTION_TITLE}>{PARTY_COPY.howMany}</legend>

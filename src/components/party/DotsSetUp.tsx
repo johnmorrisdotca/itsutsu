@@ -1,5 +1,7 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { usePartyMarbles } from "./partyMarbles";
 import { PlayerCountChoice } from "./PlayerCountChoice";
 import { SeatColourButton } from "./SeatColourButton";
@@ -12,10 +14,9 @@ import { DOTS_NAME_MOST, dotsLineCount, startDots } from "@/lib/party/dotsAndBox
 
 import { DotsBoard } from "./DotsBoard";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
-import { ONLINE_COPY } from "./online/online.constants";
 import type { SeatChoice } from "./online/online.types";
-import { DOTS_COPY, PARTY_COPY } from "./party.constants";
 import type { DotsSetUpProps } from "./party.types";
+import { dotsWords, marbleLabel, onlineWords, partyScreenWords } from "./partyWords";
 
 const SPEC = PARTY_SPECS.dotsAndBoxes;
 const COUNTS = Array.from({ length: SPEC.mostPlayers - SPEC.fewestPlayers + 1 }, (_, index) => SPEC.fewestPlayers + index);
@@ -32,6 +33,10 @@ const COUNTS = Array.from({ length: SPEC.mostPlayers - SPEC.fewestPlayers + 1 },
  * need, the ones past the count chosen kept in their place and hidden.
  */
 export function DotsSetUp({ appearance, onStart, ready, online }: DotsSetUpProps) {
+  const say = useSpeaker();
+  const DOTS_COPY = dotsWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const [count, setCount] = useState(SPEC.defaultPlayers);
@@ -94,9 +99,7 @@ export function DotsSetUp({ appearance, onStart, ready, online }: DotsSetUpProps
             return (
               <label key={index} className={`flex items-center gap-2 text-sm ${sitting ? "" : "invisible"}`} aria-hidden={sitting ? undefined : true}>
                 <SeatColourButton player={index} playing={count} />
-                <span className="sr-only">
-                  Player {index + 1}, {marbles[index].label}
-                </span>
+                <span className="sr-only">{say.say("party.seatColour", { player: playerNumberName(say, index + 1), colour: marbleLabel(marbles[index], say.locale) })}</span>
                 {severalOffer !== undefined ? (
                   <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} disabled={!sitting} />
                 ) : (
@@ -104,7 +107,7 @@ export function DotsSetUp({ appearance, onStart, ready, online }: DotsSetUpProps
                     type="text"
                     value={name}
                     maxLength={DOTS_NAME_MOST}
-                    placeholder={`Player ${index + 1}`}
+                    placeholder={playerNumberName(say, index + 1)}
                     disabled={!sitting}
                     onChange={(event) => setNames((was) => was.map((one, at) => (at === index ? event.target.value : one)))}
                     className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"

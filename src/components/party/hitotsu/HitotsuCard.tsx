@@ -9,9 +9,9 @@ import { PARTY_KINDS } from "@/lib/party/party.constants";
 
 import { seatName } from "../cards/cardAdapters";
 import { MarbleChip } from "../MarbleChip";
-import { PARTY_COPY } from "../party.constants";
-import { HITOTSU_COPY } from "./hitotsu.constants";
 import { useKeptHitotsu } from "./hitotsuStore";
+import { hitotsuScreenWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A GAME OF HITOTSU, WAITING IN MY GAMES. "Anything a person plays is kept
@@ -20,6 +20,9 @@ import { useKeptHitotsu } from "./hitotsuStore";
  * beside the other tables' games. Only while it is not finished.
  */
 export function HitotsuCard() {
+  const say = useSpeaker();
+  const HITOTSU_COPY = hitotsuScreenWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [game] = useKeptHitotsu();
   if (game === undefined || game === null || game.phase === "over" || game.toPlay === null) return null;
   const variant = PARTY_KINDS.hitotsu;

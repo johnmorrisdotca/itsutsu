@@ -5,9 +5,10 @@ import { useState } from "react";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import type { HitotsuCard, HitotsuGame, HitotsuMove } from "@johnmorrisdotca/hitotsu";
 
-import { HITOTSU_COPY } from "./hitotsu.constants";
 import { HitotsuHand } from "./HitotsuHand";
 import { callMatters, hitotsuPresses, movesFor, playableFor, quickMove } from "./hitotsuPresses";
+import { hitotsuScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** A choice made on one move of the game, forgotten when the game moves on. */
 type Held<T> = { at: number; value: T };
@@ -23,6 +24,8 @@ type Held<T> = { at: number; value: T };
  * (`HitotsuOnline`): what a move does is the rules', and `onMove` sends it.
  */
 export function HitotsuDesk({ game, seat, active, label, name, onMove }: { game: HitotsuGame; seat: number; active: boolean; label: string; name: (seat: number) => string; onMove: (move: HitotsuMove) => void }) {
+  const say = useSpeaker();
+  const HITOTSU_COPY = hitotsuScreenWords(say.locale);
   const moves = game.moves.length;
   const [held, setHeld] = useState<Held<HitotsuCard | null>>({ at: -1, value: null });
   const [calling, setCalling] = useState<Held<boolean>>({ at: -1, value: false });

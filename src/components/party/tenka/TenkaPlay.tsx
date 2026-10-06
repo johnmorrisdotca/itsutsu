@@ -3,7 +3,6 @@
 import { TableEnding } from "@/components/play/GameEnding";
 import { resignTenka } from "@/lib/party/resignTables";
 import { useRef, useState } from "react";
-import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
 import { PartySeatColour } from "../PartySeatColour";
 
 import type { Appearance } from "@/components/board/board.types";
@@ -18,8 +17,6 @@ import type { TenkaGame, TenkaMove } from "@/lib/party/tenka/tenka.types";
 import { playTenka } from "@/lib/party/tenka/tenka";
 import { tenkaAgain } from "@/lib/party/tenka/tenkaStart";
 
-import { PARTY_COPY } from "../party.constants";
-import { TENKA_COPY } from "./tenka.constants";
 import { TenkaBar } from "./TenkaBar";
 import { TenkaDice } from "./TenkaDice";
 import { TenkaHand } from "./TenkaHand";
@@ -30,6 +27,9 @@ import type { TenkaMapHandle } from "./tenka.types";
 import { NO_CHOICE, choiceNow, marksFor, tapTerritory } from "./tenkaTaps";
 import { freshTenkaSeed } from "./tenkaStore";
 import { PlayingNow } from "@/components/layout/PlayingNow";
+import { partyScreenWords, tenkaWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { partyPlayerName } from "@/lib/party/partyNames";
 
 /**
  * What must stay on the screen under the map at Large and Full, in pixels: the
@@ -69,6 +69,9 @@ const turnKey = (game: TenkaGame) => `${game.round}:${game.toPlay}`;
  * hidden, goes round without asking.
  */
 export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: TenkaGame; keep: (game: TenkaGame | null) => void; appearance: Appearance; gameHref: string; ready: { "data-ready": string } }) {
+  const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const TENKA_COPY = tenkaWords(say.locale);
   const [choice, setChoice] = useState(NO_CHOICE);
   const [handedFor, setHandedFor] = useState<string | null>(null);
   const map = useRef<TenkaMapHandle>(null);
@@ -127,7 +130,7 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
             playing ? (
               // The colour of whoever is to play, on their turn, as a small control beside whose turn it is; furniture in just the board.
               <div data-chrome>
-                <PartySeatColour seat={game.toPlay} name={tenkaPlayerName(game, game.toPlay)} playing={game.players.length} align="end" />
+                <PartySeatColour seat={game.toPlay} name={partyPlayerName(game, game.toPlay, say)} playing={game.players.length} align="end" />
               </div>
             ) : null
           }
@@ -138,7 +141,7 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
           news={
             moment.open
               ? tableNews({
-                  names: game.players.map((_, seat) => tenkaPlayerName(game, seat)),
+                  names: game.players.map((_, seat) => partyPlayerName(game, seat, say)),
                   winners: game.winners,
                   you: null,
                   next: { label: PARTY_COPY.again, onPress: () => keep(tenkaAgain(game, freshTenkaSeed())) },
@@ -181,12 +184,12 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
               playing={playing}
               toPlay={game.toPlay}
               seats={game.players.length}
-              nameOf={(seat) => tenkaPlayerName(game, seat)}
+              nameOf={(seat) => partyPlayerName(game, seat, say)}
               onResign={(seat) => keep(resignTenka(game, seat))}
               onNewGame={() => keep(null)}
             />
           </div>
-          {playing ? null : <TableWallpaper game="tenka" result={resultLine(game.players.map((_, seat) => tenkaPlayerName(game, seat)), game.winners)} />}
+          {playing ? null : <TableWallpaper game="tenka" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat, say)), game.winners)} />}
           <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
           <p className="text-sm">
             <Link href={gameHref} className="underline underline-offset-4">

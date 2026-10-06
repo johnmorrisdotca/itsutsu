@@ -1,5 +1,8 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { marbleLabel } from "./partyWords";
 import { usePartyMarbles } from "./partyMarbles";
 import { BoardFrame } from "@/components/board/BoardFrame";
 import type { PartyMarble } from "./party.types";
@@ -36,6 +39,7 @@ const SQUARES = Array.from({ length: SIZE * SIZE }, (_, index) => ({ row: Math.f
  */
 export function PartySquareBoard({ game, appearance, selected, targets, onHole, readOnly = false }: PartyBoardProps<PartyHalmaState>) {
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
+  const say = useSpeaker();
   const marbles = usePartyMarbles();
   const spec = VARIANT_SPECS.halma;
   const theme = boardThemeFor(appearance, spec);
@@ -77,7 +81,7 @@ export function PartySquareBoard({ game, appearance, selected, targets, onHole, 
               key={index}
               point={point}
               owner={owner}
-              label={squareLabel(game, point, owner, marbles)}
+              label={squareLabel(game, point, owner, marbles, say)}
               target={target}
               picked={selected !== null && selected.row === point.row && selected.col === point.col}
               last={last !== null && last.row === point.row && last.col === point.col}
@@ -93,7 +97,7 @@ export function PartySquareBoard({ game, appearance, selected, targets, onHole, 
 }
 
 /** A square's name as the two-player board says it — "C13, empty" — and whose piece stands on it. */
-function squareLabel(game: PartyHalmaState, point: { row: number; col: number }, owner: number | null, marbles: readonly PartyMarble[]): string {
+function squareLabel(game: PartyHalmaState, point: { row: number; col: number }, owner: number | null, marbles: readonly PartyMarble[], say: Speaker): string {
   const where = pointName(SIZE, point);
-  return owner === null ? `${where}, empty` : `${where}, ${partyPlayerName(game.players, owner)}'s ${marbles[owner].label.toLowerCase()} piece`;
+  return owner === null ? say.say("party.board.squareEmpty", { where }) : say.say("party.board.pieceOf", { where, name: partyPlayerName(game.players, owner, say), colour: marbleLabel(marbles[owner], say.locale).toLowerCase() });
 }

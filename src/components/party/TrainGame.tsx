@@ -11,7 +11,7 @@ import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_LEAD, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
-import { TRAIN_PHASES, peopleAt, playTrain, tileWords, trainAgain, trainMoves, trainPlayerName } from "@johnmorrisdotca/domino";
+import { TRAIN_PHASES, peopleAt, playTrain, tileWords, trainAgain, trainMoves } from "@johnmorrisdotca/domino";
 import type { Domino, TrainGame as TrainGameState, TrainMove } from "@johnmorrisdotca/domino";
 import { freshSeed } from "@/lib/puzzles/random";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -19,7 +19,6 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { TableWallpaper } from "./TableWallpaper";
 import { resultLine } from "@/components/game/winNews";
 import { MarbleChip } from "./MarbleChip";
-import { PARTY_COPY, TRAIN_COPY } from "./party.constants";
 import type { PartyTableGameProps } from "./party.types";
 import { TrainHand } from "./TrainHand";
 import { TrainRoundOver, TrainScores } from "./TrainScores";
@@ -29,6 +28,9 @@ import { TrainTurnLine } from "./TrainTurnLine";
 import { useKeptTrainGame } from "./trainStore";
 import { useTrainComputer } from "./useTrainComputer";
 import { PlayingNow } from "@/components/layout/PlayingNow";
+import { partyScreenWords, trainWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { seatedName } from "@/lib/party/partyNames";
 
 /**
  * MEXICAN TRAIN ROUND ONE DEVICE, at /games/mexican-train/pass-and-play.
@@ -45,6 +47,9 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
  * shows no hand at all, and plays itself (`useTrainComputer`).
  */
 export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps) {
+  const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const TRAIN_COPY = trainWords(say.locale);
   const hydrated = useHydrated();
   const [game, keep] = useKeptTrainGame();
   const [shownTurn, setShownTurn] = useState<number | null>(null);
@@ -106,7 +111,7 @@ export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps)
           news={
             moment.open
               ? tableNews({
-                  names: game.players.map((_, seat) => trainPlayerName(game, seat)),
+                  names: game.players.map((_, seat) => seatedName(game, seat, say)),
                   winners: game.winners,
                   // One person among computers is "you"; several people at the device are each named.
                   you: lonePerson,
@@ -157,7 +162,7 @@ export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps)
         {/* The colour of whoever is to play, on their turn (`PartySeatColour`); a computer's seat keeps its table colour. Furniture in just the board. */}
         {personToMove ? (
           <div data-chrome>
-            <PartySeatColour seat={game.toPlay} name={trainPlayerName(game, game.toPlay)} playing={game.players.length} />
+            <PartySeatColour seat={game.toPlay} name={seatedName(game, game.toPlay, say)} playing={game.players.length} />
           </div>
         ) : null}
         <TrainScores game={game} />
@@ -168,14 +173,14 @@ export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps)
             playing={game.phase !== TRAIN_PHASES.finished}
             toPlay={game.toPlay}
             seats={game.players.length}
-            nameOf={(seat) => trainPlayerName(game, seat)}
+            nameOf={(seat) => seatedName(game, seat, say)}
             onResign={(seat) => keep(resignTrain(game, seat))}
             onNewGame={() => keep(null)}
           />
         </div>
         <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
         {game.phase === TRAIN_PHASES.finished ? (
-          <TableWallpaper game="mexicanTrain" result={resultLine(game.players.map((_, seat) => trainPlayerName(game, seat)), game.winners)} />
+          <TableWallpaper game="mexicanTrain" result={resultLine(game.players.map((_, seat) => seatedName(game, seat, say)), game.winners)} />
         ) : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
@@ -194,7 +199,9 @@ export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps)
  * drawn while it is up.
  */
 function TrainCover({ game, onReveal }: { game: TrainGameState; onReveal: () => void }) {
-  const name = trainPlayerName(game, game.toPlay);
+  const say = useSpeaker();
+  const TRAIN_COPY = trainWords(say.locale);
+  const name = seatedName(game, game.toPlay, say);
   return (
     <div className={`${PANEL_CLASS} flex flex-col items-center gap-3 text-center`} data-testid="train-cover" data-seat={game.toPlay}>
       <p className="flex items-center gap-2 text-lg font-semibold">

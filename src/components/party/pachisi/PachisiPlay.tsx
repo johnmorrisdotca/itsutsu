@@ -11,22 +11,22 @@ import { resultLine, tableNews } from "@/components/game/winNews";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_LEAD, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
-import { pachisiAgain, pachisiMoves, pachisiPlayerName, pawnsHome, playPachisi } from "@/lib/party/pachisi/pachisi";
+import { pachisiAgain, pachisiMoves, pawnsHome, playPachisi } from "@/lib/party/pachisi/pachisi";
 import type { PachisiGame, PachisiMove } from "@/lib/party/pachisi/pachisi.types";
 import { freshSeed } from "@/lib/puzzles/random";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MarbleChip } from "../MarbleChip";
-import { PARTY_COPY } from "../party.constants";
 import { PartySeatColour } from "../PartySeatColour";
 import { TableWallpaper } from "../TableWallpaper";
 import { useDiceSound } from "../yacht/diceSound";
-import { YACHT_COPY } from "../yacht/yacht.constants";
 import { PachisiBoard } from "./PachisiBoard";
 import { PachisiDice } from "./PachisiDice";
-import { PACHISI_COPY } from "./pachisi.constants";
 import { PachisiTurnLine } from "./PachisiTurnLine";
 import { usePachisiComputer } from "./usePachisiComputer";
+import { pachisiWords, partyScreenWords, yachtWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { seatedName } from "@/lib/party/partyNames";
 
 /** What a person may spend next: one of the values waiting, by its place in `pending`, or both dice together to enter. */
 type Pick = number | "enter";
@@ -55,6 +55,10 @@ function diceUsed(game: PachisiGame): boolean[] {
  * and is not kept.
  */
 export function PachisiPlay({ game, keep, appearance, gameHref }: { game: PachisiGame; keep: (game: PachisiGame | null) => void; appearance: Appearance; gameHref: string }) {
+  const say = useSpeaker();
+  const PACHISI_COPY = pachisiWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const YACHT_COPY = yachtWords(say.locale);
   const hydrated = useHydrated();
   const sound = useDiceSound();
   const [choice, setChoice] = useState<{ at: number; pick: Pick } | null>(null);
@@ -72,7 +76,7 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
   const chosen = choice !== null && choice.at === game.moves.length ? choice.pick : first;
   const movable = offered.filter((move) => (chosen === "enter" ? move.kind === "enter" : move.kind === "move" && move.use === chosen)).flatMap((move) => (move.kind === "roll" ? [] : [move.pawn]));
   const people = game.computers.flatMap((computer, seat) => (computer ? [] : [seat]));
-  const names = game.players.map((_, seat) => pachisiPlayerName(game, seat));
+  const names = game.players.map((_, seat) => seatedName(game, seat, say));
   const canRoll = personToMove && game.phase === "roll";
   // The dice not yet spent come first in `pending`; what follows them is a bonus.
   const diceLeft = diceUsed(game).filter((used) => !used).length;
@@ -127,7 +131,7 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
           </div>
           {personToMove && game.phase === "move" ? (
             <div className="flex flex-col gap-2">
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Values to move by">
+              <div className="flex flex-wrap gap-2" role="group" aria-label={say.say("party.pachisi.valuesAria")}>
                 {game.pending.map((value, use) =>
                   usable[use] ? (
                     <button key={use} type="button" onClick={() => setChoice({ at: game.moves.length, pick: use })} aria-pressed={chosen === use} className={pickClass(chosen === use)} data-testid="pachisi-value" data-value={value} data-use={use}>
@@ -162,7 +166,7 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
         {/* The colour of whoever is to play, on their turn (`PartySeatColour`). Furniture in just the board. */}
         {personToMove ? (
           <div data-chrome>
-            <PartySeatColour seat={game.toPlay} name={pachisiPlayerName(game, game.toPlay)} playing={game.players.length} />
+            <PartySeatColour seat={game.toPlay} name={seatedName(game, game.toPlay, say)} playing={game.players.length} />
           </div>
         ) : null}
         <div className="flex flex-wrap gap-2">
@@ -175,7 +179,7 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
             playing={playing}
             toPlay={game.toPlay}
             seats={game.players.length}
-            nameOf={(seat) => pachisiPlayerName(game, seat)}
+            nameOf={(seat) => seatedName(game, seat, say)}
             onResign={(seat) => keep(resignPachisi(game, seat))}
             onNewGame={() => keep(null)}
           />

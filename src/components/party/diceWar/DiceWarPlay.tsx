@@ -27,9 +27,10 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { useDiceSound } from "../yacht/diceSound";
 import { TableWallpaper } from "../TableWallpaper";
-import { DICE_WAR_COPY } from "./diceWar.constants";
 import { DiceWarBoard } from "./DiceWarBoard";
 import { useDiceWarComputer } from "./useDiceWarComputer";
+import { diceWarScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A GAME OF DICE WAR UNDER WAY: the round and what the last throw did, the
@@ -40,6 +41,8 @@ import { useDiceWarComputer } from "./useDiceWarComputer";
  * thrown for them after a pause (`useDiceWarComputer`).
  */
 export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep: (game: DiceWarGame | null) => void; gameHref: string }) {
+  const say = useSpeaker();
+  const DICE_WAR_COPY = diceWarScreenWords(say.locale);
   const hydrated = useHydrated();
   const sound = useDiceSound();
   const keepGame = useCallback((next: DiceWarGame) => keep(next), [keep]);

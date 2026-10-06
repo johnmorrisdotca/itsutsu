@@ -5,7 +5,9 @@ import { BoardFrame } from "@/components/board/BoardFrame";
 import type { Appearance } from "@/components/board/board.types";
 
 import { PartyDie } from "../PartyDie";
-import { DICE_TUMBLE_MS, YACHT_COPY } from "./yacht.constants";
+import { DICE_TUMBLE_MS } from "./yacht.constants";
+import { yachtWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * ONE DIE: Korokoro's (`PartyDie`), which tumbles after a roll that threw it
@@ -15,6 +17,8 @@ import { DICE_TUMBLE_MS, YACHT_COPY } from "./yacht.constants";
  * A die not thrown yet is a pale empty square.
  */
 function Die({ value, at, held, rollKey, tumbles, onPress }: { value: number; at: number; held: boolean; rollKey: number; tumbles: boolean; onPress?: () => void }) {
+  const say = useSpeaker();
+  const YACHT_COPY = yachtWords(say.locale);
   const picture = (
     <span className={`relative block aspect-square w-full rounded-[18%] ${held ? "ring-[3px] ring-shu" : ""}`}>
       {/* Mounted before the first throw too, so the first roll tumbles; hidden under the empty square until then. */}
@@ -85,6 +89,8 @@ export function DiceTray({
   onTray?: () => void;
   label: string;
 }) {
+  const say = useSpeaker();
+  const YACHT_COPY = yachtWords(say.locale);
   const theme = BOARD_THEMES[appearance.boardTheme];
   return (
     <BoardFrame size={8} theme={theme} flipped={false} inset={0.03} lattice={false} shape="rhombus" coordinates={false} aspect="map">

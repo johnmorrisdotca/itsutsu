@@ -3,7 +3,8 @@
 import { PlayingCard } from "@/components/cards/PlayingCard";
 
 import { MarbleChip } from "../MarbleChip";
-import { CARD_TABLE_COPY } from "./cardTable.constants";
+import { cardTableWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * EVERYBODY ELSE AT THE TABLE, in a row over it: their marble and name, a
@@ -33,6 +34,8 @@ export function CardSeats({
   target: number | null;
   onTarget: (seat: number | null) => void;
 }) {
+  const say = useSpeaker();
+  const CARD_TABLE_COPY = cardTableWords(say.locale);
   return (
     <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3" data-testid="cards-seats">
       {seats.map((seat) => {

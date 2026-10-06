@@ -19,12 +19,13 @@ import { onlineRulesOf } from "@/lib/party/online/onlineGames";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { OnlineSeats } from "./OnlineSeats";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineTableProps } from "./online.types";
 import { ONLINE_VIEWS } from "./onlineViews";
 import { useComputerTurn } from "./useComputerTurn";
 import { useOnlineTable } from "./useOnlineTable";
 import { PlayingNow } from "@/components/layout/PlayingNow";
+import { onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A PARTY TABLE ON SEVERAL DEVICES, at /games/<slug>/tables/<id>: the game's
@@ -39,6 +40,8 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
  * (`onlineRulesOf`), so what a page offers is what the server takes.
  */
 export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabel, tags }: OnlineTableProps) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   const hydrated = useHydrated();
   const router = useRouter();
   const { view, mutate, paused, resume, hurrying, every } = useOnlineTable(initial, intervals);
@@ -183,7 +186,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
             <PartySeatColour seat={view.mySeat} name="" yours playing={view.seats.length} />
           </div>
         ) : null}
-        <OnlineSeats view={view} standing={(seat) => (game === null ? "" : shown.standing(game, seat))} gameLabel={gameLabel} tags={tags} />
+        <OnlineSeats view={view} standing={(seat) => (game === null ? "" : shown.standing(game, seat, say))} gameLabel={gameLabel} tags={tags} />
         {playing ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
             {confirming === null ? (
@@ -224,6 +227,8 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
 
 /** What the table waits on, in words: the reader, somebody by name, an open seat — or how it ended. */
 function StatusLine({ view, sending, thinking }: { view: OnlineTableView; sending: boolean; thinking: boolean }) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   if (view.status === ONLINE_STATUS.ended) {
     return (
       <p className={`${PANEL_CLASS} flex items-center gap-1.5 text-sm`} data-testid="online-status" data-state="ended">

@@ -1,3 +1,5 @@
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import { PartyDie } from "../PartyDie";
 import { PACHISI_TUMBLE_MS } from "./pachisi.constants";
 
@@ -9,6 +11,7 @@ import { PACHISI_TUMBLE_MS } from "./pachisi.constants";
  * shows it at rest, so a reload lays the dice as they lay.
  */
 export function PachisiDice({ dice, used, thrown }: { dice: readonly [number, number]; used: readonly boolean[]; thrown: number }) {
+  const say = useSpeaker();
   return (
     <div className="flex items-center gap-2" data-testid="pachisi-dice" data-thrown={thrown}>
       {dice.map((value, at) => (
@@ -19,7 +22,7 @@ export function PachisiDice({ dice, used, thrown }: { dice: readonly [number, nu
           data-value={value}
           data-used={used[at] ? "true" : undefined}
           role="img"
-          aria-label={value === 0 ? "Not thrown yet" : `A ${value}${used[at] ? ", used" : ""}`}
+          aria-label={value === 0 ? say.say("party.pachisi.dieNone") : say.say(used[at] ? "party.pachisi.dieUsed" : "party.pachisi.dieValue", { value: String(value) })}
         >
           {/* Mounted before the first throw too, so the first throw tumbles; hidden under the empty square until then. */}
           <span className={`block ${value === 0 ? "invisible" : ""}`}>

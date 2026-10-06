@@ -1,8 +1,9 @@
 "use client";
 
 import { MarbleChip } from "../MarbleChip";
-import { HITOTSU_COPY } from "./hitotsu.constants";
 import { HitotsuCardView } from "./HitotsuCardView";
+import { hitotsuScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * EVERYBODY ELSE AT THE TABLE, in a row over it: their marble and name, a
@@ -24,6 +25,8 @@ export function HitotsuSeats({
   scores: readonly number[];
   toPlay: number | null;
 }) {
+  const say = useSpeaker();
+  const HITOTSU_COPY = hitotsuScreenWords(say.locale);
   return (
     <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3" data-testid="hitotsu-seats">
       {seats.map((seat) => (

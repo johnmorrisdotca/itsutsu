@@ -10,9 +10,9 @@ import { gunjinOver, gunjinToPlay } from "@/lib/party/gunjin/gunjin";
 import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { partyPlayerName } from "@/lib/party/partyNames";
 
-import { PARTY_COPY } from "../party.constants";
-import { GUNJIN_COPY } from "./gunjin.constants";
 import { useKeptGunjin } from "./gunjinStore";
+import { gunjinWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A GAME OF GUNJIN, WAITING IN MY GAMES. "Anything a person plays is kept
@@ -22,6 +22,9 @@ import { useKeptGunjin } from "./gunjinStore";
  * whose turn it is and nothing of the board, which is nobody else's to see.
  */
 export function GunjinCard() {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [game] = useKeptGunjin();
   if (game === undefined || game === null || gunjinOver(game)) return null;
   const variant = PARTY_KINDS.gunjin;
@@ -33,7 +36,7 @@ export function GunjinCard() {
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{GUNJIN_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
           <GameName variant={variant} /> · {gunjinBoardOf(game.size)?.name}
-          {to === null ? "" : ` · ${partyPlayerName(game, to)} to play`}
+          {to === null ? "" : ` · ${partyPlayerName(game, to, say)} to play`}
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

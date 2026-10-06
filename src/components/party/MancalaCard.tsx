@@ -12,7 +12,8 @@ import { PARTY_KINDS } from "@/lib/party/party.constants";
 
 import { MarbleChip } from "./MarbleChip";
 import { useKeptMancalaGame } from "./mancalaStore";
-import { MANCALA_COPY, PARTY_COPY } from "./party.constants";
+import { mancalaWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A GAME OF MANCALA, WAITING IN MY GAMES. "Anything a person plays is kept
@@ -22,6 +23,9 @@ import { MANCALA_COPY, PARTY_COPY } from "./party.constants";
  * a finished one has nothing left to come back to.
  */
 export function MancalaCard() {
+  const say = useSpeaker();
+  const MANCALA_COPY = mancalaWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [game] = useKeptMancalaGame();
   if (game === undefined || game === null || game.status !== MANCALA_STATUS.playing) return null;
   const variant = PARTY_KINDS.mancala;
@@ -33,7 +37,7 @@ export function MancalaCard() {
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
           <GameName variant={variant} /> · {MANCALA_RULE_NAMES[game.ruleSet]} · {MANCALA_COPY.sowings(game.moves.length)} ·
           <MarbleChip player={game.toPlay} />
-          {partyPlayerName(game, game.toPlay)} to play
+          {say.say("party.toPlay", { name: partyPlayerName(game, game.toPlay, say) })}
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

@@ -5,9 +5,12 @@ import type { XpEventType } from "../xp/xp.types";
 import type { ImportedVolumeType } from "../xp/xpAwardCopy.constants";
 
 import type { JaTextCases } from "./copyJa.types";
+import type { PartyCopyJa } from "./dictionaries/party.ja.types";
 import type { PuzzleCopyJa } from "./dictionaries/puzzles.ja.types";
+import type { CasualKind } from "../casual/casual.types";
+import type { PartyKind } from "../party/party.types";
 import type { PuzzleKind } from "../puzzles/puzzles.types";
-import type { PuzzleTablesAuthored } from "./jaText.build";
+import type { PartyTablesAuthored, PuzzleTablesAuthored } from "./jaText.build";
 
 import type { PhraseKey } from "./i18n.constants";
 
@@ -69,6 +72,8 @@ export type JaCopyText = {
   importedVolumes: Record<ImportedVolumeType, { blurb: string }>;
   /** Every puzzle's words: its copy and the tables of its screens. */
   puzzles: JaPuzzleText;
+  /** Every party, card and casual game's words: its copy and the tables of its screens. */
+  party: JaPartyText;
 };
 
 /**
@@ -98,6 +103,18 @@ export type JaTextOf<T> = T extends undefined
 export type JaPuzzleText = {
   copy: Record<PuzzleKind, JaTextOf<PuzzleCopyJa>>;
   tables: { [K in keyof PuzzleTablesAuthored]: JaTextOf<PuzzleTablesAuthored[K]> };
+};
+
+/**
+ * The Japanese of the party, card and casual games: each game's tagline, origin and rules (an overlay of its row
+ * in `PARTY_DISPLAY` or `CASUAL_DISPLAY`, a `Record` over both kinds so a game with none does not compile) and
+ * every table of words its screens are made of, by name (`PARTY_TABLES_AUTHORED` in `jaText.build.ts`, where each
+ * is authored). Laid over the English table it answers by `copyTable.ts`, which is why a table is read as
+ * `partyTable(english, "name", locale)`.
+ */
+export type JaPartyText = {
+  copy: Record<PartyKind | CasualKind, JaTextOf<PartyCopyJa>>;
+  tables: { [K in keyof PartyTablesAuthored]: JaTextOf<PartyTablesAuthored[K]> };
 };
 
 export type JaText = JaCopyText & { phrases: JaPhraseText };

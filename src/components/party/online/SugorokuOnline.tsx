@@ -5,8 +5,9 @@ import type { SugorokuMove, SugorokuTable } from "@/lib/party/sugoroku/sugoroku.
 import { sugorokuOver, sugorokuToPlay } from "@/lib/party/sugoroku/sugorokuTable";
 
 import { SugorokuStage } from "../sugoroku/SugorokuStage";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * ONE OF THE SEVEN AT A TABLE ON TWO DEVICES: the same stage the table on one
@@ -17,6 +18,8 @@ import type { OnlineBoardProps } from "./online.types";
  * player at the strength the seat was given.
  */
 export function SugorokuOnline({ game, appearance, canMove, onMove, mySeat }: OnlineBoardProps<SugorokuTable, SugorokuMove>) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   const over = sugorokuOver(game);
   const mine = mySeat === 0 || mySeat === 1;
   return (

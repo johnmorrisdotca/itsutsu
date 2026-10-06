@@ -12,12 +12,12 @@ import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { freshSeed } from "@/lib/puzzles/random";
 
-import { PARTY_COPY, TRAIN_COPY } from "./party.constants";
 import { TrainTable } from "./TrainTable";
 import type { TrainSetUpProps } from "./train.types";
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
-import { ONLINE_COPY } from "./online/online.constants";
 import type { SeatChoice } from "./online/online.types";
+import { onlineWords, partyScreenWords, seatColourName, trainWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const SPEC = PARTY_SPECS.mexicanTrain;
 const COUNTS = Array.from({ length: SPEC.mostPlayers - SPEC.fewestPlayers + 1 }, (_, at) => SPEC.fewestPlayers + at);
@@ -91,6 +91,10 @@ function Section({ legend, children }: { legend: string; children: ReactNode }) 
  * so choosing three rather than eight moves nothing below them.
  */
 export function TrainSetUp({ appearance, onStart, ready, online }: TrainSetUpProps) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const TRAIN_COPY = trainWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const [set, setSet] = useState(SPEC.defaultSize);
@@ -181,7 +185,7 @@ export function TrainSetUp({ appearance, onStart, ready, online }: TrainSetUpPro
                   <>
                     <label className="min-w-0 flex-1">
                       <span className="sr-only">
-                        Player {seat + 1}, {marbles[seat].label}
+                        {seatColourName(say, seat, marbles[seat])}
                       </span>
                       <input
                         type="text"

@@ -27,7 +27,7 @@ export function MarbleChip({ player, size = "line" }: MarbleChipProps) {
         ...(size === "hole" ? { fontSize: "46cqmin" } : {}),
         // White on the wood needs an edge to stand on.
         boxShadow:
-          marble.label === "White"
+          marble.letter === "W"
             ? `inset 0 0 0 0.06em rgba(0,0,0,0.35), ${size === "hole" ? "1px 2px 3px rgba(0,0,0,0.45)" : "0 1px 2px rgba(0,0,0,0.35)"}`
             : undefined,
       }}

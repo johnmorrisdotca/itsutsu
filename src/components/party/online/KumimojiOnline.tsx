@@ -12,6 +12,7 @@ import { loadTileWords, tileWords, tileWordsReady } from "@/lib/puzzles/kumimoji
 import { KUMIMOJI_ONLINE, seatOf, type KumimojiMove } from "@/lib/party/online/onlineKumimoji";
 
 import type { OnlineBoardProps } from "./online.types";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 /**
  * KUMIMOJI AT A TABLE ON SEVERAL DEVICES: on the reader's own turn, the same
@@ -80,7 +81,7 @@ export function KumimojiOnline({ game, appearance, canMove, onMove }: OnlineBoar
 }
 
 /** A seat's standing at Kumimoji: the tiles in its hand, and on its table. */
-export function kumimojiStanding(game: PartyGame, seat: number): string {
+export function kumimojiStanding(game: PartyGame, seat: number, say: Speaker): string {
   const player = game.players[seat];
-  return player === undefined ? "" : `${player.hand.length} in hand · ${player.tiles.size} laid`;
+  return player === undefined ? "" : say.say("party.kumimoji.standing", { hand: String(player.hand.length), laid: String(player.tiles.size) });
 }

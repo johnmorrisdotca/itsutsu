@@ -8,8 +8,9 @@ import { CASUAL_DISPLAY, CASUAL_SPECS } from "@/lib/casual/casual.constants";
 import type { CasualKind } from "@/lib/casual/casual.types";
 import { gamePath, setUpPath } from "@/lib/gomoku/slugs";
 
-import { CASUAL_COPY } from "./casual.constants";
 import { CasualPlay } from "./CasualPlay";
+import { casualWords } from "@/components/casual/casualWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** The level a play address asks for (`?level=3`), held to the game's levels; the first when it asks for none or nonsense. */
 export function casualLevelAsked(kind: CasualKind, query: Record<string, string | string[] | undefined>): number {
@@ -26,6 +27,8 @@ export function casualLevelAsked(kind: CasualKind, query: Record<string, string 
  * (`CasualPlay`).
  */
 export function CasualPlayPage({ kind, level }: { kind: CasualKind; level: number }) {
+  const say = useSpeaker();
+  const CASUAL_COPY = casualWords(say.locale);
   const copy = CASUAL_DISPLAY[kind];
   return (
     <Page board="play">

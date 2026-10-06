@@ -7,9 +7,10 @@ import { storeOf } from "@/lib/party/mancala/sowing";
 
 import { MancalaBoard } from "../MancalaBoard";
 import { MancalaTurnLine } from "../MancalaTurnLine";
-import { MANCALA_COPY } from "../party.constants";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { mancalaWords, onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 /**
  * MANCALA AT A TABLE ON SEVERAL DEVICES: the turn line and board the table on
@@ -18,6 +19,9 @@ import type { OnlineBoardProps } from "./online.types";
  * rather than sown seed by seed.
  */
 export function MancalaOnline({ game, appearance, canMove, onMove }: OnlineBoardProps<MancalaGame, number>) {
+  const say = useSpeaker();
+  const MANCALA_COPY = mancalaWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
   const playing = game.status === MANCALA_STATUS.playing;
   return (
     <div className="flex min-w-0 flex-col gap-3" data-testid="mancala-game" data-state={game.status} data-rules={game.ruleSet} data-moves={game.moves.length}>
@@ -31,7 +35,6 @@ export function MancalaOnline({ game, appearance, canMove, onMove }: OnlineBoard
 }
 
 /** A seat's standing at Mancala: the seeds in its store. */
-export function mancalaStanding(game: MancalaGame, seat: number): string {
-  const seeds = game.holes[storeOf(seat)] ?? 0;
-  return `${seeds} in store`;
+export function mancalaStanding(game: MancalaGame, seat: number, say: Speaker): string {
+  return say.say("party.mancala.inStore", { seeds: String(game.holes[storeOf(seat)] ?? 0) });
 }

@@ -12,11 +12,26 @@ import { usePartyMarbles } from "../partyMarbles";
 import type { TenkaGame } from "@/lib/party/tenka/tenka.types";
 import { cardKind, cardTerritory } from "@/lib/party/tenka/tenkaCards";
 import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
-import { tenkaPlayerName, territoriesHeld } from "@/lib/party/tenka/tenkaTurn";
+import { territoriesHeld } from "@/lib/party/tenka/tenkaTurn";
 
 import { MarbleChip } from "../MarbleChip";
+import { territoryName } from "./tenkaWords";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { marbleLabel, tenkaWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { partyPlayerName } from "@/lib/party/partyNames";
 
-import { TENKA_COPY } from "./tenka.constants";
+
+/** What the draw at the end of the last turn says: the kind and the territory of the card, or that it was wild. */
+function drawLine(game: TenkaGame, say: Speaker): string {
+  const draw = game.lastDraw!;
+  const map = tenkaMapOf(game);
+  const territory = cardTerritory(draw.card, map);
+  const name = partyPlayerName(game, draw.seat, say);
+  if (territory === null) return say.say("party.tenka.newsDrawWild", { name });
+  const kind = say.say(({ land: "party.tenka.kindLand", sea: "party.tenka.kindSea", air: "party.tenka.kindAir", wild: "party.tenka.kindWild" } as const)[cardKind(draw.card, map)]);
+  return say.say("party.tenka.newsDraw", { name, kind, territory: territoryName(map.territories[territory], say) });
+}
 
 /**
  * WHOSE TURN IT IS, by name, colour and letter, and what just happened that
@@ -31,11 +46,13 @@ import { TENKA_COPY } from "./tenka.constants";
  * swatches beside the map.
  */
 export function TenkaTurnLine({ game, colour = null }: { game: TenkaGame; colour?: ReactNode }) {
+  const say = useSpeaker();
+  const TENKA_COPY = tenkaWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
-  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => tenkaPlayerName(game, seat)} />;
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => partyPlayerName(game, seat, say)} />;
   if (game.phase === TENKA_PHASES.over) {
-    const names = game.winners.map((seat) => tenkaPlayerName(game, seat));
+    const names = game.winners.map((seat) => partyPlayerName(game, seat, say));
     const world = game.out.filter((out) => !out).length === 1;
     const held = TENKA_COPY.territories(territoriesHeld(game.owners, game.winners[0]));
     return (
@@ -46,20 +63,20 @@ export function TenkaTurnLine({ game, colour = null }: { game: TenkaGame; colour
         ))}
         <span>
           {world
-            ? `${names[0]} takes the world. 天下統一!`
+            ? say.say("party.tenka.takesWorld", { name: names[0] })
             : names.length === 1
-              ? `${names[0]} wins the count, with ${held}.`
-              : `${names.slice(0, -1).join(", ")} and ${names.at(-1)} share the win, with ${held} each.`}
+              ? say.say("party.tenka.winsCount", { name: names[0], held })
+              : say.say("party.tenka.sharesCount", { names: say.joined(names), held })}
         </span>
       </p>
     );
   }
   const marble = marbles[game.toPlay];
   const news = [
-    game.lastOut !== null ? `${tenkaPlayerName(game, game.lastOut.by)} knocked ${tenkaPlayerName(game, game.lastOut.seat)} out and took their cards.` : null,
-    game.lastTrade !== null ? `${tenkaPlayerName(game, game.lastTrade.seat)} traded a set for ${TENKA_COPY.armies(game.lastTrade.armies)}.` : null,
+    game.lastOut !== null ? say.say("party.tenka.newsOut", { by: partyPlayerName(game, game.lastOut.by, say), seat: partyPlayerName(game, game.lastOut.seat, say) }) : null,
+    game.lastTrade !== null ? say.say("party.tenka.newsTrade", { name: partyPlayerName(game, game.lastTrade.seat, say), armies: TENKA_COPY.armies(game.lastTrade.armies) }) : null,
     game.lastDraw !== null && game.lastDraw.seat !== game.toPlay && game.phase === TENKA_PHASES.reinforce
-      ? `${tenkaPlayerName(game, game.lastDraw.seat)} took a card${cardTerritory(game.lastDraw.card, tenkaMapOf(game)) === null ? " (wild)" : ` (${cardKind(game.lastDraw.card, tenkaMapOf(game))}, ${tenkaMapOf(game).territories[cardTerritory(game.lastDraw.card, tenkaMapOf(game))!].name})`}.`
+      ? drawLine(game, say)
       : null,
   ].filter((line) => line !== null);
   return (
@@ -69,14 +86,14 @@ export function TenkaTurnLine({ game, colour = null }: { game: TenkaGame; colour
       <span className="flex min-w-0 flex-col">
         <span className="text-base">
           <span className="font-semibold" data-testid="tenka-turn-name">
-            {tenkaPlayerName(game, game.toPlay)}
+            {partyPlayerName(game, game.toPlay, say)}
           </span>
           <span className="text-muted">
-            {"’s turn"} · {marble.label} ({marble.letter})
+            {say.say("party.turnSuffix")} · {say.say("party.turnTrail", { colour: marbleLabel(marble, say.locale), letter: marble.letter })}
           </span>
         </span>
         <span className={`truncate text-sm ${news.length === 0 ? "invisible" : ""}`} data-testid="tenka-news">
-          {news.length === 0 ? "Nothing yet." : news.join(" ")}
+          {news.length === 0 ? say.say("party.tenka.nothingYet") : news.join(" ")}
         </span>
       </span>
       {colour === null ? null : <div className="ml-auto shrink-0">{colour}</div>}

@@ -39,7 +39,7 @@ import {
   type Strength,
 } from "@johnmorrisdotca/sugoroku";
 
-import { sugorokuComputerShown, SUGOROKU_DEFAULT_STRENGTH, SUGOROKU_LENGTHS, SUGOROKU_STRENGTHS, SUGOROKU_VARIANT_KEY, isSugorokuKind, type SugorokuKind } from "./sugoroku.constants";
+import { SUGOROKU_DEFAULT_STRENGTH, SUGOROKU_LENGTHS, SUGOROKU_STRENGTHS, SUGOROKU_VARIANT_KEY, isSugorokuKind, type SugorokuKind } from "./sugoroku.constants";
 import type { SugorokuMove, SugorokuTable, SugorokuView } from "./sugoroku.types";
 
 /**
@@ -340,7 +340,7 @@ export function sugorokuMoveCount(table: SugorokuTable): number {
 
 /** The table with the seats' names written in, for a page to draw: the record has none, so a seat taken by a link needs no rewrite of the game. */
 export function namedSugoroku(table: SugorokuTable, names: readonly string[]): SugorokuTable {
-  const players = table.players.map((was, seat) => sugorokuComputerShown(tidy(names[seat] ?? was)));
+  const players = table.players.map((was, seat) => tidy(names[seat] ?? was));
   const same = players.every((name, seat) => name === table.players[seat]);
   if (same) return table;
   const named: SugorokuTable = { ...table, players };

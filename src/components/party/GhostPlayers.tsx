@@ -3,8 +3,9 @@ import { partyPlayerName } from "@/lib/party/partyNames";
 import { GHOST_PHASE, GHOST_WORD, ghostLettersOf, ghostStillIn } from "@/lib/party/superghost/superghost";
 
 import { MarbleChip } from "./MarbleChip";
-import { GHOST_COPY, PARTY_COPY } from "./party.constants";
 import type { GhostPlayersProps } from "./party.types";
+import { ghostWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * EVERYBODY AT THE TABLE, in turn order, each with the letters of the ghost
@@ -17,6 +18,9 @@ import type { GhostPlayersProps } from "./party.types";
  * is greyed, struck through and labelled Out.
  */
 export function GhostPlayers({ game, room = 0 }: GhostPlayersProps) {
+  const say = useSpeaker();
+  const GHOST_COPY = ghostWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const word = [...GHOST_WORD[game.language]];
   const playing = game.phase !== GHOST_PHASE.finished;
   const rows = Math.max(room, game.players.length);
@@ -28,7 +32,7 @@ export function GhostPlayers({ game, room = 0 }: GhostPlayersProps) {
       <ol className="flex flex-col gap-1.5">
         {Array.from({ length: rows }, (_, seat) => {
           if (seat >= game.players.length) return <li key={seat} className="invisible h-8" aria-hidden="true" />;
-          const name = partyPlayerName(game, seat);
+          const name = partyPlayerName(game, seat, say);
           const out = !ghostStillIn(game, seat);
           const held = game.letters[seat];
           const current = playing && seat === game.toPlay;

@@ -2,9 +2,9 @@
 
 import dynamic from "next/dynamic";
 
-import { PLAY_BUTTON } from "@/components/ui/ui.constants";
+import { gunjinWords } from "@/components/party/partyWords";
+import { PlayLoading } from "@/components/party/PlayLoading";
 
-import { GUNJIN_COPY } from "./gunjin.constants";
 
 /**
  * GUNJIN'S TABLE, PLAY BUTTON AND MY GAMES CARD, LOADED IN THE BROWSER ONLY, as
@@ -21,13 +21,7 @@ export const GunjinTableClient = dynamic(() => import("./GunjinTable").then((mod
 
 export const GunjinOfferClient = dynamic(() => import("./GunjinOffer").then((module) => module.GunjinOffer), {
   ssr: false,
-  loading: () => (
-    <div className="flex flex-col" data-testid="party-kind-offer" data-ready="false">
-      <span className={PLAY_BUTTON} aria-hidden="true">
-        {GUNJIN_COPY.play}
-      </span>
-    </div>
-  ),
+  loading: () => <PlayLoading label={(locale) => gunjinWords(locale).play} />,
 });
 
 export const GunjinCardClient = dynamic(() => import("./GunjinCard").then((module) => module.GunjinCard), { ssr: false });

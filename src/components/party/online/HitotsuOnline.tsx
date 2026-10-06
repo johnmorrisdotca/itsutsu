@@ -4,13 +4,14 @@ import { AskIfAway } from "@/components/game/AskIfAway";
 import { HITOTSU_ONE_HAND, type HitotsuGame, type HitotsuMove, hitotsuWinners } from "@johnmorrisdotca/hitotsu";
 
 import { CardScores } from "../cards/CardScores";
-import { HITOTSU_COPY } from "../hitotsu/hitotsu.constants";
 import { HitotsuDesk } from "../hitotsu/HitotsuDesk";
 import { hitotsuNewsLine, hitotsuStatus } from "../hitotsu/hitotsuPresses";
 import { HitotsuSeats } from "../hitotsu/HitotsuSeats";
 import { HitotsuTableTop } from "../hitotsu/HitotsuTableTop";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { hitotsuScreenWords, onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 /**
  * HITOTSU AT A TABLE ON SEVERAL DEVICES: everybody else along the top, the
@@ -23,6 +24,9 @@ import type { OnlineBoardProps } from "./online.types";
  * one move at a time, by the table's own computer player.
  */
 export function HitotsuOnline({ game, appearance, canMove, onMove, mySeat }: OnlineBoardProps<HitotsuGame, HitotsuMove>) {
+  const say = useSpeaker();
+  const HITOTSU_COPY = hitotsuScreenWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
   const over = game.phase === "over";
   const name = (seat: number) => game.players[seat] || `Player ${seat + 1}`;
   const names = game.players.map((_, seat) => name(seat));
@@ -62,6 +66,6 @@ export function HitotsuOnline({ game, appearance, canMove, onMove, mySeat }: Onl
 }
 
 /** A seat's standing at Hitotsu: its points so far and the cards it holds. */
-export function hitotsuStanding(game: HitotsuGame, seat: number): string {
-  return `${game.scores[seat] ?? 0} points · ${HITOTSU_COPY.cards(game.hands[seat]?.length ?? 0)}`;
+export function hitotsuStanding(game: HitotsuGame, seat: number, say: Speaker): string {
+  return say.say("party.hitotsu.standing", { points: String(game.scores[seat] ?? 0), cards: hitotsuScreenWords(say.locale).cards(game.hands[seat]?.length ?? 0) });
 }

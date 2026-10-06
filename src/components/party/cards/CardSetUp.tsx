@@ -6,14 +6,17 @@ import { PICK_CHIP_OPEN, PICK_CHIP_SHUT } from "@/components/live/picker.constan
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { CARD_GAME_RULES } from "@/lib/cardGames/cardGameRules";
 import { CARD_GAME_SPECS } from "@/lib/cardGames/cardGames.constants";
-import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
+import { PARTY_NAME_MOST, computerNumberName } from "@/lib/party/partyNames";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 
 import { MarbleChip } from "../MarbleChip";
 import { CARD_ADAPTERS } from "./cardAdapters";
-import { CARD_TABLE_COPY, PREVIEW_SEED } from "./cardTable.constants";
+import { PREVIEW_SEED } from "./cardTable.constants";
 import type { CardSetUpProps } from "./cardTable.types";
 import { CardTableSurface } from "./CardTableParts";
 import { freshCardSeed } from "./cardTableStores";
+import { cardTableWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** What each game's length is called on its tiles. */
 const LENGTH_WORDS: Record<CardSetUpProps["kind"], (size: number) => string> = {
@@ -51,6 +54,8 @@ function Section({ legend, children }: { legend: string; children: ReactNode }) 
  * nobody sits in kept in place and hidden.
  */
 export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) {
+  const say = useSpeaker();
+  const CARD_TABLE_COPY = cardTableWords(say.locale);
   const spec = CARD_GAME_SPECS[kind];
   const counts = Array.from({ length: spec.mostPlayers - spec.fewestPlayers + 1 }, (_, at) => spec.fewestPlayers + at);
   const [count, setCount] = useState(spec.defaultPlayers);
@@ -61,7 +66,7 @@ export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) 
   const nobody = seated.every(Boolean);
   const adapter = CARD_ADAPTERS[kind];
   const preview = CARD_GAME_RULES[kind].start(size, names.slice(0, count), undefined, PREVIEW_SEED, seated.map(() => true));
-  const previewNames = names.slice(0, count).map((name, seat) => (name.trim() === "" ? (computers[seat] ? CARD_TABLE_COPY.computerName(seat) : `Player ${seat + 1}`) : name));
+  const previewNames = names.slice(0, count).map((name, seat) => (name.trim() === "" ? (computers[seat] ? computerNumberName(say, seat + 1) : playerNumberName(say, seat + 1)) : name));
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start">
@@ -104,12 +109,12 @@ export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) 
               <div key={seat} className="flex items-center gap-2 text-sm" data-testid="cards-seat-set-up" data-seat={seat}>
                 <MarbleChip player={seat} />
                 <label className="min-w-0 flex-1">
-                  <span className="sr-only">Player {seat + 1}</span>
+                  <span className="sr-only">{playerNumberName(say, seat + 1)}</span>
                   <input
                     type="text"
                     value={name}
                     maxLength={PARTY_NAME_MOST}
-                    placeholder={computers[seat] ? CARD_TABLE_COPY.computerName(seat) : `Player ${seat + 1}`}
+                    placeholder={computers[seat] ? computerNumberName(say, seat + 1) : playerNumberName(say, seat + 1)}
                     onChange={(event) => setNames((was) => was.map((one, at) => (at === seat ? event.target.value : one)))}
                     className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                     data-testid="cards-name"

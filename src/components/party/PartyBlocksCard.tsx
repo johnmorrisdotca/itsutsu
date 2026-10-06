@@ -9,8 +9,9 @@ import { partyPlayerName } from "@/lib/gomoku/party/partyRace";
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 
 import { MarbleChip } from "./MarbleChip";
-import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
 import { useKeptBlocksParty } from "./partyBlocksStore";
+import { blocksWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * BLOCK FIVE FOR FOUR, WAITING IN MY GAMES. "Anything a person plays is kept
@@ -19,6 +20,8 @@ import { useKeptBlocksParty } from "./partyBlocksStore";
  * beside the other tables. Only while it is going.
  */
 export function PartyBlocksCard() {
+  const say = useSpeaker();
+  const PARTY_BLOCKS_COPY = blocksWords(say.locale);
   const [game] = useKeptBlocksParty();
   if (game === undefined || game === null || game.status !== BLOCKS_STATUS.playing) return null;
   const laid = game.moves.length;
@@ -28,9 +31,9 @@ export function PartyBlocksCard() {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_BLOCKS_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={BLOCKS_PARTY_VARIANT} /> for four · {laid} {laid === 1 ? "piece" : "pieces"} laid ·
+          <GameName variant={BLOCKS_PARTY_VARIANT} /> {say.say("party.blocks.forFour")} · {say.count("party.blocks.cardLaid", laid)} ·
           <MarbleChip player={game.toPlay} />
-          {partyPlayerName(game.players, game.toPlay)} to play
+          {partyPlayerName(game.players, game.toPlay, say)} to play
         </span>
       </div>
       <Link href={passAndPlayPath(BLOCKS_PARTY_VARIANT)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="blocks-game-continue">

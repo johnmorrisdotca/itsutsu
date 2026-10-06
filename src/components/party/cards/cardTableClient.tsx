@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 
-import { PLAY_BUTTON } from "@/components/ui/ui.constants";
 
 import type { PartyTableGameProps } from "../party.types";
-import { CARD_TABLE_COPY } from "./cardTable.constants";
+import { PlayLoading } from "../PlayLoading";
+import { cardTableWords } from "@/components/party/partyWords";
 
 /**
  * THE CARD GAMES' TABLE, THEIR PLAY BUTTON AND THEIR MY GAMES CARD, LOADED IN
@@ -23,14 +23,7 @@ const Table = dynamic(() => import("./CardGameTable").then((module) => module.Ca
 });
 const Offer = dynamic(() => import("./CardGameOffer").then((module) => module.CardGameOffer), {
   ssr: false,
-  loading: () => (
-    <div className="flex flex-col" data-testid="party-kind-offer" data-ready="false">
-      {/* The button's room and words, not yet a link: the browser has not said whether a game is going. */}
-      <span className={PLAY_BUTTON} aria-hidden="true">
-        {CARD_TABLE_COPY.play}
-      </span>
-    </div>
-  ),
+  loading: () => <PlayLoading label={(locale) => cardTableWords(locale).play} />,
 });
 const Card = dynamic(() => import("./CardGameCard").then((module) => module.CardGameCard), { ssr: false });
 

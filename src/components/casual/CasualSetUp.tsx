@@ -11,9 +11,10 @@ import { goingLevel, nextLevel, wonLevels } from "@/lib/casual/casualProgress";
 import { casualPlayPath } from "@/lib/gomoku/slugs";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { CASUAL_COPY } from "./casual.constants";
 import { CasualBoardClient } from "./CasualBoardClient";
 import { useCasualSave } from "./casualStore";
+import { casualWords } from "@/components/casual/casualWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A CASUAL GAME'S SET-UP, at /games/<slug>/new: which level, and Start.
@@ -30,6 +31,8 @@ import { useCasualSave } from "./casualStore";
  * paragraph under Start does not depend on the choice.
  */
 export function CasualSetUp({ kind }: { kind: CasualKind }) {
+  const say = useSpeaker();
+  const CASUAL_COPY = casualWords(say.locale);
   const hydrated = useHydrated();
   const save = useCasualSave();
   const [chosen, setChosen] = useState<number | null>(null);

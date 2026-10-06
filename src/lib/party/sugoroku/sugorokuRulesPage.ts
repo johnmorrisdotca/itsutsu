@@ -1,6 +1,4 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
-import type { PartySpec } from "../party.types";
-
 import { SUGOROKU_KIND_LIST, SUGOROKU_STRENGTH_NAMES, SUGOROKU_STRENGTHS, type SugorokuKind } from "./sugoroku.constants";
 
 /** A list in words: "a", "a or b", "a, b or c". */
@@ -8,17 +6,12 @@ function orList(items: readonly string[]): string {
   return items.length === 1 ? items[0] : `${items.slice(0, -1).join(", ")} or ${items.at(-1)}`;
 }
 
-/** What a game's lengths are in words: "as a single game, or a match to 3, 5, 7 or 9 points". */
-function lengthWords(spec: PartySpec): string {
-  const matches = spec.sizes.filter((size) => size > 1);
-  return matches.length === 0 ? "as a single game" : `as a single game, or a match to ${orList(matches.map(String))} points with the doubling cube`;
-}
-
-/** What a rules page says each of the seven is offered as, from its spec: never a second sentence that could drift. */
-export const SUGOROKU_OFFERED: Record<SugorokuKind, (spec: PartySpec) => string> = Object.fromEntries(
-  SUGOROKU_KIND_LIST.map((kind) => [kind, (spec: PartySpec) => lengthWords(spec)]),
-) as Record<SugorokuKind, (spec: PartySpec) => string>;
-
+/*
+ * THE ENGLISH HALF OF WHAT THE SEVEN SAY OF THEIR TABLE on a rules page: how a turn is made, the house rules, and
+ * what the table has settled. The Japanese is `PARTY_TABLE_WORDS_JA` (`party.ja.tableWordsCards.constants.ts`),
+ * laid over it by `partyRulesPage`. What each game is offered as (a single game, or a match) is built from its
+ * spec by `partyOfferedWords.ts`.
+ */
 const STRENGTHS = orList(SUGOROKU_STRENGTHS.map((strength) => SUGOROKU_STRENGTH_NAMES[strength].toLowerCase()));
 
 const TURN =

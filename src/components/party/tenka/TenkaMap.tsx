@@ -9,22 +9,14 @@ import { ViewPad } from "@/components/puzzles/ViewPad";
 import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
 import { tenkaShapesFor } from "@/lib/party/tenka/tenkaShapes.data";
 
-import {
-  TENKA_COPY,
-  TENKA_LAND_OPACITY,
-  TENKA_LINES,
-  TENKA_NARROW_BOX,
-  TENKA_REGION_BUTTON,
-  TENKA_REGION_NAMES,
-  TENKA_SEA,
-  TENKA_SEA_DARK,
-  TENKA_TAP_REACH,
-} from "./tenka.constants";
+import { TENKA_LAND_OPACITY, TENKA_LINES, TENKA_NARROW_BOX, TENKA_REGION_BUTTON, TENKA_SEA, TENKA_SEA_DARK, TENKA_TAP_REACH } from "./tenka.constants";
 import type { TenkaMapProps } from "./tenka.types";
 import { TenkaChips, ownerMarble } from "./TenkaChips";
 import { TenkaWraps } from "./TenkaWraps";
 import { READABLE_SCALE, areaAround, nearestTerritory } from "./tenkaView";
 import { useMapView } from "./useMapView";
+import { tenkaNeutralMarble, tenkaRegionWords, tenkaWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE WORLD, ON THE SITE'S OWN BOARD.
@@ -49,6 +41,9 @@ import { useMapView } from "./useMapView";
  * enough that every counter there is drawn whole.
  */
 export function TenkaMap({ game, appearance, marks, onTerritory, readOnly: preview = false, handle }: TenkaMapProps) {
+  const say = useSpeaker();
+  const TENKA_COPY = tenkaWords(say.locale);
+  const TENKA_REGION_NAMES = tenkaRegionWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   // The game's own map: the world, or Europe (Tenka 1.2).
@@ -120,7 +115,7 @@ export function TenkaMap({ game, appearance, marks, onTerritory, readOnly: previ
                   <path
                     key={territory}
                     d={outline}
-                    fill={ownerMarble(game.owners[territory], marbles).fill}
+                    fill={ownerMarble(game.owners[territory], marbles, tenkaNeutralMarble(say.locale)).fill}
                     fillOpacity={TENKA_LAND_OPACITY}
                     stroke="rgba(20,20,20,0.55)"
                     strokeWidth={TENKA_LINES.territory / view.scale}

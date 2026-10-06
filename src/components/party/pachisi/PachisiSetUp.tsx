@@ -12,11 +12,11 @@ import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { freshSeed } from "@/lib/puzzles/random";
 
-import { PARTY_COPY } from "../party.constants";
 import { usePartyMarbles } from "../partyMarbles";
 import { SeatColourButton } from "../SeatColourButton";
 import { PachisiBoard } from "./PachisiBoard";
-import { PACHISI_COPY } from "./pachisi.constants";
+import { pachisiWords, partyScreenWords, seatColourName } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const COUNTS = Array.from({ length: PACHISI_MOST - PACHISI_FEWEST + 1 }, (_, at) => PACHISI_FEWEST + at);
 
@@ -28,6 +28,9 @@ const COUNTS = Array.from({ length: PACHISI_MOST - PACHISI_FEWEST + 1 }, (_, at)
  * nothing changes height when the number changes.
  */
 export function PachisiSetUp({ appearance, onStart, ready }: { appearance: Appearance; onStart: (game: PachisiGame) => void; ready: { "data-ready": string } }) {
+  const say = useSpeaker();
+  const PACHISI_COPY = pachisiWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const marbles = usePartyMarbles();
   const [count, setCount] = useState(PARTY_SPECS.pachisi.defaultPlayers);
   const [names, setNames] = useState<string[]>(() => new Array<string>(PACHISI_MOST).fill(""));
@@ -78,7 +81,7 @@ export function PachisiSetUp({ appearance, onStart, ready }: { appearance: Appea
                 <SeatColourButton player={seat} playing={count} />
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">
-                    Player {seat + 1}, {marbles[seat].label}
+                    {seatColourName(say, seat, marbles[seat])}
                   </span>
                   <input
                     type="text"

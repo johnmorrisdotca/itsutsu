@@ -7,18 +7,21 @@ import { TENKA_NEUTRAL } from "@/lib/party/tenka/tenka.constants";
 import type { TenkaGame } from "@/lib/party/tenka/tenka.types";
 import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
 import { tenkaShapesFor } from "@/lib/party/tenka/tenkaShapes.data";
-import { tenkaPlayerName } from "@/lib/party/tenka/tenkaTurn";
 import { centredBaseline } from "@/lib/ui/svgText";
 
-import { TENKA_CHIP, TENKA_NEUTRAL_MARBLE } from "./tenka.constants";
+import { TENKA_CHIP } from "./tenka.constants";
 import type { MapMarks } from "./tenka.types";
 
 import type { PartyMarble } from "../party.types";
 import { chipRadius, chipWidth, laidOutChips } from "./tenkaView";
+import { marbleLabel, tenkaNeutralMarble, tenkaWords } from "@/components/party/partyWords";
+import { territoryName } from "./tenkaWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { partyPlayerName } from "@/lib/party/partyNames";
 
 /** An owner's marble, as this table shows it (`usePartyMarbles`): a player's, or the neutral army's grey. */
-export function ownerMarble(owner: number, marbles: readonly PartyMarble[]): PartyMarble {
-  return owner === TENKA_NEUTRAL ? TENKA_NEUTRAL_MARBLE : marbles[owner]!;
+export function ownerMarble(owner: number, marbles: readonly PartyMarble[], neutral: PartyMarble): PartyMarble {
+  return owner === TENKA_NEUTRAL ? neutral : marbles[owner]!;
 }
 
 /** The territories whose counters matter most, first: what is chosen and what it reaches, then the player to move's, then the biggest armies. */
@@ -38,6 +41,8 @@ function counterOrder(game: TenkaGame, marks: MapMarks): number[] {
  * (`laidOutChips`); either way it is a button, named in full.
  */
 export function TenkaChips({ game, marks, scale, onTerritory }: { game: TenkaGame; marks: MapMarks; scale: number; onTerritory?: (territory: number) => void }) {
+  const say = useSpeaker();
+  const neutral = tenkaNeutralMarble(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const radius = chipRadius(scale);
@@ -58,10 +63,10 @@ export function TenkaChips({ game, marks, scale, onTerritory }: { game: TenkaGam
       {order.map((territory) => {
         const [x, y] = shapes.labels[territory];
         const owner = game.owners[territory];
-        const marble = ownerMarble(owner, marbles);
+        const marble = ownerMarble(owner, marbles, neutral);
         const armies = game.armies[territory];
-        const name = territories[territory].name;
-        const whose = owner === TENKA_NEUTRAL ? "the neutral army's" : `${tenkaPlayerName(game, owner)}'s`;
+        const name = territoryName(territories[territory], say);
+        const whose = owner === TENKA_NEUTRAL ? say.say("party.tenka.neutralOf") : say.say("party.tenka.possessive", { name: partyPlayerName(game, owner, say) });
         const fought = last !== null && (last.from === territory || last.to === territory);
         const dot = dots.has(territory);
         const width = radius * chipWidth(String(armies).length);
@@ -72,13 +77,13 @@ export function TenkaChips({ game, marks, scale, onTerritory }: { game: TenkaGam
             transform={`translate(${x} ${y})`}
             role={onTerritory === undefined ? undefined : "button"}
             tabIndex={onTerritory === undefined ? undefined : 0}
-            aria-label={`${name}, ${whose} (${marble.label}, ${marble.letter}), ${armies} ${armies === 1 ? "army" : "armies"}`}
+            aria-label={say.say("party.tenka.chipAria", { name, whose, colour: marbleLabel(marble, say.locale), letter: marble.letter, armies: tenkaWords(say.locale).armies(armies) })}
             className={onTerritory === undefined ? undefined : "cursor-pointer outline-none"}
             onClick={onTerritory === undefined ? undefined : () => onTerritory(territory)}
             onKeyDown={onTerritory === undefined ? undefined : press(territory)}
             data-testid="tenka-territory"
             data-territory={territories[territory].key}
-            data-name={name}
+            data-name={territories[territory].name}
             data-owner={owner}
             data-armies={armies}
             data-dot={dot ? "true" : undefined}
@@ -112,7 +117,7 @@ export function TenkaChips({ game, marks, scale, onTerritory }: { game: TenkaGam
                 </text>
               </>
             )}
-            <title>{`${name}: ${whose}, ${armies}`}</title>
+            <title>{say.say("party.tenka.chipTitle", { name, whose, armies: String(armies) })}</title>
           </g>
         );
       })}

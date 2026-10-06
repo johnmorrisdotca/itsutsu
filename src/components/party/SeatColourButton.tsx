@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 
 import { PieceColourPicker } from "@/components/board/PieceColourPicker";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { tableColourRefusal, tableRefusalWords } from "@/lib/pieces/tableColours";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { MarbleChip } from "./MarbleChip";
 import { PARTY_MARBLES, marbleFace } from "./party.constants";
+import { marbleLabel } from "./partyWords";
 import { usePartyMarbles, usePartyTable } from "./partyMarbles";
 
 /**
@@ -50,8 +52,8 @@ export function SeatColourButton({ player, playing }: { player: number; playing:
         type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        aria-label={`Player ${player + 1}'s colour: ${marbles[player]?.label ?? usual.label}. Change it`}
-        title="Choose this player's colour"
+        aria-label={say.say("party.playerColourAria", { player: playerNumberName(say, player + 1), colour: marbleLabel(marbles[player] ?? usual, say.locale) })}
+        title={say.say("party.chooseSeatColour")}
         className="cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-moss"
         data-testid="set-up-seat-colour"
         data-seat={player}
@@ -67,8 +69,8 @@ export function SeatColourButton({ player, playing }: { player: number; playing:
               choose(player, colour);
               setOpen(false);
             }}
-            usual={{ face: marbleFace(usual), name: `${usual.label}, the table's own` }}
-            label={`Player ${player + 1}'s colour`}
+            usual={{ face: marbleFace(usual), name: say.say("party.tableOwn", { colour: marbleLabel(usual, say.locale) }) }}
+            label={say.say("party.ofColour", { name: playerNumberName(say, player + 1) })}
             unavailable={(colour) => {
               const refusal = tableColourRefusal(player, colour, marbles, playing);
               return refusal === null ? null : tableRefusalWords(refusal, say);

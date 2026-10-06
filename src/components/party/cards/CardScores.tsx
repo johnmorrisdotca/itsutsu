@@ -3,7 +3,8 @@
 import { SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 
 import { MarbleChip } from "../MarbleChip";
-import { CARD_TABLE_COPY } from "./cardTable.constants";
+import { cardTableWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE SCORES, one row a seat: the marble and name, the score in the game's own
@@ -12,6 +13,8 @@ import { CARD_TABLE_COPY } from "./cardTable.constants";
  * winners are marked when the game is over.
  */
 export function CardScores({ names, scoreWords, standing, winners }: { names: readonly string[]; scoreWords: string; standing: (seat: number) => { score: string; note?: string }; winners: readonly number[] }) {
+  const say = useSpeaker();
+  const CARD_TABLE_COPY = cardTableWords(say.locale);
   return (
     // Side matter in just the board: the seats above the table already say each player's count (`data-chrome`).
     <section className="flex flex-col gap-1" data-testid="cards-scores" aria-label={CARD_TABLE_COPY.scores} data-chrome>

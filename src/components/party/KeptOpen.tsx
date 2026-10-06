@@ -6,7 +6,8 @@ import { BUTTON_BASE, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { adopterFor } from "./keptStores";
-import { KEPT_COPY } from "./kept.constants";
+import { keptWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE PRESS THAT OPENS A GAME FROM THE HISTORY ON THIS DEVICE: the game, as
@@ -16,6 +17,8 @@ import { KEPT_COPY } from "./kept.constants";
  * device the member is signed in on, not only the one it was played on.
  */
 export function KeptOpen({ game, id, state, over, table }: { game: string; id: string; state: string; over: boolean; table: string }) {
+  const say = useSpeaker();
+  const KEPT_COPY = keptWords(say.locale);
   const hydrated = useHydrated();
   const [status, setStatus] = useState<"ready" | "opening" | "unreadable">("ready");
   const open = async () => {

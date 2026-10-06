@@ -12,8 +12,9 @@ import { BOARD_THEMES } from "@/components/board/Board.constants";
 import { GUNJIN_LAKES } from "@/lib/party/gunjin/gunjin.constants";
 import { squareName } from "@/lib/party/gunjin/gunjinNews";
 import type { GunjinPlacement, GunjinSquare } from "@/lib/party/gunjin/gunjin.types";
+import { gunjinWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
-import { GUNJIN_COPY } from "./gunjin.constants";
 
 /** The package's own board is 52 units to a square inside a viewBox that leaves 2 units all round. */
 const CELL = 52;
@@ -60,6 +61,8 @@ export function GunjinBoard({
   onSquare?: (square: GunjinSquare) => void;
   testId?: string;
 }) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
   const { width, height } = view;
   const theme = BOARD_THEMES[appearance.boardTheme];
   const svg = useMemo(() => drawGunjinBoard(view, { language: "en", material: "ivory", selected, targets, draft }), [view, selected, targets, draft]);

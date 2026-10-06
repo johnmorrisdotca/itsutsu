@@ -7,13 +7,14 @@ import { PANEL_CLASS, BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/compone
 import { TRAIN_PHASES, tileWords, trainMoves, trainTotals } from "@johnmorrisdotca/domino";
 import type { Domino, TrainGame, TrainMove } from "@johnmorrisdotca/domino";
 
-import { TRAIN_COPY } from "../party.constants";
 import { TrainHand } from "../TrainHand";
 import { TrainRoundOver, TrainScores } from "../TrainScores";
 import { TrainTable } from "../TrainTable";
 import { TrainTurnLine } from "../TrainTurnLine";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { onlineWords, trainWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 /**
  * MEXICAN TRAIN AT A TABLE ON SEVERAL DEVICES: the turn line, the trains, the
@@ -28,6 +29,9 @@ import type { OnlineBoardProps } from "./online.types";
  * one move at a time, by the table's own computer player.
  */
 export function TrainOnline({ game, appearance, canMove, onMove, mySeat }: OnlineBoardProps<TrainGame, TrainMove>) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
+  const TRAIN_COPY = trainWords(say.locale);
   const [held, setHeld] = useState<{ turn: number; tile: Domino | null }>({ turn: -1, tile: null });
   const [dragging, setDragging] = useState<Domino | null>(null);
   const playing = game.phase === TRAIN_PHASES.playing;
@@ -76,7 +80,7 @@ export function TrainOnline({ game, appearance, canMove, onMove, mySeat }: Onlin
 }
 
 /** A seat's standing at Mexican Train: its total so far, lowest best, and the tiles it holds. */
-export function trainStanding(game: TrainGame, seat: number): string {
+export function trainStanding(game: TrainGame, seat: number, say: Speaker): string {
   const tiles = game.hands[seat]?.length ?? 0;
-  return `${trainTotals(game)[seat] ?? 0} points, ${tiles} ${tiles === 1 ? "tile" : "tiles"}`;
+  return say.say("party.train.standing", { points: String(trainTotals(game)[seat] ?? 0), tiles: trainWords(say.locale).tiles(tiles) });
 }

@@ -10,13 +10,13 @@ import type { GunjinGame, GunjinMove } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinFinalView, gunjinSeatView } from "@/lib/party/gunjin/gunjinView";
 import { partyPlayerName } from "@/lib/party/partyNames";
 
-import { GUNJIN_COPY } from "../gunjin/gunjin.constants";
 import { GunjinArrange } from "../gunjin/GunjinArrange";
 import { GunjinBoard } from "../gunjin/GunjinBoard";
 import { GunjinDrawAnswer, GunjinDrawOffer, GunjinDrawWaiting, GunjinResult } from "../gunjin/GunjinDraw";
 import { GunjinMoving, MovesPanel } from "../gunjin/GunjinMoving";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { gunjinWords, onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * GUNJIN AT A TABLE ON TWO DEVICES: the same screens the table on one device
@@ -27,10 +27,13 @@ import type { OnlineBoardProps } from "./online.types";
  * rank it was not sent. The other seat's moves arrive at the poll.
  */
 export function GunjinOnline({ game, appearance, canMove, onMove, mySeat }: OnlineBoardProps<GunjinGame, GunjinMove>) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
   const seat = (mySeat === 1 ? 1 : 0) as 0 | 1;
   const { match } = game;
   const over = gunjinOver(game);
-  const names = [partyPlayerName(game, 0), partyPlayerName(game, 1)];
+  const names = [partyPlayerName(game, 0, say), partyPlayerName(game, 1, say)];
   const board = GUNJIN_BOARDS[game.size]!;
   // A side that has arranged and waits for the other: its own arrangement, drawn as the draft, and nothing else.
   const waitingView = useMemo(() => gunjinSeatView(game, seat).view, [game, seat]);

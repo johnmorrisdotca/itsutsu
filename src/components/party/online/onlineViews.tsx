@@ -6,7 +6,9 @@ import type { DotsGame } from "@/lib/party/dotsAndBoxes/dotsAndBoxes.types";
 import type { RaceMove } from "@/lib/party/online/onlineGames";
 import type { OnlineGameKey } from "@/lib/party/online/online.types";
 
-import { DOTS_COPY } from "../party.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+
+import { dotsWords } from "../partyWords";
 import type { OnlineBoardProps, OnlineView } from "./online.types";
 import { CHECKERS_RACE, HALMA_RACE } from "../partyRaces";
 import { DotsOnline } from "./DotsOnline";
@@ -52,17 +54,17 @@ const GunjinOnline = dynamic(() => import("./GunjinOnline").then((module) => mod
 export const ONLINE_VIEWS: Record<OnlineGameKey, OnlineView<any, any>> = {
   dotsAndBoxes: {
     Board: DotsOnline,
-    standing: (game: DotsGame, seat: number) => DOTS_COPY.boxes(game.scores[seat] ?? 0),
+    standing: (game: DotsGame, seat: number, say: Speaker) => dotsWords(say.locale).boxes(game.scores[seat] ?? 0),
     testId: "dots-game",
   } satisfies OnlineView<DotsGame, number>,
   chineseCheckers: {
     Board: (props: OnlineBoardProps<PartyCheckersState, RaceMove>) => <RaceOnline kind={CHECKERS_RACE} {...props} />,
-    standing: (game: PartyCheckersState, seat: number) => `${CHECKERS_RACE.rules.piecesHome(game, seat)} of ${CHECKERS_RACE.rules.piecesEach(game)} home`,
+    standing: (game: PartyCheckersState, seat: number, say: Speaker) => say.say("party.race.home", { home: String(CHECKERS_RACE.rules.piecesHome(game, seat)), each: String(CHECKERS_RACE.rules.piecesEach(game)) }),
     testId: CHECKERS_RACE.testId,
   } satisfies OnlineView<PartyCheckersState, RaceMove>,
   halma: {
     Board: (props: OnlineBoardProps<PartyHalmaState, RaceMove>) => <RaceOnline kind={HALMA_RACE} {...props} />,
-    standing: (game: PartyHalmaState, seat: number) => `${HALMA_RACE.rules.piecesHome(game, seat)} of ${HALMA_RACE.rules.piecesEach(game)} home`,
+    standing: (game: PartyHalmaState, seat: number, say: Speaker) => say.say("party.race.home", { home: String(HALMA_RACE.rules.piecesHome(game, seat)), each: String(HALMA_RACE.rules.piecesEach(game)) }),
     testId: HALMA_RACE.testId,
   } satisfies OnlineView<PartyHalmaState, RaceMove>,
   blockFive: { Board: BlocksOnline, standing: blocksStanding, testId: "party-blocks" },

@@ -2,9 +2,9 @@
 
 import dynamic from "next/dynamic";
 
-import { PLAY_BUTTON } from "@/components/ui/ui.constants";
+import { diceWarScreenWords } from "@/components/party/partyWords";
+import { PlayLoading } from "@/components/party/PlayLoading";
 
-import { DICE_WAR_COPY } from "./diceWar.constants";
 
 /**
  * DICE WAR'S TABLE, ITS PLAY BUTTON AND ITS MY GAMES CARD, LOADED IN THE
@@ -21,14 +21,7 @@ export const DiceWarTableClient = dynamic(() => import("./DiceWarTable").then((m
 
 export const DiceWarOfferClient = dynamic(() => import("./DiceWarOffer").then((module) => module.DiceWarOffer), {
   ssr: false,
-  loading: () => (
-    <div className="flex flex-col" data-testid="party-kind-offer" data-ready="false">
-      {/* The button's room and words, not yet a link: the browser has not said whether a game is going. */}
-      <span className={PLAY_BUTTON} aria-hidden="true">
-        {DICE_WAR_COPY.play}
-      </span>
-    </div>
-  ),
+  loading: () => <PlayLoading label={(locale) => diceWarScreenWords(locale).play} />,
 });
 
 export const DiceWarCardClient = dynamic(() => import("./DiceWarCard").then((module) => module.DiceWarCard), { ssr: false });

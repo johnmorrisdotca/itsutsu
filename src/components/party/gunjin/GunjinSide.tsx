@@ -1,4 +1,5 @@
-import { GUNJIN_SIDES } from "./gunjin.constants";
+import { gunjinSideWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A SIDE'S MARK, in the colour its pieces are drawn in: a round chip with its
@@ -7,6 +8,8 @@ import { GUNJIN_SIDES } from "./gunjin.constants";
  * table's marbles, so the chip is the package's red and blue and not a marble.
  */
 export function GunjinSide({ seat }: { seat: number }) {
+  const say = useSpeaker();
+  const GUNJIN_SIDES = gunjinSideWords(say.locale);
   const side = GUNJIN_SIDES[seat === 0 ? 0 : 1];
   return (
     <span

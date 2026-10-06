@@ -10,7 +10,8 @@ import { blocksPiecesLeft, blocksPieceSize, heldCells } from "@/lib/gomoku/party
 
 
 import type { PartyBlocksTrayProps } from "./party.types";
-import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
+import { blocksWords, marbleLabel } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE PIECES OF THE PLAYER TO MOVE, as Block Five's own tray holds its one:
@@ -21,6 +22,8 @@ import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
  * phone in three rows of seven.
  */
 export function PartyBlocksTray({ game, hold, onHold, onRotate, onFlip, refusal }: PartyBlocksTrayProps) {
+  const say = useSpeaker();
+  const PARTY_BLOCKS_COPY = blocksWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const marble = marbles[game.toPlay];
@@ -32,7 +35,7 @@ export function PartyBlocksTray({ game, hold, onHold, onRotate, onFlip, refusal 
       <SectionTitle kanji={PARTY_BLOCKS_COPY.trayKanji}>{PARTY_BLOCKS_COPY.tray}</SectionTitle>
       <div className="flex min-h-[6.5rem] items-center gap-4">
         <div className="flex w-[6.5rem] shrink-0 justify-center" data-testid="blocks-in-hand" data-piece={hold.piece} data-turns={hold.turns} data-flipped={hold.flipped ? "true" : "false"}>
-          <PieceGlyph cells={heldCells(hold)} scale={1} paint={paint(`${marble.label} piece in hand, ${blocksPieceSize(hold.piece)} squares`)} />
+          <PieceGlyph cells={heldCells(hold)} scale={1} paint={paint(say.say("party.blocks.inHand", { colour: marbleLabel(marble, say.locale), size: String(blocksPieceSize(hold.piece)) }))} />
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={onRotate} data-testid="blocks-rotate">

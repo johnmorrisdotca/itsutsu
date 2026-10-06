@@ -15,6 +15,7 @@ import { GUNJIN_BOARDS } from "@/lib/party/gunjin/gunjin.constants";
 import type { GunjinGame } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinNews, gunjinReason } from "@/lib/party/gunjin/gunjinNews";
 import { gunjinFinalView } from "@/lib/party/gunjin/gunjinView";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { partyPlayerName } from "@/lib/party/partyNames";
 import { resignedBy } from "@/lib/party/resign";
 
@@ -25,7 +26,8 @@ import { GunjinBoard } from "./GunjinBoard";
 import { GunjinDrawAnswer, GunjinDrawOffer } from "./GunjinDraw";
 import { GunjinMoving, MovesPanel } from "./GunjinMoving";
 import { GunjinSide } from "./GunjinSide";
-import { GUNJIN_COPY } from "./gunjin.constants";
+import { gunjinWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** The device is handed on once for each of these: the setup's step, the turn and the side to act. A pass confirmed does not change it, so the cover stays down for it. */
 const turnKey = (game: GunjinGame) => `${game.match.setupStep}:${game.match.turn}:${game.match.currentPlayer}`;
@@ -46,13 +48,15 @@ const turnKey = (game: GunjinGame) => `${game.match.setupStep}:${game.match.turn
  * whatever it was showing, and a game opened in a new tab does the same.
  */
 export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: GunjinGame; keep: (game: GunjinGame | null) => void; appearance: Appearance; gameHref: string; ready: { "data-ready": string } }) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
   const [handedFor, setHandedFor] = useState<string | null>(null);
   const over = gunjinOver(game);
   const { match } = game;
   const seat = match.currentPlayer as 0 | 1;
   const key = turnKey(game);
   const covered = !over && (match.phase === "pass" || handedFor !== key);
-  const names = [partyPlayerName(game, 0), partyPlayerName(game, 1)];
+  const names = [partyPlayerName(game, 0, say), partyPlayerName(game, 1, say)];
   const board = GUNJIN_BOARDS[game.size]!;
   const winners = gunjinWinners(game);
   const drawn = gunjinDrawn(game);
@@ -68,7 +72,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
     setHandedFor(key);
   };
   // The side to move offers a draw, or answers the one it was offered, and the engine's own word for it is the move kept.
-  const say = (kind: "offer-draw" | "accept-draw" | "decline-draw") => {
+  const drawMove = (kind: "offer-draw" | "accept-draw" | "decline-draw") => {
     const next = playGunjin(game, { kind });
     if (next !== null) keep(next);
   };
@@ -168,7 +172,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
       ) : (
         <>
           {/* A draw offered to this side, answered before the board: accept it, decline it, or move (which declines). */}
-          <GunjinDrawAnswer game={game} names={names} onAccept={() => say("accept-draw")} onDecline={() => say("decline-draw")} />
+          <GunjinDrawAnswer game={game} names={names} onAccept={() => drawMove("accept-draw")} onDecline={() => drawMove("decline-draw")} />
           <GunjinMoving
             key={key}
             game={game}
@@ -190,13 +194,13 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
           playing={!over}
           toPlay={toPlay}
           seats={2}
-          nameOf={(one) => names[one] ?? `Player ${one + 1}`}
+          nameOf={(one) => names[one] ?? playerNumberName(say, one + 1)}
           onResign={(one) => keep(resignGunjin(game, one))}
           onNewGame={() => keep(null)}
         />
         {!over && !covered ? (
           <div data-chrome>
-            <GunjinDrawOffer game={game} names={names} onOffer={() => say("offer-draw")} />
+            <GunjinDrawOffer game={game} names={names} onOffer={() => drawMove("offer-draw")} />
           </div>
         ) : null}
         {over ? (

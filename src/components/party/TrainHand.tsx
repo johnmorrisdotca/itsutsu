@@ -1,11 +1,13 @@
 "use client";
 
-import { endsOf, legalPlays, tileWords, trainPlayerName } from "@johnmorrisdotca/domino";
+import { endsOf, legalPlays, tileWords } from "@johnmorrisdotca/domino";
 
 import { DominoFace } from "./DominoFace";
-import { TRAIN_COPY } from "./party.constants";
 import type { TrainHandProps } from "./train.types";
 import { useTileDrag } from "./useTileDrag";
+import { trainWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { seatedName } from "@/lib/party/partyNames";
 
 /** A hand in the order a player sorts one: by the larger end, then the smaller, highest first, so a suit of sixes sits together. */
 function sorted(hand: readonly number[]): number[] {
@@ -35,6 +37,8 @@ function StandingTile({ tile }: { tile: number }) {
  * people it waits under the cover until that player says it is them.
  */
 export function TrainHand({ game, seat, active, chosen, onChoose, onLay, onDragging }: TrainHandProps) {
+  const say = useSpeaker();
+  const TRAIN_COPY = trainWords(say.locale);
   const plays = active ? legalPlays(game) : [];
   const targetsOf = (tile: number) => plays.filter((play) => play.tile === tile).map((play) => play.train);
   const { handlers, floating } = useTileDrag({ enabled: active, chosen, targetsOf, onChoose, onLay, onDragging });
@@ -42,8 +46,8 @@ export function TrainHand({ game, seat, active, chosen, onChoose, onLay, onDragg
 
   return (
     <div className="flex flex-col gap-2" data-testid="train-hand" data-seat={seat} data-active={active ? "true" : "false"}>
-      <p className="text-xs font-semibold tracking-[0.12em] text-muted uppercase">{TRAIN_COPY.yourTiles(trainPlayerName(game, seat))}</p>
-      <ul className="flex flex-wrap gap-1.5" aria-label={TRAIN_COPY.yourTiles(trainPlayerName(game, seat))}>
+      <p className="text-xs font-semibold tracking-[0.12em] text-muted uppercase">{TRAIN_COPY.yourTiles(seatedName(game, seat, say))}</p>
+      <ul className="flex flex-wrap gap-1.5" aria-label={TRAIN_COPY.yourTiles(seatedName(game, seat, say))}>
         {hand.map((tile) => {
           const targets = targetsOf(tile);
           const isChosen = chosen === tile;
@@ -56,7 +60,7 @@ export function TrainHand({ game, seat, active, chosen, onChoose, onLay, onDragg
                   lifted ? "-translate-y-1.5 ring-2 ring-moss" : ""
                 } ${active && targets.length === 0 ? "opacity-55" : ""} ${floating?.tile === tile ? "opacity-30" : ""}`}
                 aria-pressed={isChosen}
-                aria-label={`${tileWords(tile)}${active ? (targets.length === 0 ? ", goes nowhere now" : `, goes on ${targets.length} ${targets.length === 1 ? "train" : "trains"}`) : ""}`}
+                aria-label={!active ? tileWords(tile) : targets.length === 0 ? say.say("party.train.tileNowhere", { tile: tileWords(tile) }) : say.count("party.train.tileGoes", targets.length, { tile: tileWords(tile) })}
                 data-testid="train-hand-tile"
                 data-tile={tile}
                 data-targets={active ? targets.length : undefined}

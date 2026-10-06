@@ -6,8 +6,9 @@ import { useState } from "react";
 import { SECTION_TITLE } from "@/components/ui/ui.constants";
 import type { OnlineSeatAsk } from "@/lib/party/online/online.types";
 
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineOffer, SeatChoice } from "./online.types";
+import { onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * THE PARTS EVERY PARTY TABLE'S SET-UP GAINS FOR SEVERAL DEVICES: the
@@ -31,6 +32,8 @@ export function firstChoices(offer: OnlineOffer | undefined, most: number): Seat
 
 /** Where the table is played: this device, or several. Nothing at all where the game cannot be played on several. */
 export function WhereChoice({ offer, several, onChange }: { offer: OnlineOffer | undefined; several: boolean; onChange: (several: boolean) => void }) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   if (offer === undefined) return null;
   return (
     <fieldset className="flex flex-col gap-2">
@@ -76,6 +79,8 @@ export function SeatChoiceSelect({
   onChoose: (seat: number, choice: SeatChoice) => void;
   disabled?: boolean;
 }) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   if (seat === 0) {
     return (
       <span className="flex min-h-11 w-full min-w-0 items-center rounded-lg border border-rule bg-ivory px-3 text-base font-semibold" data-testid="online-seat-choice" data-seat={0} data-choice="me">
@@ -126,6 +131,8 @@ export function seatAskOf(choice: SeatChoice): OnlineSeatAsk {
  * is the table's address. A refusal is said in the server's own words.
  */
 export function useStartTable(offer: OnlineOffer | undefined) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   const router = useRouter();
   const [starting, setStarting] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);

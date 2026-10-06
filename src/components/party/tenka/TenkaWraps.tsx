@@ -1,9 +1,12 @@
 import { tenkaMapOf } from "@/lib/party/tenka/tenkaMap";
 import { tenkaShapesFor } from "@/lib/party/tenka/tenkaShapes.data";
 
-import { TENKA_COPY, TENKA_WRAP_TAG } from "./tenka.constants";
+import { TENKA_WRAP_TAG } from "./tenka.constants";
 import { chipRadius, chipWidth } from "./tenkaView";
 import type { TenkaWrapsProps } from "./tenka.types";
+import { tenkaWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { territoryName } from "./tenkaWords";
 
 /** A territory's name as a tag says it, without "The". */
 
@@ -19,10 +22,12 @@ import type { TenkaWrapsProps } from "./tenka.types";
  * the map panned from one edge to the other.
  */
 export function TenkaWraps({ game, scale, reach, dark, layer, onTerritory }: TenkaWrapsProps) {
+  const say = useSpeaker();
+  const TENKA_COPY = tenkaWords(say.locale);
   // Only the world wraps round (the Bering Strait); Europe has no edge to go off.
   const shapes = tenkaShapesFor(game);
   const { territories } = tenkaMapOf(game);
-  const tagName = (territory: number) => territories[territory].name.replace(/^The /, "");
+  const tagName = (territory: number) => (say.locale === "ja" ? territoryName(territories[territory], say) : territories[territory].name.replace(/^The /, ""));
   const unit = 1 / scale;
   const font = TENKA_WRAP_TAG.font * unit;
   // Where a territory's counter is, as the rectangle it covers at this scale: what a tag is kept clear of.
@@ -41,7 +46,7 @@ export function TenkaWraps({ game, scale, reach, dark, layer, onTerritory }: Ten
           .map(({ territory, x, onEast }) => {
           const lit = reach.has(territory);
           const text = TENKA_COPY.wrapTo(tagName(territory), onEast);
-          const width = text.length * font * 0.58 + 2 * TENKA_WRAP_TAG.inset * unit;
+          const width = text.length * font * (say.locale === "ja" ? 1 : 0.58) + 2 * TENKA_WRAP_TAG.inset * unit;
           const left = onEast ? x - TENKA_WRAP_TAG.inset * unit - width : x + TENKA_WRAP_TAG.inset * unit;
           const height = font * 1.6;
           // Beside the arrow, on whichever side leaves more of the counters clear (Alaska's, at the west edge; Kamchatka's, at the east): above when it is no worse.
@@ -59,7 +64,7 @@ export function TenkaWraps({ game, scale, reach, dark, layer, onTerritory }: Ten
               data-edge={onEast ? "east" : "west"}
               data-lit={lit ? "true" : "false"}
               role={onTerritory === undefined ? undefined : "button"}
-              aria-label={TENKA_COPY.wrapNote(territories[territory].name)}
+              aria-label={TENKA_COPY.wrapNote(territoryName(territories[territory], say))}
             >
               <polygon points={`${x},${row} ${back},${row - 4 * unit} ${back},${row + 4 * unit}`} fill={dark ? "#e8eef0" : "#1d3440"} />
               <rect

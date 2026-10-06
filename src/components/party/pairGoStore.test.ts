@@ -7,6 +7,10 @@ import type { PairGoGame } from "@/lib/gomoku/party/pairGo.types";
 
 import { PAIR_GO_STORAGE_KEY } from "./pairGo.constants";
 import { keepPairGo } from "./pairGoStore";
+import { speaker } from "@/lib/i18n/i18n";
+
+/** The English speaker: these tests read the rules' English words. */
+const EN = speaker("en");
 
 /** The practice board's own key (`gameStorage.ts`), which Pair Go must never write. */
 const BOARD_FOR_TWO = "gomoku.session.v1";
@@ -49,7 +53,7 @@ describe("Pair Go kept in this browser", () => {
 
     const back = decodePairGo(storage.getItem(PAIR_GO_STORAGE_KEY)) as PairGoGame;
     expect(back.state.moves).toHaveLength(2);
-    expect(pairPlayerToMove(back)).toMatchObject({ name: "Ben", stone: STONES.black });
+    expect(pairPlayerToMove(back, EN)).toMatchObject({ name: "Ben", stone: STONES.black });
   });
 
   it("forgets only its own game when a new one is asked for", () => {

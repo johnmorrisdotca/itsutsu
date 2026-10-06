@@ -26,7 +26,7 @@ import { cardOfId } from "@/lib/cardGames/cards";
 import type { CardId } from "@/lib/cardGames/cardGames.types";
 
 import { seatName } from "./cardAdapters";
-import { CARD_TABLE_COPY, HAND_CARD_PX } from "./cardTable.constants";
+import { HAND_CARD_PX } from "./cardTable.constants";
 import type { CardAdapter } from "./cardTable.types";
 import { CardSeats } from "./CardSeats";
 import { CardScores } from "./CardScores";
@@ -34,6 +34,8 @@ import { CardTableSurface } from "./CardTableParts";
 import { freshCardSeed } from "./cardTableStores";
 import { useCardComputer } from "./useCardComputer";
 import { useKeepTurning } from "./useKeepTurning";
+import { cardTableWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /** A choice made on one turn, forgotten when the game moves on: the moves made when it was made, and what it was. */
 type Held<T> = { at: number; value: T };
@@ -56,6 +58,8 @@ type Held<T> = { at: number; value: T };
  * drawn face down, with nothing about its cards in the page.
  */
 export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, ready }: { adapter: CardAdapter<unknown, unknown>; game: unknown; keep: (game: unknown) => void; appearance: Appearance; gameHref: string; gameName: string; ready: { "data-ready": string } }) {
+  const say = useSpeaker();
+  const CARD_TABLE_COPY = cardTableWords(say.locale);
   const rules = adapter.rules;
   const { players, computers } = rules.seats(game);
   const names = players.map((_, seat) => seatName(players, computers, seat));

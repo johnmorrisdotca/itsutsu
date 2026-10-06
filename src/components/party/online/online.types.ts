@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
+import type { Speaker } from "@/lib/i18n/i18n";
 import type { OnlineOffer, OnlineTableView } from "@/lib/party/online/online.types";
 import type { LiveBoardIntervals } from "@/lib/site/site.types";
 import type { NameTag } from "@/lib/xp/nameTag.types";
@@ -32,7 +33,7 @@ export type OnlineBoardProps<S, M> = {
 export type OnlineView<S, M> = {
   Board: ComponentType<OnlineBoardProps<S, M>>;
   /** How a seat stands in this game, for its row in the seat list: "3 boxes", "4 of 10 home". */
-  standing: (game: S, seat: number) => string;
+  standing: (game: S, seat: number, say: Speaker) => string;
   /** The test id a spec reaches the board by, as the table on one device names it. */
   testId: string;
   /**

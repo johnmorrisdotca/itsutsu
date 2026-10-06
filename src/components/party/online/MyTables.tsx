@@ -13,8 +13,9 @@ import { ONLINE_SEAT_KINDS } from "@/lib/party/online/online.constants";
 import { tablePath } from "@/lib/party/online/onlinePaths";
 import type { MyTable } from "@/lib/party/online/server/myTables";
 import type { NameTag } from "@/lib/xp/nameTag.types";
+import { onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
-import { ONLINE_COPY } from "./online.constants";
 
 /**
  * THE PARTY TABLES A MEMBER SITS AT ON SEVERAL DEVICES, on My games: under
@@ -29,6 +30,8 @@ import { ONLINE_COPY } from "./online.constants";
  * An empty panel keeps its heading and says so.
  */
 export function MyTables({ tables, finished, tags }: { tables: readonly MyTable[]; finished: boolean; tags: ReadonlyMap<string, NameTag> }) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   const heading = finished ? ONLINE_COPY.myFinishedHeading : ONLINE_COPY.myHeading;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid={finished ? "tables-finished" : "tables-going"}>
@@ -53,6 +56,8 @@ export function MyTables({ tables, finished, tags }: { tables: readonly MyTable[
 
 /** One table on My games: under Going, how it stands; on Completed, among every other kind of finished game (`completed.ts`), how it went. */
 export function TableRow({ table, finished, tags }: { table: MyTable; finished: boolean; tags: ReadonlyMap<string, NameTag> }) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
   const href = tablePath(table.game, table.id);
   const toPlay = table.toPlay === null ? undefined : table.seats[table.toPlay];
   return (

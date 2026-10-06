@@ -6,14 +6,16 @@ import { SeatColourButton } from "./SeatColourButton";
 import { useState } from "react";
 
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PARTY_NAME_MOST } from "@/lib/gomoku/party/partyRace";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import type { PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 
 import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "./online/OnlineSetUpParts";
-import { ONLINE_COPY } from "./online/online.constants";
 import type { SeatChoice } from "./online/online.types";
-import { PARTY_COPY, PARTY_MARBLES } from "./party.constants";
+import { PARTY_MARBLES } from "./party.constants";
 import type { PartySetUpProps } from "./party.types";
+import { marbleLabel, onlineWords, partyScreenWords } from "./partyWords";
 
 /**
  * THE TABLE, BEFORE ANYBODY MOVES: how many are playing, and what they are
@@ -22,6 +24,9 @@ import type { PartySetUpProps } from "./party.types";
  * one — so choosing four shows exactly where the four sit.
  */
 export function PartySetUp<S extends PartyRaceState, C extends number>({ kind, appearance, onStart, ready, online }: PartySetUpProps<S, C>) {
+  const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
+  const ONLINE_COPY = onlineWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const { rules, Board } = kind;
@@ -58,9 +63,7 @@ export function PartySetUp<S extends PartyRaceState, C extends number>({ kind, a
           {preview.players.map((_, index) => (
             <label key={rules.seatOf(preview, index)} className="flex items-center gap-2 text-sm">
               <SeatColourButton player={index} playing={count} />
-              <span className="sr-only">
-                Player {index + 1}, {marbles[index].label}
-              </span>
+              <span className="sr-only">{say.say("party.seatColour", { player: playerNumberName(say, index + 1), colour: marbleLabel(marbles[index], say.locale) })}</span>
               {severalOffer !== undefined ? (
                 <SeatChoiceSelect offer={severalOffer} seat={index} choices={choices} onChoose={onChoose} />
               ) : (
@@ -68,7 +71,7 @@ export function PartySetUp<S extends PartyRaceState, C extends number>({ kind, a
                   type="text"
                   value={names[index]}
                   maxLength={PARTY_NAME_MOST}
-                  placeholder={`Player ${index + 1}`}
+                  placeholder={playerNumberName(say, index + 1)}
                   onChange={(event) => setNames((was) => was.map((name, at) => (at === index ? event.target.value : name)))}
                   className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                   data-testid="party-name"

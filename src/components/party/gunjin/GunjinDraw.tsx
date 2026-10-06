@@ -6,8 +6,9 @@ import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/compone
 import { GUNJIN_REASONS } from "@/lib/party/gunjin/gunjin.constants";
 import { gunjinDrawOfferedBy, gunjinDrawOfferedTo } from "@/lib/party/gunjin/gunjin";
 import type { GunjinGame } from "@/lib/party/gunjin/gunjin.types";
+import { gunjinWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
-import { GUNJIN_COPY } from "./gunjin.constants";
 
 /**
  * OFFERING A DRAW, and answering one: the two things beside Resign that end a
@@ -21,6 +22,8 @@ import { GUNJIN_COPY } from "./gunjin.constants";
  * offer of the other side's waiting to be answered first.
  */
 export function GunjinDrawOffer({ game, names, onOffer }: { game: GunjinGame; names: readonly string[]; onOffer: () => void }) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
   const { match } = game;
   if (match.phase !== "play" || gunjinDrawOfferedTo(game) !== null) return null;
   const seat = match.currentPlayer;
@@ -44,6 +47,8 @@ export function GunjinDrawOffer({ game, names, onOffer }: { game: GunjinGame; na
  * is on its way (the device is on the cover).
  */
 export function GunjinDrawAnswer({ game, names, onAccept, onDecline }: { game: GunjinGame; names: readonly string[]; onAccept: () => void; onDecline: () => void }) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
   const to = gunjinDrawOfferedTo(game);
   const by = gunjinDrawOfferedBy(game);
   if (to === null || by === null) return null;
@@ -64,6 +69,8 @@ export function GunjinDrawAnswer({ game, names, onAccept, onDecline }: { game: G
 
 /** What the side that offered a draw is told while it waits at its own device: the answer is the other side's. */
 export function GunjinDrawWaiting({ game, names, seat }: { game: GunjinGame; names: readonly string[]; seat: number }) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
   if (game.match.phase !== "play" || gunjinDrawOfferedBy(game) !== seat) return null;
   return (
     <p className="text-sm font-semibold" data-testid="gunjin-draw-waiting" aria-live="polite">
@@ -79,6 +86,8 @@ export function GunjinDrawWaiting({ game, names, seat }: { game: GunjinGame; nam
  * resignation mark of its own (a draw is no winner, and says nothing else).
  */
 export function GunjinResult({ game, names }: { game: GunjinGame; names: readonly string[] }) {
+  const say = useSpeaker();
+  const GUNJIN_COPY = gunjinWords(say.locale);
   const result = game.match.result;
   if (game.match.phase !== "finished" || result === undefined) return null;
   const winner = result.winner;

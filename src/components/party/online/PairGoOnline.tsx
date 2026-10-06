@@ -6,15 +6,17 @@ import { Board } from "@/components/board/Board";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { canPass } from "@/lib/gomoku/engine";
-import { GAME_STATUS, STONE_DISPLAY } from "@/lib/gomoku/gomoku.constants";
+import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
+import { stoneName } from "@/lib/gomoku/seatWords";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { pairPlayerToMove } from "@/lib/gomoku/party/pairGo";
 import type { PairGoGame } from "@/lib/gomoku/party/pairGo.types";
 import { pairSeatStone, type PairGoMove } from "@/lib/party/online/onlinePairGo";
 
 import { PairGoTurnLine, teamWords } from "../PairGoStatus";
-import { PAIR_GO_COPY } from "../pairGo.constants";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { onlineWords, pairGoWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * PAIR GO AT A TABLE ON SEVERAL DEVICES: the turn line and the site's own
@@ -23,8 +25,11 @@ import type { OnlineBoardProps } from "./online.types";
  * pass or a resignation is sent, and the table's answer is the board.
  */
 export function PairGoOnline({ game, appearance, canMove, onMove }: OnlineBoardProps<PairGoGame, PairGoMove>) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
+  const PAIR_GO_COPY = pairGoWords(say.locale);
   const playing = game.state.status === GAME_STATUS.playing;
-  const toMove = pairPlayerToMove(game);
+  const toMove = pairPlayerToMove(game, say);
   const send = (move: PairGoMove) => {
     onMove(move);
   };
@@ -40,7 +45,7 @@ export function PairGoOnline({ game, appearance, canMove, onMove }: OnlineBoardP
           </button>
           {toMove !== null ? (
             <GameEnding>
-              <EndGameButton onEnd={() => send({ kind: "resign" })} question={PAIR_GO_COPY.confirmResign(teamWords(game, toMove.stone))} testId="pairgo-resign" />
+              <EndGameButton onEnd={() => send({ kind: "resign" })} question={PAIR_GO_COPY.confirmResign(teamWords(game, toMove.stone, say))} testId="pairgo-resign" />
             </GameEnding>
           ) : null}
         </div>
@@ -52,7 +57,7 @@ export function PairGoOnline({ game, appearance, canMove, onMove }: OnlineBoardP
 }
 
 /** A seat's standing at Pair Go: the colour it plays, and that colour's captures. */
-export function pairGoStanding(game: PairGoGame, seat: number): string {
+export function pairGoStanding(game: PairGoGame, seat: number, say: Speaker): string {
   const stone = pairSeatStone(seat);
-  return `${STONE_DISPLAY[stone].label} · ${game.state.captures[stone]} captured`;
+  return say.say("party.pairgo.standing", { colour: stoneName(say, stone), count: String(game.state.captures[stone]) });
 }

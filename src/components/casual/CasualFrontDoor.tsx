@@ -14,8 +14,9 @@ import { casualLevelsWords, casualRulesPage } from "@/lib/casual/casualRulesPage
 import { familyOf, familyPagePath } from "@/lib/gomoku/families";
 import { backgroundPath, rulesPath } from "@/lib/gomoku/slugs";
 
-import { CASUAL_COPY } from "./casual.constants";
 import { CasualOffer } from "./CasualOffer";
+import { casualWords } from "@/components/casual/casualWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A casual game's front door, at /games/<slug>: what every casual game's name
@@ -31,6 +32,8 @@ import { CasualOffer } from "./CasualOffer";
  * game's page is: reading is open, and a casual game names nobody.
  */
 export function CasualFrontDoor({ kind }: { kind: CasualKind }) {
+  const say = useSpeaker();
+  const CASUAL_COPY = casualWords(say.locale);
   const page = casualRulesPage(kind);
   const family = familyOf(kind);
 

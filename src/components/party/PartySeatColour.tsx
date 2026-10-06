@@ -8,7 +8,9 @@ import { tableColourRefusal, tableRefusalWords } from "@/lib/pieces/tableColours
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { MarbleChip } from "./MarbleChip";
+import { Paired } from "@/components/i18n/Paired";
 import { PARTY_MARBLES, marbleFace } from "./party.constants";
+import { marbleLabel } from "./partyWords";
 import { usePartyMarbles, usePartyTable } from "./partyMarbles";
 
 /**
@@ -73,7 +75,7 @@ export function PartySeatColour({
 
   const usual = PARTY_MARBLES[seat];
   if (usual === undefined || choose === null) return null;
-  const whose = yours ? "Your colour" : `${name}'s colour`;
+  const whose = yours ? say.say("party.yourColour") : say.say("party.ofColour", { name });
   return (
     <div
       ref={box}
@@ -87,14 +89,14 @@ export function PartySeatColour({
         type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        aria-label={`${whose}: ${marbles[seat]?.label ?? usual.label}. Change colour`}
-        title={yours ? "Choose your colour" : `Choose ${name}'s colour`}
+        aria-label={say.say("party.colourAria", { whose, colour: marbleLabel(marbles[seat] ?? usual, say.locale) })}
+        title={yours ? say.say("party.chooseYours") : say.say("party.chooseOf", { name })}
         className={`${FOCUS_RING} inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-rule px-2 pr-3 text-sm text-ink-soft hover:border-rule-strong sm:min-h-9`}
         data-testid="party-seat-colour-toggle"
       >
         <MarbleChip player={seat} />
         <span>
-          Change colour <span className="font-mincho text-muted">色</span>
+          <Paired en={say.say("party.changeColour")} kanji="色" kanjiClassName="text-muted" inReadersLanguage />
         </span>
       </button>
       {open ? (
@@ -110,7 +112,7 @@ export function PartySeatColour({
               choose(seat, colour);
               setOpen(false);
             }}
-            usual={{ face: marbleFace(usual), name: `${usual.label}, the table's own` }}
+            usual={{ face: marbleFace(usual), name: say.say("party.tableOwn", { colour: marbleLabel(usual, say.locale) }) }}
             label={whose}
             unavailable={(colour) => {
               const refusal = tableColourRefusal(seat, colour, marbles, playing);
@@ -119,7 +121,7 @@ export function PartySeatColour({
             testId="party-seat-colour-picker"
           />
           <p className="text-xs text-muted">
-            {yours ? "Everybody at the table sees it; each player chooses their own." : "Each player chooses on their own turn, and may change it on any turn."}
+            {yours ? say.say("party.colourEveryone") : say.say("party.colourOnTurn")}
           </p>
         </div>
       ) : null}

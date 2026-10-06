@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { usePartyMarbles } from "./partyMarbles";
 import { BOARD_THEMES } from "@/components/board/Board.constants";
 import { BoardFrame } from "@/components/board/BoardFrame";
@@ -34,6 +35,7 @@ const LETTER_SIZE = 0.5;
  * button to a screen reader and a keyboard too, named by its two dots.
  */
 export function DotsBoard({ game, appearance, onLine, readOnly = false }: DotsBoardProps) {
+  const say = useSpeaker();
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
   const theme = BOARD_THEMES[appearance.boardTheme];
@@ -53,7 +55,7 @@ export function DotsBoard({ game, appearance, onLine, readOnly = false }: DotsBo
         data-testid="dots-board"
         data-size={game.size}
         role="group"
-        aria-label={`Dots and Boxes, ${game.size} by ${game.size} boxes`}
+        aria-label={say.say("party.dots.aboutBoard", { size: String(game.size) })}
       >
         {/* THE CLOSED BOXES, each in its owner's colour with their letter, the ones the last line closed ringed. */}
         {game.owners.map((owner, box) => {
@@ -85,7 +87,7 @@ export function DotsBoard({ game, appearance, onLine, readOnly = false }: DotsBo
               >
                 {marble.letter}
               </text>
-              <title>{`${dotsPlayerName(game, owner)}'s box`}</title>
+              <title>{say.say("party.dots.boxOf", { name: dotsPlayerName(game, owner, say) })}</title>
             </g>
           );
         })}
@@ -136,7 +138,7 @@ export function DotsBoard({ game, appearance, onLine, readOnly = false }: DotsBo
               // Half a box either side of the line, across it: the middles of the two boxes it borders.
               const [dx, dy] = ends.across ? [0, 0.5] : [0.5, 0];
               const diamond = `${x1},${y1} ${midX + dx},${midY + dy} ${x2},${y2} ${midX - dx},${midY - dy}`;
-              const name = `Line from ${pointName(points, ends.from)} to ${pointName(points, ends.to)}`;
+              const name = say.say("party.dots.lineFromTo", { from: pointName(points, ends.from), to: pointName(points, ends.to) });
               return (
                 <g key={line} className="group">
                   <line

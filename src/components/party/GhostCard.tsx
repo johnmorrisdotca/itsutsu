@@ -11,7 +11,9 @@ import { GHOST_PHASE } from "@/lib/party/superghost/superghost";
 
 import { MarbleChip } from "./MarbleChip";
 import { useKeptGhostGame } from "./ghostStore";
-import { GHOST_COPY, PARTY_COPY, ghostShown } from "./party.constants";
+import { ghostShown } from "./party.constants";
+import { ghostWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A GAME OF SUPERGHOST, WAITING IN MY GAMES. "Anything a person plays is kept
@@ -21,6 +23,9 @@ import { GHOST_COPY, PARTY_COPY, ghostShown } from "./party.constants";
  * Read back without the word list, so the tab fetches nothing to show it.
  */
 export function GhostCard() {
+  const say = useSpeaker();
+  const GHOST_COPY = ghostWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [game] = useKeptGhostGame();
   if (game === undefined || game === null || game.phase === GHOST_PHASE.finished) return null;
   const variant = PARTY_KINDS.superghost;
@@ -31,10 +36,10 @@ export function GhostCard() {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · {language} · {game.players.length} players · {GHOST_COPY.rounds(game.rounds.length)}
+          <GameName variant={variant} /> · {language} · {say.count("count.player", game.players.length)} · {GHOST_COPY.rounds(game.rounds.length)}
           {game.fragment === "" ? null : <span data-testid="party-game-fragment">· {ghostShown(game.fragment, game.language)} ·</span>}
           <MarbleChip player={game.toPlay} />
-          {partyPlayerName(game, game.toPlay)} to play
+          {say.say("party.toPlay", { name: partyPlayerName(game, game.toPlay, say) })}
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

@@ -9,9 +9,11 @@ import type { SugorokuMove, SugorokuTable } from "@/lib/party/sugoroku/sugoroku.
 import { sugorokuToPlay, viewOf } from "@/lib/party/sugoroku/sugorokuTable";
 import { sugorokuCubeWords, sugorokuEnding, sugorokuNames, sugorokuNews, sugorokuScoreWords, sugorokuStatus } from "@/lib/party/sugoroku/sugorokuWords";
 
-import { SUGOROKU_COPY } from "./sugoroku.constants";
 import { SugorokuBoard } from "./SugorokuBoard";
 import { useSugorokuTurn } from "./useSugorokuTurn";
+import { gameEndingCopy } from "@/components/play/gameEnding.constants";
+import { sugorokuScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A MATCH OF ONE OF THE SEVEN IN PLAY: what the table waits on and what last
@@ -43,21 +45,25 @@ export function SugorokuStage({
   thinking?: string | null;
   wrap?: (board: ReactNode) => ReactNode;
 }) {
+  const say = useSpeaker();
+  const SUGOROKU_COPY = sugorokuScreenWords(say.locale);
+  // Resigning, in the one set of words every game uses (`gameEndingCopy`); asked in place in the stage's fixed row of three presses, which cannot grow a question beside it.
+  const ENDING = gameEndingCopy(say);
   const [confirming, setConfirming] = useState(false);
   const turn = useSugorokuTurn(table, canAct, (move) => {
     setConfirming(false);
     send(move);
   });
   const { game, settings, match } = viewOf(table);
-  const names = sugorokuNames(table);
+  const names = sugorokuNames(table, say);
   const to = sugorokuToPlay(table);
   const over = match.over;
   const phase = turn.phase;
   const view = seat === 1 ? "black" : "white";
   const position = turn.game?.position ?? game?.position ?? viewOf(table).last?.position;
-  const status = over ? sugorokuEnding(table) : thinking !== null ? SUGOROKU_COPY.thinking(thinking) : phase === "move" && to !== null ? `${names[to]} to play.` : sugorokuStatus(table);
+  const status = over ? sugorokuEnding(table, say) : thinking !== null ? SUGOROKU_COPY.thinking(thinking) : phase === "move" && to !== null ? say.say("party.sugoroku.toPlay", { name: names[to] }) : sugorokuStatus(table, say);
   const hint = confirming
-    ? SUGOROKU_COPY.giveUpAsk
+    ? ENDING.resignAsk
     : phase === "move"
       ? turn.blocked
         ? SUGOROKU_COPY.noMove
@@ -104,11 +110,11 @@ export function SugorokuStage({
           {status}
         </p>
         <p className="text-sm text-muted" data-testid="sugoroku-news">
-          {sugorokuNews(table)}
+          {sugorokuNews(table, say)}
         </p>
         <p className="text-sm" data-testid="sugoroku-score">
-          {sugorokuScoreWords(table)}
-          {settings.rules.cube ? ` · ${sugorokuCubeWords(table)}` : ""}
+          {sugorokuScoreWords(table, say)}
+          {settings.rules.cube ? ` · ${sugorokuCubeWords(table, say)}` : ""}
         </p>
       </div>
       {wrap(
@@ -122,7 +128,7 @@ export function SugorokuStage({
             dice={turn.dice}
             highlight={canAct ? turn.highlight : null}
             appearance={appearance}
-            label={`${names[0]} white, ${names[1]} black`}
+            label={say.say("party.sugoroku.boardLabel", { a: names[0], b: names[1] })}
             onPress={turn.press}
           />
         ),
@@ -136,11 +142,11 @@ export function SugorokuStage({
         </button>
         {confirming ? (
           <button type="button" onClick={turn.giveUp} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="sugoroku-give-up-yes">
-            {SUGOROKU_COPY.giveUpYes}
+            {ENDING.resign}
           </button>
         ) : (
           <button type="button" onClick={() => setConfirming(true)} disabled={!canAct || over || phase === "answer"} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="sugoroku-give-up">
-            {SUGOROKU_COPY.giveUp}
+            {ENDING.resign}
           </button>
         )}
       </div>
@@ -148,7 +154,7 @@ export function SugorokuStage({
         {hint}
         {confirming ? (
           <button type="button" onClick={() => setConfirming(false)} className="ml-2 underline underline-offset-4" data-testid="sugoroku-give-up-no">
-            {SUGOROKU_COPY.giveUpNo}
+            {ENDING.keepPlaying}
           </button>
         ) : null}
       </p>

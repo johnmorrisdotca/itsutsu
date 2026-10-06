@@ -9,9 +9,9 @@ import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { diceWarSeatName } from "@/lib/party/diceWar/diceWar.constants";
 import { waitsOnPerson } from "@/lib/party/diceWar/diceWarThrow";
 
-import { PARTY_COPY } from "../party.constants";
-import { DICE_WAR_COPY } from "./diceWar.constants";
 import { useKeptDiceWarGame } from "./diceWarStore";
+import { diceWarScreenWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A GAME OF DICE WAR, WAITING IN MY GAMES. "Anything a person plays is kept
@@ -20,6 +20,9 @@ import { useKeptDiceWarGame } from "./diceWarStore";
  * the other tables' games. Only while it is not finished.
  */
 export function DiceWarCard() {
+  const say = useSpeaker();
+  const DICE_WAR_COPY = diceWarScreenWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [game] = useKeptDiceWarGame();
   if (game === undefined || game === null || game.phase === "over") return null;
   const variant = PARTY_KINDS.diceWar;

@@ -11,13 +11,13 @@ import type { PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 import { partyPlayerName } from "@/lib/gomoku/party/partyRace";
 
 import { MarbleChip } from "./MarbleChip";
-import { PARTY_COPY } from "./party.constants";
-import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
+import { blocksWords, partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 /** Names joined as a sentence says them: "Aiko", "Aiko and Ben", "Aiko, Ben and Chloe". */
-function namesOf(game: PartyBlocksState, players: readonly number[]): string {
-  const names = players.map((player) => partyPlayerName(game.players, player));
-  return names.length <= 1 ? (names[0] ?? "") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+function namesOf(game: PartyBlocksState, players: readonly number[], say: Speaker): string {
+  return say.list(players.map((player) => partyPlayerName(game.players, player, say)));
 }
 
 /**
@@ -26,9 +26,11 @@ function namesOf(game: PartyBlocksState, players: readonly number[]): string {
  * and by how many squares.
  */
 export function PartyBlocksTurnLine({ game }: { game: PartyBlocksState }) {
+  const say = useSpeaker();
+  const PARTY_BLOCKS_COPY = blocksWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
-  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => partyPlayerName(game.players, seat)} />;
+  if (resignedBy(game) !== null) return <ResignedResult game={game} seats={game.players.length} nameOf={(seat) => partyPlayerName(game.players, seat, say)} />;
   if (game.status === BLOCKS_STATUS.over) {
     const leaders = blocksLeaders(game);
     const squares = blocksScores(game)[leaders[0]].squares;
@@ -40,7 +42,7 @@ export function PartyBlocksTurnLine({ game }: { game: PartyBlocksState }) {
             <MarbleChip key={player} player={player} />
           ))}
           <span className="min-w-0">
-            {leaders.length === 1 ? PARTY_BLOCKS_COPY.won(namesOf(game, leaders), squares) : PARTY_BLOCKS_COPY.shared(namesOf(game, leaders), squares)}
+            {leaders.length === 1 ? PARTY_BLOCKS_COPY.won(namesOf(game, leaders, say), squares) : PARTY_BLOCKS_COPY.shared(namesOf(game, leaders, say), squares)}
           </span>
         </p>
         <p className="text-sm">{PARTY_BLOCKS_COPY.ended}</p>
@@ -55,7 +57,7 @@ export function PartyBlocksTurnLine({ game }: { game: PartyBlocksState }) {
         <MarbleChip player={game.toPlay} />
         <span className="min-w-0">
           <span className="font-semibold" data-testid="blocks-turn-name">
-            {partyPlayerName(game.players, game.toPlay)}
+            {partyPlayerName(game.players, game.toPlay, say)}
           </span>
           <span className="text-muted">
             {"’s turn"} · {marble.label} ({marble.letter})
@@ -64,7 +66,7 @@ export function PartyBlocksTurnLine({ game }: { game: PartyBlocksState }) {
       </p>
       {out.length > 0 ? (
         <p className="text-sm" data-testid="blocks-sitting-out">
-          {PARTY_BLOCKS_COPY.sittingOut(namesOf(game, out))}
+          {PARTY_BLOCKS_COPY.sittingOut(namesOf(game, out, say))}
         </p>
       ) : null}
     </div>
@@ -73,6 +75,9 @@ export function PartyBlocksTurnLine({ game }: { game: PartyBlocksState }) {
 
 /** The four at the table in turn order: each one's squares covered, pieces left, and whether they are out. */
 export function PartyBlocksPlayers({ game }: { game: PartyBlocksState }) {
+  const say = useSpeaker();
+  const PARTY_BLOCKS_COPY = blocksWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const playing = game.status === BLOCKS_STATUS.playing;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="blocks-players">
@@ -90,7 +95,7 @@ export function PartyBlocksPlayers({ game }: { game: PartyBlocksState }) {
             data-out={game.out[score.player] ? "true" : "false"}
           >
             <MarbleChip player={score.player} />
-            <span className="min-w-0 flex-1 truncate">{partyPlayerName(game.players, score.player)}</span>
+            <span className="min-w-0 flex-1 truncate">{partyPlayerName(game.players, score.player, say)}</span>
             {playing && game.out[score.player] ? <span className="shrink-0 text-xs text-ochre">{PARTY_BLOCKS_COPY.out}</span> : null}
             <span className="shrink-0 text-xs text-muted tabular-nums">
               {PARTY_BLOCKS_COPY.squares(score.squares)} · {PARTY_BLOCKS_COPY.piecesLeft(score.piecesLeft)}
@@ -99,7 +104,7 @@ export function PartyBlocksPlayers({ game }: { game: PartyBlocksState }) {
         ))}
       </ol>
       <p className="text-xs text-muted">
-        {game.moves.length} {game.moves.length === 1 ? "piece" : "pieces"} laid. {PARTY_COPY.kept}
+        {say.count("party.blocks.laid", game.moves.length)} {PARTY_COPY.kept}
       </p>
     </section>
   );

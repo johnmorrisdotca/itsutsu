@@ -6,12 +6,14 @@ import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 import { PARTY_KINDS } from "@/lib/party/party.constants";
-import { YACHT_PHASES, boxesFilled, yachtPlayerName } from "@/lib/party/yacht/yacht";
+import { YACHT_PHASES, boxesFilled } from "@/lib/party/yacht/yacht";
 import { YACHT_SHEET } from "@/lib/party/yacht/yacht.constants";
 
 import { MarbleChip } from "../MarbleChip";
-import { PARTY_COPY } from "../party.constants";
 import { useKeptYachtGame } from "./yachtStore";
+import { partyScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { seatedName } from "@/lib/party/partyNames";
 
 /**
  * A GAME OF YACHT, WAITING IN MY GAMES. "Anything a person plays is kept until
@@ -20,6 +22,8 @@ import { useKeptYachtGame } from "./yachtStore";
  * the other tables' games. Only while it is not finished.
  */
 export function YachtCard() {
+  const say = useSpeaker();
+  const PARTY_COPY = partyScreenWords(say.locale);
   const [game] = useKeptYachtGame();
   if (game === undefined || game === null || game.phase === YACHT_PHASES.finished) return null;
   const variant = PARTY_KINDS.yacht;
@@ -31,7 +35,7 @@ export function YachtCard() {
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
           <GameName variant={variant} /> · Turn {boxesFilled(game, game.toPlay) + 1} of {YACHT_SHEET} ·
           <MarbleChip player={game.toPlay} />
-          {yachtPlayerName(game, game.toPlay)} to play
+          {seatedName(game, game.toPlay, say)} to play
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

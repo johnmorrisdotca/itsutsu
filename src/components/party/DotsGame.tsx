@@ -1,5 +1,7 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { Paired } from "@/components/i18n/Paired";
 import { TableEnding } from "@/components/play/GameEnding";
 import { resignDots } from "@/lib/party/resignTables";
 import { PartySeatColour } from "./PartySeatColour";
@@ -20,8 +22,8 @@ import { DotsSetUp } from "./DotsSetUp";
 import { DotsTurnLine } from "./DotsTurnLine";
 import { MarbleChip } from "./MarbleChip";
 import { useKeptDotsGame } from "./dotsStore";
-import { DOTS_COPY, PARTY_COPY } from "./party.constants";
 import type { PartyTableGameProps } from "./party.types";
+import { dotsWords, partyScreenWords } from "./partyWords";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 
 /**
@@ -39,6 +41,9 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
  * a line does, and draws the answer.
  */
 export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) {
+  const say = useSpeaker();
+  const DOTS_COPY = dotsWords(say.locale);
+  const PARTY_COPY = partyScreenWords(say.locale);
   const hydrated = useHydrated();
   const [game, keep] = useKeptDotsGame();
   // The cover over the board, when the last box is closed here (`WinCover`); never on a finished table opened again.
@@ -80,7 +85,7 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
           news={
             moment.open
               ? tableNews({
-                  names: game.players.map((_, seat) => dotsPlayerName(game, seat)),
+                  names: game.players.map((_, seat) => dotsPlayerName(game, seat, say)),
                   winners: game.winners,
                   you: null,
                   next: { label: PARTY_COPY.again, onPress: () => keep(dotsAgain(game)) },
@@ -98,10 +103,10 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
         {/* The colour of whoever is to play, on their turn (`PartySeatColour`); furniture in just the board. */}
         {game.status === DOTS_STATUS.playing ? (
           <div data-chrome>
-            <PartySeatColour seat={game.toPlay} name={dotsPlayerName(game, game.toPlay)} playing={game.players.length} />
+            <PartySeatColour seat={game.toPlay} name={dotsPlayerName(game, game.toPlay, say)} playing={game.players.length} />
           </div>
         ) : null}
-        <TableScores game={game} />
+        <TableScores game={game} dotsCopy={DOTS_COPY} partyCopy={PARTY_COPY} />
         <div className="flex flex-wrap gap-2">
           {game.status === DOTS_STATUS.playing ? null : (
             <button type="button" onClick={() => keep(dotsAgain(game))} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="dots-again">
@@ -114,14 +119,14 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
             playing={game.status === DOTS_STATUS.playing}
             toPlay={game.toPlay}
             seats={game.players.length}
-            nameOf={(seat) => dotsPlayerName(game, seat)}
+            nameOf={(seat) => dotsPlayerName(game, seat, say)}
             onResign={(seat) => keep(resignDots(game, seat))}
             onNewGame={() => keep(null)}
           />
         </div>
         {/* The finished board as a desktop or phone wallpaper, as every board game offers its positions. */}
         {game.status === DOTS_STATUS.playing ? null : (
-          <TableWallpaper game="dotsAndBoxes" result={resultLine(game.players.map((_, seat) => dotsPlayerName(game, seat)), game.winners)} />
+          <TableWallpaper game="dotsAndBoxes" result={resultLine(game.players.map((_, seat) => dotsPlayerName(game, seat, say)), game.winners)} />
         )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
@@ -140,11 +145,12 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
 }
 
 /** Who is at the table, in turn order, with the boxes each holds — the one whose turn it is marked. */
-function TableScores({ game }: { game: DotsGameState }) {
+function TableScores({ game, dotsCopy, partyCopy }: { game: DotsGameState; dotsCopy: ReturnType<typeof dotsWords>; partyCopy: ReturnType<typeof partyScreenWords> }) {
+  const say = useSpeaker();
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="dots-players">
       <h2 className={SECTION_TITLE}>
-        Players <span className="font-mincho normal-case tracking-normal">席</span>
+        <Paired en={say.say("party.players")} kanji="席" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
       </h2>
       <ol className="flex flex-col gap-1.5">
         {game.players.map((_, seat) => (
@@ -158,13 +164,13 @@ function TableScores({ game }: { game: DotsGameState }) {
             data-boxes={game.scores[seat]}
           >
             <MarbleChip player={seat} />
-            <span className="min-w-0 flex-1 truncate">{dotsPlayerName(game, seat)}</span>
-            <span className="shrink-0 text-xs text-muted tabular-nums">{DOTS_COPY.boxes(game.scores[seat])}</span>
+            <span className="min-w-0 flex-1 truncate">{dotsPlayerName(game, seat, say)}</span>
+            <span className="shrink-0 text-xs text-muted tabular-nums">{dotsCopy.boxes(game.scores[seat])}</span>
           </li>
         ))}
       </ol>
       <p className="text-xs text-muted">
-        {DOTS_COPY.drawn(game.lines.length, dotsLineCount(game.size))} {PARTY_COPY.kept}
+        {dotsCopy.drawn(game.lines.length, dotsLineCount(game.size))} {partyCopy.kept}
       </p>
     </section>
   );

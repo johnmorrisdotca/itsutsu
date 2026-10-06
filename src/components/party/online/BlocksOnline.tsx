@@ -8,10 +8,11 @@ import type { BlocksLay } from "@/lib/party/online/onlineGames";
 import { PartyBlocksBoard } from "../PartyBlocksBoard";
 import { PartyBlocksTurnLine } from "../PartyBlocksStatus";
 import { PartyBlocksTray } from "../PartyBlocksTray";
-import { PARTY_BLOCKS_COPY } from "../partyBlocks.constants";
 import { useBlocksHand } from "../useBlocksHand";
-import { ONLINE_COPY } from "./online.constants";
 import type { OnlineBoardProps } from "./online.types";
+import { blocksWords, onlineWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 /**
  * BLOCK FIVE AT A TABLE ON SEVERAL DEVICES: the turn line, board and tray the
@@ -20,6 +21,9 @@ import type { OnlineBoardProps } from "./online.types";
  * sent rather than kept.
  */
 export function BlocksOnline({ game, appearance, canMove, onMove }: OnlineBoardProps<PartyBlocksState, BlocksLay>) {
+  const say = useSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
+  const PARTY_BLOCKS_COPY = blocksWords(say.locale);
   const hand = useBlocksHand(game, canMove, (piece, cells) => onMove({ piece, cells }));
   return (
     <div className="flex min-w-0 flex-col gap-3" data-testid="party-blocks" data-state={game.status} data-moves={game.moves.length}>
@@ -50,7 +54,7 @@ export function BlocksOnline({ game, appearance, canMove, onMove }: OnlineBoardP
 }
 
 /** A seat's standing at Block Five: squares covered, and pieces still in hand. */
-export function blocksStanding(game: PartyBlocksState, seat: number): string {
+export function blocksStanding(game: PartyBlocksState, seat: number, say: Speaker): string {
   const score = blocksScores(game)[seat];
-  return score === undefined ? "" : `${score.squares} squares · ${score.piecesLeft} pieces left`;
+  return score === undefined ? "" : say.say("party.blocks.standing", { squares: String(score.squares), left: String(score.piecesLeft) });
 }

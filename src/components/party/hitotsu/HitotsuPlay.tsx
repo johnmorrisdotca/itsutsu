@@ -17,17 +17,17 @@ import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { HITOTSU_ONE_HAND, type HitotsuGame, type HitotsuMove, hitotsuWinners, playHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
 
-import { CARD_TABLE_COPY } from "../cards/cardTable.constants";
 import { CardScores } from "../cards/CardScores";
 import { seatName } from "../cards/cardAdapters";
 import { freshCardSeed } from "../cards/cardTableStores";
 import { TableWallpaper } from "../TableWallpaper";
-import { HITOTSU_COPY } from "./hitotsu.constants";
 import { HitotsuDesk } from "./HitotsuDesk";
 import { hitotsuNewsLine, hitotsuStatus } from "./hitotsuPresses";
 import { HitotsuSeats } from "./HitotsuSeats";
 import { HitotsuTableTop } from "./HitotsuTableTop";
 import { useHitotsuComputer } from "./useHitotsuComputer";
+import { cardTableWords, hitotsuScreenWords } from "@/components/party/partyWords";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
  * A GAME OF HITOTSU ROUND ONE DEVICE, with a computer in any seat nobody sits
@@ -42,6 +42,9 @@ import { useHitotsuComputer } from "./useHitotsuComputer";
  * and shows that player's cards only once they say they have it.
  */
 export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game: HitotsuGame; keep: (game: HitotsuGame | null) => void; appearance: Appearance; gameHref: string; ready: { "data-ready": string } }) {
+  const say = useSpeaker();
+  const CARD_TABLE_COPY = cardTableWords(say.locale);
+  const HITOTSU_COPY = hitotsuScreenWords(say.locale);
   const names = game.players.map((_, seat) => seatName(game.players, game.computers, seat));
   const name = (seat: number) => names[seat] ?? `Player ${seat + 1}`;
   const over = game.phase === "over";
