@@ -324,15 +324,23 @@ in Numbers and is shown on the Small boards shelf as a guest (`ALSO_LISTED_IN`);
 level screens are Meikyuu's, with no locks and no hint.
 
 Tsunagi 繋ぎ, our Numberlink (`src/lib/puzzles/tsunagi/`, the levels and rules
-**Tsunagi**, an open-source package, `@johnmorrisdotca/tsunagi` 1.2.0), has
-twelve sizes, 4×4 to 15×15, shown four tiles at a time. 256 levels at each of
-5×5 to 9×9, 192 at 4×4, 128 at 10×10 and at 12×12 to 15×15, 64 at 11×11, in
-blocks of sixteen. 13×13 to 15×15 arrived with 1.2.0 (2026-10-01): a board of
+**Tsunagi**, an open-source package, `@johnmorrisdotca/tsunagi` 1.6.0), has
+fifteen sizes, 4×4 to 15×15 and then 20×20, 25×25 and 30×30, shown four tiles at a
+time (the last shelf is moved back so it is full: 15, 20, 25, 30). 256 levels at each of
+5×5 to 9×9, 192 at 4×4, 128 at 10×10 and at 12×12 to 15×15, 64 at 11×11 and at the three
+biggest, in blocks of sixteen. 13×13 to 15×15 arrived with 1.2.0 (2026-10-01): a board of
 at most sixteen lines, proved to have one answer by a solver that learns from
-its dead ends, and played on a phone with the zoom pad that starts at 10×10.
+its dead ends, and played on a phone with the zoom pad that starts at 10×10. The three
+biggest (1.5.0, 2026-10-05) have 20 to 80 lines, are made by taking clues away, and are
+looked at through the same box: its pad, the wheel, the edge nudge as a line is dragged near it,
+and two fingers pinching and dragging (`TsunagiViewport`); a finger moving through a cell redraws
+the cells that changed and each pair's own line, and nothing else (`TsunagiGrid`).
 Each size's levels are a file a browser fetches only when a board of that size
-opens; a server reads one only to name which level a kept solve was
-(`tsunagi/levelsModule.ts`).
+opens; a server reads only their boards, never the answers (the package's
+`layouts` entry, `tsunagi/layoutsModule.ts`), to name which level a kept solve was
+and to check a solve against the level it names: with the three biggest sizes the answers
+would have been 0.3 MB more in every page's function. A unit test or a spec that plays a
+level reads the whole of it through `tsunagi/levelsModule.ts`.
 
 The fourth is **Hidden Stones** 隠し石 (`src/lib/puzzles/hiddenStones/`), which
 moved here from Numbers on 2026-10-01 because there is no number in it: the

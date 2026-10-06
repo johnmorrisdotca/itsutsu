@@ -1,29 +1,25 @@
 "use client";
 
-import { useId, useRef, type PointerEvent } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type PointerEvent } from "react";
 
-import { HEX_LATTICE } from "@/components/board/Board.constants";
 import { hexagonPoints } from "@/components/board/BoardLines";
 import type { BoardThemeTokens } from "@/components/board/board.types";
-import { CELL_BLOCKED, CELL_BRIDGE, inHex, stepBetween, type LinkLayout } from "@johnmorrisdotca/tsunagi";
+import { CELL_BLOCKED, CELL_BRIDGE, inHex, type LinkLayout } from "@johnmorrisdotca/tsunagi";
 import { overBridge, ownersOf, type Lines } from "@johnmorrisdotca/tsunagi";
 
 import { PuzzleBoard } from "./PuzzleBoard";
+import { TsunagiCell, TsunagiLine, TsunagiWash, washedBy } from "./TsunagiParts";
 import { hexCellAt, tsunagiHexFit } from "./tsunagiHex";
 import {
-  TSUNAGI_BEAD,
-  TSUNAGI_MARBLE,
-  TSUNAGI_MARBLE_ACROSS,
-  TSUNAGI_MARBLE_CELL,
-  TSUNAGI_WAYPOINT_RING,
-  tsunagiBeadLook,
   tsunagiLineColour,
-  tsunagiMarbleLook,
-  tsunagiNumberType,
+  tsunagiPortalColour,
   tsunagiWash,
   type TsunagiFill,
   type TsunagiMarks,
 } from "./puzzles.constants";
+
+/** How long a tapped portal shows its link to the other ring: a finger has no hover. */
+const LINK_MS = 1800;
 
 /**
  * THE TSUNAGI BOARD: marbles on the board itself, in the player's board
@@ -47,10 +43,22 @@ import {
  * across the join is drawn out through one edge into the ghost and in through
  * the other.
  *
+ * A PORTAL is two rings alike, in a colour and a letter of their own: the line
+ * is drawn stopping just inside the ring it went into and starting again just
+ * inside the other, going on the way it went in. A faint link between the two
+ * shows while the pointer is over either, and for a moment after either is
+ * tapped, which is how a finger asks (`LINK_MS`).
+ *
  * A HEXAGON is drawn as Hexversi's board is: the cells sheared into the
  * honeycomb and fitted to the box (`tsunagiHex.ts`), each cell outlined as a
  * hexagon, the square's corners left off, and the marbles stood upright again
  * so they stay round. A finger is on the hexagon nearest it.
+ *
+ * A BIG BOARD IS REDRAWN ONLY WHERE IT CHANGED. A 30×30 board is nine hundred
+ * cells and up to eighty-two lines, and a finger moving through a cell used to
+ * redraw all of them. Each cell is its own memoised component (`TsunagiCell`)
+ * given only plain values, so a move re-renders the cells whose owner changed,
+ * and each pair's line is its own (`TsunagiLine`), kept while its list of cells is.
  */
 export function TsunagiGrid({
   layout,
@@ -95,6 +103,12 @@ export function TsunagiGrid({
   const fit = layout.hex ? tsunagiHexFit(size) : null;
   // On a hexagon, the corners of the square are off the board: not drawn, not pressed.
   const onBoard = (at: number) => !layout.hex || inHex(size, at);
+  // The portal whose link is showing: the pointer is over one of its rings, or one was tapped a moment ago.
+  const [linked, setLinked] = useState<number | null>(null);
+  const tapped = useRef<number>(0);
+  useEffect(() => () => window.clearTimeout(tapped.current), []);
+  const portalOf = (cell: number): number => layout.portalPairs.findIndex(([a, b]) => a === cell || b === cell);
+  const hover = useCallback((portal: number | null) => setLinked((now) => (portal === null && tapped.current !== 0 ? now : portal)), []);
 
   const cellAt = (event: PointerEvent<HTMLDivElement>): number | null => {
     const box = event.currentTarget.getBoundingClientRect();
@@ -112,9 +126,19 @@ export function TsunagiGrid({
   };
 
   const down = (event: PointerEvent<HTMLDivElement>) => {
-    if (!live || pressing.current !== null || (event.pointerType === "mouse" && event.button !== 0)) return;
+    if (pressing.current !== null || (event.pointerType === "mouse" && event.button !== 0)) return;
     const cell = cellAt(event);
     if (cell === null) return;
+    // A tap on a portal shows where it goes, whether or not a line can be drawn from it.
+    if (layout.portals.has(cell)) {
+      window.clearTimeout(tapped.current);
+      setLinked(portalOf(cell));
+      tapped.current = window.setTimeout(() => {
+        tapped.current = 0;
+        setLinked(null);
+      }, LINK_MS);
+    }
+    if (!live) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     pressing.current = { pointer: event.pointerId, cell };
@@ -135,8 +159,9 @@ export function TsunagiGrid({
     onLift?.();
   };
 
+  // Past Z the columns are numbered (26 to 30), two digits in a column barely eleven pixels wide on a phone: smaller there, so that no two run together.
   return (
-    <div className="w-full select-none" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"} data-marks={marks} data-fill={fill}>
+    <div className={`w-full select-none ${size > 26 ? "[&_.board-coordinates]:text-[0.5rem]" : ""}`} data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"} data-marks={marks} data-fill={fill}>
       <PuzzleBoard size={span} theme={theme} coordinates={!layout.wrap && !layout.hex}>
         <div
           className={`relative h-full w-full ${live ? "cursor-pointer" : ""}`}
@@ -175,12 +200,15 @@ export function TsunagiGrid({
                   />
                 ) : null,
               )
-            ) : owners.map((owner, at) =>
-              owner >= 0 && layout.cells[at]! < 0 ? (
-                <rect key={`wash-${at}`} x={at % size} y={Math.floor(at / size)} width={1} height={1} fill={tsunagiWash(owner, marks)} />
-              ) : owner === CELL_BLOCKED ? (
-                <rect key={`block-${at}`} x={(at % size) + 0.08} y={Math.floor(at / size) + 0.08} width={0.84} height={0.84} rx={0.08} fill={theme.line} opacity={0.55} />
-              ) : null,
+            ) : (
+              <>
+                {Array.from({ length: layout.ends.length }, (_, pair) => (
+                  <TsunagiWash key={`wash-${pair}`} pair={pair} cells={washedBy(layout, owners, pair)} marks={marks} size={size} />
+                ))}
+                {owners.map((owner, at) =>
+                  owner === CELL_BLOCKED ? <rect key={`block-${at}`} x={(at % size) + 0.08} y={Math.floor(at / size) + 0.08} width={0.84} height={0.84} rx={0.08} fill={theme.line} opacity={0.55} /> : null,
+                )}
+              </>
             )}
             {fit !== null ? null : Array.from({ length: size - 1 }, (_, at) => at + 1).map((at) => (
               <g key={`rule-${at}`} stroke={theme.line} strokeWidth={1} vectorEffect="non-scaling-stroke" opacity={0.55}>
@@ -220,23 +248,7 @@ export function TsunagiGrid({
               </mask>
             )}
             <g mask={bridges.length === 0 ? undefined : `url(#${underBridges})`}>
-              {lines.map((line, pair) =>
-                line.length < 2 ? null : (
-                  <g key={`line-${pair}`} data-testid="tsunagi-line" data-pair={pair} data-cells={line.length}>
-                    {runsOf(line, size, layout.wrap, layout.hex).map((points, at) => (
-                      <polyline
-                        key={at}
-                        points={points.map(([x, y]) => `${x + 0.5},${y + 0.5}`).join(" ")}
-                        fill="none"
-                        stroke={tsunagiLineColour(pair, marks)}
-                        strokeWidth={0.3}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    ))}
-                  </g>
-                ),
-              )}
+              {lines.map((line, pair) => (line.length < 2 ? null : <TsunagiLine key={`line-${pair}`} line={line} pair={pair} size={size} wrap={layout.wrap} hex={layout.hex} portals={layout.portals} marks={marks} />))}
             </g>
             {/* Then the bridge on top of the line beneath it, and the line going across drawn over its deck. */}
             {bridges.map((at) => {
@@ -267,6 +279,27 @@ export function TsunagiGrid({
                 </g>
               );
             })}
+            {/* A PORTAL's link, a faint bowed dashed line between its two rings: shown while the pointer is over one, or just after one was tapped. */}
+            {layout.portalPairs.map(([a, b], index) => {
+              const [ax, ay] = [(a % size) + 0.5, Math.floor(a / size) + 0.5];
+              const [bx, by] = [(b % size) + 0.5, Math.floor(b / size) + 0.5];
+              const bow = [(ax + bx) / 2 + (ay - by) * 0.12, (ay + by) / 2 + (bx - ax) * 0.12];
+              return (
+                <path
+                  key={`portal-link-${index}`}
+                  d={`M${ax} ${ay}Q${bow[0]} ${bow[1]} ${bx} ${by}`}
+                  fill="none"
+                  stroke={tsunagiPortalColour(index)}
+                  strokeWidth={0.06}
+                  strokeDasharray="0.03 0.16"
+                  strokeLinecap="round"
+                  opacity={linked === index ? 0.65 : 0}
+                  data-testid="tsunagi-portal-link"
+                  data-portal={index}
+                  data-shown={linked === index ? "true" : "false"}
+                />
+              );
+            })}
             </g>
           </svg>
           <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${span}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${span}, minmax(0, 1fr))` }}>
@@ -275,71 +308,26 @@ export function TsunagiGrid({
               const down = Math.floor(place / span);
               const at = ((down - ring + size) % size) * size + ((across - ring + size) % size);
               const ghost = across < ring || down < ring || across >= size + ring || down >= size + ring;
-              const cell = layout.cells[at]!;
-              const owner = owners[at]!;
-              const waypoint = layout.waypoints.get(at);
-              if (ghost) {
-                // A ghost of the far edge: what is there, faded, and nothing to find in a test's count.
-                return (
-                  <div key={`ghost-${place}`} className={`${TSUNAGI_MARBLE_CELL} relative flex items-center justify-center opacity-35`} data-ghost={at} aria-hidden="true">
-                    {cell >= 0 ? (
-                      <span className={TSUNAGI_MARBLE} style={{ ...tsunagiMarbleLook(cell, marks), ...tsunagiNumberType(cell + 1, TSUNAGI_MARBLE_ACROSS) }}>
-                        {marks === "numbers" ? cell + 1 : null}
-                      </span>
-                    ) : fill === "marbles" && owner >= 0 ? (
-                      <span className={TSUNAGI_BEAD} style={tsunagiBeadLook(owner, marks)} />
-                    ) : null}
-                  </div>
-                );
-              }
               // Off a hexagon's edge: a place in the grid and nothing more.
-              if (!onBoard(at)) return <div key={at} aria-hidden="true" />;
-              const label = `row ${Math.floor(at / size) + 1}, column ${(at % size) + 1}${cell >= 0 ? `, marble ${cell + 1}` : owner >= 0 ? `, line ${owner + 1}` : cell === CELL_BLOCKED ? ", blocked" : cell === CELL_BRIDGE ? ", bridge" : ", empty"}${waypoint === undefined ? "" : `, waypoint for line ${waypoint + 1}`}`;
+              if (!ghost && !onBoard(at)) return <div key={at} aria-hidden="true" />;
+              const portal = layout.portals.has(at) ? portalOf(at) : -1;
               return (
-                <div
-                  key={at}
-                  className={`${TSUNAGI_MARBLE_CELL} relative flex items-center justify-center`}
-                  data-testid="puzzle-cell"
-                  data-index={at}
-                  data-owner={owner >= 0 ? owner : undefined}
-                  data-stone={cell >= 0 ? cell : undefined}
-                  aria-label={label}
-                  role="img"
-                  // On a hexagon the cell stands upright again inside the sheared lattice, so its marble stays round.
-                  style={fit === null ? undefined : { transform: HEX_LATTICE.unslant }}
-                >
-                  {waypoint === undefined ? null : (
-                    // A WAYPOINT: a ring of its line's colour on a cell only that line may pass.
-                    <span
-                      className="pointer-events-none absolute inset-[18%] flex items-center justify-center rounded-full font-bold leading-none tabular-nums"
-                      // The ring thins on a small cell, and its number is sized to what is left inside it, as a marble's is.
-                      style={{ borderStyle: "solid", borderWidth: TSUNAGI_WAYPOINT_RING, borderColor: tsunagiLineColour(waypoint, marks), color: tsunagiLineColour(waypoint, marks), ...tsunagiNumberType(waypoint + 1, `(64cqw - 2 * ${TSUNAGI_WAYPOINT_RING})`, "0.6rem") }}
-                      data-testid="tsunagi-waypoint"
-                      data-pair={waypoint}
-                    >
-                      {marks === "numbers" && owner < 0 ? waypoint + 1 : null}
-                    </span>
-                  )}
-                  {blasted?.has(at) ? (
-                    // AN EXPLOSION: where a line was, a burst that spreads and fades; held still for a reader who asked for less motion.
-                    <span className="pointer-events-none absolute inset-[12%] rounded-full border-4 border-shu bg-shu/40 motion-safe:animate-ping" data-testid="tsunagi-blast" data-cell={at} />
-                  ) : null}
-                  {cell >= 0 && flagged?.has(cell) ? (
-                    <span
-                      className="pointer-events-none absolute inset-[8%] animate-ping rounded-full border-4"
-                      style={{ borderColor: tsunagiLineColour(cell, marks) }}
-                      data-testid="tsunagi-flag"
-                      data-pair={cell}
-                    />
-                  ) : null}
-                  {cell >= 0 ? (
-                    <span className={TSUNAGI_MARBLE} style={{ ...tsunagiMarbleLook(cell, marks), ...tsunagiNumberType(cell + 1, TSUNAGI_MARBLE_ACROSS) }} data-testid="tsunagi-marble" data-pair={cell}>
-                      {marks === "numbers" ? cell + 1 : null}
-                    </span>
-                  ) : fill === "marbles" && owner >= 0 ? (
-                    <span className={TSUNAGI_BEAD} style={tsunagiBeadLook(owner, marks)} data-testid="tsunagi-bead" data-pair={owner} />
-                  ) : null}
-                </div>
+                <TsunagiCell
+                  key={ghost ? `ghost-${place}` : at}
+                  at={at}
+                  ghost={ghost}
+                  cell={layout.cells[at]!}
+                  owner={owners[at]!}
+                  waypoint={layout.waypoints.get(at) ?? -1}
+                  portal={portal}
+                  marks={marks}
+                  fill={fill}
+                  unslant={fit !== null}
+                  size={size}
+                  blasted={blasted?.has(at) === true}
+                  flagged={layout.cells[at]! >= 0 && flagged?.has(layout.cells[at]!) === true}
+                  onLink={hover}
+                />
               );
             })}
           </div>
@@ -348,31 +336,4 @@ export function TsunagiGrid({
       </PuzzleBoard>
     </div>
   );
-}
-
-/**
- * A line as the runs it is drawn in, each a list of [column, row] points. On a
- * board that wraps, a step across the join ends one run a cell out beyond the
- * edge (in the ghost) and starts the next a cell out beyond the other edge, so
- * the line is seen to leave and come back.
- */
-function runsOf(line: readonly number[], size: number, wrap: boolean, hex = false): [number, number][][] {
-  const point = (cell: number): [number, number] => [cell % size, Math.floor(cell / size)];
-  const runs: [number, number][][] = [[point(line[0]!)]];
-  for (let at = 1; at < line.length; at += 1) {
-    const from = line[at - 1]!;
-    const to = line[at]!;
-    const plain = hex || stepBetween(size, from, to, false) !== 0 || Math.abs(to - from) === 2 || Math.abs(to - from) === 2 * size;
-    if (plain || !wrap) {
-      runs[runs.length - 1]!.push(point(to));
-      continue;
-    }
-    const by = stepBetween(size, from, to, true);
-    const [dx, dy] = Math.abs(by) === 1 ? [Math.sign(by), 0] : [0, Math.sign(by)];
-    const [fx, fy] = point(from);
-    const [tx, ty] = point(to);
-    runs[runs.length - 1]!.push([fx + dx, fy + dy]);
-    runs.push([[tx - dx, ty - dy], [tx, ty]]);
-  }
-  return runs;
 }

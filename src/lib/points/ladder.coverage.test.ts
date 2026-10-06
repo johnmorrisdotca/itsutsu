@@ -206,6 +206,8 @@ describe("the families of 256 fixed levels", () => {
     expect(range("suido", 14)).toEqual([150, 200]);
     expect(range("tsunagi", 4)).toEqual([50, 100]);
     expect(range("tsunagi", 15)).toEqual([150, 200]);
+    // The three biggest sit at the family's highest rung.
+    expect([20, 25, 30].map((size) => range("tsunagi", size))).toEqual([[150, 200], [150, 200], [150, 200]]);
   });
 });
 

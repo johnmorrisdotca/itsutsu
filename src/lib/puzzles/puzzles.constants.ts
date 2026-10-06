@@ -261,16 +261,19 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
    */
   gomojiPop: { sizes: [3, 4, 5, 6, 7], offered: [3, 4, 5, 6], defaultSize: 5, levels: PUZZLE_LEVEL_LIST, defaultLevel: "medium", mostCells: WORD_ANSWER_MOST, helps: false, strict: true, wordGrid: "gomoji", shelves: true },
   /*
-   * Twelve sizes of fixed levels, 4×4 to 15×15 (256 at most of them, 192 at 4×4,
-   * 128 at 10×10 and from 12×12 up, 64 at 11×11), and room for four size tiles:
-   * they show four at a time, 4 to 7, 8 to 11 or 12 to 15 (`useSizeShelves`). A
+   * Fifteen sizes of fixed levels, 4×4 to 15×15 and then 20×20, 25×25 and 30×30
+   * (256 at most of them, 192 at 4×4, 128 at 10×10 and from 12×12 to 15×15, 64 at 11×11
+   * and at the three biggest), and room for four size tiles: they show four at a time,
+   * 4 to 7, 8 to 11, 12 to 15 or 15 to 30, the last shelf moved back so it is full
+   * (`useSizeShelves`). A
    * level's band (the first third easy, the last hard) is its level here. No
    * Check or Hint in the puzzle sense: Tsunagi's own Check only names the pairs
    * not joined yet, and the board already shows which.
    */
-  // A layout is a cell a character and then its walls and `wrap` (`tsunagi/code.ts`): 81 cells and a wall list came to 109 characters
-  // at 9×9, past the 81 the route once allowed, and every solve of those levels was refused. `levels.test.ts` holds every level to this.
-  tsunagi: { sizes: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 240, helps: false, onBoard: true, fixedLevels: true, shelves: true, clock: false },
+  // A layout is a cell a character and then its walls, `wrap` and portals (`tsunagi/code.ts`): 81 cells and a wall list came to 109 characters
+  // at 9×9, past the 81 the route once allowed, and every solve of those levels was refused; a 30×30 is 900 cells and a tail of about 100 at most.
+  // `levels.test.ts` holds every level to this.
+  tsunagi: { sizes: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 25, 30], offered: [4, 5, 6, 7], defaultSize: 4, levels: PUZZLE_LEVEL_LIST, defaultLevel: "easy", mostCells: 1200, helps: false, onBoard: true, fixedLevels: true, shelves: true, clock: false },
   /*
   * A size is the hand a game opens with (`KUMIMOJI_HANDS`); length and
   * inventory settings decide how many tiles it uses. The hand of three is
@@ -660,6 +663,9 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     13: { label: "Giant", kanji: "巨" },
     14: { label: "Vast", kanji: "広大" },
     15: { label: "Biggest", kanji: "超大" },
+    20: { label: "Enormous", kanji: "莫大" },
+    25: { label: "Immense", kanji: "壮大" },
+    30: { label: "Colossal", kanji: "極大" },
   },
   kumimoji: {
     [KUMIMOJI_HANDS.tiny]: { label: "Tiny", kanji: "極小" },
@@ -1151,11 +1157,12 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Lines may not cross, and no two lines may share a cell.",
       "The level is solved when every pair is joined and every cell of the board has a line through it. Every level has exactly one way to do that.",
       "Press on a marble, or on the end of a line, and drag. Drag back over your own line to shorten it; drag into another line to cut it back. Tap a marble to clear its line.",
-      "Every size has its own levels, the same for everybody and ordered easiest first: 256 at each of 5×5 to 9×9, 192 at 4×4, 128 at 10×10 and at each of 12×12 to 15×15, and 64 at 11×11. They come in blocks of 16: solve a whole block and the next one opens.",
-      "The last two levels of a block bring a twist: the 15th shows it gently, the 16th is the block's test. BRIDGES first: a bridge is crossed by two lines, one straight across and a different one straight down, and neither may turn on it. Then WALLS: no line may cross a wall, or go into a blocked cell. Then WAYPOINTS: a ring on a cell that its colour's line must pass through, and no other. Then WRAP: the edges join, so a line leaving one side comes back in on the other. Then EXPLOSIONS: every few strokes a drawn line is broken, cut back to half or wiped with a line beside it cut too; the count under the board warns a stroke before, and the stroke that solves the level sets nothing off. And at the odd sizes, HEXAGONS: a honeycomb where every cell has six neighbours, so a line may also run along both slants. Two are harder with no new rule at all: a STROKE LIMIT, where every lift of your finger that changed the board spends a stroke and Undo gives none back, and SPARSE boards of a few long lines. At 14×14 and 15×15 the wrap block is an ordinary one, and so is the last.",
+      "Every size has its own levels, the same for everybody and ordered easiest first: 256 at each of 5×5 to 9×9, 192 at 4×4, 128 at 10×10 and at each of 12×12 to 15×15, and 64 at 11×11, 20×20, 25×25 and 30×30. They come in blocks of 16: solve a whole block and the next one opens.",
+      "The last two levels of a block bring a twist: the 15th shows it gently, the 16th is the block's test. BRIDGES first: a bridge is crossed by two lines, one straight across and a different one straight down, and neither may turn on it. Then WALLS: no line may cross a wall, or go into a blocked cell. Then WAYPOINTS: a ring on a cell that its colour's line must pass through, and no other. Then WRAP: the edges join, so a line leaving one side comes back in on the other. Then EXPLOSIONS: every few strokes a drawn line is broken, cut back to half or wiped with a line beside it cut too; the count under the board warns a stroke before, and the stroke that solves the level sets nothing off. And at the odd sizes, HEXAGONS: a honeycomb where every cell has six neighbours, so a line may also run along both slants. The three biggest boards have their own short ladder of four blocks: walls, wrap, portals and explosions. Two are harder with no new rule at all: a STROKE LIMIT, where every lift of your finger that changed the board spends a stroke and Undo gives none back, and SPARSE boards of a few long lines. At 14×14 and 15×15 the wrap block is an ordinary one, and so is the last.",
+      "PORTALS are a second set of levels, chosen with Portals at the set-up, at 5×5 to 10×10, 12×12 and 15×15, thirty-two each. Two rings alike are a portal: a line that goes into one comes out of the other, going the same way, and both rings are cells it fills. Each portal is gone through by exactly one line, once. Point at a ring, or tap it, to see its partner. Once a line has gone through a portal the finger is over the end of the line, and where that would take it off the board, lift it and press the line's end again.",
     ],
     board:
-      "4×4 is where to start, and 7×7 is the everyday size. 12×12 to 15×15 are long evenings, with up to sixteen pairs; on a phone a board of 10×10 or more zooms, with Fit and the arrows under the board. Play by colours or by numbers, whichever you read faster: the marbles and the level are the same either way.",
+      "4×4 is where to start, and 7×7 is the everyday size. 12×12 to 15×15 are long evenings, with up to sixteen pairs, and 20×20 to 30×30 are longer, with dozens; on a phone a board of 10×10 or more zooms, with Fit and the arrows under the board, and two fingers pinch and move it. Play by colours or by numbers, whichever you read faster: the marbles and the level are the same either way.",
   },
   /*
    * OUR OWN GAME, UNDER OUR OWN NAME. The anagram-grid race games are sold

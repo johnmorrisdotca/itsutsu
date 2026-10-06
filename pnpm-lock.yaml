@@ -69,8 +69,8 @@ importers:
         specifier: 2.14.0
         version: 2.14.0(react@19.2.8)
       '@johnmorrisdotca/tsunagi':
-        specifier: 1.4.0
-        version: 1.4.0
+        specifier: 1.6.0
+        version: 1.6.0
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -570,8 +570,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/tsunagi@1.4.0':
-    resolution: {integrity: sha512-FtruYTCfGdgcBXDeI2RjLYDByRWA4wFYCIhgjHotiKnyz4OyhkdA0JTAv6QwbK2HkOGmYq0L3YcjYCgFsr0pDg==}
+  '@johnmorrisdotca/tsunagi@1.6.0':
+    resolution: {integrity: sha512-bpZvqzPnt83ipGXSVCXe5jqTPvKdBugvr3rv8SY2BkBAqkGTXe70uGk/i3zRQHN5VW1SU12hcHgejtBVQxzbCA==}
     engines: {node: '>=22'}
 
   '@jridgewell/gen-mapping@0.3.13':
@@ -3217,7 +3217,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/tsunagi@1.4.0': {}
+  '@johnmorrisdotca/tsunagi@1.6.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

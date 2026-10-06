@@ -18,6 +18,7 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "src/components/puzzles/BlackAndWhiteGrid.tsx",
   "src/components/puzzles/GomojiGrid.tsx",
   "src/components/puzzles/TsunagiGrid.tsx",
+  "src/components/puzzles/TsunagiParts.tsx",
   // Tsunagi's picture is one of its levels, which are the package's.
   "node_modules/@johnmorrisdotca/tsunagi/package.json",
   "src/components/puzzles/KumimojiTable.tsx",

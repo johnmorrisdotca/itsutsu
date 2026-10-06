@@ -21,7 +21,7 @@ import { generateGomoji } from "./gomoji/generate";
 import { generateGomojiKana } from "./gomojiKana/generate";
 import { generateKoushi } from "./koushi/generate";
 import { loadKanaWords } from "./gomojiKana/kanaWords";
-import { loadTsunagiLevels, tsunagiPuzzle } from "./tsunagi/levels";
+import { loadTsunagiLevels, loadTsunagiLevelsOfSeed, tsunagiPuzzle } from "./tsunagi/levels";
 import { generateKumimoji } from "./kumimoji/generate";
 import type { KumimojiLanguage, KumimojiOptions } from "./kumimoji/kumimoji.types";
 import { loadTileWords } from "./kumimoji/tileWords";
@@ -142,7 +142,8 @@ export async function preparePuzzle(kind: PuzzleKind, size: number, language: Ku
   if (kind === "gomojiWort") await loadWordData("de");
   if (kind === "gomoji" || kind === "gomojiPop" || kind === "koushi" || kind === "kumimoji") await loadWordData("en");
   if (kind === "gomojiKana") await Promise.all([loadKanaWords(size), loadDailyPools(kind, [size])]);
-  if (kind === "tsunagi") await loadTsunagiLevels(size);
+  // A level of the first set, and the set a portal level's seed names (`tsunagi/levels.ts`).
+  if (kind === "tsunagi") await Promise.all([loadTsunagiLevels(size), loadTsunagiLevelsOfSeed(size, seed ?? 1)]);
   if (kind === "meikyuu") await loadMeikyuuLevelsFor(size);
   // A huge size's boards are the browser's to load: a server (no window) knows them by a hash (`suido/levels.ts`).
   if (kind === "suido" && puzzleLoads(kind, seed) && (typeof window !== "undefined" || !isSuidoHugeSize(size))) await loadSuidoLevelsAt(size);

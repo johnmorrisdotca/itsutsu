@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { checkSolution } from "../puzzleCheck";
 import { PUZZLE_CODE_LONGEST, PUZZLE_SPECS } from "../puzzles.constants";
-import { loadEveryTsunagiLevel, nextLevelLabel, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiLevelsOf, tsunagiPuzzle } from "./levels";
+import { isTsunagiLevel, levelSeed, loadEveryTsunagiLevel, nextLevelLabel, setOfSeed, TSUNAGI_LEVEL_COUNTS, TSUNAGI_PORTAL_COUNTS, TSUNAGI_PORTAL_SEED, TSUNAGI_PORTAL_SIZES, TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiLevelsOf, tsunagiPuzzle } from "./levels";
 import "./levelsModule";
 
 /**
@@ -51,5 +51,31 @@ describe("the button to the next level", () => {
     expect(nextLevelLabel(10, 1)).toBe("Level 1, the first one you have not finished →");
     expect(nextLevelLabel(5, 3)).toBe("Level 3, the first one you have not finished →");
     expect(nextLevelLabel(3, 4)).toBe("Level 4 →");
+  });
+});
+
+describe("the levels with portals, as puzzles of the site", () => {
+  it.each(TSUNAGI_PORTAL_SIZES.map((size) => [size]))("keeps each %i×%i portal level by a seed past every level of the first set, and pays its one answer", (size) => {
+    const count = TSUNAGI_PORTAL_COUNTS[size]!;
+    const seed = levelSeed("portals", 12);
+    expect(seed).toBe(TSUNAGI_PORTAL_SEED + 12);
+    expect(setOfSeed(seed)).toEqual({ set: "portals", level: 12 });
+    expect(Math.max(...Object.values(TSUNAGI_LEVEL_COUNTS))).toBeLessThan(TSUNAGI_PORTAL_SEED);
+    expect(isTsunagiLevel(size, seed)).toBe(true);
+    expect(isTsunagiLevel(size, levelSeed("portals", count + 1))).toBe(false);
+    expect(isTsunagiLevel(size, TSUNAGI_PORTAL_SEED)).toBe(false);
+    const puzzle = tsunagiPuzzle(size, seed);
+    expect(puzzle.seed).toBe(seed);
+    expect(puzzle.givens).toContain("|portals");
+    expect(tsunagiLevelOf(size, puzzle.givens)).toBe(seed);
+    expect(tsunagiBand(size, levelSeed("portals", 1))).toBe("easy");
+    expect(tsunagiBand(size, levelSeed("portals", count))).toBe("hard");
+    for (const [givens, answer] of tsunagiLevelsOf(size, "portals")) expect(checkSolution("tsunagi", size, givens, answer)).toEqual({ ok: true });
+  });
+
+  it("names a level of the first set by its own number, and a seed that names no level as the first level", () => {
+    expect(tsunagiLevelOf(5, tsunagiPuzzle(5, 3).givens)).toBe(3);
+    expect(tsunagiPuzzle(5, 99999).seed).toBe(1);
+    expect(isTsunagiLevel(5, 0)).toBe(false);
   });
 });

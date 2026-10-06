@@ -13,4 +13,4 @@ import "./gomoji/wordDataModule";
 import "./gomojiKana/kanaWordsModule";
 import "./kumimoji/tileWordsModule";
 import "./meikyuu/levelsModule";
-import "./tsunagi/levelsModule";
+import "./tsunagi/layoutsModule";

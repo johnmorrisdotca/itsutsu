@@ -6,7 +6,7 @@ import type { BoardThemeTokens } from "@/components/board/board.types";
 import { SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "@/components/live/live.constants";
 import { decodeLayout } from "@johnmorrisdotca/tsunagi";
 import { blockOf } from "@johnmorrisdotca/tsunagi";
-import { loadTsunagiLevels, TSUNAGI_LEVEL_COUNTS, tsunagiLevelsOf } from "@/lib/puzzles/tsunagi/levels";
+import { levelCountOf, loadTsunagiLevels, tsunagiLevelsOf, type TsunagiSet } from "@/lib/puzzles/tsunagi/levels";
 import { linesOfAnswer, noLines } from "@johnmorrisdotca/tsunagi";
 
 import { PuzzleBoard } from "./PuzzleBoard";
@@ -34,6 +34,7 @@ import { TsunagiGrid } from "./TsunagiGrid";
 export function TsunagiLevelPreview({
   size,
   level,
+  set = "classic",
   best,
   solveId = null,
   locked,
@@ -42,7 +43,9 @@ export function TsunagiLevelPreview({
   theme,
 }: {
   size: number;
+  /** The level's number in its set. */
   level: number;
+  set?: TsunagiSet;
   /** Its best time, where solved. */
   best: number | undefined;
   /** The member's best solve of it, which its time opens; null for a solve kept only in this browser. */
@@ -52,26 +55,27 @@ export function TsunagiLevelPreview({
   fill: TsunagiFill;
   theme: BoardThemeTokens;
 }) {
-  // The size whose levels have arrived: the data files load one size at a time.
-  const [loaded, setLoaded] = useState<number | null>(null);
+  // The size and set whose levels have arrived: the data files load one size at a time.
+  const [loaded, setLoaded] = useState<string | null>(null);
+  const loadedKey = `${set}:${size}`;
   useEffect(() => {
     let live = true;
-    void loadTsunagiLevels(size).then(() => live && setLoaded(size));
+    void loadTsunagiLevels(size, set).then(() => live && setLoaded(loadedKey));
     return () => {
       live = false;
     };
-  }, [size]);
+  }, [size, set, loadedKey]);
   const drawn = useMemo(() => {
-    if (loaded !== size) return null;
-    const entry = tsunagiLevelsOf(size)[level - 1];
+    if (loaded !== loadedKey) return null;
+    const entry = tsunagiLevelsOf(size, set)[level - 1];
     const layout = entry === undefined ? null : decodeLayout(entry[0], size);
     if (entry === undefined || layout === null) return null;
     const lines = best !== undefined ? (linesOfAnswer(layout, entry[1]) ?? noLines(layout)) : noLines(layout);
     return { layout, lines };
-  }, [loaded, size, level, best]);
-  const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
+  }, [loaded, loadedKey, size, set, level, best]);
+  const count = levelCountOf(size, set);
   return (
-    <figure className="flex w-full flex-col items-center gap-2" data-testid="tsunagi-preview" data-size={size} data-level={level} data-state={best !== undefined ? "solved" : locked ? "locked" : "open"} data-drawn={drawn !== null ? "true" : "false"}>
+    <figure className="flex w-full flex-col items-center gap-2" data-testid="tsunagi-preview" data-size={size} data-level={level} data-set={set} data-state={best !== undefined ? "solved" : locked ? "locked" : "open"} data-drawn={drawn !== null ? "true" : "false"}>
       <div className={`${SET_UP_PREVIEW_BOX} relative`} aria-hidden="true">
         {drawn === null ? (
           <PuzzleBoard size={size} theme={theme} coordinates={false}>
@@ -91,7 +95,7 @@ export function TsunagiLevelPreview({
         ) : null}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION} data-testid="tsunagi-preview-caption">
-        Level {level} of {count} at {size}×{size}
+        Level {level} of {count} at {size}×{size}{set === "portals" ? " with portals" : ""}
         {best !== undefined ? (
           <>
             : solved, best <SolveTime kind="tsunagi" solveId={solveId} elapsedMs={best} mine testId="tsunagi-preview-best" />.

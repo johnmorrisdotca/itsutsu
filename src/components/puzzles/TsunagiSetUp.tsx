@@ -17,7 +17,7 @@ import { PUZZLE_DISPLAY, PUZZLE_SIZE_NAMES, sizesOffered } from "@/lib/puzzles/p
 import { blockOf, blockRange, blocksIn } from "@johnmorrisdotca/tsunagi";
 import { tsunagiRole } from "@johnmorrisdotca/tsunagi";
 import { TsunagiLevelChips } from "./TsunagiLevelChips";
-import { firstUnsolvedTsunagiLevel, nextTsunagiLevel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS, TSUNAGI_SIZES } from "@/lib/puzzles/tsunagi/levels";
+import { firstUnsolvedTsunagiLevel, levelCountOf, nextTsunagiLevel, openTsunagiLevels, TSUNAGI_PORTAL_SIZES, TSUNAGI_SIZES, type TsunagiSet } from "@/lib/puzzles/tsunagi/levels";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { feltOrWoodTheme } from "./GomojiGrid";
@@ -29,6 +29,7 @@ import { SetUpResume } from "./SetUpResume";
 import { useSizeShelves } from "./sizeShelves";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
 import { keptAttempts, keptSolves, keptSolvesOff } from "./tsunagiKept";
+import { inSet, inSetBySize, seedIn } from "./tsunagiSets";
 import { useTsunagiCheats, useTsunagiExplosions, useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
 
 /**
@@ -46,7 +47,16 @@ import { useTsunagiCheats, useTsunagiExplosions, useTsunagiFill, useTsunagiMarks
  * one press beside them turns to the next shelf, and from the last back to the first. The press is always there,
  * so choosing never moves the page.
  */
-export function TsunagiSetUp({
+export function TsunagiSetUp(props: Omit<Parameters<typeof TsunagiSetUpFor>[0], "set" | "onSet"> & { initialSet?: TsunagiSet }) {
+  const { initialSet = "classic", ...rest } = props;
+  const [set, setSet] = useState<TsunagiSet>(initialSet);
+  // Each set has its own sizes, so choosing one starts the shelves again: the same size where the set has it.
+  return <TsunagiSetUpFor key={set} {...rest} set={set} onSet={setSet} />;
+}
+
+function TsunagiSetUpFor({
+  set,
+  onSet,
   hasAccount,
   appearance = DEFAULT_APPEARANCE,
   marksChosen,
@@ -78,13 +88,16 @@ export function TsunagiSetUp({
   initialSize: number;
   /** A level of Tsunagi already going, if any: offered first, above Start (`SetUpResume`). */
   resumeHref?: string | null;
+  /** Which levels: the classic ones, or the ones with portals. */
+  set: TsunagiSet;
+  onSet: (next: TsunagiSet) => void;
 }) {
   const hydrated = useHydrated();
-  // Every board the shelves turn to: the same list the front door names (`sizesOffered`).
-  const boards = sizesOffered("tsunagi");
+  // Every board the shelves turn to: the same list the front door names (`sizesOffered`), or the sizes the levels with portals come in.
+  const boards: readonly number[] = set === "portals" ? TSUNAGI_PORTAL_SIZES : sizesOffered("tsunagi");
   const copy = PUZZLE_DISPLAY.tsunagi;
   // Four tiles at a time, the last shelf full (`useSizeShelves`).
-  const { size, setSize, shown, onLast, turnShelf, furthest } = useSizeShelves(boards, initialSize);
+  const { size, setSize, shown, onLast, turnShelf, furthest } = useSizeShelves(boards, boards.includes(initialSize) ? initialSize : boards[0]!);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const { marks, chooseMarks } = useTsunagiMarks(marksChosen, hasAccount);
   const { fill, chooseFill } = useTsunagiFill(fillChosen, hasAccount);
@@ -93,31 +106,34 @@ export function TsunagiSetUp({
   const theme = feltOrWoodTheme({ ...appearance, felt });
 
   /* This browser's solves, read once it has hydrated: the server drew the account's alone, and the two are joined here. */
+  // Everything kept is kept by seed; the set on show is read by the level's number in it (`inSet`).
   const here = useMemo<Record<number, Record<number, number>>>(
-    () => (hydrated ? Object.fromEntries(TSUNAGI_SIZES.map((each) => [each, keptSolves(each)])) : {}),
-    [hydrated],
+    () => (hydrated ? Object.fromEntries(TSUNAGI_SIZES.map((each) => [each, inSet(keptSolves(each), set)])) : {}),
+    [hydrated, set],
   );
   // And the ones solved here only with explosions off: solved, never counted to open a block.
-  const hereOff = useMemo<Record<number, number>>(() => (hydrated ? keptSolvesOff(size) : {}), [hydrated, size]);
+  const hereOff = useMemo<Record<number, number>>(() => (hydrated ? inSet(keptSolvesOff(size), set) : {}), [hydrated, size, set]);
+  const solvedInSet = useMemo(() => inSetBySize(solved, set), [solved, set]);
+  const closedInSet = useMemo(() => Object.fromEntries(Object.entries(closed).map(([each, seeds]) => [Number(each), Object.keys(inSet(Object.fromEntries(seeds.map((seed) => [seed, 0])), set)).map(Number)])), [closed, set]);
   const best = useMemo(() => {
     const out: Record<number, number> = { ...hereOff, ...(here[size] ?? {}) };
-    for (const [level, ms] of Object.entries(solved[size] ?? {})) out[Number(level)] = Math.min(ms, out[Number(level)] ?? ms);
+    for (const [level, ms] of Object.entries(solvedInSet[size] ?? {})) out[Number(level)] = Math.min(ms, out[Number(level)] ?? ms);
     return out;
-  }, [here, hereOff, solved, size]);
+  }, [here, hereOff, solvedInSet, size]);
   const done = useMemo(() => new Set(Object.keys(best).map(Number)), [best]);
   // Every solved level but the ones solved only with explosions off: these open blocks and decide which level is next.
   const opening = useMemo(() => {
-    const shut = new Set(closed[size] ?? []);
-    return new Set([...Object.keys(here[size] ?? {}), ...Object.keys(solved[size] ?? {}).filter((level) => !shut.has(Number(level)))].map(Number));
-  }, [here, solved, closed, size]);
+    const shut = new Set(closedInSet[size] ?? []);
+    return new Set([...Object.keys(here[size] ?? {}), ...Object.keys(solvedInSet[size] ?? {}).filter((level) => !shut.has(Number(level)))].map(Number));
+  }, [here, solvedInSet, closedInSet, size]);
   // A member's attempts are the account's; a visitor's this browser's, read once hydrated as the solves are.
-  const tries = useMemo(() => (hasAccount ? (attempts[size] ?? {}) : hydrated ? keptAttempts(size) : {}), [hasAccount, attempts, size, hydrated]);
-  const open = openTsunagiLevels(size, opening);
-  const next = nextTsunagiLevel(size, opening);
+  const tries = useMemo(() => inSet(hasAccount ? (attempts[size] ?? {}) : hydrated ? keptAttempts(size) : {}, set), [hasAccount, attempts, size, hydrated, set]);
+  const open = openTsunagiLevels(size, opening, set);
+  const next = nextTsunagiLevel(size, opening, set);
   // Said when a later level is solved, so Start's number is not read as a slip.
-  const gap = firstUnsolvedTsunagiLevel(size, opening);
+  const gap = firstUnsolvedTsunagiLevel(size, opening, set);
   const skippedPast = gap !== null && [...opening].some((level) => level > gap);
-  const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
+  const count = levelCountOf(size, set);
   /*
    * THE LEVEL CHOSEN: the next one not yet solved, until a reader chooses
    * another in the picker. The preview draws it and Start plays it. A size
@@ -138,7 +154,7 @@ export function TsunagiSetUp({
   const turnBlock = (by: number) => setTurnedTo({ size, block: Math.min(blocks, Math.max(1, block + by)) });
 
   return (
-    <section className="flex flex-col gap-5" data-testid="puzzle-set-up" data-kind="tsunagi" {...readyMark(hydrated)}>
+    <section className="flex flex-col gap-5" data-testid="puzzle-set-up" data-kind="tsunagi" data-set={set} {...readyMark(hydrated)}>
       {/*
         THE PREVIEW AND THE LEVEL PICKER, THE SIZES BESIDE THEM OR UNDER THEM. John, 2026-09-26: at
         narrower desk widths the tiles ran off the right edge, "Bigger boards"
@@ -148,9 +164,10 @@ export function TsunagiSetUp({
       */}
       <div className={`${PICK_BOARD_ROW} py-2 md:flex-wrap`}>
         <div className={`${PICK_BOARD_PREVIEW} flex flex-col items-center gap-2`}>
-          <TsunagiLevelPreview size={size} level={chosen} best={best[chosen]} solveId={bestSolves[size]?.[chosen] ?? null} locked={chosenLocked} marks={marks} fill={fill} theme={theme} />
+          <TsunagiLevelPreview size={size} level={chosen} set={set} best={best[chosen]} solveId={bestSolves[size]?.[seedIn(set, chosen)] ?? null} locked={chosenLocked} marks={marks} fill={fill} theme={theme} />
           <TsunagiLevelPicker
             size={size}
+            set={set}
             block={block}
             best={best}
             attempts={tries}
@@ -172,7 +189,7 @@ export function TsunagiSetUp({
             </button>
           </div>
           <p className="text-xs text-muted" data-testid="tsunagi-levels-caption">
-            {size}×{size}: {done.size} of {count} solved. Each block of 16 opens when the one before it is all solved.
+            {size}×{size}{set === "portals" ? " with portals" : ""}: {done.size} of {count} solved. Each block of 16 opens when the one before it is all solved.
           </p>
         </div>
         <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="tsunagi-sizes">
@@ -201,12 +218,12 @@ export function TsunagiSetUp({
               <PressLabel words={`Level ${chosen} is locked`} kanji="鍵" />
             </span>
           ) : (
-            <Link href={tsunagiLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
+            <Link href={tsunagiLevelPath(size, seedIn(set, chosen))} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen} data-set={set}>
               <PressLabel words={`${START_PRESS.start.words} level ${chosen}`} kanji={START_PRESS.start.kanji} />
             </Link>
           )}
           {/* What the level Start plays asks, before it is started. */}
-          <TsunagiLevelChips size={size} level={chosen} challenges={tsunagiRole(size, chosen)?.challenges ?? []} />
+          <TsunagiLevelChips size={size} level={chosen} set={set} challenges={tsunagiRole(size, chosen, set)?.challenges ?? (set === "portals" ? ["portals"] : [])} />
           {skippedPast ? (
             <p className="text-xs text-muted" data-testid="tsunagi-first-unsolved">
               Level {gap} is the first one you have not finished.

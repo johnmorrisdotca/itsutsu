@@ -243,7 +243,7 @@ async function drag(page: Page, size: number, line: readonly number[]) {
 }
 
 test.describe("the set-up offers 13×13 to 15×15", () => {
-  test("they are the third shelf, reached from the first and left by the way back, and the preview is the board chosen", async ({ page }) => {
+  test("they are the third shelf, reached from the first and left by the next, and the preview is the board chosen", async ({ page }) => {
     await page.goto("/games/tsunagi/new");
     await ready(page, "puzzle-set-up");
     const sizes = async () => page.locator('[data-testid="tsunagi-sizes"] [data-testid="set-up-size"]').evaluateAll((tiles) => tiles.map((tile) => Number(tile.getAttribute("data-size"))));
@@ -254,7 +254,7 @@ test.describe("the set-up offers 13×13 to 15×15", () => {
     await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Bigger boards, to 15×15");
     await page.getByTestId("tsunagi-more-sizes").click();
     expect(await sizes()).toEqual([12, 13, 14, 15]);
-    await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Smaller boards, from 4×4");
+    await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Bigger boards, to 30×30");
     for (const size of [13, 14, 15]) {
       await page.locator(`[data-testid="set-up-size"][data-size="${size}"]`).click();
       await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-size", String(size));
@@ -263,6 +263,10 @@ test.describe("the set-up offers 13×13 to 15×15", () => {
       await expect(page.getByTestId("tsunagi-levels-caption")).toContainText("of 128 solved");
       expect(Math.abs((await page.getByTestId("puzzle-set-up").boundingBox())!.height - height), `the set-up changed height at ${size}×${size}`).toBeLessThanOrEqual(1);
     }
+    // The last shelf is moved back so it is full: 15, then 20, 25 and 30 (`shelvesOf`); and from it the way back is to the first.
+    await page.getByTestId("tsunagi-more-sizes").click();
+    expect(await sizes()).toEqual([15, 20, 25, 30]);
+    await expect(page.getByTestId("tsunagi-more-sizes")).toContainText("Smaller boards, from 4×4");
     await page.getByTestId("tsunagi-more-sizes").click();
     expect(await sizes()).toEqual([4, 5, 6, 7]);
   });

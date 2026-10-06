@@ -136,7 +136,8 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   // The 32×32 Huge board (2026-10-05) is the top rung; the 16×16 comes down from 125 to sit between it and the 12×12.
   jirai: { how: "size", rungs: { 7: 50, 9: 65, 12: 95, 16: 110, 32: 125 } },
   kumimoji: { how: "tiles", full: TILES },
-  tsunagi: { how: "ranked", rungs: { 4: 50, 5: 70, 6: 85, 7: 95, 8: 110, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 15: 150 } },
+  // The three biggest (2026-10-05) sit at the highest rung a level family has, 150, since a level adds up to 50 and the ceiling is 200: the work is far more than 15×15's, and the ceiling is the ceiling.
+  tsunagi: { how: "ranked", rungs: { 4: 50, 5: 70, 6: 85, 7: 95, 8: 110, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 15: 150, 20: 150, 25: 150, 30: 150 } },
   // The squares 5 to 14 and the long boards 5×7, 6×10 and 8×14 (kept as 507, 610 and 814), and the huge 20×20, 28×28 and 20×50 (2050), which have sixty-four levels and not 256. A level family's ceiling is 200, which is a rung of 150 and the 50 a level's place adds (`rankAdd`), so the three huge ones take the top rung: they pay what the 14×14 pays at its hardest, and a huge level's third pays by the same thirds as every size's (`RANK_OF_THIRD`).
   suido: { how: "ranked", rungs: { 5: 50, 6: 70, 7: 85, 8: 95, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 20: 150, 28: 150, 507: 65, 610: 90, 814: 120, 2050: 150 } },
   // The four square sizes (small to huge, 1 to 4) and the six tall ones (609 is 6×9), and the two colossal ones (2026-10-05, package 2.1): the square list is size 5, the top rung of the squares

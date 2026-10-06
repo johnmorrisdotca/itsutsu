@@ -3,8 +3,8 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 
 import { helpOpensOn, solveHelpOf } from "../solveHelp";
-import { TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiLevelsOf } from "../tsunagi/levels";
-import { loadTsunagiLevelsFromModule } from "../tsunagi/levelsModule";
+import { setOfSeed, TSUNAGI_PORTAL_SIZES, TSUNAGI_SIZES, tsunagiBand, tsunagiLevelOf, tsunagiLevelsOf } from "../tsunagi/levels";
+import { loadTsunagiLayoutsFromModule } from "../tsunagi/layoutsModule";
 
 /**
  * TSUNAGI'S RECORDS, read from the solves every puzzle keeps (`PuzzleSolve`):
@@ -31,7 +31,8 @@ export async function tsunagiSolvedBy(memberId: string): Promise<TsunagiSolved> 
   });
   const out: TsunagiSolved = {};
   const sizes = [...new Set(rows.map((row) => row.size))].filter((size) => (TSUNAGI_SIZES as readonly number[]).includes(size));
-  await Promise.all(sizes.map((size) => loadTsunagiLevelsFromModule(size)));
+  // Both sets: a solve of a level with portals is named by its layout as any is, and read back as its seed.
+  await Promise.all(sizes.flatMap((size) => [loadTsunagiLayoutsFromModule(size), ...((TSUNAGI_PORTAL_SIZES as readonly number[]).includes(size) ? [loadTsunagiLayoutsFromModule(size, "portals")] : [])]));
   for (const row of rows) {
     if (!sizes.includes(row.size)) continue;
     const level = tsunagiLevelOf(row.size, row.givens);
@@ -56,8 +57,9 @@ export const LEVEL_FASTEST_SHOWN = 5;
  * being its band, then narrowed to its layout.
  */
 export async function tsunagiLevelFastest(size: number, level: number): Promise<LevelFastest[]> {
-  await loadTsunagiLevelsFromModule(size);
-  const givens = tsunagiLevelsOf(size)[level - 1]?.[0];
+  const { set, level: number } = setOfSeed(level);
+  await loadTsunagiLayoutsFromModule(size, set);
+  const givens = tsunagiLevelsOf(size, set)[number - 1]?.[0];
   if (givens === undefined) return [];
   const rows = await prisma.puzzleSolve.findMany({
     // Unhelped only: a solve Cheat or eased explosions helped is no time to race.

@@ -8,7 +8,7 @@ import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
 import { familyPath, joinQuery, matchPath, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { clockText } from "@/lib/puzzles/clockText";
-import { fixedLevelOf } from "@/lib/puzzles/fixedLevel";
+import { fixedLevelName, fixedLevelOf, levelsQueryOf } from "@/lib/puzzles/fixedLevel";
 import { suidoSizeInAddress } from "@/lib/puzzles/suido/sizes";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
@@ -61,7 +61,7 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
                   <GameName variant={kind} raised />
                 </span>
                 <span className="text-xs text-muted">
-                  {sizeWord(race.size, kind)} · {fixedLevelOf(kind, race.seed) === null ? PUZZLE_LEVEL_DISPLAY[race.level as PuzzleLevel].label : `Level ${fixedLevelOf(kind, race.seed)}`} · a race against{" "}
+                  {sizeWord(race.size, kind)} · {fixedLevelName(kind, race.seed) ?? PUZZLE_LEVEL_DISPLAY[race.level as PuzzleLevel].label} · a race against{" "}
                   <PlayerName name={race.against.name} memberId={race.against.memberId} fallback="somebody" className={RAISED_LINK} tagged={false} />, waiting on you
                 </span>
               </span>
@@ -92,7 +92,7 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
                 </span>
                 <span className="text-xs text-muted">
                   {/* A fixed level is named by its number, every other puzzle by its level. */}
-                  {sizeWord(run.size, kind)} · {fixed !== null ? `Level ${fixed}` : PUZZLE_LEVEL_DISPLAY[level].label} · {clockText(run.elapsedMs)} so far
+                  {sizeWord(run.size, kind)} · {fixedLevelName(kind, run.seed) ?? PUZZLE_LEVEL_DISPLAY[level].label} · {clockText(run.elapsedMs)} so far
                   {run.checksAllowed !== null ? ` · ${run.checksAllowed === 1 ? "one check" : `${run.checksAllowed} checks`}` : ""}
                   {asked.hints ? " · hints" : ""}
                   {run.strict ? " · strict" : ""}
@@ -103,7 +103,7 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">
                 {fixed !== null ? (
-                  <Link href={joinQuery(setUpPath(kind), `?size=${suidoSizeInAddress(run.size)}`)} className={`${RAISED_LINK} shrink-0 text-sm text-muted underline underline-offset-4`} data-testid="puzzle-going-levels">
+                  <Link href={joinQuery(setUpPath(kind), kind === "tsunagi" ? levelsQueryOf(kind, run.size, run.seed) : `?size=${suidoSizeInAddress(run.size)}`)} className={`${RAISED_LINK} shrink-0 text-sm text-muted underline underline-offset-4`} data-testid="puzzle-going-levels">
                     All levels
                   </Link>
                 ) : null}

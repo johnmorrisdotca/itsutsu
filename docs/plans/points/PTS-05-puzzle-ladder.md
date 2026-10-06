@@ -74,7 +74,7 @@ Measured table (rung at the smallest to largest offered size, Easy):
 | Meikyuu small, medium, large, huge | 55, 95, 120, 150 (to 105, 145, 170, 200) |
 | Meikyuu tall 6x9 to 20x30 | 50, 60, 70, 80, 90, 100 (to 100 ... 150) |
 | Suido 5x5 to 14x14 | 50 to 150 (to 100 ... 200); long boards 65, 90, 120 |
-| Tsunagi 4 to 15 | 50 to 150 (to 100 ... 200) |
+| Tsunagi 4 to 15, then 20, 25 and 30 | 50 to 150 (to 100 ... 200); the three biggest all sit at the highest rung, 150 (to 200), since a level adds up to 50 and the ceiling is 200 |
 
 ## What help and play do to it
 

@@ -62,6 +62,11 @@ export type Pinned = { inset: number; render: (frame: PinFrame) => ReactNode };
  * board is drawn at the size it is shown, not stretched, so its lines stay
  * crisp. Below 10×10 this is the board alone, as it always was.
  *
+ * TWO FINGERS MOVE THE VIEW (2026-10-05, the 20×20 to 30×30 boards): a second finger down on a touch screen
+ * ends any line being drawn, as a lift does, and the two fingers together pinch the board's zoom and drag it,
+ * so a phone's reader moves about a 30×30 as a map and never needs the pad. The pad, the wheel and the edge
+ * nudge stay as they were; one finger still draws.
+ *
  * Bridges' big boards are looked at through the same box (`name`
  * "bridges"), so there is one zoom for a board too big for a thumb, not two.
  *
@@ -110,6 +115,10 @@ export function TsunagiViewport({
   /** The side of the playing area as last measured, which the edge nudge reads without a render. */
   const areaSide = useRef(0);
   const held = useRef<{ pointer: number; x: number; y: number; target: EventTarget | null } | null>(null);
+  // Fingers on a touch screen, and the two that are moving the view: while there are two, the board is not drawn on, and the finger left after one lifts is let go of until it lifts too.
+  const fingers = useRef(new Map<number, { x: number; y: number }>());
+  const gesture = useRef<{ x: number; y: number; distance: number } | null>(null);
+  const ignored = useRef(new Set<number>());
 
   useEffect(() => {
     const element = box.current;
@@ -203,6 +212,51 @@ export function TsunagiViewport({
 
   if (!enabled) return <>{children}</>;
 
+  /** The middle of the two fingers and how far apart they are. */
+  const between = () => {
+    const [a, b] = [...fingers.current.values()];
+    return { x: (a!.x + b!.x) / 2, y: (a!.y + b!.y) / 2, distance: Math.hypot(a!.x - b!.x, a!.y - b!.y) };
+  };
+  const touchDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== "touch") return;
+    fingers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (fingers.current.size === 2) {
+      // The first finger may be drawing a line: it is let go, as a lift lets go, and the board takes no more from either finger.
+      const first = held.current;
+      if (first !== null) first.target?.dispatchEvent(new window.PointerEvent("pointercancel", { bubbles: true, pointerId: first.pointer }));
+      held.current = null;
+      gesture.current = between();
+      for (const pointer of fingers.current.keys()) ignored.current.add(pointer);
+    }
+    if (ignored.current.has(event.pointerId)) event.stopPropagation();
+  };
+  const touchMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== "touch" || !fingers.current.has(event.pointerId)) return;
+    fingers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (!ignored.current.has(event.pointerId)) return;
+    event.stopPropagation();
+    const before = gesture.current;
+    if (before === null || fingers.current.size !== 2) return;
+    const now = between();
+    const rect = event.currentTarget.getBoundingClientRect();
+    gesture.current = now;
+    // Pinched about the middle between them, and carried along as the middle moves.
+    setView((each) => {
+      const zoomed = before.distance > 0 && now.distance > 0 ? zoomedAbout(each, now.distance / before.distance, before.x - rect.left, before.y - rect.top, rect.width) : each;
+      return kept({ ...zoomed, x: zoomed.x + (now.x - before.x), y: zoomed.y + (now.y - before.y) }, rect.width);
+    });
+  };
+  const touchUp = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== "touch") return;
+    const was = ignored.current.has(event.pointerId);
+    fingers.current.delete(event.pointerId);
+    if (fingers.current.size < 2) gesture.current = null;
+    if (was) {
+      event.stopPropagation();
+      ignored.current.delete(event.pointerId);
+    }
+  };
+
   const follow = (event: PointerEvent<HTMLDivElement>) => {
     if (held.current !== null && held.current.pointer === event.pointerId) held.current = { ...held.current, x: event.clientX, y: event.clientY };
   };
@@ -213,6 +267,10 @@ export function TsunagiViewport({
         ref={box}
         className="relative w-full overflow-hidden"
         style={{ touchAction: "none", aspectRatio: aspect }}
+        onPointerDownCapture={touchDown}
+        onPointerMoveCapture={touchMove}
+        onPointerUpCapture={touchUp}
+        onPointerCancelCapture={touchUp}
         onPointerDown={(event) => (held.current = { pointer: event.pointerId, x: event.clientX, y: event.clientY, target: event.target })}
         onPointerMove={follow}
         onPointerUp={() => (held.current = null)}

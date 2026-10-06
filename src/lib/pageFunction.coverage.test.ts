@@ -36,8 +36,8 @@ const READERS_A_PAGE_USES: ReadonlyMap<string, string> = new Map([
     "A kana dodger's word is replayed from its list on the page of one solve and on a member's own page (PuzzleSolvePage, PuzzleMePage).",
   ],
   [
-    "src/lib/puzzles/tsunagi/levelsModule.ts",
-    "Which Tsunagi levels a member has solved, and a level's fastest times, are read from the levels on the set-up and play pages (tsunagiRecords.ts).",
+    "src/lib/puzzles/tsunagi/layoutsModule.ts",
+    "Which Tsunagi levels a member has solved, and a level's fastest times, are read from the levels' boards on the set-up and play pages (tsunagiRecords.ts): the boards alone, never the answers.",
   ],
   [
     "src/lib/puzzles/dailyWords/dailyPoolsModule.ts",
@@ -179,18 +179,7 @@ const GAME_PACKAGES_A_PAGE_PRINTS: ReadonlyMap<string, string> = new Map<string,
   ),
   ["@johnmorrisdotca/tsunagi", "Tsunagi's rules: a kept or finished level replayed and checked on the server, and a level's board drawn in its set-up preview and on its finished page."],
   ["@johnmorrisdotca/tsunagi/renumbered", "Where each old level went (2 KB), for a browser's own record of its solves moved to the new numbers (`tsunagiKept.ts`), reached through the set-up screen."],
-  ["@johnmorrisdotca/tsunagi/levels-4", "Read by levelsModule.ts: the server checks a solve against the level it names, and lists who solved which level."],
-  ["@johnmorrisdotca/tsunagi/levels-5", "Read by levelsModule.ts."],
-  ["@johnmorrisdotca/tsunagi/levels-6", "Read by levelsModule.ts."],
-  ["@johnmorrisdotca/tsunagi/levels-7", "Read by levelsModule.ts."],
-  ["@johnmorrisdotca/tsunagi/levels-8", "Read by levelsModule.ts."],
-  ["@johnmorrisdotca/tsunagi/levels-9", "Read by levelsModule.ts."],
-  ["@johnmorrisdotca/tsunagi/levels-10", "Read by levelsModule.ts."],
-  ["@johnmorrisdotca/tsunagi/levels-11", "Read by levelsModule.ts."],
-  ["@johnmorrisdotca/tsunagi/levels-12", "Read by levelsModule.ts."],
-  ["@johnmorrisdotca/tsunagi/levels-13", "Read by levelsModule.ts."],
-  ["@johnmorrisdotca/tsunagi/levels-14", "Read by levelsModule.ts."],
-  ["@johnmorrisdotca/tsunagi/levels-15", "Read by levelsModule.ts."],
+  ["@johnmorrisdotca/tsunagi/layouts", "Every Tsunagi level's board without its answer (0.36 MB for all 2,624 levels, where the levels are 1 MB): read by layoutsModule.ts so that the server can check a solve against the level it names and list who solved which level. The levels themselves (answers too) are fetched in the browser alone, and by a unit test or a spec through levelsModule.ts."],
   ["@johnmorrisdotca/toranpu/card-backs", "The backs a reader may choose, reached by every face-down card a finished patience game's replay draws; about 11 KB, and the server draws only the Itsutsu back."],
 ]);
 
@@ -235,8 +224,8 @@ const TABLES_DRAWN_ON_THE_SERVER: ReadonlySet<string> = new Set([
 ]);
 const TABLE_FILES = ["src/components/party/partyKindTables.ts", "src/components/party/partyTables.ts"];
 
-// A word list is a `.data` file of ours, or one of Kotoba's lists, each an entry point of its own (`@johnmorrisdotca/kotoba/kana-5`), and so is each size of Tsunagi's levels (`@johnmorrisdotca/tsunagi/levels-7`).
-const isData = (spec: string) => /\.data$/.test(spec) || /^@johnmorrisdotca\/kotoba\/(words|kana|pop)-/.test(spec) || /^@johnmorrisdotca\/tsunagi\/levels-/.test(spec);
+// A word list is a `.data` file of ours, or one of Kotoba's lists, each an entry point of its own (`@johnmorrisdotca/kotoba/kana-5`), and so is each size of Tsunagi's levels (`@johnmorrisdotca/tsunagi/levels-7`) and its boards without their answers (`@johnmorrisdotca/tsunagi/layouts`).
+const isData = (spec: string) => /\.data$/.test(spec) || /^@johnmorrisdotca\/kotoba\/(words|kana|pop)-/.test(spec) || /^@johnmorrisdotca\/tsunagi\/(levels-|layouts$)/.test(spec);
 
 describe("the pages' server function", () => {
   it("fetches a list in the browser only, or reads it in a module of its own", () => {

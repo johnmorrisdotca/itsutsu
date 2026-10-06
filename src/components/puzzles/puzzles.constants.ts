@@ -334,8 +334,17 @@ function hsl([hue, saturation, lightness]: readonly [number, number, number], sh
   return alpha === 1 ? `hsl(${hue} ${saturation}% ${light}%)` : `hsl(${hue} ${saturation}% ${light}% / ${alpha})`;
 }
 
+/**
+ * A pair's colour: the sixteen above for the first sixteen pairs, then, for the dozens a 20×20 to 30×30 board
+ * has, the same hues turned round the colour wheel and made lighter or darker, round after round, so that no two
+ * pairs of one board wear exactly one colour. The package's colour sets do the same (`TSUNAGI_COLOUR_SETS`).
+ */
 function colourOf(pair: number): readonly [number, number, number] {
-  return TSUNAGI_COLOURS[pair % TSUNAGI_COLOURS.length]!;
+  const base = TSUNAGI_COLOURS[pair % TSUNAGI_COLOURS.length]!;
+  const round = Math.floor(pair / TSUNAGI_COLOURS.length);
+  if (round === 0) return base;
+  const [hue, saturation, lightness] = base;
+  return [(hue + 29 * round) % 360, saturation, Math.max(18, Math.min(88, lightness + [14, -14, 8, -8][(round - 1) % 4]!))];
 }
 
 /** A marble's face: a shaded ball of the pair's colour, or a shell stone for Numbers, with the ink its number is written in. */
@@ -386,6 +395,38 @@ export const TSUNAGI_MARBLE_ACROSS = "74cqw";
 
 /** A waypoint's ring: three pixels, or less on a cell too small to spare them. */
 export const TSUNAGI_WAYPOINT_RING = "min(3px, 6cqw)";
+
+/** A portal's outer ring: four pixels, or less on a cell too small to spare them. */
+export const TSUNAGI_PORTAL_RING = "min(4px, 8cqw)";
+
+/**
+ * How far from the middle of a portal's cell a line stops going in, and starts coming out, as a share of a cell:
+ * just inside the ring, on the side it came in by. The same figure as the package's drawing (`PORTAL_STUB`).
+ */
+export const TSUNAGI_PORTAL_STUB = 0.3;
+
+/** The colours and the letters that mark portals: two rings alike are one portal, each pair in a colour and a Greek letter of its own (the package's drawing has the same). */
+const PORTAL_COLOURS: readonly (readonly [number, number, number])[] = [
+  [276, 62, 52],
+  [174, 78, 34],
+  [32, 96, 46],
+  [338, 72, 50],
+  [212, 82, 50],
+  [96, 56, 38],
+  [262, 20, 42],
+  [16, 86, 46],
+];
+const PORTAL_MARKS = "αβγδεζηθικλμνξοπρστυφχψω";
+
+/** The colour of portal `index` (from 0), round and round the eight. */
+export function tsunagiPortalColour(index: number): string {
+  return hsl(PORTAL_COLOURS[index % PORTAL_COLOURS.length]!);
+}
+
+/** The letter that marks portal `index`, or its number once the letters are used. */
+export function tsunagiPortalMark(index: number): string {
+  return PORTAL_MARKS[index] ?? String(index + 1);
+}
 
 /** A number's font size as a share of its marble's width, by how many digits it has. */
 const NUMBER_TO_MARBLE = [0.6, 0.52, 0.4] as const;
@@ -443,6 +484,11 @@ export const TSUNAGI_CHIPS = {
   walls: { label: "Walls", kanji: "壁", says: "No line may cross a wall, or go into a blocked cell." },
   waypoints: { label: "Waypoints", kanji: "経由", says: "A ring on a cell is a waypoint: the line of its colour must pass through it, and no other line may." },
   wrap: { label: "Wrap", kanji: "巡", says: "The edges join: a line leaving one side comes back in on the other. Drag off an edge onto its faded copy, then carry on from the line's end on the far side." },
+  portals: {
+    label: "Portals",
+    kanji: "跳",
+    says: "Two rings alike are a portal. A line that goes into one comes out of the other, going the same way, and both rings are cells it fills. Each portal is gone through by exactly one line, once. Point at a ring, or tap it, to see its partner.",
+  },
   explosions: {
     label: "Explosions",
     kanji: "爆",

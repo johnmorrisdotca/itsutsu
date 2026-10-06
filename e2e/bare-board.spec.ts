@@ -502,6 +502,11 @@ const SURVEY: Survey[] = [
     await page.goto("/games/tsunagi/play?size=15&seed=1");
     await ready(page, "puzzle-play");
   } },
+  // And its biggest, 30×30 (Tsunagi 1.5.0), whose seventy or so lines must fit the modal at both desk sizes.
+  { name: "/games/tsunagi/play at 30×30", open: async (page) => {
+    await page.goto("/games/tsunagi/play?size=30&seed=1");
+    await ready(page, "puzzle-play");
+  } },
   // Meikyuu's levels are fixed mazes: a small one, as a new player meets it, and a huge one, the biggest it comes in, which the modal has to hold with nothing to scroll.
   { name: "/games/meikyuu/play", open: async (page) => {
     await page.goto("/games/meikyuu/play?size=1&level=easy&seed=6");

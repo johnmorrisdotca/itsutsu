@@ -1,4 +1,4 @@
-import { type LevelRow, loadTsunagiLevels, readTsunagiLevelsWith } from "./levels";
+import { type LevelRow, loadTsunagiLevels, readTsunagiLevelsWith, type TsunagiSet } from "./levels";
 
 /**
  * TSUNAGI'S LEVELS WHERE THERE IS NO BROWSER: the server's own checks and its
@@ -6,7 +6,12 @@ import { type LevelRow, loadTsunagiLevels, readTsunagiLevelsWith } from "./level
  * browser spec's own process. Importing this module is what lets
  * `loadTsunagiLevels` answer there (see `levels.ts`).
  */
-readTsunagiLevelsWith(async (size) => {
+readTsunagiLevelsWith(async (size, set) => {
+  if (set === "portals") {
+    const levels = (await import("@johnmorrisdotca/tsunagi/levels-portals")).TSUNAGI_PORTAL_LEVELS[size];
+    if (levels === undefined) throw new Error(`No Tsunagi with portals at ${size}×${size}.`);
+    return levels;
+  }
   // Named one by one, so the bundler splits each size into its own chunk.
   if (size === 4) return (await import("@johnmorrisdotca/tsunagi/levels-4")).TSUNAGI_4;
   if (size === 5) return (await import("@johnmorrisdotca/tsunagi/levels-5")).TSUNAGI_5;
@@ -20,10 +25,13 @@ readTsunagiLevelsWith(async (size) => {
   if (size === 13) return (await import("@johnmorrisdotca/tsunagi/levels-13")).TSUNAGI_13;
   if (size === 14) return (await import("@johnmorrisdotca/tsunagi/levels-14")).TSUNAGI_14;
   if (size === 15) return (await import("@johnmorrisdotca/tsunagi/levels-15")).TSUNAGI_15;
+  if (size === 20) return (await import("@johnmorrisdotca/tsunagi/levels-20")).TSUNAGI_20;
+  if (size === 25) return (await import("@johnmorrisdotca/tsunagi/levels-25")).TSUNAGI_25;
+  if (size === 30) return (await import("@johnmorrisdotca/tsunagi/levels-30")).TSUNAGI_30;
   throw new Error(`No Tsunagi at ${size}×${size}.`);
 });
 
-/** A size's levels, read from their module: `loadTsunagiLevels` for a caller with no browser. */
-export function loadTsunagiLevelsFromModule(size: number): Promise<readonly LevelRow[]> {
-  return loadTsunagiLevels(size);
+/** A size's levels in a set, read from their module: `loadTsunagiLevels` for a caller with no browser. */
+export function loadTsunagiLevelsFromModule(size: number, set: TsunagiSet = "classic"): Promise<readonly LevelRow[]> {
+  return loadTsunagiLevels(size, set);
 }

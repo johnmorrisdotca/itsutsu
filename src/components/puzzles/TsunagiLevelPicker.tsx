@@ -4,14 +4,14 @@ import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { blockRange } from "@johnmorrisdotca/tsunagi";
 import { tsunagiRole } from "@johnmorrisdotca/tsunagi";
-import { TSUNAGI_LEVEL_COUNTS, tsunagiBand } from "@/lib/puzzles/tsunagi/levels";
+import { levelCountOf, tsunagiBand, type TsunagiSet } from "@/lib/puzzles/tsunagi/levels";
 
 import { LevelPicker } from "./LevelPicker";
 import { TSUNAGI_MARBLE, tsunagiMarbleLook, tsunagiNumberType, type TsunagiMarks } from "./puzzles.constants";
 
-/** The address of one level: the solve's own, its number the seed. */
-export function tsunagiLevelPath(size: number, level: number): string {
-  return `${playPath("tsunagi")}${puzzleQuery({ size, level: tsunagiBand(size, level), seed: level })}`;
+/** The address of one level: the solve's own, its seed (its number, or a portal level's past the first set's: `tsunagi/levels.ts`) the seed. */
+export function tsunagiLevelPath(size: number, seed: number): string {
+  return `${playPath("tsunagi")}${puzzleQuery({ size, level: tsunagiBand(size, seed), seed })}`;
 }
 
 /**
@@ -22,6 +22,7 @@ export function tsunagiLevelPath(size: number, level: number): string {
  */
 export function TsunagiLevelPicker({
   size,
+  set = "classic",
   block,
   best,
   attempts = {},
@@ -32,6 +33,7 @@ export function TsunagiLevelPicker({
   marks,
 }: {
   size: number;
+  set?: TsunagiSet;
   /** Which block of sixteen is shown, from 1. */
   block: number;
   /** The levels solved, each with its best time. */
@@ -47,7 +49,7 @@ export function TsunagiLevelPicker({
   onChoose: (level: number) => void;
   marks: TsunagiMarks;
 }) {
-  const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
+  const count = levelCountOf(size, set);
   const { first, last } = blockRange(block, count);
   return (
     <LevelPicker
@@ -63,7 +65,7 @@ export function TsunagiLevelPicker({
       chosen={chosen}
       onChoose={onChoose}
       roleOf={(level) => {
-        const role = tsunagiRole(size, level);
+        const role = tsunagiRole(size, level, set);
         return role === null ? null : { role: role.role, words: role.challenges.join(" and ") };
       }}
       solvedMark={(level) => (

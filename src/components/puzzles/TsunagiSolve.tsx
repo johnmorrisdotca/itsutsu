@@ -15,9 +15,10 @@ import { helpOpensOn, SOLVE_HELPS, strongestHelp, type SolveHelp } from "@/lib/p
 import { cheatLine } from "@johnmorrisdotca/tsunagi";
 import { explosionAfter, explosionsAsChosen, strokesToExplosion } from "@johnmorrisdotca/tsunagi";
 import { blockOf, TSUNAGI_BLOCK } from "@johnmorrisdotca/tsunagi";
+import type { TsunagiSet } from "@/lib/puzzles/tsunagi/levels";
 import { challengesOf } from "@johnmorrisdotca/tsunagi";
-import { firstUnsolvedTsunagiLevel, nextLevelLabel, openTsunagiLevels, TSUNAGI_LEVEL_COUNTS } from "@/lib/puzzles/tsunagi/levels";
-import { allJoined, answerOf, decodeLines, dragThrough, encodeLines, filled, joined, letGo, linesOfAnswer, noLines, pressAt, unjoinedPairs, type Lines } from "@johnmorrisdotca/tsunagi";
+import { firstUnsolvedTsunagiLevel, levelCountOf, nextLevelLabel, openTsunagiLevels, setOfSeed } from "@/lib/puzzles/tsunagi/levels";
+import { allJoined, answerOf, decodeLines, dragFinger, encodeLines, filled, joined, letGo, linesOfAnswer, NO_REACH, noLines, pressAt, unjoinedPairs, type Lines, type Reach } from "@johnmorrisdotca/tsunagi";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { feltOrWoodTheme } from "./GomojiGrid";
@@ -30,6 +31,7 @@ import { tsunagiLevelPath } from "./TsunagiLevelPicker";
 import { TsunagiFillPicker, TsunagiMarksPicker } from "./TsunagiMarksPicker";
 import type { TsunagiCheatsChoice, TsunagiExplosionsChoice, TsunagiFill, TsunagiMarks } from "./puzzles.constants";
 import { keepSolveHere, keptSolves, keptSolvesOff } from "./tsunagiKept";
+import { inSet, seedIn } from "./tsunagiSets";
 import { useTsunagiAttempts } from "./useTsunagiAttempts";
 import { useTsunagiCheats, useTsunagiExplosions, useTsunagiFill, useTsunagiMarks } from "./useTsunagiMarks";
 
@@ -40,8 +42,8 @@ const CHECK_FLASH_MS = 2400;
 const BLAST_MS = 1200;
 
 /** The board of levels at a size: the set-up, opened on that size. */
-export function tsunagiLevelsPath(size: number): string {
-  return `${setUpPath("tsunagi")}?size=${size}`;
+export function tsunagiLevelsPath(size: number, set: TsunagiSet = "classic"): string {
+  return `${setUpPath("tsunagi")}?size=${size}${set === "portals" ? "&set=portals" : ""}`;
 }
 
 /**
@@ -90,17 +92,17 @@ export function TsunagiSolve({
   race?: SolveRace | null;
   resumed?: ResumedRun | null;
   appearance?: Appearance;
-  /** The levels at this size the member has solved on the account, with their best times. */
+  /** The levels at this size the member has solved on the account, with their best times, by seed. */
   known?: Record<number, number>;
-  /** How many times the member has started each level at this size, on the account. */
+  /** How many times the member has started each level at this size, on the account, by seed. */
   attempts?: Record<number, number>;
-  /** The member's best solve of each level at this size, to open from its time. */
+  /** The member's best solve of each level at this size, to open from its time, by seed. */
   bestSolves?: Record<number, string>;
   /** Colours or numbers, as the account last chose; null where it never has. */
   marksChosen?: TsunagiMarks | null;
   /** Marbles or lines, as the account last chose; null where it never has. */
   fillChosen?: TsunagiFill | null;
-  /** Levels at this size solved on the account only with explosions off: solved, and opening no block. */
+  /** Levels at this size solved on the account only with explosions off: solved, and opening no block, by seed. */
   closed?: readonly number[];
   /** Explosions as made, softened or off, as the account last chose at set-up; null where it never has. */
   explosionsChosen?: TsunagiExplosionsChoice | null;
@@ -108,13 +110,17 @@ export function TsunagiSolve({
   cheatsChosen?: TsunagiCheatsChoice | null;
 }) {
   const hydrated = useHydrated();
-  const { size, seed: level } = puzzle;
+  const { size, seed } = puzzle;
+  // The seed names the level and its set (`tsunagi/levels.ts`); what a reader sees is its number in the set.
+  const { set, level } = setOfSeed(seed);
   const layout = useMemo(() => decodeLayout(puzzle.givens, size)!, [puzzle.givens, size]);
   const [lines, setLines] = useState<Lines>(() => (resumed === null ? null : decodeLines(layout, resumed.progress)) ?? noLines(layout));
   const [undo, setUndo] = useState<Lines[]>([]);
   const now = useRef(lines);
   const drawing = useRef<number | null>(null);
   const before = useRef<Lines | null>(null);
+  // How far the finger is from the end of the line it draws, once that has been through a portal (`dragFinger`).
+  const reach = useRef<Reach>(NO_REACH);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const { marks, chooseMarks } = useTsunagiMarks(marksChosen, hasAccount);
   const { fill, chooseFill } = useTsunagiFill(fillChosen, hasAccount);
@@ -136,25 +142,25 @@ export function TsunagiSolve({
    * opens on its finished board; and the ones that open blocks, which is every
    * one but a level solved only with its explosions off (`helpOpensOn`).
    */
-  const [solvedHere] = useState(() => ({ ...keptSolvesOff(size), ...keptSolves(size), ...known }));
+  const [solvedHere] = useState(() => inSet({ ...keptSolvesOff(size), ...keptSolves(size), ...known }, set));
   const solvedSet = useMemo(() => new Set(Object.keys(solvedHere).map(Number)), [solvedHere]);
-  const [opening] = useState(() => new Set([...Object.keys(keptSolves(size)), ...Object.keys(known).filter((each) => !closed.includes(Number(each)))].map(Number)));
-  const open = openTsunagiLevels(size, opening);
-  const count = TSUNAGI_LEVEL_COUNTS[size] ?? 0;
+  const [opening] = useState(() => new Set(Object.keys(inSet({ ...keptSolves(size), ...Object.fromEntries(Object.keys(known).filter((each) => !closed.includes(Number(each))).map((each) => [each, 0])) }, set)).map(Number)));
+  const open = openTsunagiLevels(size, opening, set);
+  const count = levelCountOf(size, set);
   // Past the open blocks is shut, except a level already solved: it opens on its finished board wherever it now sits.
   const shut = race === null && resumed === null && level > open && !solvedSet.has(level);
   // Where "next" leads once this one is solved: the lowest level still unsolved, this one counted in where its solve opens.
   const opensNow = helpOpensOn(eased);
-  const onwardTo = firstUnsolvedTsunagiLevel(size, new Set([...opening, ...(opensNow ? [level] : [])]));
+  const onwardTo = firstUnsolvedTsunagiLevel(size, new Set([...opening, ...(opensNow ? [level] : [])]), set);
   const onward = {
-    next: onwardTo === null ? null : { href: tsunagiLevelPath(size, onwardTo), label: nextLevelLabel(level, onwardTo) },
-    all: { href: tsunagiLevelsPath(size), label: "All levels" },
+    next: onwardTo === null ? null : { href: tsunagiLevelPath(size, seedIn(set, onwardTo)), label: nextLevelLabel(level, onwardTo) },
+    all: { href: tsunagiLevelsPath(size, set), label: "All levels" },
   };
   // A level already solved opens on its finished board; only Restart starts it again (`TsunagiSolvedView`).
   const answerLines = useMemo(() => linesOfAnswer(layout, puzzle.solution), [layout, puzzle.solution]);
   const [reviewing, setReviewing] = useState(race === null && resumed === null && solvedSet.has(level) && answerLines !== null);
   // An attempt is a board started from empty: counted at its first line, once, and again after Restart. A kept run was counted when it began.
-  const { attempts, countOne } = useTsunagiAttempts(size, level, hasAccount, attemptsKnown[level] ?? 0);
+  const { attempts, countOne } = useTsunagiAttempts(size, seed, hasAccount, attemptsKnown[seed] ?? 0);
   const counted = useRef(resumed !== null);
   // Check: the pairs not joined yet, their marbles flashing a moment; the words stay until the board changes.
   const [flagged, setFlagged] = useState<ReadonlySet<number> | null>(null);
@@ -202,6 +208,7 @@ export function TsunagiSolve({
       }
       before.current = now.current;
       drawing.current = pressed.drawing;
+      reach.current = NO_REACH;
       show(pressed.lines);
       setBlastSays(null);
     },
@@ -210,13 +217,16 @@ export function TsunagiSolve({
   const drag = useCallback(
     (cell: number) => {
       if (drawing.current === null || idle) return;
-      show(dragThrough(layout, now.current, drawing.current, cell));
+      const dragged = dragFinger(layout, now.current, drawing.current, cell, reach.current);
+      reach.current = dragged.reach;
+      show(dragged.lines);
     },
     [idle, layout, show],
   );
   const lift = useCallback(() => {
     if (drawing.current === null) return;
     drawing.current = null;
+    reach.current = NO_REACH;
     const next = letGo(now.current, layout);
     show(next);
     const was = before.current;
@@ -248,8 +258,8 @@ export function TsunagiSolve({
 
   // Kept in this browser as soon as it is solved, so the board of levels opens the next row with or without an account.
   useEffect(() => {
-    if (done !== null && race === null) keepSolveHere(size, level, done.elapsedMs, helpOpensOn(done.helped ?? null));
-  }, [done, race, size, level]);
+    if (done !== null && race === null) keepSolveHere(size, seed, done.elapsedMs, helpOpensOn(done.helped ?? null));
+  }, [done, race, size, seed]);
 
   const takeBack = () => {
     if (idle || undo.length === 0) return;
@@ -314,7 +324,7 @@ export function TsunagiSolve({
   const boomIn = strokesToExplosion(played, strokeCount);
   const asked = (
     <>
-      {size}×{size} · Level {level} <span className="text-xs">of {count}</span>{" "}
+      {size}×{size}{set === "portals" ? " portals" : ""} · Level {level} <span className="text-xs">of {count}</span>{" "}
       {/*
         ONE WIDTH FOR EVERY COUNT. The first stroke turns "0 attempts" into "1
         attempt", and where the line over the board sat on the edge of wrapping,
@@ -330,17 +340,17 @@ export function TsunagiSolve({
 
   if (shut) {
     const block = blockOf(level);
-    const first = firstUnsolvedTsunagiLevel(size, solvedSet) ?? 1;
+    const first = firstUnsolvedTsunagiLevel(size, solvedSet, set) ?? 1;
     return (
-      <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
+      <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} data-set={set} {...readyMark(hydrated)}>
         <p className="text-sm" data-testid="tsunagi-shut">
           Level {level} at {size}×{size} opens when every level in block {block - 1} (levels {(block - 2) * TSUNAGI_BLOCK + 1}–{(block - 1) * TSUNAGI_BLOCK}) is solved.
         </p>
         <p className="flex flex-wrap gap-2">
-          <Link href={tsunagiLevelPath(size, first)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="tsunagi-shut-first">
+          <Link href={tsunagiLevelPath(size, seedIn(set, first))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="tsunagi-shut-first">
             Play level {first}, the first one you have not finished
           </Link>
-          <Link href={tsunagiLevelsPath(size)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
+          <Link href={tsunagiLevelsPath(size, set)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
             All levels
           </Link>
         </p>
@@ -348,7 +358,7 @@ export function TsunagiSolve({
     );
   }
 
-  const chips = <TsunagiLevelChips size={size} level={level} challenges={challengesOf(puzzle.givens)} />;
+  const chips = <TsunagiLevelChips size={size} level={level} set={set} challenges={challengesOf(puzzle.givens)} />;
   const pickers = (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap gap-3">
@@ -361,7 +371,7 @@ export function TsunagiSolve({
 
   if (reviewing && answerLines !== null) {
     return (
-      <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} data-reviewing="true" {...readyMark(hydrated)}>
+      <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} data-set={set} data-reviewing="true" {...readyMark(hydrated)}>
         <p className="text-sm text-muted" data-testid="puzzle-asked">
           {asked}
         </p>
@@ -371,7 +381,7 @@ export function TsunagiSolve({
           marks={marks}
           fill={fill}
           theme={theme}
-          best={solvedHere[level] === undefined ? null : { elapsedMs: solvedHere[level]!, solveId: bestSolves[level] ?? null }}
+          best={solvedHere[level] === undefined ? null : { elapsedMs: solvedHere[level]!, solveId: bestSolves[seed] ?? null }}
           attempts={attempts}
           next={onward.next}
           all={onward.all}
@@ -384,7 +394,7 @@ export function TsunagiSolve({
   }
 
   return (
-    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} {...readyMark(hydrated)}>
+    <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} data-set={set} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} asked={asked} />
       <SolvePaused pausing={pausing}>
         <TsunagiViewport size={size}>
