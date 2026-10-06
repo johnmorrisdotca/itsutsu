@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { EndGameButton, GameEnding, NewGameLink } from "@/components/play/GameEnding";
 import { ENDINGS } from "@/components/play/gameEnding.constants";
@@ -15,7 +16,8 @@ import { SOLVE_HELPS } from "@/lib/puzzles/solveHelp";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { CUBE_COPY, CUBE_INSPECTION_MS } from "./cube.constants";
+import { cubeCopy } from "./mazeWords";
+import { CUBE_INSPECTION_MS } from "./cube.constants";
 import { CubeBoard } from "./CubeBoard";
 import { CubeGuide, stepsFrom } from "./CubeGuide";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
@@ -52,6 +54,7 @@ export function CubeSolve({
    */
   animateScramble?: boolean;
 }) {
+  const CUBE_COPY = cubeCopy(useSpeaker().locale);
   const hydrated = useHydrated();
   const n = puzzle.size;
   // A kept run's turns are made at once, not played out again.

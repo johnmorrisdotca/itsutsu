@@ -13,7 +13,9 @@ import { rulesAttributionJa } from "./dictionaries/attribution.ja.constants";
 import { BOT_COPY_JA } from "./dictionaries/bots.ja.constants";
 import { HANDICAP_COPY_JA, OPENING_COPY_JA, SECOND_STONE_COPY_JA } from "./dictionaries/openings.ja.constants";
 import { VARIANT_COPY_JA } from "./dictionaries/variants.ja.constants";
-import { buildCopyText, buildPhraseText, jaTextJson } from "./jaText.build";
+import { PUZZLE_COPY_JA } from "./dictionaries/puzzles.ja.constants";
+import { overlayLines } from "./copyTable";
+import { buildCopyText, buildPhraseText, jaTextJson, PUZZLE_TABLES_AUTHORED } from "./jaText.build";
 import { loadJaText } from "./jaText.data";
 import { LEVEL_NAMES_JA } from "../xp/levelNames.ja.constants";
 import { IMPORTED_VOLUME_COPY_JA, XP_AWARD_COPY_JA } from "../xp/xpAwardCopy.ja.constants";
@@ -54,6 +56,28 @@ describe("the Japanese a reader is given", () => {
     const text = loadJaText();
     expect(text.phrases).toEqual(buildPhraseText());
     expect({ ...text, phrases: undefined }).toEqual({ ...buildCopyText(), phrases: undefined });
+  });
+
+  it("gives a reader every sentence of the puzzles' Japanese, and nothing else: a line for a line, with no back-translation, review or question", () => {
+    const puzzles = loadJaText().puzzles;
+    const authored = [...Object.values(PUZZLE_COPY_JA), ...Object.values(PUZZLE_TABLES_AUTHORED)].flatMap((ja) => overlayLines(ja).map(({ line }) => line[0]));
+    const given: string[] = [];
+    const keys = new Set<string>();
+    const walk = (value: unknown): void => {
+      if (typeof value === "string") given.push(value);
+      else if (Array.isArray(value)) value.forEach(walk);
+      else if (typeof value === "object" && value !== null) {
+        for (const [key, inner] of Object.entries(value)) {
+          keys.add(key);
+          if (key !== "by") walk(inner);
+        }
+      }
+    };
+    walk(puzzles.copy);
+    walk(puzzles.tables);
+    expect(given.length, "a table's lines are all in the text").toBe(authored.length);
+    expect(given.slice().sort()).toEqual(authored.slice().sort());
+    expect([...keys].filter((key) => key === "review" || key === "ask" || key === "back")).toEqual([]);
   });
 
   it("names the attribution paragraphs' puzzles by a mark the page fills in, and nothing else is left unfilled", () => {
@@ -137,6 +161,7 @@ function sentencesWithBacks(): { ja: string; back: string }[] {
   for (const ja of Object.values(OUTLOOK_COPY_JA)) [ja.label, ja.detail].forEach(line);
   [FATAL_MOVE_COPY_JA.label, FATAL_MOVE_COPY_JA.detail].forEach(line);
   rulesAttributionJa((kind) => ({ ja: kind, en: kind })).paragraphs.forEach(line);
+  for (const ja of [...Object.values(PUZZLE_COPY_JA), ...Object.values(PUZZLE_TABLES_AUTHORED)]) for (const { line: pair } of overlayLines(ja)) line(pair);
   for (const row of LEVEL_NAMES_JA) pairs.push({ ja: row.name, back: row.back });
   for (const row of [...Object.values(XP_AWARD_COPY_JA), ...Object.values(IMPORTED_VOLUME_COPY_JA)]) pairs.push({ ja: row.blurb, back: row.back });
   const plain = (text: string) => !/["\\\n]/.test(text);

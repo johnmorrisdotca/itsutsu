@@ -3,6 +3,8 @@
 import { memo } from "react";
 
 import { HEX_LATTICE } from "@/components/board/Board.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cellLabel } from "@/lib/puzzles/cellLabel";
 import { CELL_BLOCKED, CELL_BRIDGE, stepBetween, type LinkLayout } from "@johnmorrisdotca/tsunagi";
 import {
   TSUNAGI_BEAD,
@@ -18,6 +20,7 @@ import {
   tsunagiNumberType,
   tsunagiPortalColour,
   tsunagiPortalMark,
+  tsunagiPortalWash,
   tsunagiWash,
   type TsunagiFill,
   type TsunagiMarks,
@@ -101,6 +104,7 @@ export const TsunagiCell = memo(function TsunagiCell({
   flagged: boolean;
   onLink: (portal: number | null) => void;
 }) {
+  const say = useSpeaker();
   if (ghost) {
     // A ghost of the far edge: what is there, faded, and nothing to find in a test's count.
     return (
@@ -115,7 +119,24 @@ export const TsunagiCell = memo(function TsunagiCell({
       </div>
     );
   }
-  const label = `row ${Math.floor(at / size) + 1}, column ${(at % size) + 1}${cell >= 0 ? `, marble ${cell + 1}` : owner >= 0 ? `, line ${owner + 1}` : cell === CELL_BLOCKED ? ", blocked" : cell === CELL_BRIDGE ? ", bridge" : ", empty"}${waypoint < 0 ? "" : `, waypoint for line ${waypoint + 1}`}${portal < 0 ? "" : `, portal ${tsunagiPortalMark(portal)}`}`;
+  const what =
+    cell >= 0
+      ? say.say("pmaze.tsunagi.cell.marble", { n: String(cell + 1) })
+      : owner >= 0
+        ? say.say("pmaze.tsunagi.cell.line", { n: String(owner + 1) })
+        : cell === CELL_BLOCKED
+          ? say.say("pmaze.tsunagi.cell.blocked")
+          : cell === CELL_BRIDGE
+            ? say.say("pmaze.tsunagi.cell.bridge")
+            : say.say("pmaze.tsunagi.cell.empty");
+  const label = cellLabel(
+    say,
+    Math.floor(at / size),
+    at % size,
+    what,
+    ...(waypoint < 0 ? [] : [say.say("pmaze.tsunagi.cell.waypoint", { n: String(waypoint + 1) })]),
+    ...(portal < 0 ? [] : [say.say("pmaze.tsunagi.cell.portal", { mark: tsunagiPortalMark(portal) })]),
+  );
   return (
     <div
       className={`${TSUNAGI_MARBLE_CELL} relative flex items-center justify-center`}
@@ -146,7 +167,7 @@ export const TsunagiCell = memo(function TsunagiCell({
         // A PORTAL's ring: two alike are one portal, in a colour and a Greek letter of their own; a line goes into one and comes out of the other.
         <span
           className="absolute inset-[10%] flex items-center justify-center rounded-full font-bold leading-none"
-          style={{ borderStyle: "solid", borderWidth: TSUNAGI_PORTAL_RING, borderColor: tsunagiPortalColour(portal), backgroundColor: `color-mix(in srgb, ${tsunagiPortalColour(portal)} 14%, transparent)`, color: tsunagiPortalColour(portal), fontSize: "min(55cqw, 1.5rem)" }}
+          style={{ borderStyle: "solid", borderWidth: TSUNAGI_PORTAL_RING, borderColor: tsunagiPortalColour(portal), backgroundColor: tsunagiPortalWash(tsunagiPortalColour(portal)), color: tsunagiPortalColour(portal), fontSize: "min(55cqw, 1.5rem)" }}
           data-testid="tsunagi-portal"
           data-portal={portal}
         >

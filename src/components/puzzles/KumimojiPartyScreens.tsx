@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { WinCoverOver } from "@/components/game/WinCover";
 import { ResultMark } from "@/components/game/ResultMark";
@@ -13,15 +17,16 @@ import Link from "@/components/ui/Link";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_BUTTON, SECTION_HEADING, SECTION_HEADING_KANJI } from "@/components/ui/ui.constants";
 import { playPath } from "@/lib/gomoku/slugs";
-import { isComputer, nameOf } from "@/lib/puzzles/kumimoji/party";
+import { isComputer } from "@/lib/puzzles/kumimoji/party";
 import type { PartyGame, PartySeat } from "@/lib/puzzles/kumimoji/party.types";
 import { winnersOf } from "@/lib/puzzles/kumimoji/partyTurns";
 import { KUMIMOJI_PARTY } from "@/lib/puzzles/kumimoji/tiles.constants";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 
 import { ComputerMark } from "./KumimojiDeskParts";
-import { inALine, KumimojiPartyAll } from "./KumimojiPartyBoards";
+import { KumimojiPartyAll } from "./KumimojiPartyBoards";
 import { useKeptParty } from "./kumimojiPartyKept";
+import { inALine, seatName } from "./kumimojiWords";
 
 /** The play page of a kept game: its own settings and the number it was dealt to (whoever has joined or left since), and never a name. */
 export function partyAddress(game: PartyGame): string {
@@ -49,6 +54,7 @@ export function KumimojiPartyNames({
   replacing: PartyGame | null;
   onBegin: (seats: PartySeat[]) => void;
 }) {
+  const say = useSpeaker();
   const [computers, setComputers] = useState<readonly boolean[]>(() => Array.from({ length: count }, () => false));
   const nobody = computers.every(Boolean);
   /* A computer's name as it will be dealt: numbered among the computers, in seat order. */
@@ -65,27 +71,27 @@ export function KumimojiPartyNames({
       }}
     >
       <h2 className={SECTION_HEADING}>
-        Who is playing? <span className={SECTION_HEADING_KANJI}>誰</span>
+        <Paired en={say.say("pkumi.party.who")} kanji="誰" kanjiClassName={SECTION_HEADING_KANJI} inReadersLanguage />
       </h2>
       <p className="text-sm text-muted">
-        {count} players pass this device round, each with a hand and a table of their own. Names stay in this browser; leave one empty for its number. A computer plays its own turns, where everybody can watch.
+        {say.say("pkumi.party.lead", { count: String(count) })}
       </p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {Array.from({ length: count }, (_, at) => (
           <div key={at} className="flex items-center gap-2 text-sm" data-testid="kumimoji-party-seat-row" data-at={at}>
             <label htmlFor={`kumimoji-party-player-${at}`} className="w-16 shrink-0 text-muted">
-              Player {at + 1}
+              {say.say("pkumi.party.playerLabel", { n: String(at + 1) })}
             </label>
             {computers[at] === true ? (
               <span className="flex min-w-0 flex-1 items-center rounded border border-dashed border-rule px-2 py-1.5" data-testid="kumimoji-party-seat-computer-name">
-                Computer {computerNumber(at)}
+                {say.say("pkumi.party.computerName", { n: String(computerNumber(at)) })}
               </span>
             ) : (
               <input
                 id={`kumimoji-party-player-${at}`}
                 name={`player-${at}`}
                 defaultValue={remembered[at] ?? ""}
-                placeholder={`Player ${at + 1}`}
+                placeholder={say.say("pkumi.party.playerLabel", { n: String(at + 1) })}
                 maxLength={KUMIMOJI_PARTY.nameMost}
                 autoComplete="off"
                 className="min-w-0 flex-1 rounded border border-rule bg-paper px-2 py-1.5 text-ink"
@@ -96,7 +102,7 @@ export function KumimojiPartyNames({
             <button
               type="button"
               aria-pressed={computers[at] === true}
-              aria-label={`Player ${at + 1} is a computer`}
+              aria-label={say.say("pkumi.party.computerAria", { n: String(at + 1) })}
               className={`shrink-0 rounded-full border p-0.5 ${computers[at] === true ? "border-ochre bg-ochre-soft" : "border-transparent opacity-60 hover:opacity-100"}`}
               onClick={() => setComputers((now) => now.map((one, seat) => (seat === at ? !one : one)))}
               data-testid="kumimoji-party-seat-computer"
@@ -109,18 +115,18 @@ export function KumimojiPartyNames({
       </div>
       {replacing === null ? null : (
         <p className="text-sm text-muted" data-testid="kumimoji-party-replacing">
-          Beginning forgets the pass-and-play game this browser is keeping.{" "}
+          {say.say("pkumi.party.replacing")}{say.locale === "ja" ? "" : " "}
           <Link href={partyAddress(replacing)} className="underline underline-offset-2">
-            Continue that one instead
+            {say.say("pkumi.party.continueThat")}
           </Link>
           .
         </p>
       )}
       <p className="min-h-5 text-sm text-muted" data-testid="kumimoji-party-names-note">
-        {nobody ? "At least one seat is a person's: somebody has to watch." : ""}
+        {nobody ? say.say("pkumi.party.nobody") : ""}
       </p>
       <button type="submit" className={PLAY_BUTTON} disabled={nobody} data-testid="kumimoji-party-begin">
-        <PressLabel words="Begin" kanji="始" />
+        <PressLabel words={say.say("pkumi.party.begin")} kanji="始" />
       </button>
     </form>
   );
@@ -131,32 +137,33 @@ export function KumimojiPartyNames({
  * everybody, which asks twice.
  */
 export function KumimojiPartyOrder({ game, onEnd }: { game: PartyGame; onEnd: () => void }) {
+  const say = useSpeaker();
   const [ending, setEnding] = useState(false);
   return (
     <>
-      <ol className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted" data-testid="kumimoji-party-order" aria-label="The order of play">
+      <ol className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-sm text-muted" data-testid="kumimoji-party-order" aria-label={say.say("pkumi.party.orderAria")}>
         {game.players.map((_, at) => (
           <li key={at} className={at === game.turn ? "font-semibold text-ink" : game.resigned.includes(at) ? "line-through" : ""} data-resigned={game.resigned.includes(at) ? "true" : undefined}>
-            {nameOf(game, at)}
-            {isComputer(game, at) ? " (bot)" : ""}
-            {game.resigned.includes(at) ? " (resigned)" : game.out.includes(at) ? " (out)" : ""}
+            {seatName(say, game, at)}
+            {isComputer(game, at) ? marked(say, "pkumi.party.bot") : ""}
+            {game.resigned.includes(at) ? marked(say, "pkumi.party.resigned") : game.out.includes(at) ? marked(say, "pkumi.party.out") : ""}
           </li>
         ))}
       </ol>
       <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
         {ending ? (
           <>
-            <span>End this game for everybody? It is not kept.</span>
+            <span>{say.say("pkumi.party.endAsk")}</span>
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={onEnd} data-testid="kumimoji-party-end-yes">
-              Yes, end it
+              {say.say("pkumi.party.endYes")}
             </button>
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => setEnding(false)}>
-              Keep playing
+              {say.say("pkumi.party.keepPlaying")}
             </button>
           </>
         ) : (
           <button type="button" className="text-muted underline underline-offset-2" onClick={() => setEnding(true)} data-testid="kumimoji-party-end">
-            End this game
+            {say.say("pkumi.party.endGame")}
           </button>
         )}
       </div>
@@ -164,12 +171,17 @@ export function KumimojiPartyOrder({ game, onEnd }: { game: PartyGame; onEnd: ()
   );
 }
 
+/** A word in brackets after a name: " (bot)" in English, "（コンピュータ）" in Japanese. */
+function marked(say: Speaker, key: PhraseKey): string {
+  return say.locale === "ja" ? `（${say.say(key)}）` : ` (${say.say(key)})`;
+}
+
 /** The line over the finish: who won, how. */
-function headline(game: PartyGame): string {
-  const winners = winnersOf(game).map((at) => nameOf(game, at));
-  if (game.ending === "tied") return `Tied: ${inALine(winners)}`;
-  if (game.ending === "standing") return `${winners[0] ?? ""} wins, the last one standing`;
-  return winners.length === 1 ? `${winners[0]} wins` : `${inALine(winners)} share the win`;
+function headline(game: PartyGame, say: Speaker): string {
+  const winners = winnersOf(game).map((at) => seatName(say, game, at));
+  if (game.ending === "tied") return say.say("pkumi.party.tied", { names: inALine(say, winners) });
+  if (game.ending === "standing") return say.say("pkumi.party.standing", { name: winners[0] ?? "" });
+  return winners.length === 1 ? say.say("pkumi.party.wins", { name: winners[0]! }) : say.say("pkumi.party.share", { names: inALine(say, winners) });
 }
 
 /**
@@ -189,12 +201,13 @@ export function KumimojiPartyFinish({
   /** The win's cover over every player's crossword, when the game ended on this page (`WinCover`); none where the page around draws its own. */
   cover?: { news: WinNews | null; onClose: () => void } | null;
 }) {
+  const say = useSpeaker();
   const all = <KumimojiPartyAll game={game} theme={theme} />;
   return (
     <div className="flex flex-col gap-4" data-testid="kumimoji-party-finish" data-ending={game.ending ?? ""}>
       <h2 className={SECTION_HEADING} data-testid="kumimoji-party-winner">
         <ResultMark kind={game.ending === "tied" ? RESULT_MARKS.other : RESULT_MARKS.success} />
-        {headline(game)}
+        {headline(game, say)}
       </h2>
       {cover === null ? all : (
         <WinCoverOver news={cover.news} onClose={cover.onClose}>
@@ -208,7 +221,7 @@ export function KumimojiPartyFinish({
         </button>
       )}
       {/* Every crossword at the table as a wallpaper; a table on several devices offers its own beside its seats. */}
-      {onAgain === undefined ? null : <TableWallpaper game="kumimoji" result={headline(game)} />}
+      {onAgain === undefined ? null : <TableWallpaper game="kumimoji" result={headline(game, say)} />}
     </div>
   );
 }
@@ -219,11 +232,12 @@ export function KumimojiPartyFinish({
  * answer to the Resume a solo game has there.
  */
 export function KumimojiPartyResume() {
+  const say = useSpeaker();
   const game = useKeptParty();
   if (game === null || game.ending !== null) return null;
   return (
     <Link href={partyAddress(game)} className={PLAY_BUTTON} data-testid="kumimoji-party-continue">
-      <PressLabel words="Continue the pass-and-play game" kanji="続" />
+      <PressLabel words={say.say("pkumi.party.continueGame")} kanji="続" />
     </Link>
   );
 }

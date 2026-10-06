@@ -175,18 +175,18 @@ export function crosswordSvg(crossword: WallpaperTile, x: number, y: number, sid
  * span, the tiles laid, and the site — and, when the member has more than
  * one picture holds (`more`), that these are their newest.
  */
-export function wallpaperTitle(game: string, crosswords: readonly WallpaperTile[], more: boolean): MosaicTitle {
+export function wallpaperTitle(game: string, crosswords: readonly WallpaperTile[], more: boolean, copy: typeof KUMIMOJI_WALLPAPER_COPY = KUMIMOJI_WALLPAPER_COPY): MosaicTitle {
   const days = crosswords
     .map((crossword) => dayOf(crossword.finishedAt))
     .filter((day): day is string => day !== null)
     .sort();
   const first = days[0];
   const last = days[days.length - 1];
-  const span = first === undefined || last === undefined ? [] : [first === last ? first : `${first} to ${last}`];
+  const span = first === undefined || last === undefined ? [] : [first === last ? first : copy.range(first, last)];
   const tiles = crosswords.reduce((sum, crossword) => sum + crossword.tiles.size, 0);
   return {
-    name: KUMIMOJI_WALLPAPER_COPY.name(game, crosswords.length),
-    details: [...(more ? [KUMIMOJI_WALLPAPER_COPY.newest(crosswords.length)] : []), ...span, KUMIMOJI_WALLPAPER_COPY.tiles(tiles), MOSAIC_COPY.site],
+    name: copy.name(game, crosswords.length),
+    details: [...(more ? [copy.newest(crosswords.length)] : []), ...span, copy.tiles(tiles), MOSAIC_COPY.site],
   };
 }
 

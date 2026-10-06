@@ -1,5 +1,9 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { checkSentence } from "@/lib/puzzles/checkWords";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { readNumberGivens } from "@/lib/puzzles/numberGivens";
@@ -21,6 +25,7 @@ import { useNarrowZoom } from "./narrowZoom";
 import { TsunagiViewport } from "./TsunagiViewport";
 import { cellHint } from "@/lib/puzzles/hintCell";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { ARROW_KEY, DELETE_KEY } from "@/lib/ui/keyNames.constants";
 
 /** The 25×25 Colossus is looked at through a box on a phone (`TsunagiViewport`): a cell of the whole grid fitted to 390 pixels is about fourteen wide, so it opens at twice that and zooms to four. */
 const COLOSSUS_FROM = 25;
@@ -56,6 +61,7 @@ export function NumberSolve({
   checks?: number | null;
 }) {
   const hydrated = useHydrated();
+  const say = useSpeaker();
   const { kind, size, seed } = puzzle;
   const opens = useNarrowZoom(COLOSSUS_START_ZOOM);
   // A More or Less code is the cells and then the marks, a Jigsaw's the cells and then the regions, a Towers the cells
@@ -127,13 +133,13 @@ export function NumberSolve({
       if (typed >= 1 && typed <= size) {
         event.preventDefault();
         enter(typed);
-      } else if (event.key === "Backspace" || event.key === "Delete" || event.key === "0") {
+      } else if (event.key === "Backspace" || event.key === DELETE_KEY || event.key === "0") {
         event.preventDefault();
         enter(0);
       } else if (event.key === "Escape") {
         event.preventDefault();
         setSelected(null);
-      } else if (event.key.startsWith("Arrow")) {
+      } else if (event.key.startsWith(ARROW_KEY)) {
         event.preventDefault();
         const step = { ArrowUp: -size, ArrowDown: size, ArrowLeft: -1, ArrowRight: 1 }[event.key] ?? 0;
         const next = selected + step;
@@ -189,7 +195,7 @@ export function NumberSolve({
         />
         </TsunagiViewport>
       </SolvePaused>
-      <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(value) => (value === 0 ? "cleared" : symbolOf(value))} />
+      <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(value) => (value === 0 ? say.say("pgrid.step.cleared") : symbolOf(value))} />
       {done === null ? (
         <>
           <div className={PUZZLE_KEYS} style={{ gridTemplateColumns: `repeat(${Math.min(size + 1, PUZZLE_KEYS_PER_ROW)}, minmax(0, 1fr))` }} data-testid="puzzle-keys">
@@ -198,7 +204,7 @@ export function NumberSolve({
                 {symbolOf(value)}
               </button>
             ))}
-            <button type="button" className={PUZZLE_KEY} onClick={() => enter(0)} disabled={pausing.paused} aria-label="clear the cell" data-testid="puzzle-key-clear">
+            <button type="button" className={PUZZLE_KEY} onClick={() => enter(0)} disabled={pausing.paused} aria-label={say.say("pgrid.num.clear")} data-testid="puzzle-key-clear">
               ×
             </button>
           </div>
@@ -211,14 +217,14 @@ export function NumberSolve({
             </div>
             {checked !== null ? (
               <span className="text-sm text-muted" data-testid="puzzle-checked" aria-live="polite">
-                {checkedWords(checked)}
+                {checkedWords(checked, say)}
               </span>
             ) : fullNotRight ? (
               <span className="text-sm text-muted" data-testid="puzzle-not-right" aria-live="polite">
-                Every cell is filled, and it is not right yet.
+                {say.say("pgrid.num.fullNotRight")}
               </span>
             ) : (
-              <span className="text-sm text-muted">Tap a cell, then a number.</span>
+              <span className="text-sm text-muted">{say.say("pgrid.num.tap")}</span>
             )}
           </div>
         </>
@@ -230,9 +236,6 @@ export function NumberSolve({
 }
 
 /** What Check says: how many are wrong and how many are still empty, never which. */
-export function checkedWords(checked: { wrong: number; empty: number }): string {
-  if (checked.wrong === 0 && checked.empty === 0) return "Everything is filled and right.";
-  const wrong = checked.wrong === 0 ? "Nothing wrong so far" : `${checked.wrong} ${checked.wrong === 1 ? "cell is" : "cells are"} wrong`;
-  const empty = checked.empty > 0 ? `, ${checked.empty} still to fill` : "";
-  return `${wrong}${empty}.`;
+export function checkedWords(checked: { wrong: number; empty: number }, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return checkSentence(say, "pgrid.check.okFilled", checked.wrong, "pgrid.check.wrongCell", checked.empty > 0 ? say.say("pgrid.check.leftFill", { count: String(checked.empty) }) : null);
 }

@@ -2,8 +2,10 @@
 
 import type { Twist } from "@johnmorrisdotca/suido";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import { LevelChips } from "./LevelChips";
-import { SUIDO_CHIPS, SUIDO_TWISTS } from "./suido.constants";
+import { suidoWords } from "./mazeWords";
 
 /**
  * THE ROW UNDER A BOARD MADE WITH SQUARES: a chip for each twist it has (big pieces, block turns), as a level's row names its own, so a reader
@@ -11,14 +13,15 @@ import { SUIDO_CHIPS, SUIDO_TWISTS } from "./suido.constants";
  * place in a block, so the row is the twists alone (`LevelChips`, with the marks and the lesson left out).
  */
 export function SuidoSquaresChips({ twists }: { twists: readonly Twist[] }) {
+  const words = suidoWords(useSpeaker().locale);
   return (
     <LevelChips
       prefix="suido"
       level={0}
       marks={null}
       role={null}
-      twists={twists.map((twist) => ({ key: twist, label: SUIDO_TWISTS[twist].label, kanji: SUIDO_TWISTS[twist].kanji, says: SUIDO_TWISTS[twist].says }))}
-      copy={SUIDO_CHIPS}
+      twists={twists.map((twist) => ({ key: twist, label: words.twists[twist].label, kanji: words.twists[twist].kanji, says: words.twists[twist].says }))}
+      copy={words.chips}
     />
   );
 }

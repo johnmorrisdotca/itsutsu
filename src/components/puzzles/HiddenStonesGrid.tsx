@@ -1,5 +1,7 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cellLabel } from "@/lib/puzzles/cellLabel";
 import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
 // The board's stone, named apart from this grid's own `StoneMark` (what a cell holds).
 import { StoneMark as BoardStone } from "@/components/board/StoneMark";
@@ -59,6 +61,7 @@ export function HiddenStonesGrid({
   set?: StoneSetTokens;
   onPress: (index: number) => void;
 }) {
+  const say = useSpeaker();
   return (
     <div className="w-full" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"}>
       <PuzzleBoard size={size}>
@@ -81,7 +84,7 @@ export function HiddenStonesGrid({
               style={{ backgroundColor: REGION_FILLS[region % REGION_FILLS.length] }}
               onClick={() => onPress(index)}
               disabled={done}
-              aria-label={`row ${row + 1}, column ${col + 1}, region ${region + 1}${mark === "" ? "" : `, ${mark}`}`}
+              aria-label={cellLabel(say, row, col, say.say("pgrid.cell.region", { region: String(region + 1) }), ...(mark === "" ? [] : [say.say(mark === "stone" ? "pgrid.cell.stone" : "pgrid.cell.cross")]))}
               data-testid="puzzle-cell"
               data-index={index}
               data-region={region}

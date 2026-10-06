@@ -1,3 +1,5 @@
+import { speaker, type Speaker } from "../../i18n/i18n";
+import { DEFAULT_LOCALE } from "../../i18n/i18n.constants";
 import type { WordGrid } from "./futago";
 
 /**
@@ -26,7 +28,7 @@ import type { WordGrid } from "./futago";
  * Futago gives one more for its second word: nine at hard, ten at medium and
  * eleven at easy (`layout.ts`).
  */
-export const YOTSUGO_DISPLAY = { label: "Yotsugo", kanji: "四つ子", words: "Four words" } as const;
+export const YOTSUGO_DISPLAY = { label: "Yotsugo", kanji: "四つ子" } as const;
 
 /** How many words, and quarters, a Yotsugo has. */
 export const YOTSUGO_BOARDS = 4;
@@ -35,8 +37,6 @@ export const YOTSUGO_BOARDS = 4;
 export const YOTSUGO_MORE_GUESSES = YOTSUGO_BOARDS - 1;
 
 /** A Yotsugo in its Gomoji's rules, beside the Futago's (`puzzleRulesPage.ts`). */
-export function yotsugoRule(grid: WordGrid): string {
-  return grid === "gomojiKana"
-    ? "Yotsugo 四つ子 (quadruplets), a choice at any level, hides four kana words at once, in the four quarters of two boards, the free grey word grey against all four: every guess goes to every quarter until its word is found, each kana key is split in four corners to show each quarter's colour, and there are three guesses more than for one word."
-    : "Yotsugo 四つ子 (quadruplets), a choice at any level, hides four words at once, in the four quarters of two boards: every guess goes to every quarter until its word is found, each key is split in four corners to show each quarter's colour, and there are three guesses more than for one word — nine at hard at every length.";
+export function yotsugoRule(grid: WordGrid, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return say.say(grid === "gomojiKana" ? "puzzle.mode.yotsugo.ruleKana" : "puzzle.mode.yotsugo.ruleLetter");
 }

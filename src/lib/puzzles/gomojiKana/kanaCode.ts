@@ -1,6 +1,8 @@
 import { baseGuesses } from "../gomoji/layout";
 import { kanaBase, markKanaGuess } from "@johnmorrisdotca/kotoba";
 import type { KanaWords } from "./kanaWords";
+import { speaker, type Speaker } from "../../i18n/i18n";
+import { DEFAULT_LOCALE } from "../../i18n/i18n.constants";
 
 /**
  * A KANA GOMOJI PUZZLE, written down and read back: the word, the free grey
@@ -104,7 +106,7 @@ export function otherKanaWordFor(words: KanaWords, easy: boolean, seed: number, 
  * and any kana found another way (orange, or green with an arrow) somewhere,
  * in any size or mark, since its size or mark was the thing it had wrong.
  */
-export function breaksKanaHardRule(guesses: readonly string[], word: string, guess: string): string | null {
+export function breaksKanaHardRule(guesses: readonly string[], word: string, guess: string, say: Speaker = speaker(DEFAULT_LOCALE)): string | null {
   const target = [...word];
   const next = [...guess];
   for (const previous of guesses) {
@@ -112,8 +114,8 @@ export function breaksKanaHardRule(guesses: readonly string[], word: string, gue
     const marks = markKanaGuess(kana, target);
     for (const [at, mark] of marks.entries()) {
       const plain = mark.mark === "hit" && !mark.wrongSize && !mark.wrongMark;
-      if (plain && next[at] !== kana[at]) return `${kana[at]} must stay in place ${at + 1}`;
-      if (!plain && (mark.mark === "hit" || mark.mark === "near") && !next.some((each) => kanaBase(each) === kanaBase(kana[at]!))) return `${kana[at]} must be used`;
+      if (plain && next[at] !== kana[at]) return say.say("pword.hold.kanaStay", { kana: kana[at]!, place: String(at + 1) });
+      if (!plain && (mark.mark === "hit" || mark.mark === "near") && !next.some((each) => kanaBase(each) === kanaBase(kana[at]!))) return say.say("pword.hold.kanaUse", { kana: kana[at]! });
     }
   }
   return null;

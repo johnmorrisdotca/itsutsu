@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import type { Appearance, Felt } from "@/components/board/board.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { PuzzleBoardPreview } from "@/components/live/PuzzleBoardPreview";
 import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_BOARD_ROW_UNDER_FAMILIES } from "@/components/live/picker.constants";
@@ -11,10 +12,11 @@ import { listedGameOf, settingsOf } from "@/lib/catalogue/gameSettings";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import type { JiraiVariant } from "@/lib/puzzles/jirai/variants";
 import type { SuidoWay } from "@/lib/puzzles/suido/seed";
-import { CARD_SIZE_WORDS, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, sizesOffered } from "@/lib/puzzles/puzzles.constants";
+import { cardSizeWords } from "@/lib/puzzles/puzzleCopy";
+import { PUZZLE_SIZE_NAMES, PUZZLE_SPECS, sizesOffered } from "@/lib/puzzles/puzzles.constants";
+import { sizeWordIn } from "@/lib/puzzles/sizeWord";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
-import { sizeWord } from "./puzzles.constants";
 import { SIZE_TILES, shelfFor, shelvesOf } from "./sizeShelves";
 
 /**
@@ -92,6 +94,7 @@ export function PuzzleSizes({
   beside?: boolean;
   shelves?: boolean;
 }) {
+  const say = useSpeaker();
   const spec = PUZZLE_SPECS[kind];
   const every = sizesOffered(kind);
   const shelved = shelves && every.length > spec.offered.length;
@@ -109,7 +112,7 @@ export function PuzzleSizes({
     const sizes = every.slice(nextShelf, nextShelf + SIZE_TILES);
     if (!sizes.includes(size)) onSize(nextShelf === 0 ? sizes[sizes.length - 1]! : (sizes.find((each) => each > size) ?? sizes[0]!));
   };
-  const picker = <BoardPicker value={size} sizes={shown} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} legend={CARD_SIZE_WORDS[kind]?.legend} />;
+  const picker = <BoardPicker value={size} sizes={shown} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} legend={cardSizeWords(say.locale)[kind]?.legend} />;
   /*
    * A setting of a game whose other settings turn shelves keeps the room the
    * press takes, drawn and hidden, so choosing Pop culture on a Gomoji or
@@ -121,7 +124,7 @@ export function PuzzleSizes({
       <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="puzzle-sizes-shelved">
         {picker}
         <span className={`${BUTTON_BASE} ${BUTTON_QUIET} invisible text-sm`} aria-hidden="true">
-          Longer →
+          {say.say("pset.sizes.room")}
         </span>
       </div>
     );
@@ -131,7 +134,7 @@ export function PuzzleSizes({
     <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="puzzle-sizes-shelved">
       {picker}
       <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm`} onClick={turn} data-testid="puzzle-more-sizes">
-        {onLast ? `← Shorter, from ${sizeWord(every[0]!, kind)}` : `Longer, to ${sizeWord(every[Math.min(every.length, nextShelf + SIZE_TILES) - 1]!, kind)} →`}
+        {onLast ? say.say("pset.sizes.shorter", { size: sizeWordIn(every[0]!, kind, say) }) : say.say("pset.sizes.longer", { size: sizeWordIn(every[Math.min(every.length, nextShelf + SIZE_TILES) - 1]!, kind, say) })}
       </button>
     </div>
   );

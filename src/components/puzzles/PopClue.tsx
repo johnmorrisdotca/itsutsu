@@ -1,3 +1,5 @@
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { colonOf } from "@/lib/puzzles/puzzleText";
 import { popCategoryOf } from "@/lib/puzzles/gomoji/popWords";
 
 /**
@@ -8,11 +10,12 @@ import { popCategoryOf } from "@/lib/puzzles/gomoji/popWords";
  * than a wrong one.
  */
 export function PopClue({ words }: { words: readonly string[] }) {
+  const say = useSpeaker();
   const clues = words.map((word) => popCategoryOf(word));
   if (clues.some((clue) => clue === null)) return null;
   return (
     <p className="text-sm text-ink-soft" data-testid="pop-clue" data-clues={clues.join("|")}>
-      {clues.length > 1 ? "Categories" : "Category"}: <strong className="font-semibold text-ink">{clues.join(" · ")}</strong>
+      {say.say(clues.length > 1 ? "pword.pop.categories" : "pword.pop.category")}{colonOf(say)}<strong className="font-semibold text-ink">{clues.join(" · ")}</strong>
     </p>
   );
 }

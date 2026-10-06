@@ -2,6 +2,7 @@
 
 import { useMemo, type ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { MoveCount } from "@/components/history/MoveCount";
@@ -20,6 +21,7 @@ import { SpiderTable } from "./SpiderTable";
  * table made up.
  */
 export function PatienceReplay({ kind, size, givens, moves, at, go }: { kind: "freecell" | "spider"; size: number; givens: string; moves: string; at: number | null; go: (at: number) => void }) {
+  const say = useSpeaker();
   const theme = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme];
   const played = useMemo(() => {
     if (kind === "freecell") {
@@ -41,7 +43,7 @@ export function PatienceReplay({ kind, size, givens, moves, at, go }: { kind: "f
       </div>
       {last > 0 ? (
         <div className="flex items-center gap-2" data-testid="patience-replay">
-          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing - 1)} disabled={viewing === 0} aria-label="One move back">
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing - 1)} disabled={viewing === 0} aria-label={say.say("puzzle.replay.back")}>
             ‹
           </button>
           <input
@@ -51,17 +53,17 @@ export function PatienceReplay({ kind, size, givens, moves, at, go }: { kind: "f
             value={viewing}
             onChange={(event) => step(Number(event.target.value))}
             className="min-w-0 flex-1 accent-moss"
-            aria-label="Move"
+            aria-label={say.say("puzzle.replay.move")}
             data-testid="patience-replay-scrubber"
           />
-          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing + 1)} disabled={viewing === last} aria-label="One move on">
+          <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing + 1)} disabled={viewing === last} aria-label={say.say("puzzle.replay.on")}>
             ›
           </button>
-          <MoveCount at={viewing} last={last} start="The deal" className="shrink-0 justify-items-end text-sm text-muted" testId="patience-replay-at" />
+          <MoveCount at={viewing} last={last} start={say.say("puzzle.replay.deal")} className="shrink-0 justify-items-end text-sm text-muted" testId="patience-replay-at" />
         </div>
       ) : null}
       <p className="text-sm text-muted">
-        {last === 0 ? "The deal, as it was dealt." : played.won ? "Step through it with the scrubber, from the deal to the last card home." : "Given up here: step back through how it got there."}
+        {say.say(last === 0 ? "pcard.replay.dealt" : played.won ? "pcard.replay.stepped" : "pcard.replay.givenUp")}
       </p>
     </>
   );

@@ -1,10 +1,12 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 
-import { CUBE_COPY, CUBE_ZOOM, CUBE_ZOOM_KEPT } from "./cube.constants";
+import { cubeCopy } from "./mazeWords";
+import { CUBE_ZOOM, CUBE_ZOOM_KEPT } from "./cube.constants";
 
 const listeners = new Set<() => void>();
 /** The answer for a browser whose storage refuses, kept for as long as the page is open. */
@@ -54,6 +56,7 @@ export function useCubeZoom(): { zoom: number; set: (zoom: number) => void } {
  * Remembered per device in this browser.
  */
 export function CubeZoom({ children }: { children: ReactNode }) {
+  const CUBE_COPY = cubeCopy(useSpeaker().locale);
   const { zoom, set } = useCubeZoom();
   const box = useRef<HTMLDivElement>(null);
 

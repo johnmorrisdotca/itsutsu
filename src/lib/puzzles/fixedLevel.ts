@@ -1,3 +1,6 @@
+import { speaker, type Speaker } from "../i18n/i18n";
+import { DEFAULT_LOCALE } from "../i18n/i18n.constants";
+
 import type { PuzzleKind } from "./puzzles.types";
 import { suidoLevelOfSeed } from "./suido/seed";
 import { setOfSeed } from "@johnmorrisdotca/tsunagi";
@@ -19,10 +22,10 @@ export function fixedLevelOf(kind: PuzzleKind, seed: number): number | null {
 }
 
 /** What a level is called where a page names one: "Level 12", or "Portal level 12" for one of Tsunagi's with portals; null for a seed that names none. */
-export function fixedLevelName(kind: PuzzleKind, seed: number): string | null {
+export function fixedLevelName(kind: PuzzleKind, seed: number, say: Speaker = speaker(DEFAULT_LOCALE)): string | null {
   const number = fixedLevelOf(kind, seed);
   if (number === null) return null;
-  return kind === "tsunagi" && setOfSeed(seed).set === "portals" ? `Portal level ${number}` : `Level ${number}`;
+  return say.say(kind === "tsunagi" && setOfSeed(seed).set === "portals" ? "puzzle.level.portal" : "puzzle.level.number", { number: String(number) });
 }
 
 /** The address of a size's board of levels, set-up, for a run of a level: the set the level is in, where it is not the first. */
@@ -31,6 +34,6 @@ export function levelsQueryOf(kind: PuzzleKind, size: number, seed: number): str
 }
 
 /** The words on the button to the next level: plain when it is the one after, and saying why when it is further back. */
-export function nextLevelLabel(after: number, next: number): string {
-  return next === after + 1 ? `Level ${next} →` : `Level ${next}, the first one you have not finished →`;
+export function nextLevelLabel(after: number, next: number, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return say.say(next === after + 1 ? "puzzle.level.next" : "puzzle.level.nextSkipping", { next: String(next) });
 }

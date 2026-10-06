@@ -3,6 +3,8 @@
 import Link from "@/components/ui/Link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { nextLevelLabel } from "@/lib/puzzles/fixedLevel";
@@ -14,7 +16,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveTime } from "./SolveTime";
-import { TOBIISHI_COPY } from "./tobiishi.constants";
+import { tobiishiWords } from "./mazeWords";
 import { keepSolveHere, keptSolves } from "./tobiishiKept";
 import { TobiishiBoard, type TobiishiHandle, type TobiishiReading } from "./TobiishiBoard";
 import { TobiishiLevelChips } from "./TobiishiLevelChips";
@@ -64,6 +66,8 @@ export function TobiishiSolve({
   /** The member's best solve of each level at this length, to open from its time. */
   bestSolves?: Record<number, string>;
 }) {
+  const say = useSpeaker();
+  const TOBIISHI_COPY = tobiishiWords(say.locale).copy;
   const hydrated = useHydrated();
   const { kind, size, seed: level } = puzzle;
   const count = tobiishiLevelCount(size);
@@ -108,16 +112,16 @@ export function TobiishiSolve({
   // Where "next" leads once this one is solved: the lowest level still unsolved, this one counted in.
   const onwardTo = firstUnsolved(count, new Set([...solvedSet, level]));
   const onward = {
-    next: onwardTo === null ? null : { href: tobiishiLevelPath(size, onwardTo), label: nextLevelLabel(level, onwardTo) },
-    all: { href: levelsPath(size), label: "All levels" },
+    next: onwardTo === null ? null : { href: tobiishiLevelPath(size, onwardTo), label: nextLevelLabel(level, onwardTo, say) },
+    all: { href: levelsPath(size), label: say.say("pset.mine.allLevels") },
   };
   const asked = (
     <>
-      {tobiishiSizeLabel(size)} · Level {level} <span className="text-xs">of {count}</span>
+      {tobiishiSizeLabel(size, say)} · {say.say("puzzle.level.number", { number: String(level) })} <span className="text-xs">{say.say("pmaze.ofCount", { count: String(count) })}</span>
       {ref === null ? null : (
         <span className="text-xs">
           {" "}
-          · {tobiishiPackOf(ref.pack).title.en}, {tobiishiGoalOf(ref).names.en}
+          · {say.pairName(tobiishiPackOf(ref.pack).title.en, tobiishiPackOf(ref.pack).title.ja).text}{say.locale === "ja" ? "、" : ", "}{say.pairName(tobiishiGoalOf(ref).names.en, tobiishiGoalOf(ref).names.ja).text}
         </span>
       )}
     </>
@@ -135,13 +139,9 @@ export function TobiishiSolve({
         {chips}
         <div className="flex flex-col gap-2" data-testid="tobiishi-solved-view">
           <p className="text-sm">
-            Solved
-            {solvedHere[level] === undefined ? null : (
-              <>
-                , best <SolveTime kind="tobiishi" solveId={bestSolves[level] ?? null} elapsedMs={solvedHere[level]!} mine testId="tobiishi-best-time" />
-              </>
-            )}
-            .
+            {solvedHere[level] === undefined
+              ? say.say("puzzle.press.solved")
+              : phraseWith(say.say("puzzle.press.solvedBest"), { time: <SolveTime kind="tobiishi" solveId={bestSolves[level] ?? null} elapsedMs={solvedHere[level]!} mine testId="tobiishi-best-time" /> })}
           </p>
           <div className="flex flex-wrap gap-2">
             {onward.next === null ? null : (
@@ -153,7 +153,7 @@ export function TobiishiSolve({
               {onward.all.label}
             </Link>
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => setReviewing(false)} data-testid="tobiishi-play-again">
-              Play it again
+              {say.say("puzzle.press.playAgain")}
             </button>
           </div>
         </div>
@@ -182,12 +182,12 @@ export function TobiishiSolve({
       {done === null ? (
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2" data-testid="tobiishi-controls">
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="The jumps">
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label={say.say("pmaze.theJumps")}>
               <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.undo()} disabled={!live || reading?.undoable !== true} data-testid="tobiishi-undo">
-                Undo
+                {say.say("puzzle.press.undo")}
               </button>
               <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.restart()} disabled={!live || reading?.undoable !== true} data-testid="tobiishi-restart">
-                Restart
+                {say.say("puzzle.press.restart")}
               </button>
             </div>
           </div>

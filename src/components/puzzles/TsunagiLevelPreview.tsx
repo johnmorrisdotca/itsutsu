@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "@/components/live/live.constants";
 import { decodeLayout } from "@johnmorrisdotca/tsunagi";
 import { blockOf } from "@johnmorrisdotca/tsunagi";
@@ -74,6 +76,8 @@ export function TsunagiLevelPreview({
     return { layout, lines };
   }, [loaded, loadedKey, size, set, level, best]);
   const count = levelCountOf(size, set);
+  const say = useSpeaker();
+  const sized = set === "portals" ? say.say("pmaze.tsunagi.withPortals", { size: String(size) }) : `${size}×${size}`;
   return (
     <figure className="flex w-full flex-col items-center gap-2" data-testid="tsunagi-preview" data-size={size} data-level={level} data-set={set} data-state={best !== undefined ? "solved" : locked ? "locked" : "open"} data-drawn={drawn !== null ? "true" : "false"}>
       <div className={`${SET_UP_PREVIEW_BOX} relative`} aria-hidden="true">
@@ -95,16 +99,11 @@ export function TsunagiLevelPreview({
         ) : null}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION} data-testid="tsunagi-preview-caption">
-        Level {level} of {count} at {size}×{size}{set === "portals" ? " with portals" : ""}
-        {best !== undefined ? (
-          <>
-            : solved, best <SolveTime kind="tsunagi" solveId={solveId} elapsedMs={best} mine testId="tsunagi-preview-best" />.
-          </>
-        ) : locked ? (
-          `: locked until every level of block ${blockOf(level) - 1} is solved.`
-        ) : (
-          ": not solved yet."
-        )}
+        {best !== undefined
+          ? phraseWith(say.say("pmaze.preview.solved", { level: String(level), count: String(count), size: sized }), {
+              time: <SolveTime kind="tsunagi" solveId={solveId} elapsedMs={best} mine testId="tsunagi-preview-best" />,
+            })
+          : say.say(locked ? "pmaze.preview.locked" : "pmaze.preview.open", { level: String(level), count: String(count), size: sized, block: String(blockOf(level) - 1) })}
       </figcaption>
     </figure>
   );

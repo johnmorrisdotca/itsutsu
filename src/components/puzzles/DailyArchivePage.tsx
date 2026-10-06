@@ -10,7 +10,8 @@ import { archiveMonthAsked, archiveMonths, archiveWeeks } from "@/lib/puzzles/da
 import { dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
 import { dailyLengths } from "@/lib/puzzles/dailyWords/dailyPools";
 import { loadDailyPoolsFromModule } from "@/lib/puzzles/dailyWords/dailyPoolsModule";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { puzzleName } from "@/lib/puzzles/puzzleCopy";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { DailyArchiveTable } from "./DailyArchiveTable";
@@ -30,7 +31,8 @@ import { DailyArchiveTable } from "./DailyArchiveTable";
  * of which are the playing half and ask a stranger for an invite.
  */
 export async function DailyArchivePage({ kind, monthAsked }: { kind: PuzzleKind; monthAsked: string | undefined }) {
-  const copy = PUZZLE_DISPLAY[kind];
+  const say = await currentSpeaker();
+  const name = puzzleName(kind, say.locale);
   const today = dayKeyOf(new Date());
   await loadDailyPoolsFromModule(kind);
   const months = archiveMonths(today);
@@ -40,14 +42,14 @@ export async function DailyArchivePage({ kind, monthAsked }: { kind: PuzzleKind;
     <Page>
       <SiteHeader />
       <PageTitle
-        title={`${copy.label} daily words`}
-        kanji="毎日の言葉"
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={[{ label: "Daily words" }]} />}
-        lead="Every day has one word at each length, the same for everybody, new at midnight UTC. Here are the days gone by, a word leading to its puzzle and a day to its fastest finds; today's words wait on the game's page until tomorrow."
+        title={say.say("pword.daily.archive.title", { name })}
+        kanji={say.pairsWithKanji ? "毎日の言葉" : ""}
+        crumb={<GameTrail game={{ label: name, href: gamePath(kind) }} steps={[{ label: say.say("pword.daily.archive.crumb") }]} />}
+        lead={say.say("pword.daily.archive.lead")}
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
           <Link href={gamePath(kind)} className="text-muted underline-offset-2 hover:underline" data-testid="daily-archive-today">
-            Play today&apos;s words
+            {say.say("pword.daily.archive.playToday")}
           </Link>
         </p>
       </PageTitle>

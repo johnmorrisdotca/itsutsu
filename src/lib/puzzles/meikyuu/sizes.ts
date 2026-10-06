@@ -1,3 +1,6 @@
+import { speaker, type Speaker } from "../../i18n/i18n";
+import { DEFAULT_LOCALE, PHRASES, type PhraseKey } from "../../i18n/i18n.constants";
+
 /**
  * MEIKYUU'S SIZES, AS THE SITE KEEPS THEM. Every puzzle's `size` is one whole
  * number: a kept run, a solve, a race and an address all carry it. A maze has
@@ -104,7 +107,23 @@ export function meikyuuSolidTiles(step: MeikyuuSolidStep): readonly number[] {
 }
 
 /** The names of the solids, and the step as the person reads it. */
-export const MEIKYUU_SOLID_NAMES: Readonly<Record<MeikyuuSolidKind, string>> = { cube: "Cube", sphere: "Sphere", octahedron: "Octahedron", icosahedron: "Icosahedron" };
+const SOLID_WORDS: Readonly<Record<MeikyuuSolidKind, PhraseKey>> = {
+  cube: "puzzle.size.cube",
+  sphere: "puzzle.size.sphere",
+  octahedron: "puzzle.size.octahedron",
+  icosahedron: "puzzle.size.icosahedron",
+};
+
+/** The solids' English names, read from the phrase table that says them in every language (`puzzle.size.*`). */
+export const MEIKYUU_SOLID_NAMES: Readonly<Record<MeikyuuSolidKind, string>> = {
+  cube: PHRASES[SOLID_WORDS.cube],
+  sphere: PHRASES[SOLID_WORDS.sphere],
+  octahedron: PHRASES[SOLID_WORDS.octahedron],
+  icosahedron: PHRASES[SOLID_WORDS.icosahedron],
+};
+
+const STEP_WORDS: Readonly<Record<MeikyuuSolidStep, PhraseKey>> = { small: "puzzle.size.small", medium: "puzzle.size.medium", large: "puzzle.size.large" };
+const SIZE_WORDS: Readonly<Record<MeikyuuSizeWord, PhraseKey>> = { small: "puzzle.size.small", medium: "puzzle.size.medium", large: "puzzle.size.large", huge: "puzzle.size.huge" };
 
 /** Every size a Meikyuu level comes in: the four, the six tall ones, the two colossal ones, then the solids'. */
 export const MEIKYUU_EVERY_SIZE: readonly number[] = [...MEIKYUU_SIZES, ...MEIKYUU_TALL_SIZES, ...MEIKYUU_COLOSSAL_SIZES, ...MEIKYUU_SOLID_SIZES];
@@ -166,18 +185,19 @@ export function meikyuuSizeOfWord(word: MeikyuuSizeWord): number {
 }
 
 /** What a page says of a size: "Small", "Tall 6×9" for a tall one, "Colossal" and "Colossal tall 64×96" for the two colossal ones, "Medium cube" for a solid's. */
-export function meikyuuSizeLabel(size: number): string {
+export function meikyuuSizeLabel(size: number, say: Speaker = speaker(DEFAULT_LOCALE)): string {
   const solid = meikyuuSolidOf(size);
-  if (solid !== null) return `${solid.step.charAt(0).toUpperCase()}${solid.step.slice(1)} ${solid.kind}`;
-  if (size === MEIKYUU_COLOSSAL_SIZE) return "Colossal";
-  if (size === MEIKYUU_COLOSSAL_TALL_SIZE) return `Colossal tall ${MEIKYUU_COLOSSAL_TALL_SHAPE[0]}×${MEIKYUU_COLOSSAL_TALL_SHAPE[1]}`;
+  if (solid !== null) return say.say("puzzle.size.solid", { step: say.say(STEP_WORDS[solid.step]), solid: say.say(SOLID_WORDS[solid.kind]).toLowerCase() });
+  if (size === MEIKYUU_COLOSSAL_SIZE) return say.say("puzzle.size.colossal");
+  if (size === MEIKYUU_COLOSSAL_TALL_SIZE) return say.say("puzzle.size.colossalTall", { width: String(MEIKYUU_COLOSSAL_TALL_SHAPE[0]), height: String(MEIKYUU_COLOSSAL_TALL_SHAPE[1]) });
   const tall = meikyuuTallShape(size);
-  if (tall !== null) return `Tall ${tall.width}×${tall.height}`;
+  if (tall !== null) return say.say("puzzle.size.tall", { width: String(tall.width), height: String(tall.height) });
   const word = meikyuuSizeWord(size);
-  return word === null ? String(size) : `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
+  return word === null ? String(size) : say.say(SIZE_WORDS[word]);
 }
 
 /** A size said inside a sentence, with its noun: "small size", "tall 6×9 size", "the medium cube". */
-export function meikyuuSizeInWords(size: number): string {
-  return isMeikyuuSolid(size) ? `the ${meikyuuSizeLabel(size).toLowerCase()}` : `${meikyuuSizeLabel(size).toLowerCase()} size`;
+export function meikyuuSizeInWords(size: number, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  const label = meikyuuSizeLabel(size, say).toLowerCase();
+  return say.say(isMeikyuuSolid(size) ? "puzzle.size.inWordsSolid" : "puzzle.size.inWords", { size: label });
 }

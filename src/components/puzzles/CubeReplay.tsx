@@ -10,7 +10,7 @@ import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { CUBE_COPY } from "./cube.constants";
+import { cubeCopy } from "./mazeWords";
 import { CubeBoard } from "./CubeBoard";
 
 /** The list of moves wears the site's own ink and paper, through the custom properties Kyuubu's list reads. */
@@ -58,6 +58,7 @@ export function CubeReplay({
 }) {
   const say = useSpeaker();
   const language: KyuubuLanguage = say.locale === "ja" ? "ja" : "en";
+  const CUBE_COPY = cubeCopy(say.locale);
   // Only the turns that count are steps; a turn of the whole cube in the hand rides with the turn after it.
   const steps = useMemo(() => {
     const all = decodeCubeMoves(moves) ?? [];
@@ -116,7 +117,7 @@ export function CubeReplay({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing - 1)} disabled={viewing === 0} aria-label="One move back">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing - 1)} disabled={viewing === 0} aria-label={say.say("puzzle.replay.back")}>
               ‹
             </button>
             <input
@@ -126,10 +127,10 @@ export function CubeReplay({
               value={viewing}
               onChange={(event) => step(Number(event.target.value))}
               className="min-w-0 flex-1 accent-moss"
-              aria-label="Move"
+              aria-label={say.say("puzzle.replay.move")}
               data-testid="cube-replay-scrubber"
             />
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing + 1)} disabled={viewing === last} aria-label="One move on">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => step(viewing + 1)} disabled={viewing === last} aria-label={say.say("puzzle.replay.on")}>
               ›
             </button>
             <span className="w-28 text-right text-sm tabular-nums whitespace-nowrap text-muted" data-testid="cube-replay-at">

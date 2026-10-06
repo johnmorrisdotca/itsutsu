@@ -7,8 +7,16 @@ import { JA_ALREADY_SAID } from "./dictionaries/ja.site.constants";
 import { HANDICAP_COPY_JA, OPENING_COPY_JA, SECOND_STONE_COPY_JA } from "./dictionaries/openings.ja.constants";
 import { VARIANT_COPY_JA } from "./dictionaries/variants.ja.constants";
 import { jaText as lineText } from "./copyJa.types";
+import { isCases } from "./copyTable";
+import { PUZZLE_COPY_JA } from "./dictionaries/puzzles.ja.constants";
+import { CARD_SIZE_WORDS_JA, CHECK_ALLOWANCE_BLURB_JA, JIRAI_GRID_DISPLAY_JA, JIRAI_LEVEL_BLURBS_JA, PUZZLE_CLOCK_DISPLAY_JA, PUZZLE_LEVEL_BLURBS_JA, PUZZLE_LEVEL_DISPLAY_JA } from "./dictionaries/puzzles.ja.levels.constants";
+import { BRIDGES_CELL_WORDS_JA, BRIDGES_COPY_JA, JIRAI_COPY_JA, PENCIL_COPY_JA, PICTURE_CELL_WORDS_JA, PICTURE_COPY_JA } from "./dictionaries/puzzles.ja.grid.constants";
+import { FREECELL_COPY_JA, MAHJONG_COPY_JA, SOLITAIRE_COPY_JA, SOLITAIRE_OPTIONS_JA, SPIDER_COPY_JA } from "./dictionaries/puzzles.ja.cards.constants";
+import { CUBE_COPY_JA, SUIDO_WORDS_JA, TOBIISHI_JA, TSUNAGI_CHIPS_JA } from "./dictionaries/puzzles.ja.mazeUi.constants";
+import { MEIKYUU_WORDS_JA } from "./dictionaries/puzzles.ja.meikyuuUi.constants";
+import { KUMIMOJI_SHOTS_JA, KUMIMOJI_WALLPAPER_COPY_JA, LOOK_COPY_JA, WORD_STYLE_DISPLAY_JA } from "./dictionaries/puzzles.ja.misc.constants";
 import { PHRASE_KEYS } from "./i18n.constants";
-import type { JaCopyText, JaPhraseText } from "./jaText.types";
+import type { JaCopyText, JaPhraseText, JaPuzzleText } from "./jaText.types";
 import { LEVEL_NAMES_JA } from "../xp/levelNames.ja.constants";
 import { IMPORTED_VOLUME_COPY_JA, XP_AWARD_COPY_JA } from "../xp/xpAwardCopy.ja.constants";
 import type { XpEventType } from "../xp/xp.types";
@@ -43,6 +51,76 @@ export function buildPhraseText(): JaPhraseText {
 /** Where a puzzle is named in the attribution paragraphs, until the page fills the puzzle's own kanji in. */
 const puzzleMark = (kind: string) => `{puzzle.${kind}}`;
 
+/**
+ * Every table of a puzzle's words that sits beside its data, by the name a reader asks for it
+ * (`puzzleTable`, `src/lib/i18n/puzzleTables.ts`), each authored as an overlay of its English table with a
+ * back-translation under every line. Each of these is, with the English table it answers, one row of
+ * the coverage tests that hold the one against the other (`puzzleCopyTables.coverage.test.ts`,
+ * `screenWords.coverage.test.ts`).
+ */
+export const PUZZLE_TABLES_AUTHORED = {
+  levelDisplay: PUZZLE_LEVEL_DISPLAY_JA,
+  clockDisplay: PUZZLE_CLOCK_DISPLAY_JA,
+  levelBlurbs: PUZZLE_LEVEL_BLURBS_JA,
+  cardSizes: CARD_SIZE_WORDS_JA,
+  checkAllowance: CHECK_ALLOWANCE_BLURB_JA,
+  jiraiLevelBlurbs: JIRAI_LEVEL_BLURBS_JA,
+  jiraiGridDisplay: JIRAI_GRID_DISPLAY_JA,
+  wordStyles: WORD_STYLE_DISPLAY_JA,
+  kumimojiShots: KUMIMOJI_SHOTS_JA,
+  kumimojiWallpaper: KUMIMOJI_WALLPAPER_COPY_JA,
+  look: LOOK_COPY_JA,
+  meikyuu: MEIKYUU_WORDS_JA,
+  suido: SUIDO_WORDS_JA,
+  tobiishi: TOBIISHI_JA,
+  cube: CUBE_COPY_JA,
+  tsunagiChips: TSUNAGI_CHIPS_JA,
+  mahjong: MAHJONG_COPY_JA,
+  freeCell: FREECELL_COPY_JA,
+  spider: SPIDER_COPY_JA,
+  solitaire: SOLITAIRE_COPY_JA,
+  solitaireOptions: SOLITAIRE_OPTIONS_JA,
+  bridges: BRIDGES_COPY_JA,
+  bridgesCells: BRIDGES_CELL_WORDS_JA,
+  picture: PICTURE_COPY_JA,
+  pictureCells: PICTURE_CELL_WORDS_JA,
+  pencil: PENCIL_COPY_JA,
+  jirai: JIRAI_COPY_JA,
+} as const;
+
+export type PuzzleTablesAuthored = typeof PUZZLE_TABLES_AUTHORED;
+
+const isLine = (value: unknown): value is readonly [string, string] => Array.isArray(value) && value.length === 2 && typeof value[0] === "string" && typeof value[1] === "string";
+
+/** An authored overlay as its text alone: each line its sentence, each choice its choices, and no `review` or `ask`. */
+export function textOf(authored: unknown): unknown {
+  if (isLine(authored)) return authored[0];
+  if (isCases(authored)) {
+    const cases = authored as { by: number; is: Record<string, unknown>; other?: unknown };
+    return {
+      by: cases.by,
+      is: Object.fromEntries(Object.entries(cases.is).map(([value, node]) => [value, textOf(node)])),
+      ...(cases.other === undefined ? {} : { other: textOf(cases.other) }),
+    };
+  }
+  if (Array.isArray(authored)) return authored.map(textOf);
+  if (typeof authored === "object" && authored !== null) {
+    return Object.fromEntries(
+      Object.entries(authored)
+        .filter(([key]) => key !== "review" && key !== "ask")
+        .map(([key, value]) => [key, textOf(value)]),
+    );
+  }
+  return authored;
+}
+
+export function buildPuzzleText(): JaPuzzleText {
+  return {
+    copy: Object.fromEntries(Object.entries(PUZZLE_COPY_JA).map(([kind, ja]) => [kind, textOf(ja)])),
+    tables: Object.fromEntries(Object.entries(PUZZLE_TABLES_AUTHORED).map(([name, ja]) => [name, textOf(ja)])),
+  } as unknown as JaPuzzleText;
+}
+
 export function buildCopyText(): JaCopyText {
   const variants = Object.fromEntries(
     Object.entries(VARIANT_COPY_JA).map(([variant, ja]) => [
@@ -72,7 +150,7 @@ export function buildCopyText(): JaCopyText {
   const importedVolumes = Object.fromEntries(
     (Object.keys(IMPORTED_VOLUME_COPY_JA) as ImportedVolumeType[]).map((type) => [type, { blurb: IMPORTED_VOLUME_COPY_JA[type].blurb }]),
   );
-  return { variants, openings, handicaps, secondStone, bots, families, alsoListed, attribution, outlooks, fatalMove, levels, awards, importedVolumes } as unknown as JaCopyText;
+  return { variants, openings, handicaps, secondStone, bots, families, alsoListed, attribution, outlooks, fatalMove, levels, awards, importedVolumes, puzzles: buildPuzzleText() } as unknown as JaCopyText;
 }
 
 /**

@@ -2,18 +2,22 @@ import { connection } from "next/server";
 import Link from "@/components/ui/Link";
 
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { joinQuery, mySolvePath, setUpPath, solvePath, standingsPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_CLOCK_DISPLAY, PUZZLE_CLOCK_LIST, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelsFor, offersClock } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_DISPLAY, PUZZLE_CLOCK_LIST, PUZZLE_SPECS, levelsFor, offersClock } from "@/lib/puzzles/puzzles.constants";
+import { clockName, levelNameOf } from "@/lib/puzzles/puzzleCopy";
+import { sizeWordIn } from "@/lib/puzzles/sizeWord";
 import type { PuzzleClock, PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { type FastestBoard, fastestKey, fastestSolvesOf } from "@/lib/puzzles/server/puzzleSolves";
 import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
 import type { NameTag } from "@/lib/xp/nameTag.types";
 import { PUZZLE_RECORD_SORTS, puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
 
-import { sizeWord } from "./puzzles.constants";
 import { OneSolvePoints } from "./SolvePoints";
 import { SolveTime } from "./SolveTime";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
@@ -32,9 +36,10 @@ import { hadHeadStart } from "@/lib/puzzles/gomoji/headStart";
 export async function PuzzleFastest({ kind, title, whole = false }: { kind: PuzzleKind; title: string; whole?: boolean }) {
   await connection();
   const session = await currentSession();
+  const say = await currentSpeaker();
   const heading = (
     <h2 className={SECTION_TITLE}>
-      Fastest solves <span className="font-mincho normal-case tracking-normal">最速</span>
+      <Paired en={say.say("pset.fast.heading")} kanji="最速" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
     </h2>
   );
   if (session === null) {
@@ -42,15 +47,14 @@ export async function PuzzleFastest({ kind, title, whole = false }: { kind: Puzz
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-fastest">
         {heading}
         <p className="text-sm text-muted" data-testid="puzzle-fastest-shut">
-          Reading about {title} is open to anybody. Who is fastest at it is the playing half of this site, and that
-          needs an invite.
+          {say.say("pset.fast.shut", { title })}
         </p>
         <p className="text-sm">
           <Link href="/join" className="font-semibold underline-offset-2 hover:underline">
-            I have an invite →
+            {say.say("points.board.haveInvite")}
           </Link>{" "}
           <Link href={ASK_FOR_INVITE_PATH} className="text-muted underline-offset-2 hover:underline">
-            No invite? Ask for one
+            {say.say("points.board.noInvite")}
           </Link>
         </p>
       </section>
@@ -61,11 +65,11 @@ export async function PuzzleFastest({ kind, title, whole = false }: { kind: Puzz
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-fastest">
       {heading}
-      <FastestTable kind={kind} board={board} names={names} tags={tags} whole={whole} me={me} />
+      <FastestTable kind={kind} board={board} names={names} tags={tags} whole={whole} me={me} say={say} />
       {whole ? null : (
         <p className="text-sm">
           <Link href={standingsPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="puzzle-fastest-all">
-            Every size and level →
+            {say.say("pset.fast.every")}
           </Link>
         </p>
       )}
@@ -95,6 +99,7 @@ export function FastestTable({
   tags,
   whole,
   me,
+  say,
 }: {
   kind: PuzzleKind;
   board: FastestBoard;
@@ -103,6 +108,7 @@ export function FastestTable({
   tags: ReadonlyMap<string, NameTag>;
   whole: boolean;
   me: string | null;
+  say: Speaker;
 }) {
   const spec = PUZZLE_SPECS[kind];
   const words = spec.helps === false;
@@ -125,9 +131,9 @@ export function FastestTable({
   if (shown.length === 0) {
     return (
       <p className="text-sm text-muted" data-testid="puzzle-fastest-nobody">
-        Nobody has solved this here yet.{" "}
+        {say.say("pset.fast.nobody")}{say.pairsWithKanji ? " " : ""}
         <Link href={setUpPath(kind)} className="font-semibold text-ink underline-offset-2 hover:underline">
-          Be the first →
+          {say.say("pset.fast.beFirst")}
         </Link>
       </p>
     );
@@ -148,19 +154,19 @@ export function FastestTable({
         <thead className="text-[0.62rem] font-semibold tracking-normal text-muted uppercase @sm:tracking-[0.12em]">
           <tr>
             <th className={`${cell} w-6 text-right`}>#</th>
-            <th className={`${cell} w-full text-left`}>Player</th>
-            <th className={`${cell} text-right`}>Time</th>
-            {words ? <th className={`${cell} text-right`}>{spec.lattice === true ? "Swaps" : spec.cards === true ? "Moves" : "Guesses"}</th> : null}
-            <th className={`${cell} text-right`}>Points</th>
+            <th className={`${cell} w-full text-left`}>{say.say("points.board.player")}</th>
+            <th className={`${cell} text-right`}>{say.say("pset.col.time")}</th>
+            {words ? <th className={`${cell} text-right`}>{say.say(spec.lattice === true ? "pset.col.swaps" : spec.cards === true ? "pset.col.moves" : "pset.col.guesses")}</th> : null}
+            <th className={`${cell} text-right`}>{say.say("pset.col.points")}</th>
             <th className={`${replay} py-1 text-right`}>
-              <span className="sr-only">Replay</span>
+              <span className="sr-only">{say.say("pset.col.replay")}</span>
             </th>
           </tr>
         </thead>
         {shown.map((row) => {
           const label = (
             <>
-              {sizeWord(row.size, kind)} <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[row.level].label.toLowerCase()}</span>
+              {sizeWordIn(row.size, kind, say)} <span className="text-muted">{levelNameOf(row.level, say.locale)}</span>
               {row.clock === "none" ? null : <ClockMark clock={row.clock} />}
             </>
           );
@@ -174,10 +180,10 @@ export function FastestTable({
                     <Link
                       href={puzzleRecordHref(kind, { size: row.size, level: row.level, clock: row.clock, sort: PUZZLE_RECORD_SORTS.fastest })}
                       className="underline-offset-2 hover:underline"
-                      title="Every solve at this size and level, fastest first"
+                      title={say.say("pset.fast.everySolve")}
                       data-testid="puzzle-fastest-every"
                     >
-                      {label} <span className="font-normal text-muted">· every solve →</span>
+                      {label} <span className="font-normal text-muted">{say.say("pset.fast.everySolveLink")}</span>
                     </Link>
                   )}
                 </th>
@@ -186,7 +192,7 @@ export function FastestTable({
                 <tr className="border-t border-rule">
                   <td colSpan={columns} className="py-1 text-muted">
                     <Link href={setUpPath(kind)} className="underline-offset-2 hover:underline">
-                      nobody yet — be the first
+                      {say.say("pset.fast.nobodyYet")}
                     </Link>
                   </td>
                 </tr>
@@ -194,14 +200,14 @@ export function FastestTable({
                 row.at.fastest.map((solve, index) => {
                   const mine = solve.memberId === me;
                   const help = [
-                    solve.hintsUsed !== null && solve.hintsUsed > 0 ? (hadHeadStart(kind, row.level, solve.hintsUsed) ? "head start" : "hints") : null,
-                    solve.checksAllowed !== null ? (solve.checksAllowed === 1 ? "1 check" : `${solve.checksAllowed} checks`) : null,
+                    solve.hintsUsed !== null && solve.hintsUsed > 0 ? (hadHeadStart(kind, row.level, solve.hintsUsed) ? say.say("pset.fast.headStart") : say.say("pset.fast.hints")) : null,
+                    solve.checksAllowed !== null ? say.count("puzzle.count.check", solve.checksAllowed) : null,
                   ].filter((part) => part !== null);
                   return (
                     <tr key={solve.id} className="border-t border-rule align-baseline" data-testid="puzzle-fastest-rank" data-solve={solve.id} data-member={solve.memberId}>
                       <td className={`${cell} text-right text-muted tabular-nums`}>{index + 1}</td>
                       <td className={`${cell} whitespace-nowrap`}>
-                        <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" tag={tags.get(solve.memberId)} />
+                        <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback={say.say("points.board.aMember")} tag={tags.get(solve.memberId)} />
                         {help.length === 0 ? null : (
                           <span className="block text-xs text-muted" data-testid="puzzle-fastest-help">
                             {help.join(" · ")}
@@ -224,10 +230,10 @@ export function FastestTable({
                         <Link
                           href={mine ? mySolvePath(kind, solve.id) : solvePath(kind, solve.id)}
                           className="text-xs underline-offset-2 hover:underline"
-                          title="Watch this solve again, step by step"
+                          title={say.say("pset.fast.watchAgain")}
                           data-testid="puzzle-fastest-replay"
                         >
-                          Replay ▸
+                          {say.say("pset.fast.replay")}
                         </Link>
                       </td>
                     </tr>
@@ -241,13 +247,13 @@ export function FastestTable({
           <tbody key={clock} data-testid="puzzle-fastest-row" data-clock={clock}>
             <tr className="border-t border-rule-strong">
               <th colSpan={columns} scope="rowgroup" className="pt-2 pb-1 text-left text-xs font-semibold">
-                Any size <ClockMark clock={clock} />
+                {say.say("pset.fast.anySize")} <ClockMark clock={clock} />
               </th>
             </tr>
             <tr className="border-t border-rule">
               <td colSpan={columns} className="py-1 text-muted">
                 <Link href={joinQuery(setUpPath(kind), `?clock=${clock}`)} className="underline-offset-2 hover:underline" data-testid="puzzle-fastest-clock-first">
-                  nobody yet on the {PUZZLE_CLOCK_DISPLAY[clock].label} — be the first
+                  {say.say("pset.fast.nobodyOnClock", { clock: clockName(clock, say.locale) })}
                 </Link>
               </td>
             </tr>
@@ -263,7 +269,7 @@ function ClockMark({ clock }: { clock: PuzzleClock }) {
   const shown = PUZZLE_CLOCK_DISPLAY[clock];
   return (
     <span className="font-normal text-muted" data-testid="puzzle-fastest-clock">
-      {" "}· {shown.label} <span className="font-mincho">{shown.kanji}</span> {shown.time}
+      {" "}· <Paired en={shown.label} kanji={shown.kanji} kanjiClassName="" /> {shown.time}
     </span>
   );
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { checkSentence } from "@/lib/puzzles/checkWords";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { useCallback, useMemo, useState } from "react";
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
@@ -17,7 +20,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { PictureLogicGrid } from "./PictureLogicGrid";
 import { pinnedClues } from "./PictureLogicPinned";
 import { PuzzleSteps } from "./PuzzleSteps";
-import { PICTURE_CELL_WORDS, PICTURE_COPY } from "./puzzles.constants";
+import { pictureCellWords, pictureCopy } from "./gridWords";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
 import { SolveShow } from "./SolveShow";
@@ -65,6 +68,8 @@ export function PictureLogicSolve({
   hints?: boolean;
 }) {
   const hydrated = useHydrated();
+  const say = useSpeaker();
+  const copy = pictureCopy(say.locale);
   const { kind, size, seed } = puzzle;
   const clues = useMemo(() => decodeClues(puzzle.givens, size)!, [puzzle.givens, size]);
   const picture = useMemo(() => decodePicture(puzzle.solution, size) ?? [], [puzzle.solution, size]);
@@ -150,11 +155,11 @@ export function PictureLogicSolve({
           <PictureLogicGrid clues={clues} cells={gridCells} met={met} wrong={hinting.marked} done={done !== null || history.reviewing} finished={finished} onPaint={paint} />
         </TsunagiViewport>
       </SolvePaused>
-      <PuzzleSteps steps={steps} viewing={history.viewing} go={history.go} size={size} say={(value) => PICTURE_CELL_WORDS[value] ?? value} />
+      <PuzzleSteps steps={steps} viewing={history.viewing} go={history.go} size={size} say={(value) => pictureCellWords(say.locale)[value] ?? value} />
       {done === null ? (
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex gap-1.5" role="radiogroup" aria-label={PICTURE_COPY.pensLabel} data-testid="picture-pens">
+            <div className="flex gap-1.5" role="radiogroup" aria-label={copy.pensLabel} data-testid="picture-pens">
               {PENS.map((each) => (
                 <button
                   key={each}
@@ -165,7 +170,7 @@ export function PictureLogicSolve({
                   className={`${PICK_WORD_CHIP} ${pen === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
                   data-testid={`picture-pen-${each}`}
                 >
-                  {PICTURE_COPY.pens[each]}
+                  {copy.pens[each]}
                 </button>
               ))}
             </div>
@@ -174,7 +179,7 @@ export function PictureLogicSolve({
             <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
           </div>
           <span className="text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "picture-said"} aria-live="polite">
-            {checked !== null ? checkedLine(checked) : pen === "shade" ? PICTURE_COPY.howTo : PICTURE_COPY.howToMark}
+            {checked !== null ? checkedLine(checked, say) : pen === "shade" ? copy.howTo : copy.howToMark}
           </span>
         </div>
       ) : (
@@ -185,9 +190,6 @@ export function PictureLogicSolve({
 }
 
 /** What Check says: how many squares are wrong, and how many of the picture's are still to shade, never which. */
-function checkedLine({ wrong, toShade }: { wrong: number; toShade: number }): string {
-  if (wrong === 0 && toShade === 0) return "Every square is shaded and right.";
-  const bad = wrong === 0 ? "Nothing wrong so far" : `${wrong} ${wrong === 1 ? "square is" : "squares are"} wrong`;
-  const left = toShade > 0 ? `, ${toShade} still to shade` : "";
-  return `${bad}${left}.`;
+function checkedLine({ wrong, toShade }: { wrong: number; toShade: number }, say: Speaker): string {
+  return checkSentence(say, "pgrid.check.okSquares", wrong, "pgrid.check.wrongSquare", toShade > 0 ? say.say("pgrid.check.leftShade", { count: String(toShade) }) : null);
 }

@@ -17,9 +17,11 @@ import { dayKeyOf } from "@/lib/puzzles/dailyWords/dailyDay";
 import { dailyLanguageOf } from "@/lib/puzzles/dailyWords/dailyPools";
 import { dailySeedOf } from "@/lib/puzzles/gomoji/wordsSeed";
 import { redirect } from "next/navigation";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { puzzleCopy } from "@/lib/puzzles/puzzleCopy";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
 import { runOf } from "@/lib/puzzles/server/puzzleRuns";
-import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
 import { suidoSolvedBy } from "@/lib/puzzles/server/suidoRecords";
 import { tsunagiAttemptsBy, tsunagiSolvedBy } from "@/lib/puzzles/server/tsunagiRecords";
 import { suidoLevelOfSeed } from "@/lib/puzzles/suido/seed";
@@ -36,6 +38,7 @@ import { MeikyuuAccountLook } from "./MeikyuuAccountLook";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrailNav } from "@/components/games/GameTrail";
 import { BoardScaled } from "@/components/board/BoardScaled";
+import { PUZZLE_WIDTH_REASON } from "./paint.constants";
 
 /**
  * /games/<slug>/play for a puzzle: the solve, at the size, level and seed the
@@ -43,8 +46,10 @@ import { BoardScaled } from "@/components/board/BoardScaled";
  * nothing else; the puzzle itself is made in the browser (`PuzzlePlay`).
  */
 export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query: Record<string, string | string[] | undefined> }) {
-  const copy = PUZZLE_DISPLAY[kind];
-  const rules = puzzleRulesPage(kind);
+  const say = await currentSpeaker();
+  const copy = puzzleCopy(kind, say.locale);
+  const name = say.pairName(copy.label, copy.kanji).text;
+  const rules = puzzleRulesPage(kind, say);
   const asked = puzzleAsked(kind, query);
   /* Today's puzzle, asked for by `?daily=1`: resolved to the day's seed and an ordinary address (`daily.ts`) —
      for a Gomoji, the seed of today's word at the length asked (`dailyWords/dailyDay.ts`). */
@@ -116,11 +121,11 @@ export async function PuzzlePlayPage({ kind, query }: { kind: PuzzleKind; query:
         because it is the way back to the puzzle and its set-up.
       */}
       <GameTrailNav
-        game={{ label: copy.label, href: gamePath(kind), testId: "play-up" }}
-        steps={[{ label: "Set up", href: setUpPath(kind) }, { label: "Play" }]}
+        game={{ label: name, href: gamePath(kind), testId: "play-up" }}
+        steps={[{ label: say.say("pset.crumb.setUp"), href: setUpPath(kind) }, { label: say.say("pset.crumb.play") }]}
       />
       {/* The solve at the size this reader keeps for this kind of screen (`BoardScaled`): Regular is the column it always had. */}
-      <BoardScaled className="mx-auto w-full max-w-xl" widthReason="a puzzle grid wider than a hand is a grid nobody can reach across, until the reader asks for a bigger one">
+      <BoardScaled className="mx-auto w-full max-w-xl" widthReason={PUZZLE_WIDTH_REASON}>
         <WordStyleProvider initial={wordStyle ?? WORD_STYLES.reversi} saves={reader.hasAccount}>
           <PuzzlePlayClient drawnFor={puzzleQuery(asked)} kind={kind} size={asked.size} level={asked.level} seed={asked.seed} checks={asked.checks ?? null} hints={asked.hints === true} strict={asked.strict === true} headStart={asked.headStart === true} words={asked.words ?? 1} dodge={asked.dodge === true} backwards={asked.backwards === true} gameLength={asked.gameLength} language={asked.language} doubleSet={asked.doubleSet} diagonals={asked.diagonals} players={asked.players ?? 1} bonus={asked.bonus} pipes={asked.pipes} squares={asked.squares} jirai={asked.jirai} online={online} clock={asked.clock ?? "none"} anyDeal={asked.anyDeal === true} suido={suido} meikyuu={meikyuu} tobiishi={tobiishi} resumed={resumed} hasAccount={reader.hasAccount} appearance={appearance} tsunagi={tsunagi ? { known, bestSolves, closed, attempts: attempts?.[asked.size] ?? {}, marks: tsunagiMarks ?? null, fill: tsunagiFill ?? null, explosions: tsunagiExplosions ?? null, cheats: tsunagiCheats ?? null } : null} />
         </WordStyleProvider>

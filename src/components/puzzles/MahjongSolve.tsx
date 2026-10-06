@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { canTake, freePairs, geometryOf, hintFor, isCleared, matchesOf, tilesLeft } from "@johnmorrisdotca/jarajara";
 import { shuffleTiles } from "@johnmorrisdotca/jarajara";
@@ -17,7 +18,8 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { MahjongBoard, mahjongAspect, mahjongMaxWidth } from "./MahjongBoard";
 import { MahjongFindToggle, MahjongFreeToggle } from "./MahjongFreeToggle";
-import { MAHJONG_COPY, MAHJONG_ZOOM_FROM, mahjongMostZoom } from "./mahjong.constants";
+import { MAHJONG_ZOOM_FROM, mahjongMostZoom } from "./mahjong.constants";
+import { mahjongCopy } from "./cardWords";
 import { useMahjongFind, useMahjongFree } from "./mahjongFree";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
@@ -50,6 +52,8 @@ export function MahjongSolve({
   hints?: boolean;
   appearance?: Appearance;
 }) {
+  const say = useSpeaker();
+  const MAHJONG_COPY = mahjongCopy(say.locale);
   const hydrated = useHydrated();
   const { size, givens } = puzzle;
   const layout = layoutFor(size)!;
@@ -88,7 +92,7 @@ export function MahjongSolve({
       setSaid("shuffle" in move ? MAHJONG_COPY.shuffled : null);
       if (after !== null && isCleared(after.cells)) void finish(encodeMoves(next), at);
     },
-    [begin, moves, hinting, size, givens, finish],
+    [begin, moves, hinting, size, givens, finish, MAHJONG_COPY.shuffled],
   );
 
   const take = (a: number, b: number): boolean => {
@@ -191,15 +195,15 @@ export function MahjongSolve({
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={undo} disabled={moves.length === 0 || pausing.paused} data-testid="mahjong-undo">
-              Undo
+              {say.say("puzzle.press.undo")}
             </button>
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={shuffle} disabled={!stuck || pausing.paused} title={stuck ? undefined : "Shuffle is for when no free pair is left"} data-testid="mahjong-shuffle">
-              Shuffle
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={shuffle} disabled={!stuck || pausing.paused} title={stuck ? undefined : say.say("pcard.mj.shuffleTitle")} data-testid="mahjong-shuffle">
+              {say.say("pcard.mj.shuffle")}
             </button>
             <SolveHint hinting={hinting} onHint={hint} disabled={pausing.paused || pairs.length === 0} racing={race !== null} />
           </div>
           <p className="min-h-10 text-sm text-muted" data-testid="mahjong-said" data-stuck={stuck ? "true" : "false"} aria-live="polite">
-            {line} <span className="whitespace-nowrap">· {tilesLeft(cells)} tiles left, {pairs.length} {pairs.length === 1 ? "pair" : "pairs"} free</span>
+            {line} <span className="whitespace-nowrap">{say.locale === "ja" ? "・" : "· "}{say.count("pcard.mj.status", pairs.length, { tiles: String(tilesLeft(cells)) })}</span>
           </p>
           <MahjongFreeToggle />
           <MahjongFindToggle />

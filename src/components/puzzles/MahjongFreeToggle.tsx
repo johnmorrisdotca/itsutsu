@@ -1,8 +1,10 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 
-import { MAHJONG_COPY } from "./mahjong.constants";
+import { mahjongCopy } from "./cardWords";
 import { useMahjongFind, useMahjongFree, writeMahjongFind, writeMahjongFree } from "./mahjongFree";
 
 /** Two chips for one remembered way of looking at the board, and the line saying what the chosen one does. */
@@ -38,7 +40,7 @@ function TwoChips({
             onClick={() => write(each)}
             data-testid={`${testId}-${each ? "on" : "off"}`}
           >
-            {each ? words.on : words.off} <span className="font-mincho opacity-70">{each ? kanji.on : kanji.off}</span>
+            <Paired en={each ? words.on : words.off} kanji={each ? kanji.on : kanji.off} kanjiClassName="opacity-70" inReadersLanguage />
           </button>
         ))}
       </div>
@@ -57,11 +59,13 @@ function TwoChips({
  * so turning it off in play is what the next set-up opens on.
  */
 export function MahjongFreeToggle({ withBlurb = false }: { withBlurb?: boolean }) {
+  const say = useSpeaker();
+  const MAHJONG_COPY = mahjongCopy(say.locale);
   return (
     <TwoChips
       on={useMahjongFree()}
       write={writeMahjongFree}
-      label="Free tiles"
+      label={say.say("pcard.mj.freeAria")}
       testId="mahjong-free"
       words={{ on: MAHJONG_COPY.freeOn, off: MAHJONG_COPY.freeOff }}
       kanji={{ on: "空牌", off: "素" }}
@@ -73,11 +77,13 @@ export function MahjongFreeToggle({ withBlurb = false }: { withBlurb?: boolean }
 
 /** FIND, OR NOT: lights the matches of whatever tile is pointed at or chosen (`mahjongFree.ts`). */
 export function MahjongFindToggle({ withBlurb = false }: { withBlurb?: boolean }) {
+  const say = useSpeaker();
+  const MAHJONG_COPY = mahjongCopy(say.locale);
   return (
     <TwoChips
       on={useMahjongFind()}
       write={writeMahjongFind}
-      label="Find"
+      label={say.say("pcard.mj.findAria")}
       testId="mahjong-find"
       words={{ on: MAHJONG_COPY.findOn, off: MAHJONG_COPY.findOff }}
       kanji={{ on: "探す", off: "無" }}

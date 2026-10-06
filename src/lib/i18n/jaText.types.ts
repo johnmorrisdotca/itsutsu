@@ -4,6 +4,11 @@ import type { BotTier } from "../gomoku/opponent.types";
 import type { XpEventType } from "../xp/xp.types";
 import type { ImportedVolumeType } from "../xp/xpAwardCopy.constants";
 
+import type { JaTextCases } from "./copyJa.types";
+import type { PuzzleCopyJa } from "./dictionaries/puzzles.ja.types";
+import type { PuzzleKind } from "../puzzles/puzzles.types";
+import type { PuzzleTablesAuthored } from "./jaText.build";
+
 import type { PhraseKey } from "./i18n.constants";
 
 /**
@@ -62,6 +67,37 @@ export type JaCopyText = {
   levels: readonly JaLevelText[];
   awards: Record<XpEventType, JaAwardText>;
   importedVolumes: Record<ImportedVolumeType, { blurb: string }>;
+  /** Every puzzle's words: its copy and the tables of its screens. */
+  puzzles: JaPuzzleText;
+};
+
+/**
+ * What an authored overlay (`JaOverlay`, with a back-translation under every line, and a review stamp and
+ * open question beside a table) is as the reader is given it: each `[text, back]` is its text, each
+ * function's lines are the text of its lines, and `review` and `ask` are gone.
+ */
+export type JaTextOf<T> = T extends undefined
+  ? undefined
+  : T extends readonly [string, string]
+    ? string
+    : T extends { readonly by: number; readonly is: unknown }
+      ? JaTextCases
+      : T extends readonly unknown[]
+        ? { readonly [K in keyof T]: JaTextOf<T[K]> }
+        : T extends object
+          ? { [K in keyof T as Exclude<K, "review" | "ask">]: JaTextOf<T[K]> }
+          : T;
+
+/**
+ * The Japanese of the puzzles: each puzzle's tagline, origin and rules (an overlay of its row in
+ * `PUZZLE_DISPLAY`, a `Record<PuzzleKind, …>` so a puzzle with none does not compile) and every table of
+ * its words that sits beside its data, by name (`PUZZLE_TABLES_AUTHORED` in `jaText.build.ts`, where each
+ * is authored). Laid over the English table it answers by `copyTable.ts`, which is why a table is
+ * read as `puzzleTable(english, "name", locale)` and nothing here has a function in it.
+ */
+export type JaPuzzleText = {
+  copy: Record<PuzzleKind, JaTextOf<PuzzleCopyJa>>;
+  tables: { [K in keyof PuzzleTablesAuthored]: JaTextOf<PuzzleTablesAuthored[K]> };
 };
 
 export type JaText = JaCopyText & { phrases: JaPhraseText };

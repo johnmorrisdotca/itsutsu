@@ -4,11 +4,13 @@ import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
 
 import type { SolidMount } from "@johnmorrisdotca/meikyuu/3d/play";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { loadSolidPackage, MEIKYUU_LOOK } from "@/lib/puzzles/meikyuu/browser";
 import { encodeCells } from "@/lib/puzzles/meikyuu/steps";
 import { stoneOptionOf, type StoneLimit } from "@/lib/puzzles/meikyuu/stones";
 
 import { shutUndo } from "./meikyuuLocked";
+import { packageLanguage } from "./mazeWords";
 import { MeikyuuFrame } from "./MeikyuuFrame";
 import type { MeikyuuHandle, MeikyuuReading } from "./MeikyuuBoard";
 
@@ -66,6 +68,12 @@ export function SolidBoard({
     stonesNow.current = stones;
     mount.current?.set({ stones: stoneOptionOf(stones) });
   }, [stones]);
+  const { locale } = useSpeaker();
+  const languageNow = useRef(locale);
+  useEffect(() => {
+    languageNow.current = locale;
+    mount.current?.set({ language: packageLanguage(locale) });
+  }, [locale]);
   /* The start run is read once, as the board is made: a later change of it is not a new line to draw. */
   const startWay = useRef(way);
 
@@ -76,7 +84,7 @@ export function SolidBoard({
     if (element === null) return;
     void loadSolidPackage().then(({ play }) => {
       if (!live) return;
-      const board = play.mountSolid(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, tap: true, language: "en", stones: stoneOptionOf(stonesNow.current) });
+      const board = play.mountSolid(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, tap: true, language: packageLanguage(languageNow.current), stones: stoneOptionOf(stonesNow.current) });
       if (board === null) return;
       mount.current = board;
       const read = (): void => {

@@ -2,6 +2,8 @@
 
 import type { SolveHelp } from "@/lib/puzzles/solveHelp";
 import { useRouter } from "next/navigation";
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { IdleModal } from "@/components/game/IdleModal";
@@ -21,6 +23,7 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { PUZZLE_CLOCK_TICK_MS } from "./puzzles.constants";
 import { usePuzzleClock } from "./PuzzleClockContext";
 import { PlayingNow } from "@/components/layout/PlayingNow";
+import { CONTROL_SELECTOR } from "./paint.constants";
 
 /**
  * What every kind of solve shares: the clock, handing the answer in, and the
@@ -79,6 +82,7 @@ export function useSolve(
   typesLetters = false,
 ) {
   const router = useRouter();
+  const say = useSpeaker();
   /*
    * A RUN OPENED WHERE IT WAS LEFT is running the moment it opens, with its
    * time so far carried in. It used to open covered and paused, waiting for a
@@ -219,7 +223,7 @@ export function useSolve(
     if (!canPause) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
-      const onControl = event.target instanceof HTMLElement && event.target.closest("button, a, input, select, textarea") !== null;
+      const onControl = event.target instanceof HTMLElement && event.target.closest(CONTROL_SELECTOR) !== null;
       if ((!typesLetters && (event.key === "p" || event.key === "P")) || (event.key === " " && !onControl)) {
         event.preventDefault();
         togglePause();
@@ -276,22 +280,22 @@ export function useSolve(
           return null;
         });
         if (answered === null) {
-          setDone({ elapsedMs, paid: null, problem: SOLVE_QUEUED, helped });
+          setDone({ elapsedMs, paid: null, problem: say.say(SOLVE_QUEUED), helped });
           return;
         }
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; elapsedMs?: number; error?: string; solveId?: string | null } | null;
         if (!answered.ok) {
-          setDone({ elapsedMs, paid: null, problem: body?.error ?? "The site could not record that solve.", helped });
+          setDone({ elapsedMs, paid: null, problem: body?.error ?? say.say("puzzle.solve.couldNotRecord"), helped });
           return;
         }
         setDone({ elapsedMs: body?.elapsedMs ?? elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, solveId: body?.solveId ?? null, helped });
         // The race page above the solve reads the stamps again, so the result shows without a reload.
         if (race !== null) router.refresh();
       } catch {
-        setDone({ elapsedMs, paid: null, problem: "The site could not be reached to record that solve.", helped });
+        setDone({ elapsedMs, paid: null, problem: say.say("puzzle.solve.couldNotReach"), helped });
       }
     },
-    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router, keeping, clock, limit],
+    [puzzle, startedAt, pausedMs, carriedMs, allowed, used, hinting.used, hasAccount, race, router, keeping, clock, limit, say],
   );
 
   /**
@@ -354,11 +358,11 @@ export function useSolve(
         // No connection: kept on this device and handed in once there is one (`solveOutbox.ts`).
         if (answered === null) {
           queueSolve(runKey({ ...puzzle, clock }), handed);
-          setDone({ ...ended, problem: SOLVE_QUEUED });
+          setDone({ ...ended, problem: say.say(SOLVE_QUEUED) });
           return;
         }
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; error?: string; solveId?: string | null } | null;
-        setDone(answered.ok ? { ...ended, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, solveId: body?.solveId ?? null } : { ...ended, problem: body?.error ?? "The site could not keep it." });
+        setDone(answered.ok ? { ...ended, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, solveId: body?.solveId ?? null } : { ...ended, problem: body?.error ?? say.say("puzzle.solve.couldNotKeep") });
       });
   };
   // The tick reads the latest, with what is written now, without restarting the clock on every entry.
@@ -404,6 +408,7 @@ export { SolveHeader } from "./SolveHeader";
  * so plainly — rather than going grey without a word — once they are spent.
  */
 export function SolveCheck({ checking, onCheck, disabled }: { checking: Checking; onCheck: () => void; disabled: boolean }) {
+  const say = useSpeaker();
   const spent = checking.left === 0;
   return (
     <button
@@ -411,11 +416,11 @@ export function SolveCheck({ checking, onCheck, disabled }: { checking: Checking
       className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
       onClick={onCheck}
       disabled={disabled || spent}
-      title={spent ? "No checks left" : undefined}
+      title={spent ? say.say("puzzle.solve.noChecks") : undefined}
       data-testid="puzzle-check"
       data-left={checking.left ?? "unlimited"}
     >
-      {checking.left === null ? "Check" : spent ? "No checks left" : `Check · ${checking.left} left`}
+      {checking.left === null ? say.say("puzzle.solve.check") : spent ? say.say("puzzle.solve.noChecks") : say.say("puzzle.solve.checkLeft", { count: String(checking.left) })}
     </button>
   );
 }
@@ -426,6 +431,7 @@ export function SolveCheck({ checking, onCheck, disabled }: { checking: Checking
  * under the cover can be pressed; the cover says so and offers Resume.
  */
 export function SolvePaused({ pausing, children }: { pausing: Pausing; children: ReactNode }) {
+  const say = useSpeaker();
   return (
     /*
       The board's column for the size chooser (`BoardScale`): at Large and Full
@@ -440,13 +446,13 @@ export function SolvePaused({ pausing, children }: { pausing: Pausing; children:
       {pausing.paused ? (
         <div className={`${PANEL_CLASS} absolute inset-0 flex flex-col items-center justify-center gap-3 text-center`} data-testid="puzzle-paused">
           <p className="text-lg font-semibold">
-            Paused <span className="font-mincho text-base font-normal opacity-70">一時停止</span>
+            <Paired en={say.say("puzzle.solve.paused")} kanji="一時停止" kanjiClassName="text-base font-normal opacity-70" />
           </p>
           <p className="text-sm text-muted" data-testid="puzzle-paused-words">
-            The clock has stopped, and the grid is covered until you come back.
+            {say.say("puzzle.solve.pausedWords")}
           </p>
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} ${TAP_HEIGHT}`} onClick={pausing.toggle} data-testid="puzzle-resume">
-            Resume
+            {say.say("puzzle.solve.resume")}
           </button>
         </div>
       ) : null}

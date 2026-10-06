@@ -3,6 +3,9 @@
 import { useMemo, useState, type ReactNode } from "react";
 
 import { BoardFocus } from "@/components/board/BoardFocus";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import type { BoardStory } from "@/components/board/board.types";
 import { symbolOf } from "@/lib/puzzles/puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
@@ -30,7 +33,7 @@ import { KumimojiTable } from "./KumimojiTable";
 import { MahjongBoard } from "./MahjongBoard";
 import { TsunagiGrid } from "./TsunagiGrid";
 import { TILE_PICTURE_BOX } from "./kumimoji.constants";
-import { BRIDGES_CELL_WORDS, PICTURE_CELL_WORDS } from "./puzzles.constants";
+import { bridgesCellWords, pencilCopy, pictureCellWords } from "./gridWords";
 import { PuzzleGrid } from "./PuzzleGrid";
 import { JiraiBoard } from "./JiraiBoard";
 import { jiraiStepWord } from "./jirai.constants";
@@ -104,6 +107,7 @@ export function FinishedPuzzle({
   story: BoardStory;
 }) {
   const { style } = useWordStyle();
+  const say = useSpeaker();
   const hydrated = useHydrated();
   // Where a word's or a Solitaire's replay stands, held out here: opening the box on its own moves what is inside it.
   const [wordAt, setWordAt] = useState<number | null>(null);
@@ -150,7 +154,7 @@ export function FinishedPuzzle({
         </div>
         <MeikyuuColours className="self-start" />
         <p className="text-sm text-muted" data-testid={`solve-note-${state}`}>
-          {MEIKYUU_NOTES[state]}
+          {say.say(MEIKYUU_NOTES[state]!)}
         </p>
       </Focused>
     );
@@ -166,7 +170,7 @@ export function FinishedPuzzle({
           <TobiishiStill code={givens} way={answer} solved={answer !== null || derive} />
         </div>
         <p className="text-sm text-muted" data-testid={`solve-note-${state}`}>
-          {TOBIISHI_NOTES[state]}
+          {say.say(TOBIISHI_NOTES[state]!)}
         </p>
       </Focused>
     );
@@ -237,24 +241,24 @@ export function FinishedPuzzle({
   return <GridReplay kind={kind} size={size} level={level} givens={givens} answer={answer} steps={steps} derive={derive} story={story} hydrated={hydrated} />;
 }
 
-const TOBIISHI_NOTES: Record<string, string> = {
-  finished: "How it ended: one peg left, in the goal, by the jumps that were made.",
-  "worked-out": "Solved before its jumps were kept. Every level has an answer, so this is the one it was made from.",
-  dealt: "Its jumps are kept back, so this is the board as it was dealt.",
+const TOBIISHI_NOTES: Record<string, PhraseKey> = {
+  finished: "pgrid.note.tobiishiFinished",
+  "worked-out": "pgrid.note.tobiishiWorkedOut",
+  dealt: "pgrid.note.tobiishiDealt",
 };
 
-const MEIKYUU_NOTES: Record<string, string> = {
-  finished: "How it ended: the line drawn from the start to the goal.",
-  "worked-out": "Solved before its line was kept. Every maze here has one way through, so this is that way.",
-  dealt: "Its line is kept back, so this is the maze as it was dealt.",
+const MEIKYUU_NOTES: Record<string, PhraseKey> = {
+  finished: "pgrid.note.meikyuuFinished",
+  "worked-out": "pgrid.note.meikyuuWorkedOut",
+  dealt: "pgrid.note.meikyuuDealt",
 };
 
-const SUIDO_NOTES: Record<string, string> = {
-  finished: "How it ended: the water runs from the pump to everything it should reach, and nothing leaks.",
-  unsolved: "It ended unsolved, when its clock ran out: this is where it stood.",
-  "worked-out": "Solved before its board was kept. Every board here has one answer, so this is that answer, worked out from the puzzle.",
-  working: "",
-  dealt: "Its finished board was not kept, so this is the board as it was dealt.",
+const SUIDO_NOTES: Record<string, PhraseKey | null> = {
+  finished: "pgrid.note.suidoFinished",
+  unsolved: "pgrid.note.suidoUnsolved",
+  "worked-out": "pgrid.note.suidoWorkedOut",
+  working: null,
+  dealt: "pgrid.note.suidoDealt",
 };
 
 /**
@@ -266,6 +270,7 @@ const SUIDO_NOTES: Record<string, string> = {
  * every board has is worked out here, in the browser, once the page has taken over.
  */
 function SuidoFinished({ size, level, givens, answer, steps, derive, story, hydrated }: { size: number; level: PuzzleLevel; givens: string; answer: string | null; steps: string | null; derive: boolean; story: BoardStory; hydrated: boolean }) {
+  const say = useSpeaker();
   // The board as it stood, the last grid of the steps kept: a Suido code is longer than its cells, so the log is read at its first grid's length.
   const stood = useMemo(() => (steps === null ? null : (decodeStepLog(steps, steps.split("~")[0]!.length)?.at(-1) ?? null)), [steps]);
   const worked = useMemo(() => (answer === null && stood === null && derive && hydrated ? solvedAnswerOf("suido", size, level, givens) : null), [answer, stood, derive, hydrated, size, level, givens]);
@@ -280,7 +285,7 @@ function SuidoFinished({ size, level, givens, answer, steps, derive, story, hydr
         <SuidoBoard layout={game.start} masks={game.masks} quarters={game.quarters} readOnly done />
       </div>
       <p className="text-sm text-muted" data-testid={`solve-note-${state}`}>
-        {SUIDO_NOTES[state]}
+        {SUIDO_NOTES[state] === null ? "" : say.say(SUIDO_NOTES[state]!)}
       </p>
     </Focused>
   );
@@ -307,6 +312,7 @@ function GridReplay({
   story: BoardStory;
   hydrated: boolean;
 }) {
+  const say = useSpeaker();
   /* The answer worked out in the browser, after it has taken over from the
      server's page: never on the server, and once, however often it draws. */
   const worked = useMemo(() => (answer === null && derive && hydrated ? solvedAnswerOf(kind, size, level, givens) : null), [answer, derive, hydrated, kind, size, level, givens]);
@@ -332,39 +338,43 @@ function GridReplay({
           viewing={viewing}
           go={(index) => setAt(Math.max(0, Math.min(index, last)))}
           size={size}
-          say={(value) => sayCell(kind, value)}
-          where={kind === "loop" ? (index) => edgeWords(size, index) : undefined}
+          say={(value) => sayCell(kind, value, say)}
+          where={kind === "loop" ? (index) => edgeWords(size, index, say) : undefined}
         />
       ) : null}
       <p className="text-sm text-muted" data-testid={`solve-note-${state}`}>
-        {NOTES[state]}
+        {NOTES[state] === null ? "" : say.say(NOTES[state]!)}
       </p>
     </Focused>
   );
 }
 
-const NOTES: Record<string, string> = {
-  replay: "Step back through it with the scrubber: from where it started to the answer.",
-  finished: "Its steps were not kept, so it shows how it ended, with nothing to step through.",
-  "worked-out": "Solved before its grid was kept. Every puzzle here has one answer, so this is that answer, worked out from the puzzle.",
-  working: "",
-  dealt: "Its finished grid was not kept, so this is the puzzle as it was dealt.",
-  unsolved: "It ended unsolved, when its clock ran out: this is where it stood, and the scrubber steps back through how it got there.",
+const NOTES: Record<string, PhraseKey | null> = {
+  replay: "pgrid.note.replay",
+  finished: "pgrid.note.finished",
+  "worked-out": "pgrid.note.workedOut",
+  working: null,
+  dealt: "pgrid.note.dealt",
+  unsolved: "pgrid.note.unsolved",
 };
 
+/** What a Black and White step wrote in a cell: 1 is black and 2 is white; anything else cleared it. */
+const BLACK_WHITE_STEPS: Record<number, PhraseKey> = { 1: "pgrid.step.black", 2: "pgrid.step.white" };
+
 /** What a step wrote in a cell, for the list of steps: "7", "a stone", "white", "cleared". */
-function sayCell(kind: PuzzleKind, value: number | string): string {
-  if (kind === "hiddenStones") return value === "stone" ? "a stone" : value === "cross" ? "a cross" : "cleared";
-  if (kind === "blackAndWhite") return value === 1 ? "black" : value === 2 ? "white" : "cleared";
-  if (kind === "bridges") return BRIDGES_CELL_WORDS[value as string] ?? `island ${value}`;
-  if (kind === "pictureLogic") return PICTURE_CELL_WORDS[value === 1 ? "#" : value === 2 ? "x" : "."]!;
-  if (isPencilKind(kind)) return pencilStepWord(kind, value);
-  if (kind === "jirai") return jiraiStepWord(String(value));
-  return value === 0 ? "cleared" : symbolOf(value as number);
+function sayCell(kind: PuzzleKind, value: number | string, say: Speaker): string {
+  if (kind === "hiddenStones") return say.say(value === "stone" ? "pgrid.step.stone" : value === "cross" ? "pgrid.step.cross" : "pgrid.step.cleared");
+  if (kind === "blackAndWhite") return say.say(BLACK_WHITE_STEPS[value as number] ?? "pgrid.step.cleared");
+  if (kind === "bridges") return bridgesCellWords(say.locale)[value as string] ?? say.say("pgrid.step.island", { count: String(value) });
+  if (kind === "pictureLogic") return pictureCellWords(say.locale)[value === 1 ? "#" : value === 2 ? "x" : "."]!;
+  if (isPencilKind(kind)) return pencilStepWord(kind, value, say, pencilCopy(say.locale));
+  if (kind === "jirai") return jiraiStepWord(String(value), say);
+  return value === 0 ? say.say("pgrid.step.cleared") : symbolOf(value as number);
 }
 
 /** One frame drawn on the kind's own grid, read-only. */
 function GridOf({ kind, size, frame }: { kind: PuzzleKind; size: number; frame: Frame }) {
+  const say = useSpeaker();
   if (frame.kind === "stones") return <HiddenStonesGrid size={size} regions={frame.regions} marks={frame.cells} done={readOnly} onPress={NOTHING} />;
   if (frame.kind === "blackAndWhite") return <BlackAndWhiteGrid size={size} givens={frame.printed} stones={frame.cells} done={readOnly} onPress={NOTHING} />;
   if (frame.kind === "bridges") {
@@ -379,8 +389,8 @@ function GridOf({ kind, size, frame }: { kind: PuzzleKind; size: number; frame: 
     const solved = checkPictureLogic(size, frame.givens, answerOfCells(frame.cells)).ok;
     return <PictureLogicGrid clues={clues} cells={frame.cells} done finished={solved} readOnly />;
   }
-  if (frame.kind === "jirai") return <JiraiBoard size={size} givens={frame.givens} code={frame.cells.join("")} readOnly label="A finished Jirai board, as it stood at this step" />;
-  if (frame.kind === "pencil") return <PencilBoard kind={frame.pencil} size={size} givens={frame.givens} code={frame.cells.join("")} readOnly label="A finished puzzle, as it stood at this step" />;
+  if (frame.kind === "jirai") return <JiraiBoard size={size} givens={frame.givens} code={frame.cells.join("")} readOnly label={say.say("pgrid.finished.jirai")} />;
+  if (frame.kind === "pencil") return <PencilBoard kind={frame.pencil} size={size} givens={frame.givens} code={frame.cells.join("")} readOnly label={say.say("pgrid.finished.puzzle")} />;
   const asked = frame.asked;
   return (
     <PuzzleGrid
@@ -401,8 +411,9 @@ function GridOf({ kind, size, frame }: { kind: PuzzleKind; size: number; frame: 
 
 /** The board and what goes under it, in the box that opens on its own; marked ready once the browser has it. */
 function Focused({ story, hydrated, testId, state, children }: { story: BoardStory; hydrated: boolean; testId: string; state: string; children: ReactNode }) {
+  const say = useSpeaker();
   return (
-    <BoardFocus label="this puzzle" story={story} layout="flex flex-col gap-3">
+    <BoardFocus label={say.say("pgrid.finished.thisPuzzle")} story={story} layout="flex flex-col gap-3">
       <div className="flex flex-col gap-3" data-testid={testId} data-state={state} {...readyMark(hydrated)}>
         {children}
       </div>

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -13,6 +14,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
  * the link. With no buddies it says where they come from.
  */
 export function RaceOffer({ id, buddies, offeredTo }: { id: string; buddies: readonly { id: string; name: string }[]; offeredTo: string | null }) {
+  const say = useSpeaker();
   const router = useRouter();
   const hydrated = useHydrated();
   const [chosen, setChosen] = useState(offeredTo ?? buddies[0]?.id ?? "");
@@ -22,7 +24,7 @@ export function RaceOffer({ id, buddies, offeredTo }: { id: string; buddies: rea
   if (buddies.length === 0) {
     return (
       <p className="text-xs text-muted" data-testid="race-offer-none">
-        Or offer it to a buddy by name, once you have one: add them from their page.
+        {say.say("pset.race.offerNone")}
       </p>
     );
   }
@@ -38,12 +40,12 @@ export function RaceOffer({ id, buddies, offeredTo }: { id: string; buddies: rea
       });
       if (!answered.ok) {
         const body = (await answered.json().catch(() => null)) as { error?: string } | null;
-        setProblem(body?.error ?? "The site could not offer the race.");
+        setProblem(body?.error ?? say.say("pset.race.noOffer"));
       } else {
         router.refresh();
       }
     } catch {
-      setProblem("The site could not be reached.");
+      setProblem(say.say("pset.race.noReach"));
     }
     setSending(false);
   };
@@ -51,7 +53,7 @@ export function RaceOffer({ id, buddies, offeredTo }: { id: string; buddies: rea
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm" data-testid="race-offer" {...readyMark(hydrated)}>
       <label className="flex items-center gap-2">
-        <span className="text-muted">Or offer it to a buddy</span>
+        <span className="text-muted">{say.say("pset.race.offerLabel")}</span>
         <select value={chosen} onChange={(event) => setChosen(event.target.value)} className="rounded-md border border-rule bg-paper px-2 py-1" data-testid="race-offer-choose">
           {buddies.map((buddy) => (
             <option key={buddy.id} value={buddy.id}>
@@ -61,7 +63,7 @@ export function RaceOffer({ id, buddies, offeredTo }: { id: string; buddies: rea
         </select>
       </label>
       <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={offer} disabled={sending || chosen === ""} data-testid="race-offer-send">
-        {sending ? "Offering…" : offeredTo === null ? "Offer the seat" : "Offer it instead"}
+        {say.say(sending ? "pset.race.offering" : offeredTo === null ? "pset.race.offerSeat" : "pset.race.offerInstead")}
       </button>
       {problem !== null ? <span className="text-shu">{problem}</span> : null}
     </div>

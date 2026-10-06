@@ -2,22 +2,25 @@
 
 import { useSyncExternalStore } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 
 import { TABLE_PAD, TABLE_PAD_KEY } from "./kumimoji.constants";
 
 /** The pad's keys, three to a row: zoom in, up, zoom out; left, right; down. */
 const PAD = [
-  { key: "in", glyph: "+", label: "Zoom in" },
-  { key: "up", glyph: "↑", label: "Move the view up" },
-  { key: "out", glyph: "−", label: "Zoom out" },
-  { key: "left", glyph: "←", label: "Move the view left" },
+  { key: "in", glyph: "+", label: "pmaze.zoomIn" },
+  { key: "up", glyph: "↑", label: "pmaze.pad.up" },
+  { key: "out", glyph: "−", label: "pmaze.zoomOut" },
+  { key: "left", glyph: "←", label: "pmaze.pad.left" },
   null,
-  { key: "right", glyph: "→", label: "Move the view right" },
+  { key: "right", glyph: "→", label: "pmaze.pad.right" },
   null,
-  { key: "down", glyph: "↓", label: "Move the view down" },
+  { key: "down", glyph: "↓", label: "pmaze.pad.down" },
   null,
-] as const;
+] as const satisfies readonly ({ key: string; glyph: string; label: PhraseKey } | null)[];
 
 export type PadKey = "in" | "out" | "up" | "down" | "left" | "right";
 
@@ -50,7 +53,7 @@ export function ViewPad({
   onFit,
   onPress,
   onTurn,
-  label,
+  label: given,
   testId,
   inline = false,
 }: {
@@ -58,10 +61,13 @@ export function ViewPad({
   onFit: () => void;
   onPress: (key: PadKey) => void;
   onTurn?: () => void;
-  label: string;
+  /** What a screen reader calls the pad; left out, the pad says it itself, in the reader's language (a table for Kumimoji's, a board otherwise). */
+  label?: string;
   testId: string;
   inline?: boolean;
 }) {
+  const say = useSpeaker();
+  const label = testId === "kumimoji" ? say.say("pmaze.pad.moveZoomTable") : (given ?? say.say("pmaze.tsunagi.moveZoom"));
   const open = useSyncExternalStore(subscribe, arrowsShown, () => false);
   const toggle = () => keepArrows(!open);
   const arrows = (
@@ -70,10 +76,10 @@ export function ViewPad({
       className={`${BUTTON_BASE} ${BUTTON_QUIET} min-h-9 px-3 py-1 text-xs ${inline ? "" : "shadow-sm"}`}
       onClick={toggle}
       aria-pressed={open}
-      aria-label={open ? "Hide the arrows" : "Show the arrows"}
+      aria-label={say.say(open ? "pmaze.pad.hideArrows" : "pmaze.pad.showArrows")}
       data-testid={`${testId}-arrows`}
     >
-      Arrows
+      {say.say("pmaze.pad.arrows")}
     </button>
   );
   if (inline) {
@@ -81,13 +87,13 @@ export function ViewPad({
     return (
       <div className="flex flex-wrap items-center justify-center gap-1.5" role="group" aria-label={label} data-pad="true" data-testid={`${testId}-pad`}>
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} min-h-9 px-3 py-1 text-xs`} onClick={onFit} aria-pressed={fitted} data-fit="true" data-testid={`${testId}-fit`}>
-          Fit <span className="font-mincho opacity-70">全体</span>
+          <Paired en={say.say("puzzle.press.fit")} kanji="全体" kanjiClassName="opacity-70" inReadersLanguage />
         </button>
         {arrows}
         {(open ? order : []).map((key) => {
           const each = PAD.find((one) => one !== null && one.key === key)!;
           return (
-            <button key={key} type="button" className={TABLE_PAD_KEY} onClick={() => onPress(key)} aria-label={each.label} title={each.label} data-testid={`${testId}-pad-${key}`}>
+            <button key={key} type="button" className={TABLE_PAD_KEY} onClick={() => onPress(key)} aria-label={say.say(each.label)} title={say.say(each.label)} data-testid={`${testId}-pad-${key}`}>
               {each.glyph}
             </button>
           );
@@ -103,12 +109,12 @@ export function ViewPad({
             type="button"
             className={`${BUTTON_BASE} ${BUTTON_QUIET} min-h-9 px-3 py-1 text-xs shadow-sm`}
             onClick={onTurn}
-            aria-label="Turn the table a quarter turn clockwise, keeping every tile upright"
-            title="Turn the table a quarter turn clockwise"
+            aria-label={say.say("pmaze.pad.turnAria")}
+            title={say.say("pmaze.pad.turnTitle")}
             data-turn="true"
             data-testid={`${testId}-turn`}
           >
-            Turn
+            {say.say("pmaze.pad.turn")}
           </button>
         )}
         {arrows}
@@ -120,7 +126,7 @@ export function ViewPad({
           data-fit="true"
           data-testid={`${testId}-fit`}
         >
-          Fit <span className="font-mincho opacity-70">全体</span>
+          <Paired en={say.say("puzzle.press.fit")} kanji="全体" kanjiClassName="opacity-70" inReadersLanguage />
         </button>
       </div>
       {open ? (
@@ -129,7 +135,7 @@ export function ViewPad({
             each === null ? (
               <span key={at} aria-hidden="true" />
             ) : (
-              <button key={each.key} type="button" className={TABLE_PAD_KEY} onClick={() => onPress(each.key)} aria-label={each.label} title={each.label} data-testid={`${testId}-pad-${each.key}`}>
+              <button key={each.key} type="button" className={TABLE_PAD_KEY} onClick={() => onPress(each.key)} aria-label={say.say(each.label)} title={say.say(each.label)} data-testid={`${testId}-pad-${each.key}`}>
                 {each.glyph}
               </button>
             ),

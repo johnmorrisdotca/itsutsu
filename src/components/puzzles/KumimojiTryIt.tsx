@@ -2,6 +2,9 @@
 
 import { useMemo, useRef, useState } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
@@ -12,7 +15,7 @@ import { readWilds } from "@/lib/puzzles/kumimoji/wilds";
 import type { Turn } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import { assignHandTile, assignTableTile, deal, draw, isFinished, liftAll, liftToHand, mayDraw, moveOnTable, placeFromHand, sortHand, swapWithHand, tilesLeft, type TilePlay } from "@/lib/puzzles/kumimoji/play";
 import { TRY_IT } from "@/lib/puzzles/kumimoji/showcase";
-import { tileDescription, tileFace } from "@/lib/puzzles/kumimoji/tileFace";
+import { tileFace } from "@/lib/puzzles/kumimoji/tileFace";
 import { loadTileWords, type TileWords } from "@/lib/puzzles/kumimoji/tileWords";
 import { nextTurn } from "@/lib/puzzles/kumimoji/turn";
 import { PUZZLE_KINDS } from "@/lib/puzzles/puzzles.constants";
@@ -21,6 +24,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { DOUBLE_TAP_MS, HAND_TILE_PX, TILE, TILE_CHOSEN, tileLetterPx } from "./kumimoji.constants";
 import { TRY_IT_BOX, TRY_IT_LIST_KB } from "./kumimojiShowcase.constants";
 import { KumimojiTable, tableTheme } from "./KumimojiTable";
+import { tileSaid } from "./kumimojiWords";
 import { TileFace, wildStyle } from "./KumimojiTileFace";
 
 type Chosen = { from: "hand"; at: number } | { from: "table"; square: string } | null;
@@ -42,6 +46,8 @@ const NONE: ReadonlySet<string> = new Set();
  * without an invite plays it exactly as a member does.
  */
 export function KumimojiTryIt() {
+  const say = useSpeaker();
+  const describe = tileSaid(say);
   const hydrated = useHydrated();
   const [play, setPlay] = useState<TilePlay>(() => deal(TRY_IT.bag, TRY_IT.hand));
   const [chosen, setChosen] = useState<Chosen>(null);
@@ -115,10 +121,10 @@ export function KumimojiTryIt() {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="kumimoji-try" data-finished={finished ? "true" : "false"} data-list={list.state} {...readyMark(hydrated)}>
       <h2 className={SECTION_TITLE}>
-        Try a hand <span className="font-mincho normal-case tracking-normal">試す</span>
+        <Paired en={say.say("pkumi.try.heading")} kanji="試す" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
       </h2>
       <p className="text-sm">
-        Ten tiles: a hand of seven, and three more to draw. Lay them into one crossword, every line of two or more letters a word.
+        {say.say("pkumi.try.lead")}
       </p>
       <KumimojiTable
         tiles={play.tiles}
@@ -131,12 +137,13 @@ export function KumimojiTryIt() {
         onTurn={() => setTurn(nextTurn)}
         onSquare={onSquare}
         boxClass={TRY_IT_BOX}
+        tileDescription={describe}
       />
       <p className="min-h-10 text-sm text-muted" data-testid="kumimoji-try-said" aria-live="polite">
-        {said(list, play, verdict, left, finished)}
+        {said(say, list, play, verdict, left, finished)}
       </p>
       {found.length > 0 ? (
-        <ul className="flex flex-wrap gap-1.5" aria-label="Words on the table" data-testid="kumimoji-try-words">
+        <ul className="flex flex-wrap gap-1.5" aria-label={say.say("pkumi.try.wordsAria")} data-testid="kumimoji-try-words">
           {found.map((word, at) => (
             <li key={`${word}-${at}`} className="rounded-full bg-moss-soft px-2.5 py-0.5 text-xs font-semibold tracking-wide text-ink uppercase" data-testid="kumimoji-try-word">
               {word}
@@ -146,7 +153,7 @@ export function KumimojiTryIt() {
       ) : null}
       {selectedWild ? (
         <label className="flex flex-wrap items-center gap-2 text-sm" data-testid="kumimoji-try-wild">
-          <span>This wild tile is the letter</span>
+          <span>{say.say("pkumi.wild.letter")}</span>
           <select
             className="rounded border border-rule bg-paper px-2 py-1 text-ink"
             value={words.wildSound(selected) === null ? "" : selected}
@@ -157,7 +164,7 @@ export function KumimojiTryIt() {
             }}
             data-testid="kumimoji-try-reading"
           >
-            {words.wildSound(selected) === null ? <option value="">Choose</option> : null}
+            {words.wildSound(selected) === null ? <option value="">{say.say("pkumi.wild.choose")}</option> : null}
             {words.wildOptions.map((face) => {
               const code = words.wildFor(face);
               return code === null ? null : <option key={code} value={code}>{face.toUpperCase()}</option>;
@@ -165,9 +172,9 @@ export function KumimojiTryIt() {
           </select>
         </label>
       ) : null}
-      <div className="flex min-h-11 flex-wrap items-center gap-1.5" aria-label="Your hand" data-testid="kumimoji-try-hand">
+      <div className="flex min-h-11 flex-wrap items-center gap-1.5" aria-label={say.say("pkumi.tray.hand")} data-testid="kumimoji-try-hand">
         {play.hand.length === 0 ? (
-          <span className="text-sm text-muted">{left > 0 ? "Hand used." : "Every tile is out of the bag."}</span>
+          <span className="text-sm text-muted">{say.say(left > 0 ? "pkumi.tray.handUsed" : "pkumi.tray.bagOut")}</span>
         ) : (
           play.hand.map((tile, at) => (
             <button
@@ -178,7 +185,7 @@ export function KumimojiTryIt() {
               style={wildStyle(tileFace(tile), { width: HAND_TILE_PX, height: HAND_TILE_PX, fontSize: tileLetterPx(HAND_TILE_PX) })}
               onClick={() => onHandTile(at)}
               aria-pressed={chosen?.from === "hand" && chosen.at === at}
-              aria-label={`${tileDescription(tile)} in your hand`}
+              aria-label={say.say("pkumi.tray.inHand", { tile: describe(tile) })}
               data-testid="kumimoji-try-tile"
               data-letter={tile}
             >
@@ -195,13 +202,13 @@ export function KumimojiTryIt() {
           onClick={() => move((now) => draw(now))}
           data-testid="kumimoji-try-draw"
         >
-          Draw <span className="font-mincho opacity-70">引く</span> · {left}
+          {say.say("pkumi.tray.draw")} <span className="font-mincho opacity-70">{say.pairsWithKanji ? "引く" : ""}</span> · {left}
         </button>
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3`} disabled={finished || play.hand.length < 2} onClick={() => move(sortHand)} data-testid="kumimoji-try-sort">
-          Sort
+          {say.say("pkumi.tray.sort")}
         </button>
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-3`} disabled={finished || play.tiles.size === 0} onClick={() => move(liftAll)} data-testid="kumimoji-try-all-back">
-          All back
+          {say.say("pkumi.tray.allBack")}
         </button>
         <button
           type="button"
@@ -213,12 +220,12 @@ export function KumimojiTryIt() {
           }}
           data-testid="kumimoji-try-again"
         >
-          Start again
+          {say.say("pkumi.tray.startAgain")}
         </button>
       </div>
       <p className="text-sm">
         <Link href={setUpPath(PUZZLE_KINDS.kumimoji)} className="font-semibold underline-offset-2 hover:underline" data-testid="kumimoji-try-play">
-          A real game is 40 tiles or more, against the clock →
+          {say.say("pkumi.try.real")}
         </Link>
       </p>
     </section>
@@ -226,17 +233,18 @@ export function KumimojiTryIt() {
 }
 
 /** The line under the table: what the first tap will fetch, then what to do next, as the game says it. */
-function said(list: List, play: TilePlay, verdict: ReturnType<typeof judgeWithWords> | null, left: number, finished: boolean): string {
-  if (list.state === "idle") return `Tap a tile, then a square. Your first tap fetches the game's English word list, about ${TRY_IT_LIST_KB} KB, once; nothing is sent anywhere.`;
-  if (list.state === "loading") return "Fetching the word list…";
-  if (list.state === "failed") return "The word list could not be fetched just now. Reload the page to try again.";
+function said(say: Speaker, list: List, play: TilePlay, verdict: ReturnType<typeof judgeWithWords> | null, left: number, finished: boolean): string {
+  if (list.state === "idle") return say.say("pkumi.try.idle", { kb: String(TRY_IT_LIST_KB) });
+  if (list.state === "loading") return say.say("pkumi.try.loading");
+  if (list.state === "failed") return say.say("pkumi.try.failed");
   if (verdict === null) return "";
-  if (finished) return `Every tile is down in one crossword. That is a whole Kumimoji, ${play.bag.length} tiles long.`;
-  if (verdict.tiles === 0) return "Tap a tile, then a square. Tap a tile on the table twice to send it back.";
-  if (verdict.notWords.length > 0) return `Not ${verdict.notWords.length === 1 ? "a word" : "words"}: ${verdict.notWords.map((word) => word.toUpperCase()).join(", ")}.`;
-  if (verdict.apart.size > 0) return "Join every tile into one crossword.";
-  if (verdict.tiles === 1) return "A word takes two letters or more.";
-  if (play.hand.length > 0) return `${play.hand.length} ${play.hand.length === 1 ? "tile" : "tiles"} to lay.`;
-  if (left > 0) return left === 1 ? "Sound. Draw the last tile: it is wild, and you choose its letter." : "Sound. Draw the next tile.";
-  return "Every tile is down.";
+  if (finished) return say.say("pkumi.try.finished", { count: String(play.bag.length) });
+  if (verdict.tiles === 0) return say.say("pkumi.try.empty");
+  if (verdict.notWords.length > 0) return say.count("pkumi.say.notWords", verdict.notWords.length, { words: say.list(verdict.notWords.map((word) => word.toUpperCase())) });
+  if (verdict.apart.size > 0) return say.say("pkumi.say.join");
+  if (verdict.tiles === 1) return say.say("pkumi.say.twoLetters");
+  if (play.hand.length > 0) return say.count("pkumi.say.toLay", play.hand.length);
+  const lastOne = left === 1;
+  if (left > 0) return say.say(lastOne ? "pkumi.say.drawLast" : "pkumi.say.drawNext");
+  return say.say("pkumi.say.allDown");
 }

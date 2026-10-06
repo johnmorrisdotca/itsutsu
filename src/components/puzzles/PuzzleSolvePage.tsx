@@ -1,5 +1,8 @@
 import Link from "@/components/ui/Link";
-import { SOLVE_HELP_WORDS } from "@/lib/puzzles/solveHelp";
+import { solveHelpWords } from "@/lib/puzzles/solveHelp";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { SITE_NAME } from "@/lib/i18n/siteName";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { notFound } from "next/navigation";
 
 import { PageTitle } from "@/components/layout/Headings";
@@ -15,7 +18,10 @@ import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { clockText } from "@/lib/puzzles/clockText";
 import { guessesTaken, guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { hadHeadStart, hintsWords } from "@/lib/puzzles/gomoji/headStart";
-import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { levelLabelOf, levelNameOf, puzzleCopy, puzzleName } from "@/lib/puzzles/puzzleCopy";
+import { sizeWordIn } from "@/lib/puzzles/sizeWord";
+import { commaOf, stopOf, withNote } from "@/lib/puzzles/puzzleText";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { isPuzzleClock } from "@/lib/puzzles/puzzleClock";
 import { memberNamesOf, ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
@@ -40,22 +46,23 @@ import { isSuidoLevelSize } from "@/lib/puzzles/suido/sizes";
 import { meikyuuLevelOfSolve } from "@/lib/puzzles/server/meikyuuRecords";
 import { tobiishiLevelOfSolve } from "@/lib/puzzles/server/tobiishiRecords";
 import { FinishedPuzzle } from "./FinishedPuzzle";
-import { sizeWord } from "./puzzles.constants";
 import { MeikyuuAccountLook } from "./MeikyuuAccountLook";
 import { WordStyleProvider } from "./WordStyleContext";
 import { GameTrail } from "@/components/games/GameTrail";
 
 /** A word puzzle's hidden word, a Futago's two (`futago.ts`) or a Yotsugo's four (`yotsugo.ts`), in the case it is played in — a dodger's where it stood at the end (`wordOfPlay`). */
-function wordOf(kind: PuzzleKind, givens: string, size: number, level: string, answer: string | null): string {
+function wordOf(kind: PuzzleKind, givens: string, size: number, level: string, answer: string | null, say: Speaker): string {
+  const named = (mode: { label: string; kanji: string }) => (say.pairsWithKanji ? `${mode.label} ${mode.kanji}` : mode.kanji);
+  const asWord = (word: string, mode: string) => withNote(say, word, mode);
   if (isDodgeGivens(givens)) {
     const word = wordOfPlay(kind, size, level as PuzzleLevel, givens, answer === null ? [] : (guessesOf(kind, size, answer) ?? []));
-    return word === null ? "" : `${wordsShown(kind, [word])} (${DODGE_DISPLAY.label} ${DODGE_DISPLAY.kanji})`;
+    return word === null ? "" : asWord(wordsShown(kind, [word]), named(DODGE_DISPLAY));
   }
   // A Sakasa's word, the one it was played to avoid (`backwards.ts`).
-  if (isBackwardsGivens(givens)) return `${wordsShown(kind, hiddenWordsOf(kind, size, givens)?.words ?? [])} (${BACKWARDS_DISPLAY.label} ${BACKWARDS_DISPLAY.kanji})`;
+  if (isBackwardsGivens(givens)) return asWord(wordsShown(kind, hiddenWordsOf(kind, size, givens)?.words ?? []), named(BACKWARDS_DISPLAY));
   const words = hiddenWordsOf(kind, size, givens)?.words ?? [];
   const mode = words.length === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY;
-  return words.length > 1 ? `${wordsShown(kind, words)} (${mode.label} ${mode.kanji})` : wordsShown(kind, words);
+  return words.length > 1 ? asWord(wordsShown(kind, words), named(mode)) : wordsShown(kind, words);
 }
 
 /** A value in the facts box starts with a capital: "Draw 1", not "draw 1". */
@@ -114,7 +121,8 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   // A kana dodger's word is replayed from its list (`wordOfPlay`), loaded first.
   if (kind === "gomojiKana" && isDodgeGivens(found.givens)) await loadKanaWordsFromModule(found.size);
   const solver = (await memberNamesOf([solverId])).get(solverId) ?? "";
-  const copy = PUZZLE_DISPLAY[kind];
+  const say = await currentSpeaker();
+  const copy = puzzleCopy(kind, say.locale);
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop";
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
   const taken = guessesTaken(kind, solve.size, solve.level, solve.givens, found.answer);
@@ -124,27 +132,29 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const caught = sakasa && found.answer !== null && (guessesOf(kind, solve.size, found.answer) ?? []).at(-1) === hiddenWordsOf(kind, solve.size, solve.givens)?.words[0];
   // How it ended, worked out once for every kind (`puzzleOutcome`): "Won" for a card game, "Out of guesses" for a word; a Sakasa says its own.
   const ended: PuzzleOutcome = sakasa && solve.solved
-    ? { words: "Got through", mark: "success" }
+    ? { words: say.say("pset.solve.gotThrough"), mark: "success" }
     : caught
-      ? { words: "Caught", mark: "failure" }
-      : puzzleOutcome(kind, solve.solved, solve.clock !== "none", taken);
+      ? { words: say.say("pset.solve.caught"), mark: "failure" }
+      : puzzleOutcome(kind, solve.solved, solve.clock !== "none", taken, say);
   const outcome = ended.words;
   const timed = PUZZLE_CLOCK_DISPLAY[solve.clock as PuzzleClock] ?? PUZZLE_CLOCK_DISPLAY.none;
+  const checksTaken = solve.checksUsed ? say.count("puzzle.count.check", solve.checksUsed) : null;
   const helped = [
-    solve.checksUsed ? `${solve.checksUsed} ${solve.checksUsed === 1 ? "check" : "checks"}${solve.checksAllowed === null ? "" : ` of ${solve.checksAllowed}`}` : null,
-    hintsWords(kind, solve.level, solve.hintsUsed),
+    checksTaken === null ? null : solve.checksAllowed === null ? checksTaken : say.say("pset.solve.checksOf", { checks: checksTaken, allowed: String(solve.checksAllowed) }),
+    hintsWords(kind, solve.level, solve.hintsUsed, say),
     // Cheat, or a level's explosions eased: the help that takes a solve's points and its place on the fastest table.
-    solve.helped === null ? null : SOLVE_HELP_WORDS[solve.helped],
+    solve.helped === null ? null : solveHelpWords(solve.helped, say),
   ].filter((part) => part !== null);
   const headStart = hadHeadStart(kind, solve.level, solve.hintsUsed);
-  const bandLabel = PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel]?.label ?? solve.level;
+  const bandLabel = levelLabelOf(solve.level, say.locale);
   // A level is named by its number, the third of its size it sits in said beside it; a board by its level.
   const levelNumber = suidoLevel ?? meikyuuLevel ?? tobiishiLevel;
-  const levelLabel = levelNumber === null ? bandLabel : `${levelNumber}, ${bandLabel.toLowerCase()}`;
-  const levelTitle = levelNumber === null ? bandLabel : `Level ${levelNumber}`;
+  const levelLabel = levelNumber === null ? bandLabel : say.say("pset.solve.levelBand", { number: String(levelNumber), level: levelNameOf(solve.level, say.locale) });
+  const levelTitle = levelNumber === null ? bandLabel : say.say("puzzle.level.number", { number: String(levelNumber) });
   // "Draw 1", "7 tiles", "9×9": the size in the words its set-up chooses it by, capitalised as a value in a list is.
-  const sizeShown = capitalised(sizeWord(solve.size, kind));
-  const sizeLabel = puzzleSizeLabel(kind);
+  const sizeShown = capitalised(sizeWordIn(solve.size, kind, say));
+  const sizeLabel = puzzleSizeLabel(kind, say);
+  const timedName = say.locale === "ja" ? timed.kanji : timed.label;
   const finished = solve.finishedAt.toISOString();
   /*
    * THE FACTS IN PLAIN WORDS (John, 2026-09-29: "The box that talks about how
@@ -153,7 +163,7 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
    */
   const facts: { label: string; value: ReactNode; testId: string }[] = [
     {
-      label: "Result",
+      label: say.say("pset.solve.result"),
       value: (
         <span className="inline-flex items-center gap-1.5">
           <ResultMark kind={ended.mark} />
@@ -163,40 +173,47 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
       testId: "solve-outcome",
     },
     // A word puzzle says its word, found or not: a word not found is the one thing the grid cannot show.
-    ...(words ? [{ label: "The word", value: kept ? wordOf(kind, solve.givens, solve.size, solve.level, found.answer) : "Kept back until tomorrow", testId: "solve-word" }] : []),
+    ...(words ? [{ label: say.say("pset.solve.theWord"), value: kept ? wordOf(kind, solve.givens, solve.size, solve.level, found.answer, say) : say.say("pset.solve.keptBackShort"), testId: "solve-word" }] : []),
     { label: sizeLabel, value: sizeShown, testId: "solve-puzzle" },
-    { label: "Level", value: levelLabel, testId: "solve-level" },
-    { label: "Time", value: clockText(solve.elapsedMs), testId: "solve-time" },
-    ...(timed.ms === null ? [] : [{ label: "Countdown", value: `${timed.label} ${timed.kanji}, ${timed.time}`, testId: "solve-clock" }]),
+    { label: say.say("pset.solve.level"), value: levelLabel, testId: "solve-level" },
+    { label: say.say("pset.solve.time"), value: clockText(solve.elapsedMs), testId: "solve-time" },
+    ...(timed.ms === null ? [] : [{ label: say.say("pset.solve.countdown"), value: `${say.pairsWithKanji ? `${timed.label} ${timed.kanji}` : timed.kanji}${commaOf(say)}${timed.time}`, testId: "solve-clock" }]),
     // A word's guesses, out of the level's allowance: the other half of how it went.
-    ...(taken === null ? [] : [{ label: taken.unit === "swaps" ? "Swaps" : taken.unit === "moves" ? "Moves" : "Guesses", value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
-    { label: "Points", value: String(solve.points), testId: "solve-points" },
-    { label: "Help used", value: helped.length === 0 ? "None" : helped.join(" · "), testId: "solve-help" },
-    { label: "Finished", value: <LocalTime at={finished} style="date" />, testId: "solve-date" },
+    ...(taken === null ? [] : [{ label: say.say(taken.unit === "swaps" ? "pset.col.swaps" : taken.unit === "moves" ? "pset.col.moves" : "pset.col.guesses"), value: `${guessesText(taken)}`, testId: "solve-guesses" }]),
+    { label: say.say("pset.solve.points"), value: String(solve.points), testId: "solve-points" },
+    { label: say.say("pset.solve.helpUsed"), value: helped.length === 0 ? say.say("pset.solve.none") : helped.join(" · "), testId: "solve-help" },
+    { label: say.say("pset.solve.finished"), value: <LocalTime at={finished} style="date" />, testId: "solve-date" },
   ];
   // The day as the reader reads a date, never 2026-09-30.
   const day = <LocalTime at={finished} style="date" />;
-  const trail = own ? [{ label: "Yours", href: myGamePath(kind) }, { label: day }] : [{ label: "All solves", href: historyPath(kind) }, { label: day }];
+  const trail = own ? [{ label: say.say("pset.solve.yours"), href: myGamePath(kind) }, { label: day }] : [{ label: say.say("pset.rec.allSolves"), href: historyPath(kind) }, { label: day }];
   return (
     <Page>
       <SiteHeader />
       <PageTitle
-        title={own ? `Your ${copy.label}` : copy.label}
-        kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={trail} />}
+        title={own ? say.say("pset.solve.yourTitle", { name: puzzleName(kind, say.locale) }) : puzzleName(kind, say.locale)}
+        kanji={say.pairsWithKanji ? copy.kanji : ""}
+        crumb={<GameTrail game={{ label: puzzleName(kind, say.locale), href: gamePath(kind) }} steps={trail} />}
         lead={
           own ? (
             <span className="inline-flex flex-wrap items-center gap-x-1.5" data-testid="solve-lead">
               <ResultMark kind={ended.mark} />
               <span>
-                {outcome}, <LocalTime at={finished} style="date" />.
+                {outcome}
+                {commaOf(say)}
+                <LocalTime at={finished} style="date" />
+                {stopOf(say)}
               </span>
             </span>
           ) : (
             <span className="inline-flex flex-wrap items-center gap-x-1.5" data-testid="solve-solver">
               <ResultMark kind={ended.mark} />
               <span>
-                {outcome} by <PlayerName name={solver} memberId={solverId} fallback="A member" />, <LocalTime at={finished} style="date" />.
+                {say.say("pset.solve.leadBy", { outcome })}
+                <PlayerName name={solver} memberId={solverId} fallback={say.say("points.board.aMember")} />
+                {commaOf(say)}
+                <LocalTime at={finished} style="date" />
+                {stopOf(say)}
               </span>
             </span>
           )
@@ -214,16 +231,16 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
             derive={kept && solve.solved}
             headStart={headStart}
             story={{
-              kind: words ? "Word" : "Solve",
+              kind: say.say(words ? "pset.solve.word" : "pset.solve.solve"),
               kanji: copy.kanji,
               title: (
                 <>
-                  <PlayerName name={solver} memberId={solverId} fallback="A member" />
-                  &apos;s {copy.label} · {sizeShown} · {levelTitle}
+                  <PlayerName name={solver} memberId={solverId} fallback={say.say("points.board.aMember")} />
+                  {say.say("pset.solve.storyOf", { name: puzzleName(kind, say.locale) })} · {sizeShown} · {levelTitle}
                 </>
               ),
               // Played, not solved: a Solitaire given up is kept and replayed too.
-              source: <>Played on Itsutsu · {day}</>,
+              source: <>{say.say("pset.solve.playedOn", { site: SITE_NAME })}{day}</>,
             }}
           />
         </WordStyleProvider>
@@ -232,10 +249,10 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
         {!kept ? (
           <p className="text-sm text-muted" data-testid="solve-kept-back">
             {fixed
-              ? "This level is the same board for everybody, so how it was solved is kept back until you have solved it yourself. Here it is as it is dealt."
-              : "Today's puzzle is the same for everybody, so how it was solved is kept back until tomorrow, or until you have finished it yourself."}{" "}
+              ? say.say("pset.solve.keptBackFixed")
+              : say.say("pset.solve.keptBackToday")}{" "}
             <Link href={setUpPath(kind)} className="font-semibold text-ink underline underline-offset-2">
-              {fixed ? "Play it" : "Play today's"}
+              {say.say(fixed ? "pset.solve.playIt" : "pset.solve.playTodays")}
             </Link>
           </p>
         ) : null}
@@ -250,10 +267,10 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
           ))}
           {solve.raceId !== null ? (
             <div className="contents">
-              <dt className="text-muted">Race</dt>
+              <dt className="text-muted">{say.say("pset.solve.race")}</dt>
               <dd>
                 <Link href={matchPath(kind, solve.raceId)} className="underline underline-offset-2">
-                  The race it was
+                  {say.say("pset.solve.theRaceItWas")}
                 </Link>
               </dd>
             </div>
@@ -262,18 +279,18 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
         <p className="flex flex-wrap gap-x-4 text-sm">
           {own ? null : (
             <Link href={puzzleRecordHref(kind, { member: solverId })} className="underline underline-offset-2" data-testid="solve-their-solves">
-              All their {copy.label}
+              {say.say("pset.solve.allTheirs", { name: puzzleName(kind, say.locale) })}
             </Link>
           )}
           <Link href={puzzleRecordHref(kind, { size: solve.size, level: solve.level as PuzzleLevel, clock: isPuzzleClock(solve.clock) ? solve.clock : null, sort: PUZZLE_RECORD_SORTS.fastest })} className="underline underline-offset-2" data-testid="solve-fastest-here">
-            {`Fastest times, same ${FASTEST_SAME[sizeLabel] ?? sizeLabel.toLowerCase()} and level`}
-            {timed.ms === null ? "" : ` on the ${timed.label}`}
+            {say.say("pset.solve.fastestSame", { size: say.locale === "ja" ? sizeLabel : (FASTEST_SAME[sizeLabel] ?? sizeLabel.toLowerCase()) })}
+            {timed.ms === null ? "" : say.say("pset.solve.onClock", { clock: timedName })}
           </Link>
           <Link href={myGamePath(kind)} className="underline underline-offset-2">
-            All your {copy.label}
+            {say.say("pset.solve.allYours", { name: puzzleName(kind, say.locale) })}
           </Link>
           <Link href={setUpPath(kind)} className="font-semibold underline underline-offset-2">
-            Play another
+            {say.say("pset.solve.playAnother")}
           </Link>
         </p>
       </div>

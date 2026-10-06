@@ -1,19 +1,12 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import type { SolitaireScoring } from "@/lib/puzzles/solitaire/scoring";
 import { SOLITAIRE_SCORING_LIST } from "@/lib/puzzles/solitaire/scoring";
 
-const DEAL_WORDS = {
-  winnable: { label: "Winnable deals", kanji: "必勝", says: "Every deal has already been won by our solver, so it can be won." },
-  any: { label: "Any deal", kanji: "運任せ", says: "The shuffle as it falls, as with a real deck: some deals cannot be won." },
-} as const;
-
-const SCORE_WORDS: Record<SolitaireScoring, { label: string; kanji: string; says: string }> = {
-  none: { label: "No score", kanji: "無", says: "Just the clock and the count of moves." },
-  standard: { label: "Standard", kanji: "標準", says: "10 a card home, 5 from the waste to a column and for a card turned over; a bonus for speed." },
-  vegas: { label: "Vegas", kanji: "賭", says: "52 down for the deck and 5 back for every card home: points only, never money." },
-};
+import { solitaireOptions } from "./cardWords";
 
 /**
  * SOLITAIRE'S OWN SET-UP CHOICES, under the puzzle's options, as Kumimoji's
@@ -27,10 +20,12 @@ const SCORE_WORDS: Record<SolitaireScoring, { label: string; kanji: string; says
  * table.
  */
 export function SolitaireSetUpOptions({ anyDeal, setAnyDeal, scoring, setScoring }: { anyDeal: boolean; setAnyDeal: (any: boolean) => void; scoring: SolitaireScoring; setScoring: (scoring: SolitaireScoring) => void }) {
+  const say = useSpeaker();
+  const { deals: DEAL_WORDS } = solitaireOptions(say.locale);
   const deal = anyDeal ? DEAL_WORDS.any : DEAL_WORDS.winnable;
   return (
     <>
-      <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Deals" data-testid="solitaire-deals">
+      <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pcard.dealsAria")} data-testid="solitaire-deals">
         {([false, true] as const).map((any) => {
           const words = any ? DEAL_WORDS.any : DEAL_WORDS.winnable;
           return (
@@ -43,7 +38,7 @@ export function SolitaireSetUpOptions({ anyDeal, setAnyDeal, scoring, setScoring
               onClick={() => setAnyDeal(any)}
               data-testid={`solitaire-deal-${any ? "any" : "winnable"}`}
             >
-              {words.label} <span className="font-mincho opacity-70">{words.kanji}</span>
+              <Paired en={words.label} kanji={words.kanji} kanjiClassName="opacity-70" inReadersLanguage />
             </button>
           );
         })}
@@ -58,9 +53,11 @@ export function SolitaireSetUpOptions({ anyDeal, setAnyDeal, scoring, setScoring
 
 /** How the score is kept: on the set-up, and beside the table, the one choice in both. */
 export function SolitaireScoreChips({ chosen, onChoose }: { chosen: SolitaireScoring; onChoose: (scoring: SolitaireScoring) => void }) {
+  const say = useSpeaker();
+  const { scores: SCORE_WORDS } = solitaireOptions(say.locale);
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Score" data-testid="solitaire-scoring">
+      <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pcard.scoreAria")} data-testid="solitaire-scoring">
         {SOLITAIRE_SCORING_LIST.map((each) => (
           <button
             key={each}
@@ -71,7 +68,7 @@ export function SolitaireScoreChips({ chosen, onChoose }: { chosen: SolitaireSco
             onClick={() => onChoose(each)}
             data-testid={`solitaire-scoring-${each}`}
           >
-            {SCORE_WORDS[each].label} <span className="font-mincho opacity-70">{SCORE_WORDS[each].kanji}</span>
+            <Paired en={SCORE_WORDS[each].label} kanji={SCORE_WORDS[each].kanji} kanjiClassName="opacity-70" inReadersLanguage />
           </button>
         ))}
       </div>

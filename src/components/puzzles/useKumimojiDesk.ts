@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { handSpelling, wordsInHand } from "@/lib/puzzles/kumimoji/help";
 import { placeOf, squareAt, type GridVerdict } from "@/lib/puzzles/kumimoji/grid";
 import { assignHandTile, assignTableTile, liftAll, liftToHand, mayTrade, moveOnTable, placeFromHand, sortHand, swapWithHand, trade, type TilePlay } from "@/lib/puzzles/kumimoji/play";
@@ -13,6 +16,7 @@ import type { TableHandle } from "./KumimojiTable";
 import type { TrayPresses } from "./KumimojiTray";
 import { DOUBLE_TAP_MS, SORT_KEY } from "./kumimoji.constants";
 import { useTileDrag, type DragSource, type DropTarget } from "./useTileDrag";
+import { ENTER_KEY } from "@/lib/ui/keyNames.constants";
 
 type Chosen = { from: "hand"; at: number } | { from: "table"; square: string } | null;
 type Cursor = { square: string; across: boolean } | null;
@@ -52,6 +56,7 @@ export function useKumimojiDesk({
   words: TileWords;
   help: { allowed: boolean; spend: () => void };
 }) {
+  const say = useSpeaker();
   const [chosen, setChosen] = useState<Chosen>(null);
   const [cursor, setCursor] = useState<Cursor>(null);
   /* How far the player has turned the table to look at it: theirs alone, kept across moves, never saved with the game. */
@@ -156,7 +161,7 @@ export function useKumimojiDesk({
         const from = placeOf(cursor?.square ?? squareAt(0, 0));
         const by = arrowStep(event.key, turn)!;
         setCursor({ square: cursor === null ? squareAt(from.row, from.col) : squareAt(from.row + by.row, from.col + by.col), across: cursor?.across ?? true });
-      } else if (event.key === "Enter" && cursor !== null) {
+      } else if (event.key === ENTER_KEY && cursor !== null) {
         event.preventDefault();
         setCursor({ square: cursor.square, across: !cursor.across });
       } else if (event.key === SORT_KEY) {
@@ -188,12 +193,12 @@ export function useKumimojiDesk({
       offered: help.allowed,
       can: help.allowed && play.hand.length > 1,
       run: () => {
-        if (helpWords.length === 0) return setHelpSaid("No word in this hand: trade a tile for three.");
+        if (helpWords.length === 0) return setHelpSaid(say.say("pkumi.say.helpNone"));
         const word = helpWords[helpAt.current % helpWords.length]!;
         helpAt.current += 1;
         help.spend();
         move((now) => handSpelling(now, word));
-        setHelpSaid(`${(words.wordOf(word) ?? word).toUpperCase()} is at the front of your hand. Press Help again for another word.`);
+        setHelpSaid(say.say("pkumi.say.helpFront", { word: (words.wordOf(word) ?? word).toUpperCase() }));
       },
     },
   };
@@ -244,12 +249,12 @@ function bringTableIntoView(root: HTMLElement | null) {
 }
 
 /** The line under the table: what to do next, or what is wrong. `drawWord` is what the next step is called where the hand is used and a tile is left. */
-export function sayState(inHand: number, left: number, verdict: GridVerdict, drawWord = "Sound. Draw the next tile."): string {
-  if (verdict.tiles === 0) return "Tap a tile, then a square, or drag it onto the table. On a keyboard, choose a square and type.";
-  if (verdict.notWords.length > 0) return `Not ${verdict.notWords.length === 1 ? "a word" : "words"}: ${verdict.notWords.map((word) => word.toUpperCase()).join(", ")}.`;
-  if (verdict.apart.size > 0) return "Join every tile into one crossword.";
-  if (verdict.tiles === 1) return "A word takes two letters or more.";
-  if (inHand > 0) return `${inHand} ${inHand === 1 ? "tile" : "tiles"} to lay.`;
-  if (left > 0) return drawWord;
-  return "Every tile is down.";
+export function sayState(say: Speaker, inHand: number, left: number, verdict: GridVerdict, drawKey: PhraseKey = "pkumi.say.drawNext"): string {
+  if (verdict.tiles === 0) return say.say("pkumi.say.tapDrag");
+  if (verdict.notWords.length > 0) return say.count("pkumi.say.notWords", verdict.notWords.length, { words: say.list(verdict.notWords.map((word) => word.toUpperCase())) });
+  if (verdict.apart.size > 0) return say.say("pkumi.say.join");
+  if (verdict.tiles === 1) return say.say("pkumi.say.twoLetters");
+  if (inHand > 0) return say.count("pkumi.say.toLay", inHand);
+  if (left > 0) return say.say(drawKey);
+  return say.say("pkumi.say.allDown");
 }

@@ -6,10 +6,14 @@ import type { Kind } from "@johnmorrisdotca/suido";
 
 import type { SuidoSquares } from "@/lib/puzzles/suido/seed";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import type { PuzzleAsked } from "@/lib/puzzles/puzzleAddress";
 
-import { SUIDO_KINDS, SUIDO_SQUARES, SUIDO_SQUARES_LIST } from "./suido.constants";
+import { suidoWords } from "./mazeWords";
+import { readerName } from "./readerName";
+import { SUIDO_SQUARES_LIST } from "./suido.constants";
 
 /**
  * Suido's own choices, held by the set-up (`PuzzleSetUp`): drains, the usual kind, or network; and whether some pieces are big or turn in blocks. Squares make a
@@ -40,9 +44,11 @@ export function useSuidoChoice(asked: PuzzleAsked | undefined) {
  * room their longest wording takes.
  */
 export function SuidoSetUpOptions({ pipes, setPipes, squares, setSquares }: ReturnType<typeof useSuidoChoice>) {
+  const say = useSpeaker();
+  const { kinds: SUIDO_KINDS, squares: SUIDO_SQUARES } = suidoWords(say.locale);
   return (
     <>
-      <div className="grid grid-cols-2 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Kind of board" data-testid="suido-kind">
+      <div className="grid grid-cols-2 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pmaze.options.kindOfBoard")} data-testid="suido-kind">
         {(["drains", "network"] as const).map((each) => (
           <button
             key={each}
@@ -53,14 +59,14 @@ export function SuidoSetUpOptions({ pipes, setPipes, squares, setSquares }: Retu
             onClick={() => setPipes(each)}
             data-testid={`suido-kind-${each}`}
           >
-            {SUIDO_KINDS[each].label} <span className="font-mincho opacity-70">{SUIDO_KINDS[each].kanji}</span>
+            <Paired en={readerName(say, SUIDO_KINDS[each])} kanji={SUIDO_KINDS[each].kanji} kanjiClassName="opacity-70" inReadersLanguage />
           </button>
         ))}
       </div>
       <p className="min-h-12 text-xs text-muted" data-testid="suido-kind-blurb">
         {SUIDO_KINDS[pipes].blurb}
       </p>
-      <div className="grid grid-cols-2 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Pieces" data-testid="suido-squares">
+      <div className="grid grid-cols-2 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pmaze.options.pieces")} data-testid="suido-squares">
         {SUIDO_SQUARES_LIST.map((each) => (
           <button
             key={each}
@@ -71,7 +77,7 @@ export function SuidoSetUpOptions({ pipes, setPipes, squares, setSquares }: Retu
             onClick={() => setSquares(each)}
             data-testid={`suido-squares-${each}`}
           >
-            {SUIDO_SQUARES[each].label} <span className="font-mincho opacity-70">{SUIDO_SQUARES[each].kanji}</span>
+            <Paired en={readerName(say, SUIDO_SQUARES[each])} kanji={SUIDO_SQUARES[each].kanji} kanjiClassName="opacity-70" inReadersLanguage />
           </button>
         ))}
       </div>

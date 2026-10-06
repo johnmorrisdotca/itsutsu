@@ -1,3 +1,5 @@
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import Link from "@/components/ui/Link";
 
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
@@ -13,34 +15,35 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
  * record, since each keeps its own (`gameSettings.ts`). Static: the page stays
  * prerendered.
  */
-export function WordSettingsPanel({ game }: { game: PuzzleKind }) {
+export async function WordSettingsPanel({ game }: { game: PuzzleKind }) {
+  const say = await currentSpeaker();
   const settings = settingsOf(game);
   if (settings.length < 2) return null;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2 text-sm`} data-testid="word-settings-panel">
       <h2 className={SECTION_TITLE}>
-        Languages and word lists <span className="font-mincho normal-case tracking-normal">言語</span>
+        <Paired en={say.say("pset.words.settingsHeading")} kanji="言語" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
       </h2>
-      <p className="text-xs text-muted">Chosen on the set-up. Each keeps its own words of the day, fastest times and record.</p>
+      <p className="text-xs text-muted">{say.say("pset.words.settingsNote")}</p>
       <ul className="flex flex-col gap-1.5">
         {settings.map((kind) => {
           const setting = GAME_SETTINGS[kind]!;
           const language = WORD_LANGUAGE_DISPLAY[setting.language];
-          const list = setting.list === "everyday" ? "" : ` · ${WORD_LIST_DISPLAY[setting.list].label}`;
+          const list = setting.list === "everyday" ? "" : ` · ${say.pairName(WORD_LIST_DISPLAY[setting.list].label, WORD_LIST_DISPLAY[setting.list].kanji).text}`;
           return (
             <li key={kind} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5" data-testid="word-setting-row" data-kind={kind}>
               <Link href={setUpPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="word-setting-play">
-                {language.label}
+                {say.pairName(language.label, language.kanji).text}
                 {list}
               </Link>
               <Link href={dailyWordsPath(kind)} className="text-muted underline-offset-2 hover:underline">
-                Daily words
+                {say.say("pset.words.daily")}
               </Link>
               <Link href={standingsPath(kind)} className="text-muted underline-offset-2 hover:underline">
-                Leaderboard
+                {say.say("pset.words.leaderboard")}
               </Link>
               <Link href={historyPath(kind)} className="text-muted underline-offset-2 hover:underline">
-                All solves
+                {say.say("pset.rec.allSolves")}
               </Link>
             </li>
           );

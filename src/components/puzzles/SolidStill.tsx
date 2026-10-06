@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 
 import type { SolidMount } from "@johnmorrisdotca/meikyuu/3d/play";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { loadSolidPackage, MEIKYUU_LOOK } from "@/lib/puzzles/meikyuu/browser";
 import { encodeWay } from "@/lib/puzzles/meikyuu/way";
 
+import { packageLanguage } from "./mazeWords";
 import { MeikyuuFrame } from "./MeikyuuFrame";
 
 /** The side the frame is laid out for: a maze has no rows to letter, so only its rim depends on it (`MeikyuuBoard`). */
@@ -19,6 +21,7 @@ const FRAME_SIDE = 9;
  * nothing is drawn). In the wood every Meikyuu board is drawn on.
  */
 export function SolidStill({ code, way = null, solved = false, testId = "meikyuu-still", picture = false }: { code: string; way?: string | null; solved?: boolean; testId?: string; picture?: boolean }) {
+  const { locale } = useSpeaker();
   const host = useRef<HTMLDivElement>(null);
   const mount = useRef<SolidMount | null>(null);
   const [drawn, setDrawn] = useState<string | null>(null);
@@ -28,7 +31,7 @@ export function SolidStill({ code, way = null, solved = false, testId = "meikyuu
     if (element === null) return;
     void loadSolidPackage().then(({ play }) => {
       if (!live) return;
-      const board = play.mountSolid(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, language: "en", still: picture, draw: false, zoom: false });
+      const board = play.mountSolid(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, language: packageLanguage(locale), still: picture, draw: false, zoom: false });
       if (board === null) return;
       mount.current = board;
       const steps = way !== null && way !== "" ? way : solved ? encodeWay(code) : null;
@@ -40,7 +43,7 @@ export function SolidStill({ code, way = null, solved = false, testId = "meikyuu
       mount.current?.destroy();
       mount.current = null;
     };
-  }, [code, way, solved, picture]);
+  }, [code, way, solved, picture, locale]);
   return (
     <div className="w-full select-none" data-testid={testId} data-kind="meikyuu" data-solid="true" data-stand="square" data-drawn={drawn === code ? "true" : "false"} data-wallpaper-focus="">
       <MeikyuuFrame size={FRAME_SIDE}>

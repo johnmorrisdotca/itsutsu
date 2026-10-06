@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import { FeltPatches } from "@/components/board/FeltPatches";
 import type { Appearance } from "@/components/board/board.types";
@@ -22,6 +24,7 @@ import { WordStylePicker } from "./WordStylePicker";
 import { KumimojiTray } from "./KumimojiTray";
 import { TRAY_ROOM } from "./kumimoji.constants";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
+import { tileSaid } from "./kumimojiWords";
 import { sayState, useKumimojiDesk } from "./useKumimojiDesk";
 import { PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
 
@@ -54,6 +57,7 @@ export function KumimojiSolve({
   /** Whether Help was chosen on the set-up screen (`hints=1`); never in a race. */
   hints?: boolean;
 }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const theme = tableTheme({ ...appearance, felt });
@@ -94,6 +98,7 @@ export function KumimojiSolve({
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
         <KumimojiTable
+          tileDescription={tileSaid(say)}
           tiles={play.tiles}
           theme={theme}
           misspelt={verdict.misspelt}
@@ -111,7 +116,7 @@ export function KumimojiSolve({
       {done === null ? (
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="kumimoji-said" data-sound={verdict.sound ? "true" : "false"} aria-live="polite">
-            {desk.helpSaid ?? sayState(play.hand.length, left, verdict)}
+            {desk.helpSaid ?? sayState(say, play.hand.length, left, verdict)}
           </p>
           {desk.selectedWild ? <KumimojiWildPicker language={language} words={words} tile={desk.selectedTile!} disabled={closed} onChoose={desk.adjustSelected} /> : null}
           <div className="flex flex-wrap items-center gap-2">
@@ -135,8 +140,12 @@ export function KumimojiSolve({
       ) : (
         <>
           <p className={`${SELECTABLE} text-sm`} data-testid="kumimoji-score">
-            All {puzzle.givens.length} tiles in one crossword. <strong>{Math.max(0, kumimojiPoints(puzzle.givens, done.elapsedMs) - POINTS_A_HELP * hinting.used)}</strong> points: ten a tile, and the rest for speed
-            {hinting.used > 0 ? `, less ${POINTS_A_HELP} for each of ${hinting.used} ${hinting.used === 1 ? "Help" : "Helps"}` : ""}.
+            {phraseWith(
+              hinting.used > 0
+                ? say.count("pkumi.solve.scoreLess", hinting.used, { tiles: String(puzzle.givens.length), per: String(POINTS_A_HELP) })
+                : say.say("pkumi.solve.score", { tiles: String(puzzle.givens.length) }),
+              { points: <strong>{Math.max(0, kumimojiPoints(puzzle.givens, done.elapsedMs) - POINTS_A_HELP * hinting.used)}</strong> },
+            )}
           </p>
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} />
         </>

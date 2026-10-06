@@ -1,11 +1,16 @@
+"use client";
+
 import Link from "@/components/ui/Link";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { SUIDO_MAKE_QUERY, type SuidoMode } from "@/lib/puzzles/suido/mode";
 import { suidoSizeInAddress } from "@/lib/puzzles/suido/sizes";
 
-import { SUIDO_MODES } from "./suido.constants";
+import { suidoWords } from "./mazeWords";
+import { readerName } from "./readerName";
 
 /**
  * LEVELS OR MAKE A BOARD, over Suido's set-up: the two ways to play it, each its
@@ -17,23 +22,25 @@ import { SUIDO_MODES } from "./suido.constants";
  * where both ways have it.
  */
 export function SuidoModeSwitch({ mode, size }: { mode: SuidoMode; size?: number }) {
+  const say = useSpeaker();
+  const modes = suidoWords(say.locale).modes;
   const sized = size === undefined ? "" : `size=${suidoSizeInAddress(size)}`;
   const hrefs: Record<SuidoMode, string> = {
     levels: `${setUpPath("suido")}${sized === "" ? "" : `?${sized}`}`,
     make: `${setUpPath("suido")}?${[SUIDO_MAKE_QUERY, sized].filter((part) => part !== "").join("&")}`,
   };
   return (
-    <nav className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" aria-label="How to play" data-testid="suido-modes">
+    <nav className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" aria-label={say.say("pmaze.howToPlay")} data-testid="suido-modes">
       {(["levels", "make"] as const).map((each) => (
         <Link
           key={each}
           href={hrefs[each]}
           className={`${PICK_WORD_CHIP} ${mode === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
           aria-current={mode === each ? "page" : undefined}
-          title={SUIDO_MODES[each].says}
+          title={modes[each].says}
           data-testid={`suido-mode-${each}`}
         >
-          {SUIDO_MODES[each].label} <span className="font-mincho opacity-70">{SUIDO_MODES[each].kanji}</span>
+          <Paired en={readerName(say, modes[each])} kanji={modes[each].kanji} kanjiClassName="opacity-70" inReadersLanguage />
         </Link>
       ))}
     </nav>

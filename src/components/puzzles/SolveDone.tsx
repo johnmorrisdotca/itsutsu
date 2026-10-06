@@ -12,9 +12,10 @@ import { solvedNews } from "@/components/game/winNews";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, SELECTABLE } from "@/components/ui/ui.constants";
 import { viewHref } from "@/lib/history/myGamesViews";
 import { joinQuery, mySolvePath, playPath, setUpPath } from "@/lib/gomoku/slugs";
-import { helpOpensOn, SOLVE_HELP_SAYS } from "@/lib/puzzles/solveHelp";
+import { helpOpensOn, solveHelpSays } from "@/lib/puzzles/solveHelp";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { puzzleName } from "@/lib/puzzles/puzzleCopy";
+import { PUZZLE_CLOCK_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { clockText } from "@/lib/puzzles/clockText";
 import { wordCountOfGivens } from "@/lib/puzzles/gomoji/futago";
@@ -30,6 +31,10 @@ import { PuzzleWayBack } from "./PuzzleWayBack";
 import { useMarkPuzzleEnded, useWinSlot } from "./PuzzleWinSlot";
 import type { Done, SolveRace } from "./solveShared";
 import { ResultMark } from "@/components/game/ResultMark";
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 
 /**
  * The card at the end: the time, what was paid, another puzzle or a different
@@ -68,8 +73,8 @@ export function SolveDone({
   headStart?: boolean;
 }) {
   const router = useRouter();
+  const say = useSpeaker();
   const clock = usePuzzleClock();
-  const copy = PUZZLE_DISPLAY[puzzle.kind];
   const another = () => {
     // A Futago's Another is two more words (`futago.ts`), a Yotsugo's four more (`yotsugo.ts`): its seed says so.
     const words = PUZZLE_SPECS[puzzle.kind].wordGrid === undefined ? 1 : wordCountOfGivens(puzzle.givens);
@@ -82,6 +87,8 @@ export function SolveDone({
     router.push(joinQuery(playPath(puzzle.kind), puzzleQuery({ size: puzzle.size, level: puzzle.level, seed, checks, strict, headStart, words, dodge, backwards, clock })));
   };
   const timed = PUZZLE_CLOCK_DISPLAY[clock];
+  // "Tortoise 亀" for an English reader, 亀 for a Japanese one, whose script the kanji is.
+  const timedName = say.pairsWithKanji ? `${timed.label} ${timed.kanji}` : timed.kanji;
   /*
    * A CARD GAME IS WON OR GIVEN UP, never solved: Solitaire's Give up hands the
    * game in as ended (`runOut`), kept among the member's finished games and
@@ -90,8 +97,11 @@ export function SolveDone({
   const cards = PUZZLE_SPECS[puzzle.kind].cards === true;
   // The cube is given up the same way, and is solved rather than won.
   const gaveUp = (cards || PUZZLE_SPECS[puzzle.kind].cube === true) && done.outOfGuesses === true && done.outOfTime !== true;
-  const moveWords = moves === undefined ? "" : `, in ${moves} ${moves === 1 ? "move" : "moves"}`;
-  const anotherLabel = `${cards ? "Deal again" : `Another ${copy.label}`} →`;
+  const moveWords = moves === undefined ? "" : say.count("puzzle.done.inMoves", moves);
+  const anotherLabel = cards ? say.say("puzzle.done.dealAgain") : say.say("puzzle.done.another", { name: puzzleName(puzzle.kind, say.locale) });
+  const time = clockText(done.elapsedMs);
+  // The words between a link or a figure in a sentence: a space in English, nothing where Japanese is written solid.
+  const gap = say.pairsWithKanji ? " " : "";
 
   /*
    * THE COVER OVER THE BOARD, for a win made on this page (`WinCover`): this
@@ -114,7 +124,7 @@ export function SolveDone({
           cards,
           elapsed: clockText(done.elapsedMs),
           moves,
-          xp: !hasAccount || done.problem !== null ? undefined : done.paid === null ? null : done.paid.points > 0 ? `+${done.paid.points} XP, for ${awardWords(done.paid.awards)}.` : undefined,
+          xp: !hasAccount || done.problem !== null ? undefined : done.paid === null ? null : done.paid.points > 0 ? say.say("puzzle.done.paid", { points: String(done.paid.points), awards: awardWords(done.paid.awards, say) }) : undefined,
           next: firstStep,
         })}
         onClose={() => setCovered(false)}
@@ -127,58 +137,58 @@ export function SolveDone({
       {gaveUp ? (
         <p className="text-lg font-semibold" data-testid="puzzle-given-up">
           <ResultMark kind="failure" className="mr-1.5" />
-          Given up <span className="font-mincho text-base font-normal opacity-70">投了</span> after {clockText(done.elapsedMs)}
-          {moveWords}.
+          <Paired en={say.say("puzzle.outcome.givenUp")} kanji="投了" kanjiClassName="text-base font-normal opacity-70" />
+          {say.say("puzzle.done.givenUpTail", { time, moves: moveWords })}
         </p>
       ) : cards ? (
         <p className="text-lg font-semibold" data-testid="puzzle-won">
           <ResultMark kind="success" className="mr-1.5" />
-          Won <span className="font-mincho text-base font-normal opacity-70">勝ち</span> in {clockText(done.elapsedMs)}
-          {moveWords}.
+          <Paired en={say.say("puzzle.outcome.won")} kanji="勝ち" kanjiClassName="text-base font-normal opacity-70" />
+          {say.say("puzzle.done.wonTail", { time, moves: moveWords })}
         </p>
       ) : done.outOfTime ? (
         <p className="text-lg font-semibold" data-testid="puzzle-out-of-time">
           <ResultMark kind="failure" className="mr-1.5" />
-          Out of time <span className="font-mincho text-base font-normal opacity-70">時間切れ</span>: the {timed.label} {timed.kanji} ran down from{" "}
-          {clockText(done.elapsedMs)} before it was solved.
+          <Paired en={say.say("puzzle.outcome.outOfTime")} kanji="時間切れ" kanjiClassName="text-base font-normal opacity-70" />
+          {say.say("puzzle.done.outOfTimeTail", { clock: timedName, time })}
         </p>
       ) : (
         <p className="text-lg font-semibold" data-testid="puzzle-solved-line">
           <ResultMark kind="success" className="mr-1.5" />
-          Solved <span className="font-mincho text-base font-normal opacity-70">解決</span> in {clockText(done.elapsedMs)}
-          {moveWords}
-          {clock === "none" ? "" : `, on the ${timed.label} ${timed.kanji}`}.
+          <Paired en={say.say("puzzle.outcome.solved")} kanji="解決" kanjiClassName="text-base font-normal opacity-70" />
+          {say.say("puzzle.done.solvedTail", { time, moves: moveWords, onClock: clock === "none" ? "" : say.say("puzzle.done.onClock", { clock: timedName }) })}
         </p>
       )}
       <p className="text-sm text-muted" data-testid="puzzle-paid">
         {done.outOfTime || gaveUp
-          ? outOfTimeWords(done, hasAccount)
+          ? outOfTimeWords(done, hasAccount, say)
           : !hasAccount
-            ? "A member is paid XP for a solve. Join, and the next one counts."
+            ? say.say("puzzle.done.joinToBePaid")
             : done.paid !== null
               ? done.paid.points > 0
-                ? `+${done.paid.points} XP, for ${awardWords(done.paid.awards)}.`
-                : "Already paid for this puzzle, or the day's allowance is spent — the solve still stands."
-              : (done.problem ?? "Recording your solve…")}
+                ? say.say("puzzle.done.paid", { points: String(done.paid.points), awards: awardWords(done.paid.awards, say) })
+                : say.say("puzzle.done.alreadyPaid")
+              : (done.problem ?? say.say("puzzle.done.recording"))}
         {(done.outOfTime || gaveUp) && hasAccount && race === null ? (
           <>
-            {" "}
-            Kept in{" "}
+            {gap}
+            {say.say("puzzle.done.keptBefore")}
+            {gap}
             <Link href={viewHref("completed")} className="underline" data-testid="puzzle-out-of-time-kept">
-              My games
-            </Link>{" "}
-            as it stood, with your finished puzzles.
+              {say.say("puzzle.done.keptLink")}
+            </Link>
+            {gap}
+            {say.say("puzzle.done.keptAfter")}
           </>
         ) : null}
       </p>
       {done.helped == null ? null : (
         // A helped solve says what it costs, before anybody wonders where its points went.
         <p className="text-sm" data-testid="puzzle-helped" data-helped={done.helped}>
-          {SOLVE_HELP_SAYS[done.helped]}. It counts as solved, but scores no points and is not on the fastest table
-          {helpOpensOn(done.helped) ? "." : ", and it does not open the next block: solve it with its explosions on for that."}
+          {say.say(helpOpensOn(done.helped) ? "puzzle.done.helpedCounts" : "puzzle.done.helpedNoBlock", { says: solveHelpSays(done.helped, say) })}
         </p>
       )}
-      {race === null ? null : <p className="text-sm text-muted">Handed in. The race above says how it stands.</p>}
+      {race === null ? null : <p className="text-sm text-muted">{say.say("puzzle.done.handedIn")}</p>}
       <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
         {race === null && onward !== undefined ? (
           <>
@@ -197,12 +207,12 @@ export function SolveDone({
               {anotherLabel}
             </button>
             <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
-              {cards ? "Change the draw or passes" : "Change the size or level"}
+              {say.say(cards ? "puzzle.done.changeDraw" : "puzzle.done.changeSize")}
             </Link>
             {/* The solve just kept, to watch again step by step, as every past solve opens. */}
             {done.solveId ? (
               <Link href={mySolvePath(puzzle.kind, done.solveId)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-see-solve">
-                {done.outOfTime || gaveUp ? "See how far it got" : cards ? "See this game" : "Replay this solve"}
+                {say.say(done.outOfTime || gaveUp ? "puzzle.done.seeHowFar" : cards ? "puzzle.done.seeGame" : "puzzle.done.replay")}
               </Link>
             ) : null}
           </>
@@ -214,12 +224,12 @@ export function SolveDone({
         puzzle={puzzle}
         result={
           gaveUp
-            ? `Given up after ${clockText(done.elapsedMs)}${moveWords}`
+            ? say.say("puzzle.done.resultGivenUp", { time, moves: moveWords })
             : cards
-              ? `Won in ${clockText(done.elapsedMs)}${moveWords}`
+              ? say.say("puzzle.done.resultWon", { time, moves: moveWords })
               : done.outOfTime
-                ? "Out of time"
-                : `Solved in ${clockText(done.elapsedMs)}`
+                ? say.say("puzzle.outcome.outOfTime")
+                : say.say("puzzle.done.resultSolved", { time })
         }
       />
     </div>
@@ -228,24 +238,24 @@ export function SolveDone({
 }
 
 /** What an ending by the clock paid: playing it out, as a word played to its last guess pays. */
-function outOfTimeWords(done: Done, hasAccount: boolean): string {
-  if (!hasAccount) return "It ends unsolved. A member's is kept, and paid a little for playing it out.";
-  if (done.paid !== null) return done.paid.points > 0 ? `It ends unsolved: +${done.paid.points} XP for playing it out.` : "It ends unsolved.";
-  return done.problem ?? "It ends unsolved. Keeping it…";
+function outOfTimeWords(done: Done, hasAccount: boolean, say: Speaker): string {
+  if (!hasAccount) return say.say("puzzle.done.unsolvedGuest");
+  if (done.paid !== null) return done.paid.points > 0 ? say.say("puzzle.done.unsolvedPaid", { points: String(done.paid.points) }) : say.say("puzzle.done.unsolved");
+  return done.problem ?? say.say("puzzle.done.unsolvedKeeping");
 }
 
-const AWARD_WORDS: Record<string, string> = {
-  puzzleSolved: "the solve",
-  puzzleEnded: "playing it out",
-  firstOfVariant: "your first of this puzzle",
-  firstOfFamily: "your first puzzle at all",
-  everyVariantPlayed: "every game on the site played",
-  everyFamilyPlayed: "every family met",
-  raceWon: "winning the race",
+const AWARD_WORDS: Record<string, PhraseKey> = {
+  puzzleSolved: "puzzle.award.puzzleSolved",
+  puzzleEnded: "puzzle.award.puzzleEnded",
+  firstOfVariant: "puzzle.award.firstOfVariant",
+  firstOfFamily: "puzzle.award.firstOfFamily",
+  everyVariantPlayed: "puzzle.award.everyVariantPlayed",
+  everyFamilyPlayed: "puzzle.award.everyFamilyPlayed",
+  raceWon: "puzzle.award.raceWon",
 };
 
-function awardWords(awards: readonly string[]): string {
-  const words = awards.map((award) => AWARD_WORDS[award] ?? award);
-  if (words.length <= 1) return words[0] ?? "the solve";
-  return `${words.slice(0, -1).join(", ")} and ${words[words.length - 1]}`;
+function awardWords(awards: readonly string[], say: Speaker): string {
+  const words = awards.map((award) => (AWARD_WORDS[award] === undefined ? award : say.say(AWARD_WORDS[award])));
+  if (words.length === 0) return say.say("puzzle.award.puzzleSolved");
+  return say.list(words);
 }

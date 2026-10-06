@@ -1,3 +1,5 @@
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { Paired } from "@/components/i18n/Paired";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
@@ -20,25 +22,26 @@ import { SolveTime } from "./SolveTime";
 export async function LevelFastestTable({ prefix, kind, level, where, rows }: { prefix: string; kind: PuzzleKind; level: number; where: string; rows: LevelFastest[] }) {
   // The play page is behind the invite gate, so whoever reads this is a player here.
   const { names, tags } = await namesAndTagsOf(rows.map((row) => row.memberId));
+  const say = await currentSpeaker();
   return (
     <section className={`${PANEL_CLASS} mx-auto flex w-full max-w-xl flex-col gap-2`} data-testid={`${prefix}-level-fastest`}>
       <h2 className={SECTION_TITLE}>
-        Fastest on level {level} <span className="font-mincho normal-case tracking-normal">最速</span>
+        <Paired en={say.say("pset.lf.heading", { level: String(level) })} kanji="最速" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
       </h2>
       <div className={TABLE_SCROLL}>
         <table className="w-full text-sm">
           <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
             <tr>
               <th className="py-1 pr-2 text-left">#</th>
-              <th className="py-1 pr-2 text-left">Time</th>
-              <th className="py-1 text-left">Player</th>
+              <th className="py-1 pr-2 text-left">{say.say("pset.col.time")}</th>
+              <th className="py-1 text-left">{say.say("points.board.player")}</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr className="border-t border-rule">
                 <td colSpan={3} className="py-1 text-muted" data-testid={`${prefix}-level-fastest-nobody`}>
-                  Nobody has solved level {level} at {where} yet. The first time here is the one to beat.
+                  {say.say("pset.lf.nobody", { level: String(level), where })}
                 </td>
               </tr>
             ) : (
@@ -50,7 +53,7 @@ export async function LevelFastestTable({ prefix, kind, level, where, rows }: { 
                     <SolveTime kind={kind} solveId={row.id} elapsedMs={row.elapsedMs} />
                   </td>
                   <td className="py-1">
-                    <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" tag={tags.get(row.memberId)} />
+                    <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback={say.say("points.board.aMember")} tag={tags.get(row.memberId)} />
                   </td>
                 </tr>
               ))

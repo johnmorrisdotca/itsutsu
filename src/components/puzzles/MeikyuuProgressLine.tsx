@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { progressOf, solidProgressOf, type SolvedLevels } from "@/lib/puzzles/meikyuu/completion";
 import { everyMeikyuuLevelLoaded, loadEveryMeikyuuLevels } from "@/lib/puzzles/meikyuu/levels";
 import { MEIKYUU_COLOSSAL_SIZES, MEIKYUU_SIZES, MEIKYUU_SOLID_SIZES, MEIKYUU_TALL_SIZES, meikyuuSizeLabel } from "@/lib/puzzles/meikyuu/sizes";
 import { useHydrated } from "@/lib/ui/hydrated";
 
-import { PROGRESS_COPY } from "./meikyuu.constants";
+import { meikyuuWords } from "./mazeWords";
 import { hasKeptSolves, keptSolvedLevels } from "./meikyuuKept";
 import { MeikyuuProgress } from "./MeikyuuProgress";
 
@@ -19,6 +20,9 @@ import { MeikyuuProgress } from "./MeikyuuProgress";
  * an empty table is data, and it shows what there is to finish.
  */
 export function MeikyuuProgressLine({ account = null }: { account?: SolvedLevels | null }) {
+  const say = useSpeaker();
+  const words = meikyuuWords(say.locale);
+  const sizeLabel = (size: number) => meikyuuSizeLabel(size, say);
   const hydrated = useHydrated();
   const [, setArrived] = useState(0);
   useEffect(() => {
@@ -35,15 +39,15 @@ export function MeikyuuProgressLine({ account = null }: { account?: SolvedLevels
   const colossal = useMemo(() => progressOf(MEIKYUU_COLOSSAL_SIZES, account, device), [account, device]);
   const solids = useMemo(() => solidProgressOf(account, device), [account, device]);
   return (
-    <section className="flex flex-col gap-2" aria-label={PROGRESS_COPY.yours} data-testid="meikyuu-front-progress">
-      <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">{PROGRESS_COPY.yours}</h3>
-      <MeikyuuProgress rows={squares} label={meikyuuSizeLabel} className="max-w-sm" />
-      <p className="pt-1 text-xs text-muted">Tall, for a phone held upright</p>
-      <MeikyuuProgress rows={tall} label={meikyuuSizeLabel} className="max-w-sm" />
-      <p className="pt-1 text-xs text-muted">Colossal, about ten thousand cells: a square box, then a tall one</p>
-      <MeikyuuProgress rows={colossal} label={meikyuuSizeLabel} className="max-w-sm" />
-      <p className="pt-1 text-xs text-muted">Over a solid: all three sizes of each together</p>
-      <MeikyuuProgress rows={solids} label={meikyuuSizeLabel} className="max-w-sm" />
+    <section className="flex flex-col gap-2" aria-label={words.progress.yours} data-testid="meikyuu-front-progress">
+      <h3 className="text-xs font-semibold tracking-wide text-muted uppercase">{words.progress.yours}</h3>
+      <MeikyuuProgress rows={squares} label={sizeLabel} className="max-w-sm" />
+      <p className="pt-1 text-xs text-muted">{say.say("pmaze.meikyuu.shelfTall")}</p>
+      <MeikyuuProgress rows={tall} label={sizeLabel} className="max-w-sm" />
+      <p className="pt-1 text-xs text-muted">{say.say("pmaze.meikyuu.shelfColossal")}</p>
+      <MeikyuuProgress rows={colossal} label={sizeLabel} className="max-w-sm" />
+      <p className="pt-1 text-xs text-muted">{say.say("pmaze.meikyuu.shelfSolid")}</p>
+      <MeikyuuProgress rows={solids} label={sizeLabel} className="max-w-sm" />
     </section>
   );
 }

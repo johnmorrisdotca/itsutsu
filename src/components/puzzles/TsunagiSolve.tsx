@@ -7,6 +7,7 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { FeltPatches } from "@/components/board/FeltPatches";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
@@ -109,6 +110,7 @@ export function TsunagiSolve({
   /** Whether Cheat is allowed, as the account last chose at set-up; null where it never has. */
   cheatsChosen?: TsunagiCheatsChoice | null;
 }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const { size, seed } = puzzle;
   // The seed names the level and its set (`tsunagi/levels.ts`); what a reader sees is its number in the set.
@@ -153,8 +155,8 @@ export function TsunagiSolve({
   const opensNow = helpOpensOn(eased);
   const onwardTo = firstUnsolvedTsunagiLevel(size, new Set([...opening, ...(opensNow ? [level] : [])]), set);
   const onward = {
-    next: onwardTo === null ? null : { href: tsunagiLevelPath(size, seedIn(set, onwardTo)), label: nextLevelLabel(level, onwardTo) },
-    all: { href: tsunagiLevelsPath(size, set), label: "All levels" },
+    next: onwardTo === null ? null : { href: tsunagiLevelPath(size, seedIn(set, onwardTo)), label: nextLevelLabel(level, onwardTo, say) },
+    all: { href: tsunagiLevelsPath(size, set), label: say.say("pset.mine.allLevels") },
   };
   // A level already solved opens on its finished board; only Restart starts it again (`TsunagiSolvedView`).
   const answerLines = useMemo(() => linesOfAnswer(layout, puzzle.solution), [layout, puzzle.solution]);
@@ -253,8 +255,8 @@ export function TsunagiSolve({
     show(blown.lines);
     setUndo([]);
     setBlasted(new Set(blown.cells));
-    setBlastSays(blown.hit.length > 1 ? "Blast! A line was wiped, and the one beside it cut back to half." : "Boom! A line was cut back to half.");
-  }, [layout, played, eased, show, finish, puzzle.solution, puzzle.givens]);
+    setBlastSays(say.say(blown.hit.length > 1 ? "pmaze.tsunagi.blast" : "pmaze.tsunagi.boom"));
+  }, [layout, played, eased, show, finish, puzzle.solution, puzzle.givens, say]);
 
   // Kept in this browser as soon as it is solved, so the board of levels opens the next row with or without an account.
   useEffect(() => {
@@ -312,9 +314,7 @@ export function TsunagiSolve({
     setFlagged(new Set(missing));
     const empty = filled(layout, now.current);
     setCheckSays(
-      missing.length > 0
-        ? `${missing.length} ${missing.length === 1 ? "pair is" : "pairs are"} not joined yet: ${missing.length === 1 ? "its marbles are" : "their marbles are"} flashing.`
-        : `Every pair is joined; ${empty.of - empty.done} ${empty.of - empty.done === 1 ? "cell is" : "cells are"} still empty.`,
+      missing.length > 0 ? say.count("pmaze.tsunagi.notJoined", missing.length) : say.count("pmaze.tsunagi.allJoined", empty.of - empty.done),
     );
   };
 
@@ -322,9 +322,10 @@ export function TsunagiSolve({
   const pairsJoined = layout.ends.filter((_, pair) => joined(layout, lines, pair)).length;
   const cover = filled(layout, lines);
   const boomIn = strokesToExplosion(played, strokeCount);
+  const lastBoom = boomIn === 1;
   const asked = (
     <>
-      {size}×{size}{set === "portals" ? " portals" : ""} · Level {level} <span className="text-xs">of {count}</span>{" "}
+      {set === "portals" ? say.say("pmaze.tsunagi.sizePortals", { size: String(size) }) : `${size}×${size}`} · {say.say("puzzle.level.number", { number: String(level) })} <span className="text-xs">{say.say("pmaze.ofCount", { count: String(count) })}</span>{" "}
       {/*
         ONE WIDTH FOR EVERY COUNT. The first stroke turns "0 attempts" into "1
         attempt", and where the line over the board sat on the edge of wrapping,
@@ -333,7 +334,7 @@ export function TsunagiSolve({
         play and during it.
       */}
       <span className="inline-block min-w-[13ch] text-xs text-muted" data-testid="tsunagi-attempts" data-count={attempts}>
-        · {attempts} {attempts === 1 ? "attempt" : "attempts"}
+        {say.count("pmaze.tsunagi.attempt", attempts)}
       </span>
     </>
   );
@@ -344,14 +345,14 @@ export function TsunagiSolve({
     return (
       <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind="tsunagi" data-seed={level} data-set={set} {...readyMark(hydrated)}>
         <p className="text-sm" data-testid="tsunagi-shut">
-          Level {level} at {size}×{size} opens when every level in block {block - 1} (levels {(block - 2) * TSUNAGI_BLOCK + 1}–{(block - 1) * TSUNAGI_BLOCK}) is solved.
+          {say.say("pmaze.shut", { level: String(level), size: `${size}×${size}`, block: String(block - 1), first: String((block - 2) * TSUNAGI_BLOCK + 1), last: String((block - 1) * TSUNAGI_BLOCK) })}
         </p>
         <p className="flex flex-wrap gap-2">
           <Link href={tsunagiLevelPath(size, seedIn(set, first))} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="tsunagi-shut-first">
-            Play level {first}, the first one you have not finished
+            {say.say("pmaze.playFirst", { level: String(first) })}
           </Link>
           <Link href={tsunagiLevelsPath(size, set)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-            All levels
+            {say.say("pset.mine.allLevels")}
           </Link>
         </p>
       </section>
@@ -406,7 +407,7 @@ export function TsunagiSolve({
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={takeBack} disabled={undo.length === 0 || pausing.paused || spent} data-testid="tsunagi-undo">
-              Undo
+              {say.say("puzzle.press.undo")}
             </button>
             <button
               type="button"
@@ -415,20 +416,20 @@ export function TsunagiSolve({
               disabled={startedAt === null || pausing.paused || lines.every((line) => line.length === 0)}
               data-testid="tsunagi-restart"
             >
-              Restart
+              {say.say("puzzle.press.restart")}
             </button>
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={check} disabled={pausing.paused} data-testid="tsunagi-check">
-              Check
+              {say.say("puzzle.solve.check")}
             </button>
             {cheatOffered ? (
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={cheat} disabled={pausing.paused || spent} title="Draws one unfinished line. A solve that used it scores no points." data-testid="tsunagi-cheat">
-                Cheat
+              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={cheat} disabled={pausing.paused || spent} title={say.say("pmaze.tsunagi.cheatSays")} data-testid="tsunagi-cheat">
+                {say.say("puzzle.press.cheat")}
               </button>
             ) : null}
             <span className="text-sm text-muted tabular-nums" data-testid="tsunagi-progress" data-joined={pairsJoined} data-filled={cover.done} aria-live="polite">
               {pairsJoined === pairs && cover.done < cover.of
-                ? `Every pair joined; ${cover.of - cover.done} ${cover.of - cover.done === 1 ? "cell is" : "cells are"} still empty.`
-                : `${pairsJoined} of ${pairs} joined · ${Math.round((100 * cover.done) / cover.of)}% of the board`}
+                ? say.count("pmaze.tsunagi.joinedEmpty", cover.of - cover.done)
+                : say.say("pmaze.tsunagi.progress", { joined: String(pairsJoined), pairs: String(pairs), percent: String(Math.round((100 * cover.done) / cover.of)) })}
             </span>
           </div>
           {layout.strokes === null ? null : (
@@ -439,23 +440,23 @@ export function TsunagiSolve({
               data-limit={layout.strokes}
               aria-live="polite"
             >
-              {spent ? "Out of strokes. Restart to try again." : `${layout.strokes - strokeCount} of ${layout.strokes} ${layout.strokes === 1 ? "stroke" : "strokes"} left.`}
+              {spent ? say.say("pmaze.tsunagi.outOfStrokes") : say.count("pmaze.tsunagi.strokesLeft", layout.strokes, { left: String(layout.strokes - strokeCount) })}
             </p>
           )}
           {eased === null && !cheatedShown ? null : (
             // Said before the solve, not after it: what the help chosen will cost.
             <p className="text-sm text-muted" data-testid="tsunagi-help-note" data-helped={strongestHelp([cheatedShown ? SOLVE_HELPS.cheated : null, eased]) ?? undefined}>
               {eased === SOLVE_HELPS.explosionsOff
-                ? "Explosions are off, as chosen at set-up: a solve counts, scores no points and does not open the next block."
+                ? say.say("pmaze.tsunagi.noteOff")
                 : eased === SOLVE_HELPS.explosionsSoft
-                  ? `Explosions are softened, as chosen at set-up${cheatedShown ? ", and Cheat has been used" : ""}: a solve counts, but scores no points.`
-                  : "Cheat has been used: a solve counts, but scores no points."}
+                  ? say.say(cheatedShown ? "pmaze.tsunagi.noteSoftCheat" : "pmaze.tsunagi.noteSoft")
+                  : say.say("pmaze.tsunagi.noteCheat")}
             </p>
           )}
           {boomIn === null ? null : (
-            <p className={`text-sm ${boomIn === 1 ? "font-semibold text-shu" : "text-muted"}`} data-testid="tsunagi-boom-countdown" data-left={boomIn} data-strokes={strokeCount} aria-live="polite">
+            <p className={`text-sm ${lastBoom ? "font-semibold text-shu" : "text-muted"}`} data-testid="tsunagi-boom-countdown" data-left={boomIn} data-strokes={strokeCount} aria-live="polite">
               {blastSays === null ? "" : `${blastSays} `}
-              {boomIn === 1 ? "The next stroke sets off an explosion." : `An explosion in ${boomIn} strokes.`}
+              {lastBoom ? say.say("pmaze.tsunagi.boomNext") : say.count("pmaze.tsunagi.boomIn", boomIn)}
             </p>
           )}
           {checkSays === null ? null : (
@@ -463,7 +464,7 @@ export function TsunagiSolve({
               {checkSays}
             </p>
           )}
-          <p className="text-sm text-muted">Press a marble and drag to its partner. Drag back to shorten a line; tap a marble to clear it.</p>
+          <p className="text-sm text-muted">{say.say("pmaze.tsunagi.howTo")}</p>
         </div>
       ) : (
         <SolveDone

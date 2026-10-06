@@ -19,6 +19,22 @@ export type CopyReview = Review;
 /** One Japanese sentence and what it literally says: `[text, back]`. */
 export type JaLine = readonly [text: string, back: string];
 
+/**
+ * THE JAPANESE OF A LINE THAT DEPENDS ON ITS ARGUMENTS (an English table's function).
+ *
+ * A function cannot be handed to a browser, so the Japanese of one is data: a line whose `{0}`, `{1}`
+ * are the call's arguments in order (`["{0}手", "{0} moves"]`), or a choice by one argument's value
+ * (`by` is its place, `is` the lines keyed by what it reads as a string, `other` the rest). The English
+ * is still a function and keeps its plurals; the Japanese says what it says and the back-translation
+ * says it in English. `fillLine` and `pickLine` (`copyTable.ts`) are what read it.
+ */
+export type JaCases = { readonly by: number; readonly is: { readonly [value: string]: JaNode }; readonly other?: JaNode };
+export type JaNode = JaLine | JaCases;
+
+/** The same, as text alone: what a reader is given. */
+export type JaTextCases = { readonly by: number; readonly is: { readonly [value: string]: JaTextNode }; readonly other?: JaTextNode };
+export type JaTextNode = string | JaTextCases;
+
 /** The text of a line. */
 export function jaText(line: JaLine): string {
   return line[0];

@@ -1,12 +1,19 @@
-import type { SizeProgress } from "@/lib/puzzles/meikyuu/completion";
-import { MEIKYUU_SOLID_NAMES, meikyuuSolidOf, meikyuuTallShape } from "@/lib/puzzles/meikyuu/sizes";
+"use client";
 
-import { PROGRESS_COPY } from "./meikyuu.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { SizeProgress } from "@/lib/puzzles/meikyuu/completion";
+import { meikyuuSolidOf, meikyuuTallShape } from "@/lib/puzzles/meikyuu/sizes";
+
+import { meikyuuWords } from "./mazeWords";
 
 /** What a size is called in a row of progress: "Small", "6×9" for a tall size (the section says it is tall), and "Cube" for a solid's (the set-up says which step). */
-export function progressName(size: number, label: (size: number) => string): string {
+export function progressName(size: number, label: (size: number) => string, say: Speaker): string {
   const solid = meikyuuSolidOf(size);
-  if (solid !== null) return MEIKYUU_SOLID_NAMES[solid.kind];
+  if (solid !== null) {
+    const named = meikyuuWords(say.locale).solid[solid.kind];
+    return say.pairName(named.label, named.kanji).text;
+  }
   const tall = meikyuuTallShape(size);
   return tall === null ? label(size) : `${tall.width}×${tall.height}`;
 }
@@ -18,18 +25,20 @@ export function progressName(size: number, label: (size: number) => string): str
  * drawn at the share done with the figures beside it for anybody who cannot see the bar. `holds` is how many rows' room to keep.
  */
 export function MeikyuuProgress({ rows, label, className = "", holds = 0 }: { rows: readonly SizeProgress[]; label: (size: number) => string; className?: string; holds?: number }) {
+  const say = useSpeaker();
+  const words = meikyuuWords(say.locale).progress;
   return (
-    <ul className={`flex w-full flex-col gap-1.5 ${className}`} aria-label={PROGRESS_COPY.legend} data-testid="meikyuu-progress">
+    <ul className={`flex w-full flex-col gap-1.5 ${className}`} aria-label={words.legend} data-testid="meikyuu-progress">
       {rows.map((row) => (
         <li key={row.size} className="grid grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-2 text-xs tabular-nums" data-testid="meikyuu-progress-row" data-size={row.size} data-solved={row.solved} data-complete={row.complete ? "true" : "false"}>
-          <span className="truncate text-ink-soft">{progressName(row.size, label)}</span>
+          <span className="truncate text-ink-soft">{progressName(row.size, label, say)}</span>
           <span className="h-1.5 overflow-hidden rounded-full bg-rule/70" aria-hidden="true">
             <span className={`block h-full rounded-full ${row.complete ? "bg-moss" : "bg-ink/45"}`} style={{ width: `${row.count === 0 ? 0 : Math.round((100 * row.solved) / row.count)}%` }} />
           </span>
           <span className="min-w-[5.75rem] text-right text-muted" data-testid="meikyuu-progress-figure">
-            {PROGRESS_COPY.of(row.solved, row.count)}
+            {words.of(row.solved, row.count)}
             {row.complete ? (
-              <span className="ml-1 font-semibold text-moss" title={PROGRESS_COPY.whole} data-testid="meikyuu-progress-whole">
+              <span className="ml-1 font-semibold text-moss" title={words.whole} data-testid="meikyuu-progress-whole">
                 ✓
               </span>
             ) : null}

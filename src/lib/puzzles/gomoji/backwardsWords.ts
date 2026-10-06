@@ -1,3 +1,5 @@
+import { speaker, type Speaker } from "../../i18n/i18n";
+import { DEFAULT_LOCALE } from "../../i18n/i18n.constants";
 import type { PuzzleSpec } from "../puzzles.types";
 import { SAKASA_SCORE } from "./backwardsScore";
 
@@ -19,12 +21,11 @@ export const BACKWARDS_DISPLAY = {
 } as const;
 
 /** The line under the chips on the set-up screen when a Sakasa is chosen (`PlayWayChips`). */
-export function backwardsBlurb(rows: number): string {
-  return `Don't find the word: fill all ${rows} rows without typing it. Every green stays, every orange is used again, and a grey is never typed twice.`;
+export function backwardsBlurb(rows: number, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return say.say("puzzle.mode.sakasa.blurb", { rows: String(rows) });
 }
 
 /** The bullet on a Gomoji's rules page, in the Play section (`puzzleRulesPage.ts`). */
-export function backwardsRule(grid: NonNullable<PuzzleSpec["wordGrid"]>): string {
-  const unit = grid === "gomojiKana" ? "kana" : "letter";
-  return `Sakasa 逆さ (the wrong way round), a choice at any level and our version of Antiwordle, turns the puzzle over: a word is hidden as ever, and the aim is never to type it. Fill every row without it and you have won; type it and the game is over. Every ${unit} you uncover must be used again, a green in its place and an orange anywhere, a grey ${unit} may never be typed again, and no word twice, so each row closes in on the one word you are avoiding. Harder is longer: easy asks for as many rows as an ordinary hard Gomoji gives, hard the whole board. There is no head start, and in kana no free grey word. Each row got through scores ${SAKASA_SCORE.row}, and getting through them all ${SAKASA_SCORE.through} more. There is a Sakasa of the day at every length, the same word for everybody.`;
+export function backwardsRule(grid: NonNullable<PuzzleSpec["wordGrid"]>, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return say.say(grid === "gomojiKana" ? "puzzle.mode.sakasa.ruleKana" : "puzzle.mode.sakasa.ruleLetter", { row: String(SAKASA_SCORE.row), through: String(SAKASA_SCORE.through) });
 }

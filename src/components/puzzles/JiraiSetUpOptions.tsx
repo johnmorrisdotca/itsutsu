@@ -3,7 +3,10 @@
 import { useState } from "react";
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
-import { JIRAI_GRID_DISPLAY, JIRAI_SHAPE_DISPLAY } from "@/lib/puzzles/jirai/jirai.constants";
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { JIRAI_SHAPE_DISPLAY } from "@/lib/puzzles/jirai/jirai.constants";
+import { jiraiGridDisplay } from "@/lib/puzzles/puzzleCopy";
 import { CLASSIC_JIRAI, isJiraiVariant, JIRAI_GRIDS, JIRAI_SHAPE_LEAST, JIRAI_SHAPES, type JiraiGrid, type JiraiShape, type JiraiVariant } from "@/lib/puzzles/jirai/variants";
 import type { PuzzleAsked } from "@/lib/puzzles/puzzleAddress";
 
@@ -27,9 +30,11 @@ export function useJiraiChoice(asked: PuzzleAsked | undefined, size: number): { 
  * until a seed is drawn, and the seed says it from then on (`jiraiVariantOfSeed`).
  */
 export function JiraiSetUpOptions({ size, ...choice }: { size: number } & ReturnType<typeof useJiraiChoice>) {
+  const say = useSpeaker();
+  const grids = jiraiGridDisplay(say.locale);
   return (
     <>
-      <div className="grid grid-cols-2 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Neighbours" data-testid="jirai-grid">
+      <div className="grid grid-cols-2 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pgrid.jirai.neighbours")} data-testid="jirai-grid">
         {JIRAI_GRIDS.map((each) => (
           <button
             key={each}
@@ -40,14 +45,14 @@ export function JiraiSetUpOptions({ size, ...choice }: { size: number } & Return
             onClick={() => choice.setGrid(each)}
             data-testid={`jirai-grid-${each}`}
           >
-            {JIRAI_GRID_DISPLAY[each].label} <span className="font-mincho opacity-70">{JIRAI_GRID_DISPLAY[each].kanji}</span>
+            <Paired en={grids[each].label} kanji={grids[each].kanji} kanjiClassName="opacity-70" />
           </button>
         ))}
       </div>
       <p className="min-h-12 text-xs text-muted" data-testid="jirai-grid-blurb">
-        {JIRAI_GRID_DISPLAY[choice.grid].blurb}
+        {grids[choice.grid].blurb}
       </p>
-      <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Shape" data-testid="jirai-shape">
+      <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pgrid.jirai.shape")} data-testid="jirai-shape">
         {JIRAI_SHAPES.map((each) => {
           const possible = isJiraiVariant(choice.grid, each) && (each === "rectangle" || size >= JIRAI_SHAPE_LEAST);
           return (
@@ -57,12 +62,12 @@ export function JiraiSetUpOptions({ size, ...choice }: { size: number } & Return
               role="radio"
               aria-checked={choice.shape === each}
               disabled={!possible}
-              title={possible ? undefined : choice.grid === "wrap" ? "Edges that join take a rectangle only" : `A shape needs a board of at least ${JIRAI_SHAPE_LEAST}×${JIRAI_SHAPE_LEAST}`}
+              title={possible ? undefined : choice.grid === "wrap" ? say.say("pgrid.jirai.wrapOnly") : say.say("pgrid.jirai.shapeLeast", { size: String(JIRAI_SHAPE_LEAST) })}
               className={`${PICK_WORD_CHIP} ${choice.shape === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT} disabled:opacity-40`}
               onClick={() => choice.setShape(each)}
               data-testid={`jirai-shape-${each}`}
             >
-              {JIRAI_SHAPE_DISPLAY[each].label} <span className="font-mincho opacity-70">{JIRAI_SHAPE_DISPLAY[each].kanji}</span>
+              <Paired en={JIRAI_SHAPE_DISPLAY[each].label} kanji={JIRAI_SHAPE_DISPLAY[each].kanji} kanjiClassName="opacity-70" />
             </button>
           );
         })}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -14,7 +15,7 @@ import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { PatienceControls } from "./PatienceControls";
-import { SPIDER_COPY } from "./puzzles.constants";
+import { spiderCopy } from "./cardWords";
 import { SpiderTable } from "./SpiderTable";
 import { SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { usePatienceGame, type PatienceRules } from "./usePatienceGame";
@@ -45,6 +46,7 @@ export function SpiderSolve({
   resumed?: ResumedRun | null;
   appearance?: Appearance;
 }) {
+  const SPIDER_COPY = spiderCopy(useSpeaker().locale);
   const hydrated = useHydrated();
   const rules = useMemo<PatienceRules<Table, SpiderMove>>(
     () => ({ replay: (moves) => replaySpider(puzzle.givens, puzzle.size, moves), decode: decodeMoves, play: playSpider, won: spiderWon, finish: spiderFinishingMoves }),

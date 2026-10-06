@@ -1,3 +1,7 @@
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
+import { colonOf, semicolonOf } from "@/lib/puzzles/puzzleText";
+
 /*
  * The split key's look, kept here rather than in `puzzles.constants.ts`: that
  * file is stamped for the puzzles' pictures (`puzzleArtFingerprint.ts`), and a
@@ -43,10 +47,11 @@ export function FutagoKeyHalves<Mark extends string>({ marks, marked }: { marks:
 }
 
 /** Each word's place in words, for a screen reader: "first word", up to "fourth word". */
-const WORD_PLACES = ["first", "second", "third", "fourth"] as const;
+const WORD_PLACES = ["pword.key.firstWord", "pword.key.secondWord", "pword.key.thirdWord", "pword.key.fourthWord"] as const;
 
 /** What a screen reader hears of a split key's parts: "first word: in its place; second word: not in it", and so on to a fourth. */
-export function futagoKeyWords<Mark extends string>(marks: readonly (Mark | undefined)[], words: Record<Mark, string>): string {
-  const said = (mark: Mark | undefined) => (mark === undefined ? "not tried" : words[mark]);
-  return marks.map((mark, at) => `${WORD_PLACES[at] ?? `word ${at + 1}`} word: ${said(mark)}`).join("; ");
+export function futagoKeyWords<Mark extends string>(marks: readonly (Mark | undefined)[], words: Record<Mark, string>, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  const said = (mark: Mark | undefined) => (mark === undefined ? say.say("pword.key.notTried") : words[mark]);
+  const place = (at: number) => (WORD_PLACES[at] === undefined ? say.say("pword.key.word", { count: String(at + 1) }) : say.say(WORD_PLACES[at]));
+  return marks.map((mark, at) => `${place(at)}${colonOf(say)}${said(mark)}`).join(semicolonOf(say));
 }

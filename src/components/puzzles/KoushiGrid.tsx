@@ -4,12 +4,16 @@ import { useRef, useState, type PointerEvent } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE, FELTS } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+import { cellFacts } from "@/lib/puzzles/cellLabel";
 import { LATTICE_CELLS, LATTICE_SIDE, isHole, type LatticeMark } from "@/lib/puzzles/koushi/lattice";
 
 import { PuzzleBoard } from "./PuzzleBoard";
 import { KOUSHI_TILE_CHOSEN, KOUSHI_TILE_PLAIN, KOUSHI_TILE_TARGET, WORD_GRID_BOX, WORD_TILE, WORD_TILE_MARK } from "./puzzles.constants";
 
-const MARK_WORDS: Record<LatticeMark, string> = { hit: "in its place", near: "wanted elsewhere in one of its words", miss: "wanted by neither of its words" };
+/** What a screen reader says of a tile's mark: phrases, said in the reader's language. */
+const MARK_PHRASES: Record<LatticeMark, PhraseKey> = { hit: "pword.cell.hit", near: "pword.koushi.near", miss: "pword.koushi.miss" };
 
 /**
  * THE KOUSHI LATTICE: 21 letter tiles on the board, in Gomoji's Tiles style,
@@ -48,6 +52,7 @@ export function KoushiGrid({
   onSwap: (from: number, to: number) => void;
   appearance?: Appearance;
 }) {
+  const say = useSpeaker();
   const theme = appearance.felt !== "wood" ? FELTS[appearance.felt] : BOARD_THEMES[appearance.boardTheme];
   const dragging = useRef<{ from: number; pointer: number; moved: boolean } | null>(null);
   // A drag that ended in a swap is followed by a click on the tile it started on, which must not also choose it.
@@ -105,7 +110,7 @@ export function KoushiGrid({
             const letter = grid[cell] ?? "";
             const mark = marks[cell] ?? null;
             const look = mark === null || mark === "miss" ? KOUSHI_TILE_PLAIN : WORD_TILE_MARK[mark];
-            const label = letter === "" ? "empty" : `${letter.toUpperCase()}${mark === null ? "" : `, ${MARK_WORDS[mark]}`}`;
+            const label = letter === "" ? say.say("pgrid.cell.empty") : cellFacts(say, letter.toUpperCase(), ...(mark === null ? [] : [say.say(MARK_PHRASES[mark])]));
             const picked = chosen === cell;
             const said = {
               "data-testid": "koushi-tile",
@@ -124,7 +129,7 @@ export function KoushiGrid({
                 key={cell}
                 type="button"
                 className={`${className} touch-none ${movable(cell) ? "cursor-grab" : "cursor-default"}`}
-                aria-label={`${label}${picked ? ", chosen" : ""}`}
+                aria-label={picked ? cellFacts(say, label, say.say("pword.cell.chosen")) : label}
                 aria-pressed={picked}
                 disabled={!movable(cell)}
                 onPointerDown={(event) => down(cell, event)}

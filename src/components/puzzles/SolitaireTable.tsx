@@ -7,8 +7,10 @@ import type { BoardThemeTokens } from "@/components/board/board.types";
 import { CardPile } from "@/components/cards/CardPile";
 import type { CardSpot, PileCard } from "@/components/cards/cards.types";
 import { DEFAULT_STEP } from "@/components/cards/pileLayout";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cardSays, suitSays } from "@/lib/cards/cardSays";
 import { SUIT_DISPLAY, SUITS } from "@/lib/cards/cards.constants";
-import { cardAt, cardName } from "@/lib/cards/deck";
+import { cardAt } from "@/lib/cards/deck";
 import { COLUMN_PILES, FOUNDATION_PILES, pileCards, recyclesLeft } from "@johnmorrisdotca/toranpu/klondike";
 import type { KlondikePile, KlondikeTable, TableSpot } from "@johnmorrisdotca/toranpu/klondike";
 
@@ -62,6 +64,7 @@ export function SolitaireTable({
   onPress?: (spot: TableSpot) => void;
   onLift?: (spot: TableSpot, event: ReactPointerEvent<HTMLElement>) => void;
 }) {
+  const say = useSpeaker();
   const press = readOnly ? undefined : (spot: CardSpot) => onPress?.(spot as TableSpot);
   const lift = readOnly ? undefined : (spot: CardSpot, event: ReactPointerEvent<HTMLElement>) => onLift?.(spot as TableSpot, event);
   const shared = { picked: picked as CardSpot | null, lifted: lifted as CardSpot | null, onPress: press, onLift: lift };
@@ -74,18 +77,18 @@ export function SolitaireTable({
         <Place left={leftOf(0)} top={gap} width={CARD}>
           <CardPile
             id="s"
-            label="The stock"
+            label={say.say("pcard.pile.stock")}
             spread="stack"
             cards={faceUp(table.stock, () => false)}
             emptyMark={canRecycle ? "↻" : undefined}
-            labelFor={() => (table.stock.length > 0 ? `The stock: ${table.stock.length} cards. Turn ${draw3 ? "three" : "one"}` : "The stock")}
+            labelFor={() => (table.stock.length > 0 ? say.count("pcard.pile.stockCount", table.stock.length, { turn: say.words(draw3 ? 3 : 1) }) : say.say("pcard.pile.stock"))}
             {...shared}
           />
         </Place>
         <Place left={leftOf(1)} top={gap} width={draw3 ? CARD * (1 + 2 * wasteStep) : CARD}>
           <CardPile
             id="w"
-            label="The waste"
+            label={say.say("pcard.pile.waste")}
             spread={draw3 ? "right" : "stack"}
             showLast={draw3 ? 3 : undefined}
             step={{ faceDown: wasteStep, faceUp: wasteStep }}
@@ -98,7 +101,7 @@ export function SolitaireTable({
           <Place key={pile} left={leftOf(3 + suit)} top={gap} width={CARD}>
             <CardPile
               id={pile}
-              label={`The ${SUIT_DISPLAY[SUITS[suit]].name} foundation`}
+              label={say.say("pcard.pile.foundation", { suit: suitSays(say, SUITS[suit]) })}
               spread="stack"
               cards={faceUp(pileCards(table, pile), () => true)}
               emptyMark={SUIT_DISPLAY[SUITS[suit]].symbol}
@@ -113,12 +116,12 @@ export function SolitaireTable({
             <ColumnZone key={pile} pile={pile} left={leftOf(index)} readOnly={readOnly} onPress={press}>
               <CardPile
                 id={pile}
-                label={`Column ${index + 1}`}
+                label={say.say("pcard.pile.column", { n: String(index + 1) })}
                 spread="down"
                 room={columnRoom(rows)}
                 cards={faceUp(column.cards, (at) => at >= column.down)}
                 emptyMark="K"
-                labelFor={(spot) => (spot.index >= column.down ? cardName(cardAt(column.cards[spot.index])) : "a face-down card")}
+                labelFor={(spot) => (spot.index >= column.down ? cardSays(say, cardAt(column.cards[spot.index])) : say.say("pcard.pile.faceDown"))}
                 {...shared}
               />
             </ColumnZone>

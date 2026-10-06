@@ -2,12 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, SECTION_TITLE, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { choiceOfTheme, isDefaultChoice, themeOf, resolveFrame } from "@/lib/puzzles/meikyuu/look";
-import { FRAME_LIST, FRAMES, INK_LIST, INKS, LOOK_COPY, PAPER_LIST, PAPERS, THEME_LIST, THEMES, type FrameId, type InkId, type PaperId } from "@/lib/puzzles/meikyuu/look.constants";
+import { FRAME_LIST, FRAMES, INK_LIST, INKS, PAPER_LIST, PAPERS, THEME_LIST, THEMES, type FrameId, type InkId, type PaperId } from "@/lib/puzzles/meikyuu/look.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MOVE_COPY } from "./meikyuu.constants";
+import { lookCopy, meikyuuWords } from "./mazeWords";
+import { inkSwatch } from "./paint.constants";
 import { useEdgePan } from "./meikyuuEdgeStore";
 import { useMeikyuuLook } from "./meikyuuLookStore";
 
@@ -16,10 +19,11 @@ const SWATCH = "relative size-11 shrink-0 cursor-pointer rounded-full border-2 o
 
 /** The look as a few cells of maze, in the colours it will be drawn in: what the chooser shows before the board behind it can be seen. */
 function Sample() {
+  const say = useSpeaker();
   const { look, choice } = useMeikyuuLook();
   const frame = resolveFrame(choice.frame);
   return (
-    <svg viewBox="0 0 9 7" className="mx-auto w-full max-w-52 rounded-md" role="img" aria-label="A little maze in these colours" data-testid="meikyuu-colours-sample" style={{ background: `linear-gradient(135deg, ${frame.light}, ${frame.base} 50%, ${frame.deep})`, padding: "0.4rem" }}>
+    <svg viewBox="0 0 9 7" className="mx-auto w-full max-w-52 rounded-md" role="img" aria-label={say.say("pmaze.meikyuu.colourSample")} data-testid="meikyuu-colours-sample" style={{ background: `linear-gradient(135deg, ${frame.light}, ${frame.base} 50%, ${frame.deep})`, padding: "0.4rem" }}>
       <rect x="0.5" y="0.5" width="8" height="6" fill={look.paper} />
       <path d="M1.5 1.5H7.5V5.5H1.5ZM1.5 3.5H3.5M4.5 1.5V3.5H6.5M3.5 5.5V4.5H5.5V3.5" fill="none" stroke={look.wall} strokeWidth="0.16" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M2 2.2H4V2.9H5.5V4.5H7" fill="none" stroke={look.trail} strokeWidth="0.42" strokeLinecap="round" strokeLinejoin="round" />
@@ -83,6 +87,10 @@ export function MeikyuuColours({ className = "" }: { className?: string }) {
   const hydrated = useHydrated();
   const { choice, look, choose, reset } = useMeikyuuLook();
   const { edgePan, choose: chooseEdgePan } = useEdgePan();
+  const say = useSpeaker();
+  const LOOK_COPY = lookCopy(say.locale);
+  const MOVE_COPY = meikyuuWords(say.locale).move;
+  const named = (label: string, kanji: string) => say.pairName(label, kanji).text;
   const [open, setOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -103,7 +111,7 @@ export function MeikyuuColours({ className = "" }: { className?: string }) {
         data-look={`${choice.frame}.${choice.paper}.${choice.ink}`}
         {...readyMark(hydrated)}
       >
-        {LOOK_COPY.press} <span className="font-mincho">{LOOK_COPY.kanji}</span>
+        <Paired en={LOOK_COPY.press} kanji={LOOK_COPY.kanji} inReadersLanguage />
       </button>
       {open ? (
         <dialog
@@ -117,7 +125,7 @@ export function MeikyuuColours({ className = "" }: { className?: string }) {
           <div className="flex flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
               <h2 id="meikyuu-colours-title" className={SECTION_TITLE}>
-                {LOOK_COPY.title} <span className="font-mincho normal-case tracking-normal">{LOOK_COPY.kanji}</span>
+                <Paired en={LOOK_COPY.title} kanji={LOOK_COPY.kanji} kanjiClassName="normal-case tracking-normal" inReadersLanguage />
               </h2>
               <button type="button" onClick={() => setOpen(false)} className="min-h-11 rounded-full border border-rule-strong px-4 text-sm font-semibold text-ink hover:bg-shade" data-testid="meikyuu-colours-done">
                 {LOOK_COPY.done} <span aria-hidden="true">×</span>
@@ -146,7 +154,7 @@ export function MeikyuuColours({ className = "" }: { className?: string }) {
                         <span className="-ml-1 size-4 rounded-full border border-black/20" style={{ background: PAPERS[set.paper].colour }} />
                         <span className="-ml-1 size-4 rounded-full border border-black/20" style={{ background: INKS[set.ink].wall }} />
                       </span>
-                      <span className="min-w-0 leading-tight">{set.label}</span>
+                      <span className="min-w-0 leading-tight">{named(set.label, set.kanji)}</span>
                     </button>
                   );
                 })}
@@ -160,16 +168,16 @@ export function MeikyuuColours({ className = "" }: { className?: string }) {
                 list={FRAME_LIST}
                 chosen={choice.frame}
                 onChoose={(frame) => choose({ frame })}
-                paint={(id) => ({ label: FRAMES[id].label, style: { background: `linear-gradient(135deg, ${resolveFrame(id).light}, ${FRAMES[id].base} 55%, ${resolveFrame(id).deep})` } })}
+                paint={(id) => ({ label: named(FRAMES[id].label, FRAMES[id].kanji), style: { background: `linear-gradient(135deg, ${resolveFrame(id).light}, ${FRAMES[id].base} 55%, ${resolveFrame(id).deep})` } })}
               />
-              <Row<PaperId> title={LOOK_COPY.paper} name="paper" list={PAPER_LIST} chosen={choice.paper} onChoose={(paper) => choose({ paper })} paint={(id) => ({ label: PAPERS[id].label, style: { background: PAPERS[id].colour } })} />
+              <Row<PaperId> title={LOOK_COPY.paper} name="paper" list={PAPER_LIST} chosen={choice.paper} onChoose={(paper) => choose({ paper })} paint={(id) => ({ label: named(PAPERS[id].label, PAPERS[id].kanji), style: { background: PAPERS[id].colour } })} />
               <Row<InkId>
                 title={LOOK_COPY.ink}
                 name="ink"
                 list={INK_LIST}
                 chosen={choice.ink}
                 onChoose={(ink) => choose({ ink })}
-                paint={(id) => ({ label: INKS[id].label, style: { background: `radial-gradient(circle at 50% 50%, ${INKS[id].trail} 0 28%, ${INKS[id].wall} 31% 100%)` } })}
+                paint={(id) => ({ label: named(INKS[id].label, INKS[id].kanji), style: { background: inkSwatch(INKS[id].trail, INKS[id].wall) } })}
               />
             </div>
             {/* How the view behaves for a hand that wants it to stay where it is put: kept on this device (`meikyuuEdgeStore.ts`). */}

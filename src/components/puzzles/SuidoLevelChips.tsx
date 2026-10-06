@@ -3,10 +3,12 @@
 import type { Twist } from "@johnmorrisdotca/suido";
 import { suidoMarks, suidoRole } from "@johnmorrisdotca/suido/levels-info";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { suidoSizeKey } from "@/lib/puzzles/suido/sizes";
 
 import { LevelChips } from "./LevelChips";
-import { SUIDO_CHIPS, SUIDO_TWISTS } from "./suido.constants";
+import { suidoWords } from "./mazeWords";
+import { readerName } from "./readerName";
 
 /**
  * ONE ROW UNDER A SUIDO LEVEL: how hard it measured, the twists it has, and where
@@ -20,6 +22,8 @@ import { SUIDO_CHIPS, SUIDO_TWISTS } from "./suido.constants";
  * 15th and 16th of a block still say theirs, from the marks (`suidoRole`).
  */
 export function SuidoLevelChips({ size, level, twists }: { size: number; level: number; twists: readonly Twist[] }) {
+  const say = useSpeaker();
+  const words = suidoWords(say.locale);
   const key = suidoSizeKey(size);
   const role = key === null ? null : suidoRole(key, level);
   return (
@@ -27,9 +31,9 @@ export function SuidoLevelChips({ size, level, twists }: { size: number; level: 
       prefix="suido"
       level={level}
       marks={key === null ? null : suidoMarks(key, level)}
-      role={role === null ? null : { role: role.role, newOnes: role.newOnes.map((twist) => SUIDO_TWISTS[twist].label) }}
-      twists={twists.map((twist) => ({ key: twist, label: SUIDO_TWISTS[twist].label, kanji: SUIDO_TWISTS[twist].kanji, says: SUIDO_TWISTS[twist].says }))}
-      copy={SUIDO_CHIPS}
+      role={role === null ? null : { role: role.role, newOnes: role.newOnes.map((twist) => readerName(say, words.twists[twist])) }}
+      twists={twists.map((twist) => ({ key: twist, label: words.twists[twist].label, kanji: words.twists[twist].kanji, says: words.twists[twist].says }))}
+      copy={words.chips}
     />
   );
 }

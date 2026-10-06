@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT } from "@/components/live/picker.constants";
 import { MEIKYUU_TALL_RATIO } from "@/lib/puzzles/meikyuu/sizes";
 import { lyingDown, MEIKYUU_WAY_UP, roomOf } from "@/lib/puzzles/meikyuu/turn";
 
-import { MEIKYUU_CHOICE, WAY_UP_COPY } from "./meikyuu.constants";
+import { MEIKYUU_CHOICE } from "./meikyuu.constants";
+import { meikyuuWords } from "./mazeWords";
 import { frameAspect, type MeikyuuStand } from "./MeikyuuFrame";
 import { useWayUp } from "./meikyuuWayUpStore";
 
@@ -62,6 +64,7 @@ export function MeikyuuSlot({ stand, children }: { stand: MeikyuuStand; children
  */
 export function MeikyuuWayUp({ active = true, className = "" }: { active?: boolean; className?: string }) {
   const { wayUp, choose } = useWayUp();
+  const WAY_UP_COPY = meikyuuWords(useSpeaker().locale).wayUp;
   return (
     <div className={`flex flex-col gap-1.5 ${className}`} role="group" aria-label={WAY_UP_COPY.legend} data-testid="meikyuu-wayup" data-active={active ? "true" : "false"}>
       <p className="text-sm text-ink-soft">{WAY_UP_COPY.legend}</p>

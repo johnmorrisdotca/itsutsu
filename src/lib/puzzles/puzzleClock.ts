@@ -1,3 +1,6 @@
+import { speaker, type Speaker } from "../i18n/i18n";
+import { DEFAULT_LOCALE } from "../i18n/i18n.constants";
+
 import { PUZZLE_CLOCK_DISPLAY, PUZZLE_CLOCK_LIST, offersClock } from "./puzzles.constants";
 import type { PuzzleClock, PuzzleKind } from "./puzzles.types";
 
@@ -62,14 +65,14 @@ export function isUrgent(leftMs: number | null): boolean {
  * clock reads 4:00 until it reads 3:00), so a polite live region holding them
  * speaks once a minute. The full allowance says nothing: the set-up said it.
  */
-export function countdownSaying(clock: PuzzleClock, leftMs: number | null): string {
+export function countdownSaying(clock: PuzzleClock, leftMs: number | null, say: Speaker = speaker(DEFAULT_LOCALE)): string {
   const limit = clockLimitMs(clock);
   if (limit === null || leftMs === null) return "";
-  if (leftMs <= 0) return "Time is up.";
-  if (leftMs <= COUNTDOWN_URGENT_MS) return "Ten seconds left.";
+  if (leftMs <= 0) return say.say("puzzle.clock.timeUp");
+  if (leftMs <= COUNTDOWN_URGENT_MS) return say.say("puzzle.clock.tenSeconds");
   const minutes = Math.ceil(leftMs / 60_000);
   if (minutes * 60_000 >= limit) return "";
-  return minutes === 1 ? "One minute left." : `${minutes} minutes left.`;
+  return say.count("puzzle.clock.minutesLeft", minutes);
 }
 
 /**
@@ -77,6 +80,6 @@ export function countdownSaying(clock: PuzzleClock, leftMs: number | null): stri
  * which a list does not mention. A bare "rabbit" in a line of facts read as
  * an animal, not a clock.
  */
-export function clockWord(clock: string): string {
-  return isPuzzleClock(clock) && clock !== "none" ? `${PUZZLE_CLOCK_DISPLAY[clock].label} countdown` : "";
+export function clockWord(clock: string, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return isPuzzleClock(clock) && clock !== "none" ? say.say("puzzle.clock.countdown", { clock: say.locale === "ja" ? PUZZLE_CLOCK_DISPLAY[clock].kanji : PUZZLE_CLOCK_DISPLAY[clock].label }) : "";
 }

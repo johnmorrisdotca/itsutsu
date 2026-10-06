@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { tobiishiGoalOf, tobiishiPackOf, tobiishiRefOf } from "@/lib/puzzles/tobiishi/levels";
@@ -40,6 +41,7 @@ export function TobiishiLevelPicker({
   chosen: number;
   onChoose: (level: number) => void;
 }) {
+  const say = useSpeaker();
   const count = tobiishiLevelCount(size);
   return (
     <LevelPicker
@@ -57,7 +59,10 @@ export function TobiishiLevelPicker({
       across={ACROSS}
       describe={(level) => {
         const ref = tobiishiRefOf(size, level);
-        return ref === null ? "" : `${tobiishiPackOf(ref.pack).title.en}, ${tobiishiGoalOf(ref).names.en}`;
+        if (ref === null) return "";
+        const pack = tobiishiPackOf(ref.pack).title;
+        const goal = tobiishiGoalOf(ref).names;
+        return `${say.pairName(pack.en, pack.ja).text}${say.locale === "ja" ? "、" : ", "}${say.pairName(goal.en, goal.ja).text}`;
       }}
       solvedMark={(level) => (
         <span className="inline-flex size-6 items-center justify-center rounded-full bg-moss text-[0.7rem] font-semibold text-paper tabular-nums" data-testid="tobiishi-level-mark">

@@ -1,8 +1,11 @@
+"use client";
+
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 import type { ReactNode } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
-import { clockText } from "@/lib/puzzles/clockText";
 import { dailyWordsPath } from "@/lib/puzzles/dailyWords/dailyAddress";
 import type { DailyStatus } from "@/lib/puzzles/dailyWords/dailyWords.types";
 import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
@@ -33,6 +36,7 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
  * a panel of its own. Two narrow columns, so it fits a 390-pixel phone.
  */
 export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordButtonsProps) {
+  const say = useSpeaker();
   /*
    * A Futago's day beside the word's, a table of its own under the first: two
    * words at every length (`futago.ts`), "Futago 5" beside where the reader
@@ -41,14 +45,14 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
    */
   const table = (
     <div className="flex flex-col gap-2">
-      <ButtonTable kind={kind} rows={rows} testId="daily-words-table" label={(size) => <>Today&apos;s {size} <span className="font-mincho opacity-70">今日の{size}</span></>} prefix="daily" />
+      <ButtonTable kind={kind} rows={rows} testId="daily-words-table" label={(size) => <Paired en={say.say("pword.daily.today", { size: String(size) })} kanji={`今日の${size}`} kanjiClassName="opacity-70" inReadersLanguage />} prefix="daily" />
       <ButtonTable
         kind={kind}
         rows={rows.map((row) => ({ size: row.size, ...row.futago }))}
         testId="futago-daily-table"
         label={(size) => (
           <>
-            {FUTAGO_DISPLAY.label} {size} <span className="font-mincho opacity-70">{FUTAGO_DISPLAY.kanji}の{size}</span>
+            <Paired en={`${FUTAGO_DISPLAY.label} ${size}`} kanji={`${FUTAGO_DISPLAY.kanji}の${size}`} kanjiClassName="opacity-70" />
           </>
         )}
         prefix="futago-daily"
@@ -59,7 +63,7 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
         testId="yotsugo-daily-table"
         label={(size) => (
           <>
-            {YOTSUGO_DISPLAY.label} {size} <span className="font-mincho opacity-70">{YOTSUGO_DISPLAY.kanji}の{size}</span>
+            <Paired en={`${YOTSUGO_DISPLAY.label} ${size}`} kanji={`${YOTSUGO_DISPLAY.kanji}の${size}`} kanjiClassName="opacity-70" />
           </>
         )}
         prefix="yotsugo-daily"
@@ -72,7 +76,7 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
           testId="nige-daily-table"
           label={(size) => (
             <>
-              {DODGE_DISPLAY.label} {size} <span className="font-mincho opacity-70">{DODGE_DISPLAY.kanji}の{size}</span>
+              <Paired en={`${DODGE_DISPLAY.label} ${size}`} kanji={`${DODGE_DISPLAY.kanji}の${size}`} kanjiClassName="opacity-70" />
             </>
           )}
           prefix="nige-daily"
@@ -86,7 +90,7 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
           testId="sakasa-daily-table"
           label={(size) => (
             <>
-              {BACKWARDS_DISPLAY.label} {size} <span className="font-mincho opacity-70">{BACKWARDS_DISPLAY.kanji}の{size}</span>
+              <Paired en={`${BACKWARDS_DISPLAY.label} ${size}`} kanji={`${BACKWARDS_DISPLAY.kanji}の${size}`} kanjiClassName="opacity-70" />
             </>
           )}
           prefix="sakasa-daily"
@@ -99,11 +103,11 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
     <p className="flex flex-wrap justify-center gap-x-3 text-xs">
       {todayHref === null ? null : (
         <Link href={todayHref} className="text-muted underline-offset-2 hover:underline" data-testid="daily-today-fastest">
-          Today&apos;s fastest <span className="font-mincho">最速</span>
+          <Paired en={say.say("pword.daily.fastest")} kanji="最速" inReadersLanguage />
         </Link>
       )}
       <Link href={dailyWordsPath(kind)} className="text-muted underline-offset-2 hover:underline" data-testid="daily-archive-link">
-        Past words <span className="font-mincho">過去</span> →
+        <Paired en={say.say("pword.daily.past")} kanji="過去" inReadersLanguage /> →
       </Link>
     </p>
   );
@@ -111,9 +115,9 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
     return (
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="daily-words">
         <h2 className={SECTION_TITLE}>
-          Today&apos;s words <span className="font-mincho normal-case tracking-normal">今日の言葉</span>
+          <Paired en={say.say("pword.daily.heading")} kanji="今日の言葉" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
         </h2>
-        <p className="text-xs text-muted">The same word for everybody today at each length, the same two for a {FUTAGO_DISPLAY.label} and four for a {YOTSUGO_DISPLAY.label}, the same word that dodges for a {DODGE_DISPLAY.label} and a word to avoid for a {BACKWARDS_DISPLAY.label}, new at midnight UTC.</p>
+        <p className="text-xs text-muted">{say.say("pword.daily.lead", { futago: say.pairName(FUTAGO_DISPLAY.label, FUTAGO_DISPLAY.kanji).text, yotsugo: say.pairName(YOTSUGO_DISPLAY.label, YOTSUGO_DISPLAY.kanji).text, nige: say.pairName(DODGE_DISPLAY.label, DODGE_DISPLAY.kanji).text, sakasa: say.pairName(BACKWARDS_DISPLAY.label, BACKWARDS_DISPLAY.kanji).text })}</p>
         {table}
         {links}
       </section>
@@ -122,7 +126,7 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
   return (
     <section className="flex flex-col gap-1.5" data-testid="daily-words">
       <p className="text-center text-xs font-semibold text-muted">
-        Today&apos;s words <span className="font-mincho">今日の言葉</span>
+        <Paired en={say.say("pword.daily.heading")} kanji="今日の言葉" inReadersLanguage />
       </p>
       {table}
       {links}
@@ -132,6 +136,7 @@ export function DailyWordButtons({ kind, rows, todayHref, framed }: DailyWordBut
 
 /** Where the reader stands; a Sakasa's loss is being caught by the word, not missing it. */
 function StatusText({ kind, status, backwards }: { kind: PuzzleKind; status: DailyStatus; backwards: boolean }) {
+  const say = useSpeaker();
   if (status.state === "found") {
     return (
       <span className="text-moss">
@@ -140,9 +145,9 @@ function StatusText({ kind, status, backwards }: { kind: PuzzleKind; status: Dai
       </span>
     );
   }
-  if (status.state === "missed") return <span className="text-muted">✗ {backwards ? "caught" : "not found"}{status.guesses === null ? "" : ` · ${guessesText(status.guesses)}`}</span>;
-  if (status.state === "going") return <span>Half done</span>;
-  return <span className="text-muted">Not yet</span>;
+  if (status.state === "missed") return <span className="text-muted">✗ {say.say(backwards ? "pword.daily.caught" : "pword.daily.notFound")}{status.guesses === null ? "" : ` · ${guessesText(status.guesses)}`}</span>;
+  if (status.state === "going") return <span>{say.say("pword.daily.halfDone")}</span>;
+  return <span className="text-muted">{say.say("pword.daily.notYet")}</span>;
 }
 
 /** One table of today's buttons, a row a length: the button, and where the reader stands with it where anybody is signed in to say. */

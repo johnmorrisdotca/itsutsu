@@ -1,3 +1,5 @@
+import { speaker, type Speaker } from "../../i18n/i18n";
+import { DEFAULT_LOCALE } from "../../i18n/i18n.constants";
 import type { PuzzleSpec } from "../puzzles.types";
 
 /**
@@ -18,12 +20,11 @@ export const DODGE_DISPLAY = {
 } as const;
 
 /** The line under the chips on the set-up screen when a Nige is chosen (`PlayWayChips`). */
-export function dodgeBlurb(rows: number): string {
-  return `No word is hidden yet: each guess gets the colours that leave the most words, and it is found only when nothing else is left. ${rows} guesses.`;
+export function dodgeBlurb(rows: number, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return say.say("puzzle.mode.nige.blurb", { rows: String(rows) });
 }
 
 /** The bullet on a Gomoji's rules page, in the Play section (`puzzleRulesPage.ts`). */
-export function dodgeRule(grid: NonNullable<PuzzleSpec["wordGrid"]>): string {
-  const unit = grid === "gomojiKana" ? "kana" : "letters";
-  return `Nige 逃げ (running away), a choice at any level and our version of Absurdle, hides no word at all: every guess is answered with the colours that leave the most words still possible, never going back on a colour already shown, and the word is found only when your guess is the one word left. It gives every row of the board at every level, the level's word list being its difficulty; there is no head start, and in kana no free grey word. The line under the board says how many words it still has to hide among, and when the rows run out it names one of them. There is a Nige of the day at every length as well, the same for everybody, the ${unit} and the colours the same as ever.`;
+export function dodgeRule(grid: NonNullable<PuzzleSpec["wordGrid"]>, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return say.say(grid === "gomojiKana" ? "puzzle.mode.nige.ruleKana" : "puzzle.mode.nige.ruleLetter");
 }

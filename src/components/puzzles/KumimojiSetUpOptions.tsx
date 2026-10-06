@@ -1,5 +1,8 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import { partyFits, partyTilesNeeded } from "@/lib/puzzles/kumimoji/party";
@@ -8,7 +11,7 @@ import { KUMIMOJI_PARTY, kumimojiTileCount, TILE_MIX_TOTAL } from "@/lib/puzzles
 import { PARTY_PLAYERS_CHIP } from "./kumimoji.constants";
 
 const LENGTHS = ["short", "medium", "full"] as const;
-const LENGTH_WORDS: Record<KumimojiLength, string> = { short: "Short", medium: "Medium", full: "Full" };
+const LENGTH_WORDS: Record<KumimojiLength, PhraseKey> = { short: "pkumi.length.short", medium: "pkumi.length.medium", full: "pkumi.length.full" };
 
 /**
  * KUMIMOJI'S OWN SET-UP CHOICES, under the puzzle's options: how many
@@ -54,30 +57,31 @@ export function KumimojiSetUpOptions({
   hints: boolean;
   setHints: (hints: boolean) => void;
 }) {
+  const say = useSpeaker();
   const double = doubleSet && language === "english";
   const inBag = (length: KumimojiLength, two: boolean) => kumimojiTileCount(size, length, TILE_MIX_TOTAL, two && language === "english");
   const fits = (length: KumimojiLength, two: boolean) => partyFits(players, size, inBag(length, two));
   const tooSmall = LENGTHS.filter((each) => !fits(each, double));
   /* Six or more round one device: Double in English, Full in Japanese, chosen as the count reaches it and marked, never forced. */
   const crowd = players >= KUMIMOJI_PARTY.doubleFrom;
-  const recommended = language === "english" ? "Double, 288 tiles," : "Full, all 144 tiles,";
+  const recommended: PhraseKey = language === "english" ? "pkumi.opts.recommendDouble" : "pkumi.opts.recommendFull";
   const choosePlayers = (each: number) => {
     setPlayers(each);
     if (each < KUMIMOJI_PARTY.doubleFrom || players >= KUMIMOJI_PARTY.doubleFrom) return;
     if (language === "english") setDoubleSet(true);
     setGameLength("full");
   };
-  const tooFew = (tiles: number) => `${tiles} tiles cannot deal ${players} hands of ${size} and a round of draws (${partyTilesNeeded(players, size)})`;
+  const tooFew = (tiles: number) => say.say("pkumi.opts.tooFew", { tiles: String(tiles), players: String(players), size: String(size), needed: String(partyTilesNeeded(players, size)) });
   return (
     <>
-      <div className="grid grid-cols-8 gap-1 pt-1" role="radiogroup" aria-label="Players" data-testid="kumimoji-players">
+      <div className="grid grid-cols-8 gap-1 pt-1" role="radiogroup" aria-label={say.say("pkumi.opts.playersAria")} data-testid="kumimoji-players">
         {Array.from({ length: KUMIMOJI_PARTY.most }, (_, at) => at + 1).map((each) => (
           <button
             key={each}
             type="button"
             role="radio"
             aria-checked={players === each}
-            aria-label={each === 1 ? "One player" : `${each} players`}
+            aria-label={say.count("pkumi.count.player", each)}
             className={`${PARTY_PLAYERS_CHIP} ${players === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
             onClick={() => choosePlayers(each)}
             data-testid={`kumimoji-players-${each}`}
@@ -89,10 +93,16 @@ export function KumimojiSetUpOptions({
       {/* Three lines' room at a phone's width whatever it says, so the options below never move when the players do. */}
       <p className="min-h-12 text-xs text-muted" data-testid="kumimoji-players-blurb">
         {players === 1
-          ? "One player: the solo game, with its clock and its leaderboard. Choose more to pass this device round."
-          : `${players} players pass this device round, one bag, kept in this browser only.${crowd ? ` ${recommended} is recommended for ${KUMIMOJI_PARTY.doubleFrom} or more.` : ""}${tooSmall.length === 0 ? "" : ` ${tooSmall.map((each) => LENGTH_WORDS[each]).join(" and ")} ${tooSmall.length === 1 ? "is" : "are"} too small for ${players}.`}`}
+          ? say.say("pkumi.opts.solo")
+          : [
+              say.say("pkumi.opts.party", { count: String(players) }),
+              crowd ? say.say(recommended, { from: String(KUMIMOJI_PARTY.doubleFrom) }) : "",
+              tooSmall.length === 0 ? "" : say.count("pkumi.opts.tooSmall", tooSmall.length, { what: say.list(tooSmall.map((each) => say.say(LENGTH_WORDS[each]))), players: String(players) }),
+            ]
+              .filter((part) => part !== "")
+              .join(say.locale === "ja" ? "" : " ")}
       </p>
-      <div className="grid grid-cols-2 gap-1.5 pt-1" role="radiogroup" aria-label="Language" data-testid="kumimoji-language">
+      <div className="grid grid-cols-2 gap-1.5 pt-1" role="radiogroup" aria-label={say.say("pkumi.opts.languageAria")} data-testid="kumimoji-language">
         {(["english", "japanese"] as const).map((each) => (
           <button
             key={each}
@@ -106,11 +116,11 @@ export function KumimojiSetUpOptions({
             }}
             data-testid={`kumimoji-language-${each}`}
           >
-            {each === "english" ? "English" : "Japanese · ひらがな"}
+            {say.say(each === "english" ? "pkumi.opts.english" : "pkumi.opts.japanese")}
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-1.5 pt-1" role="radiogroup" aria-label="Game length" data-testid="kumimoji-length">
+      <div className="grid grid-cols-3 gap-1.5 pt-1" role="radiogroup" aria-label={say.say("pkumi.opts.lengthAria")} data-testid="kumimoji-length">
         {LENGTHS.map((each) => (
           <button
             key={each}
@@ -123,11 +133,11 @@ export function KumimojiSetUpOptions({
             title={fits(each, double) ? undefined : tooFew(inBag(each, double))}
             data-testid={`kumimoji-length-${each}`}
           >
-            {LENGTH_WORDS[each]} · {inBag(each, double)}
+            {say.say(LENGTH_WORDS[each])} · {inBag(each, double)}
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Tile set" data-testid="kumimoji-double">
+      <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label={say.say("pkumi.opts.setAria")} data-testid="kumimoji-double">
         {[false, true].map((each) => (
           <button
             key={String(each)}
@@ -141,8 +151,8 @@ export function KumimojiSetUpOptions({
             data-testid={`kumimoji-double-${each ? "on" : "off"}`}
             data-recommended={each && crowd && language === "english" ? "true" : undefined}
           >
-            {each ? "Double" : "One set"} · {kumimojiTileCount(size, gameLength, TILE_MIX_TOTAL, each && language === "english")}
-            {each && crowd && language === "english" ? <span aria-label=", recommended"> ★</span> : null}
+            {say.say(each ? "pkumi.opts.double" : "pkumi.opts.oneSet")} · {kumimojiTileCount(size, gameLength, TILE_MIX_TOTAL, each && language === "english")}
+            {each && crowd && language === "english" ? <span aria-label={say.say("pkumi.opts.recommendedMark")}> ★</span> : null}
           </button>
         ))}
       </div>
@@ -153,7 +163,7 @@ export function KumimojiSetUpOptions({
         too (`judgeGrid`). Off by default, and part of the game, as the
         language is: the address, a kept game and a race all carry it.
       */}
-      <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Diagonals" data-testid="kumimoji-diagonals-choice">
+      <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label={say.say("pkumi.opts.diagonalsAria")} data-testid="kumimoji-diagonals-choice">
         {[false, true].map((each) => (
           <button
             key={String(each)}
@@ -162,10 +172,10 @@ export function KumimojiSetUpOptions({
             aria-checked={diagonals === each}
             className={`${PICK_WORD_CHIP} ${diagonals === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
             onClick={() => setDiagonals(each)}
-            title={each ? "Three or more tiles in a line corner to corner must spell a word too, read downward." : "Words across and down only; tiles may touch at a corner."}
+            title={say.say(each ? "pkumi.opts.diagOnSays" : "pkumi.opts.diagOffSays")}
             data-testid={`kumimoji-diagonals-${each ? "on" : "off"}`}
           >
-            {each ? "Diagonals" : "No diagonals"} <span className="font-mincho opacity-70">{each ? "斜め有" : "斜め無"}</span>
+            <Paired en={say.say(each ? "pkumi.opts.diagOn" : "pkumi.opts.diagOff")} kanji={each ? "斜め有" : "斜め無"} kanjiClassName="opacity-70" inReadersLanguage />
           </button>
         ))}
       </div>
@@ -175,7 +185,7 @@ export function KumimojiSetUpOptions({
         own hints switch, which a Kumimoji spends on arranging the hand
         into a word (`help.ts`).
       */}
-      <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Help" data-testid="kumimoji-help-choice">
+      <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label={say.say("pkumi.opts.helpAria")} data-testid="kumimoji-help-choice">
         {[false, true].map((each) => (
           <button
             key={String(each)}
@@ -186,7 +196,7 @@ export function KumimojiSetUpOptions({
             onClick={() => setHints(each)}
             data-testid={`kumimoji-help-${each ? "on" : "off"}`}
           >
-            {each ? "Help" : "No help"} <span className="font-mincho opacity-70">{each ? "助け有" : "助け無"}</span>
+            <Paired en={say.say(each ? "pkumi.opts.helpOn" : "pkumi.opts.helpOff")} kanji={each ? "助け有" : "助け無"} kanjiClassName="opacity-70" inReadersLanguage />
           </button>
         ))}
       </div>

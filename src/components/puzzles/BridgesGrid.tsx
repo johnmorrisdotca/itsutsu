@@ -3,6 +3,9 @@
 import { memo, useRef, useState, type MouseEvent, type PointerEvent } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { cellFacts } from "@/lib/puzzles/cellLabel";
 import type { BridgesBoard } from "@/lib/puzzles/bridges/bridges.types";
 import { bridgesAt, otherEnd, spanToward } from "@/lib/puzzles/bridges/code";
 import { centredBaseline } from "@/lib/ui/svgText";
@@ -56,6 +59,7 @@ export function BridgesGrid({
   onTap?: (island: number) => void;
   onDrag?: (from: number, to: number) => void;
 }) {
+  const say = useSpeaker();
   const { size, islands, spans } = board;
   const theme = BOARD_THEMES[DEFAULT_APPEARANCE.boardTheme];
   const live = !readOnly && !done;
@@ -208,7 +212,7 @@ export function BridgesGrid({
                 onClick={(event) => keyed(event, at)}
                 className="absolute rounded-full outline-none focus-visible:ring-2 focus-visible:ring-moss"
                 style={{ left: `${(island.col / size) * 100}%`, top: `${(island.row / size) * 100}%`, width: `${100 / size}%`, height: `${100 / size}%` }}
-                aria-label={`row ${island.row + 1}, column ${island.col + 1}: island ${island.count}, ${has} ${has === 1 ? "bridge" : "bridges"}${state === "full" ? ", full" : state === "over" ? ", too many" : ""}`}
+                aria-label={islandLabel(say, island, has, state)}
                 aria-pressed={chosen === at}
                 data-testid="bridges-island"
                 data-island={at}
@@ -230,6 +234,13 @@ export function BridgesGrid({
 const aimPath = ({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: number }) => `M${x1} ${y1}L${x2} ${y2}`;
 
 /** The paper's faint rules, as every puzzle's paper has, so a reader can count along a row: drawn once for a size, never again for a bridge laid or aimed. */
+/** What a screen reader hears for an island: where it is, its number, how many bridges it has, and whether that is enough. */
+function islandLabel(say: Speaker, island: { row: number; col: number; count: number }, has: number, state: "full" | "over" | "open"): string {
+  const where = say.say("pgrid.cell.where", { row: String(island.row + 1), col: String(island.col + 1) });
+  const head = say.say("pgrid.bridges.island", { where, count: String(island.count), bridges: say.count("pgrid.bridges.has", has) });
+  return cellFacts(say, head, ...(state === "open" ? [] : [say.say(state === "full" ? "pgrid.bridges.full" : "pgrid.bridges.over")]));
+}
+
 const Rules = memo(function Rules({ size, line }: { size: number; line: string }) {
   return (
     <>

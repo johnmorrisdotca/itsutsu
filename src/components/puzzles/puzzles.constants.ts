@@ -380,6 +380,9 @@ export function tsunagiWash(pair: number, marks: TsunagiMarks): string {
   return marks === "numbers" ? hsl([colour[0], 30, 70], 0, 0.22) : hsl(colour, 8, 0.28);
 }
 
+/** The faint tint inside a portal's ring: its own colour, mostly clear. */
+export const tsunagiPortalWash = (colour: string): string => `color-mix(in srgb, ${colour} 14%, transparent)`;
+
 /** A marble: round and shaded like a stone, sized to its cell, the pair's number on it for Numbers. */
 export const TSUNAGI_MARBLE =
   "flex size-[74%] items-center justify-center rounded-full font-bold leading-none tabular-nums shadow-[0_1px_2px_rgba(0,0,0,0.5)]";

@@ -7,7 +7,10 @@ import { Kyuubu, type KyuubuHandle } from "@johnmorrisdotca/kyuubu/react";
 import { BoardFrame } from "@/components/board/BoardFrame";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 
-import { CUBE_COPY, CUBE_FILL } from "./cube.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { CUBE_FILL } from "./cube.constants";
+import { cubeCopy } from "./mazeWords";
 import { CubeZoom } from "./CubeZoom";
 
 /** How far in from the wood's edge the cube's space starts: the rim of every board. */
@@ -43,6 +46,7 @@ export function CubeBoard({
   /** Offer to zoom the cube in and out inside its board (the solve and the replay do; a preview does not). */
   zoomable?: boolean;
 }) {
+  const say = useSpeaker();
   const kyuubu = (
       <Kyuubu
         ref={cube}
@@ -51,7 +55,7 @@ export function CubeBoard({
         interactive={interactive}
         keyboard={keyboard}
         fill={CUBE_FILL}
-        label={CUBE_COPY.label(size)}
+        label={cubeCopy(say.locale).label(size)}
         onTurn={onTurn}
         hint={hint}
         className="absolute inset-0"

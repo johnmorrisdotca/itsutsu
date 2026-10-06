@@ -1,5 +1,8 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { checkSentence } from "@/lib/puzzles/checkWords";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { useCallback, useMemo, useState } from "react";
 
@@ -13,7 +16,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { BridgesGrid } from "./BridgesGrid";
 import { PuzzleSteps } from "./PuzzleSteps";
-import { BRIDGES_CELL_WORDS, BRIDGES_COPY } from "./puzzles.constants";
+import { bridgesCellWords, bridgesCopy } from "./gridWords";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
 import { SolveShow } from "./SolveShow";
@@ -55,6 +58,8 @@ export function BridgesSolve({
   hints?: boolean;
 }) {
   const hydrated = useHydrated();
+  const say = useSpeaker();
+  const copy = bridgesCopy(say.locale);
   const { kind, size, seed } = puzzle;
   const board = useMemo(() => boardOf(puzzle.givens, size)!, [puzzle.givens, size]);
   const answer = useMemo(() => decodeBridges(board, puzzle.solution) ?? [], [board, puzzle.solution]);
@@ -90,9 +95,9 @@ export function BridgesSolve({
       setChecked(null);
       setSaid(null);
       if (checkBridges(size, puzzle.givens, code).ok) void finish(code, at);
-      else if (board.islands.every((island, at) => bridgesAt(board, next, at) === island.count)) setSaid(BRIDGES_COPY.allNumbers);
+      else if (board.islands.every((island, at) => bridgesAt(board, next, at) === island.count)) setSaid(copy.allNumbers);
     },
-    [begin, current, board, hinting, size, puzzle.givens, finish],
+    [begin, current, board, hinting, size, puzzle.givens, finish, copy.allNumbers],
   );
 
   /* A bridge between two islands: one more, or none after two. Refused, and said, where it would cross one already drawn. */
@@ -102,13 +107,13 @@ export function BridgesSolve({
       if (span === null) return false;
       const count = ((current[span] ?? 0) + 1) % 3;
       if (count > 0 && crossedBy(board, current, span).length > 0) {
-        setSaid(BRIDGES_COPY.crossing);
+        setSaid(copy.crossing);
         return true;
       }
       set(span, count);
       return true;
     },
-    [board, current, set],
+    [board, current, set, copy.crossing],
   );
 
   const tap = (island: number) => {
@@ -123,7 +128,7 @@ export function BridgesSolve({
     }
     // Not in line with the island chosen, or none chosen: this one is chosen instead.
     setChosen(island);
-    setSaid(BRIDGES_COPY.chosen);
+    setSaid(copy.chosen);
   };
   const drag = (from: number, to: number) => {
     if (!live) return;
@@ -158,7 +163,7 @@ export function BridgesSolve({
           <BridgesGrid board={board} counts={counts} chosen={live ? chosen : null} wrong={hinting.marked} done={done !== null || history.reviewing} onTap={tap} onDrag={drag} />
         </TsunagiViewport>
       </SolvePaused>
-      <PuzzleSteps steps={steps} viewing={history.viewing} go={history.go} size={size} say={(value) => BRIDGES_CELL_WORDS[value] ?? `island ${value}`} />
+      <PuzzleSteps steps={steps} viewing={history.viewing} go={history.go} size={size} say={(value) => bridgesCellWords(say.locale)[value] ?? say.say("pgrid.step.island", { count: value })} />
       {done === null ? (
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
@@ -166,8 +171,8 @@ export function BridgesSolve({
             <SolveShow checking={checking} onShow={show} disabled={startedAt === null || pausing.paused} />
             <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
           </div>
-          <span className="text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "bridges-said"} data-said={said === BRIDGES_COPY.crossing ? "crossing" : said === BRIDGES_COPY.allNumbers ? "all-numbers" : undefined} aria-live="polite">
-            {checked !== null ? checkedLine(checked) : (said ?? BRIDGES_COPY.howTo)}
+          <span className="text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "bridges-said"} data-said={said === copy.crossing ? "crossing" : said === copy.allNumbers ? "all-numbers" : undefined} aria-live="polite">
+            {checked !== null ? checkedLine(checked, say) : (said ?? copy.howTo)}
           </span>
         </div>
       ) : (
@@ -178,9 +183,6 @@ export function BridgesSolve({
 }
 
 /** What Check says: how many bridges drawn are wrong, and how many are still to draw, never which. */
-function checkedLine({ wrong, missing }: { wrong: number; missing: number }): string {
-  if (wrong === 0 && missing === 0) return "Every bridge is drawn and right.";
-  const bad = wrong === 0 ? "Nothing wrong so far" : `${wrong} ${wrong === 1 ? "bridge is" : "bridges are"} wrong`;
-  const left = missing > 0 ? `, ${missing} still to draw` : "";
-  return `${bad}${left}.`;
+function checkedLine({ wrong, missing }: { wrong: number; missing: number }, say: Speaker): string {
+  return checkSentence(say, "pgrid.check.okBridges", wrong, "pgrid.check.wrongBridge", missing > 0 ? say.say("pgrid.check.leftDraw", { count: String(missing) }) : null);
 }

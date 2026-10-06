@@ -1,3 +1,7 @@
+import { speaker, type Speaker } from "../i18n/i18n";
+import { DEFAULT_LOCALE } from "../i18n/i18n.constants";
+import { joinedWith } from "./puzzleText";
+
 import { markGuess, type LetterMark } from "./gomoji/code";
 import { boardGuesses } from "./gomoji/futago";
 import { kanaBase, markKanaGuess } from "@johnmorrisdotca/kotoba";
@@ -133,9 +137,10 @@ export function knownCounts(guesses: readonly string[], marks: readonly (readonl
  * (`typedCounts`), each from two, as the key shows them. "R, in the word
  * twice", "R, 2 in the row", or both; nothing extra when neither is shown.
  */
-export function keyLabel(letter: string, known: number, typed: number): string | undefined {
+export function keyLabel(letter: string, known: number, typed: number, say: Speaker = speaker(DEFAULT_LOCALE)): string | undefined {
   const said: string[] = [];
-  if (known >= 2) said.push(`in the word ${known === 2 ? "twice" : `${known} times`}`);
-  if (typed >= 2) said.push(`${typed} in the row`);
-  return said.length === 0 ? undefined : [letter.toUpperCase(), ...said].join(", ");
+  if (known >= 2) said.push(known === 2 ? say.say("puzzle.key.inWordTwice") : say.say("puzzle.key.inWordTimes", { count: String(known) }));
+  if (typed >= 2) said.push(say.say("puzzle.key.inRow", { count: String(typed) }));
+  if (said.length === 0) return undefined;
+  return joinedWith(say, [letter.toUpperCase(), ...said]);
 }

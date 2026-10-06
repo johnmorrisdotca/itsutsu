@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { clockText } from "@/lib/puzzles/clockText";
 
 /** A block's sixteen levels, in two rows of eight: short enough to sit under the preview. */
@@ -77,12 +78,14 @@ export function LevelPicker({
   /** What a level is, in words a hover and a screen reader read after its number: the board it is on, where a number says too little. */
   describe?: (level: number) => string;
 }) {
+  const say = useSpeaker();
+  const levelWord = (level: number) => say.say("puzzle.level.number", { number: String(level) });
   return (
     <div
       className="grid w-full gap-1"
       style={{ gridTemplateColumns: `repeat(${across}, minmax(0, 1fr))` }}
       role="radiogroup"
-      aria-label={`Levels ${first} to ${last}`}
+      aria-label={say.say("pmaze.pick.group", { first: String(first), last: String(last) })}
       data-testid={`${prefix}-levels`}
       data-size={size}
       data-open={open}
@@ -92,9 +95,9 @@ export function LevelPicker({
         const time = best[level];
         const tries = attempts[level] ?? 0;
         const role = roleOf(level);
-        const roleWords = role === null ? "" : role.role === "teaches" ? `, teaches ${role.words}` : ", the block's test";
-        const triesWords = tries === 0 ? "" : `, ${tries} ${tries === 1 ? "attempt" : "attempts"}`;
-        const aboutWords = describe === undefined ? "" : `, ${describe(level)}`;
+        const roleWords = role === null ? "" : role.role === "teaches" ? say.say("pmaze.pick.teaches", { words: role.words }) : say.say("pmaze.pick.test");
+        const triesWords = tries === 0 ? "" : say.count("pmaze.pick.attempts", tries);
+        const aboutWords = describe === undefined ? "" : `${say.locale === "ja" ? "、" : ", "}${describe(level)}`;
         const solved = time !== undefined;
         // A level solved is never locked: a board solved before the levels were renumbered may sit in a block not yet open, and it is still yours.
         const locked = level > open && !solved;
@@ -107,8 +110,8 @@ export function LevelPicker({
             aria-checked={level === chosen}
             onClick={() => onChoose(level)}
             className={`relative flex min-h-12 flex-col items-center justify-center rounded-sm border border-rule-strong/60 bg-ivory px-0.5 py-1 text-sm font-semibold tabular-nums leading-none ${locked ? "text-muted" : "text-ink"} ${ring} hover:bg-paper focus-visible:outline-2 focus-visible:outline-moss`}
-            aria-label={`Level ${level}${solved ? `, solved in ${clockText(time)}` : locked ? ", locked" : level === next ? ", next" : ""}${roleWords}${triesWords}${aboutWords}`}
-            title={`Level ${level}${solved ? `: best ${clockText(time)}` : locked ? ": locked" : ""}${roleWords}${triesWords}${aboutWords}`}
+            aria-label={`${levelWord(level)}${solved ? say.say("pmaze.pick.solvedAria", { time: clockText(time) }) : locked ? say.say("pmaze.pick.lockedAria") : level === next ? say.say("pmaze.pick.nextAria") : ""}${roleWords}${triesWords}${aboutWords}`}
+            title={`${levelWord(level)}${solved ? say.say("pmaze.pick.bestTitle", { time: clockText(time) }) : locked ? say.say("pmaze.pick.lockedTitle") : ""}${roleWords}${triesWords}${aboutWords}`}
             data-testid={`${prefix}-level`}
             data-level={level}
             data-state={solved ? "solved" : locked ? "locked" : "open"}
@@ -120,7 +123,7 @@ export function LevelPicker({
                 className={`absolute -top-1 -right-1 rounded-sm px-0.5 text-[0.5rem] font-bold uppercase ${role.role === "tests" ? "bg-shu text-paper" : "bg-ochre text-ink"}`}
                 data-testid={`${prefix}-level-role`}
               >
-                {role.role === "teaches" ? "New" : "Test"}
+                {say.say(role.role === "teaches" ? "pmaze.pick.tagNew" : "pmaze.pick.tagTest")}
               </span>
             )}
             {solved ? (

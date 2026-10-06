@@ -22,7 +22,7 @@ const defining = (pattern: RegExp) => FILES.filter(({ source }) => pattern.test(
 
 describe("the levels screen, one of each part", () => {
   it("draws a block's tiles in one component", () => {
-    expect(defining(/aria-label=\{`Levels \$\{first\} to \$\{last\}`\}/)).toEqual(["LevelPicker.tsx"]);
+    expect(defining(/pmaze\.pick\.group/)).toEqual(["LevelPicker.tsx"]);
   });
 
   it("draws the row of chips in one component", () => {
@@ -30,7 +30,8 @@ describe("the levels screen, one of each part", () => {
   });
 
   it("draws the table of a level's fastest times in one component", () => {
-    expect(defining(/Fastest on level \{level\}/)).toEqual(["LevelFastestTable.tsx"]);
+    // The words are one phrase (`pset.lf.heading`) and the table is the one component that says it.
+    expect(defining(/pset\.lf\.heading/)).toEqual(["LevelFastestTable.tsx"]);
   });
 
   it("turns the shelves of sizes in one place", () => {

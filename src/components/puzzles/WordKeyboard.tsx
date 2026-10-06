@@ -1,5 +1,8 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { commaOf } from "@/lib/puzzles/puzzleText";
 import type { GomojiLanguage, LetterMark } from "@/lib/puzzles/gomoji/code";
 import { KEYBOARD_ROWS } from "@johnmorrisdotca/kotoba";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
@@ -13,7 +16,7 @@ const NONE_TYPED: ReadonlyMap<string, number> = new Map();
 const NONE_COUNTED: ReadonlyMap<string, number> = new Map();
 
 /** A split key's halves, in words, for a screen reader. */
-const MARK_WORDS: Record<LetterMark, string> = { hit: "in its place", near: "in the word elsewhere", miss: "not in it" };
+const markWords = (say: Speaker): Record<LetterMark, string> => ({ hit: say.say("pword.key.inPlace"), near: say.say("pword.key.elsewhere"), miss: say.say("pword.key.notIn") });
 
 /**
  * THE KEYBOARD UNDER A GOMOJI GRID, for a phone with no keys of its own:
@@ -64,6 +67,7 @@ export function WordKeyboard({
   onEnter?: () => void;
   onBack: () => void;
 }) {
+  const say = useSpeaker();
   const marked = style === WORD_STYLES.tiles ? WORD_TILE_MARK : WORD_KEY_MARK_STONES;
   // Read-only, the keys keep their colours and take no press: `disabled` would dim the colours being read.
   const inert = readOnly ? { tabIndex: -1, "aria-disabled": true as const } : {};
@@ -74,7 +78,7 @@ export function WordKeyboard({
           {index === 2 && onEnter !== undefined ? (
             <button type="button" className={`${WORD_KEY} ${WORD_KEY_PLAIN} flex-[1.5]`} onClick={onEnter} disabled={disabled} data-testid="word-key-enter" {...inert}>
               {/* Its own size on a span, not a second size on the key, so the word fits at 390px ("ENTER" was clipped). */}
-              <span className="text-[0.7rem] normal-case sm:text-sm">Enter</span>
+              <span className="text-[0.7rem] normal-case sm:text-sm">{say.say("pword.key.enter")}</span>
             </button>
           ) : null}
           {[...row].map((letter) => {
@@ -95,7 +99,7 @@ export function WordKeyboard({
                 data-mark={halves === null ? (mark ?? "") : halves.map((each) => each ?? "").join("|")}
                 data-typed={count > 0 ? "true" : undefined}
                 data-known-count={proven >= 2 ? proven : undefined}
-                aria-label={halves === null ? keyLabel(letter, proven, count) : `${keyLabel(letter, proven, count) ?? letter.toUpperCase()}, ${futagoKeyWords(halves, MARK_WORDS)}`}
+                aria-label={halves === null ? keyLabel(letter, proven, count, say) : `${keyLabel(letter, proven, count, say) ?? letter.toUpperCase()}${commaOf(say)}${futagoKeyWords(halves, markWords(say), say)}`}
               >
                 {halves === null ? null : <FutagoKeyHalves marks={halves} marked={marked} />}
                 {halves === null || halves.every((each) => each === undefined) ? (
@@ -114,7 +118,7 @@ export function WordKeyboard({
             );
           })}
           {index === 2 ? (
-            <button type="button" className={`${WORD_KEY} ${WORD_KEY_PLAIN} flex-[1.5]`} onClick={onBack} disabled={disabled} aria-label="delete a letter" data-testid="word-key-back" {...inert}>
+            <button type="button" className={`${WORD_KEY} ${WORD_KEY_PLAIN} flex-[1.5]`} onClick={onBack} disabled={disabled} aria-label={say.say("pword.key.deleteLetter")} data-testid="word-key-back" {...inert}>
               ⌫
             </button>
           ) : null}

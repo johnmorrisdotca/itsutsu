@@ -1,5 +1,8 @@
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { KUMIMOJI_SHOTS, KUMIMOJI_SHOT_ORDER } from "@/lib/puzzles/kumimoji/shots.constants";
+import { KUMIMOJI_SHOT_ORDER } from "@/lib/puzzles/kumimoji/shots.constants";
+import { kumimojiShots } from "@/lib/puzzles/puzzleCopy";
 
 /**
  * KUMIMOJI BEING PLAYED, in pictures taken from real play
@@ -9,11 +12,13 @@ import { KUMIMOJI_SHOTS, KUMIMOJI_SHOT_ORDER } from "@/lib/puzzles/kumimoji/shot
  * wide is a glance, not a read. Static files, lazily loaded, nothing asked of
  * the server; the width and height hold each picture's room before it comes.
  */
-export function KumimojiShots() {
+export async function KumimojiShots() {
+  const say = await currentSpeaker();
+  const KUMIMOJI_SHOTS = kumimojiShots(say.locale);
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="kumimoji-shots">
       <h2 className={SECTION_TITLE}>
-        See it played <span className="font-mincho normal-case tracking-normal">実戦</span>
+        <Paired en={say.say("pkumi.shots.heading")} kanji="実戦" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
       </h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {KUMIMOJI_SHOT_ORDER.map((key) => {
@@ -21,7 +26,7 @@ export function KumimojiShots() {
           const wide = shot.width > shot.height;
           return (
             <figure key={key} className={`flex min-w-0 flex-col gap-1.5 ${wide ? "col-span-2 sm:col-span-4" : ""}`} data-testid="kumimoji-shot" data-shot={key}>
-              <a href={shot.src} target="_blank" rel="noopener" className="block overflow-hidden rounded-lg border border-rule" aria-label={`${shot.caption} Opens the picture full size.`}>
+              <a href={shot.src} target="_blank" rel="noopener" className="block overflow-hidden rounded-lg border border-rule" aria-label={say.say("pkumi.shots.open", { caption: shot.caption })}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot, already sized, with nothing for the optimiser to do */}
                 <img src={shot.src} alt={shot.alt} width={shot.width} height={shot.height} loading="lazy" decoding="async" className="h-auto w-full" />
               </a>

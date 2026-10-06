@@ -1,11 +1,13 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { EndGameButton, GameEnding } from "@/components/play/GameEnding";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { judgeTiles } from "@/lib/puzzles/kumimoji/computerPlay";
-import { drawAll, mayDrawAll, mayTradeThisTurn, nameOf, partyTilesLeft, seatPlay, withSeatPlay } from "@/lib/puzzles/kumimoji/party";
+import { drawAll, mayDrawAll, mayTradeThisTurn, partyTilesLeft, seatPlay, withSeatPlay } from "@/lib/puzzles/kumimoji/party";
 import type { GridVerdict } from "@/lib/puzzles/kumimoji/grid";
 import type { PartyGame } from "@/lib/puzzles/kumimoji/party.types";
 import { doneRefused, endTurn, goesOut, handCanSpell, isLastTurn, lastStanding, mayResign, resign } from "@/lib/puzzles/kumimoji/partyTurns";
@@ -18,6 +20,7 @@ import { KumimojiTable, type TableHandle } from "./KumimojiTable";
 import { KumimojiTray } from "./KumimojiTray";
 import { PARTY_TRAY_ROOM } from "./kumimoji.constants";
 import { keepParty } from "./kumimojiPartyKept";
+import { seatName, tileSaid } from "./kumimojiWords";
 import { sayState, useKumimojiDesk } from "./useKumimojiDesk";
 
 /** Help in a game with no points costs nothing: the press is allowed or not, and nothing is counted. */
@@ -75,6 +78,7 @@ export function KumimojiPartyTurn({
   /** A press on its way to the table: nothing more is pressed until it answers. */
   busy?: boolean;
 }) {
+  const say = useSpeaker();
   const play = seatPlay(game);
   // Every table is read by the rules the game was set up with: with Diagonals, along its diagonals too.
   const verdict = useMemo(() => judgeTiles(play.tiles, words, { diagonals: game.settings.diagonals }), [play.tiles, words, game.settings.diagonals]);
@@ -90,7 +94,7 @@ export function KumimojiPartyTurn({
   const refused = doneRefused(game, verdict, handSpells);
   const out = goesOut(game, verdict);
   const left = partyTilesLeft(game);
-  const name = nameOf(game, game.turn);
+  const name = seatName(say, game, game.turn);
 
   const presses = {
     ...desk.presses,
@@ -104,16 +108,14 @@ export function KumimojiPartyTurn({
       },
     },
   };
-  const said = out
-    ? "Your hand is used and your crossword is sound: press Done to go out."
-    : sayState(play.hand.length, left, verdict, "Sound. Draw, and everybody takes a tile.");
+  const said = out ? say.say("pkumi.turn.outSaid") : sayState(say, play.hand.length, left, verdict, "pkumi.say.drawEveryone");
   const note =
     refused === "trade"
-      ? "No word in your hand: choose a tile and trade it for three first."
+      ? say.say("pkumi.turn.tradeFirst")
       : refused === "standing"
-        ? "Everybody else has resigned. Lay a tile on a sound crossword and press Done to win, or resign."
+        ? say.say("pkumi.turn.standing")
         : game.traded && play.hand.length > 0
-          ? "Traded: lay what you can or press Done. Your next trade is on your next turn."
+          ? say.say("pkumi.turn.traded")
           : null;
 
   if (looking) {
@@ -127,16 +129,16 @@ export function KumimojiPartyTurn({
     <section ref={root} className={`flex flex-col gap-3 ${PARTY_TRAY_ROOM}`} data-testid="kumimoji-party-turn" data-player={game.turn}>
       <div className="flex items-baseline justify-between gap-2">
         <p className="min-w-0 truncate text-base font-semibold" data-testid="kumimoji-party-whose">
-          {name}&rsquo;s turn{isLastTurn(game) ? ", the last" : lastStanding(game) ? ", the last one standing" : ""}
+          {say.say(isLastTurn(game) ? "pkumi.turn.whoseLast" : lastStanding(game) ? "pkumi.turn.whoseStanding" : "pkumi.turn.whose", { name })}
         </p>
         <span className="flex shrink-0 items-baseline gap-3 text-sm">
           <button type="button" className="text-moss underline underline-offset-2" onClick={() => setLooking(true)} data-testid="kumimoji-party-all-open">
-            All tables <span className="font-mincho opacity-70">全</span>
+            <Paired en={say.say("pkumi.turn.allTables")} kanji="全" kanjiClassName="opacity-70" inReadersLanguage />
           </button>
           {/* Handed over too soon, or to the wrong person: the pass screen again, with nothing played or lost. */}
           {onHide === undefined ? null : (
             <button type="button" className="text-muted underline underline-offset-2" onClick={onHide} data-testid="kumimoji-party-hide">
-              Pass back
+              {say.say("pkumi.turn.passBack")}
             </button>
           )}
         </span>
@@ -144,6 +146,7 @@ export function KumimojiPartyTurn({
       {/* The table's column for the size chooser (`BoardScale`): at Large and Full it takes the width, and the hand moves beside it. */}
       <div data-scale-board data-scale-stack data-bare-board>
         <KumimojiTable
+          tileDescription={tileSaid(say)}
           tiles={play.tiles}
           theme={theme}
           misspelt={verdict.misspelt}
@@ -164,7 +167,7 @@ export function KumimojiPartyTurn({
       {/* Resign, once nothing more can be got from the bag (`mayResign`), and only after a second press says so. */}
       {mayResign(game) ? (
         <GameEnding testId="kumimoji-party-resign-row">
-          <EndGameButton onEnd={() => hands.resign(game)} question="Resign, and play no more turns this game?" disabled={busy} testId="kumimoji-party-resign" />
+          <EndGameButton onEnd={() => hands.resign(game)} question={say.say("pkumi.turn.resignAsk")} disabled={busy} testId="kumimoji-party-resign" />
         </GameEnding>
       ) : null}
       <KumimojiTray
@@ -177,7 +180,7 @@ export function KumimojiPartyTurn({
         onHandDown={desk.onHandDown}
         onTray={desk.onTray}
         done={{
-          label: out ? "Done, and go out" : "Done",
+          label: say.say(out ? "pkumi.turn.doneOut" : "pkumi.turn.done"),
           can: !busy && refused === null,
           run: () => hands.done(game, verdict, spellable),
           note,

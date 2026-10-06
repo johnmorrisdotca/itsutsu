@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { helpOffered, helpOpensOn, SOLVE_HELP_LIST, SOLVE_HELP_SAYS, SOLVE_HELPS, solveHelpOf, strongestHelp } from "./solveHelp";
+import { helpOffered, helpOpensOn, SOLVE_HELP_LIST, SOLVE_HELPS, solveHelpOf, solveHelpSays, strongestHelp } from "./solveHelp";
 
 /**
  * HOW A SOLVE WAS HELPED: one column, read one way. A helped solve counts as
@@ -38,7 +38,7 @@ describe("the helps", () => {
   it("read back only what they are, and each says so", () => {
     for (const help of SOLVE_HELP_LIST) {
       expect(solveHelpOf(help)).toBe(help);
-      expect(SOLVE_HELP_SAYS[help]).toMatch(/^Helped: /);
+      expect(solveHelpSays(help)).toMatch(/^Helped: /);
     }
     expect(solveHelpOf(null)).toBeNull();
     expect(solveHelpOf("hinted")).toBeNull();

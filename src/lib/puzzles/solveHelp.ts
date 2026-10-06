@@ -1,3 +1,6 @@
+import { speaker, type Speaker } from "../i18n/i18n";
+import { DEFAULT_LOCALE, type PhraseKey } from "../i18n/i18n.constants";
+
 /**
  * HOW A SOLVE WAS HELPED, and what that costs it. One column on the solve
  * (`PuzzleSolve.helped`), read the same way by everything that counts, scores
@@ -25,21 +28,22 @@ export type SolveHelp = (typeof SOLVE_HELPS)[keyof typeof SOLVE_HELPS];
 
 export const SOLVE_HELP_LIST: readonly SolveHelp[] = [SOLVE_HELPS.cheated, SOLVE_HELPS.explosionsSoft, SOLVE_HELPS.explosionsOff, SOLVE_HELPS.guided];
 
-/** The help in a few words, for a list of the help a solve took beside its checks and hints. */
-export const SOLVE_HELP_WORDS: Record<SolveHelp, string> = {
-  cheated: "Cheat drew a line",
-  explosionsSoft: "explosions softened",
-  explosionsOff: "explosions off",
-  guided: "the solve's steps were shown",
+const HELP_PHRASE: Record<SolveHelp, PhraseKey> = {
+  cheated: "puzzle.help.cheated",
+  explosionsSoft: "puzzle.help.explosionsSoft",
+  explosionsOff: "puzzle.help.explosionsOff",
+  guided: "puzzle.help.guided",
 };
 
+/** The help in a few words, for a list of the help a solve took beside its checks and hints. */
+export function solveHelpWords(help: SolveHelp, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return say.say(HELP_PHRASE[help]);
+}
+
 /** What a helped solve says about itself, wherever it is shown. */
-export const SOLVE_HELP_SAYS: Record<SolveHelp, string> = {
-  cheated: `Helped: ${SOLVE_HELP_WORDS.cheated}`,
-  explosionsSoft: `Helped: ${SOLVE_HELP_WORDS.explosionsSoft}`,
-  explosionsOff: `Helped: ${SOLVE_HELP_WORDS.explosionsOff}`,
-  guided: `Helped: ${SOLVE_HELP_WORDS.guided}`,
-};
+export function solveHelpSays(help: SolveHelp, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return say.say("puzzle.help.helped", { help: solveHelpWords(help, say) });
+}
 
 /** Whether a solve with this help (or none) opens what a solve opens: every help but explosions off. */
 export function helpOpensOn(help: SolveHelp | null): boolean {

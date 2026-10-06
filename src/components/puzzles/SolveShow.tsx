@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 
 import type { Checking } from "./solveShared";
@@ -11,6 +12,7 @@ import type { Checking } from "./solveShared";
  * paid for from the same allowance: with three checks, three presses of either.
  */
 export function SolveShow({ checking, onShow, disabled }: { checking: Checking; onShow: () => void; disabled: boolean }) {
+  const say = useSpeaker();
   const spent = checking.left === 0;
   return (
     <button
@@ -18,10 +20,10 @@ export function SolveShow({ checking, onShow, disabled }: { checking: Checking; 
       className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
       onClick={onShow}
       disabled={disabled || spent}
-      title={spent ? "No checks left: Show is paid for from the checks" : "Mark the cells that are wrong"}
+      title={say.say(spent ? "puzzle.solve.showSpent" : "puzzle.solve.showWords")}
       data-testid="puzzle-show"
     >
-      Show
+      {say.say("puzzle.solve.show")}
     </button>
   );
 }

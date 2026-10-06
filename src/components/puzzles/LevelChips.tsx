@@ -2,9 +2,14 @@
 
 import { useState, type ReactNode } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { readerName } from "./readerName";
+
 const CHIP = "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs leading-none whitespace-nowrap";
 
-/** What one chip says: its words, its kanji where it has one, and the line a hover or a tap shows. */
+/** What one chip says: its words (in the reader's language where it has no kanji), its kanji where it has one, and the line a hover or a tap shows. */
 export type LevelChip = { key: string; label: string; kanji?: string; says: string };
 
 /** The words of the row's three fixed chips, which every game of levels has: its difficulty, what a block's 15th level teaches and what its 16th tests. */
@@ -49,6 +54,7 @@ export function LevelChips({
   twists: readonly LevelChip[];
   copy: LevelChipsCopy;
 }) {
+  const say = useSpeaker();
   const [open, setOpen] = useState<string | null>(null);
   const says = (key: string): string => (key === "difficulty" ? copy.difficulty.says : key === "teaches" ? copy.teaches.says : key === "tests" ? copy.tests.says : (twists.find((twist) => twist.key === key)?.says ?? ""));
   const chip = (key: string, content: ReactNode, strong = false) => (
@@ -73,19 +79,19 @@ export function LevelChips({
               "difficulty",
               <>
                 {copy.difficulty.label}{" "}
-                <span aria-label={`${marks} of 5`} data-testid={`${prefix}-difficulty`} data-marks={marks}>
+                <span aria-label={say.say("pmaze.chip.marksOf", { marks: String(marks) })} data-testid={`${prefix}-difficulty`} data-marks={marks}>
                   {"●".repeat(marks)}
                   <span className="opacity-30">{"●".repeat(5 - marks)}</span>
                 </span>
               </>,
             )}
-        {role?.role === "teaches" && role.newOnes.length > 0 ? chip("teaches", `New: ${role.newOnes.join(" and ")}`, true) : null}
-        {role?.role === "tests" ? chip("tests", <>{copy.tests.label} <span className="font-mincho opacity-70">{copy.tests.kanji}</span></>, true) : null}
+        {role?.role === "teaches" && role.newOnes.length > 0 ? chip("teaches", say.say("pmaze.chip.new", { things: say.list(role.newOnes) }), true) : null}
+        {role?.role === "tests" ? chip("tests", <><Paired en={copy.tests.label} kanji={copy.tests.kanji} kanjiClassName="opacity-70" inReadersLanguage /></>, true) : null}
         {twists.map((twist) =>
           chip(
             twist.key,
             <>
-              {twist.label} {twist.kanji === undefined ? null : <span className="font-mincho opacity-70">{twist.kanji}</span>}
+              <Paired en={readerName(say, twist)} kanji={twist.kanji ?? ""} kanjiClassName="opacity-70" inReadersLanguage />
             </>,
           ),
         )}

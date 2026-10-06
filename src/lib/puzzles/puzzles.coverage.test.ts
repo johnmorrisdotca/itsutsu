@@ -9,7 +9,13 @@ import { gameArtPath, gameThumbPath } from "@/lib/gomoku/artwork";
 import { GAME_FAMILIES, boardGamesOf, familyOf } from "@/lib/gomoku/families";
 import { PUZZLE_SLUGS, slugFor } from "@/lib/gomoku/slugs";
 
+import { jaBack, jaText } from "@/lib/i18n/copyJa.types";
+import { overlayLines } from "@/lib/i18n/copyTable";
+import { problemsWith } from "@/lib/i18n/copyTableAudit";
+import { PUZZLE_COPY_JA } from "@/lib/i18n/dictionaries/puzzles.ja.constants";
+
 import { generatePuzzle } from "./generate";
+import { puzzleCopy } from "./puzzleCopy";
 import { prepareEveryPuzzle } from "./prepareEvery";
 
 // The kana Gomoji is made from a list loaded a length at a time: load them all before anything is made.
@@ -156,6 +162,40 @@ describe("every puzzle is finished, not just declared", () => {
     expect(copy.rules.length).toBeGreaterThanOrEqual(3);
     // Every puzzle here is our version of a published one, under a name of our own.
     expect(copy.inspiredBy, `${kind} names nothing it is our version of`).toBeDefined();
+  });
+
+  it.each(PUZZLE_KIND_LIST)("%s has Japanese copy: a tagline, an origin, a line for every rule and the board advice, each read and back-translated", (kind) => {
+    const english = PUZZLE_DISPLAY[kind];
+    const ja = PUZZLE_COPY_JA[kind];
+    expect(ja, `${kind} has no Japanese`).toBeDefined();
+    expect(ja.review, `${kind}: nobody has read its Japanese`).toBeDefined();
+    expect(ja.rules, `${kind} has no rules in Japanese`).toBeDefined();
+    expect(ja.rules!.length, `${kind} needs a Japanese line for each of its ${english.rules.length} rules`).toBe(english.rules.length);
+    const lines = [ja.tagline!, ja.origin!, ja.board!, ...ja.rules!];
+    // Our version of a game that is a description, not a name: its Japanese is a description too.
+    if (ja.inspiredBy !== undefined) lines.push(ja.inspiredBy);
+    for (const line of lines) expect(problemsWith(line), `${kind}`).toEqual([]);
+    // Said in Japanese, the copy is the Japanese and keeps the names.
+    const read = puzzleCopy(kind, "ja");
+    expect(read.tagline).toBe(jaText(ja.tagline!));
+    expect(read.board).toBe(jaText(ja.board!));
+    expect(read.rules.map((rule) => rule)).toEqual(ja.rules!.map(jaText));
+    expect(read.label).toBe(english.label);
+    expect(read.kanji).toBe(english.kanji);
+    expect(read.alsoKnownAs).toEqual(english.alsoKnownAs);
+    expect(puzzleCopy(kind, "en")).toBe(english);
+    // Every Japanese line has its English beside it, never another Japanese line.
+    for (const line of lines) expect(jaBack(line).length).toBeGreaterThan(10);
+  });
+
+  it("names no puzzle by a publisher's title for it in Japanese", () => {
+    // 数独 is Nikoli's trademark (TERMS.md); the names below are the Japanese brand names this site does not use.
+    const brands = /数独|カックロ|ナンバーリンク|スリザーリンク|フィルオミノ|四角に切れ|美術館|ひとりにしてくれ|イラストロジック|マインスイーパー/;
+    for (const kind of PUZZLE_KIND_LIST) {
+      const everything = overlayLines(PUZZLE_COPY_JA[kind]).map(({ line }) => line[0]).join("\n");
+      expect(everything, kind).not.toMatch(brands);
+      expect(PUZZLE_DISPLAY[kind].kanji, kind).not.toMatch(brands);
+    }
   });
 
   it.each(PUZZLE_KIND_LIST)("%s builds a rules page with every section filled", (kind) => {

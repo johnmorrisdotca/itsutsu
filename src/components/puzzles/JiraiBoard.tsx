@@ -9,6 +9,9 @@ import { activeCells } from "@johnmorrisdotca/jirai";
 
 import { jiraiGameOf, jiraiRecipeOf, OUTSIDE, type JiraiMove, type JiraiRecipe } from "@/lib/puzzles/jirai/board";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { packageLanguage } from "./mazeWords";
 import { PuzzleBoard } from "./PuzzleBoard";
 
 /** How long a finger is held on a square for it to mean a flag, as Jirai's own board takes it. */
@@ -59,8 +62,10 @@ export function JiraiBoard({
   label: string;
   onMove?: (move: JiraiMove) => void;
 }) {
+  const say = useSpeaker();
+  const language = packageLanguage(say.locale);
   const recipe = useMemo(() => jiraiRecipeOf(size, givens), [size, givens]);
-  const model = useMemo(() => (recipe === null ? null : boardModel(viewOf(recipe, code), { pieces: "flags", hint })), [recipe, code, hint]);
+  const model = useMemo(() => (recipe === null ? null : boardModel(viewOf(recipe, code), { pieces: "flags", hint, language })), [recipe, code, hint, language]);
   const [cursor, setCursor] = useState<number | null>(null);
   const held = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -164,7 +169,7 @@ export function JiraiBoard({
                   data-kind={marked ? "wrong" : cell.kind}
                   data-hint={String(cell.hint)}
                   data-number={cell.kind === "open" ? cell.text : ""}
-                  aria-label={marked ? `${cell.label.split(":")[0]}: a flag that is wrong` : cell.label}
+                  aria-label={marked ? say.say("pgrid.jirai.wrongFlag", { where: cell.label.split(":")[0]! }) : cell.label}
                   tabIndex={readOnly ? -1 : cell.cell === at ? 0 : -1}
                   disabled={readOnly}
                   style={{ left: `${(cell.x / model.width) * 100}%`, top: `${(cell.y / model.height) * 100}%`, width: `${(cell.width / model.width) * 100}%`, height: `${(cell.height / model.height) * 100}%` }}

@@ -5,28 +5,38 @@ import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from
 import { blockAt, isLocked, placeAfter, shapeOf, SIDES, type Layout } from "@johnmorrisdotca/suido";
 import { attachSuidoView, drawSuido, paintSuido, SUIDO_STYLE, type SuidoView, type SuidoViewer } from "@johnmorrisdotca/suido/draw";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { cellFacts } from "@/lib/puzzles/cellLabel";
+
 import { PuzzleBoard } from "./PuzzleBoard";
 
-const SIDE_WORDS = ["north", "east", "south", "west"] as const;
+const SIDE_PHRASES = ["pmaze.suido.north", "pmaze.suido.east", "pmaze.suido.south", "pmaze.suido.west"] as const;
+/** What each shape of piece is called, as a phrase. A blank is bare ground and is said differently. */
+const SHAPE_PHRASES = { end: "pmaze.suido.end", straight: "pmaze.suido.straight", elbow: "pmaze.suido.elbow", tee: "pmaze.suido.tee", cross: "pmaze.suido.cross" } as const;
 
 /**
  * What a screen reader hears for one cell: where it is, what piece it holds, which sides it opens on, and whether it is a pump or a
  * drain. A piece of a block that turns as one is named by the cell it was given in and has been carried round by its block, so
  * it is said where it is now and as part of the block it moves with (`quarters` is how far its block has been turned).
  */
-function cellLabel(layout: Layout, masks: readonly number[], quarters: readonly number[], cell: number): string {
+function cellLabel(say: Speaker, layout: Layout, masks: readonly number[], quarters: readonly number[], cell: number): string {
   const block = blockAt(layout, cell);
   const place = block === null ? cell : placeAfter(block, cell, quarters[cell] ?? 0);
   const mask = masks[place] ?? 0;
   const shape = shapeOf(mask);
-  const where = `row ${Math.floor(place / layout.width) + 1}, column ${(place % layout.width) + 1}`;
-  if (shape === "blank") return `${where}: bare ground`;
-  const opens = SIDES.map((bit, side) => ((mask & bit) !== 0 ? SIDE_WORDS[side] : null)).filter((word) => word !== null);
-  const role = layout.sources.includes(cell) ? ", pump" : layout.drains.includes(cell) ? ", drain" : "";
+  const where = say.say("pgrid.cell.where", { row: String(Math.floor(place / layout.width) + 1), col: String((place % layout.width) + 1) });
+  if (shape === "blank") return say.say("pmaze.suido.bare", { where });
+  const opens = SIDES.map((bit, side) => ((mask & bit) !== 0 ? say.say(SIDE_PHRASES[side]!) : null)).filter((word) => word !== null);
   // A level's locked piece cannot be turned: said, so a reader's tools do not offer a press that does nothing.
-  const lock = isLocked(layout, cell) ? ", locked" : "";
-  const part = block === null ? "" : block.big ? ", part of a big piece, turns with it" : ", turns with its block";
-  return `${where}: ${shape === "tee" ? "T" : shape} piece${role}${lock}${part}, open ${opens.join(" and ")}`;
+  return cellFacts(
+    say,
+    say.say(SHAPE_PHRASES[shape], { where }),
+    ...(layout.sources.includes(cell) ? [say.say("pmaze.suido.pump")] : layout.drains.includes(cell) ? [say.say("pmaze.suido.drain")] : []),
+    ...(isLocked(layout, cell) ? [say.say("pmaze.suido.locked")] : []),
+    ...(block === null ? [] : [say.say(block.big ? "pmaze.suido.bigPart" : "pmaze.suido.block")]),
+    say.say("pmaze.suido.open", { sides: say.list(opens) }),
+  );
 }
 
 /** The cell an arrow key moves to from `cell`, staying on the board. */
@@ -94,11 +104,12 @@ export function SuidoBoard({
   onViewer?: (viewer: SuidoViewer | null) => void;
   onView?: (view: SuidoView) => void;
 }) {
+  const say = useSpeaker();
   const live = !readOnly && !done;
   const box = useRef<HTMLDivElement>(null);
   const cursor = useRef(0);
   // Made once, from where the board stood when it was first drawn, so the picture is never replaced under the water.
-  const [drawn] = useState(() => drawSuido(layout, { masks, quarters, label: `Suido board, ${layout.width} by ${layout.height}` }));
+  const [drawn] = useState(() => drawSuido(layout, { masks, quarters, label: say.say("pmaze.suido.board", { width: String(layout.width), height: String(layout.height) }) }));
 
   /* The box that moves and zooms the board, where it is one. */
   const viewer = useRef<SuidoViewer | null>(null);
@@ -123,10 +134,11 @@ export function SuidoBoard({
     const svg = box.current?.querySelector("svg");
     if (svg === null || svg === undefined) return;
     paintSuido(svg, layout, masks, quarters);
+    svg.setAttribute("aria-label", say.say("pmaze.suido.board", { width: String(layout.width), height: String(layout.height) }));
     svg.querySelectorAll<SVGGElement>(".sd-cell").forEach((cell, at) => {
       cell.setAttribute("data-testid", "suido-cell");
       cell.setAttribute("data-mask", String(masks[at] ?? 0));
-      cell.setAttribute("aria-label", cellLabel(layout, masks, quarters, at));
+      cell.setAttribute("aria-label", cellLabel(say, layout, masks, quarters, at));
       if (live) cell.setAttribute("role", "button");
       else cell.removeAttribute("role");
       cell.setAttribute("tabindex", live && at === cursor.current ? "0" : "-1");
@@ -144,7 +156,7 @@ export function SuidoBoard({
       for (const lit of block.cells) cells[lit]?.setAttribute("data-hint", "true");
     }
     if (hint !== null) viewer.current?.show(hint);
-  }, [layout, masks, quarters, hint, live]);
+  }, [layout, masks, quarters, hint, live, say]);
 
   const cellOf = (target: EventTarget | null): number | null => {
     const found = target instanceof Element ? target.closest(".sd-cell") : null;

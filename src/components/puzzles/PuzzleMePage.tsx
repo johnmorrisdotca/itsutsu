@@ -6,13 +6,17 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { gamePath, historyPath, matchPath, mySolvePath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_DISPLAY, PUZZLE_KINDS, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
-import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { levelNameOf, puzzleCopy, puzzleName } from "@/lib/puzzles/puzzleCopy";
+import { PUZZLE_KINDS } from "@/lib/puzzles/puzzles.constants";
+import { sizeWordIn } from "@/lib/puzzles/sizeWord";
+import { commaOf } from "@/lib/puzzles/puzzleText";
+import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { racesOf, readRace, seatOf } from "@/lib/puzzles/server/puzzleRaces";
 import { ownSolvesOf, ownWordsOf } from "@/lib/puzzles/server/puzzleSolves";
 
 import { KumimojiWallpaper } from "./KumimojiWallpaper";
-import { sizeWord } from "./puzzles.constants";
 import { SolveTime } from "./SolveTime";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
@@ -29,7 +33,9 @@ import { GameTrail } from "@/components/games/GameTrail";
  * instead, found and not found, with their guesses (`WordHistory`).
  */
 export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
-  const copy = PUZZLE_DISPLAY[kind];
+  const say = await currentSpeaker();
+  const copy = puzzleCopy(kind, say.locale);
+  const name = puzzleName(kind, say.locale);
   const me = await currentMemberId();
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop";
   const [solves, races, played] =
@@ -40,21 +46,21 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
     <Page>
       <SiteHeader />
       <PageTitle
-        title={`Your ${copy.label}`}
-        kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={[{ label: "Yours" }]} />}
+        title={say.say("pset.solve.yourTitle", { name })}
+        kanji={say.pairsWithKanji ? copy.kanji : ""}
+        crumb={<GameTrail game={{ label: name, href: gamePath(kind) }} steps={[{ label: say.say("pset.solve.yours") }]} />}
         lead={
           me === null
-            ? "This page lists your own solves, and it does not know who you are yet."
+            ? say.say("pset.me.lead.guest")
             : words
-              ? "Every word you have played, found or not, with your guesses and what each scored."
-              : "Your solves of it, newest first, and your races."
+              ? say.say("pset.me.lead.words")
+              : say.say("pset.me.lead.solves")
         }
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
-          <Link href={standingsPath(kind)} className="text-muted underline-offset-2 hover:underline">fastest here</Link>
-          <Link href={historyPath(kind)} className="text-muted underline-offset-2 hover:underline" data-testid="me-everybody">everybody&apos;s solves</Link>
-          <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">play one</Link>
+          <Link href={standingsPath(kind)} className="text-muted underline-offset-2 hover:underline">{say.say("pset.link.fastestHere")}</Link>
+          <Link href={historyPath(kind)} className="text-muted underline-offset-2 hover:underline" data-testid="me-everybody">{say.say("pset.link.everybodys")}</Link>
+          <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">{say.say("pset.link.playOne")}</Link>
         </p>
       </PageTitle>
 
@@ -63,15 +69,15 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
       {words ? null : (
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-own-solves">
         <h2 className={SECTION_TITLE}>
-          Your solves <span className="font-mincho normal-case tracking-normal">自分の解</span>
+          <Paired en={say.say("pset.me.yourSolves")} kanji="自分の解" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
         </h2>
         {/* Every crossword you have finished as one picture, fetched on the press and drawn in your browser. */}
         {kind === PUZZLE_KINDS.kumimoji && me !== null ? <KumimojiWallpaper /> : null}
         {solves.length === 0 ? (
           <p className="text-sm text-muted">
-            None yet.{" "}
+            {say.say("pset.me.none")}{say.pairsWithKanji ? " " : ""}
             <Link href={setUpPath(kind)} className="font-semibold text-ink underline-offset-2 hover:underline">
-              Play one →
+              {say.say("pset.me.playOne")}
             </Link>
           </p>
         ) : (
@@ -79,9 +85,9 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
           <table className="w-full text-sm">
             <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
               <tr>
-                <th className="py-1 pr-2 text-left">Puzzle</th>
-                <th className="py-1 pr-2 text-left">Time</th>
-                <th className="py-1 text-left">When</th>
+                <th className="py-1 pr-2 text-left">{say.say("pset.col.puzzle")}</th>
+                <th className="py-1 pr-2 text-left">{say.say("pset.col.time")}</th>
+                <th className="py-1 text-left">{say.say("pset.col.when")}</th>
               </tr>
             </thead>
             <tbody>
@@ -89,11 +95,11 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
                 <tr key={solve.id} className="border-t border-rule" data-testid="puzzle-own-solve">
                   <td className="py-1 pr-2">
                     <Link href={mySolvePath(kind, solve.id)} className="underline-offset-2 hover:underline" data-testid="puzzle-own-solve-open">
-                      {sizeWord(solve.size, kind)}, <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level as PuzzleLevel].label.toLowerCase()}</span>
+                      {sizeWordIn(solve.size, kind, say)}{commaOf(say)}<span className="text-muted">{levelNameOf(solve.level, say.locale)}</span>
                     </Link>
                     {solve.raceId !== null ? (
                       <Link href={matchPath(kind, solve.raceId)} className="ml-2 text-xs underline-offset-2 hover:underline">
-                        in a race
+                        {say.say("pset.me.inARace")}
                       </Link>
                     ) : null}
                   </td>
@@ -112,13 +118,13 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
 
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-own-races">
         <h2 className={SECTION_TITLE}>
-          Your races <span className="font-mincho normal-case tracking-normal">競解</span>
+          <Paired en={say.say("pset.me.yourRaces")} kanji="競解" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
         </h2>
         {races.length === 0 ? (
           <p className="text-sm text-muted">
-            None yet.{" "}
+            {say.say("pset.me.none")}{say.pairsWithKanji ? " " : ""}
             <Link href={setUpPath(kind)} className="font-semibold text-ink underline-offset-2 hover:underline">
-              Play a friend →
+              {say.say("pset.me.playAFriend")}
             </Link>
           </p>
         ) : (
@@ -126,12 +132,12 @@ export async function PuzzleMePage({ kind }: { kind: PuzzleKind }) {
             {races.map((race) => {
               const read = readRace(race);
               const seat = seatOf(race, me);
-              const other = seat === "host" ? race.guestName || "nobody yet" : race.hostName;
-              const standing = !read.outcome.over ? "not over" : read.outcome.winner === null ? "nobody won" : read.outcome.winner === seat ? "you won" : "they won";
+              const other = seat === "host" ? race.guestName || say.say("pset.me.nobodyYet") : race.hostName;
+              const standing = say.say(!read.outcome.over ? "pset.me.notOver" : read.outcome.winner === null ? "pset.me.nobodyWon" : read.outcome.winner === seat ? "pset.me.youWon" : "pset.me.theyWon");
               return (
                 <li key={race.id} data-testid="puzzle-own-race">
                   <Link href={matchPath(kind, race.id)} className="underline-offset-2 hover:underline">
-                    {sizeWord(race.size, kind)} against {other}
+                    {say.say("pset.me.against", { size: sizeWordIn(race.size, kind, say), other })}
                   </Link>{" "}
                   <span className="text-muted">
                     — <ResultMark kind={read.outcome.over ? markOfSeat(read.outcome.winner, seat ?? "", true) : RESULT_MARKS.other} className="mr-0.5" /> {standing}

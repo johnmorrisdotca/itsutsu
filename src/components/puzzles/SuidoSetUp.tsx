@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { declaredTwists } from "@johnmorrisdotca/suido/levels-info";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { START_PRESS } from "@/components/live/live.constants";
 import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
@@ -28,7 +29,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { SetUpResume } from "./SetUpResume";
 import { useSizeShelves } from "./sizeShelves";
-import { SUIDO_COPY } from "./suido.constants";
+import { suidoWords } from "./mazeWords";
 import { SuidoLevelChips } from "./SuidoLevelChips";
 import { SuidoLevelPicker, suidoLevelPath } from "./SuidoLevelPicker";
 import { SuidoLevelPreview } from "./SuidoLevelPreview";
@@ -69,6 +70,8 @@ export function SuidoSetUp({
   /** A Suido already going, if any (a level or a board made): offered first, above Start (`SetUpResume`). */
   resumeHref?: string | null;
 }) {
+  const say = useSpeaker();
+  const SUIDO_COPY = suidoWords(say.locale).copy;
   const hydrated = useHydrated();
   const { size, setSize, shown, onLast, turnShelf, furthest } = useSizeShelves(SUIDO_LEVEL_SIZES, initialSize);
 
@@ -128,30 +131,30 @@ export function SuidoSetUp({
           <SuidoLevelPreview size={size} level={chosen} best={best[chosen]} solveId={bestSolves[size]?.[chosen] ?? null} locked={chosenLocked} ready={ready} />
           <SuidoLevelPicker size={size} block={block} best={best} open={open} next={next} chosen={chosen} onChoose={(level) => setPicked({ size, level })} />
           <div className="flex items-center gap-2" data-testid="suido-blocks">
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(-1)} disabled={block <= 1} aria-label="The block before" data-testid="suido-block-back">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(-1)} disabled={block <= 1} aria-label={say.say("pmaze.blockBefore")} data-testid="suido-block-back">
               ‹
             </button>
             <span className="min-w-44 text-center text-sm tabular-nums" data-testid="suido-block" data-block={block}>
-              Block {block} of {blocks} · levels {first}–{last}
+              {say.say("pmaze.blockLine", { block: String(block), blocks: String(blocks), first: String(first), last: String(last) })}
             </span>
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(1)} disabled={block >= blocks} aria-label="The block after" data-testid="suido-block-on">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(1)} disabled={block >= blocks} aria-label={say.say("pmaze.blockAfter")} data-testid="suido-block-on">
               ›
             </button>
           </div>
           <p className="text-xs text-muted" data-testid="suido-levels-caption">
-            {suidoSizeWord(size)}: {done.size} of {count} solved. Each block of 16 opens when the one before it is all solved.
+            {say.say("pmaze.tallyBlocks", { what: suidoSizeWord(size), done: String(done.size), count: String(count) })}
           </p>
         </div>
         <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="suido-sizes">
           <BoardPicker value={size} sizes={shown} onChange={setSize} names={PUZZLE_SIZE_NAMES.suido} beside />
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm`} onClick={turnShelf} data-testid="suido-more-sizes">
-            {onLast ? `← Smaller boards, from ${suidoSizeWord(SUIDO_LEVEL_SIZES[0]!)}` : `Bigger boards, to ${suidoSizeWord(furthest)} →`}
+            {onLast ? say.say("pmaze.smallerBoards", { size: suidoSizeWord(SUIDO_LEVEL_SIZES[0]!) }) : say.say("pmaze.biggerBoards", { size: suidoSizeWord(furthest) })}
           </button>
         </div>
       </div>
 
       <div className={SET_UP_OPTIONS_AND_PLAY}>
-        <SetUpSection title="Options" kanji="設定" testId="puzzle-settings">
+        <SetUpSection title={say.say("pset.options")} kanji="設定" testId="puzzle-settings">
           <p className="text-xs text-muted" data-testid="puzzle-size-note">
             {SUIDO_COPY.levelsNote}
           </p>
@@ -162,22 +165,22 @@ export function SuidoSetUp({
           {chosenLocked ? (
             // The same button, saying why it cannot start: a locked level is looked at, never played.
             <span className={`${PLAY_BUTTON} cursor-not-allowed opacity-60`} aria-disabled="true" data-testid="puzzle-solve" data-level={chosen} data-locked="true">
-              <PressLabel words={`Level ${chosen} is locked`} kanji="鍵" />
+              <PressLabel words={say.say("pmaze.levelLocked", { level: String(chosen) })} kanji="鍵" />
             </span>
           ) : (
             <Link href={suidoLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
-              <PressLabel words={`${START_PRESS.start.words} level ${chosen}`} kanji={START_PRESS.start.kanji} />
+              <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={START_PRESS.start.kanji} />
             </Link>
           )}
           {/* What the level Start plays asks, before it is started. */}
           <SuidoLevelChips size={size} level={chosen} twists={twists} />
           {skippedPast ? (
             <p className="text-xs text-muted" data-testid="suido-first-unsolved">
-              Level {gap} is the first one you have not finished.
+              {say.say("pmaze.firstUnfinished", { level: String(gap) })}
             </p>
           ) : null}
           <p className="text-xs text-muted" data-testid="suido-kept-where">
-            {hasAccount ? "Your solved levels are kept on your account." : "Your solved levels are kept in this browser. Join, and they are kept on an account."}
+            {say.say(hasAccount ? "pmaze.keptAccount" : "pmaze.keptBrowser")}
           </p>
         </div>
       </div>

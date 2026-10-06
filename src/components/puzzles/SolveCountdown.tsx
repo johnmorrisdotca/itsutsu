@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { clockText } from "@/lib/puzzles/clockText";
 import { countdownSaying, countdownSeconds, isUrgent, timeLeftMs } from "@/lib/puzzles/puzzleClock";
 import { PUZZLE_CLOCK_DISPLAY } from "@/lib/puzzles/puzzles.constants";
@@ -22,15 +23,17 @@ export function SolveCountdown({ clock, elapsedMs }: { clock: Exclude<PuzzleCloc
   const urgent = isUrgent(left);
   const seconds = countdownSeconds(left);
   const shown = PUZZLE_CLOCK_DISPLAY[clock];
+  const say = useSpeaker();
+  const name = say.locale === "ja" ? shown.kanji : shown.label;
   return (
     <>
-      <span className="font-mincho text-base text-muted" title={shown.label} aria-hidden="true" data-testid="puzzle-clock-animal">
+      <span className="font-mincho text-base text-muted" title={name} aria-hidden="true" data-testid="puzzle-clock-animal">
         {shown.kanji}
       </span>
       <p
         className={`${PUZZLE_CLOCK} ${PUZZLE_COUNTDOWN} ${urgent ? PUZZLE_COUNTDOWN_URGENT : ""}`}
         role="timer"
-        aria-label={`time left on the ${shown.label}`}
+        aria-label={say.say("puzzle.solve.timeLeft", { clock: name })}
         data-testid="puzzle-clock"
         data-clock={clock}
         data-left={seconds}
@@ -39,7 +42,7 @@ export function SolveCountdown({ clock, elapsedMs }: { clock: Exclude<PuzzleCloc
         {clockText(seconds * 1000)}
       </p>
       <span className="sr-only" aria-live="polite" data-testid="puzzle-clock-said">
-        {countdownSaying(clock, left)}
+        {countdownSaying(clock, left, say)}
       </span>
     </>
   );

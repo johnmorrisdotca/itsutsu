@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { playPath } from "@/lib/gomoku/slugs";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { blockRange } from "@johnmorrisdotca/tsunagi";
@@ -7,6 +8,8 @@ import { tsunagiRole } from "@johnmorrisdotca/tsunagi";
 import { levelCountOf, tsunagiBand, type TsunagiSet } from "@/lib/puzzles/tsunagi/levels";
 
 import { LevelPicker } from "./LevelPicker";
+import { tsunagiChips } from "./mazeWords";
+import { readerName } from "./readerName";
 import { TSUNAGI_MARBLE, tsunagiMarbleLook, tsunagiNumberType, type TsunagiMarks } from "./puzzles.constants";
 
 /** The address of one level: the solve's own, its seed (its number, or a portal level's past the first set's: `tsunagi/levels.ts`) the seed. */
@@ -49,6 +52,8 @@ export function TsunagiLevelPicker({
   onChoose: (level: number) => void;
   marks: TsunagiMarks;
 }) {
+  const say = useSpeaker();
+  const words = tsunagiChips(say.locale);
   const count = levelCountOf(size, set);
   const { first, last } = blockRange(block, count);
   return (
@@ -66,7 +71,7 @@ export function TsunagiLevelPicker({
       onChoose={onChoose}
       roleOf={(level) => {
         const role = tsunagiRole(size, level, set);
-        return role === null ? null : { role: role.role, words: role.challenges.join(" and ") };
+        return role === null ? null : { role: role.role, words: say.list(role.challenges.map((challenge) => readerName(say, words[challenge]).toLowerCase())) };
       }}
       solvedMark={(level) => (
         <span className={`${TSUNAGI_MARBLE} size-6`} style={{ ...tsunagiMarbleLook(block - 1, marks), ...tsunagiNumberType(level, "1.5rem", "0.65rem") }} data-testid="tsunagi-level-marble">

@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import type { ComputerSaid } from "@/lib/puzzles/kumimoji/computer.types";
 import { planComputerTurn } from "@/lib/puzzles/kumimoji/computerTurn";
-import { nameOf } from "@/lib/puzzles/kumimoji/party";
 import type { PartyGame } from "@/lib/puzzles/kumimoji/party.types";
 import { tileFace } from "@/lib/puzzles/kumimoji/tileFace";
 import type { TileWords } from "@/lib/puzzles/kumimoji/tileWords";
@@ -14,23 +15,24 @@ import { COMPUTER_PAUSE_MS } from "./kumimoji.constants";
 import { ComputerMark } from "./KumimojiDeskParts";
 import { PartyBoard } from "./KumimojiPartyBoards";
 import { keepParty } from "./kumimojiPartyKept";
+import { seatName } from "./kumimojiWords";
 
 /** What a step of a computer's turn did, in a few words. */
-function sayStep(said: ComputerSaid | null, words: TileWords): string {
-  if (said === null) return "Looking at its tiles…";
+function sayStep(said: ComputerSaid | null, words: TileWords, say: Speaker): string {
+  if (said === null) return say.say("pkumi.computer.looking");
   switch (said.kind) {
     case "rebuilt":
-      return "Took its tiles up to build again";
+      return say.say("pkumi.computer.rebuilt");
     case "laid":
-      return `Laid ${(words.wordOf(said.word) ?? said.word).toUpperCase()}`;
+      return say.say("pkumi.computer.laid", { word: (words.wordOf(said.word) ?? said.word).toUpperCase() });
     case "drew":
-      return "Draw: a tile for everybody";
+      return say.say("pkumi.computer.drew");
     case "traded":
-      return `Traded ${tileFace(said.tile).glyph.toUpperCase()} for three tiles`;
+      return say.say("pkumi.computer.traded", { tile: tileFace(said.tile).glyph.toUpperCase() });
     case "done":
-      return said.out ? "Done, and out" : "Done";
+      return say.say(said.out ? "pkumi.computer.doneOut" : "pkumi.computer.done");
     case "resigned":
-      return "Resigned: it can do nothing more";
+      return say.say("pkumi.computer.resigned");
   }
 }
 
@@ -49,6 +51,7 @@ function sayStep(said: ComputerSaid | null, words: TileWords): string {
  * way to end the game.
  */
 export function KumimojiPartyComputer({ game, words, theme, children }: { game: PartyGame; words: TileWords; theme: BoardThemeTokens; children: ReactNode }) {
+  const say = useSpeaker();
   const steps = useMemo(() => planComputerTurn(game, words), [game, words]);
   /* How many steps are on the screen: none at first, then one more each pause; one pause past the last, the game moves on. */
   const [shown, setShown] = useState(0);
@@ -88,11 +91,11 @@ export function KumimojiPartyComputer({ game, words, theme, children }: { game: 
   return (
     <section className="flex flex-col gap-3" data-testid="kumimoji-party-computer" data-player={game.turn} data-step={at} data-steps={steps.length}>
       <p className="flex min-w-0 items-center gap-2 text-base font-semibold" data-testid="kumimoji-party-whose">
-        <span className="min-w-0 truncate">{nameOf(game, game.turn)} is playing</span>
+        <span className="min-w-0 truncate">{say.say("pkumi.computer.playing", { name: seatName(say, game, game.turn) })}</span>
         <ComputerMark />
       </p>
       <p className="min-h-5 text-sm text-muted" data-testid="kumimoji-party-computer-said" aria-live="polite">
-        {moves ? sayStep(said, words) : "This computer cannot move: end the game below."}
+        {moves ? sayStep(said, words, say) : say.say("pkumi.computer.stuck")}
       </p>
       <PartyBoard game={frame} at={game.turn} theme={theme} />
       {children}

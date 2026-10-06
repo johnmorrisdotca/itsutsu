@@ -2,6 +2,7 @@ import { BLANK, BULB, EDGE, SHADE, symbolFor } from "./codes";
 import { BLACK } from "./crossSums";
 import { shikakuPlace, shikakuRemove } from "./shikaku";
 import type { PencilKind } from "./pencil.types";
+import { ARROW_KEY } from "../../ui/keyNames.constants";
 
 /**
  * WHAT A PRESS DOES to a pencil puzzle's board, kept out of the components so
@@ -79,7 +80,7 @@ export function entered(kind: PencilKind, givens: string, code: string, ui: Penc
 
 /** The cell or edge an arrow key moves to from `from`, staying on the board. A Slitherlink's edges are walked in their order, left and right by one, up and down by a row of them. */
 export function moved(kind: PencilKind, size: number, from: number | null, key: string): number | null {
-  if (!key.startsWith("Arrow")) return from;
+  if (!key.startsWith(ARROW_KEY)) return from;
   const total = kind === "loop" ? 2 * size * (size + 1) : size * size;
   const start = from ?? 0;
   if (kind === "loop") {

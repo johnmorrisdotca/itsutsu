@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useCallback, useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
@@ -43,6 +44,7 @@ export function useStoneLines(): { on: boolean; toggle: () => boolean } {
  * (`HiddenStonesSolve`), and the Hint button's count says so.
  */
 export function StoneLinesToggle({ on, onToggle, disabled }: { on: boolean; onToggle: () => void; disabled: boolean }) {
+  const say = useSpeaker();
   return (
     <button
       type="button"
@@ -50,11 +52,11 @@ export function StoneLinesToggle({ on, onToggle, disabled }: { on: boolean; onTo
       onClick={onToggle}
       disabled={disabled}
       aria-pressed={on}
-      title="A line from every stone along its row and column. Counts as one hint."
+      title={say.say("pgrid.lines.says")}
       data-testid="puzzle-lines"
       data-on={on ? "true" : "false"}
     >
-      Lines
+      {say.say("pgrid.lines.press")}
     </button>
   );
 }

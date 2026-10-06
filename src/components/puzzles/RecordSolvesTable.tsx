@@ -1,6 +1,7 @@
 import Link from "@/components/ui/Link";
 
-import { SOLVE_HELP_SAYS } from "@/lib/puzzles/solveHelp";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { solveHelpSays } from "@/lib/puzzles/solveHelp";
 import { PlayerName } from "@/components/players/PlayerName";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
@@ -8,11 +9,12 @@ import { guessesText } from "@/lib/puzzles/gomoji/guessesTaken";
 import { clockWord } from "@/lib/puzzles/puzzleClock";
 import { puzzleOutcome } from "@/lib/puzzles/puzzleOutcome";
 import { ResultMark } from "@/components/game/ResultMark";
-import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { levelNameOf } from "@/lib/puzzles/puzzleCopy";
+import { sizeWordIn } from "@/lib/puzzles/sizeWord";
+import { commaOf } from "@/lib/puzzles/puzzleText";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import type { RecordSolve } from "@/lib/puzzles/server/puzzleRecord";
 
-import { sizeWord } from "./puzzles.constants";
 import { OneSolvePoints } from "./SolvePoints";
 import { SolveTime } from "./SolveTime";
 import type { NameTag } from "@/lib/xp/nameTag.types";
@@ -33,6 +35,7 @@ export function RecordSolvesTable({
   me,
   counted,
   filtered,
+  say,
 }: {
   kind: PuzzleKind;
   solves: readonly RecordSolve[];
@@ -43,61 +46,62 @@ export function RecordSolvesTable({
   counted: ReadonlySet<string> | null;
   /** Whether a filter is on, which changes what an empty table says. */
   filtered: boolean;
+  say: Speaker;
 }) {
   return (
     <div className={TABLE_SCROLL}>
       <table className="w-full text-sm" data-testid="record-solves">
         <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
           <tr>
-            <th className="py-1 pr-2 text-left">Player</th>
-            <th className="py-1 pr-2 text-left">Puzzle</th>
-            <th className="py-1 pr-2 text-left">Time</th>
-            <th className="py-1 pr-2 text-right">Points</th>
-            <th className="py-1 text-left">When</th>
+            <th className="py-1 pr-2 text-left">{say.say("points.board.player")}</th>
+            <th className="py-1 pr-2 text-left">{say.say("pset.col.puzzle")}</th>
+            <th className="py-1 pr-2 text-left">{say.say("pset.col.time")}</th>
+            <th className="py-1 pr-2 text-right">{say.say("pset.col.points")}</th>
+            <th className="py-1 text-left">{say.say("pset.col.when")}</th>
           </tr>
         </thead>
         <tbody>
           {solves.length === 0 ? (
             <tr className="border-t border-rule">
               <td colSpan={5} className="py-2 text-muted" data-testid="record-empty">
-                {filtered ? "No solves match what this record is narrowed to. " : "Nobody has solved this here yet. "}
+                {say.say(filtered ? "pset.rec.noMatch" : "pset.rec.nobody")}{" "}
                 <Link href={setUpPath(kind)} className="font-semibold text-ink underline-offset-2 hover:underline">
-                  {filtered ? "Play one →" : "Be the first →"}
+                  {say.say(filtered ? "pset.rec.playOneArrow" : "pset.rec.beFirstArrow")}
                 </Link>
               </td>
             </tr>
           ) : (
             solves.map((solve) => {
               const mine = solve.memberId === me;
-              const ended = puzzleOutcome(kind, solve.solved, solve.clock !== "none", solve.guesses);
+              const ended = puzzleOutcome(kind, solve.solved, solve.clock !== "none", solve.guesses, say);
               return (
                 <tr key={solve.id} className="border-t border-rule" data-testid="record-solve" data-solve={solve.id} data-member={solve.memberId} data-counted={counted?.has(solve.id) ? "true" : undefined}>
                   <td className="py-1 pr-2">
-                    <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback="A member" tag={tags.get(solve.memberId)} />
+                    <PlayerName name={names.get(solve.memberId) ?? ""} memberId={solve.memberId} fallback={say.say("points.board.aMember")} tag={tags.get(solve.memberId)} />
                   </td>
                   <td className="py-1 pr-2 whitespace-nowrap">
-                    {sizeWord(solve.size, kind)}, <span className="text-muted">{PUZZLE_LEVEL_DISPLAY[solve.level]?.label.toLowerCase() ?? solve.level}</span>
+                    {sizeWordIn(solve.size, kind, say)}{commaOf(say)}<span className="text-muted">{levelNameOf(solve.level, say.locale)}</span>
                   </td>
                   <td className="py-1 pr-2 whitespace-nowrap">
                     <ResultMark kind={ended.mark} className="mr-1" />
                     <SolveTime kind={kind} solveId={solve.id} elapsedMs={solve.elapsedMs} mine={mine} testId="record-solve-time" />
                     {solve.solved ? null : <span className="ml-1 text-xs text-muted" data-testid="record-solve-outcome">{ended.words.toLowerCase()}</span>}
-                    {clockWord(solve.clock) === "" ? null : (
+                    {clockWord(solve.clock, say) === "" ? null : (
                       <span className="ml-1 text-xs text-muted" data-testid="record-solve-clock">
-                        {clockWord(solve.clock)}
+                        {clockWord(solve.clock, say)}
                       </span>
                     )}
                     {solve.guesses === null || !solve.solved ? null : <span className="ml-1 text-xs text-muted tabular-nums">{guessesText(solve.guesses)}</span>}
-                    {solve.raceId === null ? null : <span className="ml-1 text-xs text-muted">race</span>}
+                    {solve.raceId === null ? null : <span className="ml-1 text-xs text-muted">{say.say("pset.rec.race")}</span>}
                     {solve.helped === null ? null : (
-                      <span className="ml-1 text-xs text-muted" title={SOLVE_HELP_SAYS[solve.helped]} data-testid="record-solve-helped" data-helped={solve.helped}>
-                        helped
+                      <span className="ml-1 text-xs text-muted" title={solveHelpSays(solve.helped, say)} data-testid="record-solve-helped" data-helped={solve.helped}>
+                        {say.say("pset.rec.helped")}
                       </span>
                     )}
                   </td>
                   <td className="py-1 pr-2 text-right whitespace-nowrap">
                     {counted?.has(solve.id) ? (
-                      <span className="mr-1 text-xs text-muted" title="Counted in the points above" data-testid="record-solve-counted">
+                      <span className="mr-1 text-xs text-muted" title={say.say("pset.rec.counted")} data-testid="record-solve-counted">
                         ★
                       </span>
                     ) : null}

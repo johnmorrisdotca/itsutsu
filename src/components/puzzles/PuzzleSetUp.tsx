@@ -9,12 +9,14 @@ import type { Appearance } from "@/components/board/board.types";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
 import { START_PRESS } from "@/components/live/live.constants";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { PANEL_CLASS, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { GAME_SETTINGS, settingQuery } from "@/lib/catalogue/gameSettings";
 import { joinQuery, playPath, setUpPath } from "@/lib/gomoku/slugs";
 import { generatePuzzle, preparePuzzle } from "@/lib/puzzles/generate";
-import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
+import { WORD_STYLE_LIST } from "@/lib/puzzles/gomoji/wordStyles";
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
 import { type PuzzleAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
@@ -26,7 +28,9 @@ import { freshSolitaireSeed } from "@/lib/puzzles/solitaire/generate";
 import { freshMahjongSeed } from "@/lib/puzzles/mahjong/generate";
 import { SUIDO_MAKE_QUERY } from "@/lib/puzzles/suido/mode";
 import { freshSuidoSeed } from "@/lib/puzzles/suido/seed";
-import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, checkAllowanceWords, levelBlurb, levelsFor } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CHECK_ALLOWANCES, PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, levelsFor } from "@/lib/puzzles/puzzles.constants";
+import { checkAllowanceWordsIn, levelBlurbIn, levelName, puzzleCopy, wordStyleDisplay } from "@/lib/puzzles/puzzleCopy";
+import { sizeWordIn } from "@/lib/puzzles/sizeWord";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { SetUpSection } from "@/components/live/SetUpSection";
@@ -41,7 +45,6 @@ import { KumimojiPartyResume } from "./KumimojiPartyScreens";
 import { KumimojiSetUpOptions } from "./KumimojiSetUpOptions";
 import { SolitaireSetUpOptions } from "./SolitaireSetUpOptions";
 import { useSolitaireScoring } from "./useSolitaireScoring";
-import { sizeWord } from "./puzzles.constants";
 import { MahjongSetUpOptions, useMahjongChoice } from "./MahjongSetUpOptions";
 import { SuidoSetUpOptions, useSuidoChoice } from "./SuidoSetUpOptions";
 import { JiraiSetUpOptions, useJiraiChoice } from "./JiraiSetUpOptions";
@@ -97,8 +100,9 @@ export function PuzzleSetUp({
 }) {
   const hydrated = useHydrated();
   const router = useRouter();
+  const say = useSpeaker();
   const spec = PUZZLE_SPECS[kind];
-  const copy = PUZZLE_DISPLAY[kind];
+  const copy = puzzleCopy(kind, say.locale);
   const [ownSize, setOwnSize] = useState(asked?.size ?? spec.defaultSize);
   // A size another language had and this one has not (kana stops at five) is this one's usual size, until one it has is chosen.
   const size = sized?.size ?? (spec.sizes.includes(ownSize) ? ownSize : spec.defaultSize);
@@ -196,12 +200,12 @@ export function PuzzleSetUp({
       });
       const body = (await answered.json().catch(() => null)) as { at?: string; error?: string } | null;
       if (!answered.ok || body?.at === undefined) {
-        setRacing(body?.error ?? "The site could not make the race.");
+        setRacing(body?.error ?? say.say("pset.raceCouldNotMake"));
         return;
       }
       router.push(body.at);
     } catch {
-      setRacing("The site could not be reached.");
+      setRacing(say.say("pset.couldNotReach"));
     }
   };
 
@@ -238,7 +242,7 @@ export function PuzzleSetUp({
         shared rather than a class typed here, so the alignment is decided once.
       */}
       <div className={SET_UP_OPTIONS_AND_PLAY}>
-      <SetUpSection title="Options" kanji="設定" testId="puzzle-settings">
+      <SetUpSection title={say.say("pset.options")} kanji="設定" testId="puzzle-settings">
         {/* A word game's language and word list come first, with a line of their own in place of the board's (`WordSettingChips`). */}
         {GAME_SETTINGS[kind] === undefined ? (
           <p className="text-xs text-muted" data-testid="puzzle-size-note">
@@ -257,7 +261,7 @@ export function PuzzleSetUp({
         {/* One level is no choice: its chip is not drawn, and the line under it says what the game is. */}
         {spec.levels.length < 2 ? null : (
         /* Four levels (a Pencil puzzle's extra hard) are four chips to a row, so the row is one line high whether a puzzle has three levels or four. */
-        <div className={`grid ${spec.levels.length > 3 ? "grid-cols-4" : "grid-cols-3"} gap-1.5 sm:flex sm:flex-wrap`} role="radiogroup" aria-label="Level">
+        <div className={`grid ${spec.levels.length > 3 ? "grid-cols-4" : "grid-cols-3"} gap-1.5 sm:flex sm:flex-wrap`} role="radiogroup" aria-label={say.say("pset.level")}>
           {spec.levels.map((each) => (
             <button
               key={each}
@@ -267,16 +271,16 @@ export function PuzzleSetUp({
               className={`${PICK_WORD_CHIP} ${level === each ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
               onClick={() => setLevel(each)}
               disabled={!sizeLevels.includes(each)}
-              title={sizeLevels.includes(each) ? undefined : spec.cards === true ? `Not offered at ${sizeWord(size, kind)}` : `A ${size}×${size} has no ${PUZZLE_LEVEL_DISPLAY[each].label.toLowerCase()} puzzle to make`}
+              title={sizeLevels.includes(each) ? undefined : spec.cards === true ? say.say("pset.notOffered", { size: sizeWordIn(size, kind, say) }) : say.say("pset.noLevelAt", { size: String(size), level: levelName(each, say.locale) })}
               data-testid={`puzzle-level-${each}`}
             >
-              {PUZZLE_LEVEL_DISPLAY[each].label} <span className="font-mincho opacity-70">{PUZZLE_LEVEL_DISPLAY[each].kanji}</span>
+              <Paired en={PUZZLE_LEVEL_DISPLAY[each].label} kanji={PUZZLE_LEVEL_DISPLAY[each].kanji} kanjiClassName="opacity-70" />
             </button>
           ))}
         </div>
         )}
         <p className={`${spec.wordGrid === undefined ? "" : "min-h-8"} text-xs text-muted`} data-testid="puzzle-level-blurb">
-          {levelBlurb(kind, level)}
+          {levelBlurbIn(kind, level, say.locale)}
         </p>
         {/*
           ONE WORD OR TWO: a Gomoji's Futago (`futago.ts`). John, 2026-09-26:
@@ -297,7 +301,7 @@ export function PuzzleSetUp({
           game." It was hard itself until then; now hard is the count of guesses.
         */}
         {spec.strict === true ? (
-          <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Strict">
+          <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pset.strict")}>
             {[false, true].map((each) => (
               <button
                 key={String(each)}
@@ -308,14 +312,14 @@ export function PuzzleSetUp({
                 onClick={() => setStrict(each)}
                 data-testid={`puzzle-strict-${each ? "on" : "off"}`}
               >
-                {each ? "Strict" : "Free"} <span className="font-mincho opacity-70">{each ? "厳" : "自"}</span>
+                <Paired en={say.say(each ? "pset.strict" : "pset.free")} kanji={each ? "厳" : "自"} kanjiClassName="opacity-70" inReadersLanguage />
               </button>
             ))}
           </div>
         ) : null}
         {spec.strict === true ? (
           <p className="min-h-8 text-xs text-muted" data-testid="puzzle-strict-blurb">
-            {strict ? "Every letter found must be played again, a green one in its place." : "Any word may be guessed, whatever the last ones found."}
+            {say.say(strict ? "pset.strictBlurb" : "pset.freeBlurb")}
           </p>
         ) : null}
         {/*
@@ -337,7 +341,7 @@ export function PuzzleSetUp({
         */}
         {spec.wordGrid === undefined ? null : (
           <>
-            <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="How the grid is drawn" data-testid="puzzle-word-style">
+            <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pset.howDrawn")} data-testid="puzzle-word-style">
               {WORD_STYLE_LIST.map((each) => (
                 <button
                   key={each}
@@ -348,12 +352,12 @@ export function PuzzleSetUp({
                   onClick={() => setStyle(each)}
                   data-testid={`puzzle-word-style-${each}`}
                 >
-                  {WORD_STYLE_DISPLAY[each].label}
+                  {wordStyleDisplay(say.locale)[each].label}
                 </button>
               ))}
             </div>
             <p className="text-xs text-muted" data-testid="puzzle-word-style-blurb">
-              {WORD_STYLE_DISPLAY[style].blurb}
+              {wordStyleDisplay(say.locale)[style].blurb}
             </p>
           </>
         )}
@@ -366,9 +370,9 @@ export function PuzzleSetUp({
           race carries it too, the same for both seats.
         */}
         {spec.checks === false ? null : (
-        <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Checks">
+        <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pset.checks")}>
           {PUZZLE_CHECK_ALLOWANCES.map((each) => {
-            const words = checkAllowanceWords(each);
+            const words = checkAllowanceWordsIn(each, say.locale);
             return (
               <button
                 key={String(each)}
@@ -379,7 +383,7 @@ export function PuzzleSetUp({
                 onClick={() => setChecks(each)}
                 data-testid={`puzzle-checks-${each ?? "unlimited"}`}
               >
-                {words.label} <span className="font-mincho opacity-70">{words.kanji}</span>
+                <Paired en={words.label} kanji={words.kanji} kanjiClassName="opacity-70" />
               </button>
             );
           })}
@@ -391,7 +395,7 @@ export function PuzzleSetUp({
           pressed, we highlight what's wrong." Off by default; the button is
           always on the puzzle, disabled with its reason when it was not chosen.
         */}
-        <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Hints">
+        <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pset.hints")}>
           {[false, true].map((each) => (
             <button
               key={String(each)}
@@ -402,7 +406,7 @@ export function PuzzleSetUp({
               onClick={() => setHints(each)}
               data-testid={`puzzle-hints-${each ? "on" : "off"}`}
             >
-              {each ? "Hints" : "No hints"} <span className="font-mincho opacity-70">{each ? "ヒント有" : "ヒント無"}</span>
+              <Paired en={say.say(each ? "pset.hintsOn" : "pset.hintsOff")} kanji={each ? "ヒント有" : "ヒント無"} kanjiClassName="opacity-70" inReadersLanguage />
             </button>
           ))}
         </div>
@@ -439,7 +443,7 @@ export function PuzzleSetUp({
           className={PLAY_BUTTON}
           onClick={race}
           disabled={!hasAccount || racing === "making" || players > 1}
-          title={players > 1 ? "Pass and play is on this device; a race is between two members on two." : hasAccount ? undefined : "A race is between two members; this session has no account yet."}
+          title={players > 1 ? say.say("pset.racePassAndPlay") : hasAccount ? undefined : say.say("pset.raceNeedsAccount")}
           data-testid="puzzle-race"
         >
           {racing === "making" ? (
@@ -450,7 +454,7 @@ export function PuzzleSetUp({
         </button>
       {!hasAccount ? (
         <p className="text-xs text-muted" data-testid="puzzle-race-needs-account">
-          Starting with a friend needs an account.
+          {say.say("pset.friendNeedsAccount")}
         </p>
       ) : null}
       {racing !== "" && racing !== "making" ? <span className="text-sm text-shu">{racing}</span> : null}

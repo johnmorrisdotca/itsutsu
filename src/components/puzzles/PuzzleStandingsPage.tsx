@@ -7,7 +7,8 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { gamePath, historyPath, myGamePath, rulesPath, setUpPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { puzzleCopy, puzzleName } from "@/lib/puzzles/puzzleCopy";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { fastestSolvesOf } from "@/lib/puzzles/server/puzzleSolves";
 import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
@@ -23,30 +24,32 @@ import { currentTestModeReader } from "@/lib/testMode/testMode";
  * leaves `/standings` shut — so nobody's name is printed to a stranger.
  */
 export async function PuzzleStandingsPage({ kind }: { kind: PuzzleKind }) {
-  const copy = PUZZLE_DISPLAY[kind];
+  const say = await currentSpeaker();
+  const copy = puzzleCopy(kind, say.locale);
+  const name = puzzleName(kind, say.locale);
   const [board, me] = await Promise.all([currentTestModeReader().then((testMode) => fastestSolvesOf(kind, testMode)), currentMemberId()]);
   const { names, tags } = await namesAndTagsOf([...board.values()].flatMap((row) => row.fastest.map((solve) => solve.memberId)));
   return (
     <Page>
       <SiteHeader />
       <PageTitle
-        title={copy.label}
-        kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind) }} steps={[{ label: "Leaderboard" }]} />}
-        lead="Everybody's points at it, all time and this month, then the fastest solves at every size and level. A solve on your own is timed by your browser; a race by the site."
+        title={name}
+        kanji={say.pairsWithKanji ? copy.kanji : ""}
+        crumb={<GameTrail game={{ label: name, href: gamePath(kind) }} steps={[{ label: say.say("pset.standings.title") }]} />}
+        lead={say.say("pset.standings.lead")}
       >
         <p className="flex flex-wrap gap-x-3 text-xs">
-          <Link href={rulesPath(kind)} className="text-muted underline-offset-2 hover:underline">rules</Link>
-          <Link href={historyPath(kind)} className="text-muted underline-offset-2 hover:underline" data-testid="standings-record">everybody&apos;s solves</Link>
-          <Link href={myGamePath(kind)} className="text-muted underline-offset-2 hover:underline">your solves</Link>
-          <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">play one</Link>
+          <Link href={rulesPath(kind)} className="text-muted underline-offset-2 hover:underline">{say.say("pset.link.rules")}</Link>
+          <Link href={historyPath(kind)} className="text-muted underline-offset-2 hover:underline" data-testid="standings-record">{say.say("pset.link.everybodys")}</Link>
+          <Link href={myGamePath(kind)} className="text-muted underline-offset-2 hover:underline">{say.say("pset.link.yourSolves")}</Link>
+          <Link href={setUpPath(kind)} className="text-muted underline-offset-2 hover:underline">{say.say("pset.link.playOne")}</Link>
         </p>
       </PageTitle>
       <Suspense fallback={null}>
-        <PuzzlePoints kind={kind} title={copy.label} whole />
+        <PuzzlePoints kind={kind} title={name} whole />
       </Suspense>
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-standings">
-        <FastestTable kind={kind} board={board} names={names} tags={tags} whole me={me} />
+        <FastestTable kind={kind} board={board} names={names} tags={tags} whole me={me} say={say} />
       </section>
     </Page>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "@/components/live/live.constants";
 import { tobiishiLevelCount } from "@/lib/puzzles/tobiishi/levelCounts";
 import { tobiishiCodeOf, tobiishiGoalOf, tobiishiPackOf, tobiishiRefOf } from "@/lib/puzzles/tobiishi/levels";
@@ -29,24 +31,22 @@ export function TobiishiLevelPreview({
   /** The member's best solve of it, which its time opens; null for a solve kept only in this browser. */
   solveId?: string | null;
 }) {
+  const say = useSpeaker();
   const solved = best !== undefined;
   const ref = tobiishiRefOf(size, level);
   if (ref === null) return null;
   const code = tobiishiCodeOf(ref);
+  const pack = tobiishiPackOf(ref.pack).title;
+  const goal = tobiishiGoalOf(ref).names;
   return (
     <figure className="flex w-full flex-col items-center gap-2" data-testid="tobiishi-preview" data-size={size} data-level={level} data-state={solved ? "solved" : "open"} data-code={code}>
       <div className={`${SET_UP_PREVIEW_BOX} relative`} aria-hidden="true">
         <TobiishiStill key={`${size}-${level}-${solved ? "solved" : "dealt"}`} code={code} solved={solved} testId="tobiishi-preview-board" />
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION} data-testid="tobiishi-preview-caption">
-        Level {level} of {tobiishiLevelCount(size)} at {tobiishiJumpsWord(size)}: {tobiishiPackOf(ref.pack).title.en}, {tobiishiGoalOf(ref).names.en}
-        {solved ? (
-          <>
-            . Solved, best <SolveTime kind="tobiishi" solveId={solveId} elapsedMs={best} mine testId="tobiishi-preview-best" />.
-          </>
-        ) : (
-          ". Not solved yet."
-        )}
+        {phraseWith(say.say(solved ? "pmaze.preview.tobiishiSolved" : "pmaze.preview.tobiishiOpen", { level: String(level), count: String(tobiishiLevelCount(size)), size: tobiishiJumpsWord(size, say), board: say.pairName(pack.en, pack.ja).text, goal: say.pairName(goal.en, goal.ja).text }), {
+          time: solved ? <SolveTime kind="tobiishi" solveId={solveId} elapsedMs={best} mine testId="tobiishi-preview-best" /> : null,
+        })}
       </figcaption>
     </figure>
   );

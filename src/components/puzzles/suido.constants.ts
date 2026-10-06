@@ -96,7 +96,7 @@ export const SUIDO_COPY = {
   howTo: "Tap a piece to turn it a quarter. The water runs from the pump along every pipe that joins, and drips out of any open end.",
   turn: "Turn",
   /** The line under the board: how far the water has got, and how many open ends still leak. */
-  status: ({ solved, reached, wanted, leaks, kind }: SuidoReading): string => {
+  status: (kind: SuidoReading["kind"], solved: boolean, reached: number, wanted: number, leaks: number): string => {
     if (kind === "inlet-outlet") {
       // One outlet, so "0 of 1 drain reached" says less than the water does: said by how far it has run.
       if (solved) return "The water runs from the inlet to the outlet in one path, and nothing leaks.";

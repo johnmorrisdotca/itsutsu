@@ -8,8 +8,11 @@ import { blockRange, suidoLevelBand, suidoLevelCount } from "@/lib/puzzles/suido
 import { suidoLevelSeed } from "@/lib/puzzles/suido/seed";
 import { suidoSizeKey } from "@/lib/puzzles/suido/sizes";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 import { LevelPicker } from "./LevelPicker";
-import { SUIDO_TWISTS } from "./suido.constants";
+import { suidoWords } from "./mazeWords";
+import { readerName } from "./readerName";
 
 /** The address of one level: the solve's own, its number in it (`number=12`). */
 export function suidoLevelPath(size: number, level: number): string {
@@ -44,6 +47,8 @@ export function SuidoLevelPicker({
   chosen: number;
   onChoose: (level: number) => void;
 }) {
+  const say = useSpeaker();
+  const words = suidoWords(say.locale);
   const { first, last } = blockRange(block, suidoLevelCount(size));
   const key = suidoSizeKey(size);
   return (
@@ -60,7 +65,7 @@ export function SuidoLevelPicker({
       onChoose={onChoose}
       roleOf={(level) => {
         const role = key === null ? null : suidoRole(key, level);
-        return role === null ? null : { role: role.role, words: role.twists.map((twist) => SUIDO_TWISTS[twist].label.toLowerCase()).join(" and ") };
+        return role === null ? null : { role: role.role, words: say.list(role.twists.map((twist) => readerName(say, words.twists[twist]).toLowerCase())) };
       }}
       solvedMark={(level) => (
         <span className="inline-flex size-6 items-center justify-center rounded-full bg-moss text-[0.7rem] font-semibold text-paper tabular-nums" data-testid="suido-level-mark">

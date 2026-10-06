@@ -100,7 +100,7 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
   if (puzzle === null && party === null && casual === null && variant === null) notFound();
   const key = puzzle ?? party ?? casual ?? variant!;
   const say = await currentSpeaker();
-  const page = puzzle !== null ? puzzleRulesPage(puzzle) : party !== null ? partyRulesPage(party) : casual !== null ? casualRulesPage(casual) : rulesPageFor(variant!, say);
+  const page = puzzle !== null ? puzzleRulesPage(puzzle, say) : party !== null ? partyRulesPage(party) : casual !== null ? casualRulesPage(casual) : rulesPageFor(variant!, say);
   // A game's strategy guides; the cube's method, which is a guide of its own (`/learn/cube`).
   const guides =
     variant !== null
@@ -205,7 +205,7 @@ export default async function RulesPage({ params }: PageProps<"/games/[slug]/rul
           {/* A Gomoji's other languages and word lists, a section each, on the one rules page the one game has (`gameSettings.ts`). */}
           {(page.settings ?? []).map((setting) => (
             <div key={setting.id} id={setting.id} data-testid="rules-setting">
-              <Part heading={{ text: setting.heading, kanji: setting.kanji }} lines={setting.lines} />
+              <Part heading={say.pairName(setting.heading, setting.kanji)} lines={setting.lines} />
             </div>
           ))}
           <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">

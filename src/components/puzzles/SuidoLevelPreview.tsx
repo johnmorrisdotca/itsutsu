@@ -5,6 +5,8 @@ import { useMemo } from "react";
 import { decodeLayout, encodeLayout, type Layout } from "@johnmorrisdotca/suido";
 import { levelAnswer } from "@johnmorrisdotca/suido/levels-info";
 
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { playingAreaInset } from "@/components/board/margin";
 import { SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "@/components/live/live.constants";
 import { blockOf, suidoLevelCount, suidoLevelsAt } from "@/lib/puzzles/suido/levels";
@@ -66,6 +68,7 @@ export function SuidoLevelPreview({
   /** Whether this size's levels have arrived (`loadSuidoLevelsAt`): the data files load one size at a time. */
   ready: boolean;
 }) {
+  const say = useSpeaker();
   const solved = best !== undefined;
   const drawn = useMemo<{ layout: Layout; masks: number[] } | null>(() => {
     if (!ready) return null;
@@ -109,16 +112,11 @@ export function SuidoLevelPreview({
         ) : null}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION} data-testid="suido-preview-caption">
-        Level {level} of {count} at {suidoSizeWord(size)}
-        {solved ? (
-          <>
-            : solved, best <SolveTime kind="suido" solveId={solveId} elapsedMs={best} mine testId="suido-preview-best" />.
-          </>
-        ) : locked ? (
-          `: locked until every level of block ${blockOf(level) - 1} is solved.`
-        ) : (
-          ": not solved yet."
-        )}
+        {solved
+          ? phraseWith(say.say("pmaze.preview.solved", { level: String(level), count: String(count), size: suidoSizeWord(size) }), {
+              time: <SolveTime kind="suido" solveId={solveId} elapsedMs={best} mine testId="suido-preview-best" />,
+            })
+          : say.say(locked ? "pmaze.preview.locked" : "pmaze.preview.open", { level: String(level), count: String(count), size: suidoSizeWord(size), block: String(blockOf(level) - 1) })}
       </figcaption>
     </figure>
   );

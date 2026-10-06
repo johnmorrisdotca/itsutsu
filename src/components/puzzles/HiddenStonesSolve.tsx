@@ -1,5 +1,9 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { checkSentence } from "@/lib/puzzles/checkWords";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
@@ -51,6 +55,7 @@ export function HiddenStonesSolve({
   set?: StoneSetTokens;
 }) {
   const hydrated = useHydrated();
+  const say = useSpeaker();
   const { kind, size, seed } = puzzle;
   const regions = useMemo(() => decodeRegions(puzzle.givens, size) ?? [], [puzzle.givens, size]);
   const answer = useMemo(() => decodeStones(puzzle.solution, size) ?? [], [puzzle.solution, size]);
@@ -173,7 +178,7 @@ export function HiddenStonesSolve({
       <SolvePaused pausing={pausing}>
         <HiddenStonesGrid size={size} regions={regions} marks={history.shown} wrong={hinting.marked} done={done !== null} onPress={press} lines={linesOn} set={set} />
       </SolvePaused>
-      <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(mark) => (mark === "stone" ? "a stone" : mark === "cross" ? "a cross" : "cleared")} />
+      <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(mark) => say.say(mark === "stone" ? "pgrid.step.stone" : mark === "cross" ? "pgrid.step.cross" : "pgrid.step.cleared")} />
       {done === null ? (
         <div className="flex flex-col gap-2">
           {/* Check and Show at one end of the row, Hint at the other (John: "LHS Check, Show, RHS Hint"), and Lines beside Hint where hints were chosen. */}
@@ -187,14 +192,14 @@ export function HiddenStonesSolve({
           </div>
           {checked !== null ? (
             <span className="text-sm text-muted" data-testid="puzzle-checked" aria-live="polite">
-              {checkedWords(checked)}
+              {checkedWords(checked, say)}
             </span>
           ) : fullNotRight ? (
             <span className="text-sm text-muted" data-testid="puzzle-not-right" aria-live="polite">
-              A stone in every row, and it is not right yet.
+              {say.say("pgrid.hs.fullNotRight")}
             </span>
           ) : (
-            <span className="text-sm text-muted">Tap for a stone, again for a cross, again to clear.</span>
+            <span className="text-sm text-muted">{say.say("pgrid.hs.tap")}</span>
           )}
         </div>
       ) : (
@@ -205,9 +210,6 @@ export function HiddenStonesSolve({
 }
 
 /** What Check says: how many stones are wrong and how many rows have none yet, never which. */
-export function checkedWords(checked: { wrong: number; missing: number }): string {
-  if (checked.wrong === 0 && checked.missing === 0) return "Every stone is right.";
-  const wrong = checked.wrong === 0 ? "Nothing wrong so far" : `${checked.wrong} ${checked.wrong === 1 ? "stone is" : "stones are"} wrong`;
-  const missing = checked.missing > 0 ? `, ${checked.missing} ${checked.missing === 1 ? "row" : "rows"} without one stone` : "";
-  return `${wrong}${missing}.`;
+export function checkedWords(checked: { wrong: number; missing: number }, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return checkSentence(say, "pgrid.check.okStones", checked.wrong, "pgrid.check.wrongStone", checked.missing > 0 ? say.count("pgrid.check.leftRows", checked.missing) : null);
 }

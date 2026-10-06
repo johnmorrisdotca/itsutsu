@@ -1,3 +1,5 @@
+import { speaker, type Speaker } from "../../i18n/i18n";
+import { DEFAULT_LOCALE, type PhraseKey } from "../../i18n/i18n.constants";
 import type { PuzzleLevel } from "../puzzles.types";
 
 /**
@@ -15,7 +17,7 @@ export const TOBIISHI_SIZES: readonly number[] = [3, 6, 9];
 
 const BANDS: Readonly<Record<number, PuzzleLevel>> = { 3: "easy", 6: "medium", 9: "hard" };
 
-const WORDS: Readonly<Record<number, string>> = { 3: "Short", 6: "Medium", 9: "Long" };
+const WORDS: Readonly<Record<number, PhraseKey>> = { 3: "puzzle.size.short", 6: "puzzle.size.medium", 9: "puzzle.size.long" };
 
 /** Whether a number is one of the three lengths. */
 export function isTobiishiSize(size: number): boolean {
@@ -28,11 +30,12 @@ export function tobiishiBand(size: number): PuzzleLevel {
 }
 
 /** What a page says of a length: "Short". */
-export function tobiishiSizeLabel(size: number): string {
-  return WORDS[size] ?? String(size);
+export function tobiishiSizeLabel(size: number, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  const word = WORDS[size];
+  return word === undefined ? String(size) : say.say(word);
 }
 
 /** What a length is in jumps, as a sentence says it: "6 jumps". */
-export function tobiishiJumpsWord(size: number): string {
-  return `${size} ${size === 1 ? "jump" : "jumps"}`;
+export function tobiishiJumpsWord(size: number, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return say.count("puzzle.count.jump", size);
 }

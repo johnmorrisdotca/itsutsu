@@ -1,7 +1,11 @@
-import { PUZZLE_LEVEL_DISPLAY, PUZZLE_SPECS, sizesOffered } from "@/lib/puzzles/puzzles.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { speaker } from "@/lib/i18n/i18n";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
+import { levelName } from "@/lib/puzzles/puzzleCopy";
+import { joinedWith } from "@/lib/puzzles/puzzleText";
+import { PUZZLE_SPECS, sizesOffered } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
-
-import { sizeWord } from "./puzzles.constants";
+import { sizeWordIn } from "@/lib/puzzles/sizeWord";
 
 /**
  * The line under a puzzle's description on its front door: every board its
@@ -10,8 +14,8 @@ import { sizeWord } from "./puzzles.constants";
  * 8×8 and 9×9 behind "Bigger boards". One function, so the line and the set-up
  * cannot disagree about the boards again; `offeredLine.test.ts` holds it.
  */
-export function offeredLine(kind: PuzzleKind): string {
-  const sizes = sizesOffered(kind).map((side) => sizeWord(side, kind)).join(", ");
-  const levels = PUZZLE_SPECS[kind].levels.map((level) => PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()).join(", ");
+export function offeredLine(kind: PuzzleKind, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  const sizes = joinedWith(say, sizesOffered(kind).map((side) => sizeWordIn(side, kind, say)));
+  const levels = joinedWith(say, PUZZLE_SPECS[kind].levels.map((level) => levelName(level, say.locale)));
   return `${sizes} · ${levels}`;
 }

@@ -28,6 +28,7 @@ export function Paired({
   kanji,
   kanjiClassName = "",
   className = "",
+  inReadersLanguage = false,
 }: {
   /** The English, as it reads today. */
   en: string;
@@ -37,8 +38,25 @@ export function Paired({
   kanjiClassName?: string;
   /** Applied when the kanji stands alone, so it keeps the heading's shape. */
   className?: string;
+  /**
+   * `en` is already said in the reader's language (a phrase), and the kanji is
+   * only the decoration an English reader gets beside it: used where the kanji
+   * alone would be a cryptic label (厳 for Strict). A Japanese reader is shown
+   * the phrase and no second copy of it.
+   */
+  inReadersLanguage?: boolean;
 }) {
-  const shown = useSpeaker().pairName(en, kanji);
+  const speaker = useSpeaker();
+  if (inReadersLanguage) {
+    return speaker.pairsWithKanji && kanji !== "" ? (
+      <>
+        {en} <span className={`font-mincho ${kanjiClassName}`}>{kanji}</span>
+      </>
+    ) : (
+      <>{en}</>
+    );
+  }
+  const shown = speaker.pairName(en, kanji);
   if (shown.kanji === null) {
     /*
      * Either the reader's own script, or a word with no kanji at all. Both

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useCallback, useMemo, useState } from "react";
 
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE } from "@/components/ui/ui.constants";
@@ -9,7 +10,8 @@ import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { JiraiBoard } from "./JiraiBoard";
-import { JIRAI_COPY, jiraiChecked, jiraiStepWord } from "./jirai.constants";
+import { jiraiChecked, jiraiStepWord } from "./jirai.constants";
+import { jiraiCopy } from "./gridWords";
 import { PuzzleSteps } from "./PuzzleSteps";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
@@ -49,6 +51,8 @@ export function JiraiSolve({
   hints?: boolean;
 }) {
   const hydrated = useHydrated();
+  const say = useSpeaker();
+  const copy = jiraiCopy(say.locale);
   const { size, seed, givens, solution } = puzzle;
   const opens = useNarrowZoom(HUGE_START_ZOOM);
   const recipe = useMemo(() => jiraiRecipeOf(size, givens)!, [size, givens]);
@@ -78,13 +82,13 @@ export function JiraiSolve({
       if (hit.length > 0) {
         hinting.charge(hit.length);
         setMistakes((so) => so + hit.length);
-        setSaid(JIRAI_COPY.boom(hit.length));
+        setSaid(copy.boom(hit.length));
       } else {
         setSaid(null);
       }
       if (next !== code && jiraiWon(next, solution) && jiraiCheck(size, givens, next).ok) void finish(next, at);
     },
-    [begin, code, hinting, solution, size, givens, finish],
+    [begin, code, hinting, solution, size, givens, finish, copy],
   );
 
   const move = useCallback(
@@ -136,12 +140,12 @@ export function JiraiSolve({
             wrong={hinting.marked}
             hint={history.reviewing ? null : lit}
             readOnly={!live}
-            label={JIRAI_COPY.label(size)}
+            label={copy.label(size)}
             onMove={move}
           />
         </TsunagiViewport>
       </SolvePaused>
-      <PuzzleSteps<string> steps={steps} viewing={history.viewing} go={history.go} size={size} say={jiraiStepWord} />
+      <PuzzleSteps<string> steps={steps} viewing={history.viewing} go={history.go} size={size} say={(value) => jiraiStepWord(value, say)} />
       {done === null ? (
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
@@ -155,15 +159,15 @@ export function JiraiSolve({
               disabled={pausing.paused}
               data-testid="jirai-flag"
             >
-              Flag
+              {say.say("pgrid.jirai.flag")}
             </button>
             <SolveHint hinting={hinting} onHint={hint} disabled={disabled} racing={race !== null} />
           </div>
           <span className="text-sm text-muted" data-testid="jirai-mines" data-left={left} data-covered={count}>
-            {JIRAI_COPY.minesLeft(left, mistakes)}
+            {copy.minesLeft(left, mistakes)}
           </span>
           <span className="text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "jirai-said"} aria-live="polite">
-            {checked !== null ? jiraiChecked(checked) : (said ?? (flagging ? JIRAI_COPY.flagging : JIRAI_COPY.howTo))}
+            {checked !== null ? jiraiChecked(checked, say) : (said ?? (flagging ? copy.flagging : copy.howTo))}
           </span>
         </div>
       ) : (

@@ -10,6 +10,9 @@ import { MEIKYUU_GUTTER_LEAST } from "@/lib/puzzles/meikyuu/turn";
 import { encodeCells } from "@/lib/puzzles/meikyuu/steps";
 import { stoneOptionOf, type StoneLimit } from "@/lib/puzzles/meikyuu/stones";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { packageLanguage } from "./mazeWords";
 import { shutUndo } from "./meikyuuLocked";
 import { useEdgePan } from "./meikyuuEdgeStore";
 import { MeikyuuFrame } from "./MeikyuuFrame";
@@ -122,6 +125,13 @@ export function MeikyuuBoard({
     pan: (on) => mount.current?.pan(on) ?? false,
     stoneMode: (on) => mount.current?.stoneMode(on) ?? false,
   }));
+  /* The reader's language, for the words the package says (a cell's name, the banner); read as the board is made and told when it changes. */
+  const { locale } = useSpeaker();
+  const languageNow = useRef(locale);
+  useEffect(() => {
+    languageNow.current = locale;
+    mount.current?.set({ language: packageLanguage(locale) });
+  }, [locale]);
   /* The stones' limit, for the board to be made with whenever the package arrives; a change after that is told to it, never a new board. */
   const stonesNow = useRef(stones);
   useEffect(() => {
@@ -150,7 +160,7 @@ export function MeikyuuBoard({
       if (!live) return;
       // A tall maze is played in its own box (`ratio`), stood up or lying as the site has decided (`meikyuu/turn.ts`) and not as the package would (`auto`); the page leaves its room itself (`reserve` 0), as the wood is sized to the window.
       const shape = tall ? { ratio: MEIKYUU_TALL_RATIO, orientation: turnedNow.current ? ("landscape" as const) : ("portrait" as const), reserve: 0 } : {};
-      const board = play.mountMeikyuu(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, tap: true, language: "en", edgePan: edgeNow.current, stones: stoneOptionOf(stonesNow.current), ...shape });
+      const board = play.mountMeikyuu(element, { recipe: code, board: MEIKYUU_LOOK, controls: false, hints: false, tap: true, language: packageLanguage(languageNow.current), edgePan: edgeNow.current, stones: stoneOptionOf(stonesNow.current), ...shape });
       if (board === null) return;
       mount.current = board;
       const read = (): void => {

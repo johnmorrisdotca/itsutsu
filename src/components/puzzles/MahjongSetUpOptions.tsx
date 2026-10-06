@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import type { MahjongBonusRule } from "@johnmorrisdotca/jarajara";
 import { AWASE_TABLE } from "@johnmorrisdotca/jarajara/table";
 import type { PuzzleAsked } from "@/lib/puzzles/puzzleAddress";
 
 import { MahjongFreeToggle } from "./MahjongFreeToggle";
-import { MAHJONG_COPY } from "./mahjong.constants";
+import { mahjongCopy } from "./cardWords";
 
 /** Mahjong's own choices, held by the set-up (`PuzzleSetUp`): how many play, and how the flowers and seasons match. */
 export function useMahjongChoice(asked: PuzzleAsked | undefined) {
@@ -17,7 +20,7 @@ export function useMahjongChoice(asked: PuzzleAsked | undefined) {
   return { players, setPlayers, bonus, setBonus };
 }
 
-const PLAYER_WORDS: Record<number, string> = { 1: "Solitaire", 2: "Two", 3: "Three", 4: "Four" };
+const PLAYER_WORDS: Record<number, PhraseKey> = { 1: "pcard.mj.playerOne", 2: "pcard.mj.playerTwo", 3: "pcard.mj.playerThree", 4: "pcard.mj.playerFour" };
 const PLAYER_KANJI: Record<number, string> = { 1: "一人", 2: "二人", 3: "三人", 4: "四人" };
 
 /**
@@ -33,9 +36,11 @@ export function MahjongSetUpOptions({
   bonus,
   setBonus,
 }: ReturnType<typeof useMahjongChoice>) {
+  const say = useSpeaker();
+  const MAHJONG_COPY = mahjongCopy(say.locale);
   return (
     <>
-      <div className="grid grid-cols-4 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Players" data-testid="mahjong-players">
+      <div className="grid grid-cols-4 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pcard.mj.playersAria")} data-testid="mahjong-players">
         {Array.from({ length: AWASE_TABLE.most }, (_, at) => at + 1).map((each) => (
           <button
             key={each}
@@ -46,14 +51,14 @@ export function MahjongSetUpOptions({
             onClick={() => setPlayers(each)}
             data-testid={`mahjong-players-${each}`}
           >
-            {PLAYER_WORDS[each]} <span className="font-mincho opacity-70">{PLAYER_KANJI[each]}</span>
+            <Paired en={say.say(PLAYER_WORDS[each]!)} kanji={PLAYER_KANJI[each]!} kanjiClassName="opacity-70" inReadersLanguage />
           </button>
         ))}
       </div>
       <p className="min-h-12 text-xs text-muted" data-testid="mahjong-players-blurb">
-        {players === 1 ? "Alone, against the clock: clear the whole layout." : `${PLAYER_WORDS[players]} take turns on one layout, a pair a turn, passing one device round; dragons and winds score most, and any seat can be a computer.`}
+        {players === 1 ? say.say("pcard.mj.alone") : say.count("pcard.mj.party", players, { who: say.say(PLAYER_WORDS[players]!) })}
       </p>
-      <div className="grid grid-cols-2 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Flowers and seasons" data-testid="mahjong-bonus">
+      <div className="grid grid-cols-2 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pcard.mj.bonusAria")} data-testid="mahjong-bonus">
         {(["group", "same"] as const).map((each) => (
           <button
             key={each}
@@ -64,7 +69,7 @@ export function MahjongSetUpOptions({
             onClick={() => setBonus(each)}
             data-testid={`mahjong-bonus-${each}`}
           >
-            {each === "group" ? MAHJONG_COPY.bonusGroup : MAHJONG_COPY.bonusSame} <span className="font-mincho opacity-70">{each === "group" ? "花季" : "同牌"}</span>
+            <Paired en={each === "group" ? MAHJONG_COPY.bonusGroup : MAHJONG_COPY.bonusSame} kanji={each === "group" ? "花季" : "同牌"} kanjiClassName="opacity-70" inReadersLanguage />
           </button>
         ))}
       </div>

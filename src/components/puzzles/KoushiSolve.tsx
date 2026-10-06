@@ -1,5 +1,7 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { stopOf } from "@/lib/puzzles/puzzleText";
 import Link from "@/components/ui/Link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -61,6 +63,7 @@ export function KoushiSolve({
   appearance?: Appearance;
 }) {
   const hydrated = useHydrated();
+  const say = useSpeaker();
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const dressed = useMemo(() => ({ ...appearance, felt }), [appearance, felt]);
   const { kind, size, level, seed } = puzzle;
@@ -126,9 +129,9 @@ export function KoushiSolve({
         <>
           <p className="text-sm" aria-live="polite">
             <strong className="tabular-nums" data-testid="koushi-swaps-left" data-left={left}>
-              {left} {left === 1 ? "swap" : "swaps"} left
+              {say.count("pword.koushi.left", left)}
             </strong>{" "}
-            <span className="text-muted">· Tap a letter, then another, to swap them, or drag one onto the other.</span>
+            <span className="text-muted">{say.say("pword.koushi.how")}</span>
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
@@ -138,7 +141,11 @@ export function KoushiSolve({
         <div className="flex flex-col gap-2" data-testid="koushi-out">
           <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
             <ResultMark kind="failure" className="mr-1.5" />
-            {done.outOfTime ? "Out of time" : "Out of swaps"}. The words were{" "}
+            {say.say(done.outOfTime ? "puzzle.outcome.outOfTime" : "puzzle.outcome.outOfSwaps")}
+            {stopOf(say)}
+            {say.pairsWithKanji ? " " : ""}
+            {say.say("pword.out.theWords")}
+            {say.pairsWithKanji ? " " : ""}
             <strong className="uppercase tracking-wide" data-testid="koushi-words">
               {words.join(" · ")}
             </strong>
@@ -146,17 +153,19 @@ export function KoushiSolve({
           </p>
           {hasAccount && race === null ? (
             <p className="text-xs text-muted" data-testid="koushi-kept">
-              {done.paid !== null && done.paid.points > 0 ? `+${done.paid.points} XP for playing it out. ` : ""}
-              Kept in{" "}
+              {done.paid !== null && done.paid.points > 0 ? say.say("pword.out.playedOutPaid", { points: String(done.paid.points) }) : ""}
+              {say.say("pword.koushi.keptBefore")}
+              {say.pairsWithKanji ? " " : ""}
               <Link href={viewHref("completed")} className="underline">
-                My games
-              </Link>{" "}
-              as you left it.
+                {say.say("puzzle.done.keptLink")}
+              </Link>
+              {say.pairsWithKanji ? " " : ""}
+              {say.say("pword.koushi.keptAfter")}
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
             <Link href={joinQuery(playPath(kind), puzzleQuery({ size, level, seed: null, clock }))} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="koushi-another">
-              Another lattice →
+              {say.say("pword.koushi.another")}
             </Link>
             <PuzzleWayBack kind={kind} />
           </div>
@@ -176,16 +185,17 @@ export function KoushiSolve({
  * ring for each of the five spent, so a perfect solve is five black stones.
  */
 export function KoushiMarks({ spare, used }: { spare: number; used: number }) {
+  const say = useSpeaker();
   const kept = Math.min(spare, SPARE_SWAPS);
   return (
     <div className="flex flex-wrap items-center gap-3" data-testid="koushi-marks" data-spare={kept}>
-      <span className="flex gap-1.5" role="img" aria-label={`${kept} of ${SPARE_SWAPS} swaps to spare`}>
+      <span className="flex gap-1.5" role="img" aria-label={say.say("pword.koushi.sparesAria", { kept: String(kept), total: String(SPARE_SWAPS) })}>
         {Array.from({ length: SPARE_SWAPS }, (_, at) => (
           <span key={at} className={at < kept ? KOUSHI_MARK_KEPT : KOUSHI_MARK_SPENT} />
         ))}
       </span>
       <span className="text-sm text-muted">
-        {used} {used === 1 ? "swap" : "swaps"}, {kept} to spare{kept === SPARE_SWAPS ? ": as few as it can be done in" : ""}.
+        {say.count("pword.koushi.summary", used, { kept: String(kept), note: kept === SPARE_SWAPS ? say.say("pword.koushi.asFew") : "" })}
       </span>
     </div>
   );

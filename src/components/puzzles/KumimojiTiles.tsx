@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { ViewTabs } from "@/components/ui/ViewTabs";
@@ -17,7 +20,7 @@ import { TILE, tileLetterPx } from "./kumimoji.constants";
 import { MIX_TILE_PX } from "./kumimojiShowcase.constants";
 import { TileFace, wildStyle } from "./KumimojiTileFace";
 
-const LENGTH_NAME = { short: "Short", medium: "Medium", full: "Full" } as const;
+const LENGTH_NAME = { short: "pkumi.length.short", medium: "pkumi.length.medium", full: "pkumi.length.full" } as const;
 
 /**
  * THE TILES, COUNTED: the whole English set and the whole Japanese set as the
@@ -32,6 +35,7 @@ const LENGTH_NAME = { short: "Short", medium: "Medium", full: "Full" } as const;
  * rare ones too. Everything happens in the browser; the page is prerendered.
  */
 export function KumimojiTiles() {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const [language, setLanguage] = useState<KumimojiLanguage>("english");
   const [kana, setKana] = useState("は");
@@ -42,20 +46,16 @@ export function KumimojiTiles() {
   return (
     <section className={`${PANEL_CLASS} flex min-w-0 flex-col gap-3`} data-testid="kumimoji-tiles" data-language={language} {...readyMark(hydrated)}>
       <h2 className={SECTION_TITLE}>
-        The tiles <span className="font-mincho normal-case tracking-normal">牌</span>
+        <Paired en={say.say("pkumi.tiles.heading")} kanji="牌" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
       </h2>
       <ViewTabs
-        label="Which set of tiles"
+        label={say.say("pkumi.tiles.which")}
         testId="kumimoji-tiles-language"
         items={[
-          { key: "english", label: "English", current: language === "english", onClick: () => setLanguage("english"), testId: "kumimoji-tiles-english" },
+          { key: "english", label: say.say("pkumi.opts.english"), current: language === "english", onClick: () => setLanguage("english"), testId: "kumimoji-tiles-english" },
           {
             key: "japanese",
-            label: (
-              <>
-                Japanese <span className="font-mincho">ひらがな</span>
-              </>
-            ),
+            label: <Paired en={say.say("pkumi.tiles.japanese")} kanji="ひらがな" inReadersLanguage />,
             current: language === "japanese",
             onClick: () => setLanguage("japanese"),
             testId: "kumimoji-tiles-japanese",
@@ -63,10 +63,15 @@ export function KumimojiTiles() {
         ]}
       />
       <p className="text-sm" data-testid="kumimoji-tiles-summary">
-        {mix.total} tiles in {mix.tiles.length} {language === "english" ? "letters" : "kana"}. The most is {mix.commonest.join(", ").toUpperCase()}, {mix.most} of them; the hard ones are{" "}
-        {mix.rarest.join(" ").toUpperCase()}, only {mix.fewest === 1 ? "one" : mix.fewest} of each.
+        {say.count("pkumi.tiles.summary", mix.fewest, {
+          total: String(mix.total),
+          kinds: say.count(language === "english" ? "puzzle.count.letter" : "puzzle.count.kana", mix.tiles.length),
+          commonest: mix.commonest.join(", ").toUpperCase(),
+          most: String(mix.most),
+          rarest: mix.rarest.join(" ").toUpperCase(),
+        })}
       </p>
-      <ul className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-x-1 gap-y-2" aria-label={`The ${language} set`} data-testid="kumimoji-mix">
+      <ul className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-x-1 gap-y-2" aria-label={say.say(language === "english" ? "pkumi.tiles.setEnglish" : "pkumi.tiles.setJapanese")} data-testid="kumimoji-mix">
         {mix.tiles.map((tile) => (
           <li key={tile.code} className="flex flex-col items-center gap-0.5" data-testid="kumimoji-mix-tile" data-glyph={tile.glyph} data-count={tile.count}>
             {language === "japanese" ? (
@@ -74,7 +79,7 @@ export function KumimojiTiles() {
                 type="button"
                 onClick={() => setKana(tile.glyph)}
                 aria-pressed={kana === tile.glyph}
-                aria-label={`${tile.glyph}, ${tile.count} in the set. Show every form it plays as.`}
+                aria-label={say.say("pkumi.tiles.formAria", { glyph: tile.glyph, count: String(tile.count) })}
                 className={`rounded-[18%] ${kana === tile.glyph ? "ring-2 ring-moss ring-offset-1" : ""}`}
               >
                 <Tile tile={tile} />
@@ -95,26 +100,26 @@ export function KumimojiTiles() {
           <TileFace face={tileFace("*")} />
         </span>
         <span>
-          The wild tile stands in for some of a game&apos;s tiles, most at easy and none at hard: it is any {language === "english" ? "letter" : "kana"} you choose, and you can change your mind.
+          {say.say(language === "english" ? "pkumi.tiles.wildLetter" : "pkumi.tiles.wildKana")}
         </span>
       </div>
       <h3 className="pt-1 text-sm font-semibold">
-        How many tiles a game takes <span className="font-mincho text-xs font-normal text-muted">枚数</span>
+        <Paired en={say.say("pkumi.tiles.howMany")} kanji="枚数" kanjiClassName="text-xs font-normal text-muted" inReadersLanguage />
       </h3>
       <div className={TABLE_SCROLL}>
         <table className="w-full text-sm tabular-nums" data-testid="kumimoji-lengths">
           <thead>
             <tr className="border-b border-rule text-left text-xs text-muted">
-              <th className="py-1 pr-2 font-medium">Length</th>
-              <th className="py-1 pr-2 font-medium">Tiles</th>
-              <th className="py-1 pr-2 font-medium">Double set</th>
-              <th className="py-1 font-medium">Wild at easy · medium · hard</th>
+              <th className="py-1 pr-2 font-medium">{say.say("pkumi.tiles.colLength")}</th>
+              <th className="py-1 pr-2 font-medium">{say.say("pkumi.tiles.colTiles")}</th>
+              <th className="py-1 pr-2 font-medium">{say.say("pkumi.tiles.colDouble")}</th>
+              <th className="py-1 font-medium">{say.say("pkumi.tiles.colWild")}</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
               <tr key={row.length} className="border-b border-rule/60 last:border-0" data-testid="kumimoji-length" data-length={row.length}>
-                <td className="py-1 pr-2">{LENGTH_NAME[row.length]}</td>
+                <td className="py-1 pr-2">{say.say(LENGTH_NAME[row.length])}</td>
                 <td className="py-1 pr-2">{row.tiles}</td>
                 <td className="py-1 pr-2">{row.doubleTiles}</td>
                 <td className="py-1">
@@ -126,11 +131,11 @@ export function KumimojiTiles() {
         </table>
       </div>
       <p className="text-xs text-muted">
-        With the {KUMIMOJI_HANDS.classic}-tile hand. A Short game from the {KUMIMOJI_HANDS.quick}-tile hand is {quickShort} tiles. The Double set is two English sets together; Japanese plays one.
+        {say.say("pkumi.tiles.foot", { classic: String(KUMIMOJI_HANDS.classic), quick: String(KUMIMOJI_HANDS.quick), quickShort: String(quickShort) })}
       </p>
       <p className="text-sm">
         <Link href={gamePath(PUZZLE_KINDS.kumimoji)} className="font-semibold underline-offset-2 hover:underline" data-testid="kumimoji-tiles-to-front">
-          Pictures of it being played, and a hand to try, on the game&apos;s page →
+          {say.say("pkumi.tiles.toFront")}
         </Link>
       </p>
     </section>
@@ -148,14 +153,14 @@ function Tile({ tile }: { tile: MixTile }) {
 
 /** One kana tile and every kana it plays as, drawn as tiles so the reader sees what a line of them spells. */
 function KanaForms({ kana }: { kana: string }) {
+  const say = useSpeaker();
   const forms = formsOfTile(kana);
   return (
     <div className="flex flex-col gap-1.5 rounded-lg bg-paper/60 p-3 text-sm" data-testid="kumimoji-kana-forms" data-kana={kana} aria-live="polite">
       <p>
-        <span className="font-semibold">{kana}</span>{" "}
-        {forms.length === 1 ? "plays as itself alone." : `plays as ${forms.length} kana, with nothing to choose: a line is a word if it spells one read any of these ways.`}
+        {phraseWith(forms.length === 1 ? say.say("pkumi.tiles.formsOne") : say.say("pkumi.tiles.formsMany", { count: String(forms.length) }), { kana: <span className="font-semibold">{kana}</span> })}
       </p>
-      <ul className="flex flex-wrap gap-1.5" aria-label={`What ${kana} plays as`}>
+      <ul className="flex flex-wrap gap-1.5" aria-label={say.say("pkumi.tiles.formsAria", { kana })}>
         {forms.map((form) => (
           <li key={form} className={`${TILE} font-normal`} style={{ width: MIX_TILE_PX, height: MIX_TILE_PX, fontSize: tileLetterPx(MIX_TILE_PX) }} data-testid="kumimoji-kana-form">
             {form}

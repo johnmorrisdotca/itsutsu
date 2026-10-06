@@ -2,8 +2,8 @@ import Link from "@/components/ui/Link";
 
 import { GameName } from "@/components/games/GameName";
 import { GameThumb } from "@/components/games/GameThumb";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { PlayerName } from "@/components/players/PlayerName";
-import { sizeWord } from "@/components/puzzles/puzzles.constants";
 import { CardArrow } from "@/components/ui/CardArrow";
 import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS, RAISED_LINK, STRETCHED_HOST } from "@/components/ui/ui.constants";
 import { familyPath, joinQuery, matchPath, playPath, setUpPath } from "@/lib/gomoku/slugs";
@@ -11,7 +11,10 @@ import { clockText } from "@/lib/puzzles/clockText";
 import { fixedLevelName, fixedLevelOf, levelsQueryOf } from "@/lib/puzzles/fixedLevel";
 import { suidoSizeInAddress } from "@/lib/puzzles/suido/sizes";
 import { keptRunAsked, puzzleQuery } from "@/lib/puzzles/puzzleAddress";
-import { PUZZLE_CLOCK_DISPLAY, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { levelLabel, puzzleName } from "@/lib/puzzles/puzzleCopy";
+import { clockWord } from "@/lib/puzzles/puzzleClock";
+import { sizeWordIn } from "@/lib/puzzles/sizeWord";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { runsOf } from "@/lib/puzzles/server/puzzleRuns";
 import type { racesWaitingOn } from "@/lib/puzzles/server/puzzleRaces";
@@ -33,7 +36,8 @@ import { MY_GAMES_COPY, MY_PUZZLE_ROW } from "./mine.constants";
  * read once by `MyGamesList`, which also counts them on the tab. An empty panel
  * keeps its heading and says so, with the way to a puzzle.
  */
-export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<typeof runsOf>>; races?: Awaited<ReturnType<typeof racesWaitingOn>> }) {
+export async function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<typeof runsOf>>; races?: Awaited<ReturnType<typeof racesWaitingOn>> }) {
+  const say = await currentSpeaker();
   const copy = MY_GAMES_COPY.puzzlesGoing;
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzles-going">
@@ -43,7 +47,7 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
         <p className="text-sm text-muted" data-testid="puzzles-going-empty">
           {MY_GAMES_COPY.empty.puzzles}{" "}
           <Link href={familyPath("numberPlace")} className="font-medium text-ink underline underline-offset-4">
-            Play one →
+            {say.say("pset.me.playOne")}
           </Link>
         </p>
       ) : null}
@@ -54,15 +58,15 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
           const href = matchPath(kind, race.id);
           return (
             <li key={race.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-race-waiting" data-kind={kind} data-race={race.id}>
-              <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={`Race at ${kind}`} />
+              <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={say.say("pset.mine.raceAt", { name: puzzleName(kind, say.locale) })} />
               <GameThumb variant={kind} size="small" />
               <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
                 <span className="truncate font-medium">
                   <GameName variant={kind} raised />
                 </span>
                 <span className="text-xs text-muted">
-                  {sizeWord(race.size, kind)} · {fixedLevelName(kind, race.seed) ?? PUZZLE_LEVEL_DISPLAY[race.level as PuzzleLevel].label} · a race against{" "}
-                  <PlayerName name={race.against.name} memberId={race.against.memberId} fallback="somebody" className={RAISED_LINK} tagged={false} />, waiting on you
+                  {sizeWordIn(race.size, kind, say)} · {fixedLevelName(kind, race.seed, say) ?? levelLabel(race.level as PuzzleLevel, say.locale)} · {say.say("pset.mine.raceAgainst")}
+                  <PlayerName name={race.against.name} memberId={race.against.memberId} fallback={say.say("pset.mine.somebody")} className={RAISED_LINK} tagged={false} />{say.say("pset.mine.waitingOnYou")}
                 </span>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">
@@ -84,7 +88,7 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
           return (
             <li key={run.id} className={`${STRETCHED_HOST} ${MY_PUZZLE_ROW}`} data-testid="puzzle-going" data-kind={kind} data-seed={run.seed}>
               {/* The whole card carries on, as a game's row opens its game; the name above it leads to the puzzle. */}
-              <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={`Carry on with ${PUZZLE_DISPLAY[kind].label}`} />
+              <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={say.say("pset.mine.carryOn", { name: puzzleName(kind, say.locale) })} />
               <GameThumb variant={kind} size="small" />
               <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
                 <span className="truncate font-medium">
@@ -92,19 +96,19 @@ export function MyPuzzleRuns({ runs, races = [] }: { runs: Awaited<ReturnType<ty
                 </span>
                 <span className="text-xs text-muted">
                   {/* A fixed level is named by its number, every other puzzle by its level. */}
-                  {sizeWord(run.size, kind)} · {fixedLevelName(kind, run.seed) ?? PUZZLE_LEVEL_DISPLAY[level].label} · {clockText(run.elapsedMs)} so far
-                  {run.checksAllowed !== null ? ` · ${run.checksAllowed === 1 ? "one check" : `${run.checksAllowed} checks`}` : ""}
-                  {asked.hints ? " · hints" : ""}
-                  {run.strict ? " · strict" : ""}
-                  {asked.headStart ? " · head start" : ""}
+                  {sizeWordIn(run.size, kind, say)} · {fixedLevelName(kind, run.seed, say) ?? levelLabel(level, say.locale)} · {say.say("pset.mine.soFar", { time: clockText(run.elapsedMs) })}
+                  {run.checksAllowed !== null ? ` · ${say.count("pset.mine.checks", run.checksAllowed)}` : ""}
+                  {asked.hints ? ` · ${say.say("pset.mine.hints")}` : ""}
+                  {run.strict ? ` · ${say.say("pset.mine.strict")}` : ""}
+                  {asked.headStart ? ` · ${say.say("pset.fast.headStart")}` : ""}
                   {/* A countdown says what it has left, the number that matters when it is picked up again. */}
-                  {asked.clock === undefined || asked.clock === "none" ? "" : ` · ${PUZZLE_CLOCK_DISPLAY[asked.clock].label} countdown, ${clockText(Math.max(0, (PUZZLE_CLOCK_DISPLAY[asked.clock].ms ?? 0) - run.elapsedMs))} left`}
+                  {asked.clock === undefined || asked.clock === "none" ? "" : ` · ${say.say("pset.mine.countdownLeft", { countdown: clockWord(asked.clock, say), time: clockText(Math.max(0, (PUZZLE_CLOCK_DISPLAY[asked.clock].ms ?? 0) - run.elapsedMs)) })}`}
                 </span>
               </span>
               <span className="ml-auto flex shrink-0 items-center gap-2">
                 {fixed !== null ? (
                   <Link href={joinQuery(setUpPath(kind), kind === "tsunagi" ? levelsQueryOf(kind, run.size, run.seed) : `?size=${suidoSizeInAddress(run.size)}`)} className={`${RAISED_LINK} shrink-0 text-sm text-muted underline underline-offset-4`} data-testid="puzzle-going-levels">
-                    All levels
+                    {say.say("pset.mine.allLevels")}
                   </Link>
                 ) : null}
                 <Link href={href} className={`${BUTTON_BASE} ${BUTTON_QUIET} ${RAISED_LINK} shrink-0`} data-testid="puzzle-going-continue">

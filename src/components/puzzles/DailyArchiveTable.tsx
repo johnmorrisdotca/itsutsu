@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
-import { useLocale } from "@/components/i18n/LocaleProvider";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, SECTION_TITLE, SELECT_CLASS, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { dayLabel, monthLabel } from "@/lib/puzzles/dailyWords/dailyDay";
@@ -23,7 +23,8 @@ import type { DailyArchiveTableProps } from "./dailyWords.types";
  */
 export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyArchiveTableProps) {
   const hydrated = useHydrated();
-  const locale = useLocale();
+  const say = useSpeaker();
+  const locale = say.locale;
   const router = useRouter();
   const [search, setSearch] = useState("");
   const wanted = search.trim().toLowerCase();
@@ -45,7 +46,7 @@ export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyAr
       <div className="flex flex-wrap items-end gap-3">
         <form method="get" className="flex items-end gap-2" data-testid="daily-month-form">
           <label className="flex flex-col gap-1 text-xs text-muted">
-            Month
+            {say.say("pword.daily.archive.month")}
             <select
               name="month"
               defaultValue={month}
@@ -58,23 +59,23 @@ export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyAr
                   {monthLabel(each, locale)}
                 </option>
               ))}
-              <option value="all">Every month</option>
+              <option value="all">{say.say("pword.daily.archive.everyMonth")}</option>
             </select>
           </label>
           {/* Only needed before the page has come alive; after that the choice goes as soon as it is made. */}
           {hydrated ? null : (
             <button type="submit" className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-              Show
+              {say.say("pword.daily.archive.show")}
             </button>
           )}
         </form>
         <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs text-muted">
-          Search these days
+          {say.say("pword.daily.archive.search")}
           <input
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="A word or a date"
+            placeholder={say.say("pword.daily.archive.placeholder")}
             className={INPUT_CLASS}
             data-testid="daily-search"
           />
@@ -82,13 +83,13 @@ export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyAr
       </div>
 
       {weeks.length === 0 ? (
-        <EmptyWeek sizes={sizes} unit={unit} line="No day has passed yet. The first day's words are listed here the day after it." />
+        <EmptyWeek sizes={sizes} unit={unit} line={say.say("pword.daily.archive.noDay")} />
       ) : shown.length === 0 ? (
-        <EmptyWeek sizes={sizes} unit={unit} line={`No day listed here has "${search.trim()}". Try another month, or every month.`} />
+        <EmptyWeek sizes={sizes} unit={unit} line={say.say("pword.daily.archive.noMatch", { search: search.trim() })} />
       ) : (
         shown.map((week) => (
           <section key={week.monday} className="flex flex-col gap-1" data-testid="daily-week" data-monday={week.monday}>
-            <h2 className={SECTION_TITLE}>Week of {dayLabel(week.monday, locale)}</h2>
+            <h2 className={SECTION_TITLE}>{say.say("pword.daily.archive.weekOf", { date: dayLabel(week.monday, locale) })}</h2>
             <div className={TABLE_SCROLL}>
               <table className="w-full text-sm">
                 <Head sizes={sizes} unit={unit} />
@@ -97,7 +98,7 @@ export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyAr
                     <tr key={row.day} className="border-t border-rule" data-testid="daily-day" data-day={row.day}>
                       {/* The day leads to its own page: its words and the fastest to find each. */}
                       <td className="py-1 pr-2 whitespace-nowrap tabular-nums">
-                        <Link href={row.dayHref} title={`${dayLabel(row.day, locale)}: the fastest finds`} className="underline decoration-rule-strong underline-offset-2 hover:decoration-ink" data-testid="daily-day-fastest">
+                        <Link href={row.dayHref} title={say.say("pword.daily.archive.fastestFinds", { day: dayLabel(row.day, locale) })} className="underline decoration-rule-strong underline-offset-2 hover:decoration-ink" data-testid="daily-day-fastest">
                           {/* The week's heading carries the year. */ dayLabel(row.day, locale, false)}
                         </Link>
                       </td>
@@ -128,13 +129,14 @@ export function DailyArchiveTable({ sizes, weeks, months, month, unit }: DailyAr
 }
 
 function Head({ sizes, unit }: { sizes: readonly number[]; unit: "letters" | "kana" }) {
+  const say = useSpeaker();
   return (
     <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
       <tr>
-        <th className="py-1 pr-2 text-left">Day</th>
+        <th className="py-1 pr-2 text-left">{say.say("pword.daily.archive.day")}</th>
         {sizes.map((size) => (
           <th key={size} className="py-1 pr-2 text-left">
-            {size} {unit}
+            {say.count(unit === "kana" ? "puzzle.count.kana" : "puzzle.count.letter", size)}
           </th>
         ))}
       </tr>

@@ -1,3 +1,6 @@
+import { speaker, type CountKey, type Speaker } from "@/lib/i18n/i18n";
+import { DEFAULT_LOCALE, type PhraseKey } from "@/lib/i18n/i18n.constants";
+import { checkSentence } from "@/lib/puzzles/checkWords";
 import type { PencilKind } from "@/lib/puzzles/pencil/pencil.types";
 
 /**
@@ -24,24 +27,39 @@ export const PENCIL_COPY: Record<PencilKind, { howTo: string; corner?: string; t
 };
 
 /** What a Check says: how many of the marks are wrong and how many are still to make, never which. */
-export function pencilChecked(kind: PencilKind, checked: { wrong: number; missing: number }): string {
-  const [one, many] = PENCIL_COPY[kind].thing;
-  if (checked.wrong === 0 && checked.missing === 0) return "Everything is in place.";
-  const bad = checked.wrong === 0 ? "Nothing wrong so far" : `${checked.wrong} ${checked.wrong === 1 ? `${one} is` : `${many} are`} wrong`;
-  const left = checked.missing > 0 ? `, ${checked.missing} still to ${kind === "crossSums" || kind === "regions" ? "fill" : kind === "shikaku" ? "draw" : kind === "hitori" ? "shade" : kind === "akari" ? "place" : "draw"}` : "";
-  return `${bad}${left}.`;
+export function pencilChecked(kind: PencilKind, checked: { wrong: number; missing: number }, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  const left = checked.missing > 0 ? say.say(LEFT_PHRASE[kind], { count: String(checked.missing) }) : null;
+  return checkSentence(say, "pgrid.check.okPlace", checked.wrong, WRONG_PHRASE[kind], left);
 }
 
+const WRONG_PHRASE = {
+  shikaku: "pgrid.check.wrongRectangle",
+  akari: "pgrid.check.wrongBulb",
+  loop: "pgrid.check.wrongLine",
+  hitori: "pgrid.check.wrongSquare",
+  regions: "pgrid.check.wrongCell",
+  crossSums: "pgrid.check.wrongCell",
+} as const satisfies Record<PencilKind, CountKey>;
+
+const LEFT_PHRASE = {
+  shikaku: "pgrid.check.leftDraw",
+  akari: "pgrid.check.leftPlace",
+  loop: "pgrid.check.leftDraw",
+  hitori: "pgrid.check.leftShade",
+  regions: "pgrid.check.leftFill",
+  crossSums: "pgrid.check.leftFill",
+} as const satisfies Record<PencilKind, PhraseKey>;
+
 /** What a step wrote at one mark place, for the list of steps. */
-export function pencilStepWord(kind: PencilKind, value: string | number): string {
-  if (value === "." || value === 0) return PENCIL_COPY[kind].erased;
-  return PENCIL_COPY[kind].step === "" ? String(value) : PENCIL_COPY[kind].step;
+export function pencilStepWord(kind: PencilKind, value: string | number, say: Speaker = speaker(DEFAULT_LOCALE), words: typeof PENCIL_COPY = PENCIL_COPY): string {
+  if (value === "." || value === 0) return say.say("pgrid.step.cleared");
+  return words[kind].step === "" ? String(value) : words[kind].step;
 }
 
 /** A Loop (Slitherlink) edge said in words, for the list of steps: which line of the grid, and where along it. */
-export function edgeWords(size: number, edge: number): string {
+export function edgeWords(size: number, edge: number, say: Speaker = speaker(DEFAULT_LOCALE)): string {
   const horizontal = size * (size + 1);
-  if (edge < horizontal) return `horizontal line ${Math.floor(edge / size) + 1}, column ${(edge % size) + 1}`;
+  if (edge < horizontal) return say.say("pgrid.step.hLine", { row: String(Math.floor(edge / size) + 1), column: String((edge % size) + 1) });
   const at = edge - horizontal;
-  return `row ${Math.floor(at / (size + 1)) + 1}, vertical line ${(at % (size + 1)) + 1}`;
+  return say.say("pgrid.step.vLine", { row: String(Math.floor(at / (size + 1)) + 1), column: String((at % (size + 1)) + 1) });
 }

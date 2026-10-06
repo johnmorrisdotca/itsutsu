@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -15,7 +16,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { FreeCellTable } from "./FreeCellTable";
 import { PatienceControls } from "./PatienceControls";
-import { FREECELL_COPY } from "./puzzles.constants";
+import { freeCellCopy } from "./cardWords";
 import { SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { usePatienceGame, type PatienceRules } from "./usePatienceGame";
 
@@ -43,6 +44,7 @@ export function FreeCellSolve({
   resumed?: ResumedRun | null;
   appearance?: Appearance;
 }) {
+  const FREECELL_COPY = freeCellCopy(useSpeaker().locale);
   const hydrated = useHydrated();
   const rules = useMemo<PatienceRules<Table, FreeCellMove>>(
     () => ({ replay: (moves) => replayFreeCell(puzzle.givens, puzzle.size, moves), decode: decodeMoves, play: playFreeCell, won: freeCellWon, finish: freeCellFinishingMoves }),

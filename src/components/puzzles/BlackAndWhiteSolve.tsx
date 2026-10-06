@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useCallback, useMemo, useState } from "react";
 
 import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
@@ -55,6 +56,7 @@ export function BlackAndWhiteSolve({
   set?: StoneSetTokens;
 }) {
   const hydrated = useHydrated();
+  const say = useSpeaker();
   const { kind, size, seed } = puzzle;
   const givens = useMemo<number[]>(() => decodeBlackAndWhite(puzzle.givens, size) ?? [], [puzzle.givens, size]);
   const answer = useMemo<number[]>(() => decodeBlackAndWhite(puzzle.solution, size) ?? [], [puzzle.solution, size]);
@@ -127,7 +129,7 @@ export function BlackAndWhiteSolve({
       <SolvePaused pausing={pausing}>
         <BlackAndWhiteGrid size={size} givens={givens} stones={history.shown} wrong={hinting.marked} done={done !== null} onPress={press} set={set} />
       </SolvePaused>
-      <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(value) => (value === BLACK ? "black" : value === WHITE ? "white" : "cleared")} />
+      <PuzzleSteps steps={history.steps} viewing={history.viewing} go={history.go} size={size} say={(value) => say.say(value === BLACK ? "pgrid.step.black" : value === WHITE ? "pgrid.step.white" : "pgrid.step.cleared")} />
       {done === null ? (
         <div className="flex flex-col gap-2">
           {/* Check and Show at one end of the row, Hint at the other (John: "LHS Check, Show, RHS Hint"). */}
@@ -138,14 +140,14 @@ export function BlackAndWhiteSolve({
           </div>
           {checked !== null ? (
             <span className="text-sm text-muted" data-testid="puzzle-checked" aria-live="polite">
-              {checkedWords(checked)}
+              {checkedWords(checked, say)}
             </span>
           ) : fullNotRight ? (
             <span className="text-sm text-muted" data-testid="puzzle-not-right" aria-live="polite">
-              Every cell holds a stone, and it is not right yet.
+              {say.say("pgrid.bw.fullNotRight")}
             </span>
           ) : (
-            <span className="text-sm text-muted">Tap for black, again for white, again to clear.</span>
+            <span className="text-sm text-muted">{say.say("pgrid.bw.tap")}</span>
           )}
         </div>
       ) : (

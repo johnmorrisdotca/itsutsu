@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { loadMeikyuuPackage, MEIKYUU_LOOK } from "@/lib/puzzles/meikyuu/browser";
 import { decodeWay } from "@/lib/puzzles/meikyuu/steps";
 
+import { packageLanguage } from "./mazeWords";
 import { MeikyuuFrame, MeikyuuHeld, type MeikyuuStand } from "./MeikyuuFrame";
 import { MeikyuuSlot, useStand } from "./MeikyuuStand";
 import { SolidStill } from "./SolidStill";
@@ -55,6 +57,7 @@ function FlatStill({
   /** A picture, for the set-up's preview: a solid takes no input at all, so the page scrolls over it. A flat maze is always one. */
   picture?: boolean;
 }) {
+  const { locale } = useSpeaker();
   const { column, stand: measured } = useStand(tall && fixed === undefined);
   const stand: MeikyuuStand = !tall ? "square" : (fixed ?? measured);
   const [drawn, setDrawn] = useState<{ code: string; svg: string } | null>(null);
@@ -67,12 +70,12 @@ function FlatStill({
       const maze = rules.buildMaze(recipe);
       const path = way !== null && way !== "" ? (decodeWay(maze, way) ?? undefined) : solved ? rules.solutionOf(maze) : undefined;
       const turn = stand === "square" ? {} : { orientation: stand === "lying" ? ("landscape" as const) : ("portrait" as const) };
-      setDrawn({ code, svg: draw.drawMaze(maze, { board: MEIKYUU_LOOK, path, won: solved && path !== undefined, standalone: true, label, ...turn }) });
+      setDrawn({ code, svg: draw.drawMaze(maze, { board: MEIKYUU_LOOK, path, won: solved && path !== undefined, standalone: true, label, language: packageLanguage(locale), ...turn }) });
     });
     return () => {
       live = false;
     };
-  }, [code, way, solved, label, stand]);
+  }, [code, way, solved, label, stand, locale]);
   return (
     <div ref={column} className="w-full select-none" data-testid={testId} data-kind="meikyuu" data-stand={stand} data-drawn={drawn?.code === code ? "true" : "false"} data-wallpaper-focus={fixed === undefined && stand !== "square" ? undefined : ""}>
       <MeikyuuSlot stand={fixed === undefined ? stand : "square"}>

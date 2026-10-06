@@ -2,6 +2,7 @@
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
+import { colonOf } from "@/lib/puzzles/puzzleText";
 
 /** The change of each step already worked out, so a long list of steps on a big grid is read once and not again at every move. */
 const KNOWN = new WeakMap<readonly unknown[], { index: number; value: unknown } | null>();
@@ -75,8 +76,10 @@ export function PuzzleSteps<V>({
                   <span className="w-7 shrink-0 text-right font-mono text-xs text-muted tabular-nums">{number}</span>
                   <span>
                     {change === null
-                      ? "several cells"
-                      : `${where?.(change.index) ?? `row ${Math.floor(change.index / size) + 1}, column ${(change.index % size) + 1}`}: ${say(change.value)}`}
+                      ? reader.say("pgrid.step.several")
+                      : where === undefined
+                        ? reader.say("pgrid.step.at", { row: String(Math.floor(change.index / size) + 1), column: String((change.index % size) + 1), what: say(change.value) })
+                        : `${where(change.index)}${colonOf(reader)}${say(change.value)}`}
                   </span>
                 </button>
               </li>

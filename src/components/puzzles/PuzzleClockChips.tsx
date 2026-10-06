@@ -1,7 +1,10 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
-import { PUZZLE_CLOCK_DISPLAY, PUZZLE_CLOCK_LIST, PUZZLE_DISPLAY, offersClock } from "@/lib/puzzles/puzzles.constants";
+import { clockDisplay, puzzleName } from "@/lib/puzzles/puzzleCopy";
+import { PUZZLE_CLOCK_LIST, offersClock } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleClock, PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 /**
@@ -17,13 +20,15 @@ import type { PuzzleClock, PuzzleKind } from "@/lib/puzzles/puzzles.types";
  * Not carried into a race, which is a contest of its own.
  */
 export function PuzzleClockChips({ kind, chosen, onChoose }: { kind: PuzzleKind; chosen: PuzzleClock; onChoose: (clock: PuzzleClock) => void }) {
+  const say = useSpeaker();
+  const display = clockDisplay(say.locale);
   const offered = offersClock(kind);
   const shown = offered ? chosen : "none";
   return (
     <>
-      <div className="grid grid-cols-2 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="Clock" data-testid="puzzle-clock-choice">
+      <div className="grid grid-cols-2 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pset.clock")} data-testid="puzzle-clock-choice">
         {PUZZLE_CLOCK_LIST.map((each) => {
-          const copy = PUZZLE_CLOCK_DISPLAY[each];
+          const copy = display[each];
           return (
             <button
               key={each}
@@ -35,7 +40,7 @@ export function PuzzleClockChips({ kind, chosen, onChoose }: { kind: PuzzleKind;
               onClick={() => onChoose(each)}
               data-testid={`puzzle-clock-${each}`}
             >
-              {copy.label} <span className="font-mincho opacity-70">{copy.kanji}</span>
+              <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="opacity-70" inReadersLanguage />
               {copy.ms === null ? null : <span className="ml-1 tabular-nums opacity-70">{copy.time}</span>}
             </button>
           );
@@ -43,8 +48,8 @@ export function PuzzleClockChips({ kind, chosen, onChoose }: { kind: PuzzleKind;
       </div>
       <p className="min-h-8 text-xs text-muted" data-testid="puzzle-clock-blurb">
         {offered
-          ? PUZZLE_CLOCK_DISPLAY[shown].blurb
-          : `${PUZZLE_DISPLAY[kind].label} keeps its own measure of how you did, so it is played with no clock.`}
+          ? display[shown].blurb
+          : say.say("pset.clockOwnMeasure", { name: puzzleName(kind, say.locale) })}
       </p>
     </>
   );

@@ -1,5 +1,8 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { commaOf } from "@/lib/puzzles/puzzleText";
 import { cycleMark, toggleSize } from "@johnmorrisdotca/kotoba";
 import type { KanaMark } from "@johnmorrisdotca/kotoba";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
@@ -12,7 +15,7 @@ import { WORD_KEY, WORD_KEY_COUNT, WORD_KEY_MARK_STONES, WORD_KEY_PLAIN, WORD_KE
 const NONE_COUNTED: ReadonlyMap<string, number> = new Map();
 
 /** A split key's halves, in words, for a screen reader. */
-const MARK_WORDS: Record<KanaMark, string> = { hit: "in its place", near: "in the word elsewhere", kin: "its column is here", miss: "not in it" };
+const markWords = (say: Speaker): Record<KanaMark, string> => ({ hit: say.say("pword.key.inPlace"), near: say.say("pword.key.elsewhere"), kin: say.say("pword.key.column"), miss: say.say("pword.key.notIn") });
 
 /**
  * The gojūon, a column to a consonant and five kana down each, read left to
@@ -78,6 +81,7 @@ export function KanaKeyboard({
   onEnter?: () => void;
   onBack: () => void;
 }) {
+  const say = useSpeaker();
   const marked = style === WORD_STYLES.tiles ? WORD_TILE_MARK : WORD_KEY_MARK_STONES;
   // A shade shorter than English's keys on a phone: six rows of them have to leave Enter on the screen.
   const key = `${WORD_KEY} min-h-8 px-0 text-sm normal-case sm:min-h-11 sm:text-base`;
@@ -116,7 +120,7 @@ export function KanaKeyboard({
                 data-mark={halves === null ? (mark ?? "") : halves.map((each) => each ?? "").join("|")}
                 data-typed={count > 0 ? "true" : undefined}
                 data-known-count={proven >= 2 ? proven : undefined}
-                aria-label={halves === null ? keyLabel(kana, proven, count) : `${keyLabel(kana, proven, count) ?? kana}, ${futagoKeyWords(halves, MARK_WORDS)}`}
+                aria-label={halves === null ? keyLabel(kana, proven, count, say) : `${keyLabel(kana, proven, count, say) ?? kana}${commaOf(say)}${futagoKeyWords(halves, markWords(say), say)}`}
               >
                 {halves === null ? null : <FutagoKeyHalves marks={halves} marked={marked} />}
                 {halves === null || halves.every((each) => each === undefined) ? (
@@ -139,12 +143,12 @@ export function KanaKeyboard({
       <div className="flex gap-1">
         <MakeKey kind="小" makes={small} keyClass={key} onPress={onSmall} disabled={disabled} inert={inert} testId="kana-key-small" />
         <MakeKey kind="゛゜" makes={toned} keyClass={key} onPress={onMark} disabled={disabled} inert={inert} testId="kana-key-mark" />
-        <button type="button" className={`${key} ${WORD_KEY_PLAIN}`} onClick={onBack} disabled={disabled} aria-label="delete a kana" data-testid="kana-key-back" {...inert}>
+        <button type="button" className={`${key} ${WORD_KEY_PLAIN}`} onClick={onBack} disabled={disabled} aria-label={say.say("pword.key.deleteKana")} data-testid="kana-key-back" {...inert}>
           ⌫
         </button>
         {onEnter === undefined ? null : (
           <button type="button" className={`${key} ${WORD_KEY_PLAIN} flex-[2]`} onClick={onEnter} disabled={disabled} data-testid="kana-key-enter" {...inert}>
-            <span className="text-[0.7rem] normal-case sm:text-sm">Enter</span>
+            <span className="text-[0.7rem] normal-case sm:text-sm">{say.say("pword.key.enter")}</span>
           </button>
         )}
       </div>
@@ -174,21 +178,22 @@ function MakeKey({
   inert: object;
   testId: string;
 }) {
-  const what = kind === "小" ? "small or large" : "its mark";
+  const say = useSpeaker();
+  const what = say.say(kind === "小" ? "pword.key.small" : "pword.key.mark");
   return (
     <button
       type="button"
       className={`${keyClass} ${WORD_KEY_PLAIN} flex-col gap-0.5 leading-none`}
       onClick={onPress}
       disabled={disabled || makes === null}
-      aria-label={makes === null ? `${kind}: nothing to change` : `make ${makes}`}
+      aria-label={makes === null ? say.say("pword.key.nothingToChange", { kind }) : say.say("pword.key.makes", { kana: makes })}
       data-testid={testId}
       data-makes={makes ?? ""}
       {...inert}
     >
       {/* Two lines always, so the key is one height whatever it says and the keyboard never grows under a finger. */}
       <span className="text-base sm:text-lg">{makes ?? kind}</span>
-      <span className="text-[0.55rem] text-muted" title={`change the kana: ${what}`}>
+      <span className="text-[0.55rem] text-muted" title={say.say("pword.key.changeKana", { what })}>
         {makes === null ? "\u00a0" : kind}
       </span>
     </button>

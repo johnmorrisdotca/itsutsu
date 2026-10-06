@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 
 import type { Hinting } from "./useHints";
@@ -13,7 +14,8 @@ import type { Hinting } from "./useHints";
  */
 export function SolveHint({ hinting, onHint, disabled, racing, without }: { hinting: Hinting; onHint: () => void; disabled: boolean; racing: boolean; without?: string }) {
   // `without` is a puzzle with no hints to choose at all, saying why in its own words (a Suido level: `suido.constants.ts`).
-  const why = without ?? (racing ? "No hints in a race" : !hinting.allowed ? "Hints are chosen when the puzzle is set up" : undefined);
+  const say = useSpeaker();
+  const why = without ?? (racing ? say.say("puzzle.solve.hintNoRace") : !hinting.allowed ? say.say("puzzle.solve.hintChosenAtSetUp") : undefined);
   return (
     <button
       type="button"
@@ -25,7 +27,7 @@ export function SolveHint({ hinting, onHint, disabled, racing, without }: { hint
       data-testid="puzzle-hint"
       data-allowed={hinting.allowed ? "true" : "false"}
     >
-      Hint{hinting.allowed ? ` · ${hinting.used} used` : ""}
+      {hinting.allowed ? say.say("puzzle.solve.hintUsed", { count: String(hinting.used) }) : say.say("puzzle.solve.hint")}
     </button>
   );
 }

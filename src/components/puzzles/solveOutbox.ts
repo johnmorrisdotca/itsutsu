@@ -1,5 +1,6 @@
 "use client";
 
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { createKeptOutbox } from "@/lib/party/kept/keptOutbox";
 
 /**
@@ -59,4 +60,4 @@ export function sendWaitingSolves(): void {
 }
 
 /** The line a solve finished offline shows where the points would be. */
-export const SOLVE_QUEUED = "You're offline, so this is kept on this device and handed in when you're back online.";
+export const SOLVE_QUEUED: PhraseKey = "puzzle.solve.queued";

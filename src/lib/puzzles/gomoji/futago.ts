@@ -1,3 +1,5 @@
+import { speaker, type Speaker } from "../../i18n/i18n";
+import { DEFAULT_LOCALE } from "../../i18n/i18n.constants";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { decodeKanaGivens, decodeKanaGuesses, toKatakana } from "../gomojiKana/kanaCode";
 import { decodeGuesses, decodeHidden, encodeHidden, languageOf } from "./code";
@@ -35,7 +37,7 @@ import { innerBackwardsGivens } from "./backwardsSeed";
  * A YOTSUGO 四つ子 (`yotsugo.ts`) is this same machinery with four words: the
  * readers, the checks and the scores below take one word, two or four.
  */
-export const FUTAGO_DISPLAY = { label: "Futago", kanji: "双子", words: "Two words" } as const;
+export const FUTAGO_DISPLAY = { label: "Futago", kanji: "双子" } as const;
 
 /**
  * A Futago in its Gomoji's rules, the last bullet of the Play section
@@ -43,10 +45,8 @@ export const FUTAGO_DISPLAY = { label: "Futago", kanji: "双子", words: "Two wo
  * stamped for their pictures (`puzzleArtFingerprint.ts`) and none of which
  * shows a Futago.
  */
-export function futagoRule(grid: WordGrid): string {
-  return grid === "gomojiKana"
-    ? "Futago 双子 (twins), a choice at any level, hides two kana words at once, side by side on one board, the free grey word grey against both: every guess goes to both words until a word is found, each kana key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well."
-    : "Futago 双子 (twins), a choice at any level, hides two words at once, side by side on one board: every guess goes to both words until a word is found, each key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well.";
+export function futagoRule(grid: WordGrid, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  return say.say(grid === "gomojiKana" ? "puzzle.mode.futago.ruleKana" : "puzzle.mode.futago.ruleLetter");
 }
 
 /** How many boards a Futago has. */

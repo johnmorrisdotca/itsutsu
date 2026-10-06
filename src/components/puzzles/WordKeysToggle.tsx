@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useCallback, useEffect, useState } from "react";
 
 /** Where this device's answer is kept: a phone and a laptop answer differently, so it is the browser's, not the account's. */
@@ -52,6 +53,7 @@ export function wordKeysClass(shown: boolean | null): string {
 
 /** The press that shows or hides the keys, and the line saying the desk's keyboard works. */
 export function WordKeysToggle({ shown, onToggle }: { shown: boolean | null; onToggle: () => void }) {
+  const say = useSpeaker();
   return (
     <div className="ml-auto flex items-center gap-2">
       <span className={`text-xs text-muted ${shown === null ? "pointer-coarse:hidden" : shown ? "hidden" : ""}`} data-testid="word-keys-note">
@@ -68,13 +70,13 @@ export function WordKeysToggle({ shown, onToggle }: { shown: boolean | null; onT
         <span aria-hidden="true">⌨ </span>
         {shown === null ? (
           <>
-            <span className="pointer-coarse:hidden">Show keys</span>
-            <span className="hidden pointer-coarse:inline">Hide keys</span>
+            <span className="pointer-coarse:hidden">{say.say("pword.keys.show")}</span>
+            <span className="hidden pointer-coarse:inline">{say.say("pword.keys.hide")}</span>
           </>
         ) : shown ? (
-          "Hide keys"
+          say.say("pword.keys.hide")
         ) : (
-          "Show keys"
+          say.say("pword.keys.show")
         )}
       </button>
     </div>

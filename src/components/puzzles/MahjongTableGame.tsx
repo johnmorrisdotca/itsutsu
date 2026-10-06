@@ -1,6 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { Paired } from "@/components/i18n/Paired";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { useEffect, useMemo, useState } from "react";
@@ -17,7 +21,7 @@ import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_BUTTON, PLAY_SURFACE, SECTION_HEADING } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { computerPair } from "@johnmorrisdotca/jarajara/table";
-import { isComputerSeat, playAtTable, readTable, seatName, startTable, tablePairs, undoAtTable } from "@johnmorrisdotca/jarajara/table";
+import { isComputerSeat, playAtTable, readTable, startTable, tablePairs, undoAtTable } from "@johnmorrisdotca/jarajara/table";
 import type { AwaseSeat, AwaseTable } from "@johnmorrisdotca/jarajara/table";
 import { tilesLeft } from "@johnmorrisdotca/jarajara";
 import { ordinaryLevel } from "@/lib/puzzles/ordinaryLevel";
@@ -28,7 +32,9 @@ import { MahjongBoard, mahjongAspect, mahjongMaxWidth } from "./MahjongBoard";
 import { MahjongFreeToggle } from "./MahjongFreeToggle";
 import { MahjongTileFace } from "./MahjongTileFace";
 import { MahjongScores, MahjongTableNames } from "./MahjongTableSeats";
-import { MAHJONG_COMPUTER_PAUSE_MS, MAHJONG_COPY, MAHJONG_ZOOM_FROM, mahjongMostZoom } from "./mahjong.constants";
+import { MAHJONG_COMPUTER_PAUSE_MS, MAHJONG_ZOOM_FROM, mahjongMostZoom } from "./mahjong.constants";
+import { mahjongCopy, mahjongSeatName } from "./cardWords";
+import { inALine } from "./kumimojiWords";
 import { useMahjongFree } from "./mahjongFree";
 import { useKeptMahjongTable } from "./mahjongTableKept";
 import { TsunagiViewport } from "./TsunagiViewport";
@@ -48,6 +54,8 @@ import { PlayingNow } from "@/components/layout/PlayingNow";
  * points, no leaderboard, no XP.
  */
 export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARANCE }: { puzzle: Puzzle; players: number; appearance?: Appearance }) {
+  const say = useSpeaker();
+  const MAHJONG_COPY = mahjongCopy(say.locale);
   const hydrated = useHydrated();
   const router = useRouter();
   const [kept, keep] = useKeptMahjongTable();
@@ -81,7 +89,7 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
     return (
       <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="mahjong-table" data-stage="names" {...readyMark(hydrated)}>
         <h2 className={SECTION_HEADING}>
-          Players <span className="font-mincho text-sm font-normal opacity-70">席</span>
+          <Paired en={say.say("pcard.mj.playersAria")} kanji="席" kanjiClassName="text-sm font-normal opacity-70" inReadersLanguage />
         </h2>
         <p className="text-sm text-muted">{MAHJONG_COPY.tableLead}</p>
         <MahjongTableNames
@@ -149,18 +157,24 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
         {state.over ? (
           <strong data-testid="mahjong-table-winner">
             <ResultMark kind={state.winners.length === 0 ? RESULT_MARKS.other : RESULT_MARKS.success} className="mr-1" />
-            {winnersLine(table, state.winners)}
+            {winnersLine(table, state.winners, say)}
           </strong>
         ) : (
           <>
-            <strong>{seatName(table.seats, state.turn)}</strong> to take a pair{computerTurn ? "…" : "."}{" "}
+            {phraseWith(say.say(computerTurn ? "pcard.mj.turnComputer" : "pcard.mj.turn"), { name: <strong>{mahjongSeatName(say, table.seats, state.turn)}</strong> })}{" "}
           </>
         )}{" "}
         {last === undefined ? null : (
           <span className="inline-flex items-center gap-1 align-middle text-muted" data-testid="mahjong-table-last">
-            {seatName(table.seats, last.seat)} took <MahjongTileFace code={last.codes[0]} className="h-6" />
-            <MahjongTileFace code={last.codes[1]} className="h-6" /> +{last.points}
-            {last.again && !state.over ? ", and goes again" : ""}
+            {phraseWith(say.say("pcard.mj.took", { name: mahjongSeatName(say, table.seats, last.seat), points: String(last.points) }), {
+              pair: (
+                <>
+                  <MahjongTileFace code={last.codes[0]} className="h-6" />
+                  <MahjongTileFace code={last.codes[1]} className="h-6" />
+                </>
+              ),
+            })}
+            {last.again && !state.over ? say.say("pcard.mj.again") : ""}
           </span>
         )}
         {state.shuffledAfter !== null && state.shuffledAfter === state.taken.length && !state.over ? <span className="text-muted"> {MAHJONG_COPY.shuffled}</span> : null}
@@ -172,7 +186,7 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
         news={
           moment.open
             ? tableNews({
-                names: table.seats.map((_, at) => seatName(table.seats, at)),
+                names: table.seats.map((_, at) => mahjongSeatName(say, table.seats, at)),
                 winners: state.winners,
                 // One person among computers is "you"; several people round the device are each named.
                 you: people.length === 1 ? people[0]! : null,
@@ -203,12 +217,12 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
           <button type="button" className={PLAY_BUTTON} onClick={again} data-testid="mahjong-table-again">
             <PressLabel words={WIN_COVER_COPY.playAgain} kanji="再" />
           </button>
-          <TableWallpaper game="mahjong" result={winnersLine(table, state.winners)} />
+          <TableWallpaper game="mahjong" result={winnersLine(table, state.winners, say)} />
         </>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={undo} disabled={lastPerson < 0 || computerTurn} data-testid="mahjong-table-undo">
-            Undo
+            {say.say("puzzle.press.undo")}
           </button>
           <EndTable onEnd={() => keep(null)} />
         </div>
@@ -218,30 +232,31 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
   );
 }
 
-function winnersLine(table: AwaseTable, winners: readonly number[]): string {
-  const names = winners.map((at) => seatName(table.seats, at));
-  if (names.length === 1) return `${names[0]} wins.`;
-  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]} share the win.`;
+function winnersLine(table: AwaseTable, winners: readonly number[], say: Speaker): string {
+  const names = winners.map((at) => mahjongSeatName(say, table.seats, at));
+  if (names.length === 1) return say.say("pcard.mj.wins", { name: names[0]! });
+  return say.say("pcard.mj.share", { names: inALine(say, names) });
 }
 
 /** Ending the game for everybody, asked twice: it is forgotten, and the names screen comes back. */
 function EndTable({ onEnd }: { onEnd: () => void }) {
+  const say = useSpeaker();
   const [asking, setAsking] = useState(false);
   if (!asking) {
     return (
       <button type="button" className="ml-auto text-sm text-muted underline underline-offset-2" onClick={() => setAsking(true)} data-testid="mahjong-table-end">
-        End this game
+        {say.say("pkumi.party.endGame")}
       </button>
     );
   }
   return (
     <span className="ml-auto flex flex-wrap items-center gap-2 text-sm">
-      End it for everybody? It is not kept.
+      {say.say("pcard.mj.endAsk")}
       <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={onEnd} data-testid="mahjong-table-end-yes">
-        Yes, end it
+        {say.say("pkumi.party.endYes")}
       </button>
       <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => setAsking(false)}>
-        Keep playing
+        {say.say("pkumi.party.keepPlaying")}
       </button>
     </span>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import { HEAD_START_DISPLAY } from "@/lib/gomoku/headStartWords";
 import { offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
@@ -36,9 +38,10 @@ export function HeadStartChips({
   /** A Sakasa chosen (`backwards.ts`): every letter is to be avoided already, so a head start would only take letters away. */
   backwards?: boolean;
 }) {
+  const say = useSpeaker();
   const offered = offersHeadStart(kind, level) && !dodge && !backwards;
   // As many as the word has (`headStartKeys`): the size chosen above.
-  const unit = kind === "gomojiKana" ? "kana" : "letters";
+  const unit = say.say(kind === "gomojiKana" ? "pword.headStart.kana" : "pword.headStart.letters");
   return (
     <>
       <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={HEAD_START_DISPLAY.label} data-testid="puzzle-head-start">
@@ -53,21 +56,24 @@ export function HeadStartChips({
             onClick={() => onChoose(each)}
             data-testid={`puzzle-head-start-${each ? "on" : "off"}`}
           >
-            {each ? HEAD_START_DISPLAY.label : `No ${HEAD_START_DISPLAY.label.toLowerCase()}`}{" "}
-            <span className="font-mincho opacity-70">{each ? HEAD_START_DISPLAY.kanji : "無"}</span>
+            {each ? (
+              <Paired en={HEAD_START_DISPLAY.label} kanji={HEAD_START_DISPLAY.kanji} kanjiClassName="opacity-70" />
+            ) : (
+              <Paired en={say.say("pword.headStart.off")} kanji="無" kanjiClassName="opacity-70" inReadersLanguage />
+            )}
           </button>
         ))}
       </div>
       <p className="min-h-8 text-xs text-muted" data-testid="puzzle-head-start-blurb">
         {dodge
-          ? "A word that dodges hides nothing yet, so there is nothing to grey before the first guess."
+          ? say.say("pword.headStart.dodge")
           : backwards
-          ? "Played backwards, a head start would only take letters away, so there is none."
+          ? say.say("pword.headStart.backwards")
           : !offered
-          ? "A head start is for easy: choose Easy to have one."
+          ? say.say("pword.headStart.notEasy")
           : chosen
-            ? `${size} ${unit} not in ${words === 4 ? "any of the four words" : words === 2 ? "either word" : "the word"} start grey: a free guess that uses no row. It costs ${POINTS_A_HELP} points.`
-            : "Nothing is ruled out on the keyboard until the board rules it out."}
+            ? say.say("pword.headStart.chosen", { count: String(size), unit, which: say.say(words === 4 ? "pword.headStart.whichFour" : words === 2 ? "pword.headStart.whichTwo" : "pword.headStart.whichOne"), points: String(POINTS_A_HELP) })
+            : say.say("pword.headStart.nothing")}
       </p>
     </>
   );

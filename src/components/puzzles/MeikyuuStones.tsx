@@ -1,9 +1,11 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT } from "@/components/live/picker.constants";
 import { MEIKYUU_STONE_LIMITS } from "@/lib/puzzles/meikyuu/stones";
 
-import { MEIKYUU_CHOICE, STONE_COPY } from "./meikyuu.constants";
+import { MEIKYUU_CHOICE } from "./meikyuu.constants";
+import { meikyuuWords } from "./mazeWords";
 import { useStoneLimit } from "./meikyuuStonesStore";
 
 /**
@@ -13,6 +15,7 @@ import { useStoneLimit } from "./meikyuuStonesStore";
  */
 export function MeikyuuStones({ className = "" }: { className?: string }) {
   const { stones, choose } = useStoneLimit();
+  const STONE_COPY = meikyuuWords(useSpeaker().locale).stone;
   return (
     <div className={`flex flex-col gap-1.5 ${className}`} role="group" aria-label={STONE_COPY.legend} data-testid="meikyuu-stones">
       <p className="text-sm text-ink-soft">{STONE_COPY.legend}</p>

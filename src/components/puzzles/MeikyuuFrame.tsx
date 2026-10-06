@@ -10,6 +10,7 @@ import { DEFAULT_LOOK, FRAMES, type FrameId } from "@/lib/puzzles/meikyuu/look.c
 
 import { useMeikyuuLook } from "./meikyuuLookStore";
 import { PuzzleBoard } from "./PuzzleBoard";
+import { frameSurface } from "./paint.constants";
 
 /**
  * A FRAME'S WOOD, as the board frame draws wood (`BoardThemeTokens`): the plain
@@ -22,7 +23,7 @@ export function frameTheme(frame: FrameId): BoardThemeTokens {
   const plain = BOARD_THEMES.kaya;
   if (frame === DEFAULT_LOOK.frame) return plain;
   const { light, base, deep, rim } = resolveFrame(frame);
-  return { ...plain, surfaceName: FRAMES[frame].label, surface: `radial-gradient(120% 90% at 20% 0%, ${light} 0%, ${base} 45%, ${deep} 100%)`, frame: rim, dark: false };
+  return { ...plain, surfaceName: FRAMES[frame].label, surface: frameSurface(light, base, deep), frame: rim, dark: false };
 }
 
 /**

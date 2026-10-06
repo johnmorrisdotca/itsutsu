@@ -1,3 +1,6 @@
+"use client";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 
 import { thousands } from "@/lib/ui/thousands";
@@ -35,11 +38,12 @@ export function SolvePoints({
   testId?: string;
   className?: string;
 }) {
+  const say = useSpeaker();
   return (
     <Link
       href={puzzleRecordHref(kind, { member: memberId, month, week })}
       className={`font-mono tabular-nums underline-offset-2 hover:underline ${className}`}
-      title="The solves these points were made of"
+      title={say.say("pset.points.madeOf")}
       data-testid={testId}
     >
       {thousands(points)}
@@ -67,11 +71,12 @@ export function OneSolvePoints({
   testId?: string;
   className?: string;
 }) {
+  const say = useSpeaker();
   return (
     <Link
       href={mine ? mySolvePath(kind, solveId) : solvePath(kind, solveId)}
       className={`font-mono tabular-nums underline-offset-2 hover:underline ${className}`}
-      title="Open this solve"
+      title={say.say("pset.time.open")}
       data-testid={testId}
       data-solve={solveId}
     >

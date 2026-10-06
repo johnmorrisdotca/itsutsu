@@ -3,6 +3,8 @@
 import Link from "@/components/ui/Link";
 import { useEffect, useMemo, useState } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { START_PRESS } from "@/components/live/live.constants";
 import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, PICK_CHIP_OPEN, PICK_CHIP_SHUT, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
@@ -16,7 +18,8 @@ import { progressOf, type SolvedLevels } from "@/lib/puzzles/meikyuu/completion"
 import { PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MEIKYUU_CHOICE, MEIKYUU_COPY, PROGRESS_COPY, SHAPE_COPY, SOLID_STEP_COPY } from "./meikyuu.constants";
+import { MEIKYUU_CHOICE } from "./meikyuu.constants";
+import { meikyuuWords } from "./mazeWords";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
 import { meikyuuLevelPath, MeikyuuLevelPicker } from "./MeikyuuLevelPicker";
@@ -80,6 +83,9 @@ export function MeikyuuSetUp({
   /** A Meikyuu already going, if any: offered first, above Start (`SetUpResume`). */
   resumeHref?: string | null;
 }) {
+  const say = useSpeaker();
+  const words = meikyuuWords(say.locale);
+  const sizeLabel = (each: number) => meikyuuSizeLabel(each, say);
   const hydrated = useHydrated();
   const [size, setSize] = useState(initialSize);
   const shapeOf = (each: number): Shape => (isMeikyuuSolid(each) ? "solid" : isMeikyuuColossal(each) ? "colossal" : isMeikyuuTall(each) ? "tall" : "square");
@@ -165,24 +171,24 @@ export function MeikyuuSetUp({
           <MeikyuuLevelPreview size={size} level={chosen} best={best[chosen]} solveId={bestSolves[size]?.[chosen] ?? null} ready={ready} />
           <MeikyuuLevelPicker size={size} block={block} best={best} next={next} chosen={chosen} onChoose={(level) => setPicked({ size, level })} />
           <div className="flex items-center gap-2" data-testid="meikyuu-blocks">
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(-1)} disabled={block <= 1} aria-label="The block before" data-testid="meikyuu-block-back">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(-1)} disabled={block <= 1} aria-label={say.say("pmaze.blockBefore")} data-testid="meikyuu-block-back">
               ‹
             </button>
             <span className="min-w-44 text-center text-sm tabular-nums" data-testid="meikyuu-block" data-block={block}>
-              Block {block} of {blocks} · levels {first}–{last}
+              {say.say("pmaze.blockLine", { block: String(block), blocks: String(blocks), first: String(first), last: String(last) })}
             </span>
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(1)} disabled={block >= blocks} aria-label="The block after" data-testid="meikyuu-block-on">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(1)} disabled={block >= blocks} aria-label={say.say("pmaze.blockAfter")} data-testid="meikyuu-block-on">
               ›
             </button>
           </div>
           <p className="text-xs text-muted" data-testid="meikyuu-levels-caption" data-complete={whole ? "true" : "false"}>
-            {whole ? `★ ${PROGRESS_COPY.cheer(meikyuuSizeLabel(size).toLowerCase(), count)}` : `${meikyuuSizeLabel(size)}: ${done.size} of ${count} solved.`}
+            {whole ? `★ ${words.progress.cheer(sizeLabel(size).toLowerCase(), count)}` : say.say("pmaze.tally", { what: sizeLabel(size), done: String(done.size), count: String(count) })}
           </p>
         </div>
         <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="meikyuu-sizes">
           {/* The shape of the mazes: squares and shapes in four sizes, or the tall ones, for a phone held upright. */}
           <fieldset className="flex min-w-0 flex-col gap-1.5 self-stretch" data-testid="meikyuu-shapes">
-            <legend className="mb-0.5 text-sm text-ink-soft">{SHAPE_COPY.legend}</legend>
+            <legend className="mb-0.5 text-sm text-ink-soft">{words.shapeCopy.legend}</legend>
             <div className="flex gap-1.5">
               {SHAPES.map((each) => (
                 <button
@@ -190,50 +196,50 @@ export function MeikyuuSetUp({
                   type="button"
                   className={`${MEIKYUU_CHOICE} ${each === shape ? PICK_CHIP_OPEN : PICK_CHIP_SHUT} flex-1 !px-2`}
                   aria-pressed={each === shape}
-                  title={SHAPE_COPY[each].says}
+                  title={words.shapeCopy[each].says}
                   onClick={() => chooseSize(lastOf[each])}
                   data-testid={`meikyuu-shape-${each}`}
                   data-chosen={each === shape ? "true" : "false"}
                 >
-                  {SHAPE_COPY[each].label} <span className="font-mincho text-xs whitespace-nowrap opacity-70">{SHAPE_COPY[each].kanji}</span>
+                  <Paired en={words.shapeCopy[each].label} kanji={words.shapeCopy[each].kanji} kanjiClassName="text-xs whitespace-nowrap opacity-70" inReadersLanguage />
                 </button>
               ))}
             </div>
           </fieldset>
-          <BoardPicker value={size} sizes={shape === "solid" ? solidTiles : shape === "colossal" ? MEIKYUU_COLOSSAL_SIZES : tall ? tallShown : MEIKYUU_SIZES} onChange={chooseSize} names={PUZZLE_SIZE_NAMES.meikyuu} beside legend={shape === "solid" ? "Solid" : "Size"} />
+          <BoardPicker value={size} sizes={shape === "solid" ? solidTiles : shape === "colossal" ? MEIKYUU_COLOSSAL_SIZES : tall ? tallShown : MEIKYUU_SIZES} onChange={chooseSize} names={PUZZLE_SIZE_NAMES.meikyuu} beside legend={say.say(shape === "solid" ? "pmaze.options.legendSolid" : "pmaze.options.legendSize")} />
           {/* The press that turns the tall sizes' shelf: always in its place, so a square size's screen is as tall as a tall one's. A solid's three steps are chosen in the same room. */}
           <div className="relative flex w-full justify-center" data-testid="meikyuu-under-tiles">
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm ${tall ? "" : "invisible"}`} onClick={turnTall} disabled={!tall} aria-hidden={tall ? undefined : true} tabIndex={tall ? undefined : -1} data-testid="meikyuu-more-sizes">
-              {moreTall ? SHAPE_COPY.lessTall(sizeFrom(MEIKYUU_TALL_SIZES[0]!)) : SHAPE_COPY.moreTall(sizeFrom(MEIKYUU_TALL_SIZES[MEIKYUU_TALL_SIZES.length - 1]!))}
+              {moreTall ? words.shapeCopy.lessTall(sizeFrom(MEIKYUU_TALL_SIZES[0]!)) : words.shapeCopy.moreTall(sizeFrom(MEIKYUU_TALL_SIZES[MEIKYUU_TALL_SIZES.length - 1]!))}
             </button>
             {solid === null ? null : (
-              <div className="absolute inset-0 flex items-center justify-center gap-1.5" role="group" aria-label={SHAPE_COPY.stepLegend} data-testid="meikyuu-steps">
+              <div className="absolute inset-0 flex items-center justify-center gap-1.5" role="group" aria-label={words.shapeCopy.stepLegend} data-testid="meikyuu-steps">
                 {MEIKYUU_SOLID_STEPS.map((each) => (
                   <button
                     key={each}
                     type="button"
                     className={`${BUTTON_BASE} !rounded-full ${each === step ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
                     aria-pressed={each === step}
-                    title={SOLID_STEP_COPY[each].says}
+                    title={words.step[each].says}
                     onClick={() => chooseStep(each)}
                     data-testid={`meikyuu-step-${each}`}
                     data-chosen={each === step ? "true" : "false"}
                   >
-                    {SOLID_STEP_COPY[each].label}
+                    {words.step[each].label}
                   </button>
                 ))}
               </div>
             )}
           </div>
           {/* How many of each size on show are solved: every level is open, and this is what there is to finish. Four rows whichever shape is chosen, so nothing moves. */}
-          <MeikyuuProgress rows={progress} label={meikyuuSizeLabel} className="max-w-[14.5rem]" holds={4} />
+          <MeikyuuProgress rows={progress} label={sizeLabel} className="max-w-[14.5rem]" holds={4} />
         </div>
       </div>
 
       <div className={SET_UP_OPTIONS_AND_PLAY}>
-        <SetUpSection title="Options" kanji="設定" testId="puzzle-settings">
+        <SetUpSection title={say.say("pset.options")} kanji="設定" testId="puzzle-settings">
           <p className="text-xs text-muted" data-testid="puzzle-size-note">
-            {MEIKYUU_COPY.levelsNote}
+            {words.copy.levelsNote}
           </p>
           {/* The colours of the preview above and of every maze drawn after it (`MeikyuuColours`). */}
           <MeikyuuColours className="self-start" />
@@ -245,12 +251,12 @@ export function MeikyuuSetUp({
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
           <SetUpResume href={resumeHref} />
           <Link href={meikyuuLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
-            <PressLabel words={`${START_PRESS.start.words} level ${chosen}`} kanji={START_PRESS.start.kanji} />
+            <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={START_PRESS.start.kanji} />
           </Link>
           {/* What the level Start plays is, before it is started. */}
           {row === undefined ? null : <MeikyuuLevelChips code={row.code} cells={row.cells} score={row.score} level={chosen} />}
           <p className="text-xs text-muted" data-testid="meikyuu-kept-where">
-            {hasAccount ? "Your solved levels are kept on your account." : "Your solved levels are kept in this browser. Join, and they are kept on an account."}
+            {say.say(hasAccount ? "pmaze.keptAccount" : "pmaze.keptBrowser")}
           </p>
         </div>
       </div>

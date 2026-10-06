@@ -1,3 +1,5 @@
+import { speaker, type Speaker } from "../../i18n/i18n";
+import { DEFAULT_LOCALE } from "../../i18n/i18n.constants";
 import { puzzleHash } from "../puzzleCode";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { seededRandom, shuffled } from "../random";
@@ -112,8 +114,8 @@ export function hadHeadStart(kind: PuzzleKind, level: string, hintsKept: boolean
 }
 
 /** The help a kept solve took, in words — "1 hint", "3 hints", or "Head start" for a word puzzle's — or null for none. */
-export function hintsWords(kind: PuzzleKind, level: string, hintsUsed: number | null): string | null {
+export function hintsWords(kind: PuzzleKind, level: string, hintsUsed: number | null, say: Speaker = speaker(DEFAULT_LOCALE)): string | null {
   if (!hintsUsed) return null;
-  if (hadHeadStart(kind, level, hintsUsed)) return "Head start";
-  return `${hintsUsed} ${hintsUsed === 1 ? "hint" : "hints"}`;
+  if (hadHeadStart(kind, level, hintsUsed)) return say.say("puzzle.help.headStart");
+  return say.count("puzzle.count.hint", hintsUsed);
 }

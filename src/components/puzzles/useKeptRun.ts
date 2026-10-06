@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef } from "react";
 
 import { keepRunOnDevice, type RunIdentity } from "./runsOnDevice";
 import type { ResumedRun } from "./solveShared";
+import { LINK_SELECTOR } from "./paint.constants";
+import { ENTER_KEY } from "@/lib/ui/keyNames.constants";
 
 /**
  * KEEPING AN UNFINISHED PUZZLE, from the page it is being solved on.
@@ -55,8 +57,8 @@ export function useKeptRun(snapshot: () => object | null): () => void {
      * that is not followed through costs one repeated write.
      */
     const leaving = (event: Event) => {
-      if (event instanceof KeyboardEvent && event.key !== "Enter") return;
-      if (event.target instanceof Element && event.target.closest("a[href]") !== null) keep();
+      if (event instanceof KeyboardEvent && event.key !== ENTER_KEY) return;
+      if (event.target instanceof Element && event.target.closest(LINK_SELECTOR) !== null) keep();
     };
     document.addEventListener("visibilitychange", hidden);
     window.addEventListener("pagehide", keep);

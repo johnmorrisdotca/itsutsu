@@ -1,3 +1,6 @@
+import { speaker, type Speaker } from "../i18n/i18n";
+import { DEFAULT_LOCALE } from "../i18n/i18n.constants";
+
 import type { GuessesTaken } from "./gomoji/guessesTaken";
 import type { PuzzleKind } from "./puzzles.types";
 
@@ -21,13 +24,13 @@ const WORD_PUZZLES: ReadonlySet<PuzzleKind> = new Set<PuzzleKind>(["gomoji", "go
  * - a word otherwise: its rows ran out, "Out of guesses" ("Out of swaps" for Koushi);
  * - anything else left unsolved: "Given up".
  */
-export function puzzleOutcome(kind: PuzzleKind, solved: boolean, clocked: boolean, taken: GuessesTaken | null): PuzzleOutcome {
-  if (solved) return { words: CARD_PUZZLES.has(kind) ? "Won" : WORD_PUZZLES.has(kind) ? "Found" : "Solved", mark: "success" };
+export function puzzleOutcome(kind: PuzzleKind, solved: boolean, clocked: boolean, taken: GuessesTaken | null, say: Speaker = speaker(DEFAULT_LOCALE)): PuzzleOutcome {
+  if (solved) return { words: say.say(CARD_PUZZLES.has(kind) ? "puzzle.outcome.won" : WORD_PUZZLES.has(kind) ? "puzzle.outcome.found" : "puzzle.outcome.solved"), mark: "success" };
   const rowsLeft = taken !== null && taken.unit !== "moves" && taken.used < taken.allowed;
-  if (clocked && !CARD_PUZZLES.has(kind) && (taken === null || rowsLeft)) return { words: "Out of time", mark: "failure" };
+  if (clocked && !CARD_PUZZLES.has(kind) && (taken === null || rowsLeft)) return { words: say.say("puzzle.outcome.outOfTime"), mark: "failure" };
   // A word ends unsolved only when its rows or its clock run out, so with no clock it was the rows.
-  if (WORD_PUZZLES.has(kind) || (taken !== null && taken.unit !== "moves")) return { words: taken?.unit === "swaps" ? "Out of swaps" : "Out of guesses", mark: "failure" };
-  return { words: "Given up", mark: "failure" };
+  if (WORD_PUZZLES.has(kind) || (taken !== null && taken.unit !== "moves")) return { words: say.say(taken?.unit === "swaps" ? "puzzle.outcome.outOfSwaps" : "puzzle.outcome.outOfGuesses"), mark: "failure" };
+  return { words: say.say("puzzle.outcome.givenUp"), mark: "failure" };
 }
 
 /**
@@ -37,13 +40,13 @@ export function puzzleOutcome(kind: PuzzleKind, solved: boolean, clocked: boolea
  * printed over all of them, and "Fastest at this size" said nothing about a
  * card game.
  */
-export function puzzleSizeLabel(kind: PuzzleKind): string {
-  if (kind === "solitaire") return "Draw";
-  if (kind === "freecell") return "Free cells";
-  if (kind === "spider") return "Suits";
-  if (kind === "mahjong") return "Layout";
-  if (WORD_PUZZLES.has(kind)) return "Length";
-  if (kind === "kumimoji") return "Hand";
-  if (kind === "koushi") return "Lattice";
-  return "Size";
+export function puzzleSizeLabel(kind: PuzzleKind, say: Speaker = speaker(DEFAULT_LOCALE)): string {
+  if (kind === "solitaire") return say.say("puzzle.sizeLabel.draw");
+  if (kind === "freecell") return say.say("puzzle.sizeLabel.freeCells");
+  if (kind === "spider") return say.say("puzzle.sizeLabel.suits");
+  if (kind === "mahjong") return say.say("puzzle.sizeLabel.layout");
+  if (WORD_PUZZLES.has(kind)) return say.say("puzzle.sizeLabel.length");
+  if (kind === "kumimoji") return say.say("puzzle.sizeLabel.hand");
+  if (kind === "koushi") return say.say("puzzle.sizeLabel.lattice");
+  return say.say("puzzle.sizeLabel.size");
 }

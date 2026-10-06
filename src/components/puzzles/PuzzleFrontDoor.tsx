@@ -2,6 +2,9 @@ import Link from "@/components/ui/Link";
 import { GAME_PICTURE_BOX, GAME_SIDE_COLUMN } from "@/components/games/games.constants";
 import type { ReactNode } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+
 import { GameFamily } from "@/components/games/GameFamily";
 import { PlayButton } from "@/components/games/PlayButton";
 import { PageTitle } from "@/components/layout/Headings";
@@ -29,11 +32,9 @@ import { GameTrail } from "@/components/games/GameTrail";
 import { KumimojiShots } from "./KumimojiShots";
 import { KumimojiTryIt } from "./KumimojiTryIt";
 import { offeredLine } from "./offeredLine";
-import { MEIKYUU_COPY } from "./meikyuu.constants";
+import { meikyuuWords, suidoWords, tobiishiWords } from "./mazeWords";
 import { MeikyuuFrontProgress } from "./MeikyuuFrontProgress";
 import { MeikyuuProgressLine } from "./MeikyuuProgressLine";
-import { TOBIISHI_COPY } from "./tobiishi.constants";
-import { SUIDO_COPY } from "./suido.constants";
 
 /**
  * A puzzle's front door, at /games/<slug>: what every puzzle's name leads to.
@@ -45,8 +46,9 @@ import { SUIDO_COPY } from "./suido.constants";
  * and the way to the rest. Prerendered like the game page: a table, the
  * same for everybody, and nothing read from the database.
  */
-export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
-  const page = puzzleRulesPage(kind);
+export async function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
+  const say = await currentSpeaker();
+  const page = puzzleRulesPage(kind, say);
   const spec = PUZZLE_SPECS[kind];
 
   return (
@@ -76,7 +78,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="puzzle">
             <div className={`${GAME_PICTURE_BOX} flex flex-col gap-2`}>
               {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
-              <img src={page.image} alt={`A ${page.title} puzzle part way through`} className="w-full rounded-xl border border-rule" data-testid="game-picture" />
+              <img src={page.image} alt={say.say("pset.front.picture", { title: page.title })} className="w-full rounded-xl border border-rule" data-testid="game-picture" />
               {/* The one big Play, under the picture, as on every game's page; alone or a friend is chosen on the set-up. */}
               <Suspense fallback={<PlayButton href={setUpPath(kind)} />}>
                 <PuzzlePlayOrResume kind={kind} />
@@ -94,7 +96,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                   data-testid="game-daily"
                 >
                   {/* A card game has a deal, not a puzzle: today's deal, the same winnable one for everybody. */}
-                  {spec.cards === true ? "Today's deal →" : "Today's puzzle →"}
+                  {say.say(spec.cards === true ? "pset.front.todaysDeal" : "pset.front.todaysPuzzle")}
                 </Link>
               )}
             </div>
@@ -104,7 +106,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               </PageTitle>
               <p className="text-xs text-muted italic">
                 {page.from !== null ? (
-                  <span className="mr-1.5 not-italic" aria-hidden="true" title={`From ${page.from.country}`} data-testid="origin-flag" data-country={page.from.code}>
+                  <span className="mr-1.5 not-italic" aria-hidden="true" title={say.say("rules.from", { country: page.from.country })} data-testid="origin-flag" data-country={page.from.code}>
                     {page.from.flag}
                   </span>
                 ) : null}
@@ -113,27 +115,27 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               {/* Only where it says something: "Our version of Skyscrapers" under "Skyscrapers" does not. */}
               {page.inspiredBy !== undefined && page.inspiredBy !== page.title ? (
                 <p className="text-xs text-muted" data-testid="inspired-by">
-                  Our version of {page.inspiredBy}.
+                  {say.say("pset.front.ourVersion", { name: page.inspiredBy })}
                 </p>
               ) : null}
               {page.alsoKnownAs.length > 0 ? (
                 <p className="text-xs text-muted" data-testid="also-known-as">
-                  Also known as {page.alsoKnownAs.join(", ")}.
+                  {say.say("rules.alsoKnownAs", { names: say.list(page.alsoKnownAs) })}
                 </p>
               ) : null}
               <span className="text-xs text-muted">
-                {offeredLine(kind)}
+                {offeredLine(kind, say)}
               </span>
               {/* A Suido's line above is the boards it makes; its fixed levels, which Play leads to first, are said beside it. */}
               {kind === PUZZLE_KINDS.suido ? (
                 <span className="text-xs text-muted" data-testid="suido-levels-line">
-                  {SUIDO_COPY.levelsLine}
+                  {suidoWords(say.locale).copy.levelsLine}
                 </span>
               ) : null}
               {kind === PUZZLE_KINDS.meikyuu ? (
                 <>
                   <span className="text-xs text-muted" data-testid="meikyuu-levels-line">
-                    {MEIKYUU_COPY.levelsLine}
+                    {meikyuuWords(say.locale).copy.levelsLine}
                   </span>
                   {/* How many of each size are solved: every level is open, and this is what there is to finish. At request time, in a Suspense of its own, so the page stays prerendered. */}
                   <Suspense fallback={<MeikyuuProgressLine />}>
@@ -143,7 +145,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
               ) : null}
               {kind === PUZZLE_KINDS.tobiishi ? (
                 <span className="text-xs text-muted" data-testid="tobiishi-levels-line">
-                  {TOBIISHI_COPY.levelsLine}
+                  {tobiishiWords(say.locale).copy.levelsLine}
                 </span>
               ) : null}
             </div>
@@ -151,7 +153,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
           <div className="flex min-w-0 flex-col gap-4">
           <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-object">
             <h2 className={SECTION_TITLE}>
-              Objective <span className="font-mincho normal-case tracking-normal">目的</span>
+              <Paired en={say.say("rules.object")} kanji="目的" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
             </h2>
             <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
               {page.object.map((line) => (
@@ -160,7 +162,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
             </ul>
             <p className="pt-1 text-sm">
               <Link href={rulesPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="game-rules-link">
-                Full rules of {page.title} <span className="font-mincho">規則</span> →
+                {say.say("pset.front.fullRules", { title: page.title })} <span className="font-mincho">規則</span> →
               </Link>
             </p>
           </section>
@@ -198,39 +200,39 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
 
           <nav className={`${PANEL_CLASS} flex flex-col gap-1 text-sm`} data-testid="game-facets">
             <h2 className={SECTION_TITLE}>
-              More on this game <span className="font-mincho normal-case tracking-normal">一覧</span>
+              <Paired en={say.say("pset.front.moreHeading")} kanji="一覧" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
             </h2>
             <div className="-mx-2 flex flex-col">
               <Facet href={rulesPath(kind)}>
-                Rules <span className="font-mincho opacity-70">規則</span>
+                <Paired en={say.say("pset.front.rules")} kanji="規則" kanjiClassName="opacity-70" inReadersLanguage />
               </Facet>
               <Facet href={standingsPath(kind)} testId="facet-standings">
-                Fastest solves <span className="font-mincho opacity-70">最速</span>
+                <Paired en={say.say("pset.fast.heading")} kanji="最速" kanjiClassName="opacity-70" inReadersLanguage />
               </Facet>
               <Facet href={historyPath(kind)} testId="facet-record">
-                All solves <span className="font-mincho opacity-70">棋譜</span>
+                <Paired en={say.say("pset.rec.allSolves")} kanji="棋譜" kanjiClassName="opacity-70" inReadersLanguage />
               </Facet>
               <Facet href={myGamePath(kind)} testId="facet-me">
                 {kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop" ? (
                   <>
-                    Your words <span className="font-mincho opacity-70">言葉</span>
+                    <Paired en={say.say("pset.front.yourWords")} kanji="言葉" kanjiClassName="opacity-70" inReadersLanguage />
                   </>
                 ) : (
                   <>
-                    Your solves <span className="font-mincho opacity-70">自分の解</span>
+                    <Paired en={say.say("pset.me.yourSolves")} kanji="自分の解" kanjiClassName="opacity-70" inReadersLanguage />
                   </>
                 )}
               </Facet>
               {dailyLanguageOf(kind) !== null ? (
                 <Facet href={dailyWordsPath(kind)} testId="facet-daily">
-                  Past daily words <span className="font-mincho opacity-70">過去の言葉</span>
+                  <Paired en={say.say("pset.front.pastDaily")} kanji="過去の言葉" kanjiClassName="opacity-70" inReadersLanguage />
                 </Facet>
               ) : null}
               <Facet href={familyPath(kind)} testId="facet-family">
-                Family <span className="font-mincho opacity-70">同族</span>
+                <Paired en={say.say("puzzle.way.family")} kanji="同族" kanjiClassName="opacity-70" inReadersLanguage />
               </Facet>
               <Facet href={backgroundPath(kind)} testId="facet-background">
-                Background <span className="font-mincho opacity-70">背景</span>
+                <Paired en={say.say("pset.front.background")} kanji="背景" kanjiClassName="opacity-70" inReadersLanguage />
               </Facet>
             </div>
           </nav>
@@ -238,7 +240,7 @@ export function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
           {page.wikipedia !== null ? (
             <p className="text-xs text-muted">
               <a href={page.wikipedia} target="_blank" rel="noreferrer noopener" className="underline-offset-2 hover:underline" data-testid="wikipedia-link">
-                Read about {page.inspiredBy ?? page.title} on Wikipedia ↗
+                {say.say("rules.wikipedia", { game: page.inspiredBy ?? page.title })}
               </a>
             </p>
           ) : null}

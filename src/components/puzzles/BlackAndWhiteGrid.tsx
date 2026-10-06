@@ -1,5 +1,7 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cellLabel } from "@/lib/puzzles/cellLabel";
 import { DEFAULT_APPEARANCE, STONE_SETS } from "@/components/board/Board.constants";
 import { StoneMark } from "@/components/board/StoneMark";
 import type { StoneSetTokens } from "@/components/board/board.types";
@@ -43,6 +45,7 @@ export function BlackAndWhiteGrid({
   set?: StoneSetTokens;
   onPress: (index: number) => void;
 }) {
+  const say = useSpeaker();
   return (
     <div className="w-full" data-testid="puzzle-grid" data-size={size} data-done={done ? "true" : "false"}>
       <PuzzleBoard size={size}>
@@ -59,7 +62,7 @@ export function BlackAndWhiteGrid({
                 data-wrong={wrong.has(index) ? "true" : undefined}
                 onClick={() => onPress(index)}
                 disabled={done || printed}
-                aria-label={`row ${row + 1}, column ${col + 1}, ${WORDS[stone]}${printed ? ", printed" : ""}`}
+                aria-label={cellLabel(say, row, col, stone === BLACK ? say.say("pgrid.cell.black") : stone === WHITE ? say.say("pgrid.cell.white") : say.say("pgrid.cell.empty"), ...(printed ? [say.say("pgrid.cell.printed")] : []))}
                 data-testid="puzzle-cell"
                 data-index={index}
                 data-given={printed ? "true" : "false"}

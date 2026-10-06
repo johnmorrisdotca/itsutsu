@@ -155,6 +155,11 @@ describe("Japanese a machine wrote", () => {
       expect(/[぀-ヿ一-鿿]/.test(stripped), `${key} has no Japanese in it`).toBe(true);
     }
   });
+
+  /* John, 2026-10-06 (TERMS.md): the computer is コンピュータ, one word, in every phrase. */
+  it("says a computer as コンピュータ, never コンピューター", () => {
+    for (const key of drafted) expect(JA_DRAFTED[key]?.text ?? "", key).not.toMatch(/コンピューター/);
+  });
 });
 
 describe("who has read the Japanese a machine wrote", () => {

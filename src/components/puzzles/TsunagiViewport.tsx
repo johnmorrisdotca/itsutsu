@@ -312,7 +312,7 @@ export function TsunagiViewport({
         ) : null}
       </div>
       {/* Under the board, never over it: a pad in the corner would cover cells a line must be drawn through. */}
-      <ViewPad fitted={view.zoom === 1} onFit={() => setView(FITTED)} onPress={press} label="Move and zoom the board" testId={name} inline />
+      <ViewPad fitted={view.zoom === 1} onFit={() => setView(FITTED)} onPress={press} testId={name} inline />
     </div>
   );
 }

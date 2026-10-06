@@ -1,9 +1,12 @@
+import { speaker, type Speaker } from "../../i18n/i18n";
+import { DEFAULT_LOCALE } from "../../i18n/i18n.constants";
 import type { PuzzleKind } from "../puzzles.types";
 import { ALPHABETS, markGuess, type GomojiLanguage } from "@johnmorrisdotca/kotoba";
 
 // Marking a guess and writing a puzzle down are Kotoba's (`@johnmorrisdotca/kotoba`); read from here as they always were.
 export { decodeGuesses, decodeHidden, encodeHidden, markGuess, type GomojiLanguage, type LetterMark } from "@johnmorrisdotca/kotoba";
 import { baseGuesses } from "./layout";
+import { ordinalIn } from "./ordinal";
 import { wordDataOf } from "./wordData";
 import { isPopWord, popAnswers } from "./popWords";
 
@@ -74,26 +77,23 @@ export function answersFor(size: number, easy: boolean, lang: GomojiLanguage = "
  * elsewhere appears somewhere. The reason a guess breaks it, in words, or null
  * when it keeps it.
  */
-export function breaksHardRule(guesses: readonly string[], hidden: string, next: string): string | null {
+export function breaksHardRule(guesses: readonly string[], hidden: string, next: string, say: Speaker = speaker(DEFAULT_LOCALE)): string | null {
   for (const guess of guesses) {
     const marks = markGuess(guess, hidden);
     for (let at = 0; at < guess.length; at += 1) {
-      if (marks[at] === "hit" && next[at] !== guess[at]) return `the ${ordinal(at + 1)} letter must be ${guess[at]!.toUpperCase()}`;
+      if (marks[at] === "hit" && next[at] !== guess[at]) return say.say("pword.hold.letterMust", { ordinal: ordinalIn(at + 1, say), unit: guess[at]!.toUpperCase() });
     }
     const needed = new Map<string, number>();
     marks.forEach((mark, at) => {
       if (mark !== "miss") needed.set(guess[at]!, (needed.get(guess[at]!) ?? 0) + 1);
     });
     for (const [letter, count] of needed) {
-      if ([...next].filter((each) => each === letter).length < count) return `the guess must use ${letter.toUpperCase()}`;
+      if ([...next].filter((each) => each === letter).length < count) return say.say("pword.hold.use", { unit: letter.toUpperCase() });
     }
   }
   return null;
 }
 
-function ordinal(n: number): string {
-  return ["first", "second", "third", "fourth", "fifth", "sixth", "seventh"][n - 1] ?? `${n}th`;
-}
 
 /**
  * For each place, the letter an earlier guess already found there (green), or

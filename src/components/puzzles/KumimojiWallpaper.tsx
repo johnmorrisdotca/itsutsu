@@ -2,15 +2,18 @@
 
 import { useMemo, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 import { MosaicPanel } from "@/components/history/MosaicPanel";
 import { MosaicWindow } from "@/components/history/MosaicWindow";
 import { setUpPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_DISPLAY, PUZZLE_KINDS } from "@/lib/puzzles/puzzles.constants";
+import { puzzleName } from "@/lib/puzzles/puzzleCopy";
+import { kumimojiWallpaperCopy } from "@/lib/puzzles/puzzleCopy";
+import { PUZZLE_KINDS } from "@/lib/puzzles/puzzles.constants";
 import { MOSAIC_SHAPES } from "@/lib/record/mosaic.constants";
 import { myFinishedCrosswords } from "@/lib/puzzles/kumimoji/wallpaper.actions";
 import { dayOf, kumimojiWallpaperSvg, wallpaperCrosswords, wallpaperTitle } from "@/lib/puzzles/kumimoji/wallpaper";
-import { KUMIMOJI_WALLPAPER_COPY, KUMIMOJI_WALLPAPER_MOST } from "@/lib/puzzles/kumimoji/wallpaper.constants";
+import { KUMIMOJI_WALLPAPER_MOST } from "@/lib/puzzles/kumimoji/wallpaper.constants";
 import type { WallpaperCrossword, WallpaperFetch } from "@/lib/puzzles/kumimoji/wallpaper.types";
 
 /**
@@ -37,7 +40,9 @@ const NONE: readonly WallpaperCrossword[] = [];
 
 export function KumimojiWallpaper() {
   const [fetched, setFetched] = useState<WallpaperFetch>({ state: "idle" });
-  const game = PUZZLE_DISPLAY[PUZZLE_KINDS.kumimoji].label;
+  const say = useSpeaker();
+  const KUMIMOJI_WALLPAPER_COPY = kumimojiWallpaperCopy(say.locale);
+  const game = puzzleName(PUZZLE_KINDS.kumimoji, say.locale);
 
   function load() {
     if (fetched.state === "loading" || fetched.state === "ready") return;
@@ -55,16 +60,16 @@ export function KumimojiWallpaper() {
   // Read in the browser only: the window's inside mounts after the press, so the day is this reader's.
   const crosswords = useMemo(
     () => wallpaperCrosswords(rows, (row, tiles) => [dayOf(row.finishedAt), KUMIMOJI_WALLPAPER_COPY.tiles(tiles)].filter((part) => part !== null).join(" · ")),
-    [rows],
+    [rows, KUMIMOJI_WALLPAPER_COPY],
   );
-  const title = useMemo(() => wallpaperTitle(game, crosswords, rows.length >= KUMIMOJI_WALLPAPER_MOST), [game, crosswords, rows.length]);
+  const title = useMemo(() => wallpaperTitle(game, crosswords, rows.length >= KUMIMOJI_WALLPAPER_MOST, KUMIMOJI_WALLPAPER_COPY), [game, crosswords, rows.length, KUMIMOJI_WALLPAPER_COPY]);
 
   return (
     <MosaicWindow
       id="kumimoji-wallpaper"
       label={KUMIMOJI_WALLPAPER_COPY.openLabel}
       heading={KUMIMOJI_WALLPAPER_COPY.heading}
-      kanji={KUMIMOJI_WALLPAPER_COPY.kanji}
+      kanji={say.pairsWithKanji ? KUMIMOJI_WALLPAPER_COPY.kanji : ""}
       alt={KUMIMOJI_WALLPAPER_COPY.alt(crosswords.length)}
       name={() => (crosswords.length === 0 ? "" : title.name)}
       onOpen={load}

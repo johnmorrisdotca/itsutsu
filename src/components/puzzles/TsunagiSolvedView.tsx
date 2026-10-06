@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 
 import Link from "@/components/ui/Link";
 
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { LinkLayout } from "@johnmorrisdotca/tsunagi";
@@ -50,6 +52,7 @@ export function TsunagiSolvedView({
   /** What sits directly under the board: the level's row of chips. */
   under?: ReactNode;
 }) {
+  const say = useSpeaker();
   return (
     <>
       <TsunagiViewport size={layout.size}>
@@ -58,17 +61,13 @@ export function TsunagiSolvedView({
       {under}
       <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="tsunagi-solved-already">
         <p className="text-sm">
-          You have solved this level
-          {best === null ? null : (
-            <>
-              , at best in <SolveTime kind="tsunagi" solveId={best.solveId} elapsedMs={best.elapsedMs} mine testId="tsunagi-best-time" />
-            </>
-          )}
-          . This is your finished board.
+          {best === null
+            ? say.say("pmaze.tsunagi.solvedAlready")
+            : phraseWith(say.say("pmaze.tsunagi.solvedAlreadyBest"), { time: <SolveTime kind="tsunagi" solveId={best.solveId} elapsedMs={best.elapsedMs} mine testId="tsunagi-best-time" /> })}
         </p>
         <p className="flex flex-wrap gap-2">
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={onRestart} data-testid="tsunagi-restart-solved">
-            Restart
+            {say.say("puzzle.press.restart")}
           </button>
           {next === null ? null : (
             <Link href={next.href} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-next-level">
@@ -80,7 +79,7 @@ export function TsunagiSolvedView({
           </Link>
         </p>
         <p className="text-xs text-muted">
-          Restart plays it again from an empty board{attempts > 0 ? `; it will be attempt ${attempts + 1}` : ""}.
+          {attempts > 0 ? say.say("pmaze.tsunagi.restartAttempt", { count: String(attempts + 1) }) : say.say("pmaze.tsunagi.restartAgain")}
         </p>
       </div>
     </>

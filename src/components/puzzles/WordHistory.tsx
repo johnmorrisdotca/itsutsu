@@ -1,10 +1,13 @@
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { commaOf } from "@/lib/puzzles/puzzleText";
 import Link from "@/components/ui/Link";
 
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import { mySolvePath, setUpPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { levelLabelOf } from "@/lib/puzzles/puzzleCopy";
 import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { OwnWord } from "@/lib/puzzles/server/puzzleSolves";
 import { markGuess } from "@/lib/puzzles/gomoji/code";
@@ -51,7 +54,8 @@ function readWord(kind: WordKind, word: OwnWord): { hidden: string; boards: { gu
   };
 }
 
-export function WordHistory({ words, total, kind = "gomoji" }: { words: readonly OwnWord[]; total: number; kind?: WordKind }) {
+export async function WordHistory({ words, total, kind = "gomoji" }: { words: readonly OwnWord[]; total: number; kind?: WordKind }) {
+  const say = await currentSpeaker();
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="word-history">
       <h2 className={SECTION_TITLE}>
@@ -68,20 +72,20 @@ export function WordHistory({ words, total, kind = "gomoji" }: { words: readonly
       ) : (
         <ul className="flex flex-col divide-y divide-rule">
           {words.map((word) => (
-            <WordRow key={word.id} word={word} kind={kind} />
+            <WordRow key={word.id} word={word} kind={kind} say={say} />
           ))}
         </ul>
       )}
-      {total > words.length ? <p className="text-xs text-muted">Your newest {words.length} of {total}.</p> : null}
+      {total > words.length ? <p className="text-xs text-muted">{say.say("pword.hist.newest", { count: String(words.length), total: String(total) })}</p> : null}
     </section>
   );
 }
 
-function WordRow({ word, kind }: { word: OwnWord; kind: WordKind }) {
+function WordRow({ word, kind, say }: { word: OwnWord; kind: WordKind; say: Speaker }) {
   const { hidden, boards } = readWord(kind, word);
   // Found in 3 of the 6 guesses the level gave (`guessesTaken`), as the boards say it.
   const taken = guessesTaken(kind, word.size, word.level, word.givens, word.answer);
-  const outcome = word.solved ? (taken === null ? `Found in ${boards?.[0] === undefined ? "?" : Math.max(...boards.map((board) => board.guesses.length))}` : `Found in ${guessesText(taken)}`) : "Not found";
+  const outcome = word.solved ? say.say("pword.hist.foundIn", { count: taken === null ? (boards?.[0] === undefined ? "?" : String(Math.max(...boards.map((board) => board.guesses.length)))) : guessesText(taken) }) : say.say("pword.hist.notFound");
   return (
     <li className="flex flex-col gap-2 py-2" data-testid="word-history-row" data-solved={word.solved ? "true" : "false"}>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -93,18 +97,18 @@ function WordRow({ word, kind }: { word: OwnWord; kind: WordKind }) {
           {outcome}
         </span>
         <span className="text-xs text-muted">
-          {PUZZLE_LEVEL_DISPLAY[word.level as PuzzleLevel]?.label ?? word.level} · <SolveTime kind={kind} solveId={word.id} elapsedMs={word.elapsedMs} mine testId="word-history-time" /> · {word.finishedAt.toISOString().slice(0, 10)}
+          {levelLabelOf(word.level, say.locale)} · <SolveTime kind={kind} solveId={word.id} elapsedMs={word.elapsedMs} mine testId="word-history-time" /> · {word.finishedAt.toISOString().slice(0, 10)}
         </span>
         {/* This one word's points, and so the way into it, like its time and the word itself. */}
         <Link href={mySolvePath(kind, word.id)} className="ml-auto text-right leading-none underline-offset-2 hover:underline" data-testid="word-history-points">
-          <span className="font-semibold tabular-nums">{word.points}</span> <span className="text-[0.65rem] tracking-wide text-muted uppercase">points</span>
+          <span className="font-semibold tabular-nums">{word.points}</span> <span className="text-[0.65rem] tracking-wide text-muted uppercase">{say.say("pword.hist.points")}</span>
         </Link>
       </div>
       {boards === null ? (
-        <p className="text-xs text-muted">Its guesses were not kept: it was played before they were.</p>
+        <p className="text-xs text-muted">{say.say("pword.hist.noGuesses")}</p>
       ) : (
         boards.map((board, at) => (
-          <div key={at} className="flex flex-wrap gap-x-3 gap-y-1.5" aria-label={`Guesses: ${board.guesses.map((guess) => guess.toUpperCase()).join(", ")}`} data-testid="word-history-board">
+          <div key={at} className="flex flex-wrap gap-x-3 gap-y-1.5" aria-label={say.say("pword.hist.guessesAria", { list: board.guesses.map((guess) => guess.toUpperCase()).join(commaOf(say)) })} data-testid="word-history-board">
             {board.guesses.map((guess, row) => {
               const marks = board.marks(guess);
               return (

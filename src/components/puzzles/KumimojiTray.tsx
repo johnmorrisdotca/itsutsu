@@ -2,12 +2,15 @@
 
 import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
-import { tileDescription as describeTile, tileFace, type TileFaceOf } from "@/lib/puzzles/kumimoji/tileFace";
+import { tileFace, type TileFaceOf } from "@/lib/puzzles/kumimoji/tileFace";
 import { KUMIMOJI_TRADE } from "@/lib/puzzles/kumimoji/tiles.constants";
 
 import { HAND_TILE_PX, TILE, TILE_CHOSEN, TRAY, tileLetterPx } from "./kumimoji.constants";
 import { TileFace, wildStyle } from "./KumimojiTileFace";
+import { tileSaid } from "./kumimojiWords";
 
 /** What each of the tray's presses may do now, and does. */
 export type TrayPresses = {
@@ -35,7 +38,7 @@ export type TrayPresses = {
 export function KumimojiTray({
   hand,
   faceOf = tileFace,
-  tileDescription = describeTile,
+  tileDescription,
   chosenAt,
   left,
   disabled,
@@ -65,6 +68,8 @@ export function KumimojiTray({
    */
   done?: { label: ReactNode; can: boolean; run: () => void; note: string | null };
 }) {
+  const say = useSpeaker();
+  const describe = tileDescription ?? tileSaid(say);
   return (
     <div
       className={TRAY}
@@ -77,7 +82,7 @@ export function KumimojiTray({
       <div className="flex items-baseline justify-between text-xs text-muted">
         <span className="flex items-baseline gap-2">
           <span>
-            Your hand <span className="font-mincho">手札</span>
+            <Paired en={say.say("pkumi.tray.hand")} kanji="手札" inReadersLanguage />
           </span>
           {/* On the hand's own line, so the four presses under it keep a quarter each. */}
           <button
@@ -88,28 +93,28 @@ export function KumimojiTray({
             data-testid="kumimoji-sort"
             aria-keyshortcuts="/"
           >
-            Sort
+            {say.say("pkumi.tray.sort")}
           </button>
           <button
             type="button"
             className="rounded px-1 text-moss underline underline-offset-2 enabled:cursor-pointer disabled:opacity-50 disabled:no-underline"
             disabled={disabled || !presses.help.can}
             onClick={presses.help.run}
-            title={presses.help.offered ? "Arrange your hand into a word" : "Help is chosen on the set-up screen, before the game starts"}
+            title={say.say(presses.help.offered ? "pkumi.tray.helpOffered" : "pkumi.tray.helpNot")}
             data-testid="kumimoji-help"
             data-offered={presses.help.offered ? "true" : "false"}
           >
-            Help
+            {say.say("pkumi.tray.help")}
           </button>
         </span>
         <span className="tabular-nums" data-testid="kumimoji-bag" data-left={left}>
-          {left} in the bag
+          {say.say("pkumi.tray.inBag", { count: String(left) })}
         </span>
       </div>
-      <div className="flex min-h-11 flex-wrap items-center gap-1.5" data-hand-row="true" data-testid="kumimoji-hand" aria-label="Your hand">
+      <div className="flex min-h-11 flex-wrap items-center gap-1.5" data-hand-row="true" data-testid="kumimoji-hand" aria-label={say.say("pkumi.tray.hand")}>
         {hand.length === 0 ? (
           <span className="text-sm text-muted" data-testid="kumimoji-hand-empty">
-            {left > 0 ? "Hand used." : "Every tile is out of the bag."}
+            {say.say(left > 0 ? "pkumi.tray.handUsed" : "pkumi.tray.bagOut")}
           </span>
         ) : (
           hand.map((letter, at) => (
@@ -126,7 +131,7 @@ export function KumimojiTray({
               data-at={at}
               data-chosen={chosenAt === at ? "true" : undefined}
               aria-pressed={chosenAt === at}
-              aria-label={`${tileDescription(letter)} in your hand`}
+              aria-label={say.say("pkumi.tray.inHand", { tile: describe(letter) })}
             >
               <TileFace face={faceOf(letter)} />
             </button>
@@ -136,23 +141,23 @@ export function KumimojiTray({
       {/* Four presses a quarter of the row each, so a phone keeps them on one line under the thumb. */}
       <div className="grid grid-cols-4 gap-1.5 sm:flex sm:flex-wrap">
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-2`} disabled={disabled || !presses.draw.can} onClick={presses.draw.run} data-testid="kumimoji-draw">
-          Draw <span className="hidden font-mincho opacity-70 sm:inline">引く</span>
+          {say.say("pkumi.tray.draw")} <span className="hidden font-mincho opacity-70 sm:inline">{say.pairsWithKanji ? "引く" : ""}</span>
         </button>
         <button
           type="button"
           className={`${BUTTON_BASE} ${presses.trade.urge === true ? BUTTON_STRONG : BUTTON_QUIET} px-2`}
           disabled={disabled || !presses.trade.can}
           onClick={presses.trade.run}
-          title={`Give the chosen tile back and take ${KUMIMOJI_TRADE.take}`}
+          title={say.say("pkumi.tray.tradeSays", { take: String(KUMIMOJI_TRADE.take) })}
           data-testid="kumimoji-trade"
         >
-          Trade
+          {say.say("pkumi.tray.trade")}
         </button>
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2`} disabled={disabled || !presses.back.can} onClick={presses.back.run} data-testid="kumimoji-back">
-          To hand
+          {say.say("pkumi.tray.toHand")}
         </button>
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2`} disabled={disabled || !presses.allBack.can} onClick={presses.allBack.run} data-testid="kumimoji-all-back">
-          All back
+          {say.say("pkumi.tray.allBack")}
         </button>
       </div>
       {done === undefined ? null : (

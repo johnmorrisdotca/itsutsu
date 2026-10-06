@@ -1,7 +1,10 @@
+import { speaker, type Speaker } from "../../i18n/i18n";
+import { DEFAULT_LOCALE } from "../../i18n/i18n.constants";
 import type { PuzzleKind } from "../puzzles.types";
 import { kanaWordsOf } from "../gomojiKana/kanaWords";
 import { kanaBase, markKanaGuess } from "@johnmorrisdotca/kotoba";
 import { allowedFor, isWord, languageOf, markGuess } from "./code";
+import { ordinalIn } from "./ordinal";
 
 /**
  * GOMOJI PLAYED BACKWARDS: Gomoji Sakasa 逆さ, our version of the Antiwordle
@@ -62,22 +65,21 @@ export function backwardsKeep(kind: PuzzleKind, guesses: readonly string[], word
 }
 
 /** Why a guess may not follow, in words, or null when it may. */
-export function breaksKeep(keep: BackwardsKeep, next: string): string | null {
-  if (keep.typed.has(next)) return `${show(next)} has been played already`;
+export function breaksKeep(keep: BackwardsKeep, next: string, say: Speaker = speaker(DEFAULT_LOCALE)): string | null {
+  if (keep.typed.has(next)) return say.say("pword.hold.played", { unit: show(next) });
   const units = [...next];
   for (const [at, unit] of keep.fixed.entries()) {
-    if (unit !== undefined && units[at] !== unit) return `the ${ordinal(at + 1)} must stay ${show(unit)}`;
+    if (unit !== undefined && units[at] !== unit) return say.say("pword.hold.stay", { ordinal: ordinalIn(at + 1, say), unit: show(unit) });
   }
   const bases = keep.kana ? units.map(kanaBase) : units;
   for (const [unit, count] of keep.need) {
-    if (bases.filter((each) => each === unit).length < count) return `the guess must use ${show(unit)}`;
+    if (bases.filter((each) => each === unit).length < count) return say.say("pword.hold.use", { unit: show(unit) });
   }
   const again = bases.find((each) => keep.banned.has(each));
-  return again === undefined ? null : `${show(again)} was grey, and may not be used again`;
+  return again === undefined ? null : say.say("pword.hold.grey", { unit: show(again) });
 }
 
 const show = (unit: string) => unit.toUpperCase();
-const ordinal = (n: number) => ["first", "second", "third", "fourth", "fifth", "sixth"][n - 1] ?? `${n}th`;
 
 /**
  * Why a guess may not follow these, in words, or null when it may: every
@@ -85,8 +87,8 @@ const ordinal = (n: number) => ["first", "second", "third", "fourth", "fifth", "
  * and no letter shown grey typed again. The hidden word always keeps to it,
  * so a player is never left with no guess at all: only, at the last, with it.
  */
-export function breaksBackwardsRule(kind: PuzzleKind, guesses: readonly string[], word: string, next: string): string | null {
-  return breaksKeep(backwardsKeep(kind, guesses, word), next);
+export function breaksBackwardsRule(kind: PuzzleKind, guesses: readonly string[], word: string, next: string, say: Speaker = speaker(DEFAULT_LOCALE)): string | null {
+  return breaksKeep(backwardsKeep(kind, guesses, word), next, say);
 }
 
 /** Whether a word may be guessed at all in this Gomoji: in its list, as any guess must be. */

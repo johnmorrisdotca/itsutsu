@@ -82,9 +82,14 @@ export const PENDING_PATHS = [
   { path: "src/lib/famous", ticket: "ENJA-05" },
   // ENJA-06, set-up screen, game screen and every ending
   { path: "src/lib/history", ticket: "ENJA-13" },
-  // ENJA-07, puzzles (folders, so a renamed puzzle file breaks nothing)
-  { path: "src/lib/puzzles", ticket: "ENJA-07" },
-  { path: "src/components/puzzles", ticket: "ENJA-07" },
+  /*
+   * ENJA-07, puzzles. What is left of them is two kinds of file, named one by one now that the folders are done.
+   *
+   * The puzzle screens whose files the pictures' stamp hashes (`puzzleArtFingerprint.ts`): a puzzle board, table
+   * or grid keeps a few English labels (a column, a stock, a foundation, a cage, a peg) that a translation must
+   * not edit, since any edit makes every puzzle picture stale until `pnpm screenshots:puzzles` is run. They come
+   * off the list in the change that re-takes the pictures.
+   */
   // ENJA-08, party and card games
   { path: "src/lib/party", ticket: "ENJA-08" },
   { path: "src/components/party", ticket: "ENJA-08" },
@@ -141,6 +146,32 @@ export const PENDING_PATHS = [
   { path: "src/proxy.ts", ticket: "ENJA-13" },
   { path: "src/lib/phrase", ticket: "ENJA-13" },
   { path: "src/lib/api", ticket: "ENJA-13" },
+  /*
+   * ENJA-13 also takes the puzzles' refusals: the reason a check gives for an answer it will not take, which
+   * the route sends back as the body of the error (`puzzleCheck.ts` and each puzzle's `check.ts`), and the
+   * races' (`puzzleRaces.ts`). A member reads them in a message the page shows; they are the API's words.
+   */
+  { path: "src/lib/puzzles/puzzleCheck.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/bridges/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/koushi/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/cube/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/freecell/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/solitaire/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/spider/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/meikyuu/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/pictureLogic/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/tobiishi/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/tsunagi/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/suido/check.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/pencil/akari.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/pencil/crossSums.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/pencil/hitori.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/pencil/loop.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/pencil/regions.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/pencil/shikaku.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/jirai/board.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/server/puzzleRaceChecks.ts", ticket: "ENJA-13" },
+  { path: "src/lib/puzzles/server/puzzleRaces.ts", ticket: "ENJA-13" },
 ];
 
 /**
@@ -240,6 +271,34 @@ export const ALLOWED_FILES = new Map([
   ["src/components/games/cardKinds.constants.ts", "what a game can be won by, each an English label beside its own kanji (三目, 四目, 五目, 反転, 詰…) that a Japanese reader is shown instead (Paired)"],
   ["src/components/games/familyMarks.constants.ts", "the families' names as the keys that pick each family's picture (FamilyMark family=\"Pencil puzzles\"): names that are looked up, not words drawn; a family's Japanese name is its kanji"],
   ["src/lib/famous/famousGames.data.ts", "the names of players, events and places exactly as the sources record them, and the games' moves: a record, not the site's own sentences"],
+  /*
+   * THE PUZZLES' ENGLISH HALVES, as the games' above: each puzzle's words are a table of English beside a Japanese
+   * overlay of the same shape (`copyTable.ts`) under src/lib/i18n/dictionaries/puzzles.ja.*.constants.ts. Where a
+   * table sits in a file the pictures' stamp hashes (`puzzleArtFingerprint.ts`) its Japanese is laid over it from a
+   * sibling (`cardWords.ts`, `mazeWords.ts`, `gridWords.ts`, `puzzleCopy.ts`). Held by
+   * `puzzleCopyTables.coverage.test.ts` and `puzzles.coverage.test.ts` ("has Japanese copy"), which fail for a
+   * sentence with no Japanese beside it or a Japanese line that answers nothing.
+   */
+  ["src/lib/puzzles/puzzles.constants.ts", "the English half of every puzzle's words (tagline, origin, rules, levels, clocks, sizes); the Japanese is puzzles.ja.*.constants.ts, held by puzzles.coverage.test.ts and puzzleCopyTables.coverage.test.ts"],
+  ["src/lib/puzzles/pencil/pencil.constants.ts", "the English half of the pencil puzzles' lines under the board; the Japanese is puzzles.ja.pencil.constants.ts, held by puzzleCopyTables.coverage.test.ts"],
+  ["src/lib/puzzles/jirai/jirai.constants.ts", "the English half of Jirai's levels, neighbours and size names; the Japanese is puzzles.ja.levels.constants.ts, held by puzzleCopyTables.coverage.test.ts"],
+  ["src/lib/puzzles/meikyuu/look.constants.ts", "the English half of Meikyuu's colour chooser, with each colour's name beside its own kanji, which a Japanese reader is shown instead (Speaker.pairName); the Japanese is puzzles.ja.misc.constants.ts, held by puzzleCopyTables.coverage.test.ts"],
+  ["src/lib/puzzles/kumimoji/wallpaper.constants.ts", "the English half of Kumimoji's wallpaper words; the Japanese is puzzles.ja.misc.constants.ts, held by puzzleCopyTables.coverage.test.ts"],
+  ["src/lib/puzzles/kumimoji/shots.constants.ts", "the English half of the captions of Kumimoji's pictures; the Japanese is puzzles.ja.misc.constants.ts, held by puzzleCopyTables.coverage.test.ts"],
+  ["src/lib/puzzles/gomoji/wordStyles.ts", "the English half of the three ways a Gomoji grid is drawn, a name and a sentence each; the Japanese is puzzles.ja.misc.constants.ts, held by puzzleCopyTables.coverage.test.ts"],
+  ["src/lib/puzzles/server/puzzleRecord.ts", "a SQL fragment the database runs, not language"],
+  ["src/components/puzzles/meikyuu.constants.ts", "the English half of Meikyuu's screen; the Japanese is puzzles.ja.meikyuuUi.constants.ts, laid over it by mazeWords.ts and held by screenWords.coverage.test.ts"],
+  ["src/components/puzzles/suido.constants.ts", "the English half of Suido's screen; the Japanese is puzzles.ja.mazeUi.constants.ts, held by screenWords.coverage.test.ts"],
+  ["src/components/puzzles/tobiishi.constants.ts", "the English half of Tobiishi's screen; the Japanese is puzzles.ja.mazeUi.constants.ts, held by screenWords.coverage.test.ts"],
+  ["src/components/puzzles/cube.constants.ts", "the English half of the Cube's screen; the Japanese is puzzles.ja.mazeUi.constants.ts, held by screenWords.coverage.test.ts"],
+  ["src/components/puzzles/jirai.constants.ts", "the English half of Jirai's lines under the board; the Japanese is puzzles.ja.grid.constants.ts, held by puzzleCopyTables.coverage.test.ts"],
+  ["src/components/puzzles/pencil/pencil.constants.ts", "the English half of the pencil puzzles' lines under the board; the Japanese is puzzles.ja.grid.constants.ts, held by puzzleCopyTables.coverage.test.ts"],
+  ["src/components/puzzles/solitaireOptions.constants.ts", "the English half of Solitaire's set-up choices; the Japanese is puzzles.ja.cards.constants.ts, held by screenWords.coverage.test.ts"],
+  ["src/components/puzzles/puzzles.constants.ts", "class lists and the English half of the Tsunagi chips and the grid and card tables' lines; the Japanese is laid over it from puzzles.ja.*.constants.ts by mazeWords.ts, gridWords.ts and cardWords.ts. The pictures' stamp hashes this file, so it is never edited to translate it"],
+  ["src/components/puzzles/mahjong.constants.ts", "the English half of Mahjong Solitaire's lines under the board; the Japanese is puzzles.ja.cards.constants.ts, laid over it by cardWords.ts. The pictures' stamp hashes this file, so it is never edited to translate it"],
+  ["src/components/puzzles/kumimoji.constants.ts", "Tailwind class lists the scanner reads as words; no sentence is in it. The pictures' stamp hashes this file"],
+  ["src/components/puzzles/paint.constants.ts", "CSS gradients, selectors and a developer's width reason, which read as words to the scanner; never drawn as text"],
+  ["src/lib/ui/keyNames.constants.ts", "the names `KeyboardEvent.key` reports for Enter, Delete and Space, compared and never drawn"],
 ]);
 
 /**
@@ -285,6 +344,8 @@ export const ALLOWED_TERMS = [
   ["ItsYourTurn|GoldToken", "the other sites whose move lists can be pasted: names, as they write them"],
   ["CC BY(?:-SA|-NC)?(?:\\s*4\\.0)?|CC0", "a Creative Commons licence identifier"],
   ["[a-h][1-9][0-9]?", "board coordinates such as e5 or h10"],
+  ["ArrowLeft|ArrowRight|ArrowUp|ArrowDown|Backspace", "the names `KeyboardEvent.key` reports for the arrows and Backspace, compared and never drawn (Enter, Delete and Space, which are also words on a button, are in src/lib/ui/keyNames.constants.ts)"],
+  ["Futago|Yotsugo|Sakasa|Nige|Antiwordle|Absurdle", "the names of Gomoji's ways to play, and of the published games they are versions of: names, not sentences"],
 ];
 
 /** The repository this script sits in, whatever directory it is run from. */

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useCallback, useMemo, useState, type KeyboardEvent } from "react";
 
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
@@ -19,6 +20,9 @@ import { SolveShow } from "./SolveShow";
 import { useStepHistory } from "./useStepHistory";
 import { PencilBoard } from "./pencil/PencilBoard";
 import { edgeWords, PENCIL_COPY, pencilChecked, pencilStepWord } from "./pencil/pencil.constants";
+import { pencilCopy } from "./gridWords";
+import { puzzleName } from "@/lib/puzzles/puzzleCopy";
+import { ARROW_KEY, DELETE_KEY, ENTER_KEY } from "@/lib/ui/keyNames.constants";
 
 /** The puzzles whose marks are numbers, which a keypad under the board enters. */
 const NUMBER_KINDS: readonly PencilKind[] = ["regions", "crossSums"];
@@ -51,10 +55,12 @@ export function PencilSolve({
   hints?: boolean;
 }) {
   const hydrated = useHydrated();
+  const say = useSpeaker();
   const { size, seed, givens, solution } = puzzle;
   const kind = puzzle.kind as PencilKind;
   const engine = pencilEngine(kind);
-  const copy = PENCIL_COPY[kind];
+  const words = pencilCopy(say.locale);
+  const copy = words[kind];
 
   const [code, setCode] = useState<string>(() => (resumed !== null && engine.fits(size, resumed.progress) ? resumed.progress : engine.blank(size, givens)));
   const [ui, setUi] = useState<PencilUi>(FRESH_UI);
@@ -112,11 +118,11 @@ export function PencilSolve({
   /* The keyboard, on the board when it has the focus: arrows move, Enter or Space presses, digits enter, Escape lets go. */
   const onKey = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!live || event.metaKey || event.ctrlKey || event.altKey) return;
-    if (event.key.startsWith("Arrow")) {
+    if (event.key.startsWith(ARROW_KEY)) {
       event.preventDefault();
       setKeyed(true);
       setUi({ ...ui, selected: moved(kind, size, ui.selected, event.key) });
-    } else if (event.key === "Enter" || event.key === " ") {
+    } else if (event.key === ENTER_KEY || event.key === " ") {
       if (NUMBER_KINDS.includes(kind) || ui.selected === null) return;
       event.preventDefault();
       setKeyed(true);
@@ -124,7 +130,7 @@ export function PencilSolve({
     } else if (NUMBER_KINDS.includes(kind) && /^[0-9]$/.test(event.key)) {
       event.preventDefault();
       enter(Number(event.key));
-    } else if (NUMBER_KINDS.includes(kind) && (event.key === "Backspace" || event.key === "Delete")) {
+    } else if (NUMBER_KINDS.includes(kind) && (event.key === "Backspace" || event.key === DELETE_KEY)) {
       event.preventDefault();
       enter(0);
     } else if (event.key === "Escape") {
@@ -178,7 +184,7 @@ export function PencilSolve({
           code={shown}
           view={history.reviewing ? undefined : view}
           readOnly={done !== null || history.reviewing}
-          label={`${PENCIL_COPY[kind].thing[1]} puzzle, ${size} by ${size}. ${copy.howTo}`}
+          label={say.say("pgrid.pencil.label", { thing: say.locale === "ja" ? puzzleName(kind, say.locale) : PENCIL_COPY[kind].thing[1], size: String(size), howTo: copy.howTo })}
           onPress={press}
           onKey={onKey}
         />
@@ -188,8 +194,8 @@ export function PencilSolve({
         viewing={history.viewing}
         go={history.go}
         size={size}
-        say={(value) => pencilStepWord(kind, value)}
-        where={kind === "loop" ? (index) => edgeWords(size, index) : undefined}
+        say={(value) => pencilStepWord(kind, value, say, words)}
+        where={kind === "loop" ? (index) => edgeWords(size, index, say) : undefined}
       />
       {done === null ? (
         <>
@@ -200,7 +206,7 @@ export function PencilSolve({
                   {value}
                 </button>
               ))}
-              <button type="button" className={PUZZLE_KEY} onClick={() => enter(0)} disabled={pausing.paused} aria-label="clear the cell" data-testid="puzzle-key-clear">
+              <button type="button" className={PUZZLE_KEY} onClick={() => enter(0)} disabled={pausing.paused} aria-label={say.say("pgrid.num.clear")} data-testid="puzzle-key-clear">
                 ×
               </button>
             </div>
@@ -218,13 +224,13 @@ export function PencilSolve({
                   disabled={pausing.paused}
                   data-testid="shikaku-remove"
                 >
-                  Remove
+                  {say.say("pgrid.pencil.remove")}
                 </button>
               ) : null}
               <SolveHint hinting={hinting} onHint={hint} disabled={disabled} racing={race !== null} />
             </div>
             <span className="text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "pencil-said"} aria-live="polite">
-              {checked !== null ? pencilChecked(kind, checked) : (said ?? (kind === "shikaku" && ui.erase ? "Tap a rectangle to take it away." : copy.howTo))}
+              {checked !== null ? pencilChecked(kind, checked, say) : (said ?? (kind === "shikaku" && ui.erase ? say.say("pgrid.pencil.removeSays") : copy.howTo))}
             </span>
           </div>
         </>

@@ -2,6 +2,9 @@
 
 import { BOARD_THEMES, DEFAULT_APPEARANCE, EDGE_LINE_WIDTH, FELTS, LINE_WIDTH, STAR_RADIUS } from "@/components/board/Board.constants";
 import type { Appearance, BoardThemeTokens } from "@/components/board/board.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+import { cellFacts } from "@/lib/puzzles/cellLabel";
 import { foundInPlace, type LetterMark } from "@/lib/puzzles/gomoji/code";
 import { gomojiBoard } from "@/lib/puzzles/gomoji/layout";
 import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
@@ -30,8 +33,9 @@ export type CellMark = LetterMark | "kin";
 /** Right kana, not quite: the wrong size, the wrong mark, or both (the kana version's arrows). */
 export type CellArrow = "" | "↓" | "↑" | "↓↑";
 
-const MARK_WORDS: Record<CellMark, string> = { hit: "in its place", near: "in the word elsewhere", kin: "the word has another kana of its column here", miss: "not in the word" };
-const ARROW_WORDS: Record<Exclude<CellArrow, "">, string> = { "↓": "wrong size", "↑": "wrong mark", "↓↑": "wrong size and mark" };
+/** What a screen reader says of a tile's mark, and of a kana's arrow: phrases, said in the reader's language. */
+const MARK_PHRASES: Record<CellMark, PhraseKey> = { hit: "pword.cell.hit", near: "pword.cell.near", kin: "pword.cell.kin", miss: "pword.cell.miss" };
+const ARROW_PHRASES: Record<Exclude<CellArrow, "">, PhraseKey> = { "↓": "pword.cell.wrongSize", "↑": "pword.cell.wrongMark", "↓↑": "pword.cell.wrongBoth" };
 
 /**
  * The surface a GOMOJI board is drawn on. Gomoji is not a gomoku variant — it
@@ -169,6 +173,7 @@ function PartRows({
   style: WordStyle;
   onChoose: (place: number) => void;
 }) {
+  const say = useSpeaker();
   const tiles = style === WORD_STYLES.tiles;
   const { guesses, done, reveal } = side;
   const letterSize = wordLetterSize(size);
@@ -191,8 +196,8 @@ function PartRows({
       const arrow = mark === null ? "" : (arrows[row]?.[at] ?? "");
       const label =
         letter === ""
-          ? "empty"
-          : `${letter.toUpperCase()}${mark === null ? "" : `, ${MARK_WORDS[mark]}`}${arrow === "" ? "" : `, ${ARROW_WORDS[arrow]}`}${row < free ? ", given free" : ""}`;
+          ? say.say("pgrid.cell.empty")
+          : cellFacts(say, letter.toUpperCase(), ...(mark === null ? [] : [say.say(MARK_PHRASES[mark])]), ...(arrow === "" ? [] : [say.say(ARROW_PHRASES[arrow])]), ...(row < free ? [say.say("pword.cell.givenFree")] : []));
       const focused = live && typing.at === at;
       const moving = reveal?.row === row && letter !== "" ? revealAttrs(reveal.dir, at, size) : null;
       const said = {
@@ -204,7 +209,7 @@ function PartRows({
         "data-known": known ? "hit" : undefined,
         "data-focus": focused ? "true" : undefined,
         ...moving?.data,
-        "aria-label": live ? `${label}, letter ${at + 1}${focused ? ", chosen" : ""}` : label,
+        "aria-label": live ? cellFacts(say, label, say.say("pword.cell.letter", { n: String(at + 1) }), ...(focused ? [say.say("pword.cell.chosen")] : [])) : label,
       };
       // Inside the stone or tile, at its lower right, in its letter's colour: read with the kana, not beside it.
       const badge = arrow === "" ? null : <ArrowMark arrow={arrow} />;
@@ -286,7 +291,7 @@ function GridLines({ cols, tall, size, rows, left, top, style, theme }: { cols: 
   const at = reversi ? 0 : 0.5;
   /* One set of lines over a rectangle of cells: `across` rows high and `down` columns wide, from (x, y). */
   const ruled = (x: number, y: number, down: number, across: number, opacity: number, key: string) => (
-    <g key={key} opacity={opacity} data-testid={opacity === 1 ? "word-lines-in-play" : "word-lines-out-of-play"}>
+    <g key={key} opacity={opacity} data-testid={opacity < 1 ? "word-lines-out-of-play" : "word-lines-in-play"}>
       {Array.from({ length: reversi ? across + 1 : across }, (_, row) => y + row + at).map((line) => (
         <line key={`y${line}`} x1={x + at} y1={line} x2={x + down - at} y2={line} stroke={ink} strokeWidth={width} vectorEffect="non-scaling-stroke" />
       ))}

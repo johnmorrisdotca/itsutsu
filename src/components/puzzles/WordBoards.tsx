@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BOARD_FRAME, LABEL_GUTTER } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { WORDS_A_BOARD } from "@/lib/puzzles/gomoji/layout";
@@ -53,6 +54,7 @@ export function WordBoards({
   onChoose: (place: number) => void;
   appearance: Appearance;
 }) {
+  const say = useSpeaker();
   const words = asWordCount(boards.length);
   const firsts = Array.from({ length: Math.ceil(boards.length / WORDS_A_BOARD) }, (_, pair) => pair * WORDS_A_BOARD);
   return (
@@ -84,7 +86,7 @@ export function WordBoards({
                   data-part={first + at}
                   data-found={board.found ? "true" : "false"}
                 >
-                  {board.found ? `✓ Found in ${board.rows.length - free}` : " "}
+                  {board.found ? say.say("pword.board.foundIn", { count: String(board.rows.length - free) }) : " "}
                 </p>
               ))}
             </div>

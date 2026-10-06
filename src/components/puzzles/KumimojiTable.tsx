@@ -4,16 +4,19 @@ import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState,
 
 import { BOARD_THEMES, FELTS } from "@/components/board/Board.constants";
 import type { Appearance, BoardThemeTokens } from "@/components/board/board.types";
+import { cellFacts } from "@/lib/puzzles/cellLabel";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
 import { placeOf, squareAt, type Tiles } from "@/lib/puzzles/kumimoji/grid";
-import { tileDescription as describeTile, tileFace, type TileFaceOf } from "@/lib/puzzles/kumimoji/tileFace";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { tileFace, type TileFaceOf } from "@/lib/puzzles/kumimoji/tileFace";
 import { TABLE, edgePan, fitView, keepInReach, panView, tableArea, zoomView, type View } from "@/lib/puzzles/kumimoji/tableView";
 import { turnArea, turnPlace, turnView, typingWay } from "@/lib/puzzles/kumimoji/turn";
 import type { Turn } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
 import { TileFace, wildStyle } from "./KumimojiTileFace";
 import { ViewPad, type PadKey } from "./ViewPad";
-import { TABLE_BOX, TABLE_CURSOR, TABLE_RULING, TABLE_SQUARE, TILE, TILE_APART, TILE_CHOSEN, TILE_MISSPELT, TILE_TYPING, tileLetterPx } from "./kumimoji.constants";
+import { TABLE_BOX, TABLE_CURSOR, TABLE_RULING, TABLE_SQUARE, TILE, TILE_APART, TILE_CHOSEN, TILE_MISSPELT, TILE_TYPING, tableRuling, tileLetterPx } from "./kumimoji.constants";
+import { tileSaid } from "./kumimojiWords";
 import { useWordStyle } from "./WordStyleContext";
 
 /** What the solve asks of the table while a tile is dragged: pan toward the edge it is held near. */
@@ -44,11 +47,14 @@ export type TableBoard = "reversi" | "gomoku";
 /** The two boards a Kumimoji offers, for its picker (`WordStylePicker`). */
 export const TABLE_BOARDS = [WORD_STYLES.reversi, WORD_STYLES.gomoku] as const;
 
+/** What the typing arrow's direction on the screen is called, as a phrase (`typingWay`). */
+const WAY_PHRASES = { right: "pkumi.table.way.right", down: "pkumi.table.way.down", left: "pkumi.table.way.left", up: "pkumi.table.way.up" } as const;
+
 /** The board lines as one repeating layer, moved with the view: on the squares' edges, or through their middles for Gomoku. */
 function ruling(board: TableBoard, tile: number, x: number, y: number, line: string): CSSProperties {
   const shift = board === "gomoku" ? tile / 2 : 0;
   return {
-    backgroundImage: `linear-gradient(to right, ${line} 1px, transparent 1px), linear-gradient(to bottom, ${line} 1px, transparent 1px)`,
+    backgroundImage: tableRuling(line),
     backgroundSize: `${tile}px ${tile}px`,
     backgroundPosition: `${x + shift}px ${y + shift}px`,
     opacity: 0.5,
@@ -91,7 +97,7 @@ export function KumimojiTable({
   misspelt = NONE,
   apart = NONE,
   faceOf = tileFace,
-  tileDescription = describeTile,
+  tileDescription,
   chosen = null,
   cursor = null,
   readOnly = false,
@@ -281,6 +287,8 @@ export function KumimojiTable({
     for (let row = grid.top; row < grid.top + grid.rows; row += 1) for (let col = grid.left; col < grid.left + grid.cols; col += 1) all.push(squareAt(row, col));
     return all;
   }, [grid]);
+  const say = useSpeaker();
+  const describe = tileDescription ?? tileSaid(say);
   const typing = cursor === null ? null : typingWay(cursor.across, turn);
 
   return (
@@ -331,7 +339,7 @@ export function KumimojiTable({
                   onClick={() => onSquare?.(square)}
                   data-square={square}
                   data-testid="kumimoji-square"
-                  aria-label={`empty square${typingHere !== null ? `, typing ${cursor!.across ? "across" : "down"}, ${typingHere.name} on the screen` : ""}`}
+                  aria-label={cellFacts(say, say.say("pkumi.table.emptySquare"), ...(typingHere === null ? [] : [say.say(cursor!.across ? "pkumi.table.typingAcross" : "pkumi.table.typingDown", { way: say.say(WAY_PHRASES[typingHere.name as keyof typeof WAY_PHRASES]) })]))}
                   data-typing={typingHere?.name}
                 >
                   {typingHere !== null ? (
@@ -344,7 +352,7 @@ export function KumimojiTable({
             }
             const tileFaceOf = faceOf(letter);
             const glyph = tileFaceOf.glyph;
-            const description = tileDescription(letter);
+            const description = describe(letter);
             const mark = misspelt.has(square) ? "misspelt" : apart.has(square) ? "apart" : "ok";
             const look = `${TILE} relative ${mark === "misspelt" ? TILE_MISSPELT : mark === "apart" ? TILE_APART : ""} ${chosen === square ? TILE_CHOSEN : ""} ${typingHere !== null ? TILE_TYPING : ""}`;
             const face = wildStyle(tileFaceOf, { width: view.tile * 0.92, height: view.tile * 0.92, fontSize: tileLetterPx(view.tile) });
@@ -375,7 +383,7 @@ export function KumimojiTable({
                 data-letter={letter}
                 data-mark={mark}
                 data-chosen={chosen === square ? "true" : undefined}
-                aria-label={`${description}${mark === "misspelt" ? ", in a line that is not a word" : mark === "apart" ? ", not joined to the rest" : ""}${chosen === square ? ", chosen" : ""}`}
+                aria-label={cellFacts(say, description, ...(mark === "misspelt" ? [say.say("pkumi.table.misspelt")] : mark === "apart" ? [say.say("pkumi.table.apart")] : []), ...(chosen === square ? [say.say("pword.cell.chosen")] : []))}
               >
                 <span className={look} style={face}>
                   <TileFace face={tileFaceOf} />
@@ -392,7 +400,7 @@ export function KumimojiTable({
          * controls on the page". A press is a gesture like any other, so the
          * view is the player's own until Fit.
          */
-        <ViewPad fitted={fitted} onFit={() => setFitted(true)} onPress={press} onTurn={onTurn === undefined ? undefined : turnOnce} label="Move and zoom the table" testId="kumimoji" />
+        <ViewPad fitted={fitted} onFit={() => setFitted(true)} onPress={press} onTurn={onTurn === undefined ? undefined : turnOnce} label={say.say("pmaze.pad.moveZoomTable")} testId="kumimoji" />
       )}
     </div>
   );

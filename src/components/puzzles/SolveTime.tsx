@@ -1,3 +1,6 @@
+"use client";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 
 import { mySolvePath, solvePath } from "@/lib/gomoku/slugs";
@@ -31,10 +34,11 @@ export function SolveTime({
   testId?: string;
   className?: string;
 }) {
+  const say = useSpeaker();
   const text = clockText(elapsedMs);
   if (solveId === null) {
     return (
-      <span className={`font-mono tabular-nums ${className}`} title="This solve is no longer kept" data-testid={testId}>
+      <span className={`font-mono tabular-nums ${className}`} title={say.say("pset.time.noLonger")} data-testid={testId}>
         {text}
       </span>
     );
@@ -43,7 +47,7 @@ export function SolveTime({
     <Link
       href={mine ? mySolvePath(kind, solveId) : solvePath(kind, solveId)}
       className={`font-mono tabular-nums underline-offset-2 hover:underline ${className}`}
-      title="Open this solve"
+      title={say.say("pset.time.open")}
       data-testid={testId}
       data-solve={solveId}
     >

@@ -3,6 +3,8 @@
 import Link from "@/components/ui/Link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { nextLevelLabel } from "@/lib/puzzles/fixedLevel";
@@ -13,7 +15,7 @@ import { isMeikyuuSolid, isMeikyuuTall, meikyuuSizeInAddress, meikyuuSizeLabel }
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { MEIKYUU_COPY, MOVE_COPY, PROGRESS_COPY, STONE_COPY, TURN_COPY } from "./meikyuu.constants";
+import { meikyuuWords } from "./mazeWords";
 import { MeikyuuBoard, type MeikyuuHandle, type MeikyuuReading } from "./MeikyuuBoard";
 import { MeikyuuColours } from "./MeikyuuColours";
 import { MeikyuuLevelChips } from "./MeikyuuLevelChips";
@@ -74,6 +76,9 @@ export function MeikyuuSolve({
   /** The member's best solve of each level at this size, to open from its time. */
   bestSolves?: Record<number, string>;
 }) {
+  const say = useSpeaker();
+  const words = meikyuuWords(say.locale);
+  const { copy: MEIKYUU_COPY, move: MOVE_COPY, progress: PROGRESS_COPY, stone: STONE_COPY, turn: TURN_COPY } = words;
   const hydrated = useHydrated();
   const { kind, size, seed: level } = puzzle;
   const count = meikyuuLevelCount(size);
@@ -136,12 +141,12 @@ export function MeikyuuSolve({
   // Where "next" leads once this one is solved: the lowest level still unsolved, this one counted in.
   const onwardTo = firstUnsolved(count, new Set([...solvedSet, level]));
   const onward = {
-    next: onwardTo === null ? null : { href: meikyuuLevelPath(size, onwardTo), label: nextLevelLabel(level, onwardTo) },
-    all: { href: levelsPath(size), label: "All levels" },
+    next: onwardTo === null ? null : { href: meikyuuLevelPath(size, onwardTo), label: nextLevelLabel(level, onwardTo, say) },
+    all: { href: levelsPath(size), label: say.say("pset.mine.allLevels") },
   };
   const asked = (
     <>
-      {meikyuuSizeLabel(size)} · Level {level} <span className="text-xs">of {count}</span>
+      {meikyuuSizeLabel(size, say)} · {say.say("puzzle.level.number", { number: String(level) })} <span className="text-xs">{say.say("pmaze.ofCount", { count: String(count) })}</span>
     </>
   );
   const chips = row === undefined ? null : <MeikyuuLevelChips code={row.code} cells={row.cells} score={row.score} level={level} />;
@@ -159,13 +164,9 @@ export function MeikyuuSolve({
         {tall ? <MeikyuuWayUp className="self-start" /> : null}
         <div className="flex flex-col gap-2" data-testid="meikyuu-solved-view">
           <p className="text-sm">
-            Solved
-            {solvedHere[level] === undefined ? null : (
-              <>
-                , best <SolveTime kind="meikyuu" solveId={bestSolves[level] ?? null} elapsedMs={solvedHere[level]!} mine testId="meikyuu-best-time" />
-              </>
-            )}
-            .
+            {solvedHere[level] === undefined
+              ? say.say("puzzle.press.solved")
+              : phraseWith(say.say("puzzle.press.solvedBest"), { time: <SolveTime kind="meikyuu" solveId={bestSolves[level] ?? null} elapsedMs={solvedHere[level]!} mine testId="meikyuu-best-time" /> })}
           </p>
           <div className="flex flex-wrap gap-2">
             {onward.next === null ? null : (
@@ -177,7 +178,7 @@ export function MeikyuuSolve({
               {onward.all.label}
             </Link>
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => setReviewing(false)} data-testid="meikyuu-play-again">
-              Play it again
+              {say.say("puzzle.press.playAgain")}
             </button>
           </div>
         </div>
@@ -194,15 +195,15 @@ export function MeikyuuSolve({
   const viewable = done !== null || live;
   const viewPad = (
     <>
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Zoom" data-testid="meikyuu-zoom">
-        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.zoomOut()} disabled={!viewable} aria-label="Zoom out" data-testid="meikyuu-zoom-out">
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label={say.say("pmaze.zoomGroup")} data-testid="meikyuu-zoom">
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.zoomOut()} disabled={!viewable} aria-label={say.say("pmaze.zoomOut")} data-testid="meikyuu-zoom-out">
           −
         </button>
-        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.zoomIn()} disabled={!viewable} aria-label="Zoom in" data-testid="meikyuu-zoom-in">
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.zoomIn()} disabled={!viewable} aria-label={say.say("pmaze.zoomIn")} data-testid="meikyuu-zoom-in">
           +
         </button>
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.fit()} disabled={!viewable} data-testid="meikyuu-fit">
-          Fit
+          {say.say("puzzle.press.fit")}
         </button>
         <button
           type="button"
@@ -246,12 +247,12 @@ export function MeikyuuSolve({
       {done === null ? (
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2" data-testid="meikyuu-controls">
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="The line">
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label={say.say("pmaze.theLine")}>
               <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.undo()} disabled={!live || reading?.undoable !== true} data-testid="meikyuu-undo">
-                Undo
+                {say.say("puzzle.press.undo")}
               </button>
               <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.restart()} disabled={!live || reading?.clearable !== true} data-testid="meikyuu-restart">
-                Restart
+                {say.say("puzzle.press.restart")}
               </button>
               {/* A marble laid beside the line, which the line cannot enter (`meikyuu/stones.ts`): a toggle, like Move, so a tap lays one and nothing draws until it is pressed again. */}
               <button
@@ -291,7 +292,7 @@ export function MeikyuuSolve({
           {/* A size finished is cheered in a line, never a window (John, 2026-10-02: "encouraging people to finish them all"). */}
           {lastOfSize && race === null && !done.outOfTime ? (
             <p className="text-sm font-semibold text-moss" data-testid="meikyuu-size-done" role="status">
-              ★ {PROGRESS_COPY.last(meikyuuSizeLabel(size).toLowerCase(), count)}
+              ★ {PROGRESS_COPY.last(meikyuuSizeLabel(size, say).toLowerCase(), count)}
             </p>
           ) : null}
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} onward={race === null ? onward : undefined} />

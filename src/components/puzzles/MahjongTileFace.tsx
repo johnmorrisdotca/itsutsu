@@ -1,6 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
 
-import { MAHJONG_FACES } from "@johnmorrisdotca/jarajara";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
+import { MAHJONG_FACES, faceWords as packageFaceWords, faceWordsJa } from "@johnmorrisdotca/jarajara";
 import type { MahjongFace } from "@johnmorrisdotca/jarajara";
 
 import { MAHJONG_INK, MAHJONG_TILE } from "./mahjong.constants";
@@ -201,10 +205,11 @@ export function MahjongFaceSymbols({ prefix }: { prefix: string }) {
  * its ivory, drawn inline, at the height the caller's box gives it.
  */
 export function MahjongTileFace({ code, className = "h-8" }: { code: string; className?: string }) {
+  const say = useSpeaker();
   const face = MAHJONG_FACES.find((each) => each.code === code);
   if (face === undefined) return null;
   return (
-    <svg viewBox="-1 -1 32 42" className={`${className} w-auto shrink-0`} role="img" aria-label={faceWords(face)} data-testid="mahjong-face" data-face={code}>
+    <svg viewBox="-1 -1 32 42" className={`${className} w-auto shrink-0`} role="img" aria-label={faceWords(face, say.locale === "ja" ? "ja" : "en")} data-testid="mahjong-face" data-face={code}>
       <rect x={-0.5} y={-0.5} width={31} height={41} rx={3} fill={MAHJONG_TILE.side} />
       <rect x={0} y={0} width={30} height={40} rx={3} fill={MAHJONG_TILE.face} stroke={MAHJONG_TILE.rim} strokeWidth={0.8} />
       {faceDrawing(face)}
@@ -212,20 +217,7 @@ export function MahjongTileFace({ code, className = "h-8" }: { code: string; cla
   );
 }
 
-/** What a face is called, for a screen reader: "3 of characters", "east wind", "red dragon", "plum (flower)". */
-export function faceWords(face: MahjongFace): string {
-  switch (face.suit) {
-    case "characters":
-    case "circles":
-    case "bamboo":
-      return `${face.rank} of ${face.suit}`;
-    case "winds":
-      return `${["east", "south", "west", "north"][face.rank - 1]} wind`;
-    case "dragons":
-      return `${["red", "green", "white"][face.rank - 1]} dragon`;
-    case "flowers":
-      return `${["plum", "orchid", "chrysanthemum", "bamboo"][face.rank - 1]} (flower)`;
-    case "seasons":
-      return `${["spring", "summer", "autumn", "winter"][face.rank - 1]} (season)`;
-  }
+/** What a face is called, for a screen reader: "3 of characters", "east wind", "red dragon", "plum (flower)", or 三萬, 東, 中, 梅 for a Japanese reader (the package's own names for both). */
+export function faceWords(face: MahjongFace, language: "en" | "ja" = "en"): string {
+  return language === "ja" ? faceWordsJa(face) : packageFaceWords(face);
 }

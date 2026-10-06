@@ -20,6 +20,13 @@ import { JA_DRAFTED_GOMOKU } from "./ja.drafted.gomoku.constants";
 import { JA_DRAFTED_RATING } from "./ja.drafted.rating.constants";
 import { JA_DRAFTED_CLOCK } from "./ja.drafted.clock.constants";
 import { JA_DRAFTED_RULESPAGE } from "./ja.drafted.rulespage.constants";
+import { JA_DRAFTED_PCARD } from "./ja.drafted.pcard.constants";
+import { JA_DRAFTED_PKUMI } from "./ja.drafted.pkumi.constants";
+import { JA_DRAFTED_PMAZE } from "./ja.drafted.pmaze.constants";
+import { JA_DRAFTED_PGRID } from "./ja.drafted.pgrid.constants";
+import { JA_DRAFTED_PWORD } from "./ja.drafted.pword.constants";
+import { JA_DRAFTED_PSET } from "./ja.drafted.pset.constants";
+import { JA_DRAFTED_PUZZLE } from "./ja.drafted.puzzle.constants";
 
 import { JA_DRAFTED_XP } from "./ja.drafted.xp.constants";
 
@@ -1010,4 +1017,11 @@ const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
 export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
   ...JA_DRAFTED_BASE,
   ...JA_DRAFTED_XP,
+  ...JA_DRAFTED_PUZZLE,
+  ...JA_DRAFTED_PSET,
+  ...JA_DRAFTED_PWORD,
+  ...JA_DRAFTED_PGRID,
+  ...JA_DRAFTED_PMAZE,
+  ...JA_DRAFTED_PKUMI,
+  ...JA_DRAFTED_PCARD,
 };

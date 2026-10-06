@@ -3,6 +3,7 @@
 import Link from "@/components/ui/Link";
 import { useMemo, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { START_PRESS } from "@/components/live/live.constants";
 import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
@@ -17,7 +18,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { SetUpResume } from "./SetUpResume";
 import { keptSolves } from "./tobiishiKept";
-import { TOBIISHI_COPY } from "./tobiishi.constants";
+import { tobiishiWords } from "./mazeWords";
 import { TobiishiLevelChips } from "./TobiishiLevelChips";
 import { tobiishiLevelPath, TobiishiLevelPicker } from "./TobiishiLevelPicker";
 import { TobiishiLevelPreview } from "./TobiishiLevelPreview";
@@ -55,6 +56,8 @@ export function TobiishiSetUp({
   /** A Tobiishi already going, if any: offered first, above Start (`SetUpResume`). */
   resumeHref?: string | null;
 }) {
+  const say = useSpeaker();
+  const TOBIISHI_COPY = tobiishiWords(say.locale).copy;
   const hydrated = useHydrated();
   const [size, setSize] = useState(initialSize);
 
@@ -81,16 +84,16 @@ export function TobiishiSetUp({
           <TobiishiLevelPreview size={size} level={chosen} best={best[chosen]} solveId={bestSolves[size]?.[chosen] ?? null} />
           <TobiishiLevelPicker size={size} best={best} next={next} chosen={chosen} onChoose={(level) => setPicked({ size, level })} />
           <p className="text-xs text-muted" data-testid="tobiishi-levels-caption">
-            {tobiishiSizeLabel(size)}: {done.size} of {count} solved.
+            {say.say("pmaze.tally", { what: tobiishiSizeLabel(size, say), done: String(done.size), count: String(count) })}
           </p>
         </div>
         <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="tobiishi-sizes">
-          <BoardPicker value={size} sizes={TOBIISHI_SIZES} onChange={setSize} names={PUZZLE_SIZE_NAMES.tobiishi} beside legend="Length" />
+          <BoardPicker value={size} sizes={TOBIISHI_SIZES} onChange={setSize} names={PUZZLE_SIZE_NAMES.tobiishi} beside legend={say.say("pmaze.options.legendLength")} />
         </div>
       </div>
 
       <div className={SET_UP_OPTIONS_AND_PLAY}>
-        <SetUpSection title="Options" kanji="設定" testId="puzzle-settings">
+        <SetUpSection title={say.say("pset.options")} kanji="設定" testId="puzzle-settings">
           <p className="text-xs text-muted" data-testid="puzzle-size-note">
             {TOBIISHI_COPY.levelsNote}
           </p>
@@ -98,7 +101,7 @@ export function TobiishiSetUp({
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
           <SetUpResume href={resumeHref} />
           <Link href={tobiishiLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
-            <PressLabel words={`${START_PRESS.start.words} level ${chosen}`} kanji={START_PRESS.start.kanji} />
+            <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={START_PRESS.start.kanji} />
           </Link>
           {/* What the level Start plays is, before it is started. */}
           {/* The room three rows of chips take (three of 1.375rem and two gaps of 0.375rem), the most any level's wrap to at any width: a board's and a goal's names are longer for some levels than others, and the screen must not change height when one is chosen. */}
@@ -106,7 +109,7 @@ export function TobiishiSetUp({
             {ref === null ? null : <TobiishiLevelChips code={tobiishiCodeOf(ref)} level={chosen} />}
           </div>
           <p className="text-xs text-muted" data-testid="tobiishi-kept-where">
-            {hasAccount ? "Your solved levels are kept on your account." : "Your solved levels are kept in this browser. Join, and they are kept on an account."}
+            {say.say(hasAccount ? "pmaze.keptAccount" : "pmaze.keptBrowser")}
           </p>
         </div>
       </div>

@@ -32,6 +32,13 @@ import { PHRASES_ADVANTAGE } from "./phrases.advantage.constants";
 import { PHRASES_GOMOKU } from "./phrases.gomoku.constants";
 import { PHRASES_RATING } from "./phrases.rating.constants";
 import { PHRASES_CLOCK } from "./phrases.clock.constants";
+import { PHRASES_PCARD } from "./phrases.pcard.constants";
+import { PHRASES_PKUMI } from "./phrases.pkumi.constants";
+import { PHRASES_PMAZE } from "./phrases.pmaze.constants";
+import { PHRASES_PGRID } from "./phrases.pgrid.constants";
+import { PHRASES_PWORD } from "./phrases.pword.constants";
+import { PHRASES_PSET } from "./phrases.pset.constants";
+import { PHRASES_PUZZLE } from "./phrases.puzzle.constants";
 
 /**
  * The languages the site knows about, and the English it speaks in by default.
@@ -153,6 +160,13 @@ export const PHRASE_AREAS = {
   gomoku: PHRASES_GOMOKU,
   clock: PHRASES_CLOCK,
   rating: PHRASES_RATING,
+  puzzle: PHRASES_PUZZLE,
+  pset: PHRASES_PSET,
+  pword: PHRASES_PWORD,
+  pgrid: PHRASES_PGRID,
+  pmaze: PHRASES_PMAZE,
+  pkumi: PHRASES_PKUMI,
+  pcard: PHRASES_PCARD,
 } as const;
 
 /**
@@ -215,6 +229,13 @@ export const PHRASES = {
   ...PHRASES_GOMOKU,
   ...PHRASES_CLOCK,
   ...PHRASES_RATING,
+  ...PHRASES_PUZZLE,
+  ...PHRASES_PSET,
+  ...PHRASES_PWORD,
+  ...PHRASES_PGRID,
+  ...PHRASES_PMAZE,
+  ...PHRASES_PKUMI,
+  ...PHRASES_PCARD,
 } as const;
 
 /** A phrase the site can say. */

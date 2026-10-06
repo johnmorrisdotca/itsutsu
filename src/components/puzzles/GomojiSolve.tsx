@@ -1,5 +1,8 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { stopOf } from "@/lib/puzzles/puzzleText";
 import Link from "@/components/ui/Link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -44,6 +47,8 @@ import { WinStack } from "./PuzzleWinSlot";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
 import { PopClue } from "./PopClue";
 import { ResultMark } from "@/components/game/ResultMark";
+import { BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
+import { DELETE_KEY, ENTER_KEY } from "@/lib/ui/keyNames.constants";
 
 /**
  * Solving Gomoji: type a word, press Enter, read its colours, and find the
@@ -87,6 +92,7 @@ export function GomojiSolve({
 }) {
   const hydrated = useHydrated();
   const { style } = useWordStyle();
+  const say = useSpeaker();
   const keys = useWordKeys();
   // The same board colour picker a Reversi or Gomoku board offers (`useFeltChoice`); every Gomoji style shares it.
   const { felt, chooseFelt } = useFeltChoice(appearance);
@@ -174,18 +180,18 @@ export function GomojiSolve({
     if (closed) return;
     const word = wordOf(typing);
     if (word === null) {
-      setSaid(`A guess is ${size} letters.`);
+      setSaid(say.say("pword.solve.guessLetters", { size: String(size) }));
       return;
     }
     if (!isWord(word, size, lang) && !(words.words.includes(word) && isDailyPoolWord(lang, size, word))) {
-      setSaid(`${word.toUpperCase()} is not in the word list.`);
+      setSaid(say.say("pword.solve.notInList", { word: word.toUpperCase() }));
       return;
     }
     // Strict holds a guess to what every board still being played has found; a found board asks nothing more.
     // A Sakasa holds every guess to what the rows uncovered, whatever Strict says (`breaksBackwardsRule`).
-    const breaks = backwards ? breaksBackwardsRule(kind, guesses, hidden, word) : strict ? (boards.filter((board) => !board.found).map((board) => breaksHardRule(board.rows, board.word, word)).find((each) => each !== null) ?? null) : null;
+    const breaks = backwards ? breaksBackwardsRule(kind, guesses, hidden, word, say) : strict ? (boards.filter((board) => !board.found).map((board) => breaksHardRule(board.rows, board.word, word, say)).find((each) => each !== null) ?? null) : null;
     if (breaks !== null) {
-      setSaid(`${backwards ? "Sakasa" : "Strict"}: ${breaks}.`);
+      setSaid(say.say("pword.solve.refused", { mode: backwards ? say.pairName(BACKWARDS_DISPLAY.label, BACKWARDS_DISPLAY.kanji).text : say.say("pset.strict"), reason: breaks }));
       return;
     }
     const at = begin();
@@ -201,7 +207,7 @@ export function GomojiSolve({
       else if (next.length === rows) void finish(next.join(""), at);
     } else if (found) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
-  }, [closed, typing, size, strict, guesses, words, boards, lang, begin, finish, runOut, rows, dodging, backwards, hidden, kind, level]);
+  }, [closed, typing, size, strict, guesses, words, boards, lang, begin, finish, runOut, rows, dodging, backwards, hidden, kind, level, say]);
 
   /* The desk's keyboard: letters, Enter, Backspace and Delete, Space to clear the chosen letter, the arrows to move — whenever the puzzle is open. */
   useEffect(() => {
@@ -212,10 +218,10 @@ export function GomojiSolve({
       if (/^[a-zA-ZäöüÄÖÜ]$/.test(event.key)) {
         event.preventDefault();
         letter(event.key.toLowerCase());
-      } else if (event.key === "Enter") {
+      } else if (event.key === ENTER_KEY) {
         event.preventDefault();
         enter();
-      } else if (event.key === "Backspace" || event.key === "Delete") {
+      } else if (event.key === "Backspace" || event.key === DELETE_KEY) {
         event.preventDefault();
         back();
       } else if (event.key === " ") {
@@ -272,10 +278,12 @@ export function GomojiSolve({
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
             {said ?? (backwards
-              ? `Type any ${size}-letter word but the hidden one, keeping every letter uncovered. ${rows - guesses.length} ${rows - guesses.length === 1 ? "row" : "rows"} to get through.`
-              : `Type a ${size}-letter word and press Enter${count === 4 ? ": it goes to all four words" : many ? ": it goes to both words" : ""}. ${rows - guesses.length} ${rows - guesses.length === 1 ? "guess" : "guesses"} left${
-              dodge === null ? "" : `, and ${dodge.standing} ${dodge.standing === 1 ? "word" : "words"} for it to hide among`
-            }.`)}
+              ? say.count("pword.solve.typeBackwards", rows - guesses.length, { size: String(size) })
+              : say.count("pword.solve.typeA", rows - guesses.length, {
+                  size: String(size),
+                  goes: count === 4 ? say.say("pword.solve.goesFour") : many ? say.say("pword.solve.goesTwo") : "",
+                  dodge: dodge === null ? "" : say.count("pword.solve.hideAmong", dodge.standing),
+                }))}
           </p>
           <div className={`${wordKeysClass(keys.shown)} flex-col`} data-testid="word-keys-box">
             <WordKeyboard known={known} split={split} counted={counted} typed={typedCounts(typing.slots)} style={style} lang={lang} disabled={pausing.paused} onLetter={letter} onEnter={enter} onBack={back} />
@@ -291,26 +299,34 @@ export function GomojiSolve({
           {backwards && !done.outOfTime ? (
             <p className="text-base">
               <ResultMark kind="failure" className="mr-1.5" />
-              Caught on row {guesses.length} of {rows}: <strong className="uppercase tracking-wide" data-testid="word-was">{hidden}</strong> was the word.
+              {say.say("pword.out.caughtHead", { n: String(guesses.length), rows: String(rows) })}
+              <strong className="uppercase tracking-wide" data-testid="word-was">{hidden}</strong>
+              {say.say("pword.out.caughtTail")}
             </p>
           ) : (
             <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
               <ResultMark kind="failure" className="mr-1.5" />
-              {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}.{" "}
-              {many ? "The words were" : dodge === null || dodge.standing <= 1 ? "The word was" : `It was still hiding among ${dodge.standing} words, one of them`}{" "}
-              <strong className="uppercase tracking-wide" data-testid="word-was">{wordsShown(kind, words.words)}</strong>.
+              {done.outOfTime ? say.say("puzzle.outcome.outOfTime") : say.say("pword.out.guesses", { rows: String(rows) })}
+              {stopOf(say)}
+              {say.pairsWithKanji ? " " : ""}
+              {many ? say.say("pword.out.theWords") : dodge === null || dodge.standing <= 1 ? say.say("pword.out.theWord") : say.say("pword.out.stillHiding", { count: String(dodge.standing) })}
+              {say.pairsWithKanji ? " " : ""}
+              <strong className="uppercase tracking-wide" data-testid="word-was">{wordsShown(kind, words.words)}</strong>
+              {say.say("pword.out.tail")}
             </p>
           )}
           {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />}
           {/* Where the word went, and what playing it out paid: a loss is kept, never lost. */}
           {hasAccount && race === null ? (
             <p className="text-xs text-muted" data-testid="word-kept">
-              {done.paid !== null && done.paid.points > 0 ? `+${done.paid.points} XP for playing it out. ` : ""}
-              Kept in{" "}
+              {done.paid !== null && done.paid.points > 0 ? say.say("pword.out.playedOutPaid", { points: String(done.paid.points) }) : ""}
+              {say.say("pword.out.keptBefore")}
+              {say.pairsWithKanji ? " " : ""}
               <Link href={viewHref("completed")} className="underline">
-                My games
-              </Link>{" "}
-              with your guesses.
+                {say.say("puzzle.done.keptLink")}
+              </Link>
+              {say.pairsWithKanji ? " " : ""}
+              {say.say("pword.out.keptAfter")}
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
@@ -319,11 +335,11 @@ export function GomojiSolve({
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
-              {count === 4 ? "Four more words →" : many ? "Two more words →" : "Another word →"}
+              {say.say(count === 4 ? "pword.out.anotherFour" : many ? "pword.out.anotherTwo" : "pword.out.anotherOne")}
             </Link>
             <PuzzleWayBack kind={kind} />
           </div>
-          <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? "Out of time" : backwards ? `Caught on row ${guesses.length}` : `Out of ${rows} guesses`} />
+          <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? say.say("puzzle.outcome.outOfTime") : backwards ? say.say("pword.out.caughtShort", { n: String(guesses.length) }) : say.say("pword.out.guesses", { rows: String(rows) })} />
         </div>
       ) : (
         <>
@@ -338,29 +354,33 @@ export function GomojiSolve({
       */}
       {lang === "en" || lang === "pop" ? null : (
         <p className={`${SELECTABLE} text-xs text-muted`} data-testid="word-credit">
-          Words from{" "}
-          {lang === "fr" ? (
-            <a href="http://www.lexique.org" className="underline" rel="noreferrer" target="_blank">
-              Lexique 3.83
-            </a>
-          ) : (
-            <a href="https://github.com/languagetool-org/german-pos-dict" className="underline" rel="noreferrer" target="_blank">
-              LanguageTool&apos;s German dictionary
-            </a>
-          )}
-          {" and "}
-          <a href="https://en.wiktionary.org" className="underline" rel="noreferrer" target="_blank">
-            Wiktionary
-          </a>
-          , ranked by{" "}
-          <a href="https://github.com/hermitdave/FrequencyWords" className="underline" rel="noreferrer" target="_blank">
-            FrequencyWords
-          </a>{" "}
-          by Hermit Dave, a count of OpenSubtitles 2018; all used under{" "}
-          <a href="https://creativecommons.org/licenses/by-sa/4.0/" className="underline" rel="noreferrer" target="_blank">
-            CC BY-SA 4.0
-          </a>
-          .
+          {phraseWith(say.say("pword.credit.words"), {
+            source:
+              lang === "fr" ? (
+                <a href="http://www.lexique.org" className="underline" rel="noreferrer" target="_blank">
+                  Lexique 3.83
+                </a>
+              ) : (
+                <a href="https://github.com/languagetool-org/german-pos-dict" className="underline" rel="noreferrer" target="_blank">
+                  {say.say("pword.credit.languageTool")}
+                </a>
+              ),
+            wiktionary: (
+              <a href="https://en.wiktionary.org" className="underline" rel="noreferrer" target="_blank">
+                Wiktionary
+              </a>
+            ),
+            frequency: (
+              <a href="https://github.com/hermitdave/FrequencyWords" className="underline" rel="noreferrer" target="_blank">
+                FrequencyWords
+              </a>
+            ),
+            licence: (
+              <a href="https://creativecommons.org/licenses/by-sa/4.0/" className="underline" rel="noreferrer" target="_blank">
+                CC BY-SA 4.0
+              </a>
+            ),
+          })}
         </p>
       )}
     </section>

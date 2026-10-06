@@ -7,6 +7,9 @@ import { decodeLayout, flowOfGame, gameCode, hintFor, isGameSolved, newGame, tur
 import { SUIDO_FIT, type SuidoView, type SuidoViewer } from "@johnmorrisdotca/suido/draw";
 import { declaredTwists } from "@johnmorrisdotca/suido/levels-info";
 
+import { Paired } from "@/components/i18n/Paired";
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
@@ -26,7 +29,8 @@ import { isSuidoHugeSize, suidoShapeOf, suidoSizeInAddress, suidoSizeWord } from
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { SUIDO_COPY, SUIDO_WAYS } from "./suido.constants";
+import { suidoWords } from "./mazeWords";
+import { SUIDO_WAYS } from "./suido.constants";
 import { SuidoBoard } from "./SuidoBoard";
 import { SuidoLevelChips } from "./SuidoLevelChips";
 import { SuidoSquaresChips } from "./SuidoSquaresChips";
@@ -126,6 +130,8 @@ export function SuidoSolve({
   /** The member's best solve of each level at this size, to open from its time. */
   bestSolves?: Record<number, string>;
 }) {
+  const say = useSpeaker();
+  const SUIDO_COPY = suidoWords(say.locale).copy;
   const hydrated = useHydrated();
   const { kind, size, seed } = puzzle;
   const level = suidoLevelOfSeed(seed);
@@ -178,7 +184,7 @@ export function SuidoSolve({
   }, [done, level, race, size, puzzle.givens]);
 
   const reading = useMemo(() => suidoReading(game, flowOfGame(game)), [game]);
-  const said = SUIDO_COPY.status(reading);
+  const said = SUIDO_COPY.status(reading.kind, reading.solved, reading.reached, reading.wanted, reading.leaks);
 
   // Where "next" leads once this one is solved: the lowest level still unsolved, this one counted in.
   const onwardTo = level === null ? null : firstUnsolvedSuidoLevelAt(size, new Set([...solvedSet, level]));
@@ -186,14 +192,14 @@ export function SuidoSolve({
     level === null
       ? undefined
       : {
-          next: onwardTo === null ? null : { href: suidoLevelPath(size, onwardTo), label: nextLevelLabel(level, onwardTo) },
-          all: { href: suidoLevelsPath(size), label: "All levels" },
+          next: onwardTo === null ? null : { href: suidoLevelPath(size, onwardTo), label: nextLevelLabel(level, onwardTo, say) },
+          all: { href: suidoLevelsPath(size), label: say.say("pset.mine.allLevels") },
         };
   const count = suidoLevelCount(size);
   const asked =
     level === null ? undefined : (
       <>
-        {suidoSizeWord(size)} · Level {level} <span className="text-xs">of {count}</span>
+        {suidoSizeWord(size)} · {say.say("puzzle.level.number", { number: String(level) })} <span className="text-xs">{say.say("pmaze.ofCount", { count: String(count) })}</span>
       </>
     );
   const twists = level === null || !suidoLevelsLoaded(size) ? [] : declaredTwists(suidoLevelsAt(size)[level - 1]!);
@@ -208,14 +214,14 @@ export function SuidoSolve({
     return (
       <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-level={level} {...readyMark(hydrated)}>
         <p className="text-sm" data-testid="suido-shut">
-          Level {level} at {suidoSizeWord(size)} opens when every level in block {block - 1} (levels {from}–{to}) is solved.
+          {say.say("pmaze.shut", { level: String(level), size: suidoSizeWord(size), block: String(block - 1), first: String(from), last: String(to) })}
         </p>
         <p className="flex flex-wrap gap-2">
           <Link href={suidoLevelPath(size, first)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="suido-shut-first">
-            Play level {first}, the first one you have not finished
+            {say.say("pmaze.playFirst", { level: String(first) })}
           </Link>
           <Link href={suidoLevelsPath(size)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`}>
-            All levels
+            {say.say("pset.mine.allLevels")}
           </Link>
         </p>
       </section>
@@ -236,13 +242,9 @@ export function SuidoSolve({
         {chips}
         <div className="flex flex-col gap-2" data-testid="suido-solved-view">
           <p className="text-sm">
-            Solved
-            {solvedHere[level] === undefined ? null : (
-              <>
-                , best <SolveTime kind="suido" solveId={bestSolves[level] ?? null} elapsedMs={solvedHere[level]!} mine testId="suido-best-time" />
-              </>
-            )}
-            .
+            {solvedHere[level] === undefined
+              ? say.say("puzzle.press.solved")
+              : phraseWith(say.say("puzzle.press.solvedBest"), { time: <SolveTime kind="suido" solveId={bestSolves[level] ?? null} elapsedMs={solvedHere[level]!} mine testId="suido-best-time" /> })}
           </p>
           <div className="flex flex-wrap gap-2">
             {onward.next === null ? null : (
@@ -254,7 +256,7 @@ export function SuidoSolve({
               {onward.all.label}
             </Link>
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => setReviewing(false)} data-testid="suido-play-again">
-              Play it again
+              {say.say("puzzle.press.playAgain")}
             </button>
           </div>
         </div>
@@ -285,7 +287,7 @@ export function SuidoSolve({
                   onClick={() => setAnticlockwise(each === "anticlockwise")}
                   data-testid={`suido-way-${each}`}
                 >
-                  {SUIDO_WAYS[each].label} <span className="font-mincho opacity-70">{SUIDO_WAYS[each].kanji}</span>
+                  <Paired en={SUIDO_WAYS[each].label} kanji={SUIDO_WAYS[each].kanji} kanjiClassName="opacity-70" />
                 </button>
               ))}
             </div>

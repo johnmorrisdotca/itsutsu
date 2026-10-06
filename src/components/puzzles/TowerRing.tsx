@@ -1,5 +1,9 @@
+"use client";
+
 import type { ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { TOWER_SIDES, type TowerClues, type TowerSide } from "@/lib/puzzles/towers/code";
 
 import { PUZZLE_TOWER_CLUE, PUZZLE_TOWER_SQUARE } from "./puzzles.constants";
@@ -12,12 +16,8 @@ function placeOf(side: TowerSide, at: number, span: number): { row: number; col:
   return { row: at + 2, col: span };
 }
 
-const SIDE_WORDS: Record<TowerSide, (at: number) => string> = {
-  top: (at) => `from the top of column ${at + 1}`,
-  bottom: (at) => `from the bottom of column ${at + 1}`,
-  left: (at) => `from the left of row ${at + 1}`,
-  right: (at) => `from the right of row ${at + 1}`,
-};
+/** What a clue looks along, as a phrase of the side it stands on: "from the top of column 3". */
+const SIDE_PHRASES: Record<TowerSide, PhraseKey> = { top: "pgrid.tower.top", bottom: "pgrid.tower.bottom", left: "pgrid.tower.left", right: "pgrid.tower.right" };
 
 /**
  * A TOWERS SQUARE WITH ITS CLUES AROUND IT: a ring one cell deep on the wood,
@@ -30,6 +30,7 @@ const SIDE_WORDS: Record<TowerSide, (at: number) => string> = {
  * with no clue is left empty wood.
  */
 export function TowerRing({ size, clues, children }: { size: number; clues: TowerClues; children: ReactNode }) {
+  const say = useSpeaker();
   const span = size + 2;
   return (
     <div
@@ -50,7 +51,7 @@ export function TowerRing({ size, clues, children }: { size: number; clues: Towe
               data-side={side}
               data-at={at}
             >
-              <span className="sr-only">{`Towers seen ${SIDE_WORDS[side](at)}: `}</span>
+              <span className="sr-only">{say.say("pgrid.tower.seen", { side: say.say(SIDE_PHRASES[side], { n: String(at + 1) }) })}</span>
               {clue}
             </span>
           );

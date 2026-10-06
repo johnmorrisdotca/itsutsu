@@ -1,6 +1,8 @@
 "use client";
 
-import { cardCode, cardName } from "@/lib/cards/deck";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cardSays } from "@/lib/cards/cardSays";
+import { cardCode } from "@/lib/cards/deck";
 
 import { CARD_ASPECT } from "./Cards.constants";
 import type { CardPileProps, CardSpot } from "./cards.types";
@@ -26,6 +28,7 @@ function covers(spot: CardSpot | null | undefined, pile: string, index: number):
  * leaves the page to scroll as usual.
  */
 export function CardPile({ id, cards, spread, step, room, showLast, emptyMark, accepts = false, back, picked, hinted = [], lifted, onPress, onLift, labelFor, label, className }: CardPileProps) {
+  const say = useSpeaker();
   const layout = pileLayout({ cards, spread, step, room, showLast });
   const box =
     spread === "right"
@@ -44,7 +47,7 @@ export function CardPile({ id, cards, spread, step, room, showLast, emptyMark, a
         type="button"
         className="absolute top-0 left-0 block"
         style={spread === "right" ? { width: `${100 / (1 + layout.extent)}%` } : { width: "100%" }}
-        aria-label={`${label}: empty`}
+        aria-label={say.say("pcard.pile.empty", { pile: label })}
         tabIndex={cards.length === 0 ? 0 : -1}
         onClick={() => onPress?.({ pile: id, index: -1 })}
         data-card-index={-1}
@@ -72,7 +75,7 @@ export function CardPile({ id, cards, spread, step, room, showLast, emptyMark, a
             className="absolute block rounded-[7%/5%] outline-none focus-visible:ring-2 focus-visible:ring-moss"
             style={{ ...position, touchAction: liftable ? "none" : "manipulation", zIndex: index + 1 }}
             tabIndex={faceUp || top ? 0 : -1}
-            aria-label={labelFor?.(spot) ?? (faceUp ? cardName(card) : "a face-down card")}
+            aria-label={labelFor?.(spot) ?? (faceUp ? cardSays(say, card) : say.say("pcard.pile.faceDown"))}
             data-card-index={index}
             onPointerDown={(event) => onLift?.(spot, event)}
             onClick={() => onPress?.(spot)}

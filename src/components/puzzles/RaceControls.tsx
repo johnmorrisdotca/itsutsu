@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { SeatCard } from "@/components/live/SeatCard";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import type { RaceSeat } from "@/lib/puzzles/raceState";
@@ -33,6 +34,7 @@ export function RaceControls({
   /** The puzzle, as the text message names it. */
   label: string;
 }) {
+  const say = useSpeaker();
   const router = useRouter();
   const hydrated = useHydrated();
   const [starting, setStarting] = useState(false);
@@ -53,13 +55,13 @@ export function RaceControls({
       const answered = await fetch(`/api/puzzles/races/${id}/start`, { method: "POST" });
       if (!answered.ok) {
         const body = (await answered.json().catch(() => null)) as { error?: string } | null;
-        setProblem(body?.error ?? "The site could not start your clock.");
+        setProblem(body?.error ?? say.say("pset.race.noStart"));
         setStarting(false);
         return;
       }
       router.refresh();
     } catch {
-      setProblem("The site could not be reached.");
+      setProblem(say.say("pset.race.noReach"));
       setStarting(false);
     }
   };
@@ -68,15 +70,15 @@ export function RaceControls({
     <div className="flex flex-col gap-2" data-testid="race-controls" {...readyMark(hydrated)}>
       {invite !== null ? (
         <div className="flex flex-col gap-2">
-          <span className="text-sm text-muted">Send this link to the person you are racing. Whoever opens it takes the other seat.</span>
+          <span className="text-sm text-muted">{say.say("pset.race.sendLink")}</span>
           {/* The seat card every seat link on the site is handed over in — see `SeatCard`. */}
           <div className="w-full max-w-xs">
             <SeatCard
               url={invite.url}
               qr={invite.qr}
-              name={{ en: "The other seat", kanji: "相手の席" }}
+              name={{ en: say.say("pset.race.otherSeat"), kanji: "相手の席" }}
               mark={null}
-              message={`Race me at ${label}: ${invite.url}`}
+              message={say.say("pset.race.message", { game: label, url: invite.url })}
               isYours={false}
               testId="race-seat-link"
             />
@@ -86,13 +88,13 @@ export function RaceControls({
       <div className="flex flex-wrap items-center gap-2">
         {seat !== null && canStart ? (
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-5 py-2`} onClick={start} disabled={starting} data-testid="race-start">
-            {starting ? "Starting…" : "Start my clock →"}
+            {say.say(starting ? "pset.race.starting" : "pset.race.startClock")}
           </button>
         ) : null}
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => router.refresh()} data-testid="race-refresh">
-          Refresh
+          {say.say("pset.race.refresh")}
         </button>
-        {seat !== null && canStart ? <span className="text-xs text-muted">The clock runs from Start until your grid is right, in one sitting.</span> : null}
+        {seat !== null && canStart ? <span className="text-xs text-muted">{say.say("pset.race.clockRuns")}</span> : null}
         {problem !== null ? <span className="text-sm text-shu">{problem}</span> : null}
       </div>
     </div>

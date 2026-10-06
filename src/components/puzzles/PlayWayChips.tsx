@@ -1,5 +1,7 @@
 "use client";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
 import { backwardsBlurb, BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
 import { backwardsGuesses } from "@/lib/puzzles/gomoji/backwardsRows";
@@ -9,8 +11,9 @@ import type { GomojiWay } from "@/lib/puzzles/gomoji/words.types";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
 /** The three ways, in the order they are drawn, each with its name and its own test id. */
-const WAYS: readonly { way: GomojiWay; label: string; kanji: string; testId: string }[] = [
-  { way: "find", label: "Find it", kanji: "探す", testId: "puzzle-way-find" },
+const WAYS: readonly { way: GomojiWay; label: string | null; kanji: string; testId: string }[] = [
+  // The first has no name of its own to keep here: it is a phrase, said in the reader's language where it is drawn.
+  { way: "find", label: null, kanji: "探す", testId: "puzzle-way-find" },
   { way: "dodge", label: DODGE_DISPLAY.label, kanji: DODGE_DISPLAY.kanji, testId: "puzzle-dodge-on" },
   { way: "backwards", label: BACKWARDS_DISPLAY.label, kanji: BACKWARDS_DISPLAY.kanji, testId: "puzzle-backwards-on" },
 ];
@@ -41,10 +44,11 @@ export function PlayWayChips({
   chosen: GomojiWay;
   onChoose: (chosen: GomojiWay) => void;
 }) {
+  const say = useSpeaker();
   const way = offered ? chosen : "find";
   return (
     <>
-      <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label="How the word is played" data-testid="puzzle-way">
+      <div className="grid grid-cols-3 gap-1.5 pt-1 sm:flex sm:flex-wrap" role="radiogroup" aria-label={say.say("pword.way.howPlayed")} data-testid="puzzle-way">
         {WAYS.map((each) => (
           <button
             key={each.way}
@@ -56,18 +60,18 @@ export function PlayWayChips({
             onClick={() => onChoose(each.way)}
             data-testid={each.testId}
           >
-            {each.label} <span className="font-mincho opacity-70">{each.kanji}</span>
+            <Paired en={each.label ?? say.say("pword.way.find")} kanji={each.kanji} kanjiClassName="opacity-70" />
           </button>
         ))}
       </div>
       <p className="min-h-12 text-xs text-muted" data-testid="puzzle-way-blurb">
         {!offered
-          ? "Pop culture words are found from their category, so they are only ever found."
+          ? say.say("pword.way.popOnly")
           : way === "dodge"
-            ? dodgeBlurb(dodgeGuesses(kind, size))
+            ? dodgeBlurb(dodgeGuesses(kind, size), say)
             : way === "backwards"
-              ? backwardsBlurb(backwardsGuesses(kind, size, level))
-              : "Hidden before the first guess, and found before the rows run out."}
+              ? backwardsBlurb(backwardsGuesses(kind, size, level), say)
+              : say.say("pword.way.findBlurb")}
       </p>
     </>
   );

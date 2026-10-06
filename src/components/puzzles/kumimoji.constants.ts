@@ -117,3 +117,6 @@ export const COMPUTER_PAUSE_MS = 320;
 /** The mark beside a computer's name: a small robot and BOT, the site's one word for a program. */
 export const COMPUTER_MARK =
   "inline-flex shrink-0 items-center gap-1 rounded-full border border-ochre/50 bg-ochre-soft px-1.5 py-0.5 text-[0.65rem] font-semibold tracking-[0.06em] text-ink uppercase";
+
+/** The board's ruling as one image: a hairline down every tile's edge and along it, in the board's line colour. */
+export const tableRuling = (line: string): string => `linear-gradient(to right, ${line} 1px, transparent 1px), linear-gradient(to bottom, ${line} 1px, transparent 1px)`;

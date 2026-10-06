@@ -2,10 +2,13 @@
 
 import { memo, useMemo, useRef, useState, type FocusEvent, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cellLabel } from "@/lib/puzzles/cellLabel";
 import { clueDepth, crossesPath, metLines, outlines, runBetween, shadedPath, type MetLines } from "@/lib/puzzles/pictureLogic/paint";
 import type { CellState, PictureClues } from "@/lib/puzzles/pictureLogic/pictureLogic.types";
 
 import { ClueLine } from "./PictureClue";
+import { pictureCellWords } from "./gridWords";
 import { PuzzleBoard } from "./PuzzleBoard";
 import { PICTURE_LOOK } from "./puzzles.constants";
 
@@ -235,6 +238,9 @@ const PaperLayer = memo(function PaperLayer({
 
 /** One button a cell, for a keyboard and a screen reader: drawn again only when a cell's state or a Show mark changes, never for a drag's tint. */
 const CellButtons = memo(function CellButtons({ cells, wrong, size, depth, stop, live }: { cells: readonly CellState[]; wrong: ReadonlySet<number>; size: number; depth: number; stop: number; live: boolean }) {
+  const say = useSpeaker();
+  const states = pictureCellWords(say.locale);
+  const said: Record<CellState, string> = { 0: say.say("pgrid.cell.blank"), 1: states["#"]!, 2: states.x! };
   const side = size + depth;
   return (
     <>
@@ -249,7 +255,7 @@ const CellButtons = memo(function CellButtons({ cells, wrong, size, depth, stop,
             disabled={!live}
             className="absolute outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-moss"
             style={{ left: `${((depth + col) / side) * 100}%`, top: `${((depth + row) / side) * 100}%`, width: `${100 / side}%`, height: `${100 / side}%` }}
-            aria-label={`row ${row + 1}, column ${col + 1}, ${WORDS[state]}`}
+            aria-label={cellLabel(say, row, col, said[state])}
             data-testid="picture-cell"
             data-index={cell}
             data-state={WORDS[state]}

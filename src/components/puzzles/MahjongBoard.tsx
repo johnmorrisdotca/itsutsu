@@ -4,7 +4,9 @@ import { memo, useId, useLayoutEffect, useMemo, useRef, useState, type PointerEv
 
 import { BoardFrame } from "@/components/board/BoardFrame";
 import type { BoardThemeTokens } from "@/components/board/board.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { cellFacts } from "@/lib/puzzles/cellLabel";
 import { geometryOf, isFree } from "@johnmorrisdotca/jarajara";
 import { layoutExtent, layoutFor } from "@johnmorrisdotca/jarajara";
 import { EMPTY_SLOT, faceOf } from "@johnmorrisdotca/jarajara";
@@ -105,6 +107,7 @@ const MahjongTile = memo(function MahjongTile({
   onLeave: (pointerType: string) => void;
   onKey: (slot: number, at: number) => void;
 }) {
+  const say = useSpeaker();
   const at = faceAt(slot, layers);
   const face = faceOf(code);
   const { faceWidth: w, faceHeight: h, depth } = MAHJONG_TILE;
@@ -128,7 +131,7 @@ const MahjongTile = memo(function MahjongTile({
       data-testid="mahjong-tile"
       role={present && !readOnly ? "button" : undefined}
       tabIndex={present && !readOnly && free ? 0 : undefined}
-      aria-label={present && face !== null ? `${faceWords(face)}${free ? "" : ", blocked"}` : undefined}
+      aria-label={present && face !== null ? cellFacts(say, faceWords(face, say.locale === "ja" ? "ja" : "en"), ...(free ? [] : [say.say("pcard.mj.blocked")])) : undefined}
       aria-pressed={present && !readOnly ? chosen : undefined}
       onPointerDown={(event) => onPress(index, event)}
       onPointerEnter={(event) => onEnter(index, event.pointerType)}
@@ -218,6 +221,7 @@ export function MahjongBoard({
   /** The tile a mouse is over, or null when it leaves one. */
   onPoint?: (slot: number | null) => void;
 }) {
+  const say = useSpeaker();
   const prefix = `mj${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const layout = layoutFor(size);
   const geometry = layout === null ? null : geometryOf(layout);
@@ -339,7 +343,7 @@ export function MahjongBoard({
           preserveAspectRatio="xMidYMid meet"
           className="absolute inset-0 h-full w-full touch-none select-none"
           role="group"
-          aria-label={`Mahjong layout, ${cells.replaceAll(EMPTY_SLOT, "").length} tiles left`}
+          aria-label={say.count("pcard.mj.layoutAria", cells.replaceAll(EMPTY_SLOT, "").length)}
           data-testid="mahjong-board"
           data-size={size}
           data-cells={cells}

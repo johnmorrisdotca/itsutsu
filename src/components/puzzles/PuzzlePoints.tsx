@@ -2,6 +2,9 @@ import { connection } from "next/server";
 import Link from "@/components/ui/Link";
 
 import { ASK_FOR_INVITE_PATH } from "@/components/auth/askForInvite.constants";
+import { Paired } from "@/components/i18n/Paired";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { PlayerName } from "@/components/players/PlayerName";
 import { PANEL_CLASS, SECTION_TITLE, TABLE_SCROLL } from "@/components/ui/ui.constants";
 import { currentSession } from "@/lib/auth/currentSession";
@@ -34,23 +37,23 @@ import { SolvePoints } from "./SolvePoints";
 export async function PuzzlePoints({ kind, title, whole = false }: { kind: PuzzleKind; title: string; whole?: boolean }) {
   await connection();
   const session = await currentSession();
+  const say = await currentSpeaker();
   const take = whole ? POINTS_WHOLE : POINTS_SHOWN;
   if (session === null) {
     return (
       <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="puzzle-points">
         <h2 className={SECTION_TITLE}>
-          Leaderboard <span className="font-mincho normal-case tracking-normal">番付</span>
+          <Paired en={say.say("pset.points.heading")} kanji="番付" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
         </h2>
         <p className="text-sm text-muted" data-testid="puzzle-points-shut">
-          Reading about {title} is open to anybody. Who leads at it is the playing half of this site, and that needs an
-          invite.
+          {say.say("pset.points.shut", { title })}
         </p>
         <p className="text-sm">
           <Link href="/join" className="font-semibold underline-offset-2 hover:underline">
-            I have an invite →
+            {say.say("points.board.haveInvite")}
           </Link>{" "}
           <Link href={ASK_FOR_INVITE_PATH} className="text-muted underline-offset-2 hover:underline">
-            No invite? Ask for one
+            {say.say("points.board.noInvite")}
           </Link>
         </p>
       </section>
@@ -67,39 +70,21 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="puzzle-points">
       <h2 className={SECTION_TITLE}>
-        Leaderboard <span className="font-mincho normal-case tracking-normal">番付</span>
+        <Paired en={say.say("pset.points.heading")} kanji="番付" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
       </h2>
       {/* Three columns where the board has the page's width (its standings page), one under another beside a puzzle and on a phone. */}
       <div className={`grid gap-4 ${whole ? "md:grid-cols-3" : ""}`}>
-        <PointsTable label="All time" kanji="通算" rows={allTime} names={names} tags={tags} kind={kind} period={ALL_TIME} testId="puzzle-points-all" />
-        <PointsTable label="This month" kanji="今月" rows={thisMonth} names={names} tags={tags} kind={kind} period={{ month: monthOf(startOfMonth()), week: null }} testId="puzzle-points-month" />
-        <PointsTable label="This week" kanji="今週" rows={thisWeek} names={names} tags={tags} kind={kind} period={{ month: null, week: weekOf(startOfWeek()) }} testId="puzzle-points-week" />
+        <PointsTable label={say.say("points.board.allTime")} kanji="通算" say={say} rows={allTime} names={names} tags={tags} kind={kind} period={ALL_TIME} testId="puzzle-points-all" />
+        <PointsTable label={say.say("points.board.thisMonth")} kanji="今月" say={say} rows={thisMonth} names={names} tags={tags} kind={kind} period={{ month: monthOf(startOfMonth()), week: null }} testId="puzzle-points-month" />
+        <PointsTable label={say.say("points.board.thisWeek")} kanji="今週" say={say} rows={thisWeek} names={names} tags={tags} kind={kind} period={{ month: null, week: weekOf(startOfWeek()) }} testId="puzzle-points-week" />
       </div>
       <p className="text-xs text-muted">
-        {kind === "gomoji"
-          ? `Every letter you find scores, more the sooner and more in its place; the word itself more the bigger the board, and more for guesses left and speed. A word not found still scores its letters, and a head start costs ${POINTS_A_HELP}. Your best of each word counts.`
-          : kind === "solitaire" || kind === "freecell"
-            ? `${POINTS_A_CELL} for every card brought home, so every deal won scores ${POINTS_A_CELL * 52}. Your best of each deal counts.`
-          : kind === "spider"
-            ? `${POINTS_A_CELL} for every card of both decks put into a run, so every deal won scores ${POINTS_A_CELL * 104}. Your best of each deal counts.`
-          : kind === "mahjong"
-            ? `${POINTS_A_CELL} a tile you take, −${POINTS_A_HELP} a Hint. Your best of each deal counts.`
-          : kind === "tobiishi"
-            ? `${POINTS_A_CELL} for every jump of a level's shortest way, so ${TOBIISHI_SIZES.map((size) => POINTS_A_CELL * size).join(", ")} points for a short, a medium or a long level. A level has no Check or Hint. Your best of each level counts.`
-          : kind === "suido"
-            ? `${POINTS_A_CELL} for every piece of pipe on the board, −${POINTS_A_HELP} a Hint. Your best of each board counts.`
-            : kind === "bridges"
-            ? `${POINTS_A_CELL} for each end of every bridge the answer has — every island's number, added up — and −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`
-            : kind === "pictureLogic"
-              ? `${POINTS_A_CELL} for every square of the grid, each one decided, shaded or empty, and −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`
-              : isPencilKind(kind)
-                ? `${POINTS_A_CELL} for every cell of the grid the answer decides, and −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`
-                : `${POINTS_A_CELL} a cell you fill, −${POINTS_A_HELP} a Check or Hint. Your best of each puzzle counts.`}
+        {pointsNote(kind, say)}
       </p>
       {whole ? null : (
         <p className="text-sm">
           <Link href={standingsPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="puzzle-points-whole">
-            The whole board →
+            {say.say("pset.points.whole")}
           </Link>
         </p>
       )}
@@ -110,6 +95,7 @@ export async function PuzzlePoints({ kind, title, whole = false }: { kind: Puzzl
 function PointsTable({
   label,
   kanji,
+  say,
   rows,
   names,
   tags,
@@ -119,6 +105,7 @@ function PointsTable({
 }: {
   label: string;
   kanji: string;
+  say: Speaker;
   rows: readonly PointsRow[];
   names: Map<string, string>;
   /** The flag, badge and level beside each name, read with the names. */
@@ -131,14 +118,14 @@ function PointsTable({
   return (
     <div className="flex flex-col gap-1" data-testid={testId}>
       <h3 className="text-sm font-semibold">
-        {label} <span className="font-mincho text-xs font-normal text-muted">{kanji}</span>
+        <Paired en={label} kanji={kanji} kanjiClassName="text-xs font-normal text-muted" inReadersLanguage />
       </h3>
       {rows.length === 0 ? (
         /* An empty board is data: its shape, and the way in. */
         <p className="text-sm text-muted" data-testid={`${testId}-empty`}>
-          Nobody on it yet.{" "}
+          {say.say("points.board.empty")}{say.pairsWithKanji ? " " : ""}
           <Link href={setUpPath(kind)} className="font-semibold text-ink underline-offset-2 hover:underline">
-            Be the first →
+            {say.say("points.board.beFirst")}
           </Link>
         </p>
       ) : (
@@ -147,8 +134,8 @@ function PointsTable({
             <thead className="text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase">
               <tr>
                 <th className="w-8 py-1 text-left">#</th>
-                <th className="py-1 text-left">Player</th>
-                <th className="py-1 text-right">Points</th>
+                <th className="py-1 text-left">{say.say("points.board.player")}</th>
+                <th className="py-1 text-right">{say.say("pset.col.points")}</th>
               </tr>
             </thead>
             <tbody>
@@ -156,9 +143,9 @@ function PointsTable({
                 <tr key={row.memberId} className="border-t border-rule" data-testid="puzzle-points-row" data-member={row.memberId}>
                   <td className="py-1 text-muted tabular-nums">{at + 1}</td>
                   <td className="py-1">
-                    <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback="A member" tag={tags.get(row.memberId)} />
+                    <PlayerName name={names.get(row.memberId) ?? ""} memberId={row.memberId} fallback={say.say("points.board.aMember")} tag={tags.get(row.memberId)} />
                   </td>
-                  <td className="py-1 text-right" title={`${row.puzzles} ${row.puzzles === 1 ? "puzzle" : "puzzles"}`}>
+                  <td className="py-1 text-right" title={say.count("puzzle.count.puzzle", row.puzzles)}>
                     {/* The sum, leading to the solves it is the sum of: that member's, in that month, that week or ever. */}
                     <SolvePoints kind={kind} memberId={row.memberId} points={row.points} month={period.month} week={period.week} testId="puzzle-points-figure" />
                   </td>
@@ -170,4 +157,20 @@ function PointsTable({
       )}
     </div>
   );
+}
+
+/** What a puzzle's points are made of, in a line under its boards. */
+function pointsNote(kind: PuzzleKind, say: Speaker): string {
+  const cell = String(POINTS_A_CELL);
+  const help = String(POINTS_A_HELP);
+  if (kind === "gomoji") return say.say("pset.points.gomoji", { help });
+  if (kind === "solitaire" || kind === "freecell") return say.say("pset.points.cardsFull", { cell, total: String(POINTS_A_CELL * 52) });
+  if (kind === "spider") return say.say("pset.points.spider", { cell, total: String(POINTS_A_CELL * 104) });
+  if (kind === "mahjong") return say.say("pset.points.mahjong", { cell, help });
+  if (kind === "tobiishi") return say.say("pset.points.tobiishi", { cell, sizes: TOBIISHI_SIZES.map((size) => POINTS_A_CELL * size).join(say.locale === "ja" ? "、" : ", ") });
+  if (kind === "suido") return say.say("pset.points.suido", { cell, help });
+  if (kind === "bridges") return say.say("pset.points.bridges", { cell, help });
+  if (kind === "pictureLogic") return say.say("pset.points.pictureLogic", { cell, help });
+  if (isPencilKind(kind)) return say.say("pset.points.pencil", { cell, help });
+  return say.say("pset.points.default", { cell, help });
 }

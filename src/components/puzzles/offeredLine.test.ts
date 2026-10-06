@@ -36,7 +36,7 @@ describe("the line under a puzzle's description", () => {
 
   it("is what the front door prints, and a shelved set-up turns through the same list", () => {
     const door = readFileSync("src/components/puzzles/PuzzleFrontDoor.tsx", "utf8");
-    expect(door).toContain("offeredLine(kind)");
+    expect(door).toContain("offeredLine(kind, say)");
     expect(door).not.toMatch(/spec\.offered\.map/);
     // The shelved puzzles: Tsunagi, whose set-up is its own, and Pop Gomoji, Sudoku (4 to 16, then 6 to 25), Bridges (7 to 13, then 13 to 25), Picture logic (5 to 20, then 15 to 50), Mahjong (Torii to the Turtle, then Castle to the Palace), the Cube (2×2 to 5×5, then 4×4 to 7×7), Suido's Make a board (its sixteen sizes) and Jirai (7 to 16, then 9 to 32), on the shared one. All turn through the list.
     expect(PUZZLE_KIND_LIST.filter((kind) => PUZZLE_SPECS[kind].shelves === true)).toEqual(["numberPlace", "gomojiPop", "tsunagi", "bridges", "pictureLogic", "mahjong", "cube", "suido", "jirai"]);

@@ -1,4 +1,6 @@
 import { gameArtPath } from "@/lib/gomoku/artwork";
+import { speaker, type Speaker } from "@/lib/i18n/i18n";
+import { DEFAULT_LOCALE, type PhraseKey } from "@/lib/i18n/i18n.constants";
 import { originFor, wikipediaUrl } from "@/lib/learn/origins";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 
@@ -10,7 +12,9 @@ import { dodgeRule } from "./gomoji/dodgeWords";
 import { offersDodge } from "./gomoji/dodgeSeed";
 import { backwardsRule } from "./gomoji/backwardsWords";
 import { layoutFor } from "@johnmorrisdotca/jarajara";
-import { CARD_SIZE_WORDS, PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY, PUZZLE_SIZE_NAMES, PUZZLE_SPECS, levelBlurb, sizesOffered } from "./puzzles.constants";
+import { PUZZLE_SIZE_NAMES, PUZZLE_SPECS, sizesOffered } from "./puzzles.constants";
+import { cardSizeWords, levelBlurbIn, levelName, puzzleCopy } from "./puzzleCopy";
+import { colonOf, joinedWith, semicolonOf, stopOf, withNote } from "./puzzleText";
 import type { PuzzleKind } from "./puzzles.types";
 
 /**
@@ -29,14 +33,14 @@ import type { PuzzleKind } from "./puzzles.types";
  * accents, German's Ä, Ö and Ü, Pop culture's categories. Only on the game's
  * own page; a setting's rules are its game's.
  */
-function settingSections(kind: PuzzleKind): { id: string; heading: string; kanji: string; lines: string[] }[] {
+function settingSections(kind: PuzzleKind, say: Speaker): { id: string; heading: string; kanji: string; lines: string[] }[] {
   if (listedGameOf(kind) !== kind) return [];
-  const own = PUZZLE_DISPLAY[kind];
+  const own = puzzleCopy(kind, say.locale);
   return settingsOf(kind)
     .filter((each) => each !== kind)
     .map((each) => {
       const setting = GAME_SETTINGS[each]!;
-      const copy = PUZZLE_DISPLAY[each];
+      const copy = puzzleCopy(each, say.locale);
       const named = setting.list === "everyday" ? WORD_LANGUAGE_DISPLAY[setting.language] : { label: WORD_LIST_DISPLAY[setting.list].label, kanji: WORD_LIST_DISPLAY[setting.list].kanji, english: WORD_LIST_DISPLAY[setting.list].label };
       const heading = named.english === named.label ? named.label : `${named.label} · ${named.english}`;
       // What this setting says that the game as it comes does not: its own rules, never the shared ones twice.
@@ -45,58 +49,53 @@ function settingSections(kind: PuzzleKind): { id: string; heading: string; kanji
     });
 }
 
-export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
-  const copy = PUZZLE_DISPLAY[kind];
+export function puzzleRulesPage(kind: PuzzleKind, say: Speaker = speaker(DEFAULT_LOCALE)): RulesPage {
+  const copy = puzzleCopy(kind, say.locale);
   const spec = PUZZLE_SPECS[kind];
   // A tile game's size is the hand it opens with (`PuzzleSpec.tiles`), not the side of a grid.
   // A Suido's rules page names the boards made from a seed here, and its levels in its own rules (`PUZZLE_DISPLAY.suido`).
-  const sizes = sizesOffered(kind).map((size) => sizeText(kind, size)).join(", ");
-  const levels = spec.levels.map((level) => `${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()} (${levelBlurb(kind, level).toLowerCase()})`);
+  const sizes = joinedWith(say, sizesOffered(kind).map((size) => sizeText(kind, size, say)));
+  const levels = spec.levels
+    .map((level) => withNote(say, levelName(level, say.locale), levelBlurbIn(kind, level, say.locale).toLowerCase()))
+    .join(semicolonOf(say));
+  const word = (key: PhraseKey, vars?: Record<string, string>) => say.say(key, vars);
 
-  const object = [copy.tagline, copy.rules[0]];
-  const board = [
-    `${CARD_SIZE_WORDS[kind]?.heading ?? (kind === "suido" ? "Boards you make" : "Sizes")}: ${sizes}. ${copy.board}`,
+  const object = [copy.tagline, copy.rules[0]!];
+  const heading = cardSizeWords(say.locale)[kind]?.heading ?? word(kind === "suido" ? "puzzle.rules.boardsYouMake" : "puzzle.rules.sizes");
+  const proof: PhraseKey =
     kind === "suido"
-      ? "Every level and every board has exactly one answer. The levels were made once, and the package they come from proves every one of them again each time it is built; a board you make is checked in the same way before you see it. So there is never a board with two answers or none."
+      ? "puzzle.rules.proofSuido"
       : kind === "tobiishi"
-      ? "Every level has at least one answer: each was made by working backward from its goal, one jump at a time, and the package they come from replays that answer on every level each time it is built. So there is never a level with no way through. A level may have more than one, and any of them solves it."
-      : kind === "meikyuu"
-      ? "Every maze has exactly one way through: the passages are carved so that there is one path between any two places, and the package they come from proves it again for every level each time it is built. So there is never a maze with two ways through, or none."
-      : spec.fixedLevels === true
-      ? "Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none."
-      : spec.cards === true && kind !== "solitaire"
-      ? "Every deal can be won: the browser that deals it has already played it out to the last card, and deals none it has not."
-      : spec.cards === true
-      ? "Every winnable deal can be won: the browser that deals it has already played it out to the last card, and a deal is only called winnable once it has. Any deal is the shuffle as it falls, and some of those cannot be won."
-      : spec.cube === true
-      ? "Every scramble can be solved: it is made by turning a solved cube, so turning back the way it came always solves it, and any other way to every face one colour counts as well."
-      : spec.layouts === true
-      ? "Every deal can be cleared: the browser that deals it lays the tiles out pair by pair in reverse first, so the order it laid them in clears it, and any other order that clears it counts as well."
-      : spec.tiles === true
-      ? "Every bag can be finished: the browser that deals it lays its tiles out as one crossword first, and any other crossword of the same tiles counts as well."
-      : "Every puzzle has exactly one answer. The browser that makes it checks that before you see it, so there is never a grid with two answers or none.",
-  ];
+        ? "puzzle.rules.proofTobiishi"
+        : kind === "meikyuu"
+          ? "puzzle.rules.proofMeikyuu"
+          : spec.fixedLevels === true
+            ? "puzzle.rules.proofLevels"
+            : spec.cards === true && kind !== "solitaire"
+              ? "puzzle.rules.proofDeal"
+              : spec.cards === true
+                ? "puzzle.rules.proofWinnable"
+                : spec.cube === true
+                  ? "puzzle.rules.proofCube"
+                  : spec.layouts === true
+                    ? "puzzle.rules.proofLayout"
+                    : spec.tiles === true
+                      ? "puzzle.rules.proofTiles"
+                      : "puzzle.rules.proofGrid";
+  const board = [`${heading}${colonOf(say)}${sizes}${stopOf(say)}${say.locale === "ja" ? "" : " "}${copy.board}`, word(proof)];
   const play = [
     ...copy.rules.slice(1),
-    ...(spec.wordGrid === undefined ? [] : [futagoRule(spec.wordGrid), yotsugoRule(spec.wordGrid), ...(offersDodge(kind) ? [dodgeRule(spec.wordGrid), backwardsRule(spec.wordGrid)] : [])]),
+    ...(spec.wordGrid === undefined
+      ? []
+      : [futagoRule(spec.wordGrid, say), yotsugoRule(spec.wordGrid, say), ...(offersDodge(kind) ? [dodgeRule(spec.wordGrid, say), backwardsRule(spec.wordGrid, say)] : [])]),
     // A Suido's levels are numbered fixed boards (its rules say so): easy, medium and hard are what a made board is asked for.
-    `${kind === "suido" ? "A board you make, at a level" : "Levels"}: ${levels.join("; ")}.`,
-    spec.cards === true
-      ? "A game is for one person, in your own browser: the deal is shuffled and every move is checked there, and nothing is sent anywhere until the last card is home."
-      : "Solving is for one person, in one sitting, in your own browser: nothing about a puzzle is sent anywhere until it is done.",
+    word(kind === "suido" ? "puzzle.rules.madeLevelsLine" : "puzzle.rules.levelsLine", { list: levels }),
+    word(spec.cards === true ? "puzzle.rules.aloneGame" : "puzzle.rules.aloneSolve"),
   ];
   const house = [
-    spec.cube === true
-      ? "A solved cube is checked by the site, turn by turn from the scramble, and a member is paid XP for it, once per scramble."
-      : spec.cards === true
-      ? "A won game is checked by the site, move by move from the deal, and a member is paid XP for it, once per deal."
-      : "A finished puzzle is checked by the site against every rule above, and a member is paid XP for a grid that is right, once per grid.",
-    kind === "suido"
-      ? "A level or a board left half turned is kept for a member and waits in My games, pieces and clock as they were. The levels you have solved are kept on your account, or in this browser without one."
-      : spec.fixedLevels === true
-      ? "A level left half drawn is kept for a member and waits in My games, lines and clock as they were. The levels you have solved are kept on your account, or in this browser without one."
-      : "A puzzle left half done is kept for a member and waits in My games, as it was left, clock and all. Without an account nothing is kept: the same address brings back the same puzzle, and its clock starts again.",
-    "Nothing is rated, nobody is beaten and no ladder counts a solve. A puzzle is a game in the catalogue and not a game between two players.",
+    word(spec.cube === true ? "puzzle.rules.paidCube" : spec.cards === true ? "puzzle.rules.paidCards" : "puzzle.rules.paidGrid"),
+    word(kind === "suido" ? "puzzle.rules.keptSuido" : spec.fixedLevels === true ? "puzzle.rules.keptLevels" : "puzzle.rules.keptPuzzle"),
+    word("puzzle.rules.notRated"),
   ];
 
   return {
@@ -107,14 +106,14 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
     origin: copy.origin,
     inspiredBy: copy.inspiredBy,
     alsoKnownAs: [...(copy.alsoKnownAs ?? [])],
-    from: originFor(copy.country),
+    from: originFor(copy.country, say.locale),
     wikipedia: copy.wikipedia === undefined ? null : wikipediaUrl(copy.wikipedia),
     object,
     board,
     play,
     house,
     image: gameArtPath(kind),
-    ...(settingSections(kind).length === 0 ? {} : { settings: settingSections(kind) }),
+    ...(settingSections(kind, say).length === 0 ? {} : { settings: settingSections(kind, say) }),
   };
 }
 
@@ -123,10 +122,13 @@ export function puzzleRulesPage(kind: PuzzleKind): RulesPage {
  * layout's name and how many tiles it holds (`PuzzleSpec.layouts`), or how
  * what a card game's size tiles choose (`CARD_SIZE_WORDS`).
  */
-function sizeText(kind: PuzzleKind, size: number): string {
+function sizeText(kind: PuzzleKind, size: number, say: Speaker): string {
   const spec = PUZZLE_SPECS[kind];
-  const cards = CARD_SIZE_WORDS[kind];
+  const cards = cardSizeWords(say.locale)[kind];
   if (cards !== undefined) return cards.word(size);
-  if (spec.layouts === true) return `${PUZZLE_SIZE_NAMES[kind][size]?.label ?? size} (${layoutFor(size)?.slots.length ?? 0} tiles)`;
-  return spec.tiles === true ? `${size} tiles in hand` : `${size}×${size}`;
+  if (spec.layouts === true) {
+    const named = PUZZLE_SIZE_NAMES[kind][size];
+    return say.say("puzzle.rules.layoutSize", { name: named === undefined ? String(size) : say.locale === "ja" ? named.kanji : named.label, count: String(layoutFor(size)?.slots.length ?? 0) });
+  }
+  return spec.tiles === true ? say.say("puzzle.rules.tilesInHand", { count: String(size) }) : `${size}×${size}`;
 }

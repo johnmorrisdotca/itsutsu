@@ -55,5 +55,7 @@ export const KUMIMOJI_WALLPAPER_COPY = {
   /** Said when the member has more than the picture holds: it shows the newest. */
   newest: (count: number) => `your newest ${count}`,
   tiles: (count: number) => `${count} ${count === 1 ? "tile" : "tiles"}`,
+  /** The days the picture spans: "2026-09-28 to 2026-10-02". */
+  range: (from: string, to: string) => `${from} to ${to}`,
   alt: (count: number) => `Your ${count === 1 ? "finished crossword" : `${count} finished crosswords`}, laid out as one picture`,
 } as const;

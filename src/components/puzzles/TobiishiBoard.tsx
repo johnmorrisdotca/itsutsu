@@ -4,9 +4,12 @@ import { isGameSolved, isGameStuck, jumpAt, legalJumps, pegCount, restart as res
 import { boundsOf, draw, pointOf, THEMES } from "@johnmorrisdotca/tobiishi/draw";
 import { useEffect, useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type Ref } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cellFacts } from "@/lib/puzzles/cellLabel";
 import { tobiishiChallengeOf, tobiishiPackOf, tobiishiRefOfCode } from "@/lib/puzzles/tobiishi/levels";
 import { encodeJumps, replayJumps } from "@/lib/puzzles/tobiishi/way";
 
+import { packageLanguage } from "./mazeWords";
 import { PuzzleBoard } from "./PuzzleBoard";
 import { PACKAGE_TRAY_OFF } from "./tobiishi.constants";
 
@@ -74,6 +77,8 @@ export function TobiishiBoard({
   onChange?: (reading: TobiishiReading) => void;
   handle?: Ref<TobiishiHandle>;
 }) {
+  const say = useSpeaker();
+  const language = packageLanguage(say.locale);
   const level = useMemo(() => {
     const named = tobiishiRefOfCode(code);
     return named === null ? null : { ref: named, start: tobiishiChallengeOf(named).game };
@@ -112,7 +117,7 @@ export function TobiishiBoard({
   const { width, height } = boundsOf(game);
   const where = (cell: number) => pointOf(game, cell);
   const reach = new Set(selected === null ? [] : legalJumps(game).filter((jump) => jump.from === selected).map((jump) => jump.to));
-  const title = `${tobiishiPackOf(ref.pack).title.en} board`;
+  const title = say.say("pmaze.tobiishi.board", { name: tobiishiPackOf(ref.pack).title[language] });
   const svg = draw(game, { material: "stone", selected, title });
 
   /** The jump a peg makes to a hole, if the engine allows it; selecting nothing afterwards. */
@@ -277,7 +282,7 @@ export function TobiishiBoard({
                     width: `${((HOLE_RADIUS * 2) / width) * 100}%`,
                     height: `${((HOLE_RADIUS * 2) / height) * 100}%`,
                   }}
-                  aria-label={`${peg ? "Peg" : "Empty hole"} ${cell.x + 1}, ${cell.y + 1}${goal ? ", goal" : ""}${legal ? ", can be jumped to" : ""}`}
+                  aria-label={cellFacts(say, say.say(peg ? "pmaze.tobiishi.peg" : "pmaze.tobiishi.hole", { x: String(cell.x + 1), y: String(cell.y + 1) }), ...(goal ? [say.say("pmaze.tobiishi.goal")] : []), ...(legal ? [say.say("pmaze.tobiishi.legal")] : []))}
                   aria-pressed={selected === index}
                   data-testid="tobiishi-hole"
                   data-cell={index}

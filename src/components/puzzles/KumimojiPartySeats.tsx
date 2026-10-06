@@ -2,34 +2,39 @@
 
 import { useState } from "react";
 
+import { Paired } from "@/components/i18n/Paired";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
-import { isComputer, nameOf, partyTilesLeft } from "@/lib/puzzles/kumimoji/party";
+import { isComputer, partyTilesLeft } from "@/lib/puzzles/kumimoji/party";
 import type { PartyGame } from "@/lib/puzzles/kumimoji/party.types";
 import { joinParty, joinRefused, leaveParty, leaveRefused, tilesHeldBy, type JoinRefusal, type LeaveRefusal } from "@/lib/puzzles/kumimoji/partySeats";
 import { KUMIMOJI_PARTY } from "@/lib/puzzles/kumimoji/tiles.constants";
 
 import { ComputerMark } from "./KumimojiDeskParts";
 import { keepParty } from "./kumimojiPartyKept";
+import { seatName } from "./kumimojiWords";
 
 /** Why nobody can sit down now, for the line where Join would be. */
-function joinWhy(game: PartyGame, refusal: JoinRefusal): string {
+function joinWhy(game: PartyGame, refusal: JoinRefusal, say: Speaker): string {
   switch (refusal) {
     case "full":
-      return `${KUMIMOJI_PARTY.most} are playing: nobody else can join.`;
+      return say.say("pkumi.seats.full", { count: String(KUMIMOJI_PARTY.most) });
     case "lastRound":
-      return "The last round has begun: nobody can join now.";
+      return say.say("pkumi.seats.lastRound");
     case "bag":
-      return `The bag holds ${partyTilesLeft(game)} ${partyTilesLeft(game) === 1 ? "tile" : "tiles"}, fewer than a hand of ${game.settings.size}: nobody can join now.`;
+      return say.count("pkumi.seats.bag", partyTilesLeft(game), { size: String(game.settings.size) });
     case "over":
-      return "The game is over.";
+      return say.say("pkumi.seats.over");
   }
 }
 
 /** Why this player cannot leave, beside their name. */
-const LEAVE_WHY: Record<LeaveRefusal, string> = {
-  out: "went out: stays to the end",
-  lastPerson: "the last person: end the game instead",
-  over: "",
+const LEAVE_WHY: Record<LeaveRefusal, PhraseKey | null> = {
+  out: "pkumi.seats.leaveOut",
+  lastPerson: "pkumi.seats.leaveLast",
+  over: null,
 };
 
 /**
@@ -45,6 +50,7 @@ const LEAVE_WHY: Record<LeaveRefusal, string> = {
  * once (`keepParty`).
  */
 export function KumimojiPartySeats({ game }: { game: PartyGame }) {
+  const say = useSpeaker();
   const [open, setOpen] = useState(false);
   const [leaving, setLeaving] = useState<number | null>(null);
   const [name, setName] = useState("");
@@ -53,7 +59,7 @@ export function KumimojiPartySeats({ game }: { game: PartyGame }) {
   if (!open) {
     return (
       <button type="button" className="self-center text-sm text-muted underline underline-offset-2" onClick={() => setOpen(true)} data-testid="kumimoji-party-seats-open">
-        Join or leave
+        {say.say("pkumi.seats.open")}
       </button>
     );
   }
@@ -65,10 +71,10 @@ export function KumimojiPartySeats({ game }: { game: PartyGame }) {
     <div className="flex flex-col gap-3 rounded-xl border border-rule p-3" data-testid="kumimoji-party-seats">
       <div className="flex items-baseline justify-between gap-2">
         <h3 className="text-sm font-semibold">
-          Join or leave <span className="font-mincho font-normal opacity-70">席</span>
+          <Paired en={say.say("pkumi.seats.open")} kanji="席" kanjiClassName="font-normal opacity-70" inReadersLanguage />
         </h3>
         <button type="button" className="text-sm text-muted underline underline-offset-2" onClick={() => setOpen(false)} data-testid="kumimoji-party-seats-close">
-          Close
+          {say.say("pkumi.seats.close")}
         </button>
       </div>
       <ul className="flex flex-col gap-2">
@@ -76,13 +82,13 @@ export function KumimojiPartySeats({ game }: { game: PartyGame }) {
           const why = leaveRefused(game, at);
           const held = tilesHeldBy(game, at);
           return (
-            <li key={`${at}-${nameOf(game, at)}`} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm" data-testid="kumimoji-party-seat" data-player={at}>
-              <span className="min-w-0 max-w-full truncate font-medium">{nameOf(game, at)}</span>
+            <li key={`${at}-${seatName(say, game, at)}`} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm" data-testid="kumimoji-party-seat" data-player={at}>
+              <span className="min-w-0 max-w-full truncate font-medium">{seatName(say, game, at)}</span>
               {isComputer(game, at) ? <ComputerMark /> : null}
               {leaving === at ? (
                 <span className="flex w-full flex-wrap items-center gap-2">
                   <span>
-                    Leave, and put {held} {held === 1 ? "tile" : "tiles"} back in the bag?
+                    {say.count("pkumi.seats.leaveAsk", held)}
                   </span>
                   <button
                     type="button"
@@ -93,19 +99,19 @@ export function KumimojiPartySeats({ game }: { game: PartyGame }) {
                     }}
                     data-testid="kumimoji-party-leave-yes"
                   >
-                    Yes, leave
+                    {say.say("pkumi.seats.leaveYes")}
                   </button>
                   <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={() => setLeaving(null)}>
-                    Stay
+                    {say.say("pkumi.seats.stay")}
                   </button>
                 </span>
               ) : why === null ? (
                 <button type="button" className="ml-auto text-muted underline underline-offset-2" onClick={() => setLeaving(at)} data-testid="kumimoji-party-leave">
-                  Leave
+                  {say.say("pkumi.seats.leave")}
                 </button>
               ) : (
                 <span className="ml-auto text-xs text-muted" data-testid="kumimoji-party-leave-why">
-                  {LEAVE_WHY[why]}
+                  {LEAVE_WHY[why] === null ? "" : say.say(LEAVE_WHY[why])}
                 </span>
               )}
             </li>
@@ -123,26 +129,26 @@ export function KumimojiPartySeats({ game }: { game: PartyGame }) {
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder={`Player ${game.players.length + 1}`}
+            placeholder={say.say("pkumi.party.playerLabel", { n: String(game.players.length + 1) })}
             maxLength={KUMIMOJI_PARTY.nameMost}
             autoComplete="off"
-            aria-label="The new player's name"
+            aria-label={say.say("pkumi.seats.nameAria")}
             className="min-w-0 flex-1 basis-32 rounded border border-rule bg-paper px-2 py-1.5 text-sm text-ink"
             data-testid="kumimoji-party-join-name"
           />
           <button type="submit" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="kumimoji-party-join">
-            Join
+            {say.say("pkumi.seats.join")}
           </button>
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} inline-flex items-center gap-1`} onClick={() => join(true)} data-testid="kumimoji-party-join-computer">
-            Add a computer
+            {say.say("pkumi.seats.addComputer")}
           </button>
           <p className="w-full text-xs text-muted">
-            A new player sits down after {nameOf(game, game.players.length - 1)} with a hand of {game.settings.size} from the bag. Leaving puts a player&rsquo;s hand and table back in the bag.
+            {say.say("pkumi.seats.note", { name: seatName(say, game, game.players.length - 1), size: String(game.settings.size) })}
           </p>
         </form>
       ) : (
         <p className="text-sm text-muted" data-testid="kumimoji-party-join-why" data-why={refusal}>
-          {joinWhy(game, refusal)}
+          {joinWhy(game, refusal, say)}
         </p>
       )}
     </div>

@@ -8,7 +8,9 @@ import { listedGameOf } from "@/lib/catalogue/gameSettings";
 import { gamePath, joinQuery, playPath, rulesPath } from "@/lib/gomoku/slugs";
 import { preferencesFor } from "@/lib/preferences/memberPreferences";
 import { WORD_STYLES } from "@/lib/puzzles/gomoji/wordStyles";
-import { PUZZLE_DISPLAY, PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import { puzzleCopy } from "@/lib/puzzles/puzzleCopy";
+import { PUZZLE_SPECS, drawnOnBoard } from "@/lib/puzzles/puzzles.constants";
 import { meikyuuSolvedBy } from "@/lib/puzzles/server/meikyuuRecords";
 import { isMeikyuuSize, meikyuuSizeFromAddress } from "@/lib/puzzles/meikyuu/sizes";
 import { tobiishiSolvedBy } from "@/lib/puzzles/server/tobiishiRecords";
@@ -62,7 +64,8 @@ export async function PuzzleSetUpPage({
   query?: Record<string, string | string[] | undefined>;
 }) {
   // One Gomoji, whatever its language: its name, its front door and its rules are the game's (`gameSettings.ts`).
-  const copy = PUZZLE_DISPLAY[listedGameOf(kind)];
+  const say = await currentSpeaker();
+  const copy = puzzleCopy(listedGameOf(kind), say.locale);
   const onBoard = drawnOnBoard(kind);
   // One of this puzzle already going leads the Start column, as it leads the front door (`PuzzlePlayOrResume`).
   const run = memberId === null ? null : await latestRunOf(memberId, kind);
@@ -80,12 +83,12 @@ export async function PuzzleSetUpPage({
         /* The puzzle's name, as a game's set-up is headed (`SetUpHeading`): Play was the press that led here, and Start is the one below. */
         title={copy.label}
         kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: "Set up" }]} />}
+        crumb={<GameTrail game={{ label: say.pairName(copy.label, copy.kanji).text, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: say.say("pset.crumb.setUp") }]} />}
         lead={
           <>
             {copy.tagline}{" "}
             <Link href={rulesPath(kind)} className="underline underline-offset-4">
-              How to play
+              {say.say("rules.play")}
             </Link>
             .
           </>

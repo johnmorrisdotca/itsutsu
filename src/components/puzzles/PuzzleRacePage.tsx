@@ -3,6 +3,9 @@ import { BoardScaled } from "@/components/board/BoardScaled";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 
+import { Paired } from "@/components/i18n/Paired";
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -14,7 +17,9 @@ import { BUTTON_BASE, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/compon
 import { currentReader } from "@/lib/auth/currentReader";
 import { requestOrigin } from "@/lib/requestOrigin";
 import { gamePath, seatPath, setUpPath } from "@/lib/gomoku/slugs";
-import { PUZZLE_DISPLAY, PUZZLE_LEVEL_DISPLAY } from "@/lib/puzzles/puzzles.constants";
+import { levelName, puzzleCopy } from "@/lib/puzzles/puzzleCopy";
+import { joinedWith } from "@/lib/puzzles/puzzleText";
+import { sizeWordIn } from "@/lib/puzzles/sizeWord";
 import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import type { KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 import { RACE_SEATS, type RaceSeat, type SeatState } from "@/lib/puzzles/raceState";
@@ -25,9 +30,10 @@ import { fetchBuddies } from "@/lib/social/buddies";
 import { PuzzlePlayClient } from "./PuzzlePlayClient";
 import { RaceControls } from "./RaceControls";
 import { RaceOffer } from "./RaceOffer";
-import { sizeWord } from "./puzzles.constants";
 import { clockText } from "@/lib/puzzles/clockText";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { GameTrail } from "@/components/games/GameTrail";
+import { PUZZLE_WIDTH_REASON } from "./paint.constants";
 
 /**
  * A race, at /games/<slug>/match/<id>: two seats, two clocks, one puzzle.
@@ -40,14 +46,32 @@ import { GameTrail } from "@/components/games/GameTrail";
  * puzzle again from the seed, as the host's did.
  */
 export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: string }) {
+  const say = await currentSpeaker();
   const race = await raceFor(id);
   if (race === null || race.kind !== kind) notFound();
   const reader = await currentReader();
   const seat = seatOf(race, reader.memberId);
   const read = readRace(race);
-  const copy = PUZZLE_DISPLAY[kind];
+  const copy = puzzleCopy(kind, say.locale);
   const level = race.level as PuzzleLevel;
-  const kumimojiMode = kind === "kumimoji" ? ` · ${race.language === "japanese" ? "Japanese · ひらがな" : "English"} · ${race.gameLength} · ${race.givens.length} tiles${race.doubleSet ? " · Double" : ""}${race.diagonals ? " · Diagonals" : ""}` : "";
+  const dot = say.locale === "ja" ? "・" : " · ";
+  const kumimojiParts =
+    kind === "kumimoji"
+      ? [
+          say.say(race.language === "japanese" ? "pkumi.opts.japanese" : "pkumi.opts.english"),
+          say.say(race.gameLength === "short" ? "pkumi.length.short" : race.gameLength === "medium" ? "pkumi.length.medium" : "pkumi.length.full"),
+          say.count("puzzle.count.tile", race.givens.length),
+          ...(race.doubleSet ? [say.say("pkumi.opts.double")] : []),
+          ...(race.diagonals ? [say.say("pkumi.opts.diagOn")] : []),
+        ]
+      : [];
+  const factsLine = [
+    joinedWith(say, [sizeWordIn(race.size, kind, say), levelName(level, say.locale)]),
+    ...kumimojiParts,
+    ...(race.checksAllowed === null ? [] : [say.count("pset.race.checksEach", race.checksAllowed)]),
+    `№ ${race.seed}`,
+    say.say("pset.race.faster"),
+  ].join(dot);
   const names: Record<RaceSeat, { name: string; memberId: string | null }> = {
     host: { name: race.hostName, memberId: race.hostMemberId },
     guest: { name: race.guestName, memberId: race.guestMemberId },
@@ -74,17 +98,17 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
       {/* Furniture, for just the board; the seats and their Start stay, being what starts the race. */}
       <div data-chrome>
       <PageTitle
-        title={`Race at ${copy.label}`}
+        title={say.say("pset.race.title", { game: copy.label })}
         kanji="競解"
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "race-up" }} steps={[{ label: "Race" }]} />}
-        lead={`${sizeWord(race.size, kind)}, ${PUZZLE_LEVEL_DISPLAY[level].label.toLowerCase()}${kumimojiMode}${race.checksAllowed === null ? "" : ` · ${race.checksAllowed === 1 ? "one check" : `${race.checksAllowed} checks`} each`} · № ${race.seed} · the faster correct solve wins.`}
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "race-up" }} steps={[{ label: say.say("pset.race.crumb") }]} />}
+        lead={factsLine}
         testId="puzzle-race"
       />
       </div>
 
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="race-seats">
         <h2 className={SECTION_TITLE}>
-          The two seats <span className="font-mincho normal-case tracking-normal">両席</span>
+          <Paired en={say.say("pset.race.seats")} kanji="両席" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
         </h2>
         <ul className="grid gap-2 sm:grid-cols-2">
           {RACE_SEATS.map((each) => (
@@ -92,28 +116,28 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
               <span className="font-medium">
                 {names[each].memberId === null && each === "guest" && offeredTo !== null ? (
                   <span className="text-muted" data-testid="race-offered-to">
-                    Offered to <PlayerName name={offeredTo.name} memberId={offeredTo.id} fallback="a buddy" tagged={false} />
+                    {phraseWith(say.say("pset.race.offeredTo"), { name: <PlayerName name={offeredTo.name} memberId={offeredTo.id} fallback={say.say("pset.race.aBuddy")} tagged={false} /> })}
                   </span>
                 ) : names[each].memberId === null ? (
-                  <span className="text-muted">The other seat, still open</span>
+                  <span className="text-muted">{say.say("pset.race.open")}</span>
                 ) : (
-                  <PlayerName name={names[each].name} memberId={names[each].memberId} fallback={each === "host" ? "The host" : "The guest"} />
+                  <PlayerName name={names[each].name} memberId={names[each].memberId} fallback={say.say(each === "host" ? "pset.race.host" : "pset.race.guest")} />
                 )}
-                {seat === each ? <span className="ml-1 text-xs text-muted">(you)</span> : null}
+                {seat === each ? <span className="ml-1 text-xs text-muted">{say.say("pset.race.you")}</span> : null}
               </span>
-              <span className="text-muted">{seatWords(read[each], names[each].memberId === null)}</span>
+              <span className="text-muted">{seatWords(read[each], names[each].memberId === null, say)}</span>
             </li>
           ))}
         </ul>
         <p className="flex items-center gap-1.5 text-sm font-medium" data-testid="race-outcome">
           {/* A race won is a tick to a watcher; to a racer it is their win or their loss. */}
           <ResultMark kind={seat === null && read.outcome.over && read.outcome.winner !== null ? RESULT_MARKS.success : read.outcome.over ? markOfSeat(read.outcome.winner, seat ?? "", true) : RESULT_MARKS.other} />
-          {outcomeWords(read.outcome, names)}
+          {outcomeWords(read.outcome, names, say)}
         </p>
         {offeredHere ? (
           /* A whole-page load, not a client navigation: the seat route claims and redirects back to this very address, which the router would otherwise answer from its cache, seatless. */
           <a href={seatPath(kind, id, race.guestToken)} className={`${BUTTON_BASE} ${BUTTON_STRONG} self-start px-5 py-2`} data-testid="race-take-seat">
-            Take the seat and race →
+            {say.say("pset.race.takeSeat")}
           </a>
         ) : null}
         <RaceControls
@@ -127,7 +151,7 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
       </section>
 
       {seat !== null && mine !== null && mine.state === "solving" ? (
-        <BoardScaled className="mx-auto w-full max-w-xl" widthReason="a puzzle grid wider than a hand is a grid nobody can reach across, until the reader asks for a bigger one">
+        <BoardScaled className="mx-auto w-full max-w-xl" widthReason={PUZZLE_WIDTH_REASON}>
           <PuzzlePlayClient
             kind={kind}
             size={race.size}
@@ -145,41 +169,40 @@ export async function PuzzleRacePage({ kind, id }: { kind: PuzzleKind; id: strin
 
       {seat === null && !reader.hasAccount ? (
         <p className="text-sm text-muted" data-testid="race-needs-account">
-          A race is between two members, and this sign-in has no member account, so the seat was not taken.
+          {say.say("pset.race.needsAccount")}
         </p>
       ) : null}
       {seat === null && !offeredHere ? (
         <p className="text-sm text-muted" data-testid="race-not-yours">
-          This race is between the two people above. Start one of your own from{" "}
-          <Link href={setUpPath(kind)} className="underline underline-offset-2">
-            the set-up
-          </Link>
-          .
+          {phraseWith(say.say("pset.race.notYours"), {
+            setup: (
+              <Link href={setUpPath(kind)} className="underline underline-offset-2">
+                {say.say("pset.race.setUp")}
+              </Link>
+            ),
+          })}
         </p>
       ) : null}
     </Page>
   );
 }
 
-function seatWords(state: SeatState, empty: boolean): string {
-  if (empty) return "Nobody has taken it yet.";
+function seatWords(state: SeatState, empty: boolean, say: Speaker): string {
+  if (empty) return say.say("pset.race.nobody");
   switch (state.state) {
     case "waiting":
-      return "Not started.";
+      return say.say("pset.race.notStarted");
     case "solving":
-      return `Solving since ${state.since.toISOString().slice(11, 16)} UTC.`;
+      return say.say("pset.race.solvingSince", { time: state.since.toISOString().slice(11, 16) });
     case "finished":
-      return `Solved in ${clockText(state.elapsedMs)}.`;
+      return say.say("pset.race.solvedIn", { time: clockText(state.elapsedMs) });
     case "gaveUp":
-      return state.why === "outOfGuesses" ? "Out of guesses: no finish." : "Gave up: the sitting ran out with no finish.";
+      return say.say(state.why === "outOfGuesses" ? "pset.race.outOfGuesses" : "pset.race.gaveUp");
   }
 }
 
-function outcomeWords(
-  outcome: ReturnType<typeof readRace>["outcome"],
-  names: Record<RaceSeat, { name: string; memberId: string | null }>,
-): string {
-  if (!outcome.over) return "Not over yet.";
-  if (outcome.winner === null) return "Nobody won: a tie, or nobody finished.";
-  return `${names[outcome.winner].name || (outcome.winner === "host" ? "The host" : "The guest")} won.`;
+function outcomeWords(outcome: ReturnType<typeof readRace>["outcome"], names: Record<RaceSeat, { name: string; memberId: string | null }>, say: Speaker): string {
+  if (!outcome.over) return say.say("pset.race.notOver");
+  if (outcome.winner === null) return say.say("pset.race.tie");
+  return say.say("pset.race.won", { name: names[outcome.winner].name || say.say(outcome.winner === "host" ? "pset.race.host" : "pset.race.guest") });
 }

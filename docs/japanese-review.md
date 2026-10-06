@@ -6,7 +6,7 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 1674. Drafted and unread: 0. Read by the reviewer agent: 1674.
+Phrases: 2752. Drafted and unread: 0. Read by the reviewer agent: 2752.
 Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 5
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
@@ -34,7 +34,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | From {country} | **発祥：{country}** | Origin: {country} | Agent 2026-10-06, native read wanted | The country is printed as the data holds it, in English ("発祥：Japan"). Localising country names needs a table of its own; John to decide whether to add one. |  |
 | — — — | Sit in with your four words | **4つの合言葉で着席する** | Sit in with my four words | Agent 2026-10-06, native read wanted | The "four words" a member chooses to sit in as themselves are 合言葉 here. The account pages that set them must use the same word; John to confirm 合言葉 is the one he wants. |  |
 
-## 2. Written by a machine — please check these (1603)
+## 2. Written by a machine — please check these (2627)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -45,7 +45,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | Every screen — navigation bar | Terms | **利用規約** | Terms of use — the usual Japanese name for a site's terms page. | Agent 2026-10-06 |  |
 | Every screen — account menu, top right | Sign in | **サインイン** | Sign in. | Agent 2026-10-06 |  |
 | Every screen — account menu, top right | Sign out | **サインアウト** | Sign out. | Agent 2026-10-06 |  |
-| Every screen — footer | Language | **言語** | Language | Agent 2026-10-06 |  |
+| Every screen — footer; — — — | Language | **言語** | Language | Agent 2026-10-06 |  |
 | Phones and tablets, until dismissed — the hint that offers the site as a home-screen app | Open the browser's ⋮ menu, then Install app or Add to Home screen. | **ブラウザの ⋮ メニューを開き、「アプリをインストール」または「ホーム画面に追加」を選んでください。** | Open the browser's ⋮ menu, then choose "Install app" or "Add to home screen". | Agent 2026-10-06 |  |
 | Phones and tablets, until dismissed — the hint that offers the site as a home-screen app | Install app | **アプリをインストール** | Install the app. | Agent 2026-10-06 |  |
 | Phones and tablets, until dismissed — the hint that offers the site as a home-screen app | Not now | **今はしない** | Not now. | Agent 2026-10-06 |  |
@@ -219,7 +219,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | A player's XP history — a row crediting a record from another site | {label}, elsewhere | **{label}（他のサイト）** | {label} (another site) | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | All time | **通算** | All time | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | A member | **会員** | A member | Agent 2026-10-06 |  |
-| The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Be the first → | **最初の一人になる →** | Be the first → | Agent 2026-10-06 |  |
+| The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page; — — — | Be the first → | **最初の一人になる →** | Be the first → | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Nobody on it yet. | **まだ誰も載っていません。** | Nobody is on it yet. | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | IP, {site} Points, is won by results alone: a win pays the most the game is worth, a draw half, and a close loss a little; beating a stronger player pays more. XP is for taking part. | **IP（{site}ポイント）は結果だけで獲得します。勝つとそのゲームの最高点、引き分けは半分、惜しい負けは少しです。強い相手に勝つと多くなります。経験値は参加することでもらえます。** | IP ({site} Points) is won by results alone. A win pays the most the game is worth, a draw half, and a close loss a little. Beating a stronger opponent pays more. Experience is what you get for taking part. | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | I have an invite → | **招待を持っています →** | I have an invitation → | Agent 2026-10-06 |  |
@@ -262,7 +262,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Each Check or Hint takes some of the price off, in proportion to the points it cost the puzzle's own score. | **チェックやヒントを使うたびに、そのパズル自身の得点から引かれた分に応じて、値段が下がります。** | Each time you use a Check or a Hint, the price goes down in proportion to the points taken off the puzzle's own score. | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Every puzzle is priced on one scale: {least} for the smallest and easiest, up to {most} for the biggest and hardest. A bigger board or a harder level pays more, and the price is the same for every player. Meikyuu, Suido and Tsunagi have 256 levels in each size (128 in each of Meikyuu's two colossal ones, and 64 on Suido's three huge boards), from easiest to hardest, and the later a level comes the more it pays, up to {top}. | **どのパズルも1つの尺度で値付けされ、いちばん小さくやさしいものが{least}、いちばん大きく難しいものが{most}です。盤が大きいほど、レベルが難しいほど多くなり、値段はどの対局者でも同じです。迷宮、水道、繋ぎには各サイズに256レベルがあり（迷宮の特大2サイズは各128、水道の巨大3サイズは各64）、やさしい順に並んでいて、後のレベルほど多くなり、最大で{top}です。** | Every puzzle is priced on one scale: the smallest and easiest is {least}, and the biggest and hardest is {most}. A bigger board or a harder level pays more, and the price is the same for every player. Meikyuu, Suido and Tsunagi have 256 levels in each size (128 each in Meikyuu's two extra-large sizes, 64 each in Suido's three huge sizes), ordered from easiest, and the later the level the more it pays, up to {top}. | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Pays, smallest to biggest | **配点（小さいものから大きいものまで）** | Points paid (from smallest to biggest) | Agent 2026-10-06 |  |
-| The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Puzzle | **パズル** | Puzzle | Agent 2026-10-06 |  |
+| The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page; — — — | Puzzle | **パズル** | Puzzle | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | {least} to {most} | **{least}から{most}** | {least} to {most} | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | What a puzzle pays | **パズルの配点** | What a puzzle pays | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | A word puzzle, Kumimoji and Koushi pay half the price for finishing and half for how well it went. A word that ran out of guesses pays only for what it found. | **言葉のパズル、組文字、格子は、値段の半分を最後まで終えたことに、残りの半分を出来ばえに対して支払います。推測の回数が尽きた言葉は、見つけた分だけが支払われます。** | A word puzzle, Kumimoji and Koushi pay half the price for finishing and half for how well it went. A word whose guesses ran out pays only for what was found. | Agent 2026-10-06 |  |
@@ -1410,12 +1410,355 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | The finished board of {name}, as a wallpaper | **{name}の終局図を壁紙にしたもの** | The finished board of {name}, made as a wallpaper | Agent 2026-10-06 |  |
 | — — — | Drawing the board… | **盤を描いています…** | Drawing the board… | Agent 2026-10-06 |  |
 | — — — | The board could not be drawn in this browser. | **このブラウザでは盤を描けませんでした。** | The board could not be drawn in this browser. | Agent 2026-10-06 |  |
+| — — — | {rank} of {suit} | **{suit}の{rank}** | {rank} of {suit} | Agent 2026-10-06 |  |
+| — — — | Deals | **配り方** | Deals | Agent 2026-10-06 |  |
+| — — — | , and goes again | **。続けてもう1手打ちます** | , and goes again | Agent 2026-10-06 |  |
+| — — — | Alone, against the clock: clear the whole layout. | **ひとりで、時計と競います。配置の牌をすべて取り除きます。** | Alone, against the clock: clear the whole layout. | Agent 2026-10-06 |  |
+| — — — | blocked | **動かせない** | cannot be moved | Agent 2026-10-06 |  |
+| — — — | Flowers and seasons | **花牌と季節牌** | Flowers and seasons | Agent 2026-10-06 |  |
+| — — — | A computer plays the {wind} seat | **{wind}の席は、コンピュータが打ちます** | A computer plays the {wind} seat | Agent 2026-10-06 |  |
+| — — — | Continue the table game | **テーブルのゲームを続ける** | Continue the table game | Agent 2026-10-06 |  |
+| — — — | End it for everybody? It is not kept. | **全員のために、終えますか？ゲームは保存されません。** | End it for everybody? It is not kept. | Agent 2026-10-06 |  |
+| — — — | Find | **探す** | Find | Agent 2026-10-06 |  |
+| — — — | Free tiles | **空き牌** | Free tiles | Agent 2026-10-06 |  |
+| — — — | Mahjong layout, {count} tile left | **麻雀の配置、残り{count}枚** | Mahjong layout, {count} tile left | Agent 2026-10-06 |  |
+| — — — | Mahjong layout, {count} tiles left | **麻雀の配置、残り{count}枚** | Mahjong layout, {count} tiles left | Agent 2026-10-06 |  |
+| — — — | At least one seat is a person's. | **少なくとも1つの席は人にしてください。** | At least one seat is a person's. | Agent 2026-10-06 |  |
+| — — — | {who} take turns on one layout, a pair a turn, passing one device round; dragons and winds score most, and any seat can be a computer. | **{who}が、1つの配置を、1回に1組ずつ取りながら、端末を順番に回して遊びます。三元牌と風牌が最も高得点で、どの席もコンピュータにできます。** | {who} take turns on one layout, a pair a turn, passing one device round; dragons and winds score most, and any seat can be a computer. | Agent 2026-10-06 |  |
+| — — — | Four | **4人** | Four | Agent 2026-10-06 |  |
+| — — — | Solitaire | **1人** | Solitaire | Agent 2026-10-06 |  |
+| — — — | Players | **人数** | Players | Agent 2026-10-06 |  |
+| — — — | Three | **3人** | Three | Agent 2026-10-06 |  |
+| — — — | Two | **2人** | Two | Agent 2026-10-06 |  |
+| — — — | Points | **得点** | Points | Agent 2026-10-06 |  |
+| — — — | Beginning forgets the table game this browser is keeping. | **はじめると、このブラウザーに残っているテーブルのゲームは、忘れられます。** | Beginning forgets the table game this browser is keeping. | Agent 2026-10-06 |  |
+| — — — | The {wind} seat's name | **{wind}の席の名前** | The {wind} seat's name | Agent 2026-10-06 |  |
+| — — — | {wind} seat | **{wind}の席** | {wind} seat | Agent 2026-10-06 |  |
+| — — — | {names} share the win. | **{names}が勝ちを分け合いました。** | {names} share the win. | Agent 2026-10-06 |  |
+| — — — | Shuffle | **シャッフル** | Shuffle | Agent 2026-10-06 |  |
+| — — — | Shuffle is for when no free pair is left | **シャッフルは、空いているペアがなくなったときに使います** | Shuffle is for when no free pair is left | Agent 2026-10-06 |  |
+| — — — | Start | **スタート** | Start | Agent 2026-10-06 |  |
+| — — — | {tiles} tiles left, {count} pair free | **残り{tiles}枚・空きのペアは{count}組** | {tiles} tiles left, {count} pair free | Agent 2026-10-06 |  |
+| — — — | {tiles} tiles left, {count} pairs free | **残り{tiles}枚・空きのペアは{count}組** | {tiles} tiles left, {count} pairs free | Agent 2026-10-06 |  |
+| — — — | {name} took {pair} +{points} | **{name}が{pair}を取りました　+{points}** | {name} took {pair} +{points} | Agent 2026-10-06 |  |
+| — — — | {name} to take a pair. | **{name}の番です。ペアを取ってください。** | {name} to take a pair. | Agent 2026-10-06 |  |
+| — — — | {name} to take a pair… | **{name}がペアを選んでいます…** | {name} to take a pair… | Agent 2026-10-06 |  |
+| — — — | {name} wins. | **{name}の勝ちです。** | {name} wins. | Agent 2026-10-06 |  |
+| — — — | Column {n} | **{n}列目** | Column {n} | Agent 2026-10-06 |  |
+| — — — | {pile}: empty | **{pile}：空** | {pile}: empty | Agent 2026-10-06 |  |
+| — — — | a face-down card | **裏向きのカード** | a face-down card | Agent 2026-10-06 |  |
+| — — — | The {suit} foundation | **{suit}のホーム** | The {suit} home | Agent 2026-10-06 |  |
+| — — — | Free cell {n} | **フリーセル{n}** | Free cell {n} | Agent 2026-10-06 |  |
+| — — — | Run {n}: the {suit}, made | **{n}組目：{suit}、完成** | Set {n}: the {suit}, made | Agent 2026-10-06 |  |
+| — — — | Run {n}: not made yet | **{n}組目：まだできていません** | Set {n}: not made yet | Agent 2026-10-06 |  |
+| — — — | The stock | **山札** | The stock | Agent 2026-10-06 |  |
+| — — — | The stock: {count} card. Turn {turn} | **山札：{count}枚。{turn}枚ずつめくる** | The stock: {count} card. Turn {turn} at a time | Agent 2026-10-06 |  |
+| — — — | The stock: {count} cards. Turn {turn} | **山札：{count}枚。{turn}枚ずつめくる** | The stock: {count} cards. Turn {turn} at a time | Agent 2026-10-06 |  |
+| — — — | The stock: {count} deal left. Deal a card to every column | **山札：配る分があと{count}回。すべての列にカードを1枚ずつ配る** | The stock: {count} deal left. Deal a card to every column | Agent 2026-10-06 |  |
+| — — — | The stock: {count} deals left. Deal a card to every column | **山札：配る分があと{count}回。すべての列にカードを1枚ずつ配る** | The stock: {count} deals left. Deal a card to every column | Agent 2026-10-06 |  |
+| — — — | The waste | **捨て札** | The waste | Agent 2026-10-06 |  |
+| — — — | ace | **エース** | ace | Agent 2026-10-06 |  |
+| — — — | jack | **ジャック** | jack | Agent 2026-10-06 |  |
+| — — — | king | **キング** | king | Agent 2026-10-06 |  |
+| — — — | queen | **クイーン** | queen | Agent 2026-10-06 |  |
+| — — — | The deal, as it was dealt. | **配られたままの配りです。** | The deal, as it was dealt. | Agent 2026-10-06 |  |
+| — — — | Given up here: step back through how it got there. | **ここであきらめました。ここまでの道筋を、さかのぼってたどれます。** | Given up here: step back through how it got there. | Agent 2026-10-06 |  |
+| — — — | Step through it with the scrubber, from the deal to the last card home. | **スクラバーで、配りから最後のカードがホームに入るまでを、1手ずつたどれます。** | Step through it with the scrubber, from the deal to the last card home. | Agent 2026-10-06 |  |
+| — — — | Score {score} | **スコア {score}** | Score {score} | Agent 2026-10-06 |  |
+| — — — | Vegas {score} | **ベガス {score}** | Vegas {score} | Agent 2026-10-06 |  |
+| — — — | Score | **得点方式** | Score | Agent 2026-10-06 |  |
+| — — — | clubs | **クラブ** | clubs | Agent 2026-10-06 |  |
+| — — — | diamonds | **ダイヤ** | diamonds | Agent 2026-10-06 |  |
+| — — — | hearts | **ハート** | hearts | Agent 2026-10-06 |  |
+| — — — | spades | **スペード** | spades | Agent 2026-10-06 |  |
+| — — — | full | **橋が足りている** | the bridges are enough | Agent 2026-10-06 |  |
+| — — — | {count} bridge | **橋{count}本** | {count} bridge | Agent 2026-10-06 |  |
+| — — — | {count} bridges | **橋{count}本** | {count} bridges | Agent 2026-10-06 |  |
+| — — — | {where}: island {count}, {bridges} | **{where}：島{count}、{bridges}** | {where}: island {count}, {bridges} | Agent 2026-10-06 |  |
+| — — — | too many | **橋が多すぎる** | too many bridges | Agent 2026-10-06 |  |
+| — — — | Every cell holds a stone, and it is not right yet. | **すべてのマスに石がありますが、まだ正しくありません。** | Every cell holds a stone, and it is not right yet. | Agent 2026-10-06 |  |
+| — — — | Tap for black, again for white, again to clear. | **タップで黒、もう1回で白、もう1回で消えます。** | Tap for black, again for white, again to clear. | Agent 2026-10-06 |  |
+| — — — | black | **黒** | black | Agent 2026-10-06 |  |
+| — — — | blank | **空白** | blank | Agent 2026-10-06 |  |
+| — — — | a cage adding to {sum} | **合計{sum}のケージ** | a cage totalling {sum} | Agent 2026-10-06 |  |
+| — — — | cross | **×印** | cross | Agent 2026-10-06 |  |
+| — — — | empty | **空欄** | empty | Agent 2026-10-06 |  |
+| — — — | given | **最初からある数字** | there from the start (a number) | Agent 2026-10-06 |  |
+| — — — | printed | **最初からある石** | there from the start (a stone) | Agent 2026-10-06 |  |
+| — — — | region {region} | **区画{region}** | region {region} | Agent 2026-10-06 |  |
+| — — — | stone | **石** | stone | Agent 2026-10-06 |  |
+| — — — | row {row}, column {col} | **{row}行{col}列** | row {row}, column {col} | Agent 2026-10-06 |  |
+| — — — | white | **白** | white | Agent 2026-10-06 |  |
+| — — — | {count} still to draw | **あと{count}個を引く必要があります** | {count} still to draw | Agent 2026-10-06 |  |
+| — — — | {count} still to fill | **あと{count}マスを埋める必要があります** | {count} still to fill | Agent 2026-10-06 |  |
+| — — — | {count} still to place | **あと{count}個を置く必要があります** | {count} still to place | Agent 2026-10-06 |  |
+| — — — | {count} row without one stone | **石のない行が{count}行** | {count} row without one stone | Agent 2026-10-06 |  |
+| — — — | {count} rows without one stone | **石のない行が{count}行** | {count} rows without one stone | Agent 2026-10-06 |  |
+| — — — | {count} still to shade | **あと{count}マスを塗る必要があります** | {count} still to shade | Agent 2026-10-06 |  |
+| — — — | {count} safe square still to uncover | **開いていない安全なマスが、あと{count}個** | {count} safe square still to uncover | Agent 2026-10-06 |  |
+| — — — | {count} safe squares still to uncover | **開いていない安全なマスが、あと{count}個** | {count} safe squares still to uncover | Agent 2026-10-06 |  |
+| — — — | No flag is wrong | **まちがっている旗はありません** | No flag is wrong | Agent 2026-10-06 |  |
+| — — — | Nothing wrong so far | **いまのところ、まちがいはありません** | Nothing wrong so far | Agent 2026-10-06 |  |
+| — — — | Every bridge is drawn and right. | **橋はすべて引かれていて、正しいです。** | Every bridge is drawn and right. | Agent 2026-10-06 |  |
+| — — — | Everything is filled and right. | **すべて埋まっていて、正しいです。** | Everything is filled and right. | Agent 2026-10-06 |  |
+| — — — | Every safe square is uncovered. | **安全なマスは、すべて開きました。** | Every safe square is uncovered. | Agent 2026-10-06 |  |
+| — — — | Everything is in place. | **すべて正しい位置にあります。** | Everything is in place. | Agent 2026-10-06 |  |
+| — — — | Every square is shaded and right. | **マスはすべて塗られていて、正しいです。** | Every square is shaded and right. | Agent 2026-10-06 |  |
+| — — — | Every stone is right. | **石はすべて正しいです。** | Every stone is right. | Agent 2026-10-06 |  |
+| — — — | {count} bridge is wrong | **まちがっている橋が{count}本** | {count} bridge is wrong | Agent 2026-10-06 |  |
+| — — — | {count} bridges are wrong | **まちがっている橋が{count}本** | {count} bridges are wrong | Agent 2026-10-06 |  |
+| — — — | {count} bulb is wrong | **まちがっている電球が{count}個** | {count} bulb is wrong | Agent 2026-10-06 |  |
+| — — — | {count} bulbs are wrong | **まちがっている電球が{count}個** | {count} bulbs are wrong | Agent 2026-10-06 |  |
+| — — — | {count} cell is wrong | **まちがっているマスが{count}個** | {count} cell is wrong | Agent 2026-10-06 |  |
+| — — — | {count} cells are wrong | **まちがっているマスが{count}個** | {count} cells are wrong | Agent 2026-10-06 |  |
+| — — — | {count} flag is wrong | **まちがっている旗が{count}本** | {count} flag is wrong | Agent 2026-10-06 |  |
+| — — — | {count} flags are wrong | **まちがっている旗が{count}本** | {count} flags are wrong | Agent 2026-10-06 |  |
+| — — — | {count} line is wrong | **まちがっている線が{count}本** | {count} line is wrong | Agent 2026-10-06 |  |
+| — — — | {count} lines are wrong | **まちがっている線が{count}本** | {count} lines are wrong | Agent 2026-10-06 |  |
+| — — — | {count} rectangle is wrong | **まちがっている長方形が{count}個** | {count} rectangle is wrong | Agent 2026-10-06 |  |
+| — — — | {count} rectangles are wrong | **まちがっている長方形が{count}個** | {count} rectangles are wrong | Agent 2026-10-06 |  |
+| — — — | {count} square is wrong | **まちがっているマスが{count}個** | {count} square is wrong | Agent 2026-10-06 |  |
+| — — — | {count} squares are wrong | **まちがっているマスが{count}個** | {count} squares are wrong | Agent 2026-10-06 |  |
+| — — — | {count} stone is wrong | **まちがっている石が{count}個** | {count} stone is wrong | Agent 2026-10-06 |  |
+| — — — | {count} stones are wrong | **まちがっている石が{count}個** | {count} stones are wrong | Agent 2026-10-06 |  |
+| — — — | A finished Jirai board, as it stood at this step | **この手順での、終わった地雷の盤** | A finished Jirai board, as it stood at this step | Agent 2026-10-06 |  |
+| — — — | A finished puzzle, as it stood at this step | **この手順での、終わったパズル** | A finished puzzle, as it stood at this step | Agent 2026-10-06 |  |
+| — — — | this puzzle | **このパズル** | this puzzle | Agent 2026-10-06 |  |
+| — — — | A stone in every row, and it is not right yet. | **どの行にも石がありますが、まだ正しくありません。** | A stone in every row, and it is not right yet. | Agent 2026-10-06 |  |
+| — — — | Tap for a stone, again for a cross, again to clear. | **タップで石、もう1回で×印、もう1回で消えます。** | Tap for a stone, again for a cross, again to clear. | Agent 2026-10-06 |  |
+| — — — | Flag | **旗** | Flag | Agent 2026-10-06 |  |
+| — — — | Neighbours | **となり** | Neighbours | Agent 2026-10-06 |  |
+| — — — | A shape needs a board of at least {size}×{size} | **この形には、{size}×{size}以上の盤が必要です** | A shape needs a board of at least {size}×{size} | Agent 2026-10-06 |  |
+| — — — | Edges that join take a rectangle only | **端がつながる盤は、四角形だけです** | Edges that join take a rectangle only | Agent 2026-10-06 |  |
+| — — — | {where}: a flag that is wrong | **{where}：まちがった旗** | {where}: a flag that is wrong | Agent 2026-10-06 |  |
+| — — — | Lines | **線** | Lines | Agent 2026-10-06 |  |
+| — — — | A line from every stone along its row and column. Counts as one hint. | **すべての石から、その行と列に沿って線を引きます。ヒント1回に数えられます。** | A line from every stone along its row and column. Counts as one hint. | Agent 2026-10-06 |  |
+| — — — | Its finished grid was not kept, so this is the puzzle as it was dealt. | **終わった盤は保存されていません。そのため、配られたままのパズルを見せています。** | Its finished grid was not kept, so this is the puzzle as it was dealt. | Agent 2026-10-06 |  |
+| — — — | Its steps were not kept, so it shows how it ended, with nothing to step through. | **手順は保存されていないので、終わったときの状態を見せています。たどる手順はありません。** | Its steps were not kept, so it shows how it ended, with nothing to step through. | Agent 2026-10-06 |  |
+| — — — | Its line is kept back, so this is the maze as it was dealt. | **線は非公開です。そのため、配られたままの迷路を見せています。** | Its line is kept back, so this is the maze as it was dealt. | Agent 2026-10-06 |  |
+| — — — | How it ended: the line drawn from the start to the goal. | **終わった状態：スタートからゴールまで引かれた線です。** | How it ended: the line drawn from the start to the goal. | Agent 2026-10-06 |  |
+| — — — | Solved before its line was kept. Every maze here has one way through, so this is that way. | **線が保存される前に解かれたものです。ここの迷路は、どれも抜け道が1つなので、これがその道です。** | Solved before its line was kept. Every maze here has one way through, so this is that way. | Agent 2026-10-06 |  |
+| — — — | Step back through it with the scrubber: from where it started to the answer. | **スクラバーで見返せます。最初の状態から答えまでをたどれます。** | Step back through it with the scrubber: from where it started to the answer. | Agent 2026-10-06 |  |
+| — — — | Its finished board was not kept, so this is the board as it was dealt. | **終わった盤は保存されていません。そのため、配られたままの盤を見せています。** | Its finished board was not kept, so this is the board as it was dealt. | Agent 2026-10-06 |  |
+| — — — | How it ended: the water runs from the pump to everything it should reach, and nothing leaks. | **終わった状態：水がポンプから、届くべきすべての場所に流れ、どこからも漏れていません。** | How it ended: the water runs from the pump to everything it should reach, and nothing leaks. | Agent 2026-10-06 |  |
+| — — — | It ended unsolved, when its clock ran out: this is where it stood. | **時計が切れて、解けないまま終わりました。これが、そのときの状態です。** | It ended unsolved, when its clock ran out: this is where it stood. | Agent 2026-10-06 |  |
+| — — — | Solved before its board was kept. Every board here has one answer, so this is that answer, worked out from the puzzle. | **盤が保存される前に解かれたものです。ここの盤は、どれも答えが1つなので、これはパズルから導いたその答えです。** | Solved before its board was kept. Every board here has one answer, so this is that answer, worked out from the puzzle. | Agent 2026-10-06 |  |
+| — — — | Its jumps are kept back, so this is the board as it was dealt. | **跳んだ手順は非公開です。そのため、配られたままの盤を見せています。** | Its jumps are kept back, so this is the board as it was dealt. | Agent 2026-10-06 |  |
+| — — — | How it ended: one peg left, in the goal, by the jumps that were made. | **終わった状態：ゴールに駒が1つ残っています。跳んだ手順で、そうなりました。** | How it ended: one peg left, in the goal, by the jumps that were made. | Agent 2026-10-06 |  |
+| — — — | Solved before its jumps were kept. Every level has an answer, so this is the one it was made from. | **跳んだ手順が保存される前に解かれたものです。どのレベルにも答えがあるので、これは、そのレベルが作られたときの答えです。** | Solved before its jumps were kept. Every level has an answer, so this is the one it was made from. | Agent 2026-10-06 |  |
+| — — — | It ended unsolved, when its clock ran out: this is where it stood, and the scrubber steps back through how it got there. | **時計が切れて、解けないまま終わりました。これが、そのときの状態で、スクラバーで、そこまでの経過をたどれます。** | It ended unsolved, when its clock ran out: this is where it stood, and the scrubber steps back through how it got there. | Agent 2026-10-06 |  |
+| — — — | Solved before its grid was kept. Every puzzle here has one answer, so this is that answer, worked out from the puzzle. | **盤が保存される前に解かれたものです。ここのパズルは、どれも答えが1つなので、これはパズルから導いたその答えです。** | Solved before its grid was kept. Every puzzle here has one answer, so this is that answer, worked out from the puzzle. | Agent 2026-10-06 |  |
+| — — — | clear the cell | **マスを消す** | clear the cell | Agent 2026-10-06 |  |
+| — — — | Every cell is filled, and it is not right yet. | **すべてのマスが埋まっていますが、まだ正しくありません。** | Every cell is filled, and it is not right yet. | Agent 2026-10-06 |  |
+| — — — | Tap a cell, then a number. | **マスをタップして、数字をタップします。** | Tap a cell, then a number. | Agent 2026-10-06 |  |
+| — — — | {thing} puzzle, {size} by {size}. {howTo} | **{thing}のパズル、{size}×{size}。{howTo}** | {thing} puzzle, {size} by {size}. {howTo} | Agent 2026-10-06 |  |
+| — — — | Remove | **消す** | Remove | Agent 2026-10-06 |  |
+| — — — | Tap a rectangle to take it away. | **長方形をタップすると、取り除かれます。** | Tap a rectangle to take it away. | Agent 2026-10-06 |  |
+| — — — | row {row}, column {column}: {what} | **{row}行{column}列：{what}** | row {row}, column {column}: {what} | Agent 2026-10-06 |  |
+| — — — | uncovered, blank | **開いた（空白）** | uncovered, blank | Agent 2026-10-06 |  |
+| — — — | cleared | **消した** | cleared | Agent 2026-10-06 |  |
+| — — — | covered | **伏せた** | covered | Agent 2026-10-06 |  |
+| — — — | a cross | **×印をつけた** | a cross | Agent 2026-10-06 |  |
+| — — — | a flag | **旗を立てた** | a flag | Agent 2026-10-06 |  |
+| — — — | horizontal line {row}, column {column} | **横線{row}、{column}列め** | horizontal line {row}, column {column} | Agent 2026-10-06 |  |
+| — — — | island {count} | **島{count}** | island {count} | Agent 2026-10-06 |  |
+| — — — | several cells | **複数のマス** | several cells | Agent 2026-10-06 |  |
+| — — — | a stone | **石を置いた** | a stone | Agent 2026-10-06 |  |
+| — — — | uncovered, {count} | **開いた（{count}）** | uncovered, {count} | Agent 2026-10-06 |  |
+| — — — | row {row}, vertical line {column} | **{row}行め、縦線{column}** | row {row}, vertical line {column} | Agent 2026-10-06 |  |
+| — — — | from the bottom of column {n} | **{n}列目の下から** | from the bottom of column {n} | Agent 2026-10-06 |  |
+| — — — | from the left of row {n} | **{n}行目の左から** | from the left of row {n} | Agent 2026-10-06 |  |
+| — — — | from the right of row {n} | **{n}行目の右から** | from the right of row {n} | Agent 2026-10-06 |  |
+| — — — | Towers seen {side}:  | **{side}見える塔の数：** | Number of towers seen {side}:  | Agent 2026-10-06 |  |
+| — — — | from the top of column {n} | **{n}列目の上から** | from the top of column {n} | Agent 2026-10-06 |  |
 | — — — | {colour} is free. | **{colour}なら空いています。** | {colour} is free. | Agent 2026-10-06 |  |
 | — — — | That colour is too like the other side's pieces to tell apart. | **その色は、相手側の駒と似すぎていて、見分けがつきません。** | That colour is too similar to the other side's pieces to tell them apart. | Agent 2026-10-06 |  |
 | — — — | The other side already plays in that colour. | **相手側はすでにその色で打っています。** | The other side is already playing in that colour. | Agent 2026-10-06 |  |
 | — — — | That colour is too like another player's marbles to tell apart. | **その色は、別の人のビー玉と似すぎていて、見分けがつきません。** | That colour is too similar to another person's marbles to tell them apart. | Agent 2026-10-06 |  |
 | — — — | Another player's marble carries that colour's letter. | **別の人のビー玉に、その色の文字がついています。** | Another person's marble carries that colour's letter. | Agent 2026-10-06 |  |
 | — — — | Another player at the table has that colour. | **卓にいる別の人が、すでにその色を使っています。** | Another person at the table is already using that colour. | Agent 2026-10-06 |  |
+| — — — | ← All tables | **← すべてのテーブル** | ← All tables | Agent 2026-10-06 |  |
+| — — — | All tables | **すべてのテーブル** | All tables | Agent 2026-10-06 |  |
+| — — — | ← Back | **← 戻る** | ← Back | Agent 2026-10-06 |  |
+| — — — | ← Back to my table | **← 自分のテーブルへ戻る** | ← Back to my table | Agent 2026-10-06 |  |
+| — — — | Back to my table | **自分のテーブルへ戻る** | Back to my table | Agent 2026-10-06 |  |
+| — — — | The table before | **前のテーブル** | The table before | Agent 2026-10-06 |  |
+| — — — | {name}’s hand | **{name}の手札** | {name}'s hand | Agent 2026-10-06 |  |
+| — — — | I'm {name} | **{name}です** | I'm {name} | Agent 2026-10-06 |  |
+| — — — | {laid} laid · {hand} in hand | **置いた{laid}枚・手札{hand}枚** | {laid} laid · {hand} in hand | Agent 2026-10-06 |  |
+| — — — | Look at {name}’s table | **{name}のテーブルを見る** | Look at {name}'s table | Agent 2026-10-06 |  |
+| — — — | The next table | **次のテーブル** | The next table | Agent 2026-10-06 |  |
+| — — — | No tiles in hand | **手札にタイルはありません** | No tiles in hand | Agent 2026-10-06 |  |
+| — — — | Pass to {name} | **{name}に渡してください** | Pass to {name} | Agent 2026-10-06 |  |
+| — — — | resigned | **投了** | resigned | Agent 2026-10-06 |  |
+| — — — | to play | **手番** | to play | Agent 2026-10-06 |  |
+| — — — | {name}’s table · {at} of {count} | **{name}のテーブル・{count}人中{at}人め** | {name}'s table · {at} of {count} | Agent 2026-10-06 |  |
+| — — — | went out | **あがり** | went out | Agent 2026-10-06 |  |
+| — — — | {names} went out — last turn for {name} | **{names}があがりました。{name}が最後の番です** | {names} went out — last turn for {name} | Agent 2026-10-06 |  |
+| — — — | won | **勝ち** | won | Agent 2026-10-06 |  |
+| — — — | Done | **終わりました** | Done | Agent 2026-10-06 |  |
+| — — — | Done, and out | **終わって、あがりました** | Done, and out | Agent 2026-10-06 |  |
+| — — — | Draw: a tile for everybody | **引く：全員がタイルを1枚ずつ取ります** | Draw: a tile for everybody | Agent 2026-10-06 |  |
+| — — — | Laid {word} | **{word}を置きました** | Laid {word} | Agent 2026-10-06 |  |
+| — — — | Looking at its tiles… | **タイルを見ています…** | Looking at its tiles… | Agent 2026-10-06 |  |
+| — — — | Bot | **コンピュータ** | Bot | Agent 2026-10-06 |  |
+| — — — | {name} is playing | **{name}が打っています** | {name} is playing | Agent 2026-10-06 |  |
+| — — — | Took its tiles up to build again | **タイルを手札に戻して、組み直します** | Took its tiles up to build again | Agent 2026-10-06 |  |
+| — — — | Resigned: it can do nothing more | **投了しました。もう打てる手がありません** | Resigned: it can do nothing more | Agent 2026-10-06 |  |
+| — — — | A computer plays this seat | **この席は、コンピュータが打ちます** | A computer plays this seat | Agent 2026-10-06 |  |
+| — — — | This computer cannot move: end the game below. | **このコンピュータは打てません。下でゲームを終えてください。** | This computer cannot move: end the game below. | Agent 2026-10-06 |  |
+| — — — | Traded {tile} for three tiles | **{tile}を、3枚のタイルと交換しました** | Traded {tile} for three tiles | Agent 2026-10-06 |  |
+| — — — | {count} player | **{count}人** | {count} player | Agent 2026-10-06 |  |
+| — — — | {count} players | **{count}人** | {count} players | Agent 2026-10-06 |  |
+| — — — | Full | **フル** | Full | Agent 2026-10-06 |  |
+| — — — | Medium | **ふつう** | Medium | Agent 2026-10-06 |  |
+| — — — | Short | **短め** | Short | Agent 2026-10-06 |  |
+| — — — | No diagonals | **斜めなし** | No diagonals | Agent 2026-10-06 |  |
+| — — — | Words across and down only; tiles may touch at a corner. | **単語は、横と縦だけです。タイルが角で触れていてもかまいません。** | Words across and down only; tiles may touch at a corner. | Agent 2026-10-06 |  |
+| — — — | Diagonals | **斜めあり** | Diagonals | Agent 2026-10-06 |  |
+| — — — | Diagonals | **斜め** | Diagonals | Agent 2026-10-06 |  |
+| — — — | Three or more tiles in a line corner to corner must spell a word too, read downward. | **角どうしでつながる3枚以上のタイルの並びも、下へ向かって読んで、単語になる必要があります。** | Three or more tiles in a line corner to corner must spell a word too, read downward. | Agent 2026-10-06 |  |
+| — — — | Double | **ダブル** | Double | Agent 2026-10-06 |  |
+| — — — | English | **英語** | English | Agent 2026-10-06 |  |
+| — — — | Help | **ヘルプ** | Help | Agent 2026-10-06 |  |
+| — — — | No help | **ヘルプなし** | No help | Agent 2026-10-06 |  |
+| — — — | Help | **ヘルプあり** | Help | Agent 2026-10-06 |  |
+| — — — | Japanese · ひらがな | **日本語・ひらがな** | Japanese · ひらがな | Agent 2026-10-06 |  |
+| — — — | Game length | **ゲームの長さ** | Game length | Agent 2026-10-06 |  |
+| — — — | One set | **1セット** | One set | Agent 2026-10-06 |  |
+| — — — | {count} players pass this device round, one bag, kept in this browser only. | **{count}人でこの端末を順番に回して遊びます。袋は1つで、このブラウザーにだけ保存されます。** | {count} players pass this device round, one bag, kept in this browser only. | Agent 2026-10-06 |  |
+| — — — | Double, 288 tiles, is recommended for {from} or more. | **{from}人以上のときは、ダブル（288枚）をおすすめします。** | Double, 288 tiles, is recommended for {from} or more. | Agent 2026-10-06 |  |
+| — — — | , recommended | **、おすすめ** | , recommended | Agent 2026-10-06 |  |
+| — — — | Full, all 144 tiles, is recommended for {from} or more. | **{from}人以上のときは、フル（全144枚）をおすすめします。** | Full, all 144 tiles, is recommended for {from} or more. | Agent 2026-10-06 |  |
+| — — — | Tile set | **タイルのセット** | Tile set | Agent 2026-10-06 |  |
+| — — — | One player: the solo game, with its clock and its leaderboard. Choose more to pass this device round. | **1人：時計と順位表のある、ひとり用のゲームです。人数を増やすと、この端末を順番に回して遊びます。** | One player: the solo game, with its clock and its leaderboard. Choose more to pass this device round. | Agent 2026-10-06 |  |
+| — — — | {tiles} tiles cannot deal {players} hands of {size} and a round of draws ({needed}) | **{tiles}枚では、{size}枚の手札を{players}人に配り、さらに1巡ぶん引くことはできません（{needed}枚が必要です）** | {tiles} tiles cannot deal {players} hands of {size} and a round of draws ({needed}) | Agent 2026-10-06 |  |
+| — — — | {what} is too small for {players}. | **{players}人には、{what}では足りません。** | {what} is too small for {players}. | Agent 2026-10-06 |  |
+| — — — | {what} are too small for {players}. | **{players}人には、{what}では足りません。** | {what} are too small for {players}. | Agent 2026-10-06 |  |
+| — — — | Begin | **はじめる** | Begin | Agent 2026-10-06 |  |
+| — — — | bot | **コンピュータ** | bot | Agent 2026-10-06 |  |
+| — — — | Player {n} is a computer | **プレイヤー{n}はコンピュータです** | Player {n} is a computer | Agent 2026-10-06 |  |
+| — — — | Computer {n} | **コンピュータ{n}** | Computer {n} | Agent 2026-10-06 |  |
+| — — — | Continue the pass-and-play game | **回し遊びのゲームを続ける** | Continue the pass-and-play game | Agent 2026-10-06 |  |
+| — — — | Continue that one instead | **そちらを続ける** | Continue that one instead | Agent 2026-10-06 |  |
+| — — — | End this game for everybody? It is not kept. | **全員のために、このゲームを終えますか？ゲームは保存されません。** | End this game for everybody? It is not kept. | Agent 2026-10-06 |  |
+| — — — | End this game | **このゲームを終える** | End this game | Agent 2026-10-06 |  |
+| — — — | Yes, end it | **はい、終える** | Yes, end it | Agent 2026-10-06 |  |
+| — — — | {count} players pass this device round, each with a hand and a table of their own. Names stay in this browser; leave one empty for its number. A computer plays its own turns, where everybody can watch. | **{count}人でこの端末を順番に回して遊びます。それぞれが自分の手札とテーブルを持ちます。名前はこのブラウザーにだけ残り、空のままなら番号で呼ばれます。コンピュータは、みんなが見ている前で、自分の手番を打ちます。** | {count} players pass this device round, each with a hand and a table of their own. Names stay in this browser; leave one empty for its number. A computer plays its own turns, where everybody can watch. | Agent 2026-10-06 |  |
+| — — — | At least one seat is a person's: somebody has to watch. | **少なくとも1つの席は人にしてください。見ている人が必要です。** | At least one seat is a person's: somebody has to watch. | Agent 2026-10-06 |  |
+| — — — | The order of play | **遊ぶ順番** | The order of play | Agent 2026-10-06 |  |
+| — — — | out | **あがり** | out | Agent 2026-10-06 |  |
+| — — — | Player {n} | **プレイヤー{n}** | Player {n} | Agent 2026-10-06 |  |
+| — — — | Beginning forgets the pass-and-play game this browser is keeping. | **はじめると、このブラウザーに残っている回し遊びのゲームは、忘れられます。** | Beginning forgets the pass-and-play game this browser is keeping. | Agent 2026-10-06 |  |
+| — — — | {names} share the win | **{names}が勝ちを分け合いました** | {names} share the win | Agent 2026-10-06 |  |
+| — — — | {name} wins, the last one standing | **{name}の勝ちです。最後まで残りました** | {name} wins, the last one standing | Agent 2026-10-06 |  |
+| — — — | Tied: {names} | **引き分け：{names}** | Tied: {names} | Agent 2026-10-06 |  |
+| — — — | Who is playing? | **遊ぶのは誰ですか？** | Who is playing? | Agent 2026-10-06 |  |
+| — — — | {name} wins | **{name}の勝ちです** | {name} wins | Agent 2026-10-06 |  |
+| — — — | Every tile is down. | **すべてのタイルを置きました。** | Every tile is down. | Agent 2026-10-06 |  |
+| — — — | Sound. Draw, and everybody takes a tile. | **正しく並んでいます。引くと、全員がタイルを1枚ずつ取ります。** | Sound. Draw, and everybody takes a tile. | Agent 2026-10-06 |  |
+| — — — | Sound. Draw the last tile: it is wild, and you choose its letter. | **正しく並んでいます。最後のタイルを引いてください。これはワイルドで、文字を選べます。** | Sound. Draw the last tile: it is wild, and you choose its letter. | Agent 2026-10-06 |  |
+| — — — | Sound. Draw the next tile. | **正しく並んでいます。次のタイルを引いてください。** | Sound. Draw the next tile. | Agent 2026-10-06 |  |
+| — — — | {word} is at the front of your hand. Press Help again for another word. | **{word}が手札の先頭にあります。別の単語を見るには、もう一度「ヘルプ」を押してください。** | {word} is at the front of your hand. Press Help again for another word. | Agent 2026-10-06 |  |
+| — — — | No word in this hand: trade a tile for three. | **この手札には単語がありません。タイル1枚を、3枚と交換してください。** | No word in this hand: trade a tile for three. | Agent 2026-10-06 |  |
+| — — — | Join every tile into one crossword. | **すべてのタイルを、ひとつのクロスワードにつなげてください。** | Join every tile into one crossword. | Agent 2026-10-06 |  |
+| — — — | Not a word: {words}. | **単語ではありません：{words}。** | Not a word: {words}. | Agent 2026-10-06 |  |
+| — — — | Not words: {words}. | **単語ではありません：{words}。** | Not words: {words}. | Agent 2026-10-06 |  |
+| — — — | Tap a tile, then a square, or drag it onto the table. On a keyboard, choose a square and type. | **タイルをタップして、マスをタップします。タイルをテーブルへドラッグしてもかまいません。キーボードでは、マスを選んで文字を打ちます。** | Tap a tile, then a square, or drag it onto the table. On a keyboard, choose a square and type. | Agent 2026-10-06 |  |
+| — — — | {count} tile to lay. | **置くタイルは、あと{count}枚です。** | {count} tile to lay. | Agent 2026-10-06 |  |
+| — — — | {count} tiles to lay. | **置くタイルは、あと{count}枚です。** | {count} tiles to lay. | Agent 2026-10-06 |  |
+| — — — | A word takes two letters or more. | **単語は、2文字以上です。** | A word takes two letters or more. | Agent 2026-10-06 |  |
+| — — — | Add a computer | **コンピュータを加える** | Add a computer | Agent 2026-10-06 |  |
+| — — — | The bag holds {count} tile, fewer than a hand of {size}: nobody can join now. | **袋のタイルは{count}枚で、{size}枚の手札に足りません。今は誰も加われません。** | The bag holds {count} tile, fewer than a hand of {size}: nobody can join now. | Agent 2026-10-06 |  |
+| — — — | The bag holds {count} tiles, fewer than a hand of {size}: nobody can join now. | **袋のタイルは{count}枚で、{size}枚の手札に足りません。今は誰も加われません。** | The bag holds {count} tiles, fewer than a hand of {size}: nobody can join now. | Agent 2026-10-06 |  |
+| — — — | {count} are playing: nobody else can join. | **{count}人が遊んでいます。これ以上は加われません。** | {count} are playing: nobody else can join. | Agent 2026-10-06 |  |
+| — — — | Join | **加わる** | Join | Agent 2026-10-06 |  |
+| — — — | The last round has begun: nobody can join now. | **最後の1巡が始まりました。今は誰も加われません。** | The last round has begun: nobody can join now. | Agent 2026-10-06 |  |
+| — — — | Leave | **席を外れる** | Leave | Agent 2026-10-06 |  |
+| — — — | Leave, and put {count} tile back in the bag? | **席を外れて、{count}枚のタイルを袋に戻しますか？** | Leave, and put {count} tile back in the bag? | Agent 2026-10-06 |  |
+| — — — | Leave, and put {count} tiles back in the bag? | **席を外れて、{count}枚のタイルを袋に戻しますか？** | Leave, and put {count} tiles back in the bag? | Agent 2026-10-06 |  |
+| — — — | the last person: end the game instead | **最後の1人なので、代わりにゲームを終えてください** | the last person: end the game instead | Agent 2026-10-06 |  |
+| — — — | went out: stays to the end | **あがったので、最後まで残ります** | went out: stays to the end | Agent 2026-10-06 |  |
+| — — — | Yes, leave | **はい、外れる** | Yes, leave | Agent 2026-10-06 |  |
+| — — — | The new player's name | **新しいプレイヤーの名前** | The new player's name | Agent 2026-10-06 |  |
+| — — — | A new player sits down after {name} with a hand of {size} from the bag. Leaving puts a player's hand and table back in the bag. | **新しいプレイヤーは、{name}の次の席に着き、袋から{size}枚の手札を受け取ります。席を外れると、そのプレイヤーの手札とテーブルのタイルは、袋に戻ります。** | A new player sits down after {name} with a hand of {size} from the bag. Leaving puts a player's hand and table back in the bag. | Agent 2026-10-06 |  |
+| — — — | Join or leave | **席に加わる・席を外れる** | Join or leave | Agent 2026-10-06 |  |
+| — — — | The game is over. | **ゲームは終わりました。** | The game is over. | Agent 2026-10-06 |  |
+| — — — | Stay | **残る** | Stay | Agent 2026-10-06 |  |
+| — — — | See it played | **遊んでいる様子** | See it played | Agent 2026-10-06 |  |
+| — — — | {caption} Opens the picture full size. | **{caption}写真が原寸で開きます。** | {caption} Opens the picture full size. | Agent 2026-10-06 |  |
+| — — — | All {tiles} tiles in one crossword. {points} points: ten a tile, and the rest for speed. | **{tiles}枚すべてを、ひとつのクロスワードにしました。{points}点：1枚10点で、残りは速さの点です。** | All {tiles} tiles in one crossword. {points} points: ten a tile, and the rest for speed. | Agent 2026-10-06 |  |
+| — — — | All {tiles} tiles in one crossword. {points} points: ten a tile, and the rest for speed, less {per} for each of {count} Help. | **{tiles}枚すべてを、ひとつのクロスワードにしました。{points}点：1枚10点で、残りは速さの点です。ヘルプ{count}回につき{per}点ずつ引かれています。** | All {tiles} tiles in one crossword. {points} points: ten a tile, and the rest for speed, less {per} for each of {count} Help. | Agent 2026-10-06 |  |
+| — — — | All {tiles} tiles in one crossword. {points} points: ten a tile, and the rest for speed, less {per} for each of {count} Helps. | **{tiles}枚すべてを、ひとつのクロスワードにしました。{points}点：1枚10点で、残りは速さの点です。ヘルプ{count}回につき{per}点ずつ引かれています。** | All {tiles} tiles in one crossword. {points} points: ten a tile, and the rest for speed, less {per} for each of {count} Helps. | Agent 2026-10-06 |  |
+| — — — | not joined to the rest | **ほかとつながっていない** | not joined to the rest | Agent 2026-10-06 |  |
+| — — — | empty square | **空のマス** | empty square | Agent 2026-10-06 |  |
+| — — — | in a line that is not a word | **言葉にならない並びの中** | in a run that is not a word | Agent 2026-10-06 |  |
+| — — — | typing across, {way} on the screen | **横に入力中、画面では{way}向き** | typing across, which is the {way} direction on the screen | Agent 2026-10-06 |  |
+| — — — | typing down, {way} on the screen | **縦に入力中、画面では{way}向き** | typing down, which is the {way} direction on the screen | Agent 2026-10-06 |  |
+| — — — | down | **下** | down | Agent 2026-10-06 |  |
+| — — — | left | **左** | left | Agent 2026-10-06 |  |
+| — — — | right | **右** | right | Agent 2026-10-06 |  |
+| — — — | up | **上** | up | Agent 2026-10-06 |  |
+| — — — | Wild, {glyph} | **ワイルド、{glyph}** | Wild, {glyph} | Agent 2026-10-06 |  |
+| — — — | Wild, unassigned | **ワイルド、未設定** | Wild, unassigned | Agent 2026-10-06 |  |
+| — — — | Double set | **ダブルセット** | Double set | Agent 2026-10-06 |  |
+| — — — | Length | **長さ** | Length | Agent 2026-10-06 |  |
+| — — — | Tiles | **枚数** | Tiles | Agent 2026-10-06 |  |
+| — — — | Wild at easy · medium · hard | **ワイルド（やさしい・ふつう・難しい）** | Wild at easy · medium · hard | Agent 2026-10-06 |  |
+| — — — | With the {classic}-tile hand. A Short game from the {quick}-tile hand is {quickShort} tiles. The Double set is two English sets together; Japanese plays one. | **手札が{classic}枚の場合です。手札が{quick}枚のとき、「短め」のゲームは{quickShort}枚です。ダブルセットは英語のセットを2つ合わせたもので、日本語は1セットで遊びます。** | With the {classic}-tile hand. A Short game from the {quick}-tile hand is {quickShort} tiles. The Double set is two English sets together; Japanese plays one. | Agent 2026-10-06 |  |
+| — — — | {glyph}, {count} in the set. Show every form it plays as. | **{glyph}、セットに{count}枚。この牌が表せるすべての形を見る。** | {glyph}, {count} in the set. Show every form it plays as. | Agent 2026-10-06 |  |
+| — — — | What {kana} plays as | **{kana}が表すもの** | What {kana} plays as | Agent 2026-10-06 |  |
+| — — — | {kana} plays as {count} kana, with nothing to choose: a line is a word if it spells one read any of these ways. | **{kana}は、{count}つのかなとして使われ、選ぶ必要はありません。これらのどの読み方で読んでも単語になるなら、その並びは単語です。** | {kana} plays as {count} kana, with nothing to choose: a line is a word if it spells one read any of these ways. | Agent 2026-10-06 |  |
+| — — — | {kana} plays as itself alone. | **{kana}は、そのままの形だけで使われます。** | {kana} plays as itself alone. | Agent 2026-10-06 |  |
+| — — — | The tiles | **タイル** | The tiles | Agent 2026-10-06 |  |
+| — — — | How many tiles a game takes | **ゲームに使うタイルの枚数** | How many tiles a game takes | Agent 2026-10-06 |  |
+| — — — | Japanese | **日本語** | Japanese | Agent 2026-10-06 |  |
+| — — — | The English set | **英語のセット** | The English set | Agent 2026-10-06 |  |
+| — — — | The Japanese set | **日本語のセット** | The Japanese set | Agent 2026-10-06 |  |
+| — — — | {total} tiles in {kinds}. The most is {commonest}, {most} of them; the hard ones are {rarest}, only one of each. | **{kinds}、全部で{total}枚です。いちばん多いのは{commonest}で{most}枚、難しいのは{rarest}で、どれも1枚だけです。** | {total} tiles in {kinds}. The most is {commonest}, {most} of them; the hard ones are {rarest}, only one of each. | Agent 2026-10-06 |  |
+| — — — | {total} tiles in {kinds}. The most is {commonest}, {most} of them; the hard ones are {rarest}, only {count} of each. | **{kinds}、全部で{total}枚です。いちばん多いのは{commonest}で{most}枚、難しいのは{rarest}で、どれも{count}枚だけです。** | {total} tiles in {kinds}. The most is {commonest}, {most} of them; the hard ones are {rarest}, only {count} of each. | Agent 2026-10-06 |  |
+| — — — | Pictures of it being played, and a hand to try, on the game's page → | **遊んでいる様子の写真と、試せる手札が、ゲームのページにあります →** | Pictures of it being played, and a hand to try, on the game's page → | Agent 2026-10-06 |  |
+| — — — | Which set of tiles | **タイルのセット** | Which set of tiles | Agent 2026-10-06 |  |
+| — — — | The wild tile stands in for some of a game's tiles, most at easy and none at hard: it is any kana you choose, and you can change your mind. | **ワイルドタイルは、ゲームのタイルの一部の代わりになります。やさしいレベルでいちばん多く、難しいレベルではありません。好きなかなを選べて、あとで選び直せます。** | The wild tile stands in for some of a game's tiles, most at easy and none at hard: it is any kana you choose, and you can change your mind. | Agent 2026-10-06 |  |
+| — — — | The wild tile stands in for some of a game's tiles, most at easy and none at hard: it is any letter you choose, and you can change your mind. | **ワイルドタイルは、ゲームのタイルの一部の代わりになります。やさしいレベルでいちばん多く、難しいレベルではありません。好きな文字を選べて、あとで選び直せます。** | The wild tile stands in for some of a game's tiles, most at easy and none at hard: it is any letter you choose, and you can change your mind. | Agent 2026-10-06 |  |
+| — — — | All back | **すべて手札へ** | All back | Agent 2026-10-06 |  |
+| — — — | Every tile is out of the bag. | **袋のタイルは、すべて出ました。** | Every tile is out of the bag. | Agent 2026-10-06 |  |
+| — — — | Draw | **引く** | Draw | Agent 2026-10-06 |  |
+| — — — | Your hand | **手札** | Your hand | Agent 2026-10-06 |  |
+| — — — | Hand used. | **手札を使いきりました。** | Hand used. | Agent 2026-10-06 |  |
+| — — — | Help is chosen on the set-up screen, before the game starts | **ヘルプは、ゲームを始める前に、設定の画面で選びます** | Help is chosen on the set-up screen, before the game starts | Agent 2026-10-06 |  |
+| — — — | Arrange your hand into a word | **手札を並べて、単語にします** | Arrange your hand into a word | Agent 2026-10-06 |  |
+| — — — | {count} in the bag | **袋に{count}枚** | {count} in the bag | Agent 2026-10-06 |  |
+| — — — | {tile} in your hand | **手札の{tile}** | {tile} in your hand | Agent 2026-10-06 |  |
+| — — — | Sort | **並べ替え** | Sort | Agent 2026-10-06 |  |
+| — — — | Start again | **もう一度はじめる** | Start again | Agent 2026-10-06 |  |
+| — — — | To hand | **手札へ** | To hand | Agent 2026-10-06 |  |
+| — — — | Trade | **交換** | Trade | Agent 2026-10-06 |  |
+| — — — | Give the chosen tile back and take {take} | **選んだタイルを返して、{take}枚取ります** | Give the chosen tile back and take {take} | Agent 2026-10-06 |  |
+| — — — | Tap a tile, then a square. Tap a tile on the table twice to send it back. | **タイルをタップして、マスをタップします。テーブルの上のタイルを2回タップすると、手札に戻ります。** | Tap a tile, then a square. Tap a tile on the table twice to send it back. | Agent 2026-10-06 |  |
+| — — — | The word list could not be fetched just now. Reload the page to try again. | **単語リストを今は取り込めませんでした。ページを読み込み直して、もう一度試してください。** | The word list could not be fetched just now. Reload the page to try again. | Agent 2026-10-06 |  |
+| — — — | Every tile is down in one crossword. That is a whole Kumimoji, {count} tiles long. | **すべてのタイルが、ひとつのクロスワードに置かれました。これで、{count}枚の組文字が1回分、完成です。** | Every tile is down in one crossword. That is a whole Kumimoji, {count} tiles long. | Agent 2026-10-06 |  |
+| — — — | Try a hand | **手札を試す** | Try a hand | Agent 2026-10-06 |  |
+| — — — | Tap a tile, then a square. Your first tap fetches the game's English word list, about {kb} KB, once; nothing is sent anywhere. | **タイルをタップして、マスをタップします。最初のタップで、このゲームの英語の単語リスト（約{kb} KB）を1回だけ取り込みます。どこにも送信されません。** | Tap a tile, then a square. Your first tap fetches the game's English word list, about {kb} KB, once; nothing is sent anywhere. | Agent 2026-10-06 |  |
+| — — — | Ten tiles: a hand of seven, and three more to draw. Lay them into one crossword, every line of two or more letters a word. | **タイルは10枚です。手札が7枚で、あと3枚を引きます。すべてをひとつのクロスワードに置き、2文字以上の並びは、すべて単語にします。** | Ten tiles: a hand of seven, and three more to draw. Lay them into one crossword, every line of two or more letters a word. | Agent 2026-10-06 |  |
+| — — — | Fetching the word list… | **単語リストを取り込んでいます…** | Fetching the word list… | Agent 2026-10-06 |  |
+| — — — | A real game is 40 tiles or more, against the clock → | **本物のゲームは、40枚以上のタイルを、時計と競って遊びます →** | A real game is 40 tiles or more, against the clock → | Agent 2026-10-06 |  |
+| — — — | Words on the table | **テーブルの上の単語** | Words on the table | Agent 2026-10-06 |  |
+| — — — | Done | **終わり** | Done | Agent 2026-10-06 |  |
+| — — — | Done, and go out | **終わりにして、あがる** | Done, and go out | Agent 2026-10-06 |  |
+| — — — | Your hand is used and your crossword is sound: press Done to go out. | **手札を使いきり、クロスワードも正しく並んでいます。「終わり」を押して、あがりましょう。** | Your hand is used and your crossword is sound: press Done to go out. | Agent 2026-10-06 |  |
+| — — — | Pass back | **渡し直す** | Pass back | Agent 2026-10-06 |  |
+| — — — | Resign, and play no more turns this game? | **投了して、このゲームの残りの番を打たないことにしますか？** | Resign, and play no more turns this game? | Agent 2026-10-06 |  |
+| — — — | Everybody else has resigned. Lay a tile on a sound crossword and press Done to win, or resign. | **ほかの全員が投了しました。正しいクロスワードにタイルを1枚置いて「終わり」を押せば勝ちです。投了することもできます。** | Everybody else has resigned. Lay a tile on a sound crossword and press Done to win, or resign. | Agent 2026-10-06 |  |
+| — — — | Traded: lay what you can or press Done. Your next trade is on your next turn. | **交換しました。置けるものを置くか、「終わり」を押してください。次の交換は、次の番にできます。** | Traded: lay what you can or press Done. Your next trade is on your next turn. | Agent 2026-10-06 |  |
+| — — — | No word in your hand: choose a tile and trade it for three first. | **手札に単語がありません。先にタイルを1枚選んで、3枚と交換してください。** | No word in your hand: choose a tile and trade it for three first. | Agent 2026-10-06 |  |
+| — — — | {name}’s turn | **{name}の番です** | {name}'s turn | Agent 2026-10-06 |  |
+| — — — | {name}’s turn, the last | **{name}の番です（最後の番）** | {name}'s turn, the last | Agent 2026-10-06 |  |
+| — — — | {name}’s turn, the last one standing | **{name}の番です（最後まで残っています）** | {name}'s turn, the last one standing | Agent 2026-10-06 |  |
+| — — — | Choose | **選ぶ** | Choose | Agent 2026-10-06 |  |
+| — — — | Choose reading | **読みを選ぶ** | Choose reading | Agent 2026-10-06 |  |
+| — — — | This wild tile is the kana | **このワイルドタイルは、次のかなです** | This wild tile is the kana | Agent 2026-10-06 |  |
+| — — — | This wild tile is the letter | **このワイルドタイルは、次の文字です** | This wild tile is the letter | Agent 2026-10-06 |  |
 | — — — | Astonishing | **驚いた** | I was astonished | Agent 2026-10-06 |  |
 | — — — | A beautiful game | **美しい対局** | A beautiful game | Agent 2026-10-06 |  |
 | — — — | Brilliant | **素晴らしい** | Wonderful | Agent 2026-10-06 |  |
@@ -1482,6 +1825,691 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Date | **日付** | Date | Agent 2026-10-06 |  |
 | — — — | No games yet. | **対局はまだありません。** | There are no games yet. | Agent 2026-10-06 |  |
 | — — — | {shown} of {total} games; the rest are on the site. | **{total}局のうち{shown}局です。残りはサイトで見られます。** | {shown} of {total} games; the rest can be seen on the site. | Agent 2026-10-06 |  |
+| — — — | Bigger boards, to {size} → | **大きい盤へ、{size}まで →** | Bigger boards, to {size} → | Agent 2026-10-06 |  |
+| — — — | The block after | **次のブロック** | The block after | Agent 2026-10-06 |  |
+| — — — | The block before | **前のブロック** | The block before | Agent 2026-10-06 |  |
+| — — — | Block {block} of {blocks} · levels {first}–{last} | **ブロック{block}／{blocks}・レベル{first}～{last}** | Block {block} of {blocks} · levels {first}–{last} | Agent 2026-10-06 |  |
+| — — — | {marks} of 5 | **5段階中の{marks}** | {marks} of 5 | Agent 2026-10-06 |  |
+| — — — | New: {things} | **新登場：{things}** | New: {things} | Agent 2026-10-06 |  |
+| — — — | {count} cell | **{count}マス** | {count} cell | Agent 2026-10-06 |  |
+| — — — | {count} peg | **{count}個の駒** | {count} peg | Agent 2026-10-06 |  |
+| — — — | {count} pegs | **{count}個の駒** | {count} pegs | Agent 2026-10-06 |  |
+| — — — | Level {level} is the first one you have not finished. | **まだ終えていない最初のレベルは、レベル{level}です。** | Level {level} is the first one you have not finished. | Agent 2026-10-06 |  |
+| — — — | Your solved levels are kept on your account. | **解いたレベルは、アカウントに保存されます。** | Your solved levels are kept on your account. | Agent 2026-10-06 |  |
+| — — — | Your solved levels are kept in this browser. Join, and they are kept on an account. | **解いたレベルは、このブラウザーに保存されます。参加すると、アカウントに保存されます。** | Your solved levels are kept in this browser. Join, and they are kept on an account. | Agent 2026-10-06 |  |
+| — — — | Level {level} is locked | **レベル{level}はロック中** | Level {level} is locked | Agent 2026-10-06 |  |
+| — — — | How many cells the maze has: the more there are, the more there is to look at, and the bigger ones are zoomed. | **迷路のマスの数です。多いほど見るところが増え、大きい迷路は拡大して遊びます。** | How many cells the maze has: the more there are, the more there is to look at, and the bigger ones are zoomed. | Agent 2026-10-06 |  |
+| — — — | A little maze in these colours | **この色の小さな迷路** | A little maze in these colours | Agent 2026-10-06 |  |
+| — — — | {says} This one scores {score}. | **{says}このレベルは{score}点です。** | {says} This one scores {score}. | Agent 2026-10-06 |  |
+| — — — | Colossal, about ten thousand cells: a square box, then a tall one | **超巨大：約1万マス。四角い箱のあと、縦長の箱** | Colossal: about ten thousand cells; a square box, then a tall box | Agent 2026-10-06 |  |
+| — — — | Over a solid: all three sizes of each together | **立体の上：どの立体も、3つのサイズをまとめて** | Over a solid: each solid's three sizes together | Agent 2026-10-06 |  |
+| — — — | Tall, for a phone held upright | **縦長：スマートフォンを縦に持って遊ぶ** | Tall: played with a phone held upright | Agent 2026-10-06 |  |
+| — — — | of {count} | **全{count}レベル** | of {count} levels in all | Agent 2026-10-06 |  |
+| — — — | Kind of board | **盤の種類** | Kind of board | Agent 2026-10-06 |  |
+| — — — | Size | **サイズ** | Size | Agent 2026-10-06 |  |
+| — — — | Solid | **立体** | Solid | Agent 2026-10-06 |  |
+| — — — | Pieces | **駒** | Pieces | Agent 2026-10-06 |  |
+| — — — | Arrows | **矢印** | Arrows | Agent 2026-10-06 |  |
+| — — — | Move the view down | **表示を下へ動かす** | Move the view down | Agent 2026-10-06 |  |
+| — — — | Hide the arrows | **矢印をかくす** | Hide the arrows | Agent 2026-10-06 |  |
+| — — — | Move the view left | **表示を左へ動かす** | Move the view left | Agent 2026-10-06 |  |
+| — — — | Move and zoom the table | **テーブルを動かす・拡大する** | Move and zoom the table | Agent 2026-10-06 |  |
+| — — — | Move the view right | **表示を右へ動かす** | Move the view right | Agent 2026-10-06 |  |
+| — — — | Show the arrows | **矢印を表示する** | Show the arrows | Agent 2026-10-06 |  |
+| — — — | Turn | **回す** | Turn | Agent 2026-10-06 |  |
+| — — — | Turn the table a quarter turn clockwise, keeping every tile upright | **すべてのタイルを立てたまま、テーブルを時計回りに4分の1回転させる** | Turn the table a quarter turn clockwise, keeping every tile upright | Agent 2026-10-06 |  |
+| — — — | Turn the table a quarter turn clockwise | **テーブルを時計回りに4分の1回転させる** | Turn the table a quarter turn clockwise | Agent 2026-10-06 |  |
+| — — — | Move the view up | **表示を上へ動かす** | Move the view up | Agent 2026-10-06 |  |
+| — — — | , {count} attempt | **、挑戦{count}回** | , {count} attempt | Agent 2026-10-06 |  |
+| — — — | , {count} attempts | **、挑戦{count}回** | , {count} attempts | Agent 2026-10-06 |  |
+| — — — | : best {time} | **：ベスト{time}** | : best {time} | Agent 2026-10-06 |  |
+| — — — | Levels {first} to {last} | **レベル{first}～{last}** | Levels {first} to {last} | Agent 2026-10-06 |  |
+| — — — | , locked | **、ロック中** | , locked | Agent 2026-10-06 |  |
+| — — — | : locked | **：ロック中** | : locked | Agent 2026-10-06 |  |
+| — — — | , next | **、次に遊ぶレベル** | , next | Agent 2026-10-06 |  |
+| — — — | , solved in {time} | **、{time}で解決済み** | , solved in {time} | Agent 2026-10-06 |  |
+| — — — | New | **新** | New | Agent 2026-10-06 |  |
+| — — — | Test | **試** | Test | Agent 2026-10-06 |  |
+| — — — | , teaches {words} | **、新しい考え方：{words}** | , teaches {words} | Agent 2026-10-06 |  |
+| — — — | , the block's test | **、ブロックのテスト** | , the block's test | Agent 2026-10-06 |  |
+| — — — | Play level {level}, the first one you have not finished | **まだ終えていない最初のレベル、レベル{level}を遊ぶ** | Play level {level}, the first one you have not finished | Agent 2026-10-06 |  |
+| — — — | Level {level} of {count} at {size}: locked until every level of block {block} is solved. | **{size}のレベル{level}（全{count}レベル）：ブロック{block}のレベルをすべて解くまで、ロックされています。** | Level {level} of {count} at {size}: locked until every level of block {block} is solved. | Agent 2026-10-06 |  |
+| — — — | Level {level} of {count} at {size}: not solved yet. | **{size}のレベル{level}（全{count}レベル）：まだ解いていません。** | Level {level} of {count} at {size}: not solved yet. | Agent 2026-10-06 |  |
+| — — — | Level {level} of {count} at {size}: solved, best {time}. | **{size}のレベル{level}（全{count}レベル）：解決済み、ベストは{time}です。** | Level {level} of {count} at {size}: solved, best {time}. | Agent 2026-10-06 |  |
+| — — — | Level {level} of {count} at {size}: {board}, {goal}. Not solved yet. | **{size}のレベル{level}（全{count}レベル）：{board}、{goal}。まだ解いていません。** | Level {level} of {count} at {size}: {board}, {goal}. Not solved yet. | Agent 2026-10-06 |  |
+| — — — | Level {level} of {count} at {size}: {board}, {goal}. Solved, best {time}. | **{size}のレベル{level}（全{count}レベル）：{board}、{goal}。解決済み、ベストは{time}です。** | Level {level} of {count} at {size}: {board}, {goal}. Solved, best {time}. | Agent 2026-10-06 |  |
+| — — — | Level {level} at {size} opens when every level in block {block} (levels {first}–{last}) is solved. | **{size}のレベル{level}は、ブロック{block}（レベル{first}～{last}）のレベルをすべて解くと開きます。** | Level {level} at {size} opens when every level in block {block} (levels {first}–{last}) is solved. | Agent 2026-10-06 |  |
+| — — — | ← Smaller boards, from {size} | **← 小さい盤へ、{size}から** | ← Smaller boards, from {size} | Agent 2026-10-06 |  |
+| — — — | Start level {level} | **レベル{level}を始める** | Start level {level} | Agent 2026-10-06 |  |
+| — — — | {where}: bare ground | **{where}：空き地** | {where}: bare ground | Agent 2026-10-06 |  |
+| — — — | part of a big piece, turns with it | **大きな駒の一部で、いっしょに回る** | part of a big piece, and turns together with it | Agent 2026-10-06 |  |
+| — — — | turns with its block | **ブロックといっしょに回る** | turns with its block | Agent 2026-10-06 |  |
+| — — — | Suido board, {width} by {height} | **水道の盤、{width}×{height}** | Suido board, {width} by {height} | Agent 2026-10-06 |  |
+| — — — | {where}: cross piece | **{where}：十字の駒** | {where}: a cross-shaped piece | Agent 2026-10-06 |  |
+| — — — | drain | **排水口** | drain | Agent 2026-10-06 |  |
+| — — — | east | **東** | east | Agent 2026-10-06 |  |
+| — — — | {where}: elbow piece | **{where}：曲がりの駒** | {where}: an elbow piece | Agent 2026-10-06 |  |
+| — — — | {where}: end piece | **{where}：行き止まりの駒** | {where}: a dead-end piece | Agent 2026-10-06 |  |
+| — — — | locked | **固定** | locked | Agent 2026-10-06 |  |
+| — — — | north | **北** | north | Agent 2026-10-06 |  |
+| — — — | open {sides} | **{sides}が開いている** | open on the {sides} | Agent 2026-10-06 |  |
+| — — — | pump | **ポンプ** | pump | Agent 2026-10-06 |  |
+| — — — | south | **南** | south | Agent 2026-10-06 |  |
+| — — — | {where}: straight piece | **{where}：直線の駒** | {where}: a straight piece | Agent 2026-10-06 |  |
+| — — — | {where}: T piece | **{where}：T字の駒** | {where}: a T-shaped piece | Agent 2026-10-06 |  |
+| — — — | west | **西** | west | Agent 2026-10-06 |  |
+| — — — | {what}: {done} of {count} solved. | **{what}：{count}レベル中、{done}レベルを解きました。** | {what}: {done} of {count} levels solved. | Agent 2026-10-06 |  |
+| — — — | {what}: {done} of {count} solved. Each block of 16 opens when the one before it is all solved. | **{what}：{count}レベル中、{done}レベルを解きました。16レベルのブロックは、ひとつ前のブロックをすべて解くと開きます。** | {what}: {done} of {count} levels solved. Each block of 16 levels opens when the one before it is all solved. | Agent 2026-10-06 |  |
+| — — — | The jumps | **ジャンプの操作** | Controls for the jumps | Agent 2026-10-06 |  |
+| — — — | The line | **線の操作** | Controls for the line | Agent 2026-10-06 |  |
+| — — — | {name} board | **{name}の盤** | {name} board | Agent 2026-10-06 |  |
+| — — — | The board this level is played on. | **このレベルを遊ぶ盤です。** | The board this level is played on. | Agent 2026-10-06 |  |
+| — — — | goal | **ゴール** | goal | Agent 2026-10-06 |  |
+| — — — | The hole the last peg has to be in: it is drawn with a dashed ring. | **最後の駒が入る穴です。破線の輪で描かれています。** | The hole the last peg has to be in: it is drawn with a dashed ring. | Agent 2026-10-06 |  |
+| — — — | Empty hole {x}, {y} | **{y}行{x}列の空の穴** | the empty hole at row {y}, column {x} | Agent 2026-10-06 |  |
+| — — — | can be jumped to | **ここへ跳べる** | can be jumped to from here | Agent 2026-10-06 |  |
+| — — — | Peg {x}, {y} | **{y}行{x}列の駒** | the peg at row {y}, column {x} | Agent 2026-10-06 |  |
+| — — — | How many pegs the level starts with. Each jump takes one, so it takes one jump fewer than that to leave one peg. | **このレベルを始めるときの駒の数です。ジャンプのたびに1個減るので、駒を1個にするには、これより1回少ないジャンプですみます。** | How many pegs the level starts with. Each jump takes one, so it takes one jump fewer than that to leave one peg. | Agent 2026-10-06 |  |
+| — — — | Every pair is joined; {count} cell is still empty. | **すべての組がつながりました。空いているマスは、あと{count}マスです。** | Every pair is joined; {count} cell is still empty. | Agent 2026-10-06 |  |
+| — — — | Every pair is joined; {count} cells are still empty. | **すべての組がつながりました。空いているマスは、あと{count}マスです。** | Every pair is joined; {count} cells are still empty. | Agent 2026-10-06 |  |
+| — — — | · {count} attempt | **・{count}回目の挑戦** | · attempt {count} | Agent 2026-10-06 |  |
+| — — — | · {count} attempts | **・挑戦{count}回** | · {count} attempts | Agent 2026-10-06 |  |
+| — — — | Blast! A line was wiped, and the one beside it cut back to half. | **ドカン！線が1本消え、隣の線は半分まで短くなりました。** | Blast! A line was wiped, and the one beside it cut back to half. | Agent 2026-10-06 |  |
+| — — — | Boom! A line was cut back to half. | **ボン！線が1本、半分まで短くなりました。** | Boom! A line was cut back to half. | Agent 2026-10-06 |  |
+| — — — | An explosion in {count} stroke. | **あと{count}回線を引くと、爆発します。** | An explosion in {count} stroke. | Agent 2026-10-06 |  |
+| — — — | An explosion in {count} strokes. | **あと{count}回線を引くと、爆発します。** | An explosion in {count} strokes. | Agent 2026-10-06 |  |
+| — — — | The next stroke sets off an explosion. | **次に線を引くと、爆発します。** | The next stroke sets off an explosion. | Agent 2026-10-06 |  |
+| — — — | blocked | **通れない** | cannot be passed | Agent 2026-10-06 |  |
+| — — — | bridge | **橋** | bridge | Agent 2026-10-06 |  |
+| — — — | line {n} | **線{n}** | line {n} | Agent 2026-10-06 |  |
+| — — — | marble {n} | **玉{n}** | marble {n} | Agent 2026-10-06 |  |
+| — — — | portal {mark} | **ポータル{mark}** | portal {mark} | Agent 2026-10-06 |  |
+| — — — | waypoint for line {n} | **線{n}の経由点** | waypoint for line {n} | Agent 2026-10-06 |  |
+| — — — | Cheating | **ズル** | Cheating | Agent 2026-10-06 |  |
+| — — — | Allow cheating | **ズルを許す** | Allow cheating | Agent 2026-10-06 |  |
+| — — — | No cheating | **ズルなし** | No cheating | Agent 2026-10-06 |  |
+| — — — | Draws one unfinished line. A solve that used it scores no points. | **未完成の線を1本引きます。使って解くと、得点はありません。** | Draws one unfinished line. A solve that used it scores no points. | Agent 2026-10-06 |  |
+| — — — | Cheat draws one unfinished line. A level solved with Cheat counts, but scores no points and is not on the fastest table. | **ズルは、未完成の線を1本引きます。ズルを使って解いたレベルは、記録には数えられますが、得点はなく、最速の表にも載りません。** | Cheat draws one unfinished line. A level solved with Cheat counts, but scores no points and is not on the fastest table. | Agent 2026-10-06 |  |
+| — — — | A level solved with explosions off counts, but scores no points and is not on the fastest table; with explosions off, it does not open the next block. | **爆発をなしにして解いたレベルは、記録には数えられますが、得点はなく、最速の表にも載りません。爆発なしでは、次のブロックも開きません。** | A level solved with explosions off counts, but scores no points and is not on the fastest table; with explosions off, it does not open the next block. | Agent 2026-10-06 |  |
+| — — — | Cheat draws one unfinished line. A level solved with explosions off or Cheat counts, but scores no points and is not on the fastest table; with explosions off, it does not open the next block. | **ズルは、未完成の線を1本引きます。爆発をなしにするかズルを使って解いたレベルは、記録には数えられますが、得点はなく、最速の表にも載りません。爆発なしでは、次のブロックも開きません。** | Cheat draws one unfinished line. A level solved with explosions off or Cheat counts, but scores no points and is not on the fastest table; with explosions off, it does not open the next block. | Agent 2026-10-06 |  |
+| — — — | A level solved with explosions softened counts, but scores no points and is not on the fastest table. | **爆発を弱めて解いたレベルは、記録には数えられますが、得点はなく、最速の表にも載りません。** | A level solved with explosions softened counts, but scores no points and is not on the fastest table. | Agent 2026-10-06 |  |
+| — — — | Cheat draws one unfinished line. A level solved with explosions softened or Cheat counts, but scores no points and is not on the fastest table. | **ズルは、未完成の線を1本引きます。爆発を弱めるかズルを使って解いたレベルは、記録には数えられますが、得点はなく、最速の表にも載りません。** | Cheat draws one unfinished line. A level solved with explosions softened or Cheat counts, but scores no points and is not on the fastest table. | Agent 2026-10-06 |  |
+| — — — | Off | **なし** | Off | Agent 2026-10-06 |  |
+| — — — | Normal | **ふつう** | Normal | Agent 2026-10-06 |  |
+| — — — | Softer | **弱め** | Softer | Agent 2026-10-06 |  |
+| — — — | Explosions | **爆発** | Explosions | Agent 2026-10-06 |  |
+| — — — | Explosions, on the levels that have them | **爆発（爆発のあるレベルで）** | Explosions, on the levels that have them | Agent 2026-10-06 |  |
+| — — — | Marbles | **玉** | Marbles | Agent 2026-10-06 |  |
+| — — — | Fill each line with | **線の中身** | Fill each line with | Agent 2026-10-06 |  |
+| — — — | Press a marble and drag to its partner. Drag back to shorten a line; tap a marble to clear it. | **玉を押して、相手の玉までドラッグします。戻るようにドラッグすると線が短くなり、玉をタップすると線が消えます。** | Press a marble and drag to its partner. Drag back to shorten a line; tap a marble to clear it. | Agent 2026-10-06 |  |
+| — — — | Join by | **つなぎ方** | Join by | Agent 2026-10-06 |  |
+| — — — | Every pair joined; {count} cell is still empty. | **すべての組がつながりました。空いているマスは、あと{count}マスです。** | Every pair joined; {count} cell is still empty. | Agent 2026-10-06 |  |
+| — — — | Every pair joined; {count} cells are still empty. | **すべての組がつながりました。空いているマスは、あと{count}マスです。** | Every pair joined; {count} cells are still empty. | Agent 2026-10-06 |  |
+| — — — | Levels | **レベルの種類** | Levels | Agent 2026-10-06 |  |
+| — — — | Colours | **色** | Colours | Agent 2026-10-06 |  |
+| — — — | Numbers | **数字** | Numbers | Agent 2026-10-06 |  |
+| — — — | Move and zoom the board | **盤を動かす・拡大する** | Move and zoom the board | Agent 2026-10-06 |  |
+| — — — | Cheat has been used: a solve counts, but scores no points. | **ズルを使いました。解いた記録には数えられますが、得点はありません。** | Cheat has been used: a solve counts, but scores no points. | Agent 2026-10-06 |  |
+| — — — | Explosions are off, as chosen at set-up: a solve counts, scores no points and does not open the next block. | **設定のとおり、爆発はなしです。解いた記録には数えられますが、得点はなく、次のブロックも開きません。** | Explosions are off, as chosen at set-up: a solve counts, scores no points and does not open the next block. | Agent 2026-10-06 |  |
+| — — — | Explosions are softened, as chosen at set-up: a solve counts, but scores no points. | **設定のとおり、爆発は弱めです。解いた記録には数えられますが、得点はありません。** | Explosions are softened, as chosen at set-up: a solve counts, but scores no points. | Agent 2026-10-06 |  |
+| — — — | Explosions are softened, as chosen at set-up, and Cheat has been used: a solve counts, but scores no points. | **設定のとおり、爆発は弱めで、ズルも使いました。解いた記録には数えられますが、得点はありません。** | Explosions are softened, as chosen at set-up, and Cheat has been used: a solve counts, but scores no points. | Agent 2026-10-06 |  |
+| — — — | {count} pair is not joined yet: its marbles are flashing. | **まだつながっていない組が{count}組あります。その玉が点滅しています。** | {count} pair is not joined yet: its marbles are flashing. | Agent 2026-10-06 |  |
+| — — — | {count} pairs are not joined yet: their marbles are flashing. | **まだつながっていない組が{count}組あります。その玉が点滅しています。** | {count} pairs are not joined yet: their marbles are flashing. | Agent 2026-10-06 |  |
+| — — — | Out of strokes. Restart to try again. | **線を引ける回数を使い切りました。やり直して、もう一度挑戦してください。** | Out of strokes. Restart to try again. | Agent 2026-10-06 |  |
+| — — — | {joined} of {pairs} joined · {percent}% of the board | **{pairs}組中、{joined}組がつながっています・盤の{percent}％** | {joined} of {pairs} pairs joined · {percent}% of the board | Agent 2026-10-06 |  |
+| — — — | Restart plays it again from an empty board. | **「最初からやり直す」を押すと、空の盤からもう一度遊べます。** | Restart plays it again from an empty board. | Agent 2026-10-06 |  |
+| — — — | Restart plays it again from an empty board; it will be attempt {count}. | **「最初からやり直す」を押すと、空の盤からもう一度遊べます。{count}回目の挑戦になります。** | Restart plays it again from an empty board; it will be attempt {count}. | Agent 2026-10-06 |  |
+| — — — | Classic | **定番** | Classic | Agent 2026-10-06 |  |
+| — — — | Portals | **ポータル** | Portals | Agent 2026-10-06 |  |
+| — — — | {size}×{size} portals | **ポータルの{size}×{size}** | {size}×{size} portals | Agent 2026-10-06 |  |
+| — — — | You have solved this level. This is your finished board. | **このレベルは解決済みです。これは、完成した盤です。** | You have solved this level. This is your finished board. | Agent 2026-10-06 |  |
+| — — — | You have solved this level, at best in {time}. This is your finished board. | **このレベルは解決済みで、ベストは{time}です。これは、完成した盤です。** | You have solved this level, at best in {time}. This is your finished board. | Agent 2026-10-06 |  |
+| — — — | {left} of {count} stroke left. | **線を引けるのは、あと{left}回（全{count}回）です。** | {left} more strokes allowed (of {count} in all). | Agent 2026-10-06 |  |
+| — — — | {left} of {count} strokes left. | **線を引けるのは、あと{left}回（全{count}回）です。** | {left} more strokes allowed (of {count} in all). | Agent 2026-10-06 |  |
+| — — — | {size}×{size} with portals | **ポータルありの{size}×{size}** | {size}×{size} with portals | Agent 2026-10-06 |  |
+| — — — | Whole board | **盤全体** | Whole board | Agent 2026-10-06 |  |
+| — — — | Zoom the board | **盤を拡大・縮小する** | Zoom the board | Agent 2026-10-06 |  |
+| — — — | Zoom | **拡大と縮小** | Zoom | Agent 2026-10-06 |  |
+| — — — | Zoom in | **拡大する** | Zoom in | Agent 2026-10-06 |  |
+| — — — | Zoom out | **縮小する** | Zoom out | Agent 2026-10-06 |  |
+| — — — | {game} board, {size} by {size} | **{game}の盤、{size}×{size}** | {game} board, {size} by {size} | Agent 2026-10-06 |  |
+| — — — | Checks | **チェック** | Checks | Agent 2026-10-06 |  |
+| — — — | {name} keeps its own measure of how you did, so it is played with no clock. | **{name}は、成績を自分のやり方で測るので、時計なしで遊びます。** | {name} keeps its own measure of how you did, so it is played with no clock. | Agent 2026-10-06 |  |
+| — — — | Guesses | **予想** | Guesses | Agent 2026-10-06 |  |
+| — — — | Moves | **手** | Moves | Agent 2026-10-06 |  |
+| — — — | Points | **点** | Points | Agent 2026-10-06 |  |
+| — — — | Replay | **再生** | Replay | Agent 2026-10-06 |  |
+| — — — | Swaps | **入れ替え** | Swaps | Agent 2026-10-06 |  |
+| — — — | Time | **時間** | Time | Agent 2026-10-06 |  |
+| — — — | When | **いつ** | When | Agent 2026-10-06 |  |
+| — — — | The site could not be reached. | **サイトにつながりません。** | The site could not be reached. | Agent 2026-10-06 |  |
+| — — — | Play | **遊ぶ** | Play | Agent 2026-10-06 |  |
+| — — — | Set up | **設定** | Set up | Agent 2026-10-06 |  |
+| — — — | Any size | **どのサイズでも** | Any size | Agent 2026-10-06 |  |
+| — — — | Every size and level → | **すべてのサイズとレベル →** | Every size and level → | Agent 2026-10-06 |  |
+| — — — | Every solve at this size and level, fastest first | **このサイズとレベルのすべての解答を、速い順に** | Every solve at this size and level, fastest first | Agent 2026-10-06 |  |
+| — — — | · every solve → | **· すべての解答 →** | · every solve → | Agent 2026-10-06 |  |
+| — — — | Fastest solves | **最速の解答** | Fastest solves | Agent 2026-10-06 |  |
+| — — — | head start | **先手** | head start | Agent 2026-10-06 |  |
+| — — — | hints | **ヒント** | hints | Agent 2026-10-06 |  |
+| — — — | Nobody has solved this here yet. | **ここでは、まだ誰も解いていません。** | Nobody has solved this here yet. | Agent 2026-10-06 |  |
+| — — — | nobody yet on the {clock} — be the first | **{clock}では、まだ誰もいません。最初の一人になりましょう** | nobody yet on the {clock} — be the first | Agent 2026-10-06 |  |
+| — — — | nobody yet — be the first | **まだ誰もいません。最初の一人になりましょう** | nobody yet — be the first | Agent 2026-10-06 |  |
+| — — — | Replay ▸ | **再生 ▸** | Replay ▸ | Agent 2026-10-06 |  |
+| — — — | Reading about {title} is open to anybody. Who is fastest at it is the playing half of this site, and that needs an invite. | **{title}について読むのは、誰でもできます。誰がいちばん速いかは、このサイトの遊ぶ側のことで、招待が必要です。** | Reading about {title} is open to anybody. Who is fastest at it is the playing half of this site, and that needs an invite. | Agent 2026-10-06 |  |
+| — — — | Watch this solve again, step by step | **この解答を1手ずつ見直す** | Watch this solve again, step by step | Agent 2026-10-06 |  |
+| — — — | Free | **フリー** | Free | Agent 2026-10-06 |  |
+| — — — | Any word may be guessed, whatever the last ones found. | **どの単語でも予想できます。直前に見つかった文字は関係ありません。** | Any word may be guessed, whatever the last ones found. | Agent 2026-10-06 |  |
+| — — — | Starting with a friend needs an account. | **友だちと始めるには、アカウントが必要です。** | Starting with a friend needs an account. | Agent 2026-10-06 |  |
+| — — — | Full rules of {title} | **{title}の規則をすべて見る** | Full rules of {title} | Agent 2026-10-06 |  |
+| — — — | More on this game | **このゲームについて** | More on this game | Agent 2026-10-06 |  |
+| — — — | Our version of {name}. | **「{name}」を元にした、このサイトの版です。** | Our version of "{name}". | Agent 2026-10-06 |  |
+| — — — | Past daily words | **過去の毎日の言葉** | Past words of the day | Agent 2026-10-06 |  |
+| — — — | A {title} puzzle part way through | **途中まで進んだ{title}のパズル** | A {title} puzzle part way through | Agent 2026-10-06 |  |
+| — — — | Today's deal → | **今日の配札 →** | Today's deal → | Agent 2026-10-06 |  |
+| — — — | Today's puzzle → | **今日のパズル →** | Today's puzzle → | Agent 2026-10-06 |  |
+| — — — | Your words | **自分の言葉** | Your words | Agent 2026-10-06 |  |
+| — — — | Hints | **ヒントあり** | Hints | Agent 2026-10-06 |  |
+| — — — | How the grid is drawn | **盤の描き方** | How the grid is drawn | Agent 2026-10-06 |  |
+| — — — | Level | **レベル** | Level | Agent 2026-10-06 |  |
+| — — — | Fastest on level {level} | **レベル{level}の最速** | Fastest on level {level} | Agent 2026-10-06 |  |
+| — — — | Nobody has solved level {level} at {where} yet. The first time here is the one to beat. | **{where}のレベル{level}は、まだ誰も解いていません。ここでの最初のタイムが、超える相手になります。** | Nobody has solved level {level} at {where} yet. The first time here is the one to beat. | Agent 2026-10-06 |  |
+| — — — | everybody's solves | **全員の解答** | everybody's solves | Agent 2026-10-06 |  |
+| — — — | fastest here | **ここでの最速** | fastest here | Agent 2026-10-06 |  |
+| — — — | just mine | **自分の分だけ** | just mine | Agent 2026-10-06 |  |
+| — — — | play one | **1問遊ぶ** | play one | Agent 2026-10-06 |  |
+| — — — | your solves | **自分の解答** | your solves | Agent 2026-10-06 |  |
+| — — — | {size} against {other} | **{size}、相手は{other}** | {size} against {other} | Agent 2026-10-06 |  |
+| — — — | in a race | **競走で** | in a race | Agent 2026-10-06 |  |
+| — — — | This page lists your own solves, and it does not know who you are yet. | **このページには自分の解答が並びますが、まだ誰なのか分かりません。** | This page lists your own solves, and it does not know who you are yet. | Agent 2026-10-06 |  |
+| — — — | Your solves of it, newest first, and your races. | **自分の解答が新しい順に、そして競走が並びます。** | Your solves of it, newest first, and your races. | Agent 2026-10-06 |  |
+| — — — | Every word you have played, found or not, with your guesses and what each scored. | **遊んだ単語がすべて、見つけたかどうかにかかわらず、予想と点数つきで並びます。** | Every word you have played, found or not, with your guesses and what each scored. | Agent 2026-10-06 |  |
+| — — — | nobody won | **勝者なし** | nobody won | Agent 2026-10-06 |  |
+| — — — | nobody yet | **まだ誰もいません** | nobody yet | Agent 2026-10-06 |  |
+| — — — | None yet. | **まだありません。** | None yet. | Agent 2026-10-06 |  |
+| — — — | not over | **まだ終わっていません** | not over | Agent 2026-10-06 |  |
+| — — — | Play a friend → | **友だちと遊ぶ →** | Play a friend → | Agent 2026-10-06 |  |
+| — — — | Play one → | **1問遊ぶ →** | Play one → | Agent 2026-10-06 |  |
+| — — — | they won | **負け** | they won | Agent 2026-10-06 |  |
+| — — — | Your races | **競解** | Your races | Agent 2026-10-06 |  |
+| — — — | Your solves | **自分の解** | Your solves | Agent 2026-10-06 |  |
+| — — — | you won | **勝ち** | you won | Agent 2026-10-06 |  |
+| — — — | All levels | **すべてのレベル** | All levels | Agent 2026-10-06 |  |
+| — — — | Carry on with {name} | **{name}を続ける** | Carry on with {name} | Agent 2026-10-06 |  |
+| — — — | one check | **チェック1回** | one check | Agent 2026-10-06 |  |
+| — — — | {count} checks | **チェック{count}回** | {count} checks | Agent 2026-10-06 |  |
+| — — — | {countdown}, {time} left | **{countdown}、残り{time}** | {countdown}, {time} left | Agent 2026-10-06 |  |
+| — — — | hints | **ヒントあり** | hints | Agent 2026-10-06 |  |
+| — — — | no help | **補助なし** | no help | Agent 2026-10-06 |  |
+| — — — | Your {name}, finished {ago}, as it ended | **自分の{name}（{ago}に終了）、終わったときのまま** | Your {name}, finished {ago}, as it ended | Agent 2026-10-06 |  |
+| — — — | points | **点** | points | Agent 2026-10-06 |  |
+| — — — | a race against  | **競走の相手は** | a race against  | Agent 2026-10-06 |  |
+| — — — | Race at {name} | **{name}の競走** | Race at {name} | Agent 2026-10-06 |  |
+| — — — | {time} so far | **{time}経過** | {time} so far | Agent 2026-10-06 |  |
+| — — — | somebody | **誰か** | somebody | Agent 2026-10-06 |  |
+| — — — | strict | **ストリクト** | strict | Agent 2026-10-06 |  |
+| — — — | guesses | **予想** | guesses | Agent 2026-10-06 |  |
+| — — — | moves | **手** | moves | Agent 2026-10-06 |  |
+| — — — | swaps | **入れ替え** | swaps | Agent 2026-10-06 |  |
+| — — — | , waiting on you | **、こちらの番です** | , waiting on you | Agent 2026-10-06 |  |
+| — — — | A {size}×{size} has no {level} puzzle to make | **{size}×{size}には、{level}のパズルはありません** | A {size}×{size} has no {level} puzzle to make | Agent 2026-10-06 |  |
+| — — — | Not offered at {size} | **{size}では選べません** | Not offered at {size} | Agent 2026-10-06 |  |
+| — — — | Options | **設定** | Options | Agent 2026-10-06 |  |
+| — — — | {cell} for each end of every bridge the answer has — every island's number, added up — and −{help} a Check or Hint. Your best of each puzzle counts. | **答えにあるすべての橋の端1つにつき{cell}点（つまり、すべての島の数字の合計）、チェックかヒント1回につき−{help}点です。パズルごとに、いちばんよい記録が数えられます。** | {cell} for each end of every bridge the answer has — every island's number, added up — and −{help} a Check or Hint. Your best of each puzzle counts. | Agent 2026-10-06 |  |
+| — — — | {cell} for every card brought home, so every deal won scores {total}. Your best of each deal counts. | **組札に上がったカード1枚につき{cell}点なので、勝った配りは{total}点になります。配りごとに、いちばんよい記録が数えられます。** | {cell} for every card brought home, so every deal won scores {total}. Your best of each deal counts. | Agent 2026-10-06 |  |
+| — — — | {cell} a cell you fill, −{help} a Check or Hint. Your best of each puzzle counts. | **埋めたマス1つにつき{cell}点、チェックかヒント1回につき−{help}点です。パズルごとに、いちばんよい記録が数えられます。** | {cell} a cell you fill, −{help} a Check or Hint. Your best of each puzzle counts. | Agent 2026-10-06 |  |
+| — — — | Every letter you find scores, more the sooner and more in its place; the word itself more the bigger the board, and more for guesses left and speed. A word not found still scores its letters, and a head start costs {help}. Your best of each word counts. | **見つけた文字ごとに点が入ります。早いほど、正しい場所にあるほど多く入ります。単語そのものは、盤が大きいほど、残った予想が多いほど、速いほど多くなります。見つけられなかった単語でも、文字の点は入り、先手には{help}点かかります。単語ごとに、いちばんよい記録が数えられます。** | Every letter you find scores, more the sooner and more in its place; the word itself more the bigger the board, and more for guesses left and speed. A word not found still scores its letters, and a head start costs {help}. Your best of each word counts. | Agent 2026-10-06 |  |
+| — — — | The solves these points were made of | **この点のもとになった解答** | The solves these points were made of | Agent 2026-10-06 |  |
+| — — — | {cell} a tile you take, −{help} a Hint. Your best of each deal counts. | **取った牌1枚につき{cell}点、ヒント1回につき−{help}点です。配りごとに、いちばんよい記録が数えられます。** | {cell} a tile you take, −{help} a Hint. Your best of each deal counts. | Agent 2026-10-06 |  |
+| — — — | {cell} for every cell of the grid the answer decides, and −{help} a Check or Hint. Your best of each puzzle counts. | **答えが決める盤のマス1つにつき{cell}点、チェックかヒント1回につき−{help}点です。パズルごとに、いちばんよい記録が数えられます。** | {cell} for every cell of the grid the answer decides, and −{help} a Check or Hint. Your best of each puzzle counts. | Agent 2026-10-06 |  |
+| — — — | {cell} for every square of the grid, each one decided, shaded or empty, and −{help} a Check or Hint. Your best of each puzzle counts. | **盤のマス1つにつき{cell}点（塗るか空にするかが、どれも決まっています）、チェックかヒント1回につき−{help}点です。パズルごとに、いちばんよい記録が数えられます。** | {cell} for every square of the grid, each one decided, shaded or empty, and −{help} a Check or Hint. Your best of each puzzle counts. | Agent 2026-10-06 |  |
+| — — — | Reading about {title} is open to anybody. Who leads at it is the playing half of this site, and that needs an invite. | **{title}について読むのは、誰でもできます。誰がリードしているかは、このサイトの遊ぶ側のことで、招待が必要です。** | Reading about {title} is open to anybody. Who leads at it is the playing half of this site, and that needs an invite. | Agent 2026-10-06 |  |
+| — — — | {cell} for every card of both decks put into a run, so every deal won scores {total}. Your best of each deal counts. | **2組のカードのうち、並びに入ったカード1枚につき{cell}点なので、勝った配りは{total}点になります。配りごとに、いちばんよい記録が数えられます。** | {cell} for every card of both decks put into a run, so every deal won scores {total}. Your best of each deal counts. | Agent 2026-10-06 |  |
+| — — — | {cell} for every piece of pipe on the board, −{help} a Hint. Your best of each board counts. | **盤のパイプの部品1つにつき{cell}点、ヒント1回につき−{help}点です。盤ごとに、いちばんよい記録が数えられます。** | {cell} for every piece of pipe on the board, −{help} a Hint. Your best of each board counts. | Agent 2026-10-06 |  |
+| — — — | {cell} for every jump of a level's shortest way, so {sizes} points for a short, a medium or a long level. A level has no Check or Hint. Your best of each level counts. | **レベルのいちばん短い手順の跳び1回につき{cell}点なので、短い、中くらい、長いレベルで、{sizes}点です。レベルにチェックとヒントはありません。レベルごとに、いちばんよい記録が数えられます。** | {cell} for every jump of a level's shortest way, so {sizes} points for a short, a medium or a long level. A level has no Check or Hint. Your best of each level counts. | Agent 2026-10-06 |  |
+| — — — | The whole board → | **番付のすべて →** | The whole board → | Agent 2026-10-06 |  |
+| — — — | a buddy | **バディ** | a buddy | Agent 2026-10-06 |  |
+| — — — | one check each | **チェックは1人1回まで** | one check each | Agent 2026-10-06 |  |
+| — — — | {count} checks each | **チェックは1人{count}回まで** | {count} checks each | Agent 2026-10-06 |  |
+| — — — | The clock runs from Start until your grid is right, in one sitting. | **時計は、「スタート」から、盤が正解になるまで、1回の挑戦のあいだ進みます。** | The clock runs from Start until your grid is right, in one sitting. | Agent 2026-10-06 |  |
+| — — — | Race | **競争** | Race | Agent 2026-10-06 |  |
+| — — — | the faster correct solve wins. | **先に正解した人の勝ちです。** | the faster correct solve wins. | Agent 2026-10-06 |  |
+| — — — | Gave up: the sitting ran out with no finish. | **あきらめました。時間切れで、完走できませんでした。** | Gave up: the sitting ran out with no finish. | Agent 2026-10-06 |  |
+| — — — | The guest | **相手** | The guest | Agent 2026-10-06 |  |
+| — — — | The host | **主催者** | The host | Agent 2026-10-06 |  |
+| — — — | Race me at {game}: {url} | **{game}で競争しよう：{url}** | Race me at {game}: {url} | Agent 2026-10-06 |  |
+| — — — | A race is between two members, and this sign-in has no member account, so the seat was not taken. | **競争はメンバー2人のあいだで行います。このサインインにはメンバーのアカウントがないため、席には着けませんでした。** | A race is between two members, and this sign-in has no member account, so the seat was not taken. | Agent 2026-10-06 |  |
+| — — — | Nobody has taken it yet. | **まだ誰も座っていません。** | Nobody has taken it yet. | Agent 2026-10-06 |  |
+| — — — | The site could not offer the race. | **サイトが、競争を提案できませんでした。** | The site could not offer the race. | Agent 2026-10-06 |  |
+| — — — | The site could not be reached. | **サイトにつながりませんでした。** | The site could not be reached. | Agent 2026-10-06 |  |
+| — — — | The site could not start your clock. | **時計を始められませんでした。** | The clock could not be started. | Agent 2026-10-06 |  |
+| — — — | Not over yet. | **まだ終わっていません。** | Not over yet. | Agent 2026-10-06 |  |
+| — — — | Not started. | **まだ始まっていません。** | Not started. | Agent 2026-10-06 |  |
+| — — — | This race is between the two people above. Start one of your own from {setup}. | **この競争は、上の2人のあいだのものです。自分の競争は、{setup}から始めてください。** | This race is between the two people above. Start one of your own from {setup}. | Agent 2026-10-06 |  |
+| — — — | Offered to {name} | **{name}に提案中** | Offered to {name} | Agent 2026-10-06 |  |
+| — — — | Offering… | **提案しています…** | Offering… | Agent 2026-10-06 |  |
+| — — — | Offer it instead | **代わりに提案する** | Offer it instead | Agent 2026-10-06 |  |
+| — — — | Or offer it to a buddy | **またはバディに提案する** | Or offer it to a buddy | Agent 2026-10-06 |  |
+| — — — | Or offer it to a buddy by name, once you have one: add them from their page. | **バディができたら、名前を選んで、そのバディに提案することもできます。バディは、その人のページから加えます。** | Or offer it to a buddy by name, once you have one: add them from their page. | Agent 2026-10-06 |  |
+| — — — | Offer the seat | **席を提案する** | Offer the seat | Agent 2026-10-06 |  |
+| — — — | The other seat, still open | **もう1つの席は、まだ空いています** | The other seat, still open | Agent 2026-10-06 |  |
+| — — — | The other seat | **もう1つの席** | The other seat | Agent 2026-10-06 |  |
+| — — — | Out of guesses: no finish. | **予想の回数を使いきり、完走できませんでした。** | Out of guesses: no finish. | Agent 2026-10-06 |  |
+| — — — | Refresh | **更新** | Refresh | Agent 2026-10-06 |  |
+| — — — | The two seats | **2つの席** | The two seats | Agent 2026-10-06 |  |
+| — — — | Send this link to the person you are racing. Whoever opens it takes the other seat. | **このリンクを、競う相手に送ってください。開いた人が、もう1つの席に着きます。** | Send this link to the person you are racing. Whoever opens it takes the other seat. | Agent 2026-10-06 |  |
+| — — — | the set-up | **設定の画面** | the set-up | Agent 2026-10-06 |  |
+| — — — | Solved in {time}. | **{time}で解きました。** | Solved in {time}. | Agent 2026-10-06 |  |
+| — — — | Solving since {time} UTC. | **UTCの{time}から解いています。** | Solving since {time} UTC. | Agent 2026-10-06 |  |
+| — — — | Start my clock → | **自分の時計を始める →** | Start my clock → | Agent 2026-10-06 |  |
+| — — — | Starting… | **始めています…** | Starting… | Agent 2026-10-06 |  |
+| — — — | Take the seat and race → | **席に着いて、競う →** | Take the seat and race → | Agent 2026-10-06 |  |
+| — — — | Nobody won: a tie, or nobody finished. | **勝者はいません。引き分けか、誰も完走しませんでした。** | Nobody won: a tie, or nobody finished. | Agent 2026-10-06 |  |
+| — — — | Race at {game} | **{game}で競う** | Race at {game} | Agent 2026-10-06 |  |
+| — — — | {name} won. | **{name}の勝ちです。** | {name} won. | Agent 2026-10-06 |  |
+| — — — | (you) | **（自分）** | (you) | Agent 2026-10-06 |  |
+| — — — | The site could not make the race. | **サイトは、競走を作れませんでした。** | The site could not make the race. | Agent 2026-10-06 |  |
+| — — — | A race is between two members; this session has no account yet. | **競走は、会員どうしで行います。このセッションには、まだアカウントがありません。** | A race is between two members; this session has no account yet. | Agent 2026-10-06 |  |
+| — — — | Pass and play is on this device; a race is between two members on two. | **交代で遊ぶのは1台です。競走は、会員2人が2台で行います。** | Pass and play is on this device; a race is between two members on two. | Agent 2026-10-06 |  |
+| — — — | All solves | **すべての解答** | All solves | Agent 2026-10-06 |  |
+| — — — | Counted in the points above | **上の点に数えられています** | Counted in the points above | Agent 2026-10-06 |  |
+| — — — | fastest first | **速い順** | fastest first | Agent 2026-10-06 |  |
+| — — — | Filtered by | **絞り込み** | Filtered by | Agent 2026-10-06 |  |
+| — — — | helped | **補助あり** | helped | Agent 2026-10-06 |  |
+| — — — |  in {when} | **（{when}の分）** |  in {when} | Agent 2026-10-06 |  |
+| — — — | Every solve of it kept here, by everybody. Open a time to watch that solve again, step by step. | **ここに保存された、全員のすべての解答です。タイムを開くと、その解答を1手ずつ見直せます。** | Every solve of it kept here, by everybody. Open a time to watch that solve again, step by step. | Agent 2026-10-06 |  |
+| — — — | newest first | **新しい順** | newest first | Agent 2026-10-06 |  |
+| — — — | Next → | **次へ →** | Next → | Agent 2026-10-06 |  |
+| — — — | No solves match what this record is narrowed to. | **この記録の絞り込みに合う解答はありません。** | No solves match what this record is narrowed to. | Agent 2026-10-06 |  |
+| — — — | Page {page} of {pages} | **{pages}ページ中の{page}ページ目** | Page {page} of {pages} | Agent 2026-10-06 |  |
+| — — — | ← Previous | **← 前へ** | ← Previous | Agent 2026-10-06 |  |
+| — — — | race | **競走** | race | Agent 2026-10-06 |  |
+| — — — | — remove | **— 外す** | — remove | Agent 2026-10-06 |  |
+| — — — | Solved, fastest first | **解けたものを速い順に** | Solved, fastest first | Agent 2026-10-06 |  |
+| — — — | Sort: | **並び順：** | Sort: | Agent 2026-10-06 |  |
+| — — — | Stop narrowing to {label} | **「{label}」での絞り込みを外す** | Stop narrowing to {label} | Agent 2026-10-06 |  |
+| — — — |  from {puzzles}{when}: each puzzle counts once, at its best, and the rows marked | **（{puzzles}{when}）。どの問題も、いちばんよい解答が1回だけ数えられます。** |  from {puzzles}{when}: each puzzle counts once, at its best, and the rows marked | Agent 2026-10-06 |  |
+| — — — |  are the ones counted. | **の行が、数えられたものです。** |  are the ones counted. | Agent 2026-10-06 |  |
+| — — — | {name}'s solves | **{name}の解答** | {name}'s solves | Agent 2026-10-06 |  |
+| — — — | {name} · All solves | **{name} · すべての解答** | {name} · All solves | Agent 2026-10-06 |  |
+| — — — | with a star | **星つき** | with a star | Agent 2026-10-06 |  |
+| — — — | Your solves | **自分の解答** | Your solves | Agent 2026-10-06 |  |
+| — — — | Longer, to {size} → | **長い方へ、{size}まで →** | Longer, to {size} → | Agent 2026-10-06 |  |
+| — — — | Longer → | **長い方へ →** | Longer → | Agent 2026-10-06 |  |
+| — — — | ← Shorter, from {size} | **← 短い方へ、{size}から** | ← Shorter, from {size} | Agent 2026-10-06 |  |
+| — — — | All their {name} | **この人の{name}すべて** | All their {name} | Agent 2026-10-06 |  |
+| — — — | All your {name} | **自分の{name}すべて** | All your {name} | Agent 2026-10-06 |  |
+| — — — | Caught | **引っかかった** | Caught | Agent 2026-10-06 |  |
+| — — — | {checks} of {allowed} | **{checks}（上限{allowed}回）** | {checks} of {allowed} | Agent 2026-10-06 |  |
+| — — — | Countdown | **カウントダウン** | Countdown | Agent 2026-10-06 |  |
+| — — — | Fastest times, same {size} and level | **同じ{size}とレベルの最速タイム** | Fastest times, same {size} and level | Agent 2026-10-06 |  |
+| — — — | Finished | **終了** | Finished | Agent 2026-10-06 |  |
+| — — — | Got through | **通り抜けた** | Got through | Agent 2026-10-06 |  |
+| — — — | Help used | **使った補助** | Help used | Agent 2026-10-06 |  |
+| — — — | This level is the same board for everybody, so how it was solved is kept back until you have solved it yourself. Here it is as it is dealt. | **このレベルは全員が同じ盤なので、解き方は、自分で解くまで非公開です。ここでは、配られたままの盤を見せています。** | This level is the same board for everybody, so how it was solved is kept back until you have solved it yourself. Here it is as it is dealt. | Agent 2026-10-06 |  |
+| — — — | Kept back until tomorrow | **明日まで非公開** | Kept back until tomorrow | Agent 2026-10-06 |  |
+| — — — | Today's puzzle is the same for everybody, so how it was solved is kept back until tomorrow, or until you have finished it yourself. | **今日のパズルは全員が同じなので、解き方は、明日になるか、自分で解き終えるまで非公開です。** | Today's puzzle is the same for everybody, so how it was solved is kept back until tomorrow, or until you have finished it yourself. | Agent 2026-10-06 |  |
+| — — — | {outcome} by  | **{outcome}。解いた人は** | {outcome} by  | Agent 2026-10-06 |  |
+| — — — | {number}, {level} | **{number}番、{level}** | {number}, {level} | Agent 2026-10-06 |  |
+| — — — |  on the {clock} | **（{clock}の分）** |  on the {clock} | Agent 2026-10-06 |  |
+| — — — | Play another | **もう1問遊ぶ** | Play another | Agent 2026-10-06 |  |
+| — — — | Played on {site} ·  | **{site}で遊んだ記録 · ** | Played on {site} ·  | Agent 2026-10-06 |  |
+| — — — | Play it | **遊ぶ** | Play it | Agent 2026-10-06 |  |
+| — — — | Play today's | **今日のを遊ぶ** | Play today's | Agent 2026-10-06 |  |
+| — — — | Race | **競走** | Race | Agent 2026-10-06 |  |
+| — — — | Solve | **解答** | Solve | Agent 2026-10-06 |  |
+| — — — | 's {name} | **の{name}** | 's {name} | Agent 2026-10-06 |  |
+| — — — | The race it was | **その競走** | The race it was | Agent 2026-10-06 |  |
+| — — — | The word | **単語** | The word | Agent 2026-10-06 |  |
+| — — — | Word | **単語** | Word | Agent 2026-10-06 |  |
+| — — — | Yours | **自分の** | Yours | Agent 2026-10-06 |  |
+| — — — | Your {name} | **自分の{name}** | Your {name} | Agent 2026-10-06 |  |
+| — — — | Everybody's points at it, all time and this month, then the fastest solves at every size and level. A solve on your own is timed by your browser; a race by the site. | **全員の点を通算と今月で、続いて、すべてのサイズとレベルの最速の解答を並べます。1人で解いたときの時間は自分のブラウザが、競走の時間はサイトが計ります。** | Everybody's points at it, all time and this month, then the fastest solves at every size and level. A solve on your own is timed by your browser; a race by the site. | Agent 2026-10-06 |  |
+| — — — | Strict | **ストリクト** | Strict | Agent 2026-10-06 |  |
+| — — — | Every letter found must be played again, a green one in its place. | **見つかった文字は、次の予想でも必ず使い、緑の文字は同じ場所に置きます。** | Every letter found must be played again, a green one in its place. | Agent 2026-10-06 |  |
+| — — — | This solve is no longer kept | **この解答は、もう保存されていません** | This solve is no longer kept | Agent 2026-10-06 |  |
+| — — — | Open this solve | **この解答を開く** | Open this solve | Agent 2026-10-06 |  |
+| — — — | Daily words | **日替わり単語** | Daily words | Agent 2026-10-06 |  |
+| — — — | Languages and word lists | **言語と単語リスト** | Languages and word lists | Agent 2026-10-06 |  |
+| — — — | Chosen on the set-up. Each keeps its own words of the day, fastest times and record. | **設定の画面で選びます。それぞれに、今日の言葉、最速のタイム、記録があります。** | Chosen on the set-up. Each keeps its own words of the day, fastest times and record. | Agent 2026-10-06 |  |
+| — — — | every family met | **すべての系統に出会ったこと** | every family met | Agent 2026-10-06 |  |
+| — — — | every game on the site played | **サイトのすべてのゲームを遊んだこと** | every game on the site played | Agent 2026-10-06 |  |
+| — — — | your first puzzle at all | **初めてのパズル** | your first puzzle at all | Agent 2026-10-06 |  |
+| — — — | your first of this puzzle | **このパズルの初めての解答** | your first of this puzzle | Agent 2026-10-06 |  |
+| — — — | playing it out | **最後まで遊んだこと** | playing it out | Agent 2026-10-06 |  |
+| — — — | the solve | **解答** | the solve | Agent 2026-10-06 |  |
+| — — — | winning the race | **競走に勝ったこと** | winning the race | Agent 2026-10-06 |  |
+| — — — | {clock} countdown | **{clock}のカウントダウン** | {clock} countdown | Agent 2026-10-06 |  |
+| — — — | One minute left. | **残り1分です。** | One minute left. | Agent 2026-10-06 |  |
+| — — — | {count} minutes left. | **残り{count}分です。** | {count} minutes left. | Agent 2026-10-06 |  |
+| — — — | Ten seconds left. | **残り10秒です。** | Ten seconds left. | Agent 2026-10-06 |  |
+| — — — | Time is up. | **時間切れです。** | Time is up. | Agent 2026-10-06 |  |
+| — — — | {count} check | **チェック{count}回** | {count} check | Agent 2026-10-06 |  |
+| — — — | {count} hint | **ヒント{count}回** | {count} hint | Agent 2026-10-06 |  |
+| — — — | {count} hints | **ヒント{count}回** | {count} hints | Agent 2026-10-06 |  |
+| — — — | {count} jump | **{count}回の跳び** | {count} jump | Agent 2026-10-06 |  |
+| — — — | {count} jumps | **{count}回の跳び** | {count} jumps | Agent 2026-10-06 |  |
+| — — — | {count} kana | **{count}文字** | {count} kana | Agent 2026-10-06 |  |
+| — — — | {count} letter | **{count}文字** | {count} letter | Agent 2026-10-06 |  |
+| — — — | {count} letters | **{count}文字** | {count} letters | Agent 2026-10-06 |  |
+| — — — | {count} point | **{count}点** | {count} point | Agent 2026-10-06 |  |
+| — — — | {count} points | **{count}点** | {count} points | Agent 2026-10-06 |  |
+| — — — | {count} puzzle | **{count}問** | {count} puzzle | Agent 2026-10-06 |  |
+| — — — | {count} puzzles | **{count}問** | {count} puzzles | Agent 2026-10-06 |  |
+| — — — | {count} tile | **{count}枚** | {count} tile | Agent 2026-10-06 |  |
+| — — — | {count} tiles | **{count}枚** | {count} tiles | Agent 2026-10-06 |  |
+| — — — | {count} word | **{count}語** | {count} word | Agent 2026-10-06 |  |
+| — — — | {count} words | **{count}語** | {count} words | Agent 2026-10-06 |  |
+| — — — | Already paid for this puzzle, or the day's allowance is spent — the solve still stands. | **このパズルはすでに経験値が入っているか、その日の上限に達しました。解答は有効です。** | Already paid for this puzzle, or the day's allowance is spent — the solve still stands. | Agent 2026-10-06 |  |
+| — — — | Another {name} → | **別の{name} →** | Another {name} → | Agent 2026-10-06 |  |
+| — — — | Change the draw or passes | **めくる枚数と回数を変える** | Change the draw or passes | Agent 2026-10-06 |  |
+| — — — | Change the size or level | **サイズかレベルを変える** | Change the size or level | Agent 2026-10-06 |  |
+| — — — | Deal again → | **もう一度配る →** | Deal again → | Agent 2026-10-06 |  |
+| — — — |  after {time}{moves}. | **：{time}経過{moves}。** |  after {time}{moves}. | Agent 2026-10-06 |  |
+| — — — | Handed in. The race above says how it stands. | **提出しました。上の競走に、いまの状況が出ています。** | Handed in. The race above says how it stands. | Agent 2026-10-06 |  |
+| — — — | {says}. It counts as solved, but scores no points and is not on the fastest table. | **{says}。解けたものとして数えられますが、点は入らず、最速の表にも載りません。** | {says}. It counts as solved, but scores no points and is not on the fastest table. | Agent 2026-10-06 |  |
+| — — — | {says}. It counts as solved, but scores no points and is not on the fastest table, and it does not open the next block: solve it with its explosions on for that. | **{says}。解けたものとして数えられますが、点は入らず、最速の表にも載らず、次のブロックも開きません。開くには、爆発ありで解いてください。** | {says}. It counts as solved, but scores no points and is not on the fastest table, and it does not open the next block: solve it with its explosions on for that. | Agent 2026-10-06 |  |
+| — — — | , in {count} move | **、{count}手** | , in {count} move | Agent 2026-10-06 |  |
+| — — — | , in {count} moves | **、{count}手** | , in {count} moves | Agent 2026-10-06 |  |
+| — — — | A member is paid XP for a solve. Join, and the next one counts. | **経験値が入るのは会員だけです。会員になると、次の解答から数えられます。** | A member is paid XP for a solve. Join, and the next one counts. | Agent 2026-10-06 |  |
+| — — — | as it stood, with your finished puzzles. | **に保存されています。** | as it stood, with your finished puzzles. | Agent 2026-10-06 |  |
+| — — — | Kept in | **終わったパズルといっしょに、状態そのままで** | Kept in | Agent 2026-10-06 |  |
+| — — — | My games | **対局中** | My games | Agent 2026-10-06 |  |
+| — — — | , on the {clock} | **、{clock}で** | , on the {clock} | Agent 2026-10-06 |  |
+| — — — | : the {clock} ran down from {time} before it was solved. | **：{clock}が{time}から尽きて、解けませんでした。** | : the {clock} ran down from {time} before it was solved. | Agent 2026-10-06 |  |
+| — — — | +{points} XP, for {awards}. | **+{points}経験値：{awards}。** | +{points} XP, for {awards}. | Agent 2026-10-06 |  |
+| — — — | Recording your solve… | **解答を記録しています…** | Recording your solve… | Agent 2026-10-06 |  |
+| — — — | Replay this solve | **この解答をもう一度見る** | Replay this solve | Agent 2026-10-06 |  |
+| — — — | Given up after {time}{moves} | **投了：{time}{moves}** | Given up after {time}{moves} | Agent 2026-10-06 |  |
+| — — — | Solved in {time} | **解決：{time}** | Solved in {time} | Agent 2026-10-06 |  |
+| — — — | Won in {time}{moves} | **勝ち：{time}{moves}** | Won in {time}{moves} | Agent 2026-10-06 |  |
+| — — — | See this game | **このゲームを見る** | See this game | Agent 2026-10-06 |  |
+| — — — | See how far it got | **どこまで進んだかを見る** | See how far it got | Agent 2026-10-06 |  |
+| — — — |  in {time}{moves}{onClock}. | **：所要{time}{moves}{onClock}。** |  in {time}{moves}{onClock}. | Agent 2026-10-06 |  |
+| — — — | It ends unsolved. | **解けないまま終わりました。** | It ends unsolved. | Agent 2026-10-06 |  |
+| — — — | It ends unsolved. A member's is kept, and paid a little for playing it out. | **解けないまま終わりました。会員なら保存され、最後まで遊んだことで少し経験値が入ります。** | It ends unsolved. A member's is kept, and paid a little for playing it out. | Agent 2026-10-06 |  |
+| — — — | It ends unsolved. Keeping it… | **解けないまま終わりました。保存しています…** | It ends unsolved. Keeping it… | Agent 2026-10-06 |  |
+| — — — | It ends unsolved: +{points} XP for playing it out. | **解けないまま終わりました：最後まで遊んで+{points}経験値。** | It ends unsolved: +{points} XP for playing it out. | Agent 2026-10-06 |  |
+| — — — |  in {time}{moves}. | **：所要{time}{moves}。** |  in {time}{moves}. | Agent 2026-10-06 |  |
+| — — — | Cheat drew a line | **チートで線を引いた** | Cheat drew a line | Agent 2026-10-06 |  |
+| — — — | explosions off | **爆発をなしにした** | explosions off | Agent 2026-10-06 |  |
+| — — — | explosions softened | **爆発をやわらげた** | explosions softened | Agent 2026-10-06 |  |
+| — — — | the solve's steps were shown | **解き方の手順を見せた** | the solve's steps were shown | Agent 2026-10-06 |  |
+| — — — | Head start | **先手** | Head start | Agent 2026-10-06 |  |
+| — — — | Helped: {help} | **補助あり：{help}** | Helped: {help} | Agent 2026-10-06 |  |
+| — — — | {count} in the row | **この行に{count}個あります** | {count} in the row | Agent 2026-10-06 |  |
+| — — — | in the word {count} times | **単語に{count}回入っています** | in the word {count} times | Agent 2026-10-06 |  |
+| — — — | in the word twice | **単語に2回入っています** | in the word twice | Agent 2026-10-06 |  |
+| — — — | Level {next} → | **レベル{next} →** | Level {next} → | Agent 2026-10-06 |  |
+| — — — | Level {next}, the first one you have not finished → | **レベル{next}（まだ終えていない最初のレベル） →** | Level {next}, the first one you have not finished → | Agent 2026-10-06 |  |
+| — — — | Level {number} | **レベル{number}** | Level {number} | Agent 2026-10-06 |  |
+| — — — | Portal level {number} | **ポータルのレベル{number}** | Portal level {number} | Agent 2026-10-06 |  |
+| — — — | Futago 双子 (twins), a choice at any level, hides two kana words at once, side by side on one board, the free grey word grey against both: every guess goes to both words until a word is found, each kana key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well. | **「双子」は、どのレベルでも選べる遊び方で、2つのかなの単語を同時に隠し、1つの盤に並べます。無料の灰色の単語は、両方の単語に対して灰色です。予想は、単語が見つかるまで、両方の単語に送られ、かなのキーは2つに分かれて、両方の盤の色を表します。予想は、単語が1つのときより1回多くなります。どの長さにも、日替わりの単語が2つあります。** | Futago 双子 (twins), a choice at any level, hides two kana words at once, side by side on one board, the free grey word grey against both: every guess goes to both words until a word is found, each kana key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well. | Agent 2026-10-06 |  |
+| — — — | Futago 双子 (twins), a choice at any level, hides two words at once, side by side on one board: every guess goes to both words until a word is found, each key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well. | **「双子」は、どのレベルでも選べる遊び方で、2つの単語を同時に隠し、1つの盤に並べます。予想は、単語が見つかるまで、両方の単語に送られます。キーは2つに分かれ、両方の盤の色を表します。予想は、単語が1つのときより1回多くなります。どの長さにも、日替わりの単語が2つあります。** | Futago 双子 (twins), a choice at any level, hides two words at once, side by side on one board: every guess goes to both words until a word is found, each key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well. | Agent 2026-10-06 |  |
+| — — — | No word is hidden yet: each guess gets the colours that leave the most words, and it is found only when nothing else is left. {rows} guesses. | **単語はまだ隠れていません。予想のたびに、残る単語がいちばん多くなる色が返され、ほかに何も残らなくなったときに、見つかったことになります。予想は{rows}回です。** | No word is hidden yet: each guess gets the colours that leave the most words, and it is found only when nothing else is left. {rows} guesses. | Agent 2026-10-06 |  |
+| — — — | Nige 逃げ (running away), a choice at any level and our version of Absurdle, hides no word at all: every guess is answered with the colours that leave the most words still possible, never going back on a colour already shown, and the word is found only when your guess is the one word left. It gives every row of the board at every level, the level's word list being its difficulty; there is no head start, and in kana no free grey word. The line under the board says how many words it still has to hide among, and when the rows run out it names one of them. There is a Nige of the day at every length as well, the same for everybody, the kana and the colours the same as ever. | **「逃げ」は、どのレベルでも選べる遊び方で、Absurdleのこのサイト版です。隠れた単語はありません。予想のたびに、残りの単語がいちばん多く残る色が返され、すでに出た色を取り消すことはありません。予想した単語が、残った1語になったときに、見つかったことになります。どのレベルでも盤のすべての行が使え、難しさは、レベルの単語リストで決まります。先手はなく、無料の灰色の単語もありません。盤の下の行は、まだいくつの単語のなかに隠れられるかを表し、行が尽きると、そのうちの1語を教えます。「逃げ」にも、どの長さにも日替わりがあり、全員が同じです。かなと色はいつもどおりです。** | Nige 逃げ (running away), a choice at any level and our version of Absurdle, hides no word at all: every guess is answered with the colours that leave the most words still possible, never going back on a colour already shown, and the word is found only when your guess is the one word left. It gives every row of the board at every level, the level's word list being its difficulty; there is no head start, and in kana no free grey word. The line under the board says how many words it still has to hide among, and when the rows run out it names one of them. There is a Nige of the day at every length as well, the same for everybody, the kana and the colours the same as ever. | Agent 2026-10-06 |  |
+| — — — | Nige 逃げ (running away), a choice at any level and our version of Absurdle, hides no word at all: every guess is answered with the colours that leave the most words still possible, never going back on a colour already shown, and the word is found only when your guess is the one word left. It gives every row of the board at every level, the level's word list being its difficulty; there is no head start, and in kana no free grey word. The line under the board says how many words it still has to hide among, and when the rows run out it names one of them. There is a Nige of the day at every length as well, the same for everybody, the letters and the colours the same as ever. | **「逃げ」は、どのレベルでも選べる遊び方で、Absurdleのこのサイト版です。隠れた単語はありません。予想のたびに、残りの単語がいちばん多く残る色が返され、すでに出た色を取り消すことはありません。予想した単語が、残った1語になったときに、見つかったことになります。どのレベルでも盤のすべての行が使え、難しさは、レベルの単語リストで決まります。先手はなく、かなでも無料の灰色の単語はありません。盤の下の行は、まだいくつの単語のなかに隠れられるかを表し、行が尽きると、そのうちの1語を教えます。「逃げ」にも、どの長さにも日替わりがあり、全員が同じです。文字と色はいつもどおりです。** | Nige 逃げ (running away), a choice at any level and our version of Absurdle, hides no word at all: every guess is answered with the colours that leave the most words still possible, never going back on a colour already shown, and the word is found only when your guess is the one word left. It gives every row of the board at every level, the level's word list being its difficulty; there is no head start, and in kana no free grey word. The line under the board says how many words it still has to hide among, and when the rows run out it names one of them. There is a Nige of the day at every length as well, the same for everybody, the letters and the colours the same as ever. | Agent 2026-10-06 |  |
+| — — — | Don't find the word: fill all {rows} rows without typing it. Every green stays, every orange is used again, and a grey is never typed twice. | **単語を見つけてはいけません。その単語を打たずに、{rows}行すべてを埋めます。緑はそのまま、オレンジは使い直し、灰色は二度と打てません。** | Don't find the word: fill all {rows} rows without typing it. Every green stays, every orange is used again, and a grey is never typed twice. | Agent 2026-10-06 |  |
+| — — — | Sakasa 逆さ (the wrong way round), a choice at any level and our version of Antiwordle, turns the puzzle over: a word is hidden as ever, and the aim is never to type it. Fill every row without it and you have won; type it and the game is over. Every kana you uncover must be used again, a green in its place and an orange anywhere, a grey kana may never be typed again, and no word twice, so each row closes in on the one word you are avoiding. Harder is longer: easy asks for as many rows as an ordinary hard Gomoji gives, hard the whole board. There is no head start, and in kana no free grey word. Each row got through scores {row}, and getting through them all {through} more. There is a Sakasa of the day at every length, the same word for everybody. | **「逆さ」は、どのレベルでも選べる遊び方で、Antiwordleのこのサイト版です。パズルを裏返し、単語は隠れたままですが、目標は、その単語を絶対に打たないことです。その単語を打たずにすべての行を埋めれば勝ちで、打ってしまえばゲームオーバーです。見つかったかなは、必ず使い直します。緑のかなは同じ場所に、オレンジのかなはどこかに使います。灰色のかなは、もう打てません。同じ単語も2回は打てません。そのため、1行ごとに、避けているただ1つの単語に近づいていきます。難しいほど長くなります。初級は、ふつうの上級の五文字と同じ行数、上級は盤全体の行数です。先手はなく、無料の灰色の単語もありません。通り抜けた行ごとに{row}点、すべて通り抜けるとさらに{through}点です。「逆さ」は、どの長さにも日替わりがあり、全員が同じ単語です。** | Sakasa 逆さ (the wrong way round), a choice at any level and our version of Antiwordle, turns the puzzle over: a word is hidden as ever, and the aim is never to type it. Fill every row without it and you have won; type it and the game is over. Every kana you uncover must be used again, a green in its place and an orange anywhere, a grey kana may never be typed again, and no word twice, so each row closes in on the one word you are avoiding. Harder is longer: easy asks for as many rows as an ordinary hard Gomoji gives, hard the whole board. There is no head start, and in kana no free grey word. Each row got through scores {row}, and getting through them all {through} more. There is a Sakasa of the day at every length, the same word for everybody. | Agent 2026-10-06 |  |
+| — — — | Sakasa 逆さ (the wrong way round), a choice at any level and our version of Antiwordle, turns the puzzle over: a word is hidden as ever, and the aim is never to type it. Fill every row without it and you have won; type it and the game is over. Every letter you uncover must be used again, a green in its place and an orange anywhere, a grey letter may never be typed again, and no word twice, so each row closes in on the one word you are avoiding. Harder is longer: easy asks for as many rows as an ordinary hard Gomoji gives, hard the whole board. There is no head start, and in kana no free grey word. Each row got through scores {row}, and getting through them all {through} more. There is a Sakasa of the day at every length, the same word for everybody. | **「逆さ」は、どのレベルでも選べる遊び方で、Antiwordleのこのサイト版です。パズルを裏返し、単語は隠れたままですが、目標は、その単語を絶対に打たないことです。その単語を打たずにすべての行を埋めれば勝ちで、打ってしまえばゲームオーバーです。見つかった文字は、必ず使い直します。緑の文字は同じ場所に、オレンジの文字はどこかに使います。灰色の文字は、もう打てません。同じ単語も2回は打てません。そのため、1行ごとに、避けているただ1つの単語に近づいていきます。難しいほど長くなります。初級は、ふつうの上級の五文字と同じ行数、上級は盤全体の行数です。先手はなく、かなでも無料の灰色の単語はありません。通り抜けた行ごとに{row}点、すべて通り抜けるとさらに{through}点です。「逆さ」は、どの長さにも日替わりがあり、全員が同じ単語です。** | Sakasa 逆さ (the wrong way round), a choice at any level and our version of Antiwordle, turns the puzzle over: a word is hidden as ever, and the aim is never to type it. Fill every row without it and you have won; type it and the game is over. Every letter you uncover must be used again, a green in its place and an orange anywhere, a grey letter may never be typed again, and no word twice, so each row closes in on the one word you are avoiding. Harder is longer: easy asks for as many rows as an ordinary hard Gomoji gives, hard the whole board. There is no head start, and in kana no free grey word. Each row got through scores {row}, and getting through them all {through} more. There is a Sakasa of the day at every length, the same word for everybody. | Agent 2026-10-06 |  |
+| — — — | Yotsugo 四つ子 (quadruplets), a choice at any level, hides four kana words at once, in the four quarters of two boards, the free grey word grey against all four: every guess goes to every quarter until its word is found, each kana key is split in four corners to show each quarter's colour, and there are three guesses more than for one word. | **「四つ子」は、どのレベルでも選べる遊び方で、4つのかなの単語を同時に隠し、2つの盤の4つの区画に分けて並べます。無料の灰色の単語は、4つすべてに対して灰色です。予想は、その単語が見つかるまで、すべての区画に送られ、かなのキーは4つの角に分かれて、各区画の色を表します。予想は、単語が1つのときより3回多くなります。** | Yotsugo 四つ子 (quadruplets), a choice at any level, hides four kana words at once, in the four quarters of two boards, the free grey word grey against all four: every guess goes to every quarter until its word is found, each kana key is split in four corners to show each quarter's colour, and there are three guesses more than for one word. | Agent 2026-10-06 |  |
+| — — — | Yotsugo 四つ子 (quadruplets), a choice at any level, hides four words at once, in the four quarters of two boards: every guess goes to every quarter until its word is found, each key is split in four corners to show each quarter's colour, and there are three guesses more than for one word — nine at hard at every length. | **「四つ子」は、どのレベルでも選べる遊び方で、4つの単語を同時に隠し、2つの盤の4つの区画に分けて並べます。予想は、その単語が見つかるまで、すべての区画に送られます。キーは4つの角に分かれ、各区画の色を表します。予想は、単語が1つのときより3回多くなり、どの長さでも上級で9回です。** | Yotsugo 四つ子 (quadruplets), a choice at any level, hides four words at once, in the four quarters of two boards: every guess goes to every quarter until its word is found, each key is split in four corners to show each quarter's colour, and there are three guesses more than for one word — nine at hard at every length. | Agent 2026-10-06 |  |
+| — — — | Found | **発見** | Found | Agent 2026-10-06 |  |
+| — — — | Given up | **投了** | Given up | Agent 2026-10-06 |  |
+| — — — | Out of guesses | **予想の回数切れ** | Out of guesses | Agent 2026-10-06 |  |
+| — — — | Out of swaps | **入れ替えの回数切れ** | Out of swaps | Agent 2026-10-06 |  |
+| — — — | Out of time | **時間切れ** | Out of time | Agent 2026-10-06 |  |
+| — — — | Solved | **解決** | Solved | Agent 2026-10-06 |  |
+| — — — | Cheat | **ズル** | Cheat | Agent 2026-10-06 |  |
+| — — — | Fit | **全体表示** | Show the whole | Agent 2026-10-06 |  |
+| — — — | Play it again | **もう一度遊ぶ** | Play it again | Agent 2026-10-06 |  |
+| — — — | Restart | **最初からやり直す** | Start over | Agent 2026-10-06 |  |
+| — — — | Solved. | **解決済みです。** | Solved. | Agent 2026-10-06 |  |
+| — — — | Solved, best {time}. | **解決済みです。ベストは{time}です。** | Solved, best {time}. | Agent 2026-10-06 |  |
+| — — — | Undo | **元に戻す** | Undo | Agent 2026-10-06 |  |
+| — — — | One move back | **1手戻る** | One move back | Agent 2026-10-06 |  |
+| — — — | The deal | **配り** | The deal | Agent 2026-10-06 |  |
+| — — — | Move | **手** | Move | Agent 2026-10-06 |  |
+| — — — | One move on | **1手進む** | One move on | Agent 2026-10-06 |  |
+| — — — | A game is for one person, in your own browser: the deal is shuffled and every move is checked there, and nothing is sent anywhere until the last card is home. | **1人で、自分のブラウザで遊びます。配りのシャッフルも手の確認も、そこで行い、最後のカードが組札に上がるまで、何もどこにも送られません。** | A game is for one person, in your own browser: the deal is shuffled and every move is checked there, and nothing is sent anywhere until the last card is home. | Agent 2026-10-06 |  |
+| — — — | Solving is for one person, in one sitting, in your own browser: nothing about a puzzle is sent anywhere until it is done. | **解くのは1人で、1回の席で、自分のブラウザで行います。パズルについて、終わるまで何もどこにも送られません。** | Solving is for one person, in one sitting, in your own browser: nothing about a puzzle is sent anywhere until it is done. | Agent 2026-10-06 |  |
+| — — — | Boards you make | **作れる盤** | Boards you make | Agent 2026-10-06 |  |
+| — — — | A level left half drawn is kept for a member and waits in My games, lines and clock as they were. The levels you have solved are kept on your account, or in this browser without one. | **途中まで引いたレベルは、会員のために保存され、「対局中」で待っています。線も時計も、そのままです。解いたレベルは、アカウントに保存され、アカウントがなければこのブラウザに保存されます。** | A level left half drawn is kept for a member and waits in My games, lines and clock as they were. The levels you have solved are kept on your account, or in this browser without one. | Agent 2026-10-06 |  |
+| — — — | A puzzle left half done is kept for a member and waits in My games, as it was left, clock and all. Without an account nothing is kept: the same address brings back the same puzzle, and its clock starts again. | **途中までのパズルは、会員のために保存され、「対局中」で、時計も含めて、そのままの状態で待っています。アカウントがなければ何も保存されません。同じアドレスを開くと同じパズルが出て、時計は最初からになります。** | A puzzle left half done is kept for a member and waits in My games, as it was left, clock and all. Without an account nothing is kept: the same address brings back the same puzzle, and its clock starts again. | Agent 2026-10-06 |  |
+| — — — | A level or a board left half turned is kept for a member and waits in My games, pieces and clock as they were. The levels you have solved are kept on your account, or in this browser without one. | **途中まで回したレベルや盤は、会員のために保存され、「対局中」で待っています。部品も時計も、そのままです。解いたレベルは、アカウントに保存され、アカウントがなければこのブラウザに保存されます。** | A level or a board left half turned is kept for a member and waits in My games, pieces and clock as they were. The levels you have solved are kept on your account, or in this browser without one. | Agent 2026-10-06 |  |
+| — — — | {name} ({count} tiles) | **{name}（{count}枚）** | {name} ({count} tiles) | Agent 2026-10-06 |  |
+| — — — | Levels: {list}. | **レベル：{list}。** | Levels: {list}. | Agent 2026-10-06 |  |
+| — — — | A board you make, at a level: {list}. | **自分で作る盤のレベル：{list}。** | A board you make, at a level: {list}. | Agent 2026-10-06 |  |
+| — — — | Nothing is rated, nobody is beaten and no ladder counts a solve. A puzzle is a game in the catalogue and not a game between two players. | **レーティングはなく、誰かに勝つことも負けることもなく、順位表に解いた回数が数えられることもありません。パズルは、カタログのゲームのひとつで、2人で戦う対局ではありません。** | Nothing is rated, nobody is beaten and no ladder counts a solve. A puzzle is a game in the catalogue and not a game between two players. | Agent 2026-10-06 |  |
+| — — — | A won game is checked by the site, move by move from the deal, and a member is paid XP for it, once per deal. | **勝ったゲームは、サイトが配りから1手ずつ確かめ、会員には経験値が入ります。1回の配りにつき1回です。** | A won game is checked by the site, move by move from the deal, and a member is paid XP for it, once per deal. | Agent 2026-10-06 |  |
+| — — — | A solved cube is checked by the site, turn by turn from the scramble, and a member is paid XP for it, once per scramble. | **そろったキューブは、サイトがシャッフルから1手ずつ確かめ、会員には経験値が入ります。1回のシャッフルにつき1回です。** | A solved cube is checked by the site, turn by turn from the scramble, and a member is paid XP for it, once per scramble. | Agent 2026-10-06 |  |
+| — — — | A finished puzzle is checked by the site against every rule above, and a member is paid XP for a grid that is right, once per grid. | **終わったパズルは、サイトが上のすべての決まりに照らして確かめ、正しい盤には、会員に経験値が入ります。1つの盤につき1回です。** | A finished puzzle is checked by the site against every rule above, and a member is paid XP for a grid that is right, once per grid. | Agent 2026-10-06 |  |
+| — — — | Every scramble can be solved: it is made by turning a solved cube, so turning back the way it came always solves it, and any other way to every face one colour counts as well. | **どのシャッフルも解けます。そろったキューブを回して作るので、来た道を戻れば必ず解けます。ほかの方法で、すべての面を1色にそろえても、解けたことになります。** | Every scramble can be solved: it is made by turning a solved cube, so turning back the way it came always solves it, and any other way to every face one colour counts as well. | Agent 2026-10-06 |  |
+| — — — | Every deal can be won: the browser that deals it has already played it out to the last card, and deals none it has not. | **どの配りも勝てます。配ったブラウザが、最後のカードまで遊び切って確かめてあり、確かめていない配りは配りません。** | Every deal can be won: the browser that deals it has already played it out to the last card, and deals none it has not. | Agent 2026-10-06 |  |
+| — — — | Every puzzle has exactly one answer. The browser that makes it checks that before you see it, so there is never a grid with two answers or none. | **どのパズルも、答えはちょうど1つです。作ったブラウザが、見る前に確かめるので、答えが2つある盤や、1つもない盤はありません。** | Every puzzle has exactly one answer. The browser that makes it checks that before you see it, so there is never a grid with two answers or none. | Agent 2026-10-06 |  |
+| — — — | Every deal can be cleared: the browser that deals it lays the tiles out pair by pair in reverse first, so the order it laid them in clears it, and any other order that clears it counts as well. | **どの配りも、取り切れます。配ったブラウザが、先に牌を2枚ずつ逆の順に並べるので、その順で取り切れます。ほかの順で取り切っても、取り切ったことになります。** | Every deal can be cleared: the browser that deals it lays the tiles out pair by pair in reverse first, so the order it laid them in clears it, and any other order that clears it counts as well. | Agent 2026-10-06 |  |
+| — — — | Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none. | **どのレベルも、答えはちょうど1つです。レベルを作るときにこのサイトの解析プログラムが確かめ、サイトをビルドするたびにもう一度確かめるので、答えが2つある盤や、1つもない盤はありません。** | Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none. | Agent 2026-10-06 |  |
+| — — — | Every maze has exactly one way through: the passages are carved so that there is one path between any two places, and the package they come from proves it again for every level each time it is built. So there is never a maze with two ways through, or none. | **どの迷路も、抜け道はちょうど1つです。通路は、どの2つの場所のあいだにも道が1本だけになるように掘られ、元のパッケージが、ビルドのたびにすべてのレベルでもう一度確かめます。そのため、抜け道が2つある迷路や、1つもない迷路はありません。** | Every maze has exactly one way through: the passages are carved so that there is one path between any two places, and the package they come from proves it again for every level each time it is built. So there is never a maze with two ways through, or none. | Agent 2026-10-06 |  |
+| — — — | Every level and every board has exactly one answer. The levels were made once, and the package they come from proves every one of them again each time it is built; a board you make is checked in the same way before you see it. So there is never a board with two answers or none. | **どのレベルも盤も、答えはちょうど1つです。レベルは1度作られ、元のパッケージが、ビルドのたびにすべてもう一度確かめます。自分で作った盤も、見る前に同じように確かめられます。そのため、答えが2つある盤や、1つもない盤はありません。** | Every level and every board has exactly one answer. The levels were made once, and the package they come from proves every one of them again each time it is built; a board you make is checked in the same way before you see it. So there is never a board with two answers or none. | Agent 2026-10-06 |  |
+| — — — | Every bag can be finished: the browser that deals it lays its tiles out as one crossword first, and any other crossword of the same tiles counts as well. | **どの袋も、使い切れます。配ったブラウザが、先にタイルを1つのクロスワードとして並べるので、ほかの並べ方のクロスワードでも、使い切ったことになります。** | Every bag can be finished: the browser that deals it lays its tiles out as one crossword first, and any other crossword of the same tiles counts as well. | Agent 2026-10-06 |  |
+| — — — | Every level has at least one answer: each was made by working backward from its goal, one jump at a time, and the package they come from replays that answer on every level each time it is built. So there is never a level with no way through. A level may have more than one, and any of them solves it. | **どのレベルにも、少なくとも1つの答えがあります。ゴールから1回ずつ逆向きに跳んで作ってあり、元のパッケージが、ビルドのたびに、すべてのレベルでその答えをもう一度再現して確かめます。そのため、解けないレベルはありません。答えが複数あることもあり、どれでも解けたことになります。** | Every level has at least one answer: each was made by working backward from its goal, one jump at a time, and the package they come from replays that answer on every level each time it is built. So there is never a level with no way through. A level may have more than one, and any of them solves it. | Agent 2026-10-06 |  |
+| — — — | Every winnable deal can be won: the browser that deals it has already played it out to the last card, and a deal is only called winnable once it has. Any deal is the shuffle as it falls, and some of those cannot be won. | **「勝てる配り」は、必ず勝てます。配ったブラウザが最後のカードまで遊び切って確かめてあり、確かめた配りだけを「勝てる」と呼びます。「どの配りでも」は、シャッフルしたままで、勝てないものもあります。** | Every winnable deal can be won: the browser that deals it has already played it out to the last card, and a deal is only called winnable once it has. Any deal is the shuffle as it falls, and some of those cannot be won. | Agent 2026-10-06 |  |
+| — — — | Sizes | **サイズ** | Sizes | Agent 2026-10-06 |  |
+| — — — | {count} tiles in hand | **手札{count}枚** | {count} tiles in hand | Agent 2026-10-06 |  |
+| — — — | {count} across | **横{count}枚** | {count} across | Agent 2026-10-06 |  |
+| — — — | Colossal | **超巨大** | Colossal | Agent 2026-10-06 |  |
+| — — — | Colossal tall {width}×{height} | **超巨大の縦長 {width}×{height}** | Colossal tall {width}×{height} | Agent 2026-10-06 |  |
+| — — — | Cube | **立方体** | Cube | Agent 2026-10-06 |  |
+| — — — | Huge | **巨大** | Huge | Agent 2026-10-06 |  |
+| — — — | Icosahedron | **二十面体** | Icosahedron | Agent 2026-10-06 |  |
+| — — — | {size} size | **{size}サイズ** | {size} size | Agent 2026-10-06 |  |
+| — — — | the {size} | **{size}の盤** | the {size} | Agent 2026-10-06 |  |
+| — — — | Long | **長** | Long | Agent 2026-10-06 |  |
+| — — — | Medium | **中** | Medium | Agent 2026-10-06 |  |
+| — — — | Octahedron | **八面体** | Octahedron | Agent 2026-10-06 |  |
+| — — — | Short | **短** | Short | Agent 2026-10-06 |  |
+| — — — | Small | **小** | Small | Agent 2026-10-06 |  |
+| — — — | {step} {solid} | **{solid}（{step}サイズ）** | {step} {solid} | Agent 2026-10-06 |  |
+| — — — | Sphere | **球** | Sphere | Agent 2026-10-06 |  |
+| — — — | Tall {width}×{height} | **縦長 {width}×{height}** | Tall {width}×{height} | Agent 2026-10-06 |  |
+| — — — | Draw | **めくる枚数** | Draw | Agent 2026-10-06 |  |
+| — — — | Free cells | **フリーセル** | Free cells | Agent 2026-10-06 |  |
+| — — — | Hand | **手札** | Hand | Agent 2026-10-06 |  |
+| — — — | Lattice | **格子** | Lattice | Agent 2026-10-06 |  |
+| — — — | Layout | **配置** | Layout | Agent 2026-10-06 |  |
+| — — — | Suits | **マーク** | Suits | Agent 2026-10-06 |  |
+| — — — | Check | **チェック** | Check | Agent 2026-10-06 |  |
+| — — — | Check · {count} left | **チェック · 残り{count}回** | Check · {count} left | Agent 2026-10-06 |  |
+| — — — | The site could not keep it. | **サイトは、それを保存できませんでした。** | The site could not keep it. | Agent 2026-10-06 |  |
+| — — — | The site could not be reached to record that solve. | **サイトにつながらず、その解答を記録できませんでした。** | The site could not be reached to record that solve. | Agent 2026-10-06 |  |
+| — — — | The site could not record that solve. | **サイトは、その解答を記録できませんでした。** | The site could not record that solve. | Agent 2026-10-06 |  |
+| — — — | Hint | **ヒント** | Hint | Agent 2026-10-06 |  |
+| — — — | Hints are chosen when the puzzle is set up | **ヒントは、パズルの設定で選びます** | Hints are chosen when the puzzle is set up | Agent 2026-10-06 |  |
+| — — — | No hints in a race | **競走ではヒントは使えません** | No hints in a race | Agent 2026-10-06 |  |
+| — — — | Hint · {count} used | **ヒント · {count}回使用** | Hint · {count} used | Agent 2026-10-06 |  |
+| — — — | No checks left | **チェックは残っていません** | No checks left | Agent 2026-10-06 |  |
+| — — — | Pause | **一時停止** | Pause | Agent 2026-10-06 |  |
+| — — — | Paused | **一時停止中** | Paused | Agent 2026-10-06 |  |
+| — — — | The clock has stopped, and the grid is covered until you come back. | **時計は止まり、戻ってくるまで盤は隠れています。** | The clock has stopped, and the grid is covered until you come back. | Agent 2026-10-06 |  |
+| — — — | You're offline, so this is kept on this device and handed in when you're back online. | **オフラインなので、この解答はこの端末に保存され、オンラインに戻ったときに提出されます。** | You're offline, so this is kept on this device and handed in when you're back online. | Agent 2026-10-06 |  |
+| — — — | Resume | **再開** | Resume | Agent 2026-10-06 |  |
+| — — — | Show | **表示** | Show | Agent 2026-10-06 |  |
+| — — — | No checks left: Show is paid for from the checks | **チェックが残っていません。表示は、チェックの回数から使います** | No checks left: Show is paid for from the checks | Agent 2026-10-06 |  |
+| — — — | Mark the cells that are wrong | **まちがっているマスに印をつけます** | Mark the cells that are wrong | Agent 2026-10-06 |  |
+| — — — | time left on the {clock} | **{clock}の残り時間** | time left on the {clock} | Agent 2026-10-06 |  |
+| — — — | time taken | **経過時間** | time taken | Agent 2026-10-06 |  |
+| — — — | Family | **同族** | Family | Agent 2026-10-06 |  |
+| — — — | {name}'s page | **{name}のページ** | {name}'s page | Agent 2026-10-06 |  |
+| — — — | ✓ Found in {count} | **✓ {count}回で発見** | ✓ Found in {count} | Agent 2026-10-06 |  |
+| — — — | chosen | **選択中** | chosen | Agent 2026-10-06 |  |
+| — — — | given free | **無料で入っている** | in for free | Agent 2026-10-06 |  |
+| — — — | in its place | **合っている場所** | in the right place | Agent 2026-10-06 |  |
+| — — — | the word has another kana of its column here | **同じ列の別のかなが単語にある** | the word has another kana from the same column | Agent 2026-10-06 |  |
+| — — — | letter {n} | **{n}文字目** | letter {n} | Agent 2026-10-06 |  |
+| — — — | not in the word | **単語にない** | not in the word | Agent 2026-10-06 |  |
+| — — — | in the word elsewhere | **単語の別の場所にある** | in the word elsewhere | Agent 2026-10-06 |  |
+| — — — | wrong size and mark | **大きさと濁点・半濁点がちがう** | the size and the dakuten or handakuten are wrong | Agent 2026-10-06 |  |
+| — — — | wrong mark | **濁点・半濁点がちがう** | the dakuten or handakuten is wrong | Agent 2026-10-06 |  |
+| — — — | wrong size | **大きさがちがう** | the size is wrong | Agent 2026-10-06 |  |
+| — — — | Words from {jmdict} by the Electronic Dictionary Research and Development Group, used under its {licence} (CC BY-SA 4.0), release {release}. | **単語は、電子辞書研究開発グループの{jmdict}から取っています。{licence}（CC BY-SA 4.0）のもとで使っており、リリースは{release}です。** | Words from {jmdict} by the Electronic Dictionary Research and Development Group, used under its {licence} (CC BY-SA 4.0), release {release}. | Agent 2026-10-06 |  |
+| — — — | LanguageTool's German dictionary | **LanguageToolのドイツ語辞書** | LanguageTool's German dictionary | Agent 2026-10-06 |  |
+| — — — | licence | **ライセンス** | licence | Agent 2026-10-06 |  |
+| — — — | Words from {source} and {wiktionary}, ranked by {frequency} by Hermit Dave, a count of OpenSubtitles 2018; all used under {licence}. | **単語は、{source}と{wiktionary}から取り、{frequency}（Hermit Daveによる、OpenSubtitles 2018の集計）で順位づけしています。すべて{licence}のもとで使っています。** | Words from {source} and {wiktionary}, ranked by {frequency} by Hermit Dave, a count of OpenSubtitles 2018; all used under {licence}. | Agent 2026-10-06 |  |
+| — — — | Day | **日** | Day | Agent 2026-10-06 |  |
+| — — — | Every month | **すべての月** | Every month | Agent 2026-10-06 |  |
+| — — — | {day}: the fastest finds | **{day}：最速の記録** | {day}: the fastest finds | Agent 2026-10-06 |  |
+| — — — | Every day has one word at each length, the same for everybody, new at midnight UTC. Here are the days gone by, a word leading to its puzzle and a day to its fastest finds; today's words wait on the game's page until tomorrow. | **毎日、どの長さにも1つずつ単語があり、全員が同じで、UTCの午前0時に新しくなります。ここには過ぎた日が並び、単語はそのパズルへ、日付はその最速の記録へつながっています。今日の単語は、明日まで、ゲームのページで待っています。** | Every day has one word at each length, the same for everybody, new at midnight UTC. Here are the days gone by, a word leading to its puzzle and a day to its fastest finds; today's words wait on the game's page until tomorrow. | Agent 2026-10-06 |  |
+| — — — | Month | **月** | Month | Agent 2026-10-06 |  |
+| — — — | No day has passed yet. The first day's words are listed here the day after it. | **まだ過ぎた日はありません。最初の日の単語は、その翌日に、ここに並びます。** | No day has passed yet. The first day's words are listed here the day after it. | Agent 2026-10-06 |  |
+| — — — | No day listed here has "{search}". Try another month, or every month. | **「{search}」を含む日は、ここにありません。ほかの月か、すべての月を試してください。** | No day listed here has "{search}". Try another month, or every month. | Agent 2026-10-06 |  |
+| — — — | A word or a date | **単語か日付** | A word or a date | Agent 2026-10-06 |  |
+| — — — | Play today's words | **今日の単語を遊ぶ** | Play today's words | Agent 2026-10-06 |  |
+| — — — | Search these days | **この日々を検索** | Search these days | Agent 2026-10-06 |  |
+| — — — | {name} daily words | **{name}の日替わり単語** | {name} daily words | Agent 2026-10-06 |  |
+| — — — | Week of {date} | **{date}の週** | Week of {date} | Agent 2026-10-06 |  |
+| — — — | caught | **引っかかった** | caught | Agent 2026-10-06 |  |
+| — — — | The day after → | **次の日 →** | The day after → | Agent 2026-10-06 |  |
+| — — — | ← The day before | **← 前の日** | ← The day before | Agent 2026-10-06 |  |
+| — — — | Every past day | **過ぎた日のすべて** | Every past day | Agent 2026-10-06 |  |
+| — — — | The words of this day, and the fastest to find each — on the day or since. | **この日の単語と、それぞれをいちばん速く見つけた記録です。その日に見つけたものも、その後のものも含みます。** | The words of this day, and the fastest to find each — on the day or since. | Agent 2026-10-06 |  |
+| — — — | Today's words stay hidden until tomorrow. The times are already racing. | **今日の単語は、明日まで隠れています。タイムは、すでに競い合っています。** | Today's words stay hidden until tomorrow. The times are already racing. | Agent 2026-10-06 |  |
+| — — — | Nobody has found this one yet. | **まだ誰も見つけていません。** | Nobody has found this one yet. | Agent 2026-10-06 |  |
+| — — — | Play it yourself → | **自分で遊ぶ →** | Play it yourself → | Agent 2026-10-06 |  |
+| — — — | Today, {day} | **今日、{day}** | Today, {day} | Agent 2026-10-06 |  |
+| — — — | Today's fastest | **今日の最速** | Today's fastest | Agent 2026-10-06 |  |
+| — — — | Half done | **途中まで** | Half done | Agent 2026-10-06 |  |
+| — — — | Today's words | **今日の言葉** | Today's words | Agent 2026-10-06 |  |
+| — — — | The same word for everybody today at each length, the same two for a {futago} and four for a {yotsugo}, the same word that dodges for a {nige} and a word to avoid for a {sakasa}, new at midnight UTC. | **今日の単語は、どの長さも全員が同じです。{futago}では同じ2つ、{yotsugo}では同じ4つ、{nige}では同じ逃げる単語、{sakasa}では同じ避ける単語で、UTCの午前0時に新しくなります。** | The same word for everybody today at each length, the same two for a {futago} and four for a {yotsugo}, the same word that dodges for a {nige} and a word to avoid for a {sakasa}, new at midnight UTC. | Agent 2026-10-06 |  |
+| — — — | not found | **見つからなかった** | not found | Agent 2026-10-06 |  |
+| — — — | Not yet | **まだ** | Not yet | Agent 2026-10-06 |  |
+| — — — | Past words | **過去の単語** | Past words | Agent 2026-10-06 |  |
+| — — — | Today's {size} | **今日の{size}** | Today's {size} | Agent 2026-10-06 |  |
+| — — — | Four hidden words, {guesses} guesses: each goes to all four, and each key shows all four colours. | **4つの単語が隠れていて、予想は{guesses}回です。予想は4つすべてに送られ、キーは4つの色をすべて表します。** | Four hidden words, {guesses} guesses: each goes to all four, and each key shows all four colours. | Agent 2026-10-06 |  |
+| — — — | How many words | **単語の数** | How many words | Agent 2026-10-06 |  |
+| — — — | One hidden word, one board. | **隠れた単語は1つ、盤も1つです。** | One hidden word, one board. | Agent 2026-10-06 |  |
+| — — — | One word | **一語** | One word | Agent 2026-10-06 |  |
+| — — — | Two hidden words, {guesses} guesses: each goes to both words, and each key shows both colours. | **2つの単語が隠れていて、予想は{guesses}回です。予想は両方に送られ、キーは両方の色を表します。** | Two hidden words, {guesses} guesses: each goes to both words, and each key shows both colours. | Agent 2026-10-06 |  |
+| — — — | Played backwards, a head start would only take letters away, so there is none. | **逆さに遊ぶときは、先手は文字を減らすだけなので、ありません。** | Played backwards, a head start would only take letters away, so there is none. | Agent 2026-10-06 |  |
+| — — — | {count} {unit} not in {which} start grey: a free guess that uses no row. It costs {points} points. | **{which}入っていない{unit}が{count}個、最初から灰色になります。行を使わない無料の予想ですが、{points}点かかります。** | {count} {unit} not in {which} start grey: a free guess that uses no row. It costs {points} points. | Agent 2026-10-06 |  |
+| — — — | A word that dodges hides nothing yet, so there is nothing to grey before the first guess. | **逃げる単語は、まだ何も隠していないので、最初の予想の前に灰色にするものはありません。** | A word that dodges hides nothing yet, so there is nothing to grey before the first guess. | Agent 2026-10-06 |  |
+| — — — | kana | **かな** | kana | Agent 2026-10-06 |  |
+| — — — | letters | **文字** | letters | Agent 2026-10-06 |  |
+| — — — | A head start is for easy: choose Easy to have one. | **先手は初級のためのものです。使うには、初級を選んでください。** | A head start is for easy: choose Easy to have one. | Agent 2026-10-06 |  |
+| — — — | Nothing is ruled out on the keyboard until the board rules it out. | **盤が決めるまで、キーボードでは何も消えません。** | Nothing is ruled out on the keyboard until the board rules it out. | Agent 2026-10-06 |  |
+| — — — | No head start | **先手なし** | No head start | Agent 2026-10-06 |  |
+| — — — | any of the four words | **4つの単語のどれにも** | any of the four words | Agent 2026-10-06 |  |
+| — — — | the word | **単語に** | the word | Agent 2026-10-06 |  |
+| — — — | either word | **どちらの単語にも** | either word | Agent 2026-10-06 |  |
+| — — — | Found in {count} | **{count}で発見** | Found in {count} | Agent 2026-10-06 |  |
+| — — — | Guesses: {list} | **予想：{list}** | Guesses: {list} | Agent 2026-10-06 |  |
+| — — — | Your newest {count} of {total}. | **{total}件のうち、新しい{count}件です。** | Your newest {count} of {total}. | Agent 2026-10-06 |  |
+| — — — | Its guesses were not kept: it was played before they were. | **予想は保存されていません。保存される前に遊んだものです。** | Its guesses were not kept: it was played before they were. | Agent 2026-10-06 |  |
+| — — — | Not found | **見つからなかった** | Not found | Agent 2026-10-06 |  |
+| — — — | {unit} was grey, and may not be used again | **{unit}は灰色だったので、もう使えません** | {unit} was grey, and may not be used again | Agent 2026-10-06 |  |
+| — — — | {kana} must stay in place {place} | **{kana}は、{place}番目のままにします** | {kana} must stay in place {place} | Agent 2026-10-06 |  |
+| — — — | {kana} must be used | **{kana}を使う必要があります** | {kana} must be used | Agent 2026-10-06 |  |
+| — — — | the {ordinal} letter must be {unit} | **{ordinal}の文字は、{unit}のままにします** | the {ordinal} letter must be {unit} | Agent 2026-10-06 |  |
+| — — — | {unit} has been played already | **{unit}は、もう打ちました** | {unit} has been played already | Agent 2026-10-06 |  |
+| — — — | the {ordinal} must stay {unit} | **{ordinal}は、{unit}のままにします** | the {ordinal} must stay {unit} | Agent 2026-10-06 |  |
+| — — — | the guess must use {unit} | **予想には、{unit}を使う必要があります** | the guess must use {unit} | Agent 2026-10-06 |  |
+| — — — | change the kana: {what} | **かなを変える：{what}** | change the kana: {what} | Agent 2026-10-06 |  |
+| — — — | its column is here | **この列にある** | its column is here | Agent 2026-10-06 |  |
+| — — — | delete a kana | **かなを消す** | delete a kana | Agent 2026-10-06 |  |
+| — — — | delete a letter | **文字を消す** | delete a letter | Agent 2026-10-06 |  |
+| — — — | in the word elsewhere | **単語のほかの場所** | in the word elsewhere | Agent 2026-10-06 |  |
+| — — — | Enter | **決定** | Enter | Agent 2026-10-06 |  |
+| — — — | first word | **1つめの単語** | first word | Agent 2026-10-06 |  |
+| — — — | fourth word | **4つめの単語** | fourth word | Agent 2026-10-06 |  |
+| — — — | in its place | **正しい場所** | in its place | Agent 2026-10-06 |  |
+| — — — | make {kana} | **{kana}にする** | make {kana} | Agent 2026-10-06 |  |
+| — — — | its mark | **濁点・半濁点** | its mark | Agent 2026-10-06 |  |
+| — — — | {kind}: nothing to change | **{kind}：変えられるものはありません** | {kind}: nothing to change | Agent 2026-10-06 |  |
+| — — — | not in it | **単語にない** | not in it | Agent 2026-10-06 |  |
+| — — — | not tried | **まだ試していない** | not tried | Agent 2026-10-06 |  |
+| — — — | second word | **2つめの単語** | second word | Agent 2026-10-06 |  |
+| — — — | small or large | **大きさ** | small or large | Agent 2026-10-06 |  |
+| — — — | third word | **3つめの単語** | third word | Agent 2026-10-06 |  |
+| — — — | word {count} | **単語{count}** | word {count} | Agent 2026-10-06 |  |
+| — — — | Hide keys | **キーを隠す** | Hide keys | Agent 2026-10-06 |  |
+| — — — | Show keys | **キーを出す** | Show keys | Agent 2026-10-06 |  |
+| — — — | Another lattice → | **別の格子 →** | Another lattice → | Agent 2026-10-06 |  |
+| — — — | : as few as it can be done in | **（これ以上少なくできません）** | : as few as it can be done in | Agent 2026-10-06 |  |
+| — — — | · Tap a letter, then another, to swap them, or drag one onto the other. | **· 文字をタップして、もう1つの文字をタップすると入れ替わります。文字を別の文字の上にドラッグしてもかまいません。** | · Tap a letter, then another, to swap them, or drag one onto the other. | Agent 2026-10-06 |  |
+| — — — | as you left it. | **に保存されています。** | as you left it. | Agent 2026-10-06 |  |
+| — — — | Kept in | **そのままの状態で** | Kept in | Agent 2026-10-06 |  |
+| — — — | {count} swap left | **入れ替えは残り{count}回** | {count} swap left | Agent 2026-10-06 |  |
+| — — — | {count} swaps left | **入れ替えは残り{count}回** | {count} swaps left | Agent 2026-10-06 |  |
+| — — — | wanted by neither of its words | **どちらの単語にも不要** | not needed by either word | Agent 2026-10-06 |  |
+| — — — | wanted elsewhere in one of its words | **どちらかの単語の別の場所に必要** | needed elsewhere in one of the words | Agent 2026-10-06 |  |
+| — — — | {kept} of {total} swaps to spare | **余った入れ替えは{total}回中{kept}回** | {kept} of {total} swaps to spare | Agent 2026-10-06 |  |
+| — — — | {count} swap, {kept} to spare{note}. | **入れ替え{count}回、余り{kept}回{note}。** | {count} swap, {kept} to spare{note}. | Agent 2026-10-06 |  |
+| — — — | {count} swaps, {kept} to spare{note}. | **入れ替え{count}回、余り{kept}回{note}。** | {count} swaps, {kept} to spare{note}. | Agent 2026-10-06 |  |
+| — — — | Four words | **4つの単語** | Four words | Agent 2026-10-06 |  |
+| — — — | Two words | **2つの単語** | Two words | Agent 2026-10-06 |  |
+| — — — | fifth | **5つ目** | fifth | Agent 2026-10-06 |  |
+| — — — | first | **1つ目** | first | Agent 2026-10-06 |  |
+| — — — | fourth | **4つ目** | fourth | Agent 2026-10-06 |  |
+| — — — | {n}th | **{n}つ目** | {n}th | Agent 2026-10-06 |  |
+| — — — | second | **2つ目** | second | Agent 2026-10-06 |  |
+| — — — | seventh | **7つ目** | seventh | Agent 2026-10-06 |  |
+| — — — | sixth | **6つ目** | sixth | Agent 2026-10-06 |  |
+| — — — | third | **3つ目** | third | Agent 2026-10-06 |  |
+| — — — | Four more words → | **さらに4つの単語 →** | Four more words → | Agent 2026-10-06 |  |
+| — — — | Another word → | **別の単語 →** | Another word → | Agent 2026-10-06 |  |
+| — — — | Two more words → | **さらに2つの単語 →** | Two more words → | Agent 2026-10-06 |  |
+| — — — | Caught on row {n} of {rows}:  | **{rows}行中{n}行めで引っかかりました：** | Caught on row {n} of {rows}:  | Agent 2026-10-06 |  |
+| — — — | Caught on row {n} | **{n}行めで引っかかった** | Caught on row {n} | Agent 2026-10-06 |  |
+| — — — |  was the word. | **が、その単語でした。** |  was the word. | Agent 2026-10-06 |  |
+| — — — | Out of {rows} guesses | **予想{rows}回を使い切りました** | Out of {rows} guesses | Agent 2026-10-06 |  |
+| — — — | with your guesses. | **に保存されています。** | with your guesses. | Agent 2026-10-06 |  |
+| — — — | Kept in | **予想といっしょに** | Kept in | Agent 2026-10-06 |  |
+| — — — | +{points} XP for playing it out.  | **最後まで遊んで+{points}経験値。** | +{points} XP for playing it out.  | Agent 2026-10-06 |  |
+| — — — | It was still hiding among {count} words, one of them | **まだ{count}個の単語のどれかに隠れていました。その1つは** | It was still hiding among {count} words, one of them | Agent 2026-10-06 |  |
+| — — — | . | **でした。** | . | Agent 2026-10-06 |  |
+| — — — | The word was | **単語は** | The word was | Agent 2026-10-06 |  |
+| — — — | The words were | **単語は** | The words were | Agent 2026-10-06 |  |
+| — — — | Categories | **カテゴリ** | Categories | Agent 2026-10-06 |  |
+| — — — | Category | **カテゴリ** | Category | Agent 2026-10-06 |  |
+| — — — | — caught on the first row. | **— 最初の行で引っかかりました。** | — caught on the first row. | Agent 2026-10-06 |  |
+| — — — | Columns | **列** | Columns | Agent 2026-10-06 |  |
+| — — — | Found elsewhere | **ほかの場所で発見** | Found elsewhere | Agent 2026-10-06 |  |
+| — — — | Every row | **すべての行** | Every row | Agent 2026-10-06 |  |
+| — — — | In place | **正しい場所** | In place | Agent 2026-10-06 |  |
+| — — — | — nothing of the word was found. | **— 単語の文字は、ひとつも見つかりませんでした。** | — nothing of the word was found. | Agent 2026-10-06 |  |
+| — — — | Rows got through | **通り抜けた行** | Rows got through | Agent 2026-10-06 |  |
+| — — — | Speed | **速さ** | Speed | Agent 2026-10-06 |  |
+| — — — | English words from SCOWL, Kevin Atkinson's spelling lists: easy hides one of the commonest. | **英語の単語は、Kevin Atkinsonの綴りリスト「SCOWL」からです。初級は、ごく身近な単語のどれかが答えです。** | English words from SCOWL, Kevin Atkinson's spelling lists: easy hides one of the commonest. | Agent 2026-10-06 |  |
+| — — — | French words from Lexique, every hidden one in Wiktionary too; accents fold to their letter. | **フランス語の単語は「Lexique」からで、答えはどれもWiktionaryにもあります。アクセント記号は、ふつうの文字として扱います。** | French words from Lexique, every hidden one in Wiktionary too; accents fold to their letter. | Agent 2026-10-06 |  |
+| — — — | German words from LanguageTool's dictionary, with Ä, Ö and Ü as letters of their own. | **ドイツ語の単語は、LanguageToolの辞書からです。Ä、Ö、Üは、それぞれ独立した文字です。** | German words from LanguageTool's dictionary, with Ä, Ö and Ü as letters of their own. | Agent 2026-10-06 |  |
+| — — — | Kana words from JMdict, in hiragana, typed on the kana keys or in romaji. | **かなの単語は、JMdictからで、ひらがなです。かなのキーか、ローマ字で打ちます。** | Kana words from JMdict, in hiragana, typed on the kana keys or in romaji. | Agent 2026-10-06 |  |
+| — — — | Pop culture words kept by hand, each shown with its category: a Pokemon, a Greek deity. | **ポップカルチャーの言葉は、手で管理していて、それぞれカテゴリが示されます。たとえば、ポケモンやギリシャの神です。** | Pop culture words kept by hand, each shown with its category: a Pokemon, a Greek deity. | Agent 2026-10-06 |  |
+| — — — | Pop culture is in English only. | **ポップカルチャーは、英語だけです。** | Pop culture is in English only. | Agent 2026-10-06 |  |
+| — — — | Word list | **単語リスト** | Word list | Agent 2026-10-06 |  |
+| — — — | Every guess goes to all four words.   | **予想は、4つすべての単語に送られます。** | Every guess goes to all four words.   | Agent 2026-10-06 |  |
+| — — — | Every guess goes to both words.   | **予想は、両方の単語に送られます。** | Every guess goes to both words.   | Agent 2026-10-06 |  |
+| — — — | The first word is free, grey everywhere.   | **最初の単語は無料で、すべて灰色です。** | The first word is free, grey everywhere.   | Agent 2026-10-06 |  |
+| — — — | The first word is free, grey everywhere in all four quarters.   | **最初の単語は無料で、4つの区画のすべてに対してすべて灰色です。** | The first word is free, grey everywhere in all four quarters.   | Agent 2026-10-06 |  |
+| — — — | The first word is free, grey everywhere for both words.   | **最初の単語は無料で、両方の単語に対してすべて灰色です。** | The first word is free, grey everywhere for both words.   | Agent 2026-10-06 |  |
+| — — — | : it goes to all four words | **（4つすべての単語に送られます）** | : it goes to all four words | Agent 2026-10-06 |  |
+| — — — | : it goes to both words | **（両方の単語に送られます）** | : it goes to both words | Agent 2026-10-06 |  |
+| — — — | {count} guess left{dodge}. | **予想は残り{count}回{dodge}。** | {count} guess left{dodge}. | Agent 2026-10-06 |  |
+| — — — | {count} guesses left{dodge}. | **予想は残り{count}回{dodge}。** | {count} guesses left{dodge}. | Agent 2026-10-06 |  |
+| — — — | A guess is {size} kana. | **予想は{size}文字です。** | A guess is {size} kana. | Agent 2026-10-06 |  |
+| — — — | A guess is {size} letters. | **予想は{size}文字です。** | A guess is {size} letters. | Agent 2026-10-06 |  |
+| — — — | , and {count} word for it to hide among | **、隠れられる単語は{count}個** | , and {count} word for it to hide among | Agent 2026-10-06 |  |
+| — — — | , and {count} words for it to hide among | **、隠れられる単語は{count}個** | , and {count} words for it to hide among | Agent 2026-10-06 |  |
+| — — — | {word} is not in the word list. | **{word}は、単語リストにありません。** | {word} is not in the word list. | Agent 2026-10-06 |  |
+| — — — | {mode}: {reason}. | **{mode}の決まり：{reason}。** | {mode} rule: {reason}. | Agent 2026-10-06 |  |
+| — — — | Type a {size}-letter word and press Enter{goes}. {count} guess left{dodge}. | **{size}文字の単語を打って、Enterを押します{goes}。予想は残り{count}回{dodge}。** | Type a {size}-letter word and press Enter{goes}. {count} guess left{dodge}. | Agent 2026-10-06 |  |
+| — — — | Type a {size}-letter word and press Enter{goes}. {count} guesses left{dodge}. | **{size}文字の単語を打って、Enterを押します{goes}。予想は残り{count}回{dodge}。** | Type a {size}-letter word and press Enter{goes}. {count} guesses left{dodge}. | Agent 2026-10-06 |  |
+| — — — | Type any {size}-letter word but the hidden one, keeping every letter uncovered. {count} row to get through. | **隠れた単語以外の{size}文字の単語を打ち、見つかった文字をすべて使い続けます。通り抜ける行は、あと{count}行です。** | Type any {size}-letter word but the hidden one, keeping every letter uncovered. {count} row to get through. | Agent 2026-10-06 |  |
+| — — — | Type any {size}-letter word but the hidden one, keeping every letter uncovered. {count} rows to get through. | **隠れた単語以外の{size}文字の単語を打ち、見つかった文字をすべて使い続けます。通り抜ける行は、あと{count}行です。** | Type any {size}-letter word but the hidden one, keeping every letter uncovered. {count} rows to get through. | Agent 2026-10-06 |  |
+| — — — | Type any word but the hidden one, keeping every kana uncovered. {count} row to get through. | **隠れた単語以外の単語を打ち、見つかったかなをすべて使い続けます。通り抜ける行は、あと{count}行です。** | Type any word but the hidden one, keeping every kana uncovered. {count} row to get through. | Agent 2026-10-06 |  |
+| — — — | Type any word but the hidden one, keeping every kana uncovered. {count} rows to get through. | **隠れた単語以外の単語を打ち、見つかったかなをすべて使い続けます。通り抜ける行は、あと{count}行です。** | Type any word but the hidden one, keeping every kana uncovered. {count} rows to get through. | Agent 2026-10-06 |  |
+| — — — | Find it | **探す** | Find it | Agent 2026-10-06 |  |
+| — — — | Hidden before the first guess, and found before the rows run out. | **最初の予想の前は隠れていて、行が尽きる前に見つかります。** | Hidden before the first guess, and found before the rows run out. | Agent 2026-10-06 |  |
+| — — — | How the word is played | **単語の遊び方** | How the word is played | Agent 2026-10-06 |  |
+| — — — | Pop culture words are found from their category, so they are only ever found. | **ポップカルチャーの言葉は、カテゴリから見つけるので、見つける遊び方しかありません。** | Pop culture words are found from their category, so they are only ever found. | Agent 2026-10-06 |  |
 | — — — | This game did not count | **この対局はレーティングに反映されませんでした** | This game was not reflected in ratings | Agent 2026-10-06 |  |
 | — — — | One side took a handicap, so the two of you are not playing by the same rules. A rating is an exchange between two players on equal terms, and a handicap game cannot give the site one — so it is filed and replayed like any other, but no rating moves. | **片方がハンデを受けているため、2人は同じ規則で打っていません。レーティングは対等な2人のあいだでやりとりするものなので、ハンデ戦には反映できません。対局はほかの対局と同じように記録され、再生もできますが、レーティングは動きません。** | One side has a handicap, so the two of you are not playing by the same rules. A rating is exchanged between two players on equal terms, so it cannot be applied to a handicap game. The game is recorded and can be replayed like any other, but no rating moves. | Agent 2026-10-06 |  |
 | — — — | Will not count — a handicap | **レーティング対象外（ハンデ戦）** | Not counted for rating (a handicap game) | Agent 2026-10-06 |  |
@@ -1537,16 +2565,13 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | No stones were played in this game. | **この対局では、石が打たれていません。** | No stones were played in this game. | Agent 2026-10-06 |  |
 | — — — | Page {page} of {pages} · {games} | **{pages}ページ中{page}ページ目・{games}** | Page {page} of {pages} · {games} | Agent 2026-10-06 |  |
 | — — — | Pagination | **ページ送り** | Page navigation | Agent 2026-10-06 |  |
-| — — — | Pause | **一時停止** | Pause | Agent 2026-10-06 |  |
 | — — — | Play | **再生** | Play | Agent 2026-10-06 |  |
 | — — — | Previous | **前へ** | Previous | Agent 2026-10-06 |  |
 | — — — | {shown} of {total} shown — reading more… | **{total}局中{shown}局を表示しています。続きを読み込み中…** | {shown} of {total} games are shown. Loading more… | Agent 2026-10-06 |  |
 | — — — | {shown} of {total} shown. Keep scrolling for more. | **{total}局中{shown}局を表示しています。下へスクロールすると続きが出ます。** | {shown} of {total} games are shown. Keep scrolling for more. | Agent 2026-10-06 |  |
-| — — — | — remove | **— 外す** | — remove | Agent 2026-10-06 |  |
 | — — — | Replay: {black} vs {white} | **再生：{black}対{white}** | Replay: {black} against {white} | Agent 2026-10-06 |  |
 | — — — | What they said | **交わした言葉** | What they said | Agent 2026-10-06 |  |
 | — — — | More games could not be loaded just now — the pages below still work. | **いまは続きを読み込めませんでした。下のページ送りは使えます。** | More could not be loaded just now. The page links below still work. | Agent 2026-10-06 |  |
-| — — — | Move | **手** | Move | Agent 2026-10-06 |  |
 | — — — | Not well | **うまくいかなかった** | Did not go well | Agent 2026-10-06 |  |
 | — — — | Private; only you see it. | **非公開です。自分だけに見えます。** | It is private. Only you can see it. | Agent 2026-10-06 |  |
 | — — — | How do you think you played? | **自分の対局はどうでしたか？** | How was your own game? | Agent 2026-10-06 |  |
@@ -1638,7 +2663,6 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | The computer | **コンピュータ** | The computer | Agent 2026-10-06 |  |
 | — — — | See the board | **盤を見る** | See the board | Agent 2026-10-06 |  |
 | — — — | {who} share the win | **{who}で勝ちを分け合いました** | {who} shared the win | Agent 2026-10-06 |  |
-| — — — | Solved | **解決** | Solved | Agent 2026-10-06 |  |
 | — — — | {who} wins | **{who}の勝ち** | {who} wins | Agent 2026-10-06 |  |
 | — — — | You win | **勝ちです** | You win | Agent 2026-10-06 |  |
 

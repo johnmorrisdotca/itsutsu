@@ -2,6 +2,9 @@
 
 import type { ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cellLabel } from "@/lib/puzzles/cellLabel";
+
 import { PuzzleBoard } from "./PuzzleBoard";
 import { TowerRing } from "./TowerRing";
 import type { Mark } from "@/lib/puzzles/moreOrLess/code";
@@ -75,6 +78,7 @@ export function PuzzleGrid({
   /** The cells Hint marked wrong (`useHints`); none by default. */
   wrong?: ReadonlySet<number>;
 }) {
+  const say = useSpeaker();
   /*
    * Where the heavy rules go: between two cells of different regions — a
    * Number Place or Diagonal box, or a Jigsaw's own shapes. One rule draws
@@ -128,7 +132,7 @@ export function PuzzleGrid({
               style={cellTextStyle(size)}
               onClick={() => onSelect(index)}
               disabled={done}
-              aria-label={`row ${row + 1}, column ${col + 1}, ${value === 0 ? "empty" : symbolOf(value)}${isGiven ? ", given" : ""}${sumAt.has(index) ? `, a cage adding to ${sumAt.get(index)}` : ""}`}
+              aria-label={cellLabel(say, row, col, value === 0 ? say.say("pgrid.cell.empty") : symbolOf(value), ...(isGiven ? [say.say("pgrid.cell.given")] : []), ...(sumAt.has(index) ? [say.say("pgrid.cell.cage", { sum: String(sumAt.get(index)) })] : []))}
               aria-pressed={selected === index}
               data-testid="puzzle-cell"
               data-index={index}

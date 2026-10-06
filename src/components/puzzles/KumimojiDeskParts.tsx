@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { TileWords } from "@/lib/puzzles/kumimoji/tileWords";
 import type { KumimojiLanguage } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
@@ -23,10 +24,11 @@ export function KumimojiWildPicker({
   disabled: boolean;
   onChoose: (code: string) => void;
 }) {
+  const say = useSpeaker();
   const unread = words.wildSound(tile) === null;
   return (
     <label className="flex flex-wrap items-center gap-2 text-sm" data-testid="kumimoji-tile-adjustment">
-      <span>{language === "japanese" ? "This wild tile is the kana" : "This wild tile is the letter"}</span>
+      <span>{say.say(language === "japanese" ? "pkumi.wild.kana" : "pkumi.wild.letter")}</span>
       <select
         className="rounded border border-rule bg-paper px-2 py-1 text-ink"
         value={unread ? "" : tile}
@@ -34,7 +36,7 @@ export function KumimojiWildPicker({
         disabled={disabled}
         data-testid="kumimoji-tile-reading"
       >
-        {unread ? <option value="">Choose reading</option> : null}
+        {unread ? <option value="">{say.say("pkumi.wild.chooseReading")}</option> : null}
         {words.wildOptions.map((face) => {
           const code = words.wildFor(face);
           return code === null ? null : <option key={code} value={code}>{face}</option>;
@@ -61,13 +63,14 @@ export function KumimojiGhost({ ghost }: { ghost: { x: number; y: number; letter
 
 /** The mark beside a computer's name wherever it is shown: a small robot and the word. */
 export function ComputerMark() {
+  const say = useSpeaker();
   return (
-    <span className={COMPUTER_MARK} data-testid="kumimoji-party-computer-mark" title="A computer plays this seat">
+    <span className={COMPUTER_MARK} data-testid="kumimoji-party-computer-mark" title={say.say("pkumi.computer.seatTitle")}>
       <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="2.5" y="5" width="11" height="8" rx="2" />
         <path d="M8 5V2.5M6 9h.01M10 9h.01M6 11.25h4" strokeLinecap="round" />
       </svg>
-      Bot
+      {say.say("pkumi.computer.mark")}
     </span>
   );
 }

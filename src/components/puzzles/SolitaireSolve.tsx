@@ -19,7 +19,7 @@ import { solitaireScore } from "@/lib/puzzles/solitaire/scoring";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { SOLITAIRE_COPY } from "./puzzles.constants";
+import { solitaireCopy } from "./cardWords";
 import { SolitaireScoreChips } from "./SolitaireSetUpOptions";
 import { SolitaireTable } from "./SolitaireTable";
 import { SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
@@ -56,6 +56,7 @@ export function SolitaireSolve({
   appearance?: Appearance;
 }) {
   const say = useSpeaker();
+  const SOLITAIRE_COPY = solitaireCopy(say.locale);
   const hydrated = useHydrated();
   const rules = useMemo(() => solitaireRules(puzzle.size, puzzle.level), [puzzle.size, puzzle.level]);
   const game = useKlondikeGame(puzzle.givens, rules, resumed?.progress ?? null);
@@ -149,14 +150,14 @@ export function SolitaireSolve({
       <CardDragGhost ghost={drag.ghost} ghostRef={drag.ghostRef} />
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT}`} onClick={() => { game.undo(); setPicked(null); }} disabled={!live || moves.length === 0 || game.finishing} data-testid="solitaire-undo">
-          Undo
+          {say.say("puzzle.press.undo")}
         </button>
         <p className="text-sm tabular-nums" data-testid="solitaire-move-count">
           {say.count("count.move", moves.length)}
         </p>
         {score === null ? null : (
           <p className="text-sm tabular-nums" data-testid="solitaire-score" data-scoring={scoring}>
-            {scoring === "vegas" ? "Vegas" : "Score"} {score}
+            {say.say(scoring === "vegas" ? "pcard.score.vegas" : "pcard.score.score", { score: String(score) })}
           </p>
         )}
         {done === null ? (

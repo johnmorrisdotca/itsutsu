@@ -7,13 +7,15 @@ import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { FeltPatches } from "@/components/board/FeltPatches";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BoardPicker } from "@/components/live/BoardPicker";
 import { START_PRESS } from "@/components/live/live.constants";
 import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
 import { SetUpSection } from "@/components/live/SetUpSection";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
-import { PUZZLE_DISPLAY, PUZZLE_SIZE_NAMES, sizesOffered } from "@/lib/puzzles/puzzles.constants";
+import { puzzleCopy } from "@/lib/puzzles/puzzleCopy";
+import { PUZZLE_SIZE_NAMES, sizesOffered } from "@/lib/puzzles/puzzles.constants";
 import { blockOf, blockRange, blocksIn } from "@johnmorrisdotca/tsunagi";
 import { tsunagiRole } from "@johnmorrisdotca/tsunagi";
 import { TsunagiLevelChips } from "./TsunagiLevelChips";
@@ -92,10 +94,11 @@ function TsunagiSetUpFor({
   set: TsunagiSet;
   onSet: (next: TsunagiSet) => void;
 }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   // Every board the shelves turn to: the same list the front door names (`sizesOffered`), or the sizes the levels with portals come in.
   const boards: readonly number[] = set === "portals" ? TSUNAGI_PORTAL_SIZES : sizesOffered("tsunagi");
-  const copy = PUZZLE_DISPLAY.tsunagi;
+  const copy = puzzleCopy("tsunagi", say.locale);
   // Four tiles at a time, the last shelf full (`useSizeShelves`).
   const { size, setSize, shown, onLast, turnShelf, furthest } = useSizeShelves(boards, boards.includes(initialSize) ? initialSize : boards[0]!);
   const { felt, chooseFelt } = useFeltChoice(appearance);
@@ -178,30 +181,30 @@ function TsunagiSetUpFor({
             marks={marks}
           />
           <div className="flex items-center gap-2" data-testid="tsunagi-blocks">
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(-1)} disabled={block <= 1} aria-label="The block before" data-testid="tsunagi-block-back">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(-1)} disabled={block <= 1} aria-label={say.say("pmaze.blockBefore")} data-testid="tsunagi-block-back">
               ‹
             </button>
             <span className="min-w-44 text-center text-sm tabular-nums" data-testid="tsunagi-block" data-block={block}>
-              Block {block} of {blocks} · levels {first}–{last}
+              {say.say("pmaze.blockLine", { block: String(block), blocks: String(blocks), first: String(first), last: String(last) })}
             </span>
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(1)} disabled={block >= blocks} aria-label="The block after" data-testid="tsunagi-block-on">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2.5 py-1 text-sm`} onClick={() => turnBlock(1)} disabled={block >= blocks} aria-label={say.say("pmaze.blockAfter")} data-testid="tsunagi-block-on">
               ›
             </button>
           </div>
           <p className="text-xs text-muted" data-testid="tsunagi-levels-caption">
-            {size}×{size}{set === "portals" ? " with portals" : ""}: {done.size} of {count} solved. Each block of 16 opens when the one before it is all solved.
+            {say.say("pmaze.tallyBlocks", { what: set === "portals" ? say.say("pmaze.tsunagi.withPortals", { size: String(size) }) : `${size}×${size}`, done: String(done.size), count: String(count) })}
           </p>
         </div>
         <div className="flex max-w-full flex-col items-center gap-2 md:shrink-0" data-testid="tsunagi-sizes">
           <BoardPicker value={size} sizes={shown} onChange={setSize} names={PUZZLE_SIZE_NAMES.tsunagi} beside />
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm`} onClick={turnShelf} data-testid="tsunagi-more-sizes">
-            {onLast ? `← Smaller boards, from ${boards[0]}×${boards[0]}` : `Bigger boards, to ${furthest}×${furthest} →`}
+            {onLast ? say.say("pmaze.smallerBoards", { size: `${boards[0]}×${boards[0]}` }) : say.say("pmaze.biggerBoards", { size: `${furthest}×${furthest}` })}
           </button>
         </div>
       </div>
 
       <div className={SET_UP_OPTIONS_AND_PLAY}>
-        <SetUpSection title="Options" kanji="設定" testId="puzzle-settings">
+        <SetUpSection title={say.say("pset.options")} kanji="設定" testId="puzzle-settings">
           <p className="text-xs text-muted" data-testid="puzzle-size-note">
             {copy.board}
           </p>
@@ -216,22 +219,22 @@ function TsunagiSetUpFor({
           {chosenLocked ? (
             // The same button, saying why it cannot start: a locked level is looked at, never played.
             <span className={`${PLAY_BUTTON} cursor-not-allowed opacity-60`} aria-disabled="true" data-testid="puzzle-solve" data-level={chosen} data-locked="true">
-              <PressLabel words={`Level ${chosen} is locked`} kanji="鍵" />
+              <PressLabel words={say.say("pmaze.levelLocked", { level: String(chosen) })} kanji="鍵" />
             </span>
           ) : (
             <Link href={tsunagiLevelPath(size, seedIn(set, chosen))} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen} data-set={set}>
-              <PressLabel words={`${START_PRESS.start.words} level ${chosen}`} kanji={START_PRESS.start.kanji} />
+              <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={START_PRESS.start.kanji} />
             </Link>
           )}
           {/* What the level Start plays asks, before it is started. */}
           <TsunagiLevelChips size={size} level={chosen} set={set} challenges={tsunagiRole(size, chosen, set)?.challenges ?? (set === "portals" ? ["portals"] : [])} />
           {skippedPast ? (
             <p className="text-xs text-muted" data-testid="tsunagi-first-unsolved">
-              Level {gap} is the first one you have not finished.
+              {say.say("pmaze.firstUnfinished", { level: String(gap) })}
             </p>
           ) : null}
           <p className="text-xs text-muted" data-testid="tsunagi-kept-where">
-            {hasAccount ? "Your solved levels are kept on your account." : "Your solved levels are kept in this browser. Join, and they are kept on an account."}
+            {say.say(hasAccount ? "pmaze.keptAccount" : "pmaze.keptBrowser")}
           </p>
         </div>
       </div>

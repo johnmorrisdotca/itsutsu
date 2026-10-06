@@ -1,5 +1,6 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
 import { useMemo } from "react";
 import { SOLVABLE_SIZES, movementSays, movesNotation, solveSteps, type CubeMove, type SolveStep } from "@johnmorrisdotca/kyuubu";
@@ -7,7 +8,7 @@ import { SOLVABLE_SIZES, movementSays, movesNotation, solveSteps, type CubeMove,
 import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { CUBE_ALGORITHM_NAMES, CUBE_GUIDE_COPY, CUBE_STAGE_WORDS } from "@/lib/learn/cubeMethod";
 
-import { CUBE_COPY } from "./cube.constants";
+import { cubeCopy } from "./mazeWords";
 
 /** The method's steps from here, or null where it is not written for this size or could not be worked out. */
 export function stepsFrom(state: string, n: number): SolveStep[] | null {
@@ -57,6 +58,7 @@ export function CubeGuide({
   onCube: boolean;
   onToggleCube: () => void;
 }) {
+  const CUBE_COPY = cubeCopy(useSpeaker().locale);
   const steps = useMemo(() => (open ? stepsFrom(state, n) : null), [open, state, n]);
   if (!SOLVABLE_SIZES.includes(n)) {
     return (

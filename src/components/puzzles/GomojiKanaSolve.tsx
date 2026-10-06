@@ -1,5 +1,8 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { stopOf } from "@/lib/puzzles/puzzleText";
 import Link from "@/components/ui/Link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -45,6 +48,8 @@ import { PuzzleWayBack } from "./PuzzleWayBack";
 import { WinStack } from "./PuzzleWinSlot";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
 import { ResultMark } from "@/components/game/ResultMark";
+import { BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
+import { DELETE_KEY, ENTER_KEY } from "@/lib/ui/keyNames.constants";
 
 
 function arrowOf(mark: KanaMarked): CellArrow {
@@ -100,6 +105,7 @@ export function GomojiKanaSolve({
 }) {
   const hydrated = useHydrated();
   const { style } = useWordStyle();
+  const say = useSpeaker();
   const keys = useWordKeys();
   // The same board colour picker a Reversi or Gomoku board offers (`useFeltChoice`); every Gomoji style shares it.
   const { felt, chooseFelt } = useFeltChoice(appearance);
@@ -218,18 +224,18 @@ export function GomojiKanaSolve({
     setTyping(row);
     const word = wordOf(row);
     if (word === null) {
-      setSaid(`A guess is ${size} kana.`);
+      setSaid(say.say("pword.solve.guessKana", { size: String(size) }));
       return;
     }
     if (!words.allowed.has(word) && !(given.words.includes(word) && isDailyPoolWord("ja", size, word))) {
-      setSaid(`${word} is not in the word list.`);
+      setSaid(say.say("pword.solve.notInList", { word }));
       return;
     }
     // Strict holds a guess to what every board still being played has found; a found board asks nothing more.
     // A Sakasa holds every guess to what the rows uncovered, whatever Strict says (`breaksBackwardsRule`).
-    const breaks = backwards ? breaksBackwardsRule(kind, guesses, hidden, word) : strict ? (boards.filter((board) => !board.found).map((board) => breaksKanaHardRule(board.guessed, board.word, word)).find((each) => each !== null) ?? null) : null;
+    const breaks = backwards ? breaksBackwardsRule(kind, guesses, hidden, word, say) : strict ? (boards.filter((board) => !board.found).map((board) => breaksKanaHardRule(board.guessed, board.word, word, say)).find((each) => each !== null) ?? null) : null;
     if (breaks !== null) {
-      setSaid(`${backwards ? "Sakasa" : "Strict"}: ${breaks}.`);
+      setSaid(say.say("pword.solve.refused", { mode: backwards ? say.pairName(BACKWARDS_DISPLAY.label, BACKWARDS_DISPLAY.kanji).text : say.say("pset.strict"), reason: breaks }));
       return;
     }
     const at = begin();
@@ -245,7 +251,7 @@ export function GomojiKanaSolve({
       else if (next.length === rows) void finish(next.join(""), at);
     } else if (found) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
-  }, [closed, romaji, typing, size, words, strict, guesses, given, boards, begin, finish, runOut, rows, dodging, backwards, hidden, kind, level]);
+  }, [closed, romaji, typing, size, words, strict, guesses, given, boards, begin, finish, runOut, rows, dodging, backwards, hidden, kind, level, say]);
 
   /* The desk's keyboard: romaji, kana from a Japanese keyboard, Enter, Backspace and Delete, Space and the arrows. */
   useEffect(() => {
@@ -259,10 +265,10 @@ export function GomojiKanaSolve({
       } else if (/^[ぁ-ゖァ-ヶー]$/u.test(event.key)) {
         event.preventDefault();
         kana(toHiragana(event.key));
-      } else if (event.key === "Enter") {
+      } else if (event.key === ENTER_KEY) {
         event.preventDefault();
         enter();
-      } else if (event.key === "Backspace" || event.key === "Delete") {
+      } else if (event.key === "Backspace" || event.key === DELETE_KEY) {
         event.preventDefault();
         back();
       } else if (event.key === " ") {
@@ -313,10 +319,8 @@ export function GomojiKanaSolve({
         <>
           <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
             {said ?? (backwards
-              ? `Type any word but the hidden one, keeping every kana uncovered. ${left} ${left === 1 ? "row" : "rows"} to get through.`
-              : `${free === 1 ? `The first word is free, grey everywhere${count === 4 ? " in all four quarters" : many ? " for both words" : ""}. ` : ""}${count === 4 ? "Every guess goes to all four words. " : many ? "Every guess goes to both words. " : ""}${left} ${left === 1 ? "guess" : "guesses"} left${
-              dodge === null ? "" : `, and ${dodge.standing} ${dodge.standing === 1 ? "word" : "words"} for it to hide among`
-            }.`)}
+              ? say.count("pword.solve.typeBackwardsKana", left)
+              : `${free === 1 ? say.say(count === 4 ? "pword.solve.freeFirstFour" : many ? "pword.solve.freeFirstTwo" : "pword.solve.freeFirst") : ""}${count === 4 ? say.say("pword.solve.allFour") : many ? say.say("pword.solve.allTwo") : ""}${say.count("pword.solve.guessesLeft", left, { dodge: dodge === null ? "" : say.count("pword.solve.hideAmong", dodge.standing) })}`)}
             {romaji === "" ? null : (
               <span className="ml-2 font-mono text-ink" data-testid="kana-romaji">
                 {romaji}…
@@ -350,25 +354,33 @@ export function GomojiKanaSolve({
           {backwards && !done.outOfTime ? (
             <p className="text-base">
               <ResultMark kind="failure" className="mr-1.5" />
-              Caught on row {guesses.length} of {rows}: <strong className="tracking-wide" data-testid="word-was">{hidden}</strong> was the word.
+              {say.say("pword.out.caughtHead", { n: String(guesses.length), rows: String(rows) })}
+              <strong className="tracking-wide" data-testid="word-was">{hidden}</strong>
+              {say.say("pword.out.caughtTail")}
             </p>
           ) : (
             <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
               <ResultMark kind="failure" className="mr-1.5" />
-              {done.outOfTime ? "Out of time" : `Out of ${rows} guesses`}.{" "}
-              {many ? "The words were" : dodge === null || dodge.standing <= 1 ? "The word was" : `It was still hiding among ${dodge.standing} words, one of them`}{" "}
-              <strong className="tracking-wide" data-testid="word-was">{wordsShown(kind, given.words)}</strong>.
+              {done.outOfTime ? say.say("puzzle.outcome.outOfTime") : say.say("pword.out.guesses", { rows: String(rows) })}
+              {stopOf(say)}
+              {say.pairsWithKanji ? " " : ""}
+              {many ? say.say("pword.out.theWords") : dodge === null || dodge.standing <= 1 ? say.say("pword.out.theWord") : say.say("pword.out.stillHiding", { count: String(dodge.standing) })}
+              {say.pairsWithKanji ? " " : ""}
+              <strong className="tracking-wide" data-testid="word-was">{wordsShown(kind, given.words)}</strong>
+              {say.say("pword.out.tail")}
             </p>
           )}
           {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={score!} headStart={headStart} />}
           {hasAccount && race === null ? (
             <p className="text-xs text-muted" data-testid="word-kept">
-              {done.paid !== null && done.paid.points > 0 ? `+${done.paid.points} XP for playing it out. ` : ""}
-              Kept in{" "}
+              {done.paid !== null && done.paid.points > 0 ? say.say("pword.out.playedOutPaid", { points: String(done.paid.points) }) : ""}
+              {say.say("pword.out.keptBefore")}
+              {say.pairsWithKanji ? " " : ""}
               <Link href={viewHref("completed")} className="underline">
-                My games
-              </Link>{" "}
-              with your guesses.
+                {say.say("puzzle.done.keptLink")}
+              </Link>
+              {say.pairsWithKanji ? " " : ""}
+              {say.say("pword.out.keptAfter")}
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2" data-testid="puzzle-way-on">
@@ -377,11 +389,11 @@ export function GomojiKanaSolve({
               className={`${BUTTON_BASE} ${BUTTON_STRONG}`}
               data-testid="word-another"
             >
-              {count === 4 ? "Four more words →" : many ? "Two more words →" : "Another word →"}
+              {say.say(count === 4 ? "pword.out.anotherFour" : many ? "pword.out.anotherTwo" : "pword.out.anotherOne")}
             </Link>
             <PuzzleWayBack kind={kind} />
           </div>
-          <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? "Out of time" : backwards ? `Caught on row ${guesses.length}` : `Out of ${rows} guesses`} />
+          <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? say.say("puzzle.outcome.outOfTime") : backwards ? say.say("pword.out.caughtShort", { n: String(guesses.length) }) : say.say("pword.out.guesses", { rows: String(rows) })} />
         </div>
       ) : (
         <>
@@ -391,15 +403,18 @@ export function GomojiKanaSolve({
       )}
       {/* JMdict's licence asks for this on every page that shows its words. */}
       <p className={`${SELECTABLE} text-xs text-muted`} data-testid="kana-credit">
-        Words from{" "}
-        <a href="https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project" className="underline" rel="noreferrer" target="_blank">
-          JMdict
-        </a>{" "}
-        by the Electronic Dictionary Research and Development Group, used under its{" "}
-        <a href="https://www.edrdg.org/edrdg/licence.html" className="underline" rel="noreferrer" target="_blank">
-          licence
-        </a>{" "}
-        (CC BY-SA 4.0), release {words.release}.
+        {phraseWith(say.say("pword.credit.kana", { release: words.release }), {
+          jmdict: (
+            <a href="https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project" className="underline" rel="noreferrer" target="_blank">
+              JMdict
+            </a>
+          ),
+          licence: (
+            <a href="https://www.edrdg.org/edrdg/licence.html" className="underline" rel="noreferrer" target="_blank">
+              {say.say("pword.credit.licence")}
+            </a>
+          ),
+        })}
       </p>
     </section>
   );

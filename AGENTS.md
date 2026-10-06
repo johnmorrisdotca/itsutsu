@@ -272,6 +272,14 @@ rule that stops the gap growing, and the gate that holds it.
   `opponent.constants.ts` and `analysis.constants.ts` are hashed by the measured
   ladder's fingerprint (`ladderFingerprint.ts`): a word is never edited in
   either, for a translation or anything else, so their Japanese sits beside them.
+  A puzzle's words are the same pair: `puzzleCopy` reads its tagline, origin
+  and rules, and the tables its screens are made of (`mazeWords.ts`,
+  `gridWords.ts`, `cardWords.ts`) lay a Japanese overlay from
+  `src/lib/i18n/dictionaries/puzzles.ja.*` over the English table, which stays
+  in its own file because the pictures' stamp hashes several of them
+  (`puzzleArtFingerprint.ts`): a word is never edited in a stamped file, so its
+  Japanese sits beside it. The screens' sentences are phrases (`pset.*`,
+  `pword.*`, `pgrid.*`, `pmaze.*`, `pkumi.*`, `pcard.*`, `puzzle.*`).
 - **The Japanese is drafted with `back`, and the `japanese-reviewer` agent
   checks it before the change lands.** John does not read Japanese and both
   sites publish it under his name, so a phrase that no reader has passed does

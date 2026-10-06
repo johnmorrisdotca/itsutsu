@@ -39,9 +39,7 @@ const RECORDED = [
   "src/lib/famous",
   // ENJA-06, set-up screen, game screen and every ending
   "src/lib/history",
-  // ENJA-07, puzzles (folders, so a renamed puzzle file breaks nothing)
-  "src/lib/puzzles",
-  "src/components/puzzles",
+  // ENJA-07, puzzles: the folders are done, and what is left is the stamped screens, named one by one
   // ENJA-08, party and card games
   "src/lib/party",
   "src/components/party",
@@ -98,6 +96,28 @@ const RECORDED = [
   "src/proxy.ts",
   "src/lib/phrase",
   "src/lib/api",
+  // ENJA-13 also takes the puzzles' refusals
+  "src/lib/puzzles/puzzleCheck.ts",
+  "src/lib/puzzles/bridges/check.ts",
+  "src/lib/puzzles/koushi/check.ts",
+  "src/lib/puzzles/cube/check.ts",
+  "src/lib/puzzles/freecell/check.ts",
+  "src/lib/puzzles/solitaire/check.ts",
+  "src/lib/puzzles/spider/check.ts",
+  "src/lib/puzzles/meikyuu/check.ts",
+  "src/lib/puzzles/pictureLogic/check.ts",
+  "src/lib/puzzles/tobiishi/check.ts",
+  "src/lib/puzzles/tsunagi/check.ts",
+  "src/lib/puzzles/suido/check.ts",
+  "src/lib/puzzles/pencil/akari.ts",
+  "src/lib/puzzles/pencil/crossSums.ts",
+  "src/lib/puzzles/pencil/hitori.ts",
+  "src/lib/puzzles/pencil/loop.ts",
+  "src/lib/puzzles/pencil/regions.ts",
+  "src/lib/puzzles/pencil/shikaku.ts",
+  "src/lib/puzzles/jirai/board.ts",
+  "src/lib/puzzles/server/puzzleRaceChecks.ts",
+  "src/lib/puzzles/server/puzzleRaces.ts",
 ];
 
 const TICKETS = /^ENJA-(?:05|06|07|08|09|10|11|12|13)$/;

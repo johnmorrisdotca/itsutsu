@@ -45,7 +45,7 @@ export function PatienceControls({
     <>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT}`} onClick={onUndo} disabled={!canUndo} data-testid="patience-undo">
-          Undo
+          {say.say("puzzle.press.undo")}
         </button>
         <p className="text-sm tabular-nums" data-testid="patience-move-count">
           {say.count("count.move", moves)}

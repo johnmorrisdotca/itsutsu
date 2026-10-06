@@ -1,5 +1,7 @@
 "use client";
 
+import { phraseWith } from "@/components/i18n/phraseWith";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { SET_UP_PREVIEW_BOX, SET_UP_PREVIEW_CAPTION } from "@/components/live/live.constants";
 import { meikyuuLevelCount } from "@/lib/puzzles/meikyuu/levelCounts";
 import { meikyuuLevelsAt, meikyuuLevelsLoaded, type MeikyuuLevelRow } from "@/lib/puzzles/meikyuu/levels";
@@ -37,6 +39,7 @@ export function MeikyuuLevelPreview({
   /** Whether the levels have arrived (`loadMeikyuuLevels`). */
   ready: boolean;
 }) {
+  const say = useSpeaker();
   const solved = best !== undefined;
   const row: MeikyuuLevelRow | undefined = ready && meikyuuLevelsLoaded(size) ? meikyuuLevelsAt(size)[level - 1] : undefined;
   // A tall maze stands upright in the box, which is the one size whatever is chosen: the wood is as tall as the box.
@@ -52,14 +55,11 @@ export function MeikyuuLevelPreview({
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION} data-testid="meikyuu-preview-caption">
-        Level {level} of {count} at {meikyuuSizeInWords(size)}
-        {solved ? (
-          <>
-            : solved, best <SolveTime kind="meikyuu" solveId={solveId} elapsedMs={best} mine testId="meikyuu-preview-best" />.
-          </>
-        ) : (
-          ": not solved yet."
-        )}
+        {solved
+          ? phraseWith(say.say("pmaze.preview.solved", { level: String(level), count: String(count), size: meikyuuSizeInWords(size, say) }), {
+              time: <SolveTime kind="meikyuu" solveId={solveId} elapsedMs={best} mine testId="meikyuu-preview-best" />,
+            })
+          : say.say("pmaze.preview.open", { level: String(level), count: String(count), size: meikyuuSizeInWords(size, say) })}
       </figcaption>
     </figure>
   );

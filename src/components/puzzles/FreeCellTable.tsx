@@ -6,8 +6,10 @@ import { BoardFrame } from "@/components/board/BoardFrame";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { CardPile } from "@/components/cards/CardPile";
 import type { CardSpot } from "@/components/cards/cards.types";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cardSays, suitSays } from "@/lib/cards/cardSays";
 import { SUIT_DISPLAY, SUITS } from "@/lib/cards/cards.constants";
-import { cardAt, cardName } from "@/lib/cards/deck";
+import { cardAt } from "@/lib/cards/deck";
 import { CELL_PILES, COLUMN_PILES, FOUNDATION_PILES, freeCellPileCards } from "@johnmorrisdotca/toranpu/freecell";
 import type { FreeCellPile, FreeCellSpot, FreeCellTable as Table } from "@johnmorrisdotca/toranpu/freecell";
 
@@ -44,6 +46,7 @@ export function FreeCellTable({
   onPress?: (spot: FreeCellSpot) => void;
   onLift?: (spot: FreeCellSpot, event: ReactPointerEvent<HTMLElement>) => void;
 }) {
+  const say = useSpeaker();
   const press = readOnly ? undefined : (spot: CardSpot) => onPress?.(spot as FreeCellSpot);
   const lift = readOnly ? undefined : (spot: CardSpot, event: ReactPointerEvent<HTMLElement>) => onLift?.(spot as FreeCellSpot, event);
   const shared = { picked: picked as CardSpot | null, lifted: lifted as CardSpot | null, onPress: press, onLift: lift };
@@ -53,14 +56,14 @@ export function FreeCellTable({
       <div className="absolute inset-0 [container-type:inline-size]" data-testid="freecell-table" data-cells={table.cells.length}>
         {CELL_PILES.slice(0, table.cells.length).map((pile: FreeCellPile, at) => (
           <TablePlace key={pile} left={leftOf(at)} top={gap} width={card}>
-            <CardPile id={pile} label={`Free cell ${at + 1}`} spread="stack" cards={faceUpCards(freeCellPileCards(table, pile))} emptyMark="□" accepts={!readOnly} {...shared} />
+            <CardPile id={pile} label={say.say("pcard.pile.freeCell", { n: String(at + 1) })} spread="stack" cards={faceUpCards(freeCellPileCards(table, pile))} emptyMark="□" accepts={!readOnly} {...shared} />
           </TablePlace>
         ))}
         {FOUNDATION_PILES.map((pile, suit) => (
           <TablePlace key={pile} left={leftOf(4 + suit)} top={gap} width={card}>
             <CardPile
               id={pile}
-              label={`The ${SUIT_DISPLAY[SUITS[suit]].name} foundation`}
+              label={say.say("pcard.pile.foundation", { suit: suitSays(say, SUITS[suit]) })}
               spread="stack"
               cards={faceUpCards(freeCellPileCards(table, pile))}
               emptyMark={SUIT_DISPLAY[SUITS[suit]].symbol}
@@ -75,11 +78,11 @@ export function FreeCellTable({
             <ColumnZone key={pile} pile={pile} left={leftOf(index)} top={columnsTop} card={card} gap={gap} readOnly={readOnly} onPress={press}>
               <CardPile
                 id={pile}
-                label={`Column ${index + 1}`}
+                label={say.say("pcard.pile.column", { n: String(index + 1) })}
                 spread="down"
                 room={room}
                 cards={faceUpCards(column)}
-                labelFor={(spot) => cardName(cardAt(column[spot.index]))}
+                labelFor={(spot) => cardSays(say, cardAt(column[spot.index]))}
                 {...shared}
               />
             </ColumnZone>

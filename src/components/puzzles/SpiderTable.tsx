@@ -6,8 +6,10 @@ import { BoardFrame } from "@/components/board/BoardFrame";
 import type { BoardThemeTokens } from "@/components/board/board.types";
 import { CardPile } from "@/components/cards/CardPile";
 import type { CardSpot } from "@/components/cards/cards.types";
-import { SUIT_DISPLAY, SUITS } from "@/lib/cards/cards.constants";
-import { cardAt, cardName } from "@/lib/cards/deck";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cardSays, suitSays } from "@/lib/cards/cardSays";
+import { SUITS } from "@/lib/cards/cards.constants";
+import { cardAt } from "@/lib/cards/deck";
 import { COLUMNS, RANKS_A_SUIT, RUNS_TO_WIN, canDeal } from "@johnmorrisdotca/toranpu/spider";
 import type { SpiderSpot, SpiderTable as Table } from "@johnmorrisdotca/toranpu/spider";
 
@@ -44,6 +46,7 @@ export function SpiderTable({
   onPress?: (spot: SpiderSpot) => void;
   onLift?: (spot: SpiderSpot, event: ReactPointerEvent<HTMLElement>) => void;
 }) {
+  const say = useSpeaker();
   const press = readOnly ? undefined : (spot: CardSpot) => onPress?.(spot);
   const lift = readOnly ? undefined : (spot: CardSpot, event: ReactPointerEvent<HTMLElement>) => onLift?.(spot, event);
   const shared = { picked: picked as CardSpot | null, lifted: lifted as CardSpot | null, onPress: press, onLift: lift };
@@ -57,10 +60,10 @@ export function SpiderTable({
         <TablePlace left={leftOf(0)} top={gap} width={card}>
           <CardPile
             id="s"
-            label="The stock"
+            label={say.say("pcard.pile.stock")}
             spread="stack"
             cards={faceUpCards(stock, () => false)}
-            labelFor={() => (canDeal(table) ? `The stock: ${deals} ${deals === 1 ? "deal" : "deals"} left. Deal a card to every column` : "The stock")}
+            labelFor={() => (canDeal(table) ? say.count("pcard.pile.stockDeals", deals) : say.say("pcard.pile.stock"))}
             {...shared}
           />
         </TablePlace>
@@ -70,7 +73,7 @@ export function SpiderTable({
             <TablePlace key={at} left={leftOf(COLUMNS - RUNS_TO_WIN + at)} top={gap} width={card}>
               <CardPile
                 id={`f${at}`}
-                label={suit === undefined ? `Run ${at + 1}: not made yet` : `Run ${at + 1}: the ${SUIT_DISPLAY[SUITS[suit]].name}, made`}
+                label={suit === undefined ? say.say("pcard.pile.runNot", { n: String(at + 1) }) : say.say("pcard.pile.runMade", { n: String(at + 1), suit: suitSays(say, SUITS[suit]) })}
                 spread="stack"
                 cards={suit === undefined ? [] : faceUpCards([suit * RANKS_A_SUIT + RANKS_A_SUIT - 1])}
                 {...shared}
@@ -82,11 +85,11 @@ export function SpiderTable({
           <ColumnZone key={index} pile={String(index)} left={leftOf(index)} top={columnsTop} card={card} gap={gap} readOnly={readOnly} onPress={press}>
             <CardPile
               id={String(index)}
-              label={`Column ${index + 1}`}
+              label={say.say("pcard.pile.column", { n: String(index + 1) })}
               spread="down"
               room={room}
               cards={faceUpCards(column.cards, (at) => at >= column.down)}
-              labelFor={(spot) => (spot.index >= column.down ? cardName(cardAt(column.cards[spot.index])) : "a face-down card")}
+              labelFor={(spot) => (spot.index >= column.down ? cardSays(say, cardAt(column.cards[spot.index])) : say.say("pcard.pile.faceDown"))}
               {...shared}
             />
           </ColumnZone>

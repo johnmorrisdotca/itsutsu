@@ -1,6 +1,8 @@
 "use client";
 
-import { WORD_STYLE_DISPLAY, WORD_STYLE_LIST, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { WORD_STYLE_LIST, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
+import { wordStyleDisplay } from "@/lib/puzzles/puzzleCopy";
 
 import { useWordStyle } from "./WordStyleContext";
 
@@ -15,10 +17,12 @@ import { useWordStyle } from "./WordStyleContext";
  * is not offered here reads as the first.
  */
 export function WordStylePicker({ styles = WORD_STYLE_LIST }: { styles?: readonly WordStyle[] } = {}) {
+  const say = useSpeaker();
+  const WORD_STYLE_DISPLAY = wordStyleDisplay(say.locale);
   const { style: chosenStyle, setStyle } = useWordStyle();
   const style = styles.includes(chosenStyle) ? chosenStyle : styles[0];
   return (
-    <div className="flex items-center gap-1.5" role="group" aria-label="How the grid is drawn" data-testid="word-style">
+    <div className="flex items-center gap-1.5" role="group" aria-label={say.say("pset.words.gridDrawn")} data-testid="word-style">
       {styles.map((each) => {
         const chosen = each === style;
         return (
