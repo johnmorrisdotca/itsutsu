@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { gameNameFor } from "@/lib/catalogue/gameKeys";
 import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 
@@ -216,7 +217,7 @@ export default async function DoorstepPage({ params, searchParams }: PageProps<"
       */}
       <PageTitle
         testId="doorstep-title"
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: say.say("gamepages.begin") }]} />}
+        crumb={<GameTrail game={{ label: gameNameFor(variant, say), href: gamePath(variant) }} steps={[{ label: say.say("gamepages.begin") }]} />}
         title={<GameName variant={variant} kanji className="no-underline hover:underline" />}
         lead={
           <>

@@ -6,7 +6,7 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 1663. Drafted and unread: 0. Read by the reviewer agent: 1663.
+Phrases: 1674. Drafted and unread: 0. Read by the reviewer agent: 1674.
 Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 5
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
@@ -34,7 +34,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | From {country} | **発祥：{country}** | Origin: {country} | Agent 2026-10-06, native read wanted | The country is printed as the data holds it, in English ("発祥：Japan"). Localising country names needs a table of its own; John to decide whether to add one. |  |
 | — — — | Sit in with your four words | **4つの合言葉で着席する** | Sit in with my four words | Agent 2026-10-06, native read wanted | The "four words" a member chooses to sit in as themselves are 合言葉 here. The account pages that set them must use the same word; John to confirm 合言葉 is the one he wants. |  |
 
-## 2. Written by a machine — please check these (1593)
+## 2. Written by a machine — please check these (1603)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -667,8 +667,11 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | {count} puzzles | **{count}問** | {count} puzzles. | Agent 2026-10-06 |  |
 | — — — | {count} step | **{count}手順** | {count} step. | Agent 2026-10-06 |  |
 | — — — | {count} steps | **{count}手順** | {count} steps. | Agent 2026-10-06 |  |
+| — — — | Cancel | **取り消す** | Cancel | Agent 2026-10-06 |  |
+| — — — | Call off this game? Nothing has been played, so nobody wins and no rating moves. | **この対局を中止しますか？まだ1手も打たれていないので、勝敗はつかず、レーティングも動きません。** | Call off this game? Not one move has been played yet, so there is no winner or loser, and no rating moves. | Agent 2026-10-06 |  |
 | — — — | Continue → | **続きから →** | Continue → | Agent 2026-10-06 |  |
 | — — — | Continue {what} → | **{what}の続きから →** | Continue {what} → | Agent 2026-10-06 |  |
+| — — — | That could not be done just now. | **いまはできませんでした。** | That could not be done just now. | Agent 2026-10-06 |  |
 | — — — | Start a new game? The one in progress ends here and is not kept. | **新規対局を始めますか？進行中の対局はここで終わり、保存されません。** | Start a new game? The one in progress ends here and is not saved. | Agent 2026-10-06 |  |
 | — — — | New game ends the one in progress here. | **新規対局を始めると、ここで進行中の対局は終わります。** | Starting a new game ends the one in progress here. | Agent 2026-10-06 |  |
 | — — — | Keep it | **そのまま残す** | Keep it | Agent 2026-10-06 |  |
@@ -676,6 +679,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Give up | **あきらめる** | Give up | Agent 2026-10-06 |  |
 | — — — | Give up this game? It ends here, unsolved. | **あきらめますか？ここで終わり、解けないままになります。** | Give up? It ends here, left unsolved. | Agent 2026-10-06 |  |
 | — — — | Keep playing | **続ける** | Keep playing | Agent 2026-10-06 |  |
+| — — — | No, leave it | **いいえ、このままにする** | No, leave it as it is | Agent 2026-10-06 |  |
 | — — — | New game | **新規対局** | New game | Agent 2026-10-06 |  |
 | — — — | Starts a new game. This one stays where it is, in My games. | **新規対局を始めます。この対局は「対局中」にそのまま残ります。** | Starts a new game. This one stays where it is, under In progress. | Agent 2026-10-06 |  |
 | — — — | Start a new game | **新規対局を始める** | Start a new game | Agent 2026-10-06 |  |
@@ -686,8 +690,15 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | {name} resigned. | **{name}が投了しました。** | {name} resigned. | Agent 2026-10-06 |  |
 | — — — | {name} resigned. The game ended where it stood, with nobody the winner. | **{name}が投了しました。対局はその場で終わり、勝者はいません。** | {name} resigned. The game ended where it stood, and there is no winner. | Agent 2026-10-06 |  |
 | — — — | {name} resigned. {winners} wins. | **{name}が投了しました。{winners}の勝ちです。** | {name} resigned. {winners} wins. | Agent 2026-10-06 |  |
+| — — — | Resign this game? The other side wins and it is filed in the record. | **この対局を投了しますか？相手の勝ちになり、記録に残ります。** | Resign this game? The other side wins and it is kept in the record. | Agent 2026-10-06 |  |
 | — — — | Resign this game for {name}? The table ends here, with nobody the winner. | **{name}の代わりに投了しますか？卓はここで終わり、勝者はいません。** | Resign this game on behalf of {name}? The table ends here, and there is no winner. | Agent 2026-10-06 |  |
 | — — — | Resign this game for {name}? The other player wins. | **{name}の代わりに投了しますか？相手の勝ちになります。** | Resign this game on behalf of {name}? The other player wins. | Agent 2026-10-06 |  |
+| — — — | Star this game | **この対局にスターを付ける** | Put a star on this game | Agent 2026-10-06 |  |
+| — — — | Starred: take the star off | **スター付き：スターを外す** | Starred: take the star off | Agent 2026-10-06 |  |
+| — — — | Starred, listed first in your finished games | **スター付き：終わった対局の一覧で先頭に並びます** | Starred: listed first among your finished games | Agent 2026-10-06 |  |
+| — — — | Starred | **スター付き** | Starred | Agent 2026-10-06 |  |
+| — — — | Star it, to list it first in your finished games | **スターを付けると、終わった対局の一覧で先頭に並びます** | If you put a star on it, it is listed first among your finished games | Agent 2026-10-06 |  |
+| — — — | Star | **スター** | Star | Agent 2026-10-06 |  |
 | — — — | Advanced | **詳細** | Details | Agent 2026-10-06 |  |
 | — — — | Who is ahead | **勝率バー** | Win-rate bar | Agent 2026-10-06 |  |
 | — — — | How the game stands while it is on — read by threats where the game has them, counted where it has something countable, and left unsaid where it has neither. | **対局中の形勢です。脅威のあるゲームでは脅威で読み、数えられるものがあるゲームでは数え、どちらもないゲームでは何も示しません。** | How the game stands while it is on. Where the game has threats it is read by threats, where something can be counted it is counted, and where there is neither nothing is shown. | Agent 2026-10-06 |  |
@@ -704,7 +715,6 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Read the board yourself. | **盤は自分で読みます。** | You read the board yourself. | Agent 2026-10-06 |  |
 | — — — | Describe the position | **形勢を言葉で説明** | Describe the position in words | Agent 2026-10-06 |  |
 | — — — | You are told when you are winning or in trouble, never where. | **優勢か劣勢かは教えますが、場所は教えません。** | You are told whether you are ahead or behind, but not where. | Agent 2026-10-06 |  |
-| — — — | Cancel | **取り消す** | Cancel | Agent 2026-10-06 |  |
 | — — — | Discard and play | **捨てて打つ** | Discard and play | Agent 2026-10-06 |  |
 | — — — | Play from here? | **ここから打ちますか？** | Play from here? | Agent 2026-10-06 |  |
 | — — — | Games | **ゲーム** | Games | Agent 2026-10-06 |  |

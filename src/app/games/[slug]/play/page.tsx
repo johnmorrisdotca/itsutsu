@@ -11,7 +11,7 @@ import { BoardScaled } from "@/components/board/BoardScaled";
 import { RulesModal } from "@/components/games/RulesModal";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { gameNameFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
 import { PuzzlePlayPage } from "@/components/puzzles/PuzzlePlayPage";
 import { CasualPlayPage, casualLevelAsked } from "@/components/casual/CasualPlayPage";
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/play
   const puzzle = puzzleFor(slug);
   const say = await currentSpeaker();
   const copy = gameCopyOf(variantFor(slug) ?? puzzle ?? casualKindFor(slug) ?? "", say.locale);
-  return { title: copy === null ? say.say("gamepages.games") : say.say("gamepages.playGame", { game: copy.label }) };
+  return { title: copy === null ? say.say("gamepages.games") : say.say("gamepages.playGame", { game: say.pairName(copy.label, copy.kanji).text }) };
 }
 
 /**
@@ -74,10 +74,10 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
       {/* Just the board's header (`BoardMasthead`), drawn only in that mode. */}
       <div data-bare-only>
         <BoardMasthead
-          story={{ kind: say.say("gamepages.practiceBoard"), kanji: say.pairsWithKanji ? "試し打ち" : "", title: copy.label, source: say.say("gamescreen.sourcePractice", { site: SITE_NAME }) }}
+          story={{ kind: say.say("gamepages.practiceBoard"), kanji: say.pairsWithKanji ? "試し打ち" : "", title: gameNameFor(variant, say), source: say.say("gamescreen.sourcePractice", { site: SITE_NAME }) }}
         />
       </div>
-      <GameTrailNav game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: say.say("gamepages.practiceBoard") }]} />
+      <GameTrailNav game={{ label: gameNameFor(variant, say), href: gamePath(variant) }} steps={[{ label: say.say("gamepages.practiceBoard") }]} />
       {/* The board and its sidebar at the size this reader keeps for this kind of screen (`BoardScaled`). */}
       <BoardScaled>
         <GameViewClient
@@ -108,7 +108,7 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
             game: (
               <>
                 <Link href={gamePath(variant)} className="font-medium text-ink underline underline-offset-4">
-                  {copy.label}
+                  {gameNameFor(variant, say)}
                 </Link>
                 {say.pairsWithKanji ? <span className="font-mincho"> {copy.kanji}</span> : null}
               </>
@@ -125,7 +125,7 @@ export default async function PlayPage({ params, searchParams }: PageProps<"/gam
               <span key={game}>
                 {i > 0 ? " · " : ""}
                 <Link href={gamePath(game)} className="underline underline-offset-4">
-                  {gameCopyFor(game, say.locale).label}
+                  {gameNameFor(game, say)}
                 </Link>
               </span>
             ))}

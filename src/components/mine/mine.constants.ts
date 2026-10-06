@@ -89,7 +89,6 @@ export const MY_GAMES_COPY = {
   rowOpen: { yourMove: "Your move →", open: "Open →" },
   rowMore: { title: "Resign, and anything else this game can do", label: (players: string) => `More for ${players}` },
   resign: { label: "Resign", kanji: "投了" },
-  resignConfirm: "Resign this game? The other side wins and it is filed in the record.",
   /*
    * A board with no stones on it is called off, not resigned. Resigning means
    * giving up something under way, and nothing is under way — so the word
@@ -97,7 +96,6 @@ export const MY_GAMES_COPY = {
    * rating moves.
    */
   cancel: { label: "Cancel", kanji: "取消" },
-  cancelConfirm: "Call off this game? Nothing has been played, so nobody wins and no rating moves.",
   localGame: { label: "Your game", kanji: "続き" },
   /** The pass-and-play Kumimoji kept in this browser (`LocalPartyCard`). */
   localParty: { label: "Pass and play", kanji: "回し" },

@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import { Button } from "./Controls";
@@ -26,7 +27,7 @@ export function ConfirmButton({
   label,
   question,
   confirm,
-  cancel = "No, leave it",
+  cancel,
   onConfirm,
   onAsking,
   disabled = false,
@@ -41,6 +42,7 @@ export function ConfirmButton({
   question: string;
   /** The word on the button that does it. Says the act, never "OK". */
   confirm: string;
+  /** The answer that leaves things as they are; the reader's own "No, leave it" where nothing says otherwise. */
   cancel?: string;
   onConfirm: () => void;
   /**
@@ -62,6 +64,7 @@ export function ConfirmButton({
   /** Names three things: the button, the panel, and the answer. */
   testId: string;
 }) {
+  const speaker = useSpeaker();
   const [asking, setAsking] = useState(false);
   /*
    * WHY THE TRIGGER CARRIES A READY MARK.
@@ -140,7 +143,7 @@ export function ConfirmButton({
           {confirm}
         </Button>
         <Button onClick={() => say(ASKING.dismissed)} data-testid={`${testId}-no`}>
-          {cancel}
+          {cancel ?? speaker.say("ending.leaveIt")}
         </Button>
       </div>
     </div>

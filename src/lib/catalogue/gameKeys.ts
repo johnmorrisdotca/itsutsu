@@ -4,6 +4,7 @@ import type { RuleVariant } from "../gomoku/gomoku.types";
 import { RULE_VARIANT_DISPLAY, type VariantCopy } from "../gomoku/variants.constants";
 import { variantCopy } from "../gomoku/variantCopy";
 import { DEFAULT_LOCALE } from "../i18n/i18n.constants";
+import type { Speaker } from "../i18n/i18n";
 import type { Locale } from "../i18n/i18n.types";
 import { CASUAL_DISPLAY, CASUAL_KIND_LIST } from "../casual/casual.constants";
 import type { CasualKind } from "../casual/casual.types";
@@ -104,4 +105,10 @@ export function gameCopyOf(key: string, locale: Locale = DEFAULT_LOCALE): Varian
   if (isCasualKind(key)) return CASUAL_DISPLAY[key];
   if (key in RULE_VARIANT_DISPLAY) return variantCopy(key as RuleVariant, locale);
   return null;
+}
+
+/** A game's name as one string in the reader's language, whichever kind it is: "Gomoku", or 五目並べ for a reader of Japanese. */
+export function gameNameFor(key: GameKey, say: Speaker): string {
+  const copy = gameCopyFor(key, say.locale);
+  return say.pairName(copy.label, copy.kanji).text;
 }

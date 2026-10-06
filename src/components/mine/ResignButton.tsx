@@ -7,6 +7,7 @@ import { useState } from "react";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import type { Asking } from "@/components/ui/ui.types";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { MY_GAMES_COPY } from "./mine.constants";
 
 /**
@@ -66,6 +67,7 @@ export function ResignButton({
   /** The trigger's look: small in a list of games, the ordinary quiet button in the row under a board (`GameEnding`). */
   className?: string;
 }) {
+  const say = useSpeaker();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [refused, setRefused] = useState<string | null>(null);
@@ -96,7 +98,7 @@ export function ResignButton({
       const said = (await response.json().catch(() => null)) as {
         error?: string;
       } | null;
-      setRefused(said?.error ?? "That could not be done just now.");
+      setRefused(said?.error ?? say.say("ending.couldNotDo"));
     } finally {
       setBusy(false);
     }
@@ -120,10 +122,10 @@ export function ResignButton({
         }
         question={
           nothingPlayed
-            ? MY_GAMES_COPY.cancelConfirm
-            : MY_GAMES_COPY.resignConfirm
+            ? say.say("ending.cancelAsk")
+            : say.say("ending.resignFiled")
         }
-        confirm={copy.label}
+        confirm={say.say(nothingPlayed ? "ending.cancel" : "ending.resign")}
         onConfirm={() => void resign()}
         onAsking={onAsking}
         disabled={busy}

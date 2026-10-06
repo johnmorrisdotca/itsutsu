@@ -125,6 +125,7 @@ export function namesPrinted(source: string): number[] {
     /(?<!\$)\{\s*variantLabel\(/g,
     /(?<!\$)\{\s*RULE_VARIANT_DISPLAY\[[^\]]+\]\.label\s*\}/g,
     /(?<!\$)\{\s*gameCopyFor\([^)]+\)\.label\s*\}/g,
+    /(?<!\$)\{\s*(?:gameNameFor|variantName)\([^)]+\)\s*\}/g,
   ];
   const found: number[] = [];
   for (const pattern of patterns) {

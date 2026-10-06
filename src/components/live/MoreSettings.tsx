@@ -1,5 +1,3 @@
-"use client";
-
 import type { Speaker } from "@/lib/i18n/i18n";
 import type { ReactNode } from "react";
 
@@ -47,7 +45,7 @@ export function MoreSettings({
   say,
   children,
 }: {
-  /** The reader's language, said by whoever draws this, which may be a server component. */
+  /** The reader's language, said by whoever draws this. Nothing here is a client component, so a server one may pass it. */
   say: Speaker;
   /** What the folded controls currently say, in the order they appear inside. */
   summary: SettingWord[];

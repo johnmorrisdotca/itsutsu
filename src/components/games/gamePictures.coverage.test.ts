@@ -115,7 +115,8 @@ const NOT_A_LIST: Record<string, { line: string; why: string }[]> = {
     },
   ],
   "src/app/games/[slug]/play/page.tsx": [
-    { line: "{gameCopyFor(game, say.locale).label}", why: 'the footer sentence "Also in Captures: …" under a board' },
+    { line: "{gameNameFor(game, say)}", why: 'the footer sentence "Also in Captures: …" under a board' },
+    { line: "{gameNameFor(variant, say)}", why: "the footer sentence naming the game whose own board is the page, where a second picture of it would repeat the board above" },
   ],
   "src/app/games/[slug]/match/[id]/FiledMatchPage.tsx": [
     {

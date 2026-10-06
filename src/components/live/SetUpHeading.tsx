@@ -100,7 +100,7 @@ export async function SetUpHeading({
       lead={
         lead === null ? undefined : (
           <>
-            {lead}{" "}
+            {lead}{say.sentences(["", ""])}
             {variant !== null ? (
               <Link href={rulesPath(variant)} className="underline underline-offset-4">
                 {say.say("live.howToPlay")}
@@ -110,7 +110,7 @@ export async function SetUpHeading({
                 {say.say("live.allGames")}
               </Link>
             )}
-            .
+            {say.sentence("")}
           </>
         )
       }

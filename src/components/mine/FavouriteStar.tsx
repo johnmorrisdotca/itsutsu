@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+
 /**
  * THE STAR ON A GAME YOU PLAYED. John, 2026-09-25: "ability to favourite your
  * game, it moves to the top". Pressed, the game is starred and listed first on
@@ -26,6 +28,7 @@ export function FavouriteStar({
   /** Say it in words beside the star, where it stands alone rather than in a row of them. */
   labelled?: boolean;
 }) {
+  const say = useSpeaker();
   const router = useRouter();
   const [on, setOn] = useState(starred);
   const [busy, setBusy] = useState(false);
@@ -49,8 +52,8 @@ export function FavouriteStar({
       onClick={() => void press()}
       disabled={busy}
       aria-pressed={on}
-      aria-label={on ? "Starred: take the star off" : "Star this game"}
-      title={on ? "Starred, listed first in your finished games" : "Star it, to list it first in your finished games"}
+      aria-label={say.say(on ? "ending.starred" : "ending.star")}
+      title={say.say(on ? "ending.starredTitle" : "ending.starTitle")}
       className={`relative z-10 inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-moss ${
         labelled ? "self-start px-1 text-sm" : "w-8 text-lg"
       } ${on ? "text-ochre" : "text-muted hover:text-ink"}`}
@@ -60,7 +63,7 @@ export function FavouriteStar({
       <span aria-hidden="true" className={labelled ? "text-lg" : undefined}>
         {on ? "★" : "☆"}
       </span>
-      {labelled ? <span aria-hidden="true">{on ? "Starred" : "Star"}</span> : null}
+      {labelled ? <span aria-hidden="true">{say.say(on ? "ending.starredWord" : "ending.starWord")}</span> : null}
     </button>
   );
 }

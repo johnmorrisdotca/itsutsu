@@ -11,7 +11,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { IpBoard } from "@/components/points/IpBoard";
 import { pairedText } from "@/lib/gomoku/seatWords";
-import { EVERY_GAME_KEY, gameCopyFor, isCasualKind, isPartyKind } from "@/lib/catalogue/gameKeys";
+import { EVERY_GAME_KEY, isCasualKind, isPartyKind, gameNameFor } from "@/lib/catalogue/gameKeys";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { familyOf, gamesShownIn } from "@/lib/gomoku/families";
 import { familyBlurb } from "@/lib/gomoku/familyCopy";
@@ -57,7 +57,6 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
   const family = familyOf(variant);
   const say = await currentSpeaker();
   const locale = say.locale;
-  const copy = gameCopyFor(variant, locale);
   // A game in no family is a gap the New Game Gate refuses, but a page must
   // not pretend to an answer it has not got.
   if (family === null) notFound();
@@ -76,7 +75,7 @@ export default async function GameFamilyPage({ params }: PageProps<"/games/[slug
         title={family.title}
         kanji={family.kanji}
         lead={familyBlurb(family, locale)}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant), testId: "family-up" }} steps={[{ label: say.say("gamepages.family") }]} />}
+        crumb={<GameTrail game={{ label: gameNameFor(variant, say), href: gamePath(variant), testId: "family-up" }} steps={[{ label: say.say("gamepages.family") }]} />}
       />
 
       <div className="flex items-center gap-4">

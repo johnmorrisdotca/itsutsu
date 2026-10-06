@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlayerActions } from "@/components/players/PlayerActions";
 import { StandingsTable } from "@/components/players/Standings";
 import { PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import { gameCopyFor, gameNameFor } from "@/lib/catalogue/gameKeys";
 import { siblingsOf } from "@/lib/gomoku/families";
 import { gamePath, historyPath, playPath, rulesPath, standingsPath, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
@@ -125,7 +125,7 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
       <PageTitle
         title={copy.label}
         kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: say.say("gamepages.leaderboard") }]} />}
+        crumb={<GameTrail game={{ label: gameNameFor(variant, say), href: gamePath(variant) }} steps={[{ label: say.say("gamepages.leaderboard") }]} />}
       >
         <p className="text-sm font-medium">{copy.tagline}</p>
         <p className="flex flex-wrap gap-x-3 text-xs">
@@ -136,7 +136,7 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
       </PageTitle>
       <section className={`${PANEL_CLASS} flex flex-col gap-4`} data-testid="game-champions">
         <p className="text-sm text-muted">
-          {say.say("gamepages.eloNote", { game: copy.label })}
+          {say.say("gamepages.eloNote", { game: gameNameFor(variant, say) })}
         </p>
         {/*
           THE TABLE IS DRAWN EITHER WAY. It used to be replaced by a sentence
@@ -149,10 +149,10 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
         {standings.length === 0 ? (
           <p className="flex flex-wrap items-baseline gap-x-2 text-sm" data-testid="standings-empty">
             <span className="text-muted">
-              {say.say("gamepages.noRatedGames", { game: copy.label })}
+              {say.say("gamepages.noRatedGames", { game: gameNameFor(variant, say) })}
             </span>
             <Link href={playPath(variant)} className="font-semibold underline-offset-2 hover:underline" data-testid="standings-be-first">
-              {say.say("gamepages.beFirst", { game: copy.label })}
+              {say.say("gamepages.beFirst", { game: gameNameFor(variant, say) })}
             </Link>
           </p>
         ) : null}
@@ -200,7 +200,7 @@ export default async function GameChampionsPage({ params, searchParams }: PagePr
           {againstComputers.length === 0 ? (
             <p className="flex flex-wrap items-baseline gap-x-2 text-sm" data-testid="computer-standings-empty">
               <span className="text-muted">
-                {say.say("gamepages.noBotGames", { game: copy.label })}
+                {say.say("gamepages.noBotGames", { game: gameNameFor(variant, say) })}
               </span>
               <Link href={playPath(variant)} className="font-semibold underline-offset-2 hover:underline">
                 {say.say("gamepages.playOne")}

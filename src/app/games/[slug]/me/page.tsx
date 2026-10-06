@@ -1,3 +1,4 @@
+import { variantName } from "@/lib/gomoku/variantCopy";
 import type { Metadata } from "next";
 import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
@@ -12,7 +13,7 @@ import { findMemberById } from "@/lib/auth/members";
 import { gamePath, historyPath, myGamePath, variantFor } from "@/lib/gomoku/slugs";
 import { puzzleForAddress } from "@/lib/catalogue/settingAddress";
 import { PuzzleMePage } from "@/components/puzzles/PuzzleMePage";
-import { gameCopyOf } from "@/lib/catalogue/gameKeys";
+import { gameNameFor } from "@/lib/catalogue/gameKeys";
 import { titleWithKanji } from "@/components/games/pageTitles";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { GameTrail } from "@/components/games/GameTrail";
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/me">
   const variant = variantFor((await params).slug);
   const say = await currentSpeaker();
   return {
-    title: variant === null ? say.say("gamepages.yourGames") : titleWithKanji(say, "gamepages.titleYourGame", "自分の棋譜", { game: gameCopyOf(variant, say.locale)?.label ?? "" }),
+    title: variant === null ? say.say("gamepages.yourGames") : titleWithKanji(say, "gamepages.titleYourGame", "自分の棋譜", { game: variantName(variant, say) }),
     robots: { index: false, follow: false },
   };
 }
@@ -54,7 +55,6 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
   const variant = variantFor(slug);
   if (variant === null) notFound();
   const say = await currentSpeaker();
-  const copy = gameCopyOf(variant, say.locale)!;
 
   // By member id: a member who came in with an invite code has games of their own here too.
   const myId = await currentMemberId();
@@ -65,8 +65,8 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
       <Page>
         <SiteHeader />
         <PageTitle
-          title={say.say("gamepages.yourGamesTitle", { game: copy.label })}
-          crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant) }} steps={[{ label: say.say("gamepages.yoursCrumb") }]} />}
+          title={say.say("gamepages.yourGamesTitle", { game: gameNameFor(variant, say) })}
+          crumb={<GameTrail game={{ label: gameNameFor(variant, say), href: gamePath(variant) }} steps={[{ label: say.say("gamepages.yoursCrumb") }]} />}
           lead={
             myId === null
               ? say.say("gamepages.meUnknown")
@@ -76,7 +76,7 @@ export default async function MyGamesOfPage({ params, searchParams }: PageProps<
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="my-games-unknown">
           <p className="text-sm">
             <Link href={historyPath(variant)} className="underline underline-offset-4">
-              {say.say("gamepages.everyGameHere", { game: copy.label })}
+              {say.say("gamepages.everyGameHere", { game: gameNameFor(variant, say) })}
             </Link>
           </p>
         </section>

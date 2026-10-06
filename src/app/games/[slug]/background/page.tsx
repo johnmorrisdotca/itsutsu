@@ -6,7 +6,7 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
-import { EVERY_GAME_KEY, gameCopyOf, isRuleVariant } from "@/lib/catalogue/gameKeys";
+import { EVERY_GAME_KEY, gameCopyOf, isRuleVariant, gameNameFor } from "@/lib/catalogue/gameKeys";
 import { gameKeyFor, gamePath, rulesPath, slugFor } from "@/lib/gomoku/slugs";
 import { backgroundFor } from "@/lib/gomoku/backgrounds";
 import { GameTrail } from "@/components/games/GameTrail";
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps<"/games/[slug]/back
   const say = await currentSpeaker();
   const copy = gameCopyOf(gameKeyFor((await params).slug) ?? "", say.locale);
   const page = titleWithKanji(say, "gamepages.background", "背景");
-  return { title: copy === null ? say.say("gamepages.background") : `${copy.label} · ${page}` };
+  return { title: copy === null ? say.say("gamepages.background") : `${say.pairName(copy.label, copy.kanji).text} · ${page}` };
 }
 
 export function generateStaticParams() {
@@ -47,7 +47,6 @@ export default async function BackgroundPage({ params }: PageProps<"/games/[slug
   const variant = gameKeyFor((await params).slug);
   if (variant === null) notFound();
   const say = await currentSpeaker();
-  const copy = gameCopyOf(variant, say.locale)!;
   const art = isRuleVariant(variant) ? backgroundFor(variant) : null;
 
   return (
@@ -56,20 +55,20 @@ export default async function BackgroundPage({ params }: PageProps<"/games/[slug
       <PageTitle
         title={say.say("gamepages.background")}
         kanji="背景"
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(variant), testId: "background-up" }} steps={[{ label: say.say("gamepages.background") }]} />}
+        crumb={<GameTrail game={{ label: gameNameFor(variant, say), href: gamePath(variant), testId: "background-up" }} steps={[{ label: say.say("gamepages.background") }]} />}
       />
 
       {art === null ? (
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="background-none">
           <p className="text-sm">
-            {say.say("gamepages.noBackground", { game: copy.label })}
+            {say.say("gamepages.noBackground", { game: gameNameFor(variant, say) })}
           </p>
           <p className="text-sm text-muted">
             {say.say("gamepages.backgroundWhere")}
           </p>
           <p className="pt-1 text-sm">
             <Link href={rulesPath(variant)} className="underline underline-offset-4">
-              {say.say("gamepages.rulesOf", { game: copy.label })}
+              {say.say("gamepages.rulesOf", { game: gameNameFor(variant, say) })}
               {say.pairsWithKanji ? <span className="font-mincho"> 規則</span> : null}
             </Link>
           </p>

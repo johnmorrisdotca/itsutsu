@@ -119,4 +119,59 @@ export const JA_DRAFTED_ENDING: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Keep it",
     review: AGENT_READ,
   },
+  "ending.resignFiled": {
+    text: "この対局を投了しますか？相手の勝ちになり、記録に残ります。",
+    back: "Resign this game? The other side wins and it is kept in the record.",
+    review: AGENT_READ,
+  },
+  "ending.cancel": {
+    text: "取り消す",
+    back: "Cancel",
+    review: AGENT_READ,
+  },
+  "ending.cancelAsk": {
+    text: "この対局を中止しますか？まだ1手も打たれていないので、勝敗はつかず、レーティングも動きません。",
+    back: "Call off this game? Not one move has been played yet, so there is no winner or loser, and no rating moves.",
+    review: AGENT_READ,
+  },
+  "ending.couldNotDo": {
+    text: "いまはできませんでした。",
+    back: "That could not be done just now.",
+    review: AGENT_READ,
+  },
+  "ending.leaveIt": {
+    text: "いいえ、このままにする",
+    back: "No, leave it as it is",
+    review: AGENT_READ,
+  },
+  "ending.star": {
+    text: "この対局にスターを付ける",
+    back: "Put a star on this game",
+    review: AGENT_READ,
+  },
+  "ending.starWord": {
+    text: "スター",
+    back: "Star",
+    review: AGENT_READ,
+  },
+  "ending.starTitle": {
+    text: "スターを付けると、終わった対局の一覧で先頭に並びます",
+    back: "If you put a star on it, it is listed first among your finished games",
+    review: AGENT_READ,
+  },
+  "ending.starred": {
+    text: "スター付き：スターを外す",
+    back: "Starred: take the star off",
+    review: AGENT_READ,
+  },
+  "ending.starredWord": {
+    text: "スター付き",
+    back: "Starred",
+    review: AGENT_READ,
+  },
+  "ending.starredTitle": {
+    text: "スター付き：終わった対局の一覧で先頭に並びます",
+    back: "Starred: listed first among your finished games",
+    review: AGENT_READ,
+  },
 };

@@ -4,7 +4,8 @@ import Link from "@/components/ui/Link";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 
-import { GAME_COPY } from "@/components/game/game.constants";
+import { gameCopy } from "@/components/game/game.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { Asking } from "@/components/ui/ui.types";
 import { botInSeat } from "@/lib/bots/bots";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
@@ -51,6 +52,7 @@ import { advanceHold, NOTHING_HELD, type AdvanceHold } from "./advanceHold";
 type Onward = { after: GameDetail; seat: Stone };
 
 export function useAdvanceToNextGame(afterMove: AfterMove = AFTER_MOVE.nextWaiting) {
+  const GAME_COPY = gameCopy(useSpeaker());
   const router = useRouter();
   const [nowhereToGo, setNowhereToGo] = useState(false);
   /**
