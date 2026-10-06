@@ -111,7 +111,7 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
                   winners: game.winners,
                   you: null,
                   next: { label: PARTY_COPY.again, onPress: () => keep(ghostAgain(game)) },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -157,7 +157,7 @@ export function GhostGame({ gameHref, online }: PartyTableGameProps) {
             onNewGame={() => keep(null)}
           />
         </div>
-        {playing ? null : <TableWallpaper game="superghost" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat, say)), game.winners)} />}
+        {playing ? null : <TableWallpaper game="superghost" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat, say)), game.winners, false, say)} />}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {GHOST_COPY.about} →

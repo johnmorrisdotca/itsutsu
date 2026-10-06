@@ -1,4 +1,5 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
+import type { PhraseKey } from "../../i18n/i18n.constants";
 
 /**
  * GUNJIN 軍人, the hidden-rank military board games, as the site names them.
@@ -87,14 +88,14 @@ export const GUNJIN_SAVE_VERSION = 1;
 /** How many different arrangements of a side `moves` offers in the set-up, where a person chooses their own. */
 export const GUNJIN_OFFERED_SETUPS = 3;
 
-/** The reasons a game ends, in the words a table says them, by the engine's own word for each. */
-export const GUNJIN_REASONS: Record<string, string> = {
-  "objective-captured": "the leader was taken",
-  "capture-threshold": "too few pieces were left",
-  blocked: "the other side had no move",
-  "flag-won": "the flag was taken",
-  "flag-held": "the flag reached the far row and stayed there",
-  resigned: "resigned",
-  "agreed-draw": "a draw was agreed",
-  repetition: "the position came round three times",
+/** The reasons a game ends, as the phrase that says each in the reader's language, by the engine's own word for each. */
+export const GUNJIN_REASON_PHRASES: Record<string, PhraseKey> = {
+  "objective-captured": "party.gunjin.reasonObjective",
+  "capture-threshold": "party.gunjin.reasonThreshold",
+  blocked: "party.gunjin.reasonBlocked",
+  "flag-won": "party.gunjin.reasonFlagWon",
+  "flag-held": "party.gunjin.reasonFlagHeld",
+  resigned: "party.gunjin.reasonResigned",
+  "agreed-draw": "party.gunjin.reasonDraw",
+  repetition: "party.gunjin.reasonRepeat",
 };

@@ -35,7 +35,7 @@ export function DiceWarBoard({ game }: { game: DiceWarGame }) {
         const roll = throwMade?.rolls.find((one) => one.seat === seat) ?? null;
         const won = throwMade !== null && throwMade.winner === seat;
         const tied = throwMade !== null && throwMade.winner === null && throwMade.tied.includes(seat);
-        const name = diceWarSeatName(game.players, game.computers, seat);
+        const name = diceWarSeatName(game.players, game.computers, seat, say);
         return (
           <li
             key={seat}

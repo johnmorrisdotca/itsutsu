@@ -23,7 +23,7 @@ import { CasualFrontDoor } from "@/components/casual/CasualFrontDoor";
 import { HOUSEKI_FAMILY_TITLE, HousekiFamilyPage } from "@/components/houseki/HousekiFamilyPage";
 import { HousekiFrontDoor } from "@/components/houseki/HousekiFrontDoor";
 import { HOUSEKI_FAMILY_KEY } from "@/lib/houseki/houseki.constants";
-import { CASUAL_FAMILY_TITLE, CasualFamilyPage } from "@/components/casual/CasualFamilyPage";
+import { casualFamilyTitle, CasualFamilyPage } from "@/components/casual/CasualFamilyPage";
 import { CASUAL_FAMILY_KEY } from "@/lib/casual/casual.constants";
 import { EVERY_GAME_KEY, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import {
@@ -53,9 +53,9 @@ import { GameTrail } from "@/components/games/GameTrail";
 export async function generateMetadata({ params }: PageProps<"/games/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   // Karakuri's family page answers here too, at /games/karakuri (`CasualFamilyPage`).
-  if (slug === CASUAL_FAMILY_KEY) return { title: CASUAL_FAMILY_TITLE };
-  if (slug === HOUSEKI_FAMILY_KEY) return { title: HOUSEKI_FAMILY_TITLE };
   const say = await currentSpeaker();
+  if (slug === CASUAL_FAMILY_KEY) return { title: casualFamilyTitle(say) };
+  if (slug === HOUSEKI_FAMILY_KEY) return { title: HOUSEKI_FAMILY_TITLE };
   const copy = gameCopyOf(variantFor(slug) ?? puzzleFor(slug) ?? partyKindFor(slug) ?? casualKindFor(slug) ?? housekiKindFor(slug) ?? "", say.locale);
   if (copy === null) return { title: say.say("gamepages.games") };
   return { title: say.pairsWithKanji ? `${copy.label} ${copy.kanji}` : copy.label, description: copy.tagline };

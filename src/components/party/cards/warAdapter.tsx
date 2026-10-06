@@ -3,7 +3,9 @@
 import { WAR_RULES } from "@johnmorrisdotca/toranpu/war";
 import type { WarGame, WarMove } from "@johnmorrisdotca/toranpu/war";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { laidBy, warEnding, warWords } from "@/lib/cardGames/war/warWords";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 
 import type { CardAdapter, CardCentreProps } from "./cardTable.types";
 import { LaidCard, TableWords } from "./CardTableParts";
@@ -19,7 +21,8 @@ const TURN: WarMove = { turn: true };
  * game is on the table.
  */
 function WarCentre({ game, players }: CardCentreProps<WarGame>) {
-  const name = (seat: number) => players[seat] ?? `Player ${seat + 1}`;
+  const say = useSpeaker();
+  const name = (seat: number) => players[seat] ?? playerNumberName(say, seat + 1);
   const last = game.last;
   const seats = [0, 1] as const;
   // Where each seat's cards lie, as hundredths of the table's width: seat 0 on the left, seat 1 mirrored.
@@ -37,7 +40,7 @@ function WarCentre({ game, players }: CardCentreProps<WarGame>) {
             </TableWords>
             {count === 0 ? null : <LaidCard card={null} left={left} top={11.5} testId="war-pile" />}
             <TableWords left={left - 3} top={31} width={19} testId="war-count">
-              {count === 1 ? "1 card" : `${count} cards`}
+              {say.count("ctable.war.cards", count)}
             </TableWords>
             {laid === null ? null : (
               <>
@@ -50,7 +53,7 @@ function WarCentre({ game, players }: CardCentreProps<WarGame>) {
         );
       })}
       <TableWords left={5} top={38} width={90} testId="war-said">
-        {warWords(game, name)}
+        {warWords(game, name, say)}
       </TableWords>
     </>
   );
@@ -68,11 +71,11 @@ export const WAR_ADAPTER: CardAdapter<WarGame, WarMove> = {
   // A pile, never a hand: the table counts it and does not show it.
   hand: (game, seat) => game.hands[seat] ?? [],
   chooses: () => 0,
-  actions: () => [{ label: "Turn the cards over", move: TURN, testId: "cards-turn", strong: true }],
+  actions: (_game, _chosen, _target, _name, say) => [{ label: say.say("ctable.war.turnButton"), move: TURN, testId: "cards-turn", strong: true }],
   quick: () => null,
-  status: (game) => (game.phase === "over" ? "" : `Turn ${game.moves.length + 1} of ${game.size}. Turn the cards over.`),
+  status: (game, _name, say) => (game.phase === "over" ? "" : say.say("ctable.war.turnStatus", { n: String(game.moves.length + 1), size: String(game.size) })),
   ending: warEnding,
   standing: (game, seat) => ({ score: String(game.hands[seat]?.length ?? 0) }),
-  scoreWords: "Cards held, most wins",
+  scoreWords: (say) => say.say("ctable.war.scoreWords"),
   Centre: WarCentre,
 };

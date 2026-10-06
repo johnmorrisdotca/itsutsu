@@ -89,7 +89,7 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
                   winners: game.winners,
                   you: null,
                   next: { label: PARTY_COPY.again, onPress: () => keep(dotsAgain(game)) },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -126,7 +126,7 @@ export function DotsGame({ appearance, gameHref, online }: PartyTableGameProps) 
         </div>
         {/* The finished board as a desktop or phone wallpaper, as every board game offers its positions. */}
         {game.status === DOTS_STATUS.playing ? null : (
-          <TableWallpaper game="dotsAndBoxes" result={resultLine(game.players.map((_, seat) => dotsPlayerName(game, seat, say)), game.winners)} />
+          <TableWallpaper game="dotsAndBoxes" result={resultLine(game.players.map((_, seat) => dotsPlayerName(game, seat, say)), game.winners, false, say)} />
         )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

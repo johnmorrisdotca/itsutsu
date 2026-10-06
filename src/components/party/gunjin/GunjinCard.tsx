@@ -11,7 +11,7 @@ import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { partyPlayerName } from "@/lib/party/partyNames";
 
 import { useKeptGunjin } from "./gunjinStore";
-import { gunjinWords, partyScreenWords } from "@/components/party/partyWords";
+import { gunjinBoardWords, gunjinWords, partyScreenWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
@@ -35,8 +35,8 @@ export function GunjinCard() {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{GUNJIN_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · {gunjinBoardOf(game.size)?.name}
-          {to === null ? "" : ` · ${partyPlayerName(game, to, say)} to play`}
+          <GameName variant={variant} /> · {gunjinBoardOf(game.size) === null ? "" : gunjinBoardWords(say.locale)[game.size]?.name}
+          {to === null ? "" : ` · ${say.say("party.toPlay", { name: partyPlayerName(game, to, say) })}`}
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

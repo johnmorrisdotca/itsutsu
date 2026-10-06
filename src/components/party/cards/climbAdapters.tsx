@@ -2,7 +2,9 @@
 
 import { BIG_TWO_RULES } from "@/lib/cardGames/bigTwo/bigTwoRules";
 import type { BigTwoGame } from "@/lib/cardGames/bigTwo/bigTwo.types";
-import { cardWords } from "@/lib/cardGames/cards";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cardNamed } from "@/lib/cardGames/cardSay";
+import type { Speaker } from "@/lib/i18n/i18n";
 import type { CardId } from "@/lib/cardGames/cardGames.types";
 import type { ClimbMove, ClimbTrick } from "@/lib/cardGames/climbing/climbing.types";
 import { presidentTitle } from "@/lib/cardGames/president/president";
@@ -12,7 +14,7 @@ import type { PresidentGame, PresidentMove } from "@/lib/cardGames/president/pre
 import type { CardAction, CardAdapter, CardCentreProps } from "./cardTable.types";
 import { LaidCard, TableWords } from "./CardTableParts";
 
-const TITLE_WORDS = { president: "President", vicePresident: "Vice-President", citizen: "Citizen", viceBeggar: "Vice-Beggar", beggar: "Beggar" } as const;
+const TITLE_WORDS = { president: "ctable.climb.titlePresident", vicePresident: "ctable.climb.titleVice", citizen: "ctable.climb.titleCitizen", viceBeggar: "ctable.climb.titleViceBeggar", beggar: "ctable.climb.titleBeggar" } as const;
 
 /**
  * THE PLAY TO BEAT, in the middle of the table: its cards side by side and who
@@ -20,6 +22,7 @@ const TITLE_WORDS = { president: "President", vicePresident: "Vice-President", c
  * until the trick is over. An empty middle is a lead: anything goes.
  */
 function ClimbCentre({ game, players }: CardCentreProps<ClimbTrick>) {
+  const say = useSpeaker();
   const cards = game.pile?.cards ?? [];
   const width = 13;
   const step = cards.length > 1 ? Math.min(width * 0.62, (60 - width) / (cards.length - 1)) : 0;
@@ -29,7 +32,7 @@ function ClimbCentre({ game, players }: CardCentreProps<ClimbTrick>) {
     <>
       {game.pile === null ? (
         <TableWords left={20} top={20} width={60} testId="cards-pile-empty">
-          {game.toPlay === null ? "" : `${players[game.toPlay]} leads: any play goes`}
+          {game.toPlay === null ? "" : say.say("ctable.climb.leadAny", { name: players[game.toPlay] })}
         </TableWords>
       ) : (
         <>
@@ -37,13 +40,13 @@ function ClimbCentre({ game, players }: CardCentreProps<ClimbTrick>) {
             <LaidCard key={card} card={card} left={left + step * at} top={8} width={width} testId="cards-pile-card" />
           ))}
           <TableWords left={20} top={28} width={60}>
-            Laid by {players[game.pile.seat]}
+            {say.say("ctable.climb.laidBy", { name: players[game.pile.seat] })}
           </TableWords>
         </>
       )}
       {passed.length === 0 ? null : (
         <TableWords left={10} top={38} width={80} testId="cards-passed">
-          Passed: {passed.join(", ")}
+          {say.say("ctable.climb.passed", { names: say.joined(passed) })}
         </TableWords>
       )}
     </>
@@ -51,14 +54,14 @@ function ClimbCentre({ game, players }: CardCentreProps<ClimbTrick>) {
 }
 
 /** Play the cards chosen, or pass: the presses a climbing game offers the player to move. */
-function climbActions<S extends ClimbTrick, M>(game: S, chosen: readonly CardId[], play: (game: S, move: M) => S | null, moves: readonly M[]): CardAction<M>[] {
+function climbActions<S extends ClimbTrick, M>(game: S, chosen: readonly CardId[], play: (game: S, move: M) => S | null, moves: readonly M[], say: Speaker): CardAction<M>[] {
   const move = { play: [...chosen] } as M;
   const ok = chosen.length > 0 && play(game, move) !== null;
   const actions: CardAction<M>[] = [
-    { label: chosen.length > 1 ? `Play ${chosen.length} cards` : "Play", move: ok ? move : null, testId: "cards-play", strong: true, why: chosen.length === 0 ? "Choose the cards to play." : "Those cards do not beat the play on the table." },
+    { label: chosen.length > 1 ? say.say("ctable.playCount", { count: String(chosen.length) }) : say.say("ctable.play"), move: ok ? move : null, testId: "cards-play", strong: true, why: chosen.length === 0 ? say.say("ctable.chooseCards") : say.say("ctable.noBeat") },
   ];
   const pass = moves.find((one) => "pass" in (one as object));
-  if (pass !== undefined) actions.push({ label: "Pass", move: pass, testId: "cards-pass" });
+  if (pass !== undefined) actions.push({ label: say.say("ctable.pass"), move: pass, testId: "cards-pass" });
   return actions;
 }
 
@@ -74,15 +77,15 @@ export const BIG_TWO_ADAPTER: CardAdapter<BigTwoGame, ClimbMove> = {
   rules: BIG_TWO_RULES,
   hand: (game, seat) => game.hands[seat] ?? [],
   chooses: () => 5,
-  actions: (game, chosen) => climbActions(game, chosen, BIG_TWO_RULES.play, BIG_TWO_RULES.moves(game)),
+  actions: (game, chosen, _target, _name, say) => climbActions(game, chosen, BIG_TWO_RULES.play, BIG_TWO_RULES.moves(game), say),
   quick: (game, card, chosen) => climbQuick(game, card, chosen, BIG_TWO_RULES.play),
-  status: (game, name) => {
+  status: (game, name, say) => {
     if (game.toPlay === null) return "";
-    if (game.opening !== null) return `${name(game.toPlay)} leads, and the play must include the ${cardWords(game.opening)}.`;
-    return game.pile === null ? `${name(game.toPlay)} leads: any single, pair, three or five-card hand.` : `${name(game.toPlay)} to beat it, or pass.`;
+    if (game.opening !== null) return say.say("ctable.climb.openingCard", { name: name(game.toPlay), card: cardNamed(game.opening, say) });
+    return game.pile === null ? say.say("ctable.climb.leadBigTwo", { name: name(game.toPlay) }) : say.say("ctable.climb.beat", { name: name(game.toPlay) });
   },
-  standing: (game, seat) => ({ score: String(game.penalties[seat]), note: `deal ${Math.min(game.deals.length + 1, game.size)} of ${game.size}` }),
-  scoreWords: "Penalty points, fewest wins",
+  standing: (game, seat, say) => ({ score: String(game.penalties[seat]), note: say.say("ctable.climb.deal", { n: String(Math.min(game.deals.length + 1, game.size)), total: String(game.size) }) }),
+  scoreWords: (say) => say.say("ctable.climb.bigTwoScoreWords"),
   Centre: ClimbCentre,
 };
 
@@ -91,28 +94,28 @@ export const PRESIDENT_ADAPTER: CardAdapter<PresidentGame, PresidentMove> = {
   rules: PRESIDENT_RULES,
   hand: (game, seat) => game.hands[seat] ?? [],
   chooses: (game) => (game.phase === "exchange" ? (game.owed[0]?.count ?? 1) : 4),
-  actions: (game, chosen) => {
+  actions: (game, chosen, _target, _name, say) => {
     if (game.phase === "exchange") {
       const owed = game.owed[0];
       const move: PresidentMove = { give: [...chosen] };
       const ok = owed !== undefined && chosen.length === owed.count && PRESIDENT_RULES.play(game, move) !== null;
-      return [{ label: `Give ${owed?.count ?? 1}`, move: ok ? move : null, testId: "cards-give", strong: true, why: `Choose ${owed?.count === 1 ? "one card" : `${owed?.count} cards`} to give back.` }];
+      return [{ label: say.say("ctable.climb.give", { count: String(owed?.count ?? 1) }), move: ok ? move : null, testId: "cards-give", strong: true, why: say.count("ctable.climb.giveWhy", owed?.count ?? 1) }];
     }
-    return climbActions<PresidentGame, PresidentMove>(game, chosen, PRESIDENT_RULES.play, PRESIDENT_RULES.moves(game));
+    return climbActions<PresidentGame, PresidentMove>(game, chosen, PRESIDENT_RULES.play, PRESIDENT_RULES.moves(game), say);
   },
   quick: (game, card, chosen) => (game.phase === "playing" ? climbQuick<PresidentGame, PresidentMove>(game, card, chosen, PRESIDENT_RULES.play) : null),
-  status: (game, name) => {
+  status: (game, name, say) => {
     if (game.toPlay === null) return "";
     if (game.phase === "exchange") {
       const owed = game.owed[0];
-      return `${name(game.toPlay)}: give ${owed.count === 1 ? "a card" : `${owed.count} cards`} of your choosing back to ${name(owed.to)}.`;
+      return say.count("ctable.climb.giveStatus", owed.count, { name: name(game.toPlay), to: name(owed.to) });
     }
-    return game.pile === null ? `${name(game.toPlay)} leads: one card, or two, three or four of a rank.` : `${name(game.toPlay)} to beat it, or pass.`;
+    return game.pile === null ? say.say("ctable.climb.leadPresident", { name: name(game.toPlay) }) : say.say("ctable.climb.beat", { name: name(game.toPlay) });
   },
-  standing: (game, seat) => ({
+  standing: (game, seat, say) => ({
     score: String(game.scores[seat]),
-    note: game.titles === null ? undefined : TITLE_WORDS[presidentTitle(game.titles, seat)],
+    note: game.titles === null ? undefined : say.say(TITLE_WORDS[presidentTitle(game.titles, seat)]),
   }),
-  scoreWords: "Points, most wins",
+  scoreWords: (say) => say.say("ctable.pointsMost"),
   Centre: ClimbCentre as CardAdapter<PresidentGame, PresidentMove>["Centre"],
 };

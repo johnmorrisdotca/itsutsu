@@ -1,6 +1,9 @@
 "use client";
 
-import { CARD_BACK_CHOICES, CARD_BACK_WORDS, CARD_BOX } from "./Cards.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+
+import { CARD_BACK_CHOICES, CARD_BOX } from "./Cards.constants";
 import { useCardBackChoice } from "./cardBackChoice";
 import { CardBackOf } from "./ChosenCardBack";
 
@@ -11,10 +14,18 @@ import { CardBackOf } from "./ChosenCardBack";
  * reader and on hover. A card is a card's shape, never a square: a square
  * patch is a board's.
  */
+const BACK_NAMES: Record<(typeof CARD_BACK_CHOICES)[number], PhraseKey> = {
+  itsutsu: "ctable.back.itsutsu",
+  "classic-red": "ctable.back.classicRed",
+  "classic-blue": "ctable.back.classicBlue",
+  "ink-dots": "ctable.back.inkDots",
+};
+
 export function CardBackPicker() {
+  const say = useSpeaker();
   const { back, choose } = useCardBackChoice();
   return (
-    <div className="flex items-center gap-2" role="radiogroup" aria-label="Card back" data-testid="card-back-picker">
+    <div className="flex items-center gap-2" role="radiogroup" aria-label={say.say("ctable.back.aria")} data-testid="card-back-picker">
       {CARD_BACK_CHOICES.map((each) => {
         const chosen = back === each;
         return (
@@ -23,8 +34,8 @@ export function CardBackPicker() {
             type="button"
             role="radio"
             aria-checked={chosen}
-            aria-label={`${CARD_BACK_WORDS[each]} back`}
-            title={`${CARD_BACK_WORDS[each]} back`}
+            aria-label={say.say("ctable.back.label", { name: say.say(BACK_NAMES[each]) })}
+            title={say.say("ctable.back.label", { name: say.say(BACK_NAMES[each]) })}
             onClick={() => choose(each)}
             data-testid={`card-back-${each}`}
             className={`surface-light block h-7 w-5 cursor-pointer rounded-[3px] outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-moss ${

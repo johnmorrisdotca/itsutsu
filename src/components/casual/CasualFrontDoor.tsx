@@ -16,6 +16,7 @@ import { backgroundPath, rulesPath } from "@/lib/gomoku/slugs";
 
 import { CasualOffer } from "./CasualOffer";
 import { casualWords } from "@/components/casual/casualWords";
+import { Paired } from "@/components/i18n/Paired";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 /**
@@ -34,7 +35,8 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 export function CasualFrontDoor({ kind }: { kind: CasualKind }) {
   const say = useSpeaker();
   const CASUAL_COPY = casualWords(say.locale);
-  const page = casualRulesPage(kind);
+  const page = casualRulesPage(kind, say);
+  const name = say.pairName(page.title, page.kanji).text;
   const family = familyOf(kind);
 
   return (
@@ -48,7 +50,7 @@ export function CasualFrontDoor({ kind }: { kind: CasualKind }) {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start" data-testid="game-front-door" data-kind="casual">
             <div className={`${GAME_PICTURE_BOX} flex flex-col gap-2`}>
               {/* eslint-disable-next-line @next/next/no-img-element -- a static screenshot with no need of optimisation */}
-              <img src={page.image} alt={`A game of ${page.title} part way through`} className="w-full rounded-xl border border-rule" data-testid="game-picture" />
+              <img src={page.image} alt={say.say("party.front.picture", { title: name })} className="w-full rounded-xl border border-rule" data-testid="game-picture" />
               {/* The one big Play, under the picture, as on every game's page: to the levels, where a level is chosen. */}
               <CasualOffer kind={kind} />
             </div>
@@ -58,14 +60,13 @@ export function CasualFrontDoor({ kind }: { kind: CasualKind }) {
               </PageTitle>
               <p className="text-xs text-muted italic">{page.origin}</p>
               <span className="text-xs text-muted" data-testid="casual-offered">
-                {casualLevelsWords(kind)[0].toUpperCase()}
-                {casualLevelsWords(kind).slice(1)} to play alone. {CASUAL_COPY.never}
+                {say.say("casual.offered", { levels: casualLevelsWords(kind, say) })} {CASUAL_COPY.never}
               </span>
             </div>
           </div>
           <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="game-object">
             <h2 className={SECTION_TITLE}>
-              Objective <span className="font-mincho normal-case tracking-normal">目的</span>
+              <Paired en={say.say("rules.object")} kanji="目的" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
             </h2>
             <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed">
               {page.object.map((line) => (
@@ -74,7 +75,7 @@ export function CasualFrontDoor({ kind }: { kind: CasualKind }) {
             </ul>
             <p className="pt-1 text-sm">
               <Link href={rulesPath(kind)} className="font-semibold underline-offset-2 hover:underline" data-testid="game-rules-link">
-                Full rules of {page.title} <span className="font-mincho">規則</span> →
+                {say.say("pset.front.fullRules", { title: name })} {say.pairsWithKanji ? <span className="font-mincho">規則</span> : null} →
               </Link>
             </p>
           </section>
@@ -85,19 +86,19 @@ export function CasualFrontDoor({ kind }: { kind: CasualKind }) {
 
           <nav className={`${PANEL_CLASS} flex flex-col gap-1 text-sm`} data-testid="game-facets">
             <h2 className={SECTION_TITLE}>
-              More on this game <span className="font-mincho normal-case tracking-normal">一覧</span>
+              <Paired en={say.say("pset.front.moreHeading")} kanji="一覧" kanjiClassName="normal-case tracking-normal" inReadersLanguage />
             </h2>
             <div className="-mx-2 flex flex-col">
               <Facet href={rulesPath(kind)}>
-                Rules <span className="font-mincho opacity-70">規則</span>
+                <Paired en={say.say("pset.front.rules")} kanji="規則" kanjiClassName="opacity-70" inReadersLanguage />
               </Facet>
               {family !== null ? (
                 <Facet href={familyPagePath(family)} testId="facet-family">
-                  Family <span className="font-mincho opacity-70">同族</span>
+                  <Paired en={say.say("puzzle.way.family")} kanji="同族" kanjiClassName="opacity-70" inReadersLanguage />
                 </Facet>
               ) : null}
               <Facet href={backgroundPath(kind)} testId="facet-background">
-                Background <span className="font-mincho opacity-70">背景</span>
+                <Paired en={say.say("pset.front.background")} kanji="背景" kanjiClassName="opacity-70" inReadersLanguage />
               </Facet>
             </div>
           </nav>

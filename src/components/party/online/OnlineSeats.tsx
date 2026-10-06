@@ -12,6 +12,7 @@ import type { NameTag } from "@/lib/xp/nameTag.types";
 import { MarbleChip } from "../MarbleChip";
 import { onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 
 /**
  * WHO SITS AT THE TABLE, in seat order, with their colour, how each stands in
@@ -38,7 +39,7 @@ export function OnlineSeats({
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="online-seats">
       <h2 className={SECTION_TITLE}>
-        {ONLINE_COPY.seatsHeading} <span className="font-mincho normal-case tracking-normal">席</span>
+        {ONLINE_COPY.seatsHeading} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">席</span> : null}
       </h2>
       <ol className="flex flex-col gap-1.5">
         {view.seats.map((seat) => (
@@ -79,7 +80,7 @@ function SeatName({ seat, tag }: { seat: OnlineSeatView; tag: NameTag | undefine
   const ONLINE_COPY = onlineWords(say.locale);
   // A member's seat, or a computer that is one of the site's programs: the name leads to their page.
   if (seat.kind === ONLINE_SEAT_KINDS.member || (seat.kind === ONLINE_SEAT_KINDS.computer && seat.memberId !== null)) {
-    return <PlayerName name={seat.name} memberId={seat.memberId} fallback={`Player ${seat.seat + 1}`} tag={tag} testId="online-seat-name" />;
+    return <PlayerName name={seat.name} memberId={seat.memberId} fallback={playerNumberName(say, seat.seat + 1)} tag={tag} testId="online-seat-name" />;
   }
   if (seat.kind === ONLINE_SEAT_KINDS.computer) return <span>{ONLINE_COPY.computerSeat}</span>;
   return <span className="text-muted italic">{ONLINE_COPY.openSeat}</span>;

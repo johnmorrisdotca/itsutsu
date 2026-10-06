@@ -28,7 +28,7 @@ function Die({ value, at, held, rollKey, tumbles, onPress }: { value: number; at
       {value === 0 ? <span className="absolute inset-[4%] rounded-[18%] border-[2.5px] border-black/55 bg-[rgba(255,253,246,0.55)]" aria-hidden="true" /> : null}
     </span>
   );
-  const label = value === 0 ? "Not thrown yet" : `${value}${held ? `, ${YACHT_COPY.held.toLowerCase()}` : ""}`;
+  const label = value === 0 ? say.say("party.yacht.dieNone") : held ? say.say("party.yacht.dieHeld", { value: String(value), held: YACHT_COPY.held.toLowerCase() }) : String(value);
   const mark = <span className={`text-[0.65rem] font-semibold tracking-[0.12em] uppercase ${held ? "text-shu" : "invisible"}`}>{YACHT_COPY.held}</span>;
   // ONE ELEMENT WHETHER OR NOT IT CAN BE PRESSED: a die that changed from a span to a button would be mounted afresh, and a die mounted afresh has no earlier roll to tumble from.
   const pressable = onPress !== undefined;
@@ -42,7 +42,7 @@ function Die({ value, at, held, rollKey, tumbles, onPress }: { value: number; at
       role={pressable ? "button" : "img"}
       tabIndex={pressable ? 0 : undefined}
       aria-pressed={pressable ? held : undefined}
-      aria-label={pressable ? `Die ${at + 1}: ${label}. Tap to ${held ? "let it go" : "hold it"}.` : label}
+      aria-label={pressable ? say.say(held ? "party.yacht.dieTapRelease" : "party.yacht.dieTapHold", { n: String(at + 1), label }) : label}
       onClick={onPress}
       onKeyDown={
         pressable

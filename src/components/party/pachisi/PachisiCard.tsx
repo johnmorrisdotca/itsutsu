@@ -35,7 +35,7 @@ export function PachisiCard() {
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
           <GameName variant={variant} /> · {PACHISI_COPY.home4(pawnsHome(game, game.toPlay))} ·
           <MarbleChip player={game.toPlay} />
-          {seatedName(game, game.toPlay, say)} to play
+          {say.say("party.toPlay", { name: seatedName(game, game.toPlay, say) })}
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

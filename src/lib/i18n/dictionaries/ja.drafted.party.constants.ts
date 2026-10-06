@@ -889,11 +889,6 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   // Tenka's table
-  "party.tenka.playersTitle": {
-    text: "対局者",
-    back: "Players",
-    review: AGENT_READ,
-  },
   "party.tenka.columnsNote": {
     text: "領土・部隊・カード。",
     back: "Territories, armies and cards.",
@@ -1123,6 +1118,323 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "party.gunjin.nameBlue": {
     text: "{name}（青）",
     back: "{name} (blue)",
+    review: AGENT_READ,
+  },
+  // Hitotsu's status, news and labels
+  "party.hitotsu.playLine": {
+    text: "{name}の番です：{colour}、同じ数字か記号、またはワイルドを出せます。",
+    back: "{name}'s turn: you can play {colour}, the same number or symbol, or a wild.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.caught": {
+    text: "{name}は「ヒトツ！」と言い忘れました：2枚引きます。",
+    back: "{name} forgot to say \"Hitotsu!\" and draws two cards.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.took": {
+    text: "{name}が{count}枚引きました。",
+    back: "{name} drew {count} cards.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.challengeGuilty": {
+    text: "{name}が{by}に挑戦しました。{by}はその色を持っていました。",
+    back: "{name} challenged {by}. {by} had the colour.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.challengeInnocent": {
+    text: "{name}が{by}に挑戦しました。{by}はその色を持っていませんでした。",
+    back: "{name} challenged {by}. {by} did not have the colour.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.swap": {
+    text: "{name}が{other}と手札を交換しました。",
+    back: "{name} swapped hands with {other}.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.rotate": {
+    text: "全員の手札が回りました。",
+    back: "Every hand was passed on.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.jump": {
+    text: "{name}が割り込みました！",
+    back: "{name} jumped in!",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.skipped": {
+    text: "{name}は飛ばされます。",
+    back: "{name} is skipped.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.reversed": {
+    text: "順番が逆になりました。",
+    back: "The order has turned round.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.drew.one": {
+    text: "{name}が1枚引きました。",
+    back: "{name} drew a card.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.drew.other": {
+    text: "{name}が{count}枚引きました。",
+    back: "{name} drew {count} cards.",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.stockAria": {
+    text: "伏せた山札",
+    back: "the stock, face down",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.topAria": {
+    text: "一番上は{card}",
+    back: "{card} is on top",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.waiting": {
+    text: "+{count}枚が待っています",
+    back: "+{count} cards are waiting",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.noGo": {
+    text: "、出せません",
+    back: ", cannot be played",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.points.one": {
+    text: "{count}点",
+    back: "{count} point",
+    review: AGENT_READ,
+  },
+  "party.hitotsu.points.other": {
+    text: "{count}点",
+    back: "{count} points",
+    review: AGENT_READ,
+  },
+  // Dice War's lines
+  "party.diceWar.points.one": {
+    text: "{count}点",
+    back: "{count} point",
+    review: AGENT_READ,
+  },
+  "party.diceWar.points.other": {
+    text: "{count}点",
+    back: "{count} points",
+    review: AGENT_READ,
+  },
+  "party.diceWar.roundOf": {
+    text: "第{round}ラウンド（全{to}）",
+    back: "Round {round} of {to}",
+    review: AGENT_READ,
+  },
+  "party.diceWar.roundFirst": {
+    text: "第{round}ラウンド、先に{points}を取った人の勝ち",
+    back: "Round {round}: the first to {points} wins",
+    review: AGENT_READ,
+  },
+  "party.diceWar.wonRound": {
+    text: "{name}が{high}でラウンドに勝ち、{points}を得ました。",
+    back: "{name} won the round with {high} and gains {points}.",
+    review: AGENT_READ,
+  },
+  "party.diceWar.wonWar": {
+    text: "{name}が{high}で戦争に勝ち、{points}を得ました。",
+    back: "{name} won the war with {high} and gains {points}.",
+    review: AGENT_READ,
+  },
+  "party.diceWar.calledOff": {
+    text: "{names}は引き分けを繰り返したので、このラウンドは打ち切りで、誰も得点しません。",
+    back: "{names} kept tying, so the round is called off and nobody scores.",
+    review: AGENT_READ,
+  },
+  "party.diceWar.tiedWar": {
+    text: "{names}が{high}で並びました：戦争！",
+    back: "{names} tied with {high}: war!",
+    review: AGENT_READ,
+  },
+  "party.diceWar.rollAgain": {
+    text: "{names}がもう一度振ります。かかっているのは{points}です。",
+    back: "{names} roll again. {points} are at stake.",
+    review: AGENT_READ,
+  },
+  "party.diceWar.rollFirst": {
+    text: "全員が振ります。合計がいちばん大きい人が1点を取ります。",
+    back: "Everybody rolls. Whoever has the highest total scores a point.",
+    review: AGENT_READ,
+  },
+  "party.diceWar.rollNext": {
+    text: "全員が次の1点のために振ります。",
+    back: "Everybody rolls for the next point.",
+    review: AGENT_READ,
+  },
+  "party.diceWar.reached": {
+    text: "{names}が{points}に届きました。",
+    back: "{names} reached {points}.",
+    review: AGENT_READ,
+  },
+  "party.diceWar.shareMost": {
+    text: "{rounds}ラウンドが終わり、{names}が最多得点で並びました。",
+    back: "After {rounds} rounds, {names} are level on the most points.",
+    review: AGENT_READ,
+  },
+  "party.diceWar.hasMost": {
+    text: "{rounds}ラウンドが終わり、{names}が最多得点です。",
+    back: "After {rounds} rounds, {names} has the most points.",
+    review: AGENT_READ,
+  },
+  "party.diceWar.cardRound": {
+    text: "第{round}ラウンド",
+    back: "Round {round}",
+    review: AGENT_READ,
+  },
+  "party.diceWar.toRoll": {
+    text: "{name}の番",
+    back: "{name}'s turn to roll",
+    review: AGENT_READ,
+  },
+  // Yacht's dice and boxes
+  "party.yacht.dieNone": {
+    text: "まだ振っていません",
+    back: "Not thrown yet",
+    review: AGENT_READ,
+  },
+  "party.yacht.dieHeld": {
+    text: "{value}、{held}",
+    back: "{value}, {held}",
+    review: AGENT_READ,
+  },
+  "party.yacht.dieTapHold": {
+    text: "サイコロ{n}：{label}。タップで固定します。",
+    back: "Die {n}: {label}. Tap to hold it.",
+    review: AGENT_READ,
+  },
+  "party.yacht.dieTapRelease": {
+    text: "サイコロ{n}：{label}。タップで固定を解除します。",
+    back: "Die {n}: {label}. Tap to release it.",
+    review: AGENT_READ,
+  },
+  "party.yacht.boxAria": {
+    text: "{box}に{score}点を記入",
+    back: "Write {score} points in {box}",
+    review: AGENT_READ,
+  },
+  // Cards on the My games list and small lines
+  "party.yacht.turnOf": {
+    text: "第{n}手番（全{total}）",
+    back: "Turn {n} of {total}",
+    review: AGENT_READ,
+  },
+  "party.computerTag": {
+    text: "コンピュータ",
+    back: "computer",
+    review: AGENT_READ,
+  },
+  // Gunjin's news and the reasons a game ends
+  "party.gunjin.moved": {
+    text: "{name}が{from}から{to}へ駒を動かしました。",
+    back: "{name} moved a piece from {from} to {to}.",
+    review: AGENT_READ,
+  },
+  "party.gunjin.bothOff": {
+    text: "{name}の駒が{to}で{other}の駒を攻撃し、両方とも取り除かれました。",
+    back: "{name}'s piece attacked {other}'s on {to}, and both were removed.",
+    review: AGENT_READ,
+  },
+  "party.gunjin.bothOffRanks": {
+    text: "{name}の{a}と{other}の{b}が{to}で出会い、両方とも取り除かれました。",
+    back: "{name}'s {a} and {other}'s {b} met on {to}, and both were removed.",
+    review: AGENT_READ,
+  },
+  "party.gunjin.took": {
+    text: "{from}の{name}の駒が、{to}の{other}の駒を取りました。",
+    back: "{name}'s piece from {from} took {other}'s piece on {to}.",
+    review: AGENT_READ,
+  },
+  "party.gunjin.tookRanks": {
+    text: "{from}の{name}の{a}が、{to}の{other}の{b}を取りました。",
+    back: "{name}'s {a} from {from} took {other}'s {b} on {to}.",
+    review: AGENT_READ,
+  },
+  "party.gunjin.lost": {
+    text: "{from}の{name}の駒が{to}の{other}の駒を攻撃しましたが、取り除かれました。",
+    back: "{name}'s piece from {from} attacked {other}'s piece on {to} but was removed.",
+    review: AGENT_READ,
+  },
+  "party.gunjin.lostRanks": {
+    text: "{from}の{name}の{a}が{to}の{other}の{b}を攻撃しましたが、取り除かれました。",
+    back: "{name}'s {a} from {from} attacked {other}'s {b} on {to} but was removed.",
+    review: AGENT_READ,
+  },
+  "party.gunjin.reasonObjective": {
+    text: "大将が取られました",
+    back: "the general was taken",
+    review: AGENT_READ,
+  },
+  "party.gunjin.reasonThreshold": {
+    text: "駒が少なくなりすぎました",
+    back: "too few pieces were left",
+    review: AGENT_READ,
+  },
+  "party.gunjin.reasonBlocked": {
+    text: "相手に動かせる駒がありませんでした",
+    back: "the other side had no piece that could move",
+    review: AGENT_READ,
+  },
+  "party.gunjin.reasonFlagWon": {
+    text: "軍旗が取られました",
+    back: "the flag was taken",
+    review: AGENT_READ,
+  },
+  "party.gunjin.reasonFlagHeld": {
+    text: "軍旗が奥の列に達し、そこにとどまりました",
+    back: "the flag reached the far row and stayed there",
+    review: AGENT_READ,
+  },
+  "party.gunjin.reasonResigned": {
+    text: "投了しました",
+    back: "resigned",
+    review: AGENT_READ,
+  },
+  "party.gunjin.reasonDraw": {
+    text: "引き分けに合意しました",
+    back: "a draw was agreed",
+    review: AGENT_READ,
+  },
+  "party.gunjin.reasonRepeat": {
+    text: "同じ局面が3回現れました",
+    back: "the same position came up three times",
+    review: AGENT_READ,
+  },
+  // Online tables, the lines the table's own words lack
+  "party.online.unreachable": {
+    text: "サイトにつながりませんでした。",
+    back: "The site could not be reached.",
+    review: AGENT_READ,
+  },
+  "party.online.openTable": {
+    text: "卓を開く",
+    back: "Open the table",
+    review: AGENT_READ,
+  },
+  "party.online.nextPlayer": {
+    text: "次の対局者",
+    back: "The next player",
+    review: AGENT_READ,
+  },
+  "party.online.seatN": {
+    text: "席{n}",
+    back: "Seat {n}",
+    review: AGENT_READ,
+  },
+  // The pass-and-play page's heading
+  "party.passPlayTitle": {
+    text: "{game}の回し打ち",
+    back: "{game}, pass and play",
+    review: AGENT_READ,
+  },
+  "party.onlineTableTitle": {
+    text: "{game}のオンライン卓",
+    back: "{game}, online table",
     review: AGENT_READ,
   },
 };

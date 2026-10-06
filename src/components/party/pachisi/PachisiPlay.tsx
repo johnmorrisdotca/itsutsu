@@ -110,7 +110,7 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
         {/* Quiet around the game while it is played (`PlayingNow`). */}
         <PlayingNow on={moment.playing} />
         <WinCoverOver
-          news={moment.open ? tableNews({ names, winners: game.winners, you: people.length === 1 ? people[0]! : null, next: { label: `${PARTY_COPY.again} →`, onPress: again } }) : null}
+          news={moment.open ? tableNews({ names, winners: game.winners, you: people.length === 1 ? people[0]! : null, next: { label: `${PARTY_COPY.again} →`, onPress: again } }, say) : null}
           onClose={moment.close}
         >
           <PachisiBoard game={game} appearance={appearance} movable={movable} onPawn={personToMove && game.phase === "move" ? onPawn : undefined} />
@@ -185,7 +185,7 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
           />
         </div>
         <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
-        {playing ? null : <TableWallpaper game="pachisi" result={resultLine(names, game.winners)} />}
+        {playing ? null : <TableWallpaper game="pachisi" result={resultLine(names, game.winners, false, say)} />}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {PACHISI_COPY.about} →

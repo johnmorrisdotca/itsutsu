@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { speaker } from "../i18n/i18n";
+
 import { CARD_GAME_LIST } from "../cardGames/cardGames.constants";
 import { CARD_GAME_RULES } from "../cardGames/cardGameRules";
 
@@ -7,6 +9,9 @@ import { PARTY_KIND_LIST, PARTY_SPECS } from "./party.constants";
 import { PARTY_RULES } from "./partyRules";
 import { warEnding, warWords } from "../cardGames/war/warWords";
 import type { PartyRules } from "./party.types";
+
+/** The English speaker: these tests read the English words. */
+const EN = speaker("en");
 
 /**
  * THE FAMILY CARD GAMES AS PARTY GAMES: hearts, spades, bigTwo, president,
@@ -103,13 +108,13 @@ describe("war at the party table", () => {
 
   it("says each turn in words, a war and how the game ended", () => {
     const name = (seat: number) => names[seat];
-    expect(warWords(rules.start(100, names, undefined, 1)!, name)).toBe("Turn the cards over to begin.");
+    expect(warWords(rules.start(100, names, undefined, 1)!, name, EN)).toBe("Turn the cards over to begin.");
     let game = rules.start(1000, names, undefined, 5, [false, false])!;
     let sawWar = false;
     let sawPlain = false;
     while (!rules.over(game)) {
       game = rules.play(game, { turn: true })!;
-      const said = warWords(game, name);
+      const said = warWords(game, name, EN);
       if (game.last !== null && game.last.wars > 0 && game.last.winner !== null) {
         sawWar = true;
         expect(said).toMatch(/^Both turned \w+: war! Ann turned .* and Ben turned .*\. (Ann|Ben) takes all \d+ cards\.$/);
@@ -119,12 +124,12 @@ describe("war at the party table", () => {
       }
     }
     expect(sawWar && sawPlain).toBe(true);
-    const ending = warEnding(game, name);
+    const ending = warEnding(game, name, EN);
     expect(ending.line.length).toBeGreaterThan(0);
     // A game turned to its last card says who holds every one; one cut off at its turn limit says the turns ran out.
     const cut = rules.start(50, names, undefined, 3, [false, false])!;
     let at = cut;
     while (!rules.over(at)) at = rules.play(at, { turn: true })!;
-    if (at.ended === "limit") expect(warEnding(at, name).line).toMatch(/turns have run out/);
+    if (at.ended === "limit") expect(warEnding(at, name, EN).line).toMatch(/turns have run out/);
   });
 });

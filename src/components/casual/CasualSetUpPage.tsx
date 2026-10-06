@@ -3,7 +3,8 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import Link from "@/components/ui/Link";
-import { CASUAL_DISPLAY } from "@/lib/casual/casual.constants";
+import { casualCopy } from "@/lib/party/partyCopy";
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import type { CasualKind } from "@/lib/casual/casual.types";
 import { gamePath, rulesPath } from "@/lib/gomoku/slugs";
 
@@ -16,20 +17,21 @@ import { CasualSetUp } from "./CasualSetUp";
  * stranger reads the rules and is invited in. It reads nothing from the
  * database; what the player has won is in their browser (`casualStore.ts`).
  */
-export function CasualSetUpPage({ kind }: { kind: CasualKind }) {
-  const copy = CASUAL_DISPLAY[kind];
+export async function CasualSetUpPage({ kind }: { kind: CasualKind }) {
+  const say = await currentSpeaker();
+  const copy = casualCopy(kind, say.locale);
   return (
     <Page>
       <SiteHeader />
       <PageTitle
         title={copy.label}
         kanji={copy.kanji}
-        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: "Set up" }]} />}
+        crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: say.say("gamescreen.setUpTitle") }]} />}
         lead={
           <>
             {copy.tagline}{" "}
             <Link href={rulesPath(kind)} className="underline underline-offset-4">
-              How to play
+              {say.say("gamepages.howToPlay")}
             </Link>
             .
           </>

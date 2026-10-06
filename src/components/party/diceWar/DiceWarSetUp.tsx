@@ -16,7 +16,8 @@ import {
   type DiceWarGoalKind,
 } from "@/lib/party/diceWar/diceWar.constants";
 import { DICE_WAR_RULES } from "@/lib/party/diceWar/diceWarRules";
-import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
+import { PARTY_NAME_MOST, computerNumberName } from "@/lib/party/partyNames";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { freshSeed } from "@/lib/puzzles/random";
 
 import { usePartyMarbles } from "../partyMarbles";
@@ -150,7 +151,7 @@ export function DiceWarSetUp({ onStart, ready }: { onStart: (game: DiceWarGame) 
                     type="text"
                     value={name}
                     maxLength={PARTY_NAME_MOST}
-                    placeholder={computers[seat] ? `${DICE_WAR_COPY.computer} ${seat + 1}` : `Player ${seat + 1}`}
+                    placeholder={computers[seat] ? computerNumberName(say, seat + 1) : playerNumberName(say, seat + 1)}
                     onChange={(event) => setNames((was) => was.map((one, at) => (at === seat ? event.target.value : one)))}
                     className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                     data-testid="dicewar-name"

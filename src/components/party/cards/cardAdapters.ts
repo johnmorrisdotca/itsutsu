@@ -1,6 +1,8 @@
 "use client";
 
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { seatedName } from "@/lib/party/partyNames";
 
 import type { CardAdapter } from "./cardTable.types";
 import { BIG_TWO_ADAPTER, PRESIDENT_ADAPTER } from "./climbAdapters";
@@ -34,9 +36,7 @@ export const CARD_ADAPTERS: Record<CardGameKind, CardAdapter<unknown, unknown>> 
   war: WAR_ADAPTER as unknown as CardAdapter<unknown, unknown>,
 };
 
-/** A seat's name as the table says it: the one typed, or "Computer 3" or "Player 2". */
-export function seatName(players: readonly string[], computers: readonly boolean[], seat: number): string {
-  const given = players[seat]?.trim() ?? "";
-  if (given !== "") return given;
-  return computers[seat] === true ? `Computer ${seat + 1}` : `Player ${seat + 1}`;
+/** A seat's name as the table says it: the one typed, or "Computer 3" or "Player 2", or コンピュータ3 and 対局者2. */
+export function seatName(players: readonly string[], computers: readonly boolean[], seat: number, say: Speaker): string {
+  return seatedName({ players, computers }, seat, say);
 }

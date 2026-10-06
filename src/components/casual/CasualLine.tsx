@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "@/components/ui/Link";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { STAT_CHIP, STAT_LINK } from "@/components/games/games.constants";
-import { CASUAL_SPECS } from "@/lib/casual/casual.constants";
 import type { CasualKind } from "@/lib/casual/casual.types";
+import { casualLevelsWords } from "@/lib/casual/casualRulesPage";
 import { setUpPath } from "@/lib/gomoku/slugs";
 
 /**
@@ -18,19 +19,19 @@ import { setUpPath } from "@/lib/gomoku/slugs";
  * above the card's stretched face, like every other link on a card.
  */
 export function CasualLine({ kind, signedIn }: { kind: CasualKind; signedIn: boolean }) {
-  const { levels } = CASUAL_SPECS[kind];
+  const say = useSpeaker();
   return (
     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs" data-testid="casual-line" data-variant={kind}>
       <span className={`${STAT_CHIP} text-muted`}>
-        {levels} {kind === "choiceStory" ? "stories" : "levels"} to play alone; unrated, kept in your browser.
+        {say.say("casual.line", { levels: casualLevelsWords(kind, say) })}
       </span>
       {signedIn ? (
         <Link href={setUpPath(kind)} className={STAT_LINK} data-testid="casual-line-play">
-          Play →
+          {say.say("party.play")}
         </Link>
       ) : (
         <Link href="/join" className={STAT_LINK} data-testid="casual-line-join">
-          Join to play →
+          {say.say("party.joinToPlay")}
         </Link>
       )}
     </div>

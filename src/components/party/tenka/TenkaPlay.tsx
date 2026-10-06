@@ -145,7 +145,7 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
                   winners: game.winners,
                   you: null,
                   next: { label: PARTY_COPY.again, onPress: () => keep(tenkaAgain(game, freshTenkaSeed())) },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -189,7 +189,7 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
               onNewGame={() => keep(null)}
             />
           </div>
-          {playing ? null : <TableWallpaper game="tenka" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat, say)), game.winners)} />}
+          {playing ? null : <TableWallpaper game="tenka" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat, say)), game.winners, false, say)} />}
           <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
           <p className="text-sm">
             <Link href={gameHref} className="underline underline-offset-4">

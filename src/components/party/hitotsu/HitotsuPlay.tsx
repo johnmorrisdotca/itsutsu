@@ -1,6 +1,6 @@
 "use client";
 
-import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+import { gameEndingCopy } from "@/components/play/gameEnding.constants";
 import { resignedBy, resignWinners } from "@/lib/party/resign";
 import { TableEnding } from "@/components/play/GameEnding";
 import { resignHitotsu } from "@/lib/party/resignTables";
@@ -12,7 +12,8 @@ import { useFeltChoice } from "@/components/board/useFeltChoice";
 import { useCardSounds } from "@/components/cards/useCardSounds";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
-import { resultLine, tableNews } from "@/components/game/winNews";
+import { namesInALine, resultLine, tableNews } from "@/components/game/winNews";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
 import { HITOTSU_ONE_HAND, type HitotsuGame, type HitotsuMove, hitotsuWinners, playHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
@@ -43,10 +44,11 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  */
 export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game: HitotsuGame; keep: (game: HitotsuGame | null) => void; appearance: Appearance; gameHref: string; ready: { "data-ready": string } }) {
   const say = useSpeaker();
+  const GAME_ENDING_COPY = gameEndingCopy(say);
   const CARD_TABLE_COPY = cardTableWords(say.locale);
   const HITOTSU_COPY = hitotsuScreenWords(say.locale);
-  const names = game.players.map((_, seat) => seatName(game.players, game.computers, seat));
-  const name = (seat: number) => names[seat] ?? `Player ${seat + 1}`;
+  const names = game.players.map((_, seat) => seatName(game.players, game.computers, seat, say));
+  const name = (seat: number) => names[seat] ?? playerNumberName(say, seat + 1);
   const over = game.phase === "over";
   const toPlay = over ? null : game.toPlay;
   const people = game.players.map((_, seat) => seat).filter((seat) => !game.computers[seat]);
@@ -68,7 +70,7 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
     const fresh = startHitotsu(game.size, game.players, freshCardSeed(), game.options, game.computers);
     if (fresh !== null) keep(fresh);
   };
-  const news = hitotsuNewsLine(game, name);
+  const news = hitotsuNewsLine(game, name, say);
 
   return (
     <section
@@ -83,7 +85,7 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
     >
       <div className="flex min-h-16 flex-col gap-0.5">
         <p className="text-base font-semibold" data-testid="hitotsu-status" aria-live="polite">
-          {over ? (resigned !== null ? `${HITOTSU_COPY.over}: ${GAME_ENDING_COPY.resignedResult(name(resigned), winners.map(name))}` : `${HITOTSU_COPY.over}: ${HITOTSU_COPY.won(winners.map(name).join(" and "))}`) : thinking && toPlay !== null ? HITOTSU_COPY.thinking(name(toPlay)) : hitotsuStatus(game, name)}
+          {over ? (resigned !== null ? `${HITOTSU_COPY.over}: ${GAME_ENDING_COPY.resignedResult(name(resigned), winners.map(name))}` : `${HITOTSU_COPY.over}: ${HITOTSU_COPY.won(namesInALine(winners.map(name), say))}`) : thinking && toPlay !== null ? HITOTSU_COPY.thinking(name(toPlay)) : hitotsuStatus(game, name, say)}
         </p>
         <p className="text-sm text-muted" data-testid="hitotsu-news">
           {news}
@@ -99,7 +101,7 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
       />
       <div className="mx-auto flex w-full min-w-0 max-w-2xl flex-col gap-3" data-width-reason="a card table wider than a hand of cards spreads the pile past where the eye can take it in with the hand" data-scale-board data-bare-board data-testid="hitotsu-board">
         <WinCoverOver
-          news={moment.open ? tableNews({ names, winners, you: people.length === 1 ? people[0]! : null, next: { label: HITOTSU_COPY.again, onPress: again } }) : null}
+          news={moment.open ? tableNews({ names, winners, you: people.length === 1 ? people[0]! : null, next: { label: HITOTSU_COPY.again, onPress: again } }, say) : null}
           onClose={moment.close}
         >
           <HitotsuTableTop game={game} appearance={{ ...appearance, felt }} />
@@ -141,7 +143,7 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
           onNewGame={() => keep(null)}
         />
       </div>
-      {over ? <TableWallpaper game="hitotsu" result={resultLine(names, winners)} /> : null}
+      {over ? <TableWallpaper game="hitotsu" result={resultLine(names, winners, false, say)} /> : null}
       <p className="text-xs text-muted">{HITOTSU_COPY.kept}</p>
       <p className="text-sm">
         <Link href={gameHref} className="underline underline-offset-4">

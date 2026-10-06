@@ -1,6 +1,8 @@
 "use client";
 
-import { rankOf, suitWords } from "@/lib/cardGames/cards";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { suitNamed } from "@/lib/cardGames/cardSay";
+import { rankOf } from "@/lib/cardGames/cards";
 import type { CardSuit } from "@/lib/cardGames/cardGames.types";
 import { EIGHT, crazyTop } from "@/lib/cardGames/crazyEights/crazyEights";
 import { CRAZY_EIGHTS_RULES } from "@/lib/cardGames/crazyEights/crazyEightsRules";
@@ -14,18 +16,19 @@ const SUIT_SIGNS: Record<CardSuit, string> = { S: "♠", H: "♥", D: "♦", C: 
 
 /** The stock face down and the discard pile face up beside it, and the suit to follow when an eight called one. */
 function CrazyEightsCentre({ game }: CardCentreProps<CrazyEightsGame>) {
+  const say = useSpeaker();
   const top = crazyTop(game);
   const called = rankOf(top) === EIGHT;
   return (
     <>
       {game.stock.length === 0 ? null : <LaidCard card={null} left={30} top={6} testId="cards-stock" />}
       <TableWords left={22} top={29} width={30}>
-        {game.stock.length === 0 ? "No stock" : `${game.stock.length} in the stock`}
+        {game.stock.length === 0 ? say.say("ctable.stockNone") : say.say("ctable.stock", { count: String(game.stock.length) })}
       </TableWords>
       <LaidCard card={top} left={55} top={6} testId="cards-discard" />
       {called ? (
         <TableWords left={45} top={29} width={35} testId="cards-called">
-          {SUIT_SIGNS[game.suit]} {suitWords(game.suit)} called
+          {say.say("ctable.crazy.called", { sign: SUIT_SIGNS[game.suit], suit: suitNamed(game.suit, say) })}
         </TableWords>
       ) : null}
     </>
@@ -38,7 +41,7 @@ export const CRAZY_EIGHTS_ADAPTER: CardAdapter<CrazyEightsGame, CrazyEightsMove>
   rules: CRAZY_EIGHTS_RULES,
   hand: (game, seat) => game.hands[seat] ?? [],
   chooses: () => 1,
-  actions: (game, chosen) => {
+  actions: (game, chosen, _target, _name, say) => {
     const moves = CRAZY_EIGHTS_RULES.moves(game);
     const actions: CardAction<CrazyEightsMove>[] = [];
     const card = chosen.length === 1 ? chosen[0] : null;
@@ -46,17 +49,17 @@ export const CRAZY_EIGHTS_ADAPTER: CardAdapter<CrazyEightsGame, CrazyEightsMove>
       // An eight calls a suit: one press a suit, each the whole move.
       for (const suit of SUITS) {
         const move: CrazyEightsMove = { play: card, suit };
-        actions.push({ label: `${SUIT_SIGNS[suit]} Call ${suitWords(suit)}`, move: CRAZY_EIGHTS_RULES.play(game, move) === null ? null : move, testId: `cards-call-${suit}`, strong: true });
+        actions.push({ label: say.say("ctable.crazy.call", { sign: SUIT_SIGNS[suit], suit: suitNamed(suit, say) }), move: CRAZY_EIGHTS_RULES.play(game, move) === null ? null : move, testId: `cards-call-${suit}`, strong: true });
       }
     } else {
       const move: CrazyEightsMove | null = card === null ? null : { play: card };
       const ok = move !== null && CRAZY_EIGHTS_RULES.play(game, move) !== null;
-      actions.push({ label: "Play", move: ok ? move : null, testId: "cards-play", strong: true, why: card === null ? "Choose a card that matches the suit or the rank." : "That card does not match the suit or the rank." });
+      actions.push({ label: say.say("ctable.play"), move: ok ? move : null, testId: "cards-play", strong: true, why: card === null ? say.say("ctable.crazy.chooseMatch") : say.say("ctable.crazy.noMatch") });
     }
     const draw = moves.find((move) => "draw" in move);
-    if (draw !== undefined) actions.push({ label: "Draw", move: draw, testId: "cards-draw" });
+    if (draw !== undefined) actions.push({ label: say.say("ctable.draw"), move: draw, testId: "cards-draw" });
     const pass = moves.find((move) => "pass" in move);
-    if (pass !== undefined) actions.push({ label: "Pass", move: pass, testId: "cards-pass" });
+    if (pass !== undefined) actions.push({ label: say.say("ctable.pass"), move: pass, testId: "cards-pass" });
     return actions;
   },
   // A double tap plays a card that matches; an eight waits for its suit to be called.
@@ -65,12 +68,12 @@ export const CRAZY_EIGHTS_ADAPTER: CardAdapter<CrazyEightsGame, CrazyEightsMove>
     const move: CrazyEightsMove = { play: card };
     return CRAZY_EIGHTS_RULES.play(game, move) === null ? null : move;
   },
-  status: (game, name) => {
+  status: (game, name, say) => {
     if (game.toPlay === null) return "";
-    if (game.drawn !== null) return `${name(game.toPlay)} drew: play the card drawn if it matches, or pass.`;
-    return `${name(game.toPlay)} to play: ${SUIT_SIGNS[game.suit]} ${suitWords(game.suit)}, or a card of the same rank, or an eight.`;
+    if (game.drawn !== null) return say.say("ctable.crazy.drewStatus", { name: name(game.toPlay) });
+    return say.say("ctable.crazy.playStatus", { name: name(game.toPlay), sign: SUIT_SIGNS[game.suit], suit: suitNamed(game.suit, say) });
   },
   standing: (game, seat) => ({ score: String(game.scores[seat]) }),
-  scoreWords: "Points, first to the total wins",
+  scoreWords: (say) => say.say("ctable.pointsFirst"),
   Centre: CrazyEightsCentre,
 };

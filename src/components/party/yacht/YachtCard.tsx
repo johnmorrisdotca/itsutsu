@@ -33,9 +33,9 @@ export function YachtCard() {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · Turn {boxesFilled(game, game.toPlay) + 1} of {YACHT_SHEET} ·
+          <GameName variant={variant} /> · {say.say("party.yacht.turnOf", { n: String(boxesFilled(game, game.toPlay) + 1), total: String(YACHT_SHEET) })} ·
           <MarbleChip player={game.toPlay} />
-          {seatedName(game, game.toPlay, say)} to play
+          {say.say("party.toPlay", { name: seatedName(game, game.toPlay, say) })}
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

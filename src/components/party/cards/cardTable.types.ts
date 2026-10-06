@@ -1,5 +1,7 @@
 import type { ComponentType } from "react";
 
+import type { Speaker } from "@/lib/i18n/i18n";
+
 import type { Appearance } from "@/components/board/board.types";
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import type { CardGameRules, CardId } from "@/lib/cardGames/cardGames.types";
@@ -32,7 +34,7 @@ export type CardAdapter<S, M> = {
   /** How many cards a seat may choose at once for a move now: one, or as many as a play or a pass takes. */
   chooses: (game: S) => number;
   /** The presses open to the player to move, with these cards chosen and this seat pointed at. */
-  actions: (game: S, chosen: readonly CardId[], target: number | null, name: (seat: number) => string) => CardAction<M>[];
+  actions: (game: S, chosen: readonly CardId[], target: number | null, name: (seat: number) => string, say: Speaker) => CardAction<M>[];
   /** What a double tap on a card, or a card let go on the table, plays: the one obvious move with it, or null. */
   quick: (game: S, card: CardId, chosen: readonly CardId[], target: number | null) => M | null;
   /** The seats a move may be aimed at (Go Fish's asks); none for a game without. */
@@ -40,11 +42,11 @@ export type CardAdapter<S, M> = {
   /** Cards to mark in a hand as just arrived (Hearts' passed cards). */
   arrived?: (game: S, seat: number) => readonly CardId[];
   /** What is happening now, in a line: whose turn, and what they are to do. */
-  status: (game: S, name: (seat: number) => string) => string;
+  status: (game: S, name: (seat: number) => string, say: Speaker) => string;
   /** Each seat's standing: its score, and a word beside it (a title, books). */
-  standing: (game: S, seat: number) => { score: string; note?: string };
+  standing: (game: S, seat: number, say: Speaker) => { score: string; note?: string };
   /** What the scores count, for the heading over them: "Points (fewest wins)". */
-  scoreWords: string;
+  scoreWords: (say: Speaker) => string;
   Centre: ComponentType<CardCentreProps<S>>;
   /**
    * A game with nothing hidden and nothing to choose (War): no hand is drawn,
@@ -53,7 +55,7 @@ export type CardAdapter<S, M> = {
    */
   open?: boolean;
   /** How a finished game ended, in a line, and whether it was a draw, for a game whose ending is more than "somebody won". */
-  ending?: (game: S, name: (seat: number) => string) => { line: string; draw: boolean };
+  ending?: (game: S, name: (seat: number) => string, say: Speaker) => { line: string; draw: boolean };
 };
 
 /** The set-up: how many, how long, and who sits where — a person, named if they like, or a computer. */

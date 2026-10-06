@@ -6,6 +6,10 @@ import { decodeGunjin, decodeGunjinSeen, encodeGunjin, encodeGunjinSeen } from "
 import { gunjinReason } from "./gunjinNews";
 import type { GunjinGame, GunjinMove } from "./gunjin.types";
 import { GUNJIN_ONLINE } from "../online/onlineGunjin";
+import { speaker } from "../../i18n/i18n";
+
+/** The English speaker: these tests read the English words. */
+const EN = speaker("en");
 
 /** A game of this board with both sides arranged and the device handed to red: ready for the first move. */
 function begun(size: number): GunjinGame {
@@ -30,7 +34,7 @@ describe("Gunjin ends by a resignation or an agreed draw, on every board", () =>
       expect(gunjinOver(over), `${size}`).toBe(true);
       expect(gunjinWinners(over)).toEqual([1 - red]);
       expect(gunjinDrawn(over)).toBe(false);
-      expect(gunjinReason(over)).toBe("resigned");
+      expect(gunjinReason(over, EN)).toBe("resigned");
       expect(gunjinToPlay(over)).toBeNull();
       // Nothing is played after it.
       expect(playGunjin(over, { kind: "resign" })).toBeNull();
@@ -53,7 +57,7 @@ describe("Gunjin ends by a resignation or an agreed draw, on every board", () =>
       expect(gunjinOver(ended)).toBe(true);
       expect(gunjinDrawn(ended)).toBe(true);
       expect(gunjinWinners(ended)).toEqual([]);
-      expect(gunjinReason(ended)).toBe("a draw was agreed");
+      expect(gunjinReason(ended, EN)).toBe("a draw was agreed");
     }
   });
 

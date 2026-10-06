@@ -33,7 +33,7 @@ export function HitotsuDesk({ game, seat, active, label, name, onMove }: { game:
   const call = calling.at === moves && calling.value;
   const open = active && movesFor(game, seat).length > 0;
   const playable = open ? playableFor(game, seat) : [];
-  const presses = open ? hitotsuPresses(game, seat, chosen, call, name) : [];
+  const presses = open ? hitotsuPresses(game, seat, chosen, call, name, say) : [];
   const stuck = presses.find((press) => press.strong === true && press.move === null);
   const send = (move: HitotsuMove | null) => {
     if (move === null) return;
@@ -52,7 +52,7 @@ export function HitotsuDesk({ game, seat, active, label, name, onMove }: { game:
   return (
     <div className="flex flex-col gap-2" data-testid="hitotsu-desk" data-seat={seat}>
       <p className="text-sm text-muted">
-        {label} · {game.scores[seat] ?? 0} points
+        {label} · {say.count("party.hitotsu.points", game.scores[seat] ?? 0)}
       </p>
       <HitotsuHand cards={hand} chosen={chosen} playable={playable} onPress={open ? press : undefined} label={label} />
       {open && callMatters(game, seat) ? (

@@ -19,7 +19,7 @@ const sameSquare = (a: GunjinSquare | null, b: GunjinSquare) => a !== null && a.
 export function MovesPanel({ game, names, note }: { game: GunjinGame; names: readonly string[]; note?: string }) {
   const say = useSpeaker();
   const GUNJIN_COPY = gunjinWords(say.locale);
-  const lines = gunjinNewsLines(game, names, 6);
+  const lines = gunjinNewsLines(game, names, 6, say);
   return (
     <div className={`${PANEL_CLASS} flex min-w-0 flex-col gap-2`} data-testid="gunjin-moves">
       {note === undefined ? null : <p className="text-sm text-muted">{note}</p>}

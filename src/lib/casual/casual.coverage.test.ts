@@ -8,6 +8,7 @@ import { GAME_ADDED } from "@/lib/catalogue/gameAdded.data";
 import { EVERY_GAME_KEY, RECORDED_GAME_KEYS, gameCopyFor, isCasualKind } from "@/lib/catalogue/gameKeys";
 import { openSourceOf } from "@/lib/catalogue/openSource";
 import { gameArtPath, gameThumbPath } from "@/lib/gomoku/artwork";
+import { speaker } from "@/lib/i18n/i18n";
 import { RECORDED_FAMILIES, familyOf, familyPagePath } from "@/lib/gomoku/families";
 import { CASUAL_SLUGS, casualPlayPath, gameKeyFor, slugFor } from "@/lib/gomoku/slugs";
 import { offlineGameAddresses } from "@/lib/offline/offlineGames";
@@ -91,7 +92,7 @@ describe("every casual game is finished, not just declared", () => {
   });
 
   it.each(CASUAL_KIND_LIST)("%s builds a rules page with every section filled", (kind) => {
-    const page = casualRulesPage(kind);
+    const page = casualRulesPage(kind, speaker("en"));
     for (const section of [page.object, page.board, page.play, page.house]) expect(section.length).toBeGreaterThan(0);
     expect(page.image).toBe(gameArtPath(kind));
     // Nothing on it promises a score, a rank or experience: a casual game has none.

@@ -1,4 +1,6 @@
 // Free of Korokoro, like the rest of the party constants: the rules page and the catalogue import this, and a page's server function must not carry the dice package for it (`diceWar.test.ts` holds these to its limits).
+import type { Speaker } from "../../i18n/i18n";
+import { seatedName } from "../partyNames";
 
 /** How a game of Dice War is played to its end: to a score, or for a number of rounds. */
 export type DiceWarGoalKind = "points" | "rounds";
@@ -26,9 +28,7 @@ export const DICE_WAR_SIDES = [4, 6, 8, 10, 12, 20, 100] as const;
 /** The table the set-up opens on: a person and the computer, one six-sided die each, first to 10. */
 export const DICE_WAR_DEFAULTS = { players: 2, dice: 1, sides: 6, goal: "points" as DiceWarGoalKind, to: DICE_WAR_DEFAULT_POINTS };
 
-/** A seat's name as the table says it: the one typed, or "Computer 3" or "Player 2". */
-export function diceWarSeatName(players: readonly string[], computers: readonly boolean[], seat: number): string {
-  const given = players[seat]?.trim() ?? "";
-  if (given !== "") return given;
-  return computers[seat] === true ? `Computer ${seat + 1}` : `Player ${seat + 1}`;
+/** A seat's name as the table says it: the one typed, or "Computer 3" or "Player 2", or コンピュータ3 and 対局者2. */
+export function diceWarSeatName(players: readonly string[], computers: readonly boolean[], seat: number, say: Speaker): string {
+  return seatedName({ players, computers }, seat, say);
 }

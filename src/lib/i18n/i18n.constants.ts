@@ -42,6 +42,8 @@ import { PHRASES_PUZZLE } from "./phrases.puzzle.constants";
 import { PHRASES_CUBEMETHOD } from "./phrases.cubemethod.constants";
 import { PHRASES_HOUSEKI } from "./phrases.houseki.constants";
 import { PHRASES_PARTY } from "./phrases.party.constants";
+import { PHRASES_CASUAL } from "./phrases.casual.constants";
+import { PHRASES_CTABLE } from "./phrases.ctable.constants";
 
 /**
  * The languages the site knows about, and the English it speaks in by default.
@@ -173,6 +175,8 @@ export const PHRASE_AREAS = {
   pkumi: PHRASES_PKUMI,
   pcard: PHRASES_PCARD,
   party: PHRASES_PARTY,
+  ctable: PHRASES_CTABLE,
+  casual: PHRASES_CASUAL,
 } as const;
 
 /**
@@ -245,6 +249,8 @@ export const PHRASES = {
   ...PHRASES_PKUMI,
   ...PHRASES_PCARD,
   ...PHRASES_PARTY,
+  ...PHRASES_CTABLE,
+  ...PHRASES_CASUAL,
 } as const;
 
 /** A phrase the site can say. */

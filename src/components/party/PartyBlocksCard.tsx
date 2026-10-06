@@ -33,7 +33,7 @@ export function PartyBlocksCard() {
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
           <GameName variant={BLOCKS_PARTY_VARIANT} /> {say.say("party.blocks.forFour")} · {say.count("party.blocks.cardLaid", laid)} ·
           <MarbleChip player={game.toPlay} />
-          {partyPlayerName(game.players, game.toPlay, say)} to play
+          {say.say("party.toPlay", { name: partyPlayerName(game.players, game.toPlay, say) })}
         </span>
       </div>
       <Link href={passAndPlayPath(BLOCKS_PARTY_VARIANT)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="blocks-game-continue">

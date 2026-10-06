@@ -1,6 +1,8 @@
 "use client";
 
-import { cardCode, cardName } from "@/lib/cards/deck";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cardSays } from "@/lib/cards/cardSays";
+import { cardCode } from "@/lib/cards/deck";
 
 import type { CardHandProps } from "./cards.types";
 import { PlayingCard } from "./PlayingCard";
@@ -19,6 +21,7 @@ const WIDEST_STEP = 0.62;
  * and-play table tells nobody what the next player holds.
  */
 export function CardHand({ id, cards, hidden = false, back, chosen = [], hinted = [], onPress, onLift, lifted, label, cardWidth = 72, className }: CardHandProps) {
+  const say = useSpeaker();
   const count = cards.length;
   const width = `min(${cardWidth}px, 100%)`;
   const reach = 1 + WIDEST_STEP * Math.max(0, count - 1);
@@ -43,7 +46,7 @@ export function CardHand({ id, cards, hidden = false, back, chosen = [], hinted 
                 touchAction: onLift !== undefined && !hidden ? "none" : "manipulation",
                 zIndex: index + 1,
               }}
-              aria-label={hidden ? `card ${index + 1} of ${count}, face down` : `${cardName(card)}${up ? ", chosen" : ""}`}
+              aria-label={hidden ? say.say("ctable.faceDownCard", { n: String(index + 1), total: String(count) }) : `${cardSays(say, card)}${up ? say.say("ctable.chosenSuffix") : ""}`}
               aria-pressed={hidden ? undefined : up}
               data-card-index={index}
               disabled={hidden && onPress === undefined}

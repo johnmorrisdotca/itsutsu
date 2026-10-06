@@ -1,9 +1,9 @@
 "use client";
 
-import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+import { gameEndingCopy } from "@/components/play/gameEnding.constants";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS } from "@/components/ui/ui.constants";
-import { GUNJIN_REASONS } from "@/lib/party/gunjin/gunjin.constants";
+import { GUNJIN_REASON_PHRASES } from "@/lib/party/gunjin/gunjin.constants";
 import { gunjinDrawOfferedBy, gunjinDrawOfferedTo } from "@/lib/party/gunjin/gunjin";
 import type { GunjinGame } from "@/lib/party/gunjin/gunjin.types";
 import { gunjinWords } from "@/components/party/partyWords";
@@ -23,6 +23,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  */
 export function GunjinDrawOffer({ game, names, onOffer }: { game: GunjinGame; names: readonly string[]; onOffer: () => void }) {
   const say = useSpeaker();
+  const GAME_ENDING_COPY = gameEndingCopy(say);
   const GUNJIN_COPY = gunjinWords(say.locale);
   const { match } = game;
   if (match.phase !== "play" || gunjinDrawOfferedTo(game) !== null) return null;
@@ -87,11 +88,13 @@ export function GunjinDrawWaiting({ game, names, seat }: { game: GunjinGame; nam
  */
 export function GunjinResult({ game, names }: { game: GunjinGame; names: readonly string[] }) {
   const say = useSpeaker();
+  const GAME_ENDING_COPY = gameEndingCopy(say);
   const GUNJIN_COPY = gunjinWords(say.locale);
   const result = game.match.result;
   if (game.match.phase !== "finished" || result === undefined) return null;
   const winner = result.winner;
-  const reason = GUNJIN_REASONS[result.reason] ?? result.reason;
+  const reasonKey = GUNJIN_REASON_PHRASES[result.reason];
+  const reason = reasonKey === undefined ? result.reason : say.say(reasonKey);
   const line =
     winner === null || winner === undefined
       ? GUNJIN_COPY.drawn(reason)

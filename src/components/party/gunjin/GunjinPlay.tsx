@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { TableEnding } from "@/components/play/GameEnding";
-import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+import { gameEndingCopy } from "@/components/play/gameEnding.constants";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { resultLine, tableNews } from "@/components/game/winNews";
@@ -49,6 +49,7 @@ const turnKey = (game: GunjinGame) => `${game.match.setupStep}:${game.match.turn
  */
 export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: GunjinGame; keep: (game: GunjinGame | null) => void; appearance: Appearance; gameHref: string; ready: { "data-ready": string } }) {
   const say = useSpeaker();
+  const GAME_ENDING_COPY = gameEndingCopy(say);
   const GUNJIN_COPY = gunjinWords(say.locale);
   const [handedFor, setHandedFor] = useState<string | null>(null);
   const over = gunjinOver(game);
@@ -82,7 +83,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
   };
 
   const last = match.log.at(-1);
-  const news = gunjinNews(game, names);
+  const news = gunjinNews(game, names, say);
   const arranging = match.phase === "setup" || (match.phase === "pass" && match.passPurpose === "setup");
   const first = match.setupStep === 0;
 
@@ -103,7 +104,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
           {over ? (
             <>
               {GUNJIN_COPY.gameOver}:{" "}
-              {resigned !== null ? GAME_ENDING_COPY.resignedResult(names[resigned]!, winners.map((one) => names[one]!)) : drawn ? GUNJIN_COPY.drawn(gunjinReason(game)) : winners.length === 0 ? "" : GUNJIN_COPY.wins(names[winners[0]!]!, gunjinReason(game))}
+              {resigned !== null ? GAME_ENDING_COPY.resignedResult(names[resigned]!, winners.map((one) => names[one]!)) : drawn ? GUNJIN_COPY.drawn(gunjinReason(game, say)) : winners.length === 0 ? "" : GUNJIN_COPY.wins(names[winners[0]!]!, gunjinReason(game, say))}
             </>
           ) : covered ? (
             GUNJIN_COPY.hiddenBoard
@@ -125,7 +126,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] lg:items-start" data-scale-desk>
           <div className="min-w-0" data-scale-board data-bare-board>
             <WinCoverOver
-              news={moment.open ? tableNews({ names, winners, you: null, draw: drawn, detail: resigned === null ? gunjinReason(game) : null, next: { label: GUNJIN_COPY.again, onPress: again } }) : null}
+              news={moment.open ? tableNews({ names, winners, you: null, draw: drawn, detail: resigned === null ? gunjinReason(game, say) : null, next: { label: GUNJIN_COPY.again, onPress: again } }, say) : null}
               onClose={moment.close}
             >
               <GunjinBoard
@@ -209,7 +210,7 @@ export function GunjinPlay({ game, keep, appearance, gameHref, ready }: { game: 
           </button>
         ) : null}
       </div>
-      {over ? <TableWallpaper game="gunjin" result={resultLine(names, winners, drawn)} /> : null}
+      {over ? <TableWallpaper game="gunjin" result={resultLine(names, winners, drawn, say)} /> : null}
       <p className="text-xs text-muted" data-chrome>
         {GUNJIN_COPY.kept}
       </p>

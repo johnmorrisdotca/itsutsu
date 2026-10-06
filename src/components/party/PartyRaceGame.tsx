@@ -110,7 +110,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
                   winners: game.status === PARTY_STATUS.won && game.winner !== null ? [game.winner] : [],
                   you: null,
                   next: { label: PARTY_COPY.again, onPress: again },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -129,7 +129,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
         ) : null}
         <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="party-players">
           <h2 className={SECTION_TITLE}>
-            Players <span className="font-mincho normal-case tracking-normal">席</span>
+            {say.say("party.players")} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">席</span> : null}
           </h2>
           <ol className="flex flex-col gap-1.5">
             {game.players.map((_, index) => (
@@ -142,7 +142,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
                 <MarbleChip player={index} />
                 <span className="min-w-0 flex-1 truncate">{partyPlayerName(game.players, index, say)}</span>
                 <span className="shrink-0 text-xs text-muted tabular-nums">
-                  {rules.piecesHome(game, index)} of {rules.piecesEach(game)} home
+                  {say.say("party.race.home", { home: String(rules.piecesHome(game, index)), each: String(rules.piecesEach(game)) })}
                 </span>
               </li>
             ))}
@@ -173,7 +173,7 @@ export function PartyRaceGame<S extends PartyRaceState, C extends number>({ kind
           />
         </div>
         {game.status === PARTY_STATUS.won && game.winner !== null ? (
-          <TableWallpaper game={kind.variant} result={resultLine(game.players.map((_, index) => partyPlayerName(game.players, index, say)), [game.winner])} />
+          <TableWallpaper game={kind.variant} result={resultLine(game.players.map((_, index) => partyPlayerName(game.players, index, say)), [game.winner], false, say)} />
         ) : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

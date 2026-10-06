@@ -99,7 +99,7 @@ export function SeatChoiceSelect({
       data-testid="online-seat-choice"
       data-seat={seat}
       data-choice={chosen}
-      aria-label={`Seat ${seat + 1}`}
+      aria-label={say.say("party.online.seatN", { n: String(seat + 1) })}
     >
       {offer.links ? <option value="link">{ONLINE_COPY.link}</option> : null}
       {offer.buddies.map((buddy) => {
@@ -153,7 +153,7 @@ export function useStartTable(offer: OnlineOffer | undefined) {
       }
       setProblem(body?.error ?? ONLINE_COPY.couldNotStart);
     } catch {
-      setProblem("The site could not be reached.");
+      setProblem(say.say("party.online.unreachable"));
     }
     setStarting(false);
   };

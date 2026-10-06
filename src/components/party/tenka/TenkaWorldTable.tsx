@@ -15,7 +15,7 @@ export function TenkaWorldTable({ say }: { say: Speaker }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="tenka-world">
       <h2 className={SECTION_TITLE}>
-        {say.say("party.tenka.worldTitle")} {say.locale === "en" ? <span className="font-mincho normal-case tracking-normal">天下</span> : null}
+        {say.say("party.tenka.worldTitle")} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">天下</span> : null}
       </h2>
       <p className="text-sm">
         {say.say("party.tenka.worldLead")}
@@ -33,7 +33,7 @@ export function TenkaWorldTable({ say }: { say: Speaker }) {
             {TENKA_CONTINENTS.map((continent) => (
               <tr key={continent.key} className="border-b border-rule/60 align-top" data-testid="tenka-continent" data-continent={continent.key} data-bonus={continent.bonus}>
                 <td className="py-1.5 pr-3 font-medium whitespace-nowrap">
-                  {continentName(continent, say)} {say.locale === "en" ? <span className="font-mincho text-xs text-muted">{continent.kanji}</span> : null}
+                  {continentName(continent, say)} {say.pairsWithKanji ? <span className="font-mincho text-xs text-muted">{continent.kanji}</span> : null}
                 </td>
                 <td className="py-1.5 pr-3 font-semibold tabular-nums">+{continent.bonus}</td>
                 <td className="py-1.5 text-xs leading-relaxed">

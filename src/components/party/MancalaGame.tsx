@@ -102,7 +102,7 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
                   // Level on seeds is a draw, as the turn line says it.
                   draw: game.winners.length > 1,
                   next: { label: PARTY_COPY.again, onPress: () => keep(mancalaAgain(game)) },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -142,7 +142,7 @@ export function MancalaGame({ appearance, gameHref, online }: PartyTableGameProp
           />
         </div>
         {game.status === MANCALA_STATUS.playing ? null : (
-          <TableWallpaper game="mancala" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat, say)), game.winners, game.winners.length > 1)} />
+          <TableWallpaper game="mancala" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat, say)), game.winners, game.winners.length > 1, say)} />
         )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

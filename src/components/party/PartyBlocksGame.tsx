@@ -90,7 +90,7 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
                   winners: resignedBy(game) !== null ? [] : blocksLeaders(game),
                   you: null,
                   next: { label: PARTY_BLOCKS_COPY.again, onPress: () => keep(againBlocksParty(game)) },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -145,7 +145,7 @@ export function PartyBlocksGame({ appearance, gameHref, online }: PartyTableGame
           />
         </div>
         {playing ? null : (
-          <TableWallpaper game={RULE_VARIANTS.blockFive} result={resultLine(game.players.map((_, player) => partyPlayerName(game.players, player, say)), resignedBy(game) !== null ? [] : blocksLeaders(game))} />
+          <TableWallpaper game={RULE_VARIANTS.blockFive} result={resultLine(game.players.map((_, player) => partyPlayerName(game.players, player, say)), resignedBy(game) !== null ? [] : blocksLeaders(game), false, say)} />
         )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

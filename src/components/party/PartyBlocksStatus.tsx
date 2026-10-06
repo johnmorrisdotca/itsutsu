@@ -82,7 +82,7 @@ export function PartyBlocksPlayers({ game }: { game: PartyBlocksState }) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="blocks-players">
       <h2 className={SECTION_TITLE}>
-        Players <span className="font-mincho normal-case tracking-normal">席</span>
+        {say.say("party.players")} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">席</span> : null}
       </h2>
       <ol className="flex flex-col gap-1.5">
         {blocksScores(game).map((score) => (

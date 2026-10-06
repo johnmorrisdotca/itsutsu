@@ -53,7 +53,7 @@ export function CasualSetUp({ kind }: { kind: CasualKind }) {
       <div className={`${PANEL_CLASS} flex min-w-0 flex-col gap-4`}>
         <fieldset className="flex flex-col gap-2">
           <legend className={SECTION_TITLE}>
-            {CASUAL_COPY.levels} <span className="font-mincho normal-case tracking-normal">{CASUAL_COPY.setUpKanji}</span>
+            {CASUAL_COPY.levels} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">{CASUAL_COPY.setUpKanji}</span> : null}
           </legend>
           <div className="grid grid-cols-5 gap-1.5 lg:grid-cols-[repeat(5,6.75rem)]" role="radiogroup" aria-label={CASUAL_COPY.levels}>
             {Array.from({ length: spec.levels }, (_, index) => index + 1).map((option) => {

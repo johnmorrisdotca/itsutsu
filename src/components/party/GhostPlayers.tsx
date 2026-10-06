@@ -27,7 +27,7 @@ export function GhostPlayers({ game, room = 0 }: GhostPlayersProps) {
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="ghost-players">
       <h2 className={SECTION_TITLE}>
-        {GHOST_COPY.table} <span className="font-mincho normal-case tracking-normal">席</span>
+        {GHOST_COPY.table} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">席</span> : null}
       </h2>
       <ol className="flex flex-col gap-1.5">
         {Array.from({ length: rows }, (_, seat) => {

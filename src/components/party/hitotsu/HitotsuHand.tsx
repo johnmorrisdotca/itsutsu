@@ -3,7 +3,9 @@
 import type { HitotsuCard } from "@johnmorrisdotca/hitotsu";
 
 import { HITOTSU_HAND_CARD_PX } from "./hitotsu.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { HitotsuCardView, hitotsuCardLabel } from "./HitotsuCardView";
+import { hitotsuLanguage } from "./hitotsuPresses";
 
 /** How much of a card a hand shows at most when there is room to spare. */
 const WIDEST_STEP = 0.62;
@@ -28,6 +30,7 @@ export function HitotsuHand({
   onPress?: (card: HitotsuCard) => void;
   label: string;
 }) {
+  const say = useSpeaker();
   const count = cards.length;
   const width = `min(${HITOTSU_HAND_CARD_PX}px, 100%)`;
   const reach = 1 + WIDEST_STEP * Math.max(0, count - 1);
@@ -50,7 +53,7 @@ export function HitotsuHand({
                 transform: up ? "translateY(-4%)" : "translateY(4%)",
                 zIndex: index + 1,
               }}
-              aria-label={`${hitotsuCardLabel(card)}${up ? ", chosen" : ""}${goes ? "" : ", does not go"}`}
+              aria-label={`${hitotsuCardLabel(card, hitotsuLanguage(say))}${up ? say.say("ctable.chosenSuffix") : ""}${goes ? "" : say.say("party.hitotsu.noGo")}`}
               aria-pressed={up}
               disabled={onPress === undefined}
               onClick={() => onPress?.(card)}

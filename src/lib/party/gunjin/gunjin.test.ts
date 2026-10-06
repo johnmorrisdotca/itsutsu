@@ -11,6 +11,10 @@ import { flagWithinReach } from "./gunjinFlag";
 import { GUNJIN_RULES } from "./gunjinRules";
 import { PARTY_SPECS } from "../party.constants";
 import { resignedBy } from "../resign";
+import { speaker } from "../../i18n/i18n";
+
+/** The English speaker: these tests read the English words. */
+const EN = speaker("en");
 
 /** A game of this board played to its end (or `most` moves) by a seeded random player, from the arrangements `gunjinMoves` offers. */
 function played(size: number, seed: number, most = 10_000): GunjinGame {
@@ -230,19 +234,19 @@ describe("a move is described from the public record alone", () => {
 
   it("says nothing before the first move and a sentence after", () => {
     const game = begun(GUNJIN_DEFAULT_SIZE);
-    expect(gunjinNews(game, ["Ann", "Ben"])).toBeNull();
+    expect(gunjinNews(game, ["Ann", "Ben"], EN)).toBeNull();
     const moved = playGunjin(game, gunjinMoves(game)[0]!)!;
-    expect(gunjinNews(moved, ["Ann", "Ben"])).toMatch(/Ann.*(moved|took|attacked|both)/);
-    expect(gunjinNewsLines(played(GUNJIN_DEFAULT_SIZE, 4, 40), ["Ann", "Ben"], 5).length).toBe(5);
+    expect(gunjinNews(moved, ["Ann", "Ben"], EN)).toMatch(/Ann.*(moved|took|attacked|both)/);
+    expect(gunjinNewsLines(played(GUNJIN_DEFAULT_SIZE, 4, 40), ["Ann", "Ben"], 5, EN).length).toBe(5);
   });
 
   it("names the ranks that fought on Capture Flag, and only there", () => {
     const flag = played(100, 5, 300);
-    const lines = gunjinNewsLines(flag, ["Ann", "Ben"], 300).filter((line) => /took|taken/.test(line));
+    const lines = gunjinNewsLines(flag, ["Ann", "Ben"], 300, EN).filter((line) => /took|taken/.test(line));
     expect(lines.length).toBeGreaterThan(0);
     expect(lines.some((line) => /Marshal|General|Colonel|Major|Captain|Lieutenant|Sergeant|Miner|Scout|Spy|Bomb|Flag/.test(line))).toBe(true);
     const shogi = played(81, 5, 300);
-    expect(gunjinNewsLines(shogi, ["Ann", "Ben"], 300).some((line) => /General|Colonel|Aircraft|Tank|Spy|Mine/.test(line))).toBe(false);
+    expect(gunjinNewsLines(shogi, ["Ann", "Ben"], 300, EN).some((line) => /General|Colonel|Aircraft|Tank|Spy|Mine/.test(line))).toBe(false);
   });
 });
 

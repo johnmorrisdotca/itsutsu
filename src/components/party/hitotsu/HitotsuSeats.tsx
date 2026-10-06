@@ -47,8 +47,8 @@ export function HitotsuSeats({
               <span className="truncate">{names[seat]}</span>
             </span>
             <span className="text-xs text-muted">
-              {HITOTSU_COPY.cards(counts[seat])} · {scores[seat]} points
-              {computers[seat] ? " · computer" : ""}
+              {HITOTSU_COPY.cards(counts[seat])} · {say.count("party.hitotsu.points", scores[seat])}
+              {computers[seat] ? ` · ${say.say("party.computerTag")}` : ""}
               {counts[seat] === 1 ? <strong className="ml-1 text-shu"> {HITOTSU_COPY.one}</strong> : null}
             </span>
           </span>

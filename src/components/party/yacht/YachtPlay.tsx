@@ -104,7 +104,7 @@ export function YachtPlay({ game, keep, appearance, gameHref }: { game: YachtGam
                   you: lonePerson,
                   detail: game.players.length === 1 ? YACHT_COPY.aloneScored(sheetTotal(game.sheets[0])) : null,
                   next: { label: `${PARTY_COPY.again} →`, onPress: again },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -163,7 +163,7 @@ export function YachtPlay({ game, keep, appearance, gameHref }: { game: YachtGam
           />
         </div>
         <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
-        {playing ? null : <TableWallpaper game="yacht" result={resultLine(names, game.winners)} />}
+        {playing ? null : <TableWallpaper game="yacht" result={resultLine(names, game.winners, false, say)} />}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {YACHT_COPY.about} →

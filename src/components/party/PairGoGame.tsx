@@ -94,7 +94,7 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
                   winners: game.state.winner === null ? [] : [game.state.winner === STONES.black ? 0 : 1],
                   you: null,
                   next: { label: PAIR_GO_COPY.again, onPress: () => act(againPairGo(game)) },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -169,7 +169,7 @@ export function PairGoGame({ appearance, gameHref, online }: PartyTableGameProps
           </GameEnding>
         </div>
         {playing || game.state.winner === null ? null : (
-          <TableWallpaper game={RULE_VARIANTS.go} result={resultLine([teamWords(game, STONES.black, say), teamWords(game, STONES.white, say)], [game.state.winner === STONES.black ? 0 : 1])} />
+          <TableWallpaper game={RULE_VARIANTS.go} result={resultLine([teamWords(game, STONES.black, say), teamWords(game, STONES.white, say)], [game.state.winner === STONES.black ? 0 : 1], false, say)} />
         )}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

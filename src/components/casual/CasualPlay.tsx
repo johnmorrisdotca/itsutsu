@@ -9,7 +9,8 @@ import { ENDINGS } from "@/components/play/gameEnding.constants";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE, SECTION_HEADING, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { CASUAL_DISPLAY, CASUAL_SPECS } from "@/lib/casual/casual.constants";
+import { CASUAL_SPECS } from "@/lib/casual/casual.constants";
+import { casualCopy } from "@/lib/party/partyCopy";
 import type { CasualKind } from "@/lib/casual/casual.types";
 import { leaveLevel, startLevel, winLevel, wonLevels } from "@/lib/casual/casualProgress";
 import { casualPlayPath, gamePath, rulesPath, setUpPath } from "@/lib/gomoku/slugs";
@@ -43,7 +44,7 @@ export function CasualPlay({ kind, level }: { kind: CasualKind; level: number })
   const hydrated = useHydrated();
   const save = useCasualSave();
   const spec = CASUAL_SPECS[kind];
-  const copy = CASUAL_DISPLAY[kind];
+  const copy = casualCopy(kind, say.locale);
   const story = kind === "choiceStory";
   const last = level >= spec.levels;
   const [run, setRun] = useState(0);
@@ -87,7 +88,7 @@ export function CasualPlay({ kind, level }: { kind: CasualKind; level: number })
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
         <p className="text-sm font-medium" data-testid="casual-line" aria-live="polite">
-          {CASUAL_COPY.levelWord(story)} {level} of {spec.levels}
+          {say.say("casual.levelOf", { word: CASUAL_COPY.levelWord(story), level: String(level), total: String(spec.levels) })}
           {info === "" ? "" : ` · ${info}`}
         </p>
         <PlayingNow on={phase === "playing"} />
@@ -133,7 +134,7 @@ export function CasualPlay({ kind, level }: { kind: CasualKind; level: number })
       <aside className="flex min-w-0 flex-col gap-4">
         <section className={`${PANEL_CLASS} flex flex-col gap-1.5`} data-chrome data-testid="casual-progress">
           <h2 className={SECTION_TITLE}>
-            {copy.label} <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span>
+            {copy.label} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">{copy.kanji}</span> : null}
           </h2>
           <p className="text-sm">{save === undefined ? "" : CASUAL_COPY.wonOf(won, spec.levels, story)}</p>
           <p className="text-xs text-muted">{CASUAL_COPY.never}</p>

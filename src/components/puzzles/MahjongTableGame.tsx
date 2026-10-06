@@ -16,7 +16,7 @@ import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { WIN_COVER_COPY } from "@/components/game/winCover.constants";
 import { tableNews } from "@/components/game/winNews";
 import { TableWallpaper } from "@/components/party/TableWallpaper";
-import { PARTY_COPY } from "@/components/party/party.constants";
+import { partyScreenWords } from "@/components/party/partyWords";
 import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_BUTTON, PLAY_SURFACE, SECTION_HEADING } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
@@ -151,7 +151,7 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
       data-left={tilesLeft(state.cells)}
       {...readyMark(hydrated)}
     >
-      <AskIfAway watching={!state.over} detail={PARTY_COPY.idleDetail} kept={PARTY_COPY.idleKept} />
+      <AskIfAway watching={!state.over} detail={partyScreenWords(say.locale).idleDetail} kept={partyScreenWords(say.locale).idleKept} />
       <MahjongScores table={table} state={state} />
       <p className="min-h-10 text-sm" data-testid="mahjong-table-said" aria-live="polite">
         {state.over ? (

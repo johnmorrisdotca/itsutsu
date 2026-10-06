@@ -15,6 +15,7 @@ import type { MyTable } from "@/lib/party/online/server/myTables";
 import type { NameTag } from "@/lib/xp/nameTag.types";
 import { onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 
 
 /**
@@ -69,7 +70,7 @@ export function TableRow({ table, finished, tags }: { table: MyTable; finished: 
       data-your-move={table.yourMove ? "true" : undefined}
       data-result={table.result ?? undefined}
     >
-      <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label="Open the table" />
+      <Link href={href} data-card-link="" className="absolute inset-0 rounded-lg" aria-label={say.say("party.online.openTable")} />
       <GameThumb variant={table.game} size="small" />
       <span className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
         <span className="truncate font-medium">
@@ -79,7 +80,7 @@ export function TableRow({ table, finished, tags }: { table: MyTable; finished: 
           {table.seats.map((seat, index) => (
             <span key={seat.seat} className={RAISED_LINK}>
               {seat.kind === ONLINE_SEAT_KINDS.member || (seat.kind === ONLINE_SEAT_KINDS.computer && seat.memberId !== null) ? (
-                <PlayerName name={seat.name} memberId={seat.memberId} fallback={`Player ${seat.seat + 1}`} tag={seat.memberId === null ? undefined : tags.get(seat.memberId)} testId="my-table-player" />
+                <PlayerName name={seat.name} memberId={seat.memberId} fallback={playerNumberName(say, seat.seat + 1)} tag={seat.memberId === null ? undefined : tags.get(seat.memberId)} testId="my-table-player" />
               ) : seat.kind === ONLINE_SEAT_KINDS.computer ? (
                 ONLINE_COPY.computerSeat
               ) : (
@@ -105,7 +106,7 @@ export function TableRow({ table, finished, tags }: { table: MyTable; finished: 
               ? ONLINE_COPY.myYourMove
               : toPlay?.kind === ONLINE_SEAT_KINDS.open
                 ? ONLINE_COPY.myOpen
-                : ONLINE_COPY.myTheirMove(toPlay?.name || (toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : "The next player"))}
+                : ONLINE_COPY.myTheirMove(toPlay?.name || (toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : say.say("party.online.nextPlayer")))}
         </span>
       </span>
       <span className="ml-auto flex shrink-0 items-center gap-2">

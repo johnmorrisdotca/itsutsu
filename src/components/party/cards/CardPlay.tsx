@@ -1,6 +1,6 @@
 "use client";
 
-import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+import { gameEndingCopy } from "@/components/play/gameEnding.constants";
 import { TableEnding } from "@/components/play/GameEnding";
 import { resignedBy, resignWinners, resigning } from "@/lib/party/resign";
 import { useState } from "react";
@@ -18,7 +18,8 @@ import { useCardDrag } from "@/components/cards/useCardDrag";
 import { useCardSounds } from "@/components/cards/useCardSounds";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
-import { resultLine, tableNews } from "@/components/game/winNews";
+import { namesInALine, resultLine, tableNews } from "@/components/game/winNews";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { TableWallpaper } from "../TableWallpaper";
 import Link from "@/components/ui/Link";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
@@ -59,11 +60,12 @@ type Held<T> = { at: number; value: T };
  */
 export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, ready }: { adapter: CardAdapter<unknown, unknown>; game: unknown; keep: (game: unknown) => void; appearance: Appearance; gameHref: string; gameName: string; ready: { "data-ready": string } }) {
   const say = useSpeaker();
+  const GAME_ENDING_COPY = gameEndingCopy(say);
   const CARD_TABLE_COPY = cardTableWords(say.locale);
   const rules = adapter.rules;
   const { players, computers } = rules.seats(game);
-  const names = players.map((_, seat) => seatName(players, computers, seat));
-  const name = (seat: number) => names[seat] ?? `Player ${seat + 1}`;
+  const names = players.map((_, seat) => seatName(players, computers, seat, say));
+  const name = (seat: number) => names[seat] ?? playerNumberName(say, seat + 1);
   // A resignation ends the table where it stands (`lib/party/resign.ts`); the engine, a package's, is not asked.
   const resigned = resignedBy(game as object);
   const over = resigned !== null || rules.over(game);
@@ -125,11 +127,11 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
     choose(card);
   };
 
-  const actions = myTurn ? adapter.actions(game, chosen, target, name) : [];
+  const actions = myTurn ? adapter.actions(game, chosen, target, name, say) : [];
   useKeepTurning(turning && myTurn, moves, () => play(actions[0]?.move ?? null));
   const stuck = actions.find((action) => action.strong === true && action.move === null);
   const others = open ? [] : players.map((_, seat) => seat).filter((seat) => seat !== viewer);
-  const ending = over && resigned === null && adapter.ending !== undefined ? adapter.ending(game, name) : null;
+  const ending = over && resigned === null && adapter.ending !== undefined ? adapter.ending(game, name, say) : null;
   const counts = players.map((_, seat) => adapter.hand(game, seat).length);
   const { felt, chooseFelt } = useFeltChoice(appearance);
   const sound = useCardSounds(counts.reduce((sum, count) => sum + count, 0));
@@ -156,7 +158,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
     >
       <p className="min-h-12 text-base font-semibold" data-testid="cards-status" aria-live="polite">
         {over ? <ResultMark kind={winners.length === 0 || ending?.draw === true ? RESULT_MARKS.other : RESULT_MARKS.success} className="mr-1.5" /> : null}
-        {over ? `${CARD_TABLE_COPY.over}: ${ending !== null ? ending.line : resigned !== null ? GAME_ENDING_COPY.resignedResult(name(resigned), winners.map(name)) : CARD_TABLE_COPY.won(winners.map(name).join(" and "))}` : thinking && toPlay !== null ? CARD_TABLE_COPY.thinking(name(toPlay)) : adapter.status(game, name)}
+        {over ? `${CARD_TABLE_COPY.over}: ${ending !== null ? ending.line : resigned !== null ? GAME_ENDING_COPY.resignedResult(name(resigned), winners.map(name)) : CARD_TABLE_COPY.won(namesInALine(winners.map(name), say))}` : thinking && toPlay !== null ? CARD_TABLE_COPY.thinking(name(toPlay)) : adapter.status(game, name, say)}
       </p>
       {open ? null : (
       <CardSeats
@@ -164,7 +166,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
         names={names}
         computers={computers}
         counts={counts}
-        standing={(seat) => adapter.standing(game, seat)}
+        standing={(seat) => adapter.standing(game, seat, say)}
         toPlay={toPlay}
         targets={myTurn && adapter.targets !== undefined ? adapter.targets(game) : []}
         target={target}
@@ -182,7 +184,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
                   // One person among computers is "you"; several people round the device are each named.
                   you: people.length === 1 ? people[0]! : null,
                   next: { label: CARD_TABLE_COPY.again, onPress: again },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -216,7 +218,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
         ) : viewer === null ? null : (
           <div className="flex flex-col gap-2" data-testid="cards-hand-panel" data-seat={viewer}>
             <p className="text-sm text-muted">
-              {people.length === 1 ? CARD_TABLE_COPY.yourHand : CARD_TABLE_COPY.handOf(name(viewer))} · {adapter.standing(game, viewer).score}
+              {people.length === 1 ? CARD_TABLE_COPY.yourHand : CARD_TABLE_COPY.handOf(name(viewer))} · {adapter.standing(game, viewer, say).score}
             </p>
             <CardHand
               id="hand"
@@ -254,7 +256,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
         )}
       </div>
       <CardDragGhost ghost={drag.ghost} ghostRef={drag.ghostRef} />
-      <CardScores names={names} scoreWords={adapter.scoreWords} standing={(seat) => adapter.standing(game, seat)} winners={winners} />
+      <CardScores names={names} scoreWords={adapter.scoreWords(say)} standing={(seat) => adapter.standing(game, seat, say)} winners={winners} />
       <div className="flex flex-wrap items-center gap-2">
         {over ? (
           <button type="button" onClick={again} className={`${BUTTON_BASE} ${BUTTON_STRONG}`} data-testid="cards-again">
@@ -280,7 +282,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
           }}
         />
       </div>
-      {over ? <TableWallpaper game={adapter.kind} result={resultLine(names, winners, ending?.draw === true)} /> : null}
+      {over ? <TableWallpaper game={adapter.kind} result={resultLine(names, winners, ending?.draw === true, say)} /> : null}
       <p className="text-xs text-muted">{CARD_TABLE_COPY.kept}</p>
       <p className="text-sm">
         <Link href={gameHref} className="underline underline-offset-4">

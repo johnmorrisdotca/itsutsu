@@ -4,7 +4,8 @@ import { GameTrailNav } from "@/components/games/GameTrail";
 import { OpenSourceCredit } from "@/components/games/OpenSourceCredit";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { CASUAL_DISPLAY, CASUAL_SPECS } from "@/lib/casual/casual.constants";
+import { CASUAL_SPECS } from "@/lib/casual/casual.constants";
+import { casualCopy } from "@/lib/party/partyCopy";
 import type { CasualKind } from "@/lib/casual/casual.types";
 import { gamePath, setUpPath } from "@/lib/gomoku/slugs";
 
@@ -29,15 +30,15 @@ export function casualLevelAsked(kind: CasualKind, query: Record<string, string 
 export function CasualPlayPage({ kind, level }: { kind: CasualKind; level: number }) {
   const say = useSpeaker();
   const CASUAL_COPY = casualWords(say.locale);
-  const copy = CASUAL_DISPLAY[kind];
+  const copy = casualCopy(kind, say.locale);
   return (
     <Page board="play">
       <SiteHeader />
       {/* Just the board's header (`BoardMasthead`), drawn only in that mode. */}
       <div data-bare-only>
-        <BoardMasthead story={{ kind: CASUAL_COPY.card, kanji: copy.kanji, title: copy.label, source: "On Itsutsu: played alone, unrated, and worth no points" }} />
+        <BoardMasthead story={{ kind: CASUAL_COPY.card, kanji: copy.kanji, title: copy.label, source: say.say("casual.source") }} />
       </div>
-      <GameTrailNav game={{ label: copy.label, href: gamePath(kind), testId: "play-up" }} steps={[{ label: "Set up", href: setUpPath(kind) }, { label: `${CASUAL_COPY.levelWord(kind === "choiceStory")} ${level}` }]} />
+      <GameTrailNav game={{ label: copy.label, href: gamePath(kind), testId: "play-up" }} steps={[{ label: say.say("gamescreen.setUpTitle"), href: setUpPath(kind) }, { label: say.say("casual.crumbLevel", { word: CASUAL_COPY.levelWord(kind === "choiceStory"), level: String(level) }) }]} />
       <BoardScaled>
         <CasualPlay key={level} kind={kind} level={level} />
       </BoardScaled>

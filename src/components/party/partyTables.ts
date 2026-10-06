@@ -8,9 +8,7 @@ import { PartyBlocksOffer } from "./PartyBlocksOffer";
 import { PairGoOffer } from "./PairGoOffer";
 import { PartyCheckersGame, PartyCheckersOffer } from "./PartyCheckersGame";
 import { PartyHalmaGame, PartyHalmaOffer } from "./PartyHalmaGame";
-import { PAIR_GO_COPY } from "./pairGo.constants";
-import { PARTY_COPY, PARTY_GAME_COPY } from "./party.constants";
-import { PARTY_BLOCKS_COPY } from "./partyBlocks.constants";
+import { blocksWords, pairGoWords, partyScreenWords, raceWords } from "./partyWords";
 import type { PartyTable } from "./party.types";
 
 /**
@@ -20,18 +18,14 @@ import type { PartyTable } from "./party.types";
  */
 export const PARTY_TABLES: Partial<Record<RuleVariant, PartyTable>> = {
   [RULE_VARIANTS.chineseCheckers]: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: PARTY_GAME_COPY.chineseCheckers.lead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: raceWords(locale).chineseCheckers.lead }),
     Game: PartyCheckersGame,
     Offer: PartyCheckersOffer,
   },
-  [RULE_VARIANTS.go]: { title: PAIR_GO_COPY.title, kanji: PAIR_GO_COPY.kanji, lead: PAIR_GO_COPY.lead, Game: PairGoGame, Offer: PairGoOffer },
-  [RULE_VARIANTS.halma]: { title: PARTY_COPY.title, kanji: PARTY_COPY.kanji, lead: PARTY_GAME_COPY.halma.lead, Game: PartyHalmaGame, Offer: PartyHalmaOffer },
+  [RULE_VARIANTS.go]: { words: (locale) => ({ title: pairGoWords(locale).title, kanji: pairGoWords(locale).kanji, lead: pairGoWords(locale).lead }), Game: PairGoGame, Offer: PairGoOffer },
+  [RULE_VARIANTS.halma]: { words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: raceWords(locale).halma.lead }), Game: PartyHalmaGame, Offer: PartyHalmaOffer },
   [RULE_VARIANTS.blockFive]: {
-    title: PARTY_BLOCKS_COPY.title,
-    kanji: PARTY_BLOCKS_COPY.kanji,
-    lead: PARTY_BLOCKS_COPY.lead,
+    words: (locale) => ({ title: blocksWords(locale).title, kanji: blocksWords(locale).kanji, lead: blocksWords(locale).lead }),
     Game: PartyBlocksGame,
     Offer: PartyBlocksOffer,
   },

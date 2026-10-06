@@ -94,7 +94,7 @@ export function SugorokuPlay({ table, keep, appearance, gameHref, ready }: { tab
                       draw: winners.length === 2,
                       detail: sugorokuEnding(table, say),
                       next: { label: `${SUGOROKU_COPY.again} →`, onPress: again },
-                    })
+                    }, say)
                   : null
               }
               onClose={moment.close}
@@ -118,7 +118,7 @@ export function SugorokuPlay({ table, keep, appearance, gameHref, ready }: { tab
           <NewGameButton going={!over} onNewGame={() => keep(null)} testId="sugoroku-new" />
         </GameEnding>
       </div>
-      {over ? <TableWallpaper game={table.kind} result={resultLine(names, winners, winners.length === 2)} /> : null}
+      {over ? <TableWallpaper game={table.kind} result={resultLine(names, winners, winners.length === 2, say)} /> : null}
       <p className="text-xs text-muted">{SUGOROKU_COPY.kept}</p>
       <p className="text-sm">
         <Link href={gameHref} className="underline underline-offset-4">

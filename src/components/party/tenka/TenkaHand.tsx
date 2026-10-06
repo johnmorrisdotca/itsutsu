@@ -44,7 +44,7 @@ export function TenkaHand({
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="tenka-hand" data-cards={handed ? hand.length : undefined}>
       <h2 className={SECTION_TITLE}>
-        {TENKA_COPY.hand} {say.locale === "en" ? <span className="font-mincho normal-case tracking-normal">手札</span> : null}
+        {TENKA_COPY.hand} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">手札</span> : null}
       </h2>
       {!handed ? (
         <p className="text-sm text-muted">{say.say("party.tenka.handHidden", { cards: TENKA_COPY.cards(hand.length) })}</p>

@@ -17,20 +17,21 @@ import { CardTableSurface } from "./CardTableParts";
 import { freshCardSeed } from "./cardTableStores";
 import { cardTableWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 /** What each game's length is called on its tiles. */
-const LENGTH_WORDS: Record<CardSetUpProps["kind"], (size: number) => string> = {
-  hearts: (size) => `To ${size}`,
-  bigTwo: (size) => `${size} ${size === 1 ? "deal" : "deals"}`,
-  president: (size) => `${size} rounds`,
-  goFish: () => "One deal",
-  crazyEights: (size) => `To ${size}`,
-  spades: (size) => `To ${size}`,
-  ginRummy: (size) => `To ${size}`,
-  euchre: (size) => `To ${size}`,
-  cribbage: (size) => (size === 61 ? "To 61, once round" : "To 121"),
-  ohHell: (size) => (size === 7 ? "7 deals, up to seven cards" : "13 deals, up and back down"),
-  war: (size) => `${size} turns`,
+const LENGTH_WORDS: Record<CardSetUpProps["kind"], (size: number, say: Speaker) => string> = {
+  hearts: (size, say) => say.say("ctable.length.to", { size: String(size) }),
+  bigTwo: (size, say) => say.count("ctable.length.deals", size),
+  president: (size, say) => say.say("ctable.length.rounds", { count: String(size) }),
+  goFish: (_size, say) => say.say("ctable.length.oneDeal"),
+  crazyEights: (size, say) => say.say("ctable.length.to", { size: String(size) }),
+  spades: (size, say) => say.say("ctable.length.to", { size: String(size) }),
+  ginRummy: (size, say) => say.say("ctable.length.to", { size: String(size) }),
+  euchre: (size, say) => say.say("ctable.length.to", { size: String(size) }),
+  cribbage: (size, say) => say.say(size === 61 ? "ctable.length.cribShort" : "ctable.length.cribLong"),
+  ohHell: (size, say) => say.say(size === 7 ? "ctable.length.ohHellShort" : "ctable.length.ohHellLong"),
+  war: (size, say) => say.say("ctable.length.turns", { count: String(size) }),
 };
 
 function Section({ legend, children }: { legend: string; children: ReactNode }) {
@@ -97,7 +98,7 @@ export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) 
           <div className={`grid gap-1.5 ${spec.sizes.length === 4 ? "grid-cols-2" : "grid-cols-3"}`} role="radiogroup" aria-label={CARD_TABLE_COPY.length}>
             {spec.sizes.map((option) => (
               <button key={option} type="button" role="radio" aria-checked={option === size} onClick={() => setSize(option)} data-testid="cards-length" data-size={option} className={`min-h-11 rounded-lg border text-sm font-semibold ${option === size ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}>
-                {LENGTH_WORDS[kind](option)}
+                {LENGTH_WORDS[kind](option, say)}
               </button>
             ))}
           </div>

@@ -34,7 +34,7 @@ export function HitotsuCard() {
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
           <GameName variant={variant} /> · {HITOTSU_COPY.cards(game.hands[game.toPlay]?.length ?? 0)} ·
           <MarbleChip player={game.toPlay} />
-          {seatName(game.players, game.computers, game.toPlay)} to play
+          {say.say("party.toPlay", { name: seatName(game.players, game.computers, game.toPlay, say) })}
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

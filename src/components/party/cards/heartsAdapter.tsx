@@ -1,20 +1,22 @@
 "use client";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { HEARTS_RULES } from "@/lib/cardGames/hearts/heartsRules";
 import { passOffset } from "@/lib/cardGames/hearts/hearts";
 import type { HeartsGame, HeartsMove } from "@/lib/cardGames/hearts/hearts.types";
+import type { Speaker } from "@/lib/i18n/i18n";
 
 import type { CardAdapter, CardCentreProps } from "./cardTable.types";
 import { LaidCard, TableWords, trickPlace } from "./CardTableParts";
 
 /** Where this deal's three cards go, in words: "to the left", "across", or nowhere. */
-function passWords(game: HeartsGame): string {
+function passWords(game: HeartsGame, say: Speaker): string {
   const seats = game.players.length;
   const offset = passOffset(game.deal, seats);
-  if (offset === 0) return "nowhere: this deal keeps them";
-  if (offset === 1) return "to the left";
-  if (offset === seats - 1) return "to the right";
-  return "across";
+  if (offset === 0) return say.say("ctable.hearts.passNowhere");
+  if (offset === 1) return say.say("ctable.hearts.passLeft");
+  if (offset === seats - 1) return say.say("ctable.hearts.passRight");
+  return say.say("ctable.hearts.passAcross");
 }
 
 /**
@@ -23,6 +25,7 @@ function passWords(game: HeartsGame): string {
  * says who took it, until the next card is played.
  */
 function HeartsCentre({ game, viewer, players }: CardCentreProps<HeartsGame>) {
+  const say = useSpeaker();
   const seats = game.players.length;
   const showing = game.trick.length > 0 ? game.trick : (game.lastTrick?.plays ?? []);
   const taken = game.trick.length === 0 && game.lastTrick !== null ? game.lastTrick.winner : null;
@@ -33,12 +36,12 @@ function HeartsCentre({ game, viewer, players }: CardCentreProps<HeartsGame>) {
       ))}
       {taken === null ? null : (
         <TableWords left={30} top={22} width={40} testId="cards-trick-taken">
-          {players[taken]} took the trick
+          {say.say("ctable.tookTrick", { name: players[taken] })}
         </TableWords>
       )}
       {game.phase === "passing" ? (
         <TableWords left={20} top={21} width={60}>
-          Passing three cards {passWords(game)}
+          {say.say("ctable.hearts.passing", { where: passWords(game, say) })}
         </TableWords>
       ) : null}
     </>
@@ -51,15 +54,15 @@ export const HEARTS_ADAPTER: CardAdapter<HeartsGame, HeartsMove> = {
   rules: HEARTS_RULES,
   hand: (game, seat) => game.hands[seat] ?? [],
   chooses: (game) => (game.phase === "passing" ? 3 : 1),
-  actions: (game, chosen) => {
+  actions: (game, chosen, _target, _name, say) => {
     if (game.phase === "passing") {
       const move: HeartsMove = { pass: [...chosen] };
       const ok = chosen.length === 3 && HEARTS_RULES.play(game, move) !== null;
-      return [{ label: `Pass three ${passWords(game)}`, move: ok ? move : null, testId: "cards-pass", strong: true, why: `Choose three cards to pass (${chosen.length} chosen).` }];
+      return [{ label: say.say("ctable.hearts.passButton", { where: passWords(game, say) }), move: ok ? move : null, testId: "cards-pass", strong: true, why: say.say("ctable.hearts.passWhy", { count: String(chosen.length) }) }];
     }
     const move: HeartsMove | null = chosen.length === 1 ? { play: chosen[0] } : null;
     const ok = move !== null && HEARTS_RULES.play(game, move) !== null;
-    return [{ label: "Play", move: ok ? move : null, testId: "cards-play", strong: true, why: chosen.length === 0 ? "Choose a card to play." : "That card cannot be played now: follow the suit led if you can." }];
+    return [{ label: say.say("ctable.play"), move: ok ? move : null, testId: "cards-play", strong: true, why: chosen.length === 0 ? say.say("ctable.chooseCard") : say.say("ctable.hearts.cannotPlay") }];
   },
   quick: (game, card) => {
     if (game.phase !== "playing") return null;
@@ -68,13 +71,13 @@ export const HEARTS_ADAPTER: CardAdapter<HeartsGame, HeartsMove> = {
   },
   // The three cards passed in, marked until the first trick of the deal is taken.
   arrived: (game, seat) => (game.phase === "playing" && game.lastTrick === null ? (game.received[seat] ?? []) : []),
-  status: (game, name) => {
+  status: (game, name, say) => {
     if (game.toPlay === null) return "";
-    if (game.phase === "passing") return `${name(game.toPlay)}: choose three cards to pass ${passWords(game)}.`;
-    const lead = game.trick.length === 0 ? "to lead" : "to play";
-    return `${name(game.toPlay)} ${lead}.${game.heartsBroken ? " Hearts are broken." : ""}`;
+    if (game.phase === "passing") return say.say("ctable.hearts.passStatus", { name: name(game.toPlay), where: passWords(game, say) });
+    const key = game.trick.length === 0 ? (game.heartsBroken ? "ctable.hearts.toLeadBroken" : "ctable.toLead") : game.heartsBroken ? "ctable.hearts.toPlayBroken" : "ctable.toPlay";
+    return say.say(key, { name: name(game.toPlay) });
   },
-  standing: (game, seat) => ({ score: String(game.scores[seat]), note: game.phase === "over" ? undefined : `${game.points[seat]} this deal` }),
-  scoreWords: "Points, fewest wins",
+  standing: (game, seat, say) => ({ score: String(game.scores[seat]), note: game.phase === "over" ? undefined : say.say("ctable.hearts.thisDeal", { points: String(game.points[seat]) }) }),
+  scoreWords: (say) => say.say("ctable.hearts.scoreWords"),
   Centre: HeartsCentre,
 };

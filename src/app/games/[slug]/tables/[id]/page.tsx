@@ -7,7 +7,8 @@ import { PageTitle } from "@/components/layout/Headings";
 import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { OnlineTable } from "@/components/party/online/OnlineTable";
-import { ONLINE_COPY } from "@/components/party/online/online.constants";
+import { onlineWords } from "@/components/party/partyWords";
+import type { Speaker } from "@/lib/i18n/i18n";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import { appearanceFor } from "@/lib/auth/members";
 import { currentMemberId } from "@/lib/auth/currentSession";
@@ -30,7 +31,8 @@ export async function generateMetadata() {
 }
 
 /** Why a seat link sent the reader here rather than seating them, from `?seat=`. */
-function seatNotice(said: string | string[] | undefined, reason: string | string[] | undefined): string | null {
+function seatNotice(said: string | string[] | undefined, reason: string | string[] | undefined, say: Speaker): string | null {
+  const ONLINE_COPY = onlineWords(say.locale);
   if (said === "full") return ONLINE_COPY.full;
   if (said === "over") return ONLINE_COPY.over;
   if (said === "refused") return typeof reason === "string" && Object.hasOwn(SEATING_REFUSALS, reason) ? `${ONLINE_COPY.refused} ${SEATING_REFUSALS[reason as SeatingRefusal]}` : ONLINE_COPY.refused;
@@ -50,7 +52,9 @@ export default async function TablePage({ params, searchParams }: PageProps<"/ga
   const key = partyKindFor(slug) ?? variantFor(slug) ?? puzzleFor(slug);
   if (key === null || !isOnlineGame(key)) notFound();
   const readerId = await currentMemberId();
-  const notice = seatNotice(asked.seat, asked.reason);
+  const say = await currentSpeaker();
+  const ONLINE_COPY = onlineWords(say.locale);
+  const notice = seatNotice(asked.seat, asked.reason, say);
   if (readerId === null) notFound();
   const [view, appearance, intervals] = await Promise.all([readTableView(id, readerId), appearanceFor(readerId), liveBoardIntervals()]);
   if (view === null) {
@@ -59,7 +63,7 @@ export default async function TablePage({ params, searchParams }: PageProps<"/ga
     return (
       <Page board>
         <SiteHeader />
-        <PageTitle title={ONLINE_COPY.title} kanji={ONLINE_COPY.kanji} />
+        <PageTitle title={ONLINE_COPY.title} kanji={say.locale === "ja" ? "" : ONLINE_COPY.kanji} />
         <p className={`${PANEL_CLASS} text-sm`} data-testid="online-seat-notice">
           {notice}
         </p>
@@ -68,7 +72,7 @@ export default async function TablePage({ params, searchParams }: PageProps<"/ga
   }
   // An address naming another game's slug is sent to the table's own.
   if (view.game !== key) redirect(tablePath(view.game, id));
-  const copy = gameCopyFor(view.game);
+  const copy = gameCopyFor(view.game, say.locale);
   // The flag and badge beside each name at the table, one read (`nameTagsOf`).
   const tags = Object.fromEntries(await nameTagsOf(view.seats.map((seat) => seat.memberId)));
 
@@ -79,7 +83,7 @@ export default async function TablePage({ params, searchParams }: PageProps<"/ga
       <GameTrailNav game={{ label: copy.label, href: gamePath(view.game) }} steps={[{ label: ONLINE_COPY.title }]} />
       {/* Furniture, for just the board, and quiet while a game is played on it (`PlayingNow`). */}
       <div data-chrome data-quiet-in-play>
-        <PageTitle title={`${copy.label}, ${ONLINE_COPY.title.toLowerCase()}`} kanji={ONLINE_COPY.kanji} lead={ONLINE_COPY.lead} />
+        <PageTitle title={say.say("party.onlineTableTitle", { game: copy.label })} kanji={say.locale === "ja" ? "" : ONLINE_COPY.kanji} lead={ONLINE_COPY.lead} />
       </div>
       {notice !== null ? (
         <p className={`${PANEL_CLASS} text-sm`} data-testid="online-seat-notice">

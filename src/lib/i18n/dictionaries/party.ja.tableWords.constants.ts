@@ -134,7 +134,7 @@ export const PARTY_TABLE_WORDS_JA_GAMES = {
   },
   hitotsu: {
     turn: [
-      "卓の上の行に、誰の番か、どの色に合わせるか、順番がどちら回りかが表示されます。手札は卓の手前に並びます。札をタップして選ぶと（札が持ち上がります）、「出す」を押すか、札を2回タップして、すぐに出します。ワイルドでは、宣言する色を聞かれ、7と0のルールがオンのときの7では、手札を交換する相手を聞かれます。残り2枚になったら、出す前に「一つ！」を押します。引かされる場面では、「引き取る」を押すか、積み重ねるか、ワイルドドロー4に「チャレンジ」を押します。コンピュータは、番が来ると、少しあとに、自分で自分の席を打ちます。",
+      "卓の上の行に、誰の番か、どの色に合わせるか、順番がどちら回りかが表示されます。手札は卓の手前に並びます。札をタップして選ぶと（札が持ち上がります）、「出す」を押すか、札を2回タップして、すぐに出します。ワイルドでは、宣言する色を聞かれ、7と0のルールがオンのときの7では、手札を交換する相手を聞かれます。残り2枚になったら、出す前に「一つ！」を押します。引かされる場面では、「引き取る」を押すか、積み重ねるか、ワイルドドローフォーに「チャレンジ」を押します。コンピュータは、番が来ると、少しあとに、自分で自分の席を打ちます。",
       "The line over the table says whose turn it is, which colour to follow, and which way play is going round. Your hand is along the foot of the table. Tap a card to choose it (it rises) and press \"Play\", or tap a card twice to play it at once. A wild asks which colour to call, and a seven, with sevens and zeros on, which person to swap hands with. With two cards left, press \"Hitotsu!\" before you play. Facing a draw, press \"Take it\", or stack, or press \"Challenge\" on a Wild Draw Four. A computer plays its own seat by itself, a moment after its turn comes.",
     ],
     house: [
@@ -147,7 +147,7 @@ export const PARTY_TABLE_WORDS_JA_GAMES = {
         "The house rules are each a choice in the set-up, with the published rule first.",
       ],
       [
-        "積み重ね：オフ（公式のルール）。同じ札（ドロー2にドロー2、ワイルドドロー4にワイルドドロー4）。またはどのドロー札でも（積み重ねドロー）で、ドロー2にワイルドドロー4も、ワイルドドロー4に、宣言した色のドロー2も出せます。積み重ねられない次の人が、合計をすべて引きます。",
+        "積み重ね：オフ（公式のルール）。同じ札（ドロー2にドロー2、ワイルドドローフォーにワイルドドローフォー）。またはどのドロー札でも（積み重ねドロー）で、ドロー2にワイルドドローフォーも、ワイルドドローフォーに、宣言した色のドロー2も出せます。積み重ねられない次の人が、合計をすべて引きます。",
         "Stacking: off (the published rule), the same card (a Draw Two on a Draw Two and a Wild Draw Four on a Wild Draw Four), or any draw card (progressive draw), with a Wild Draw Four allowed on a Draw Two too, and a Draw Two of the colour called on a Wild Draw Four. The next person who cannot stack takes the whole total.",
       ],
       [
@@ -163,7 +163,7 @@ export const PARTY_TABLE_WORDS_JA_GAMES = {
         "Draw until you can play: draw until a card goes, rather than just one.",
       ],
       [
-        "ブラフなし：ワイルドドロー4は、場の色の札を1枚も持っていないときだけ出せ、チャレンジはできません。",
+        "ブラフなし：ワイルドドローフォーは、場の色の札を1枚も持っていないときだけ出せ、チャレンジはできません。",
         "No bluffing: a Wild Draw Four may be played only when you hold nothing of the colour on top, and it cannot be challenged.",
       ],
       [

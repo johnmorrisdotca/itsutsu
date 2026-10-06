@@ -26,6 +26,7 @@ import { useOnlineTable } from "./useOnlineTable";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 import { onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 
 /**
  * A PARTY TABLE ON SEVERAL DEVICES, at /games/<slug>/tables/<id>: the game's
@@ -73,7 +74,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
           setProblem(body?.error ?? ONLINE_COPY.couldNotStart);
         }
       } catch {
-        setProblem("The site could not be reached.");
+        setProblem(say.say("party.online.unreachable"));
       } finally {
         setSending(false);
       }
@@ -88,7 +89,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
     setConfirming(null);
     if (answer === null || !answer.ok) {
       const body = (await answer?.json().catch(() => null)) as { error?: string } | null;
-      setProblem(body?.error ?? "The site could not be reached.");
+      setProblem(body?.error ?? say.say("party.online.unreachable"));
       return;
     }
     if (what === "leave") router.push("/play");
@@ -105,11 +106,11 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
   const moment = useWinMoment(playing ? "playing" : view.status === ONLINE_STATUS.finished ? "ended" : "unknown");
   const news = moment.open
     ? tableNews({
-        names: view.seats.map((seat, at) => seat.name || (seat.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : `Player ${at + 1}`)),
+        names: view.seats.map((seat, at) => seat.name || (seat.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : playerNumberName(say, at + 1))),
         winners: view.winners,
         you: view.mySeat,
         next: null,
-      })
+      }, say)
     : null;
   const canMove = playing && view.toPlay === view.mySeat && !sending;
   // Every place's colour as the server keeps it, and how this reader changes their own (`setTableColour`).
@@ -213,7 +214,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
             )}
           </div>
         ) : null}
-        {view.status === ONLINE_STATUS.finished ? <TableWallpaper game={view.game} result={resultLine(view.seats.map((seat, at) => seat.name || `Player ${at + 1}`), view.winners)} /> : null}
+        {view.status === ONLINE_STATUS.finished ? <TableWallpaper game={view.game} result={resultLine(view.seats.map((seat, at) => seat.name || playerNumberName(say, at + 1)), view.winners, false, say)} /> : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">
             {ONLINE_COPY.about} →
@@ -248,7 +249,7 @@ function StatusLine({ view, sending, thinking }: { view: OnlineTableView; sendin
       ? ONLINE_COPY.yourTurn
       : toPlay?.kind === ONLINE_SEAT_KINDS.open
         ? ONLINE_COPY.waitingOpen
-        : ONLINE_COPY.waitingOn(toPlay?.name || (toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : `Player ${view.toPlay + 1}`));
+        : ONLINE_COPY.waitingOn(toPlay?.name || (toPlay?.kind === ONLINE_SEAT_KINDS.computer ? ONLINE_COPY.computerSeat : playerNumberName(say, view.toPlay + 1)));
   return (
     <p
       className={`text-sm font-semibold ${yours ? "text-ink" : "text-muted"}`}

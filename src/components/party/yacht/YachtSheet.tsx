@@ -28,7 +28,7 @@ export function YachtSheet({ game, onBox }: { game: YachtGame; onBox?: (box: num
   return (
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="yacht-sheet">
       <h2 className={SECTION_TITLE}>
-        {YACHT_COPY.sheet} <span className="font-mincho normal-case tracking-normal">得点表</span>
+        {YACHT_COPY.sheet} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">得点表</span> : null}
       </h2>
       <div className={TABLE_SCROLL}>
         <table className="w-full text-sm">
@@ -68,7 +68,7 @@ export function YachtSheet({ game, onBox }: { game: YachtGame; onBox?: (box: num
                             data-testid="yacht-box"
                             data-box={box}
                             data-would={boxScore(key, game.dice)}
-                            aria-label={`Score ${boxScore(key, game.dice)} for ${YACHT_BOX_WORDS[key].name}`}
+                            aria-label={say.say("party.yacht.boxAria", { score: String(boxScore(key, game.dice)), box: YACHT_BOX_WORDS[key].name })}
                           >
                             {boxScore(key, game.dice)}
                           </button>

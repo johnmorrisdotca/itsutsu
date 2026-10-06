@@ -94,7 +94,7 @@ export function TenkaDice({ game, compact = false }: { game: TenkaGame; compact?
       {dice}
       <p className="text-sm" data-testid="tenka-roll-words">
         {roll.throws > 1 ? say.say("party.tenka.diceFrom", { count: String(roll.throws), from, to }) : say.say("party.tenka.diceOnce", { from, to })}{" "}
-        {say.say("party.tenka.diceThrew", { attacker, a: roll.attackDice.join(", "), defender, d: roll.defendDice.join(", ") })} {sentence(lostLine)}.
+        {say.say("party.tenka.diceThrew", { attacker, a: say.joined(roll.attackDice.map(String)), defender, d: say.joined(roll.defendDice.map(String)) })} {sentence(lostLine)}.
         {roll.took ? <strong data-testid="tenka-took">{say.say("party.tenka.diceTakes", { who: attacker, territory: to })}</strong> : null}
       </p>
     </section>

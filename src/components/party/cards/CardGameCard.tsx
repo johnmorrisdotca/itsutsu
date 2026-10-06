@@ -35,12 +35,12 @@ export function CardGameCard({ kind }: { kind: CardGameKind }) {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{CARD_TABLE_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={kind} /> · {players.length} players
+          <GameName variant={kind} /> · {say.count("count.player", players.length)}
           {toPlay === null ? null : (
             <>
               {" "}
               · <MarbleChip player={toPlay} />
-              {seatName(players, computers, toPlay)} to play
+              {say.say("party.toPlay", { name: seatName(players, computers, toPlay, say) })}
             </>
           )}
         </span>

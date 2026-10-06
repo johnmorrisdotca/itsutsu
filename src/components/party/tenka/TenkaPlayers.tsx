@@ -25,7 +25,7 @@ export function TenkaPlayers({ game }: { game: TenkaGame }) {
     <section className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="tenka-players">
       <h2 className={`${SECTION_TITLE} flex items-baseline justify-between gap-2`}>
         <span>
-          {say.say("party.tenka.playersTitle")} {say.locale === "en" ? <span className="font-mincho normal-case tracking-normal">席</span> : null}
+          {say.say("party.players")} {say.pairsWithKanji ? <span className="font-mincho normal-case tracking-normal">席</span> : null}
         </span>
         <span className="normal-case tracking-normal" data-testid="tenka-round">
           {tenkaRoundLine(say, game.round, game.rounds, TENKA_WORLD_ROUNDS)}

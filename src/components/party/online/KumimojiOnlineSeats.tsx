@@ -36,12 +36,12 @@ export function KumimojiOnlineSeats({ offer, count, setup }: { offer: OnlineOffe
       }}
     >
       <h2 className={SECTION_HEADING}>
-        {ONLINE_COPY.seats} <span className={SECTION_HEADING_KANJI}>席</span>
+        {ONLINE_COPY.seats} {say.pairsWithKanji ? <span className={SECTION_HEADING_KANJI}>席</span> : null}
       </h2>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {Array.from({ length: count }, (_, seat) => (
           <label key={seat} className="flex items-center gap-2 text-sm">
-            <span className="w-16 shrink-0 text-muted">Player {seat + 1}</span>
+            <span className="w-16 shrink-0 text-muted">{say.say("pkumi.party.playerLabel", { n: String(seat + 1) })}</span>
             <SeatChoiceSelect offer={offer} seat={seat} choices={choices} onChoose={(at, choice) => setChoices((was) => was.map((one, i) => (i === at ? choice : one)))} />
           </label>
         ))}

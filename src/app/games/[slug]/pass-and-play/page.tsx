@@ -16,6 +16,7 @@ import { appearanceFor } from "@/lib/auth/members";
 import { currentReader } from "@/lib/auth/currentReader";
 import { gameCopyFor } from "@/lib/catalogue/gameKeys";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
 import type { GameKey } from "@/lib/catalogue/gameKeys";
 import { gamePath, partyKindFor, variantFor } from "@/lib/gomoku/slugs";
 import { onlineOfferFor } from "@/lib/party/online/server/onlineOffer";
@@ -36,12 +37,13 @@ function tableAt(slug: string): { key: GameKey; table: PartyTable } | null {
 export async function generateMetadata({ params }: PageProps<"/games/[slug]/pass-and-play">): Promise<Metadata> {
   const found = tableAt((await params).slug);
   const say = await currentSpeaker();
-  return { title: found === null ? say.say("gamepages.games") : headingOf(gameCopyFor(found.key, say.locale).label, found.table.title) };
+  return { title: found === null ? say.say("gamepages.games") : headingOf(gameCopyFor(found.key, say.locale).label, found.table.words(say.locale).title, say) };
 }
 
 /** "Chinese Checkers, pass and play"; "Pair Go" and "Block Five for four", which name their game already. */
-function headingOf(game: string, title: string): string {
-  return title.includes(game) ? title : `${game}, ${title.toLowerCase()}`;
+function headingOf(game: string, title: string, say: Speaker): string {
+  if (title.includes(game)) return title;
+  return say.locale === "ja" ? say.say("party.passPlayTitle", { game }) : `${game}, ${title.toLowerCase()}`;
 }
 
 /**
@@ -69,7 +71,9 @@ export default async function PassAndPlayPage({ params }: PageProps<"/games/[slu
   const found = tableAt((await params).slug);
   if (found === null) notFound();
   const { key, table } = found;
-  const copy = gameCopyFor(key);
+  const say = await currentSpeaker();
+  const copy = gameCopyFor(key, say.locale);
+  const words = table.words(say.locale);
   const reader = await currentReader();
   // And, where the game can be played on several devices, what its set-up offers for that (`onlineOfferFor`).
   const [kept, online] = await Promise.all([appearanceFor(reader.memberId), onlineOfferFor(key, reader.memberId)]);
@@ -79,13 +83,13 @@ export default async function PassAndPlayPage({ params }: PageProps<"/games/[slu
   return (
     <Page board="play">
       <SiteHeader />
-      <GameTrailNav game={{ label: copy.label, href: gamePath(key) }} steps={[{ label: table.title }]} />
+      <GameTrailNav game={{ label: copy.label, href: gamePath(key) }} steps={[{ label: words.title }]} />
       {/* Furniture, for just the board: the table and what plays it stay. Quiet while a game is played on it (`PlayingNow`). */}
       <div data-chrome data-quiet-in-play>
         <PageTitle
-          title={headingOf(copy.label, table.title)}
-          kanji={table.kanji}
-          lead={table.lead}
+          title={headingOf(copy.label, words.title, say)}
+          kanji={say.locale === "ja" ? "" : words.kanji}
+          lead={words.lead}
         />
       </div>
       {/* The table at the size this reader keeps for this kind of screen (`BoardScaled`), once a game is on it. */}

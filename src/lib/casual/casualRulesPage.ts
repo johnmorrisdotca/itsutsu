@@ -1,13 +1,15 @@
 import { gameArtPath } from "@/lib/gomoku/artwork";
+import type { Speaker } from "@/lib/i18n/i18n";
 import type { RulesPage } from "@/lib/learn/rulesPage";
+import { casualCopy } from "@/lib/party/partyCopy";
 
-import { CASUAL_DISPLAY, CASUAL_SPECS } from "./casual.constants";
+import { CASUAL_SPECS } from "./casual.constants";
 import type { CasualKind } from "./casual.types";
 
-/** "5 levels" or "4 stories", from the game's own spec. */
-export function casualLevelsWords(kind: CasualKind): string {
+/** "5 levels" or "4 stories", from the game's own spec; 5レベル and 4話 for a reader of Japanese. */
+export function casualLevelsWords(kind: CasualKind, say: Speaker): string {
   const { levels } = CASUAL_SPECS[kind];
-  return kind === "choiceStory" ? `${levels} stories` : `${levels} levels`;
+  return say.count(kind === "choiceStory" ? "casual.stories" : "casual.levels", levels);
 }
 
 /**
@@ -15,10 +17,10 @@ export function casualLevelsWords(kind: CasualKind): string {
  * House. The same `RulesPage` shape every game builds, so the one rules page
  * draws it and a reader who has read one has read them all. The facts come
  * from the game's copy and spec, never from a second description that could
- * drift.
+ * drift. Its words are the reader's language's (`casualCopy`, and the house lines' phrases).
  */
-export function casualRulesPage(kind: CasualKind): RulesPage {
-  const copy = CASUAL_DISPLAY[kind];
+export function casualRulesPage(kind: CasualKind, say: Speaker): RulesPage {
+  const copy = casualCopy(kind, say.locale);
   const spec = CASUAL_SPECS[kind];
   return {
     variant: kind,
@@ -30,16 +32,9 @@ export function casualRulesPage(kind: CasualKind): RulesPage {
     from: null,
     wikipedia: null,
     object: [copy.tagline, copy.rules[0]],
-    board: [`${casualLevelsWords(kind)[0].toUpperCase()}${casualLevelsWords(kind).slice(1)}. ${copy.board}`],
+    board: [say.say("casual.boardLine", { levels: casualLevelsWords(kind, say), board: copy.board })],
     play: copy.rules.slice(1),
-    house: [
-      "Played alone, with a finger or the mouse, and on a phone as on a desk. Nothing here is rated, and a level won earns no points and no experience.",
-      "Your progress, the levels you have won in each game and the one you were on, is kept only in the browser you play in. Clear the site's data and it starts again; it follows you to no other device.",
-      spec.physics
-        ? "The physics is the Karakuri package's own and runs in your browser at a fixed sixtieth of a second a step, with nothing random in it, so a level plays the same way every time and on every device."
-        : "Every level can be won: each was proved by a search, or by playing it out, before it was kept.",
-      "Restart begins the level again; Give up ends it unsolved; New game goes back to choose a level, and leaves the one you were on where it is.",
-    ],
+    house: [say.say("casual.house.alone"), say.say("casual.house.kept"), say.say(spec.physics ? "casual.house.physics" : "casual.house.solved"), say.say("casual.house.restart")],
     image: gameArtPath(kind),
   };
 }

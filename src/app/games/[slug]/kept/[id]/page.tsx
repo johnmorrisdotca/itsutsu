@@ -8,7 +8,7 @@ import { Page } from "@/components/layout/Page";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { MY_GAMES_COPY } from "@/components/mine/mine.constants";
 import { KeptOpen } from "@/components/party/KeptOpen";
-import { KEPT_COPY } from "@/components/party/kept.constants";
+import { keptWords } from "@/components/party/partyWords";
 import { PlayerName } from "@/components/players/PlayerName";
 import Link from "@/components/ui/Link";
 import { PANEL_CLASS } from "@/components/ui/ui.constants";
@@ -58,7 +58,9 @@ export default async function KeptGamePage({ params }: PageProps<"/games/[slug]/
   const own = row.hostMemberId === memberId;
   const owner = row.seats.find((seat) => seat.memberId === row.hostMemberId && seat.kind === KEPT_SEAT_KINDS.member);
 
-  const copy = gameCopyFor(key);
+  const say = await currentSpeaker();
+  const KEPT_COPY = keptWords(say.locale);
+  const copy = gameCopyFor(key, say.locale);
   const tags = await nameTagsOf(row.seats.map((seat) => seat.memberId));
   // How it stands for whoever filed it: the reader when it is theirs, the player whose history it is from when not.
   const mine = owner?.seat ?? 0;
@@ -72,7 +74,7 @@ export default async function KeptGamePage({ params }: PageProps<"/games/[slug]/
     <Page>
       <SiteHeader />
       <GameTrailNav game={{ label: copy.label, href: gamePath(key) }} steps={[{ label: KEPT_COPY.title }]} />
-      <PageTitle title={own ? KEPT_COPY.title : KEPT_COPY.theirs.title} kanji={KEPT_COPY.kanji} lead={own ? lead : KEPT_COPY.theirs.lead} />
+      <PageTitle title={own ? KEPT_COPY.title : KEPT_COPY.theirs.title} kanji={say.locale === "ja" ? "" : KEPT_COPY.kanji} lead={own ? lead : KEPT_COPY.theirs.lead} />
       <section className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="kept-game" data-state={state} data-game={key}>
         <div className="flex items-center gap-3">
           <GameThumb variant={key} size="regular" />

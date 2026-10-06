@@ -1,3 +1,4 @@
+import type { Locale } from "@/lib/i18n/i18n.types";
 import type { ComponentType, ReactNode } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
@@ -81,10 +82,11 @@ export type PartyTableGameProps = {
  * One game's table at `/games/<slug>/pass-and-play`: what its page is called,
  * what it says first, and what plays it.
  */
+export type PartyTableWords = { title: string; kanji: string; lead: string };
+
 export type PartyTable = {
-  title: string;
-  kanji: string;
-  lead: string;
+  /** What the table's page is called and says first, in the reader's language. */
+  words: (locale: Locale) => PartyTableWords;
   Game: ComponentType<PartyTableGameProps>;
   /** The way in, on the game's own page: offers the kept game back first, while one is going. */
   Offer: ComponentType<{ href: string }>;

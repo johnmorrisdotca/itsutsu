@@ -5,6 +5,8 @@ import { HITOTSU_ONE_HAND, type HitotsuGame, type HitotsuMove, hitotsuWinners } 
 
 import { CardScores } from "../cards/CardScores";
 import { HitotsuDesk } from "../hitotsu/HitotsuDesk";
+import { namesInALine } from "@/components/game/winNews";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { hitotsuNewsLine, hitotsuStatus } from "../hitotsu/hitotsuPresses";
 import { HitotsuSeats } from "../hitotsu/HitotsuSeats";
 import { HitotsuTableTop } from "../hitotsu/HitotsuTableTop";
@@ -28,7 +30,7 @@ export function HitotsuOnline({ game, appearance, canMove, onMove, mySeat }: Onl
   const HITOTSU_COPY = hitotsuScreenWords(say.locale);
   const ONLINE_COPY = onlineWords(say.locale);
   const over = game.phase === "over";
-  const name = (seat: number) => game.players[seat] || `Player ${seat + 1}`;
+  const name = (seat: number) => game.players[seat] || playerNumberName(say, seat + 1);
   const names = game.players.map((_, seat) => name(seat));
   const winners = hitotsuWinners(game);
   const mine = game.hands[mySeat] !== undefined;
@@ -36,10 +38,10 @@ export function HitotsuOnline({ game, appearance, canMove, onMove, mySeat }: Onl
     <div className="flex min-w-0 flex-col gap-3" data-testid="hitotsu-game" data-state={over ? "finished" : "playing"} data-moves={game.moves.length} data-to-play={game.toPlay ?? undefined} data-viewer={mine ? mySeat : undefined}>
       <div className="flex min-h-16 flex-col gap-0.5">
         <p className="text-base font-semibold" data-testid="hitotsu-status" aria-live="polite">
-          {over ? `${HITOTSU_COPY.over}: ${HITOTSU_COPY.won(winners.map(name).join(" and "))}` : hitotsuStatus(game, name)}
+          {over ? `${HITOTSU_COPY.over}: ${HITOTSU_COPY.won(namesInALine(winners.map(name), say))}` : hitotsuStatus(game, name, say)}
         </p>
         <p className="text-sm text-muted" data-testid="hitotsu-news">
-          {hitotsuNewsLine(game, name)}
+          {hitotsuNewsLine(game, name, say)}
         </p>
       </div>
       <HitotsuSeats

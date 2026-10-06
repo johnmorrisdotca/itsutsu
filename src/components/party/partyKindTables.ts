@@ -11,34 +11,26 @@ import { GhostOffer } from "./GhostOffer";
 import { MancalaCard } from "./MancalaCard";
 import { MancalaGame } from "./MancalaGame";
 import { MancalaOffer } from "./MancalaOffer";
-import { DOTS_COPY, GHOST_COPY, MANCALA_COPY, PARTY_COPY } from "./party.constants";
+import { dotsWords, ghostWords, mancalaWords, onlineWords, partyScreenWords, cardTableWords, sugorokuScreenWords, yachtWords, pachisiWords, diceWarScreenWords, gunjinWords, hitotsuScreenWords } from "./partyWords";
+import { gameCopyFor } from "@/lib/catalogue/gameKeys";
+import type { Locale } from "@/lib/i18n/i18n.types";
 import type { PartyTable } from "./party.types";
 import { TenkaCard } from "./tenka/TenkaCard";
-import { ONLINE_COPY } from "./online/online.constants";
 import { TenkaOffer } from "./tenka/TenkaOffer";
 import { TenkaTable } from "./tenka/TenkaTable";
-import { CARD_TABLE_COPY } from "./cards/cardTable.constants";
 import { BigTwoCard, BigTwoOffer, BigTwoTable, CrazyEightsCard, CrazyEightsOffer, CrazyEightsTable, CribbageCard, CribbageOffer, CribbageTable, EuchreCard, EuchreOffer, EuchreTable, GinRummyCard, GinRummyOffer, GinRummyTable, GoFishCard, GoFishOffer, GoFishTable, HeartsCard, HeartsOffer, HeartsTable, OhHellCard, OhHellOffer, OhHellTable, PresidentCard, PresidentOffer, PresidentTable, SpadesCard, SpadesOffer, SpadesTable, WarCard, WarOffer, WarTable } from "./cards/cardTableClient";
-import { CARD_GAME_DISPLAY } from "@/lib/cardGames/cardGames.copy";
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { TrainCardClient, TrainGameClient } from "./trainClient";
 import { TrainOffer } from "./TrainOffer";
-import { PACHISI_COPY } from "./pachisi/pachisi.constants";
 import { PachisiCardClient, PachisiTableClient } from "./pachisi/pachisiClient";
 import { PachisiOffer } from "./pachisi/PachisiOffer";
-import { YACHT_COPY } from "./yacht/yacht.constants";
 import { YachtCardClient, YachtTableClient } from "./yacht/yachtClient";
 import { YachtOffer } from "./yacht/YachtOffer";
-import { HITOTSU_COPY } from "./hitotsu/hitotsu.constants";
-import { GUNJIN_COPY } from "./gunjin/gunjin.constants";
 import { GunjinCardClient, GunjinOfferClient, GunjinTableClient } from "./gunjin/gunjinClient";
-import { DICE_WAR_COPY } from "./diceWar/diceWar.constants";
 import { DiceWarCardClient, DiceWarOfferClient, DiceWarTableClient } from "./diceWar/diceWarClient";
 import { HitotsuCardClient, HitotsuOfferClient, HitotsuTableClient } from "./hitotsu/hitotsuClient";
 import { SUGOROKU_COMPONENTS } from "./sugoroku/sugorokuRows";
 import { SUGOROKU_KIND_LIST, type SugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
-import { SUGOROKU_COPY } from "./sugoroku/sugoroku.constants";
-import { SUGOROKU_DISPLAY } from "@/lib/party/sugoroku/sugoroku.copy";
 
 /**
  * EACH PARTY GAME'S TABLE, one row a `PartyKind`: what its table page at
@@ -50,68 +42,52 @@ import { SUGOROKU_DISPLAY } from "@/lib/party/sugoroku/sugoroku.copy";
  */
 export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: ComponentType }> = {
   dotsAndBoxes: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: DOTS_COPY.lead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: dotsWords(locale).lead }),
     Game: DotsGame,
     Offer: DotsOffer,
     Card: DotsCard,
   },
   superghost: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: GHOST_COPY.lead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: ghostWords(locale).lead }),
     Game: GhostGame,
     Offer: GhostOffer,
     Card: GhostCard,
   },
   mancala: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: MANCALA_COPY.lead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: mancalaWords(locale).lead }),
     Game: MancalaGame,
     Offer: MancalaOffer,
     Card: MancalaCard,
   },
   tenka: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: ONLINE_COPY.tenkaLead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: onlineWords(locale).tenkaLead }),
     Game: TenkaTable,
     Offer: TenkaOffer,
     Card: TenkaCard,
   },
   mexicanTrain: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: ONLINE_COPY.trainLead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: onlineWords(locale).trainLead }),
     // Loaded in the browser only (`trainClient.tsx`): the kept game is the browser's, and the rules stay out of the server's bundle.
     Game: TrainGameClient,
     Offer: TrainOffer,
     Card: TrainCardClient,
   },
   yacht: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: YACHT_COPY.lead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: yachtWords(locale).lead }),
     // Loaded in the browser only (`yachtClient.tsx`), as Mexican Train's table is.
     Game: YachtTableClient,
     Offer: YachtOffer,
     Card: YachtCardClient,
   },
   pachisi: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: PACHISI_COPY.lead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: pachisiWords(locale).lead }),
     // Loaded in the browser only (`pachisiClient.tsx`), as Yacht's table is.
     Game: PachisiTableClient,
     Offer: PachisiOffer,
     Card: PachisiCardClient,
   },
   diceWar: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: DICE_WAR_COPY.lead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: diceWarScreenWords(locale).lead }),
     // Loaded in the browser only (`diceWarClient.tsx`), as the card games' tables are: Korokoro stays out of the server's function.
     Game: DiceWarTableClient,
     Offer: DiceWarOfferClient,
@@ -119,9 +95,7 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
   },
   // Hidden-rank games for two (`gunjin/`), loaded in the browser only, as the card games' are: the package's engine stays out of the server's function.
   gunjin: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: GUNJIN_COPY.lead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: gunjinWords(locale).lead }),
     Game: GunjinTableClient,
     Offer: GunjinOfferClient,
     Card: GunjinCardClient,
@@ -134,9 +108,7 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
   crazyEights: cardTable("crazyEights", CrazyEightsTable, CrazyEightsOffer, CrazyEightsCard),
   // Its own deck and its own table (`hitotsu/`), loaded in the browser only, as the card games' are.
   hitotsu: {
-    title: PARTY_COPY.title,
-    kanji: PARTY_COPY.kanji,
-    lead: HITOTSU_COPY.lead,
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: hitotsuScreenWords(locale).lead }),
     Game: HitotsuTableClient,
     Offer: HitotsuOfferClient,
     Card: HitotsuCardClient,
@@ -145,7 +117,7 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
   ...(Object.fromEntries(
     SUGOROKU_KIND_LIST.map((kind) => [
       kind,
-      { title: PARTY_COPY.title, kanji: PARTY_COPY.kanji, lead: SUGOROKU_COPY.lead(SUGOROKU_DISPLAY[kind].label), ...SUGOROKU_COMPONENTS[kind] },
+      { words: (locale: Locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: sugorokuScreenWords(locale).lead(gameCopyFor(kind, locale).label) }), ...SUGOROKU_COMPONENTS[kind] },
     ]),
   ) as Record<SugorokuKind, PartyTable & { Card: ComponentType }>),
   spades: cardTable("spades", SpadesTable, SpadesOffer, SpadesCard),
@@ -158,5 +130,5 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
 
 /** A card game's row: the pass-and-play title every table shares, its own lead, and its three components. */
 function cardTable(kind: CardGameKind, Game: PartyTable["Game"], Offer: PartyTable["Offer"], Card: ComponentType): PartyTable & { Card: ComponentType } {
-  return { title: PARTY_COPY.title, kanji: PARTY_COPY.kanji, lead: CARD_TABLE_COPY.lead(CARD_GAME_DISPLAY[kind].label), Game, Offer, Card };
+  return { words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: cardTableWords(locale).lead(gameCopyFor(kind, locale).label) }), Game, Offer, Card };
 }

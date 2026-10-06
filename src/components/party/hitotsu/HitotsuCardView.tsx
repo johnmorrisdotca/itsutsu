@@ -25,6 +25,6 @@ export function HitotsuCardView({ card, faceUp = true, chosen = false, called, c
 }
 
 /** What a card is called aloud, for its button and the table's lines. */
-export function hitotsuCardLabel(card: HitotsuCard): string {
-  return hitotsuWords(card);
+export function hitotsuCardLabel(card: HitotsuCard, language: "en" | "ja" = "en"): string {
+  return hitotsuWords(card, language);
 }

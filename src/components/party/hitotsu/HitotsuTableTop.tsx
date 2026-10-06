@@ -5,6 +5,7 @@ import { HITOTSU_COLOUR_LOOK, colourWords, type HitotsuGame, hitotsuTop, isWild 
 
 import { CardTableSurface, TableWords } from "../cards/CardTableParts";
 import { HitotsuCardView, hitotsuCardLabel } from "./HitotsuCardView";
+import { hitotsuLanguage } from "./hitotsuPresses";
 import { hitotsuScreenWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
@@ -45,7 +46,7 @@ export function HitotsuTableTop({ game, appearance }: { game: HitotsuGame; appea
   return (
     <CardTableSurface appearance={appearance}>
       {game.stock.length === 0 ? null : (
-        <span className="absolute block" style={{ left: cqw(19), top: cqw(ROW), width: cqw(CARD) }} data-testid="hitotsu-stock" role="img" aria-label="the stock, face down">
+        <span className="absolute block" style={{ left: cqw(19), top: cqw(ROW), width: cqw(CARD) }} data-testid="hitotsu-stock" role="img" aria-label={say.say("party.hitotsu.stockAria")}>
           <HitotsuCardView faceUp={false} />
         </span>
       )}
@@ -66,7 +67,7 @@ export function HitotsuTableTop({ game, appearance }: { game: HitotsuGame; appea
         data-testid="hitotsu-discard"
         data-card={top}
         role="img"
-        aria-label={`${hitotsuCardLabel(top)} on top`}
+        aria-label={say.say("party.hitotsu.topAria", { card: hitotsuCardLabel(top, hitotsuLanguage(say)) })}
       >
         <HitotsuCardView card={top} called={isWild(top) ? game.colour : undefined} />
       </span>
@@ -76,16 +77,16 @@ export function HitotsuTableTop({ game, appearance }: { game: HitotsuGame; appea
         data-testid="hitotsu-colour"
         data-colour={game.colour}
         role="img"
-        aria-label={HITOTSU_COPY.follow(colourWords(game.colour))}
+        aria-label={HITOTSU_COPY.follow(colourWords(game.colour, hitotsuLanguage(say)))}
       >
         {look.element}
       </span>
       <TableWords left={64} top={DISC_TOP + DISC + 2} width={23} testId="hitotsu-direction">
-        {game.direction === 1 ? "↻" : "↺"} {colourWords(game.colour)}
+        {game.direction === 1 ? "↻" : "↺"} {colourWords(game.colour, hitotsuLanguage(say))}
       </TableWords>
       {game.pending > 0 ? (
         <TableWords left={38.5} top={UNDER_CARDS} width={32} testId="hitotsu-pending">
-          +{game.pending} waiting
+          {say.say("party.hitotsu.waiting", { count: String(game.pending) })}
         </TableWords>
       ) : null}
     </CardTableSurface>

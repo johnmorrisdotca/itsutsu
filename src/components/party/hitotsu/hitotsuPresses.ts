@@ -1,6 +1,10 @@
 import { HITOTSU_COLOUR_LOOK, colourWords, movesFor, waysFor, type HitotsuCard, type HitotsuGame, type HitotsuMove } from "@johnmorrisdotca/hitotsu";
 
-import { HITOTSU_COPY } from "./hitotsu.constants";
+import { hitotsuScreenWords } from "@/components/party/partyWords";
+import type { Speaker } from "@/lib/i18n/i18n";
+
+/** The language the package is asked for: Japanese for a reader of Japanese, English for anyone else. */
+export const hitotsuLanguage = (say: Speaker): "en" | "ja" => (say.locale === "ja" ? "ja" : "en");
 
 export { callMatters, movesFor, playableFor, quickMove } from "@johnmorrisdotca/hitotsu";
 
@@ -12,7 +16,8 @@ export type HitotsuPress = { label: string; move: HitotsuMove | null; testId: st
  * colour for a wild, one per player for a seven that swaps; then Draw, Keep
  * it, Pass, Take, Challenge — whichever the rules offer now.
  */
-export function hitotsuPresses(game: HitotsuGame, seat: number, chosen: HitotsuCard | null, call: boolean, name: (seat: number) => string): HitotsuPress[] {
+export function hitotsuPresses(game: HitotsuGame, seat: number, chosen: HitotsuCard | null, call: boolean, name: (seat: number) => string, say: Speaker): HitotsuPress[] {
+  const HITOTSU_COPY = hitotsuScreenWords(say.locale);
   const moves = movesFor(game, seat);
   if (moves.length === 0) return [];
   const mine = game.toPlay === seat;
@@ -22,7 +27,7 @@ export function hitotsuPresses(game: HitotsuGame, seat: number, chosen: HitotsuC
   if (ways.some((way) => way.colour !== undefined)) {
     for (const way of ways) {
       const colour = way.colour!;
-      presses.push({ label: HITOTSU_COPY.callColour(colourWords(colour)), move: way, testId: `hitotsu-colour-${colour}`, strong: true, colour: HITOTSU_COLOUR_LOOK[colour].fill });
+      presses.push({ label: HITOTSU_COPY.callColour(colourWords(colour, hitotsuLanguage(say))), move: way, testId: `hitotsu-colour-${colour}`, strong: true, colour: HITOTSU_COLOUR_LOOK[colour].fill });
     }
   } else if (ways.some((way) => way.swap !== undefined)) {
     for (const way of ways) presses.push({ label: HITOTSU_COPY.swapWith(name(way.swap!)), move: way, testId: `hitotsu-swap-${way.swap}`, strong: true });
@@ -45,39 +50,41 @@ export function hitotsuPresses(game: HitotsuGame, seat: number, chosen: HitotsuC
 }
 
 /** The line over the table: whose turn it is and what they are to do. */
-export function hitotsuStatus(game: HitotsuGame, name: (seat: number) => string): string {
+export function hitotsuStatus(game: HitotsuGame, name: (seat: number) => string, say: Speaker): string {
+  const HITOTSU_COPY = hitotsuScreenWords(say.locale);
   if (game.toPlay === null) return "";
   const who = name(game.toPlay);
   if (game.challenge !== null) return HITOTSU_COPY.challengeOpen(who, name(game.challenge.by));
   if (game.pending > 0) return HITOTSU_COPY.facing(who, game.pending);
   if (game.drawn !== null) return HITOTSU_COPY.drew(who);
-  return `${HITOTSU_COPY.toPlay(who)}: ${colourWords(game.colour)}, or the same number or symbol, or a wild.`;
+  return say.say("party.hitotsu.playLine", { name: who, colour: colourWords(game.colour, hitotsuLanguage(say)) });
 }
 
 /** What the last move did beyond the card, in words: "Ben took four.", "Cy was caught: two cards." */
-export function hitotsuNewsLine(game: HitotsuGame, name: (seat: number) => string): string {
-  return game.news
+export function hitotsuNewsLine(game: HitotsuGame, name: (seat: number) => string, say: Speaker): string {
+  return say.sentences(
+    game.news
     .map((news) => {
       switch (news.kind) {
         case "caught":
-          return `${name(news.seat)} forgot to call Hitotsu!: two cards.`;
+          return say.say("party.hitotsu.caught", { name: name(news.seat) });
         case "took":
-          return `${name(news.seat)} took ${news.count}.`;
+          return say.say("party.hitotsu.took", { name: name(news.seat), count: String(news.count) });
         case "challenge":
-          return news.guilty ? `${name(news.seat)} challenged ${name(news.by)}, who had the colour.` : `${name(news.seat)} challenged ${name(news.by)}, who did not have the colour.`;
+          return say.say(news.guilty ? "party.hitotsu.challengeGuilty" : "party.hitotsu.challengeInnocent", { name: name(news.seat), by: name(news.by) });
         case "swap":
-          return `${name(news.seat)} swapped hands with ${name(news.with)}.`;
+          return say.say("party.hitotsu.swap", { name: name(news.seat), other: name(news.with) });
         case "rotate":
-          return "Every hand passed on.";
+          return say.say("party.hitotsu.rotate");
         case "jump":
-          return `${name(news.seat)} jumped in!`;
+          return say.say("party.hitotsu.jump", { name: name(news.seat) });
         case "skipped":
-          return `${name(news.seat)} is skipped.`;
+          return say.say("party.hitotsu.skipped", { name: name(news.seat) });
         case "reversed":
-          return "Play turns round.";
+          return say.say("party.hitotsu.reversed");
         case "drew":
-          return `${name(news.seat)} drew ${news.count === 1 ? "a card" : `${news.count} cards`}.`;
+          return say.count("party.hitotsu.drew", news.count, { name: name(news.seat) });
       }
-    })
-    .join(" ");
+    }),
+  );
 }

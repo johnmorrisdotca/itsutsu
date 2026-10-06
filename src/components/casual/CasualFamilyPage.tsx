@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation";
 
+import { currentSpeaker } from "@/lib/i18n/currentLocale";
+import type { Speaker } from "@/lib/i18n/i18n";
+import { familyBlurb } from "@/lib/gomoku/familyCopy";
+
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { FamilyShelf } from "@/components/games/FamilyShelf";
 import { GameTrail } from "@/components/games/GameTrail";
@@ -14,8 +18,11 @@ import { familyCountWords } from "@/lib/gomoku/familyWords";
 /** The one family this page is for: Karakuri, whose games are casual and recorded nowhere, so no game's family page can be its address (`familyPagePath`). */
 const KARAKURI = GAME_FAMILIES.find((family) => family.key === CASUAL_FAMILY_KEY);
 
-/** The page's title, for the game page's metadata. */
-export const CASUAL_FAMILY_TITLE = KARAKURI === undefined ? "Karakuri" : `${KARAKURI.title} ${KARAKURI.kanji}`;
+/** The page's title, for the game page's metadata: the family's name and its kanji for a reader of English, the kanji alone for a reader of Japanese. */
+export function casualFamilyTitle(say: Speaker): string {
+  if (KARAKURI === undefined) return "Karakuri";
+  return say.pairsWithKanji ? `${KARAKURI.title} ${KARAKURI.kanji}` : KARAKURI.kanji;
+}
 
 /**
  * KARAKURI, AT /games/karakuri.
@@ -32,17 +39,18 @@ export const CASUAL_FAMILY_TITLE = KARAKURI === undefined ? "Karakuri" : `${KARA
  * header), and that function is against its ceiling (AGENTS.md, Function Size).
  * `families.coverage.test.ts` allows exactly this, by name.
  */
-export function CasualFamilyPage() {
+export async function CasualFamilyPage() {
   if (KARAKURI === undefined) notFound();
+  const say = await currentSpeaker();
   return (
     <Page>
       <SiteHeader />
-      <PageTitle title={KARAKURI.title} kanji={KARAKURI.kanji} lead={KARAKURI.blurb} crumb={<GameTrail game={{ label: KARAKURI.title }} />} />
+      <PageTitle title={KARAKURI.title} kanji={KARAKURI.kanji} lead={familyBlurb(KARAKURI, say.locale)} crumb={<GameTrail game={{ label: KARAKURI.title }} />} />
 
       <div className="flex items-center gap-4" data-testid="karakuri-family">
         <FamilyMark family={KARAKURI.title} size="regular" />
         <p className="text-sm text-muted" data-testid="family-guest-count">
-          {familyCountWords(KARAKURI)}, each played alone for a minute or two a level. Nothing here is rated or scored; the levels you win are kept in this browser.
+          {say.say("casual.familyLine", { count: familyCountWords(KARAKURI, say) })}
         </p>
       </div>
 
@@ -50,7 +58,7 @@ export function CasualFamilyPage() {
 
       <p className="text-sm">
         <Link href="/games" className="underline underline-offset-4" data-testid="family-all-games">
-          Every family, and every game <span className="font-mincho">全種目</span> →
+          {say.say("gamepages.everyFamily")} {say.pairsWithKanji ? <span className="font-mincho">全種目</span> : null} →
         </Link>
       </p>
     </Page>

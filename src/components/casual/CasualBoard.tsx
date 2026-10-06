@@ -3,6 +3,7 @@
 import { mountKarakuri, type KarakuriGame, type StatusEvent } from "@johnmorrisdotca/karakuri/play";
 import { useEffect, useRef, useState } from "react";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { CasualKind } from "@/lib/casual/casual.types";
 import { CASUAL_SPECS } from "@/lib/casual/casual.constants";
 
@@ -52,6 +53,7 @@ export function CasualBoard({
   onStatus?: (event: StatusEvent) => void;
   testId?: string;
 }) {
+  const { locale } = useSpeaker();
   const host = useRef<HTMLDivElement>(null);
   const told = useRef(onStatus);
   const [mounted, setMounted] = useState(false);
@@ -65,6 +67,8 @@ export function CasualBoard({
       game: CASUAL_SPECS[kind].id as KarakuriGame,
       level,
       ui: "board",
+      // The package says its own words (the line about the level and the result) in the reader's language.
+      lang: locale === "ja" ? "ja" : "en",
       room,
       onStatus: (event) => told.current?.(event),
       onChange: (event) => told.current?.(event),
@@ -78,7 +82,7 @@ export function CasualBoard({
       mode.disconnect();
       mount.destroy();
     };
-  }, [kind, level, run]);
+  }, [kind, level, run, locale]);
   return (
     <div
       ref={host}

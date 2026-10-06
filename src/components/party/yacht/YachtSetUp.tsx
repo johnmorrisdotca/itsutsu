@@ -8,7 +8,8 @@ import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/compon
 import { YACHT_DICE, YACHT_FEWEST_ALONE, YACHT_MOST_PLAYERS } from "@/lib/party/yacht/yacht.constants";
 import { startYacht } from "@/lib/party/yacht/yacht";
 import type { YachtGame } from "@/lib/party/yacht/yacht.types";
-import { PARTY_NAME_MOST } from "@/lib/party/partyNames";
+import { PARTY_NAME_MOST, computerNumberName } from "@/lib/party/partyNames";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { freshSeed } from "@/lib/puzzles/random";
 
@@ -99,7 +100,7 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
                     type="text"
                     value={name}
                     maxLength={PARTY_NAME_MOST}
-                    placeholder={computer ? `${YACHT_COPY.computer} ${seat + 1}` : `Player ${seat + 1}`}
+                    placeholder={computer ? computerNumberName(say, seat + 1) : playerNumberName(say, seat + 1)}
                     onChange={(event) => setNames((was) => was.map((one, at) => (at === seat ? event.target.value : one)))}
                     className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
                     data-testid="yacht-name"

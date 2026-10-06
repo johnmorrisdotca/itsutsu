@@ -7,7 +7,9 @@ import { BoardFrame } from "@/components/board/BoardFrame";
 import type { Appearance } from "@/components/board/board.types";
 import { PlayingCard } from "@/components/cards/PlayingCard";
 import { tableTheme } from "@/components/puzzles/KumimojiTable";
-import { cardOfId, cardWords } from "@/lib/cardGames/cards";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cardNamed } from "@/lib/cardGames/cardSay";
+import { cardOfId } from "@/lib/cardGames/cards";
 import type { CardId } from "@/lib/cardGames/cardGames.types";
 
 import { CARD_TABLE_BOARD } from "./cardTable.constants";
@@ -36,6 +38,7 @@ export function CardTableSurface({ appearance, children }: { appearance?: Appear
 
 /** A card lying on the table, face up (a card id) or face down (null), at a place in hundredths of the table's width. */
 export function LaidCard({ card, left, top, width = CARD_TABLE_BOARD.card, turn = 0, testId }: { card: CardId | null; left: number; top: number; width?: number; turn?: number; testId?: string }) {
+  const say = useSpeaker();
   return (
     <span
       className="absolute block"
@@ -43,7 +46,7 @@ export function LaidCard({ card, left, top, width = CARD_TABLE_BOARD.card, turn 
       data-testid={testId}
       data-laid={card ?? "back"}
       role="img"
-      aria-label={card === null ? "a face-down card" : cardWords(card)}
+      aria-label={card === null ? say.say("pcard.pile.faceDown") : cardNamed(card, say)}
     >
       <PlayingCard card={card === null ? undefined : cardOfId(card)} faceUp={card !== null} />
     </span>

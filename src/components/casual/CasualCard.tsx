@@ -49,7 +49,7 @@ function CasualCard({ kind, going, won, next }: { kind: CasualKind; going: numbe
         </span>
         <span className="text-xs text-muted">
           {CASUAL_COPY.wonOf(won, spec.levels, story)}
-          {going === null ? "" : ` · ${CASUAL_COPY.levelWord(story)} ${going} ${CASUAL_COPY.going.toLowerCase()}`}
+          {going === null ? "" : ` · ${say.say("casual.cardGoing", { word: CASUAL_COPY.levelWord(story), level: String(going), going: CASUAL_COPY.going.toLowerCase() })}`}
         </span>
       </div>
       <Link href={casualPlayPath(kind, level)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="casual-card-continue">

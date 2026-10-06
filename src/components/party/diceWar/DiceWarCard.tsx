@@ -32,8 +32,8 @@ export function DiceWarCard() {
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{DICE_WAR_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · Round {game.round}
-          {waitsOnPerson(game) ? ` · ${game.players.length} players` : ` · ${diceWarSeatName(game.players, game.computers, game.rollers[0] ?? 0)} to roll`}
+          <GameName variant={variant} /> · {say.say("party.diceWar.cardRound", { round: String(game.round) })}
+          {waitsOnPerson(game) ? ` · ${say.count("count.player", game.players.length)}` : ` · ${say.say("party.diceWar.toRoll", { name: diceWarSeatName(game.players, game.computers, game.rollers[0] ?? 0, say) })}`}
         </span>
       </div>
       <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">

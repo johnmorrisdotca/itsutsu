@@ -299,7 +299,7 @@ export const PARTY_COPY_JA_GAMES = {
     ],
     rules: [
       [
-        "2〜8人で、108枚のデッキから、1人7枚（パーティーモードは5枚）を配ります。デッキは、4色それぞれに、0が1枚、1から9までの数字が2枚ずつ、スキップ、リバース、ドロー2が2枚ずつ、それに、ワイルドが4枚、ワイルドドロー4が4枚です。最初にめくった数字札が、場の最初の札になります。",
+        "2〜8人で、108枚のデッキから、1人7枚（パーティーモードは5枚）を配ります。デッキは、4色それぞれに、0が1枚、1から9までの数字が2枚ずつ、スキップ、リバース、ドロー2が2枚ずつ、それに、ワイルドが4枚、ワイルドドローフォーが4枚です。最初にめくった数字札が、場の最初の札になります。",
         "Two to eight people, seven cards each (five in party mode) from a deck of 108: in each of four colours one zero, two of every number from one to nine, and two each of Skip, Reverse and Draw Two, plus four Wilds and four Wild Draw Fours. The first number card turned up starts the pile.",
       ],
       [
@@ -311,7 +311,7 @@ export const PARTY_COPY_JA_GAMES = {
         "Skip: the next person misses their turn. Reverse: the order turns the other way round (with two, it acts as a skip). Draw Two: the next person draws two cards and misses their turn.",
       ],
       [
-        "ワイルド：好きな色を宣言します。ワイルドドロー4：色を宣言し、次の人は4枚引いて番を飛ばされますが、チャレンジもできます。出した人が、それを出した時点の場の色の札を持っていたなら、出した人が代わりに4枚引きます。持っていなければ、チャレンジした人が6枚引きます。",
+        "ワイルド：好きな色を宣言します。ワイルドドローフォー：色を宣言し、次の人は4枚引いて番を飛ばされますが、チャレンジもできます。出した人が、それを出した時点の場の色の札を持っていたなら、出した人が代わりに4枚引きます。持っていなければ、チャレンジした人が6枚引きます。",
         "Wild: call any colour. Wild Draw Four: call a colour, and the next person draws four and misses their turn, but may challenge it. If the person who played it held a card of the colour that was on top when they played it, they draw the four instead. If they did not, the challenger draws six.",
       ],
       [

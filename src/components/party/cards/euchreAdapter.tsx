@@ -1,6 +1,7 @@
 "use client";
 
-import { cardWords, suitWords } from "@/lib/cardGames/cards";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { cardNamed, suitNamed } from "@/lib/cardGames/cardSay";
 import type { CardSuit } from "@/lib/cardGames/cardGames.types";
 import { dealerOf, partnerOf, teamOf } from "@/lib/cardGames/euchre/euchre";
 import { EUCHRE_RULES } from "@/lib/cardGames/euchre/euchreRules";
@@ -18,14 +19,15 @@ const SUIT_SIGNS: Record<CardSuit, string> = { S: "♠", H: "♥", D: "♦", C: 
  * made them.
  */
 function EuchreCentre({ game, viewer, players }: CardCentreProps<EuchreGame>) {
+  const say = useSpeaker();
   if (game.phase === "order" || game.phase === "call") {
     return (
       <>
         <LaidCard card={game.phase === "order" ? game.upcard : null} left={43.5} top={8} testId="cards-upcard" />
         <TableWords left={15} top={30} width={70} testId="cards-making">
           {game.phase === "order"
-            ? `${players[dealerOf(game.deal)]} deals. Order up the ${cardWords(game.upcard)}, or pass?`
-            : `The ${cardWords(game.upcard)} was turned down: name another suit, or pass.`}
+            ? say.say("ctable.euchre.orderUpQuestion", { name: players[dealerOf(game.deal)], card: cardNamed(game.upcard, say) })
+            : say.say("ctable.euchre.turnedDown", { card: cardNamed(game.upcard, say) })}
         </TableWords>
       </>
     );
@@ -39,12 +41,12 @@ function EuchreCentre({ game, viewer, players }: CardCentreProps<EuchreGame>) {
       ))}
       {taken === null ? null : (
         <TableWords left={30} top={22} width={40} testId="cards-trick-taken">
-          {players[taken]} took the trick
+          {say.say("ctable.tookTrick", { name: players[taken] })}
         </TableWords>
       )}
       {game.trump === null || game.maker === null ? null : (
         <TableWords left={1} top={1} width={42} testId="cards-trumps">
-          {SUIT_SIGNS[game.trump]} {suitWords(game.trump)}, made by {players[game.maker]}
+          {SUIT_SIGNS[game.trump]} {say.say("ctable.euchre.trumpsBy", { suit: suitNamed(game.trump, say), name: players[game.maker] })}
         </TableWords>
       )}
     </>
@@ -57,26 +59,27 @@ export const EUCHRE_ADAPTER: CardAdapter<EuchreGame, EuchreMove> = {
   rules: EUCHRE_RULES,
   hand: (game, seat) => game.hands[seat] ?? [],
   chooses: () => 1,
-  actions: (game, chosen) => {
+  actions: (game, chosen, _target, _name, say) => {
     const dealer = dealerOf(game.deal);
     if (game.phase === "order") {
-      const up = game.toPlay === dealer ? `Pick up the ${cardWords(game.upcard)}` : `Order up the ${cardWords(game.upcard)}`;
+      const card = cardNamed(game.upcard, say);
+      const up = say.say(game.toPlay === dealer ? "ctable.euchre.pickUp" : "ctable.euchre.orderUp", { card });
       return [
         { label: up, move: { order: true }, testId: "cards-order" },
-        { label: "Pass", move: { pass: true }, testId: "cards-pass" },
+        { label: say.say("ctable.pass"), move: { pass: true }, testId: "cards-pass" },
       ];
     }
     if (game.phase === "call") {
-      const calls = EUCHRE_RULES.moves(game).flatMap((move): CardAction<EuchreMove>[] => ("call" in move ? [{ label: `${SUIT_SIGNS[move.call]} Call ${suitWords(move.call)}`, move, testId: `cards-call-${move.call}` }] : []));
-      return game.toPlay === dealer ? calls : [...calls, { label: "Pass", move: { pass: true }, testId: "cards-pass" }];
+      const calls = EUCHRE_RULES.moves(game).flatMap((move): CardAction<EuchreMove>[] => ("call" in move ? [{ label: say.say("ctable.euchre.call", { sign: SUIT_SIGNS[move.call], suit: suitNamed(move.call, say) }), move, testId: `cards-call-${move.call}` }] : []));
+      return game.toPlay === dealer ? calls : [...calls, { label: say.say("ctable.pass"), move: { pass: true }, testId: "cards-pass" }];
     }
     const card = chosen.length === 1 ? chosen[0] : null;
     if (game.phase === "discard") {
-      return [{ label: "Throw away", move: card === null ? null : { discard: card }, testId: "cards-discard-card", strong: true, why: "You picked up the turned card: choose one card to throw away." }];
+      return [{ label: say.say("ctable.euchre.throw"), move: card === null ? null : { discard: card }, testId: "cards-discard-card", strong: true, why: say.say("ctable.euchre.throwWhy") }];
     }
     const move: EuchreMove | null = card === null ? null : { play: card };
     const ok = move !== null && EUCHRE_RULES.play(game, move) !== null;
-    return [{ label: "Play", move: ok ? move : null, testId: "cards-play", strong: true, why: card === null ? "Choose a card to play." : "Follow the suit led if you can: the left bower counts as a trump." }];
+    return [{ label: say.say("ctable.play"), move: ok ? move : null, testId: "cards-play", strong: true, why: card === null ? say.say("ctable.chooseCard") : say.say("ctable.euchre.cannotPlay") }];
   },
   quick: (game, card) => {
     if (game.phase === "discard") return { discard: card };
@@ -86,23 +89,24 @@ export const EUCHRE_ADAPTER: CardAdapter<EuchreGame, EuchreMove> = {
   },
   // The turned card the dealer has just picked up, marked until one is thrown away.
   arrived: (game, seat) => (game.phase === "discard" && seat === dealerOf(game.deal) ? [game.upcard] : []),
-  status: (game, name) => {
+  status: (game, name, say) => {
     if (game.toPlay === null) return "";
-    const who = `${name(game.toPlay)}, partnered with ${name(partnerOf(game.toPlay))}`;
-    if (game.phase === "order") return `${who}: order up the ${cardWords(game.upcard)} as trumps, or pass.`;
-    if (game.phase === "call") return game.toPlay === dealerOf(game.deal) ? `${name(game.toPlay)} deals, and must name trumps.` : `${who}: name trumps, or pass.`;
-    if (game.phase === "discard") return `${name(game.toPlay)} picked up the ${cardWords(game.upcard)}: throw one card away.`;
-    return `${name(game.toPlay)} ${game.trick.length === 0 ? "to lead" : "to play"}.`;
+    const who = say.say("ctable.euchre.who", { name: name(game.toPlay), partner: name(partnerOf(game.toPlay)) });
+    if (game.phase === "order") return say.say("ctable.euchre.orderStatus", { who, card: cardNamed(game.upcard, say) });
+    if (game.phase === "call") return game.toPlay === dealerOf(game.deal) ? say.say("ctable.euchre.mustName", { name: name(game.toPlay) }) : say.say("ctable.euchre.nameTrumps", { who });
+    if (game.phase === "discard") return say.say("ctable.euchre.pickedUp", { name: name(game.toPlay), card: cardNamed(game.upcard, say) });
+    return say.say(game.trick.length === 0 ? "ctable.toLead" : "ctable.toPlay", { name: name(game.toPlay) });
   },
-  standing: (game, seat) => {
+  standing: (game, seat, say) => {
     const team = teamOf(seat);
     const together = game.tricks[team] + game.tricks[team + 2];
     const making = game.maker !== null && teamOf(game.maker) === team;
+    const vars = { took: String(game.tricks[seat]), together: String(together) };
     return {
       score: String(game.scores[team]),
-      note: game.phase === "playing" ? `took ${game.tricks[seat]}; the pair ${together}${making ? ", making trumps" : ""}` : seat === dealerOf(game.deal) && game.phase !== "over" ? "deals" : undefined,
+      note: game.phase === "playing" ? say.say(making ? "ctable.euchre.noteMaking" : "ctable.euchre.note", vars) : seat === dealerOf(game.deal) && game.phase !== "over" ? say.say("ctable.dealerNote") : undefined,
     };
   },
-  scoreWords: "Partnership points, across the table",
+  scoreWords: (say) => say.say("ctable.euchre.scoreWords"),
   Centre: EuchreCentre,
 };

@@ -116,7 +116,7 @@ export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps)
                   // One person among computers is "you"; several people at the device are each named.
                   you: lonePerson,
                   next: { label: `${PARTY_COPY.again} →`, onPress: () => keep(trainAgain(game, freshSeed())) },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -180,7 +180,7 @@ export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps)
         </div>
         <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
         {game.phase === TRAIN_PHASES.finished ? (
-          <TableWallpaper game="mexicanTrain" result={resultLine(game.players.map((_, seat) => seatedName(game, seat, say)), game.winners)} />
+          <TableWallpaper game="mexicanTrain" result={resultLine(game.players.map((_, seat) => seatedName(game, seat, say)), game.winners, false, say)} />
         ) : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

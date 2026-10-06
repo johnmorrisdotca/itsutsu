@@ -1,6 +1,6 @@
 "use client";
 
-import { GAME_ENDING_COPY } from "@/components/play/gameEnding.constants";
+import { gameEndingCopy } from "@/components/play/gameEnding.constants";
 import { resignedBy, resignWinners } from "@/lib/party/resign";
 import { TableEnding } from "@/components/play/GameEnding";
 import { resignDiceWar } from "@/lib/party/resignTables";
@@ -21,6 +21,7 @@ import { DICE_WAR_RULES } from "@/lib/party/diceWar/diceWarRules";
 // Everybody rolls at once, so there is no one player to move: the first person still to roll resigns.
 import { diceWarPeopleToRoll } from "@johnmorrisdotca/korokoro";
 import { throwDiceWar, waitsOnPerson } from "@/lib/party/diceWar/diceWarThrow";
+import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { diceWarEnding, diceWarNext, diceWarRoundLine, diceWarSaid } from "@/lib/party/diceWar/diceWarWords";
 import { freshSeed } from "@/lib/puzzles/random";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -42,6 +43,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  */
 export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep: (game: DiceWarGame | null) => void; gameHref: string }) {
   const say = useSpeaker();
+  const GAME_ENDING_COPY = gameEndingCopy(say);
   const DICE_WAR_COPY = diceWarScreenWords(say.locale);
   const hydrated = useHydrated();
   const sound = useDiceSound();
@@ -50,8 +52,8 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
 
   const over = game.phase === "over";
   const moment = useWinMoment(over ? "ended" : "playing");
-  const names = game.players.map((_, seat) => diceWarSeatName(game.players, game.computers, seat));
-  const name = (seat: number) => names[seat] ?? `Player ${seat + 1}`;
+  const names = game.players.map((_, seat) => diceWarSeatName(game.players, game.computers, seat, say));
+  const name = (seat: number) => names[seat] ?? playerNumberName(say, seat + 1);
   const resigned = resignedBy(game);
   const winners = resigned !== null ? resignWinners(game.players.length, resigned) : over ? diceWarWinners(game) : [];
   const people = game.computers.map((computer, seat) => (computer ? -1 : seat)).filter((seat) => seat >= 0);
@@ -68,7 +70,7 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
     const fresh = DICE_WAR_RULES.startWith({ players: game.players, computers: game.computers, dice: game.dice, sides: game.sides, goal: game.goal, to: game.to, seed: String(freshSeed()) });
     if (fresh !== null) keep(fresh);
   };
-  const said = diceWarSaid(game, name);
+  const said = diceWarSaid(game, name, say);
   const next = canRoll ? DICE_WAR_COPY.yourTurn : over ? "" : DICE_WAR_COPY.thinking;
 
   return (
@@ -85,14 +87,14 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
         <div className="flex min-h-[4.5rem] flex-col gap-0.5" aria-live="polite">
           <p className="text-base font-semibold" data-testid="dicewar-status">
             {over ? <ResultMark kind={winners.length === 0 ? RESULT_MARKS.other : RESULT_MARKS.success} className="mr-1.5" /> : null}
-            {over ? `${DICE_WAR_COPY.over}: ${resigned !== null ? GAME_ENDING_COPY.resignedResult(name(resigned), winners.map(name)) : diceWarEnding(game, winners, name)}` : diceWarRoundLine(game)}
+            {over ? `${DICE_WAR_COPY.over}: ${resigned !== null ? GAME_ENDING_COPY.resignedResult(name(resigned), winners.map(name)) : diceWarEnding(game, winners, name, say)}` : diceWarRoundLine(game, say)}
             {!over && game.wars > 0 ? <span className="ml-2 text-shu" data-testid="dicewar-stake">{DICE_WAR_COPY.war}: {DICE_WAR_COPY.stake(game.stake)}</span> : null}
           </p>
           <p className="text-sm text-muted" data-testid="dicewar-said">
             {said}
           </p>
           <p className="text-sm" data-testid="dicewar-next">
-            {over ? "" : diceWarNext(game, name)} {next}
+            {over ? "" : diceWarNext(game, name, say)} {next}
           </p>
         </div>
         {/* Above the rows, not under them: with eight players the rows run past a phone's window, and the press is the one thing a turn asks. */}
@@ -117,9 +119,9 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
                   winners,
                   // One person among computers is "you"; several people round the device are each named.
                   you: people.length === 1 ? people[0] : null,
-                  detail: diceWarEnding(game, winners, name),
+                  detail: diceWarEnding(game, winners, name, say),
                   next: { label: `${DICE_WAR_COPY.again} →`, onPress: again },
-                })
+                }, say)
               : null
           }
           onClose={moment.close}
@@ -144,7 +146,7 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
         />
       </div>
       <p className="text-xs text-muted">{DICE_WAR_COPY.kept}</p>
-      {over ? <TableWallpaper game="diceWar" result={resultLine(names, winners)} /> : null}
+      {over ? <TableWallpaper game="diceWar" result={resultLine(names, winners, false, say)} /> : null}
       <p className="text-sm">
         <Link href={gameHref} className="underline underline-offset-4">
           {DICE_WAR_COPY.about} →

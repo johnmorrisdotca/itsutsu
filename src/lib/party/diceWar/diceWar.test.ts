@@ -7,6 +7,10 @@ import { DICE_WAR_DEFAULTS, DICE_WAR_DICE, DICE_WAR_LIMITS_HERE, DICE_WAR_POINT_
 import { DICE_WAR_RULES } from "./diceWarRules";
 import { lastThrow, throwDiceWar, waitsOnPerson } from "./diceWarThrow";
 import { diceWarEnding, diceWarNext, diceWarRoundLine, diceWarSaid, namesInLine } from "./diceWarWords";
+import { speaker } from "@/lib/i18n/i18n";
+
+/** The English speaker: these tests read the English words. */
+const EN = speaker("en");
 
 /**
  * DICE WAR (diceWar), as the site seats it: the rules are Korokoro's, so what is
@@ -46,9 +50,9 @@ describe("diceWar: the tables the site offers", () => {
   });
 
   it("names a seat as typed, or Computer 2 / Player 1 when nothing was typed", () => {
-    expect(diceWarSeatName(["Ann", "", " "], [false, true, false], 0)).toBe("Ann");
-    expect(diceWarSeatName(["Ann", "", " "], [false, true, false], 1)).toBe("Computer 2");
-    expect(diceWarSeatName(["Ann", "", " "], [false, true, false], 2)).toBe("Player 3");
+    expect(diceWarSeatName(["Ann", "", " "], [false, true, false], 0, EN)).toBe("Ann");
+    expect(diceWarSeatName(["Ann", "", " "], [false, true, false], 1, EN)).toBe("Computer 2");
+    expect(diceWarSeatName(["Ann", "", " "], [false, true, false], 2, EN)).toBe("Player 3");
   });
 });
 
@@ -91,42 +95,42 @@ describe("diceWar: a tie for the highest is war, and the stake grows", () => {
     expect(game.rollers).toEqual([0, 1]);
     expect(diceWarPeopleToRoll(game)).toEqual([0, 1]);
     expect([game.wars, game.stake, game.scores]).toEqual([1, 2, [0, 0, 0]]);
-    expect(diceWarSaid(game, name)).toBe("Ann and Ben tied with 4: war!");
-    expect(diceWarNext(game, name)).toBe("Ann and Ben roll again, with 2 points at stake.");
+    expect(diceWarSaid(game, name, EN)).toBe("Ann and Ben tied with 4: war!");
+    expect(diceWarNext(game, name, EN)).toBe("Ann and Ben roll again, with 2 points at stake.");
     // Another tie raises it again.
     game = playDiceWar(game, { faces: { "0": [3], "1": [3] } })!;
     expect([game.wars, game.stake]).toEqual([2, 3]);
     game = playDiceWar(game, { faces: { "0": [2], "1": [6] } })!;
     expect(game.scores).toEqual([0, 3, 0]);
     expect([game.round, game.wars, game.stake, game.rollers]).toEqual([2, 0, 1, [0, 1, 2]]);
-    expect(diceWarSaid(game, name)).toBe("Ben won the war with 6 and takes 3 points.");
+    expect(diceWarSaid(game, name, EN)).toBe("Ben won the war with 6 and takes 3 points.");
     // Dice that are not this table's, or from a person who is not to roll, are refused.
     expect(playDiceWar(game, { faces: { "0": [7], "1": [1], "2": [1] } })).toBeNull();
   });
 
   it("scores one point for an outright win, and the first to the score wins", () => {
     let game = DICE_WAR_RULES.startWith({ players: ["Ann", "Ben"], to: 3 })!;
-    expect(diceWarRoundLine(game)).toBe("Round 1, first to 3 points");
+    expect(diceWarRoundLine(game, EN)).toBe("Round 1, first to 3 points");
     for (let round = 0; round < 3; round += 1) game = playDiceWar(game, { faces: { "0": [6], "1": [1] } })!;
     expect(diceWarOver(game)).toBe(true);
     expect(diceWarWinners(game)).toEqual([0]);
-    expect(diceWarEnding(game, [0], name)).toBe("Ann reached 3 points.");
+    expect(diceWarEnding(game, [0], name, EN)).toBe("Ann reached 3 points.");
     expect(DICE_WAR_RULES.moves(game)).toEqual([]);
   });
 
   it("played for rounds, ends when they are up, the most points winning and level players sharing", () => {
     let game = DICE_WAR_RULES.startWith({ players: ["Ann", "Ben"], goal: "rounds", to: 2 })!;
-    expect(diceWarRoundLine(game)).toBe("Round 1 of 2");
+    expect(diceWarRoundLine(game, EN)).toBe("Round 1 of 2");
     game = playDiceWar(game, { faces: { "0": [6], "1": [1] } })!;
     game = playDiceWar(game, { faces: { "0": [1], "1": [6] } })!;
     expect(diceWarOver(game)).toBe(true);
     expect(diceWarWinners(game)).toEqual([0, 1]);
-    expect(diceWarEnding(game, [0, 1], name)).toBe("Ann and Ben share the most points after 2 rounds.");
+    expect(diceWarEnding(game, [0, 1], name, EN)).toBe("Ann and Ben share the most points after 2 rounds.");
   });
 
   it("lists names in a line", () => {
-    expect(namesInLine(["Ann"])).toBe("Ann");
-    expect(namesInLine(["Ann", "Ben"])).toBe("Ann and Ben");
-    expect(namesInLine(["Ann", "Ben", "Cy"])).toBe("Ann, Ben and Cy");
+    expect(namesInLine(["Ann"], EN)).toBe("Ann");
+    expect(namesInLine(["Ann", "Ben"], EN)).toBe("Ann and Ben");
+    expect(namesInLine(["Ann", "Ben", "Cy"], EN)).toBe("Ann, Ben and Cy");
   });
 });
