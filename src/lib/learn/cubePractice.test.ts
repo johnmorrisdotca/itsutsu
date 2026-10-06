@@ -1,7 +1,9 @@
 import { solveSteps, turnAll } from "@johnmorrisdotca/kyuubu";
 import { describe, expect, it } from "vitest";
 
-import { CUBE_STAGE_WORDS, CUBE_STAGES_BY_SIZE } from "./cubeMethod";
+import { speaker } from "@/lib/i18n/i18n";
+
+import { cubeStageWords, CUBE_STAGES_BY_SIZE } from "./cubeMethod";
 import { practiceCube, stageDone, stageRest } from "./cubePractice";
 
 /**
@@ -40,6 +42,9 @@ describe("a cube to practise a step on", () => {
   });
 
   it("says every stage in words", () => {
-    for (const stage of new Set([...CUBE_STAGES_BY_SIZE[2], ...CUBE_STAGES_BY_SIZE[3]])) expect(CUBE_STAGE_WORDS[stage].title.length).toBeGreaterThan(0);
+    for (const locale of ["en", "ja"] as const) {
+      const words = cubeStageWords(speaker(locale));
+      for (const stage of new Set([...CUBE_STAGES_BY_SIZE[2], ...CUBE_STAGES_BY_SIZE[3]])) expect(words[stage].title.length).toBeGreaterThan(0);
+    }
   });
 });

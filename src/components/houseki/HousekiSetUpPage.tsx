@@ -35,11 +35,13 @@ export async function HousekiSetUpPage({ kind }: { kind: HousekiKind }) {
         crumb={<GameTrail game={{ label: copy.label, href: gamePath(kind), testId: "set-up-up" }} steps={[{ label: say.say("pset.crumb.setUp") }]} />}
         lead={
           <>
-            {copy.tagline}{" "}
+            {/* The gap and the stop are the language's own: a space and "." in English, nothing and "。" in Japanese. */}
+            {copy.tagline}
+            {say.sentences(["", ""])}
             <Link href={rulesPath(kind)} className="underline underline-offset-4">
               {say.say("gamepages.howToPlay")}
             </Link>
-            .
+            {say.sentence("")}
           </>
         }
       />

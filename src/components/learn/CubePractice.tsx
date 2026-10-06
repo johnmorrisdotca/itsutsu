@@ -9,7 +9,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { CubeBoard } from "@/components/puzzles/CubeBoard";
 import { CubeReplayPanel } from "@/components/puzzles/CubeReplayPanel";
 import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
-import { CUBE_ALGORITHM_NAMES, CUBE_GUIDE_COPY } from "@/lib/learn/cubeMethod";
+import { cubeAlgorithmNames, cubeGuideCopy } from "@/lib/learn/cubeMethod";
 import { LESSON_SPEEDS, lessonGap, lessonOf, lessonState, lessonTurnsTo, type CubeLesson, type LessonSpeed } from "@/lib/learn/cubeLesson";
 import { practiceCube, stageDone, stageRest, type TaughtSize } from "@/lib/learn/cubePractice";
 
@@ -67,6 +67,8 @@ function useLookRound(box: RefObject<HTMLDivElement | null>): boolean {
  */
 export function CubePractice({ n, stage, speed, onSpeed }: { n: TaughtSize; stage: SolveStage; speed: LessonSpeed; onSpeed: (speed: LessonSpeed) => void }) {
   const say = useSpeaker();
+  const CUBE_GUIDE_COPY = cubeGuideCopy(say);
+  const CUBE_ALGORITHM_NAMES = cubeAlgorithmNames(say);
   const [seed, setSeed] = useState(1);
   const start = useMemo(() => practiceCube(n, stage, seed), [n, stage, seed]);
   const [moves, setMoves] = useState<CubeMove[]>([]);

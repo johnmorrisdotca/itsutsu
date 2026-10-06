@@ -251,9 +251,9 @@ test.describe("the replay's other conditions", () => {
     await expect(practice).toHaveAttribute("data-lesson-at", "1");
     await expect(practice.getByTestId("cube-step-back")).toContainText("戻る");
     await expect(practice.getByTestId("cube-step-on")).toContainText("進む");
-    await expect(practice.getByTestId("cube-step-speed-slow")).toHaveText("遅め");
+    await expect(practice.getByTestId("cube-step-speed-slow")).toHaveText("ゆっくり");
     await expect(practice.getByTestId("cube-replay-at")).toContainText("手");
     await expect(practice.getByTestId("cube-replay-says")).toContainText(/[面層]/);
-    await expect(practice.getByTestId("cube-practice-said")).toContainText("回転を1手ずつ見ます");
+    await expect(practice.getByTestId("cube-practice-said")).toContainText("回転を1手ずつ見ていきます");
   });
 });

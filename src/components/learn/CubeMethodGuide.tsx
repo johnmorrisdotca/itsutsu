@@ -3,10 +3,11 @@
 import { useState } from "react";
 import type { SolveStage } from "@johnmorrisdotca/kyuubu";
 
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { SectionHeading } from "@/components/layout/Headings";
 import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import type { LessonSpeed } from "@/lib/learn/cubeLesson";
-import { CUBE_GUIDE_COPY, CUBE_STAGE_WORDS, CUBE_STAGES_BY_SIZE } from "@/lib/learn/cubeMethod";
+import { cubeGuideCopy, cubeStageWords, CUBE_STAGES_BY_SIZE } from "@/lib/learn/cubeMethod";
 import type { TaughtSize } from "@/lib/learn/cubePractice";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -21,6 +22,9 @@ import { CubePractice } from "./CubePractice";
  */
 export function CubeMethodGuide() {
   const hydrated = useHydrated();
+  const say = useSpeaker();
+  const CUBE_GUIDE_COPY = cubeGuideCopy(say);
+  const CUBE_STAGE_WORDS = cubeStageWords(say);
   const [n, setN] = useState<TaughtSize>(3);
   const [practising, setPractising] = useState<SolveStage | null>(null);
   // How fast a step is played, kept from one step to the next: somebody who chose slow wants slow on the next.
