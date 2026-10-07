@@ -999,16 +999,18 @@ trusting if the numbers matter to a decision.
 
 The production database is Neon project `calm-boat-93104880` ("itsutsu"),
 Postgres 18 in `aws-us-east-2`. Its `main` branch is **not protected**, and its
-history retention is `86400` seconds — **twenty-four hours**. What there is to
-recover from:
+history retention is **six hours** since the org moved to Neon's Free plan on
+2026-10-07 (it was twenty-four on Launch). What there is to recover from:
 
-- **Point-in-time recovery: yes, but only for a day.** Neon can restore or
-  branch from any moment in the last 24 hours. A mistake noticed on Wednesday
-  about Tuesday's migration is past the window.
+- **Point-in-time recovery: yes, but only for six hours.** Neon can restore or
+  branch from any moment in the last six hours. A mistake noticed the next
+  morning is past the window, which is why the branch and the dump below come
+  first.
 - **A few `before-*` branches, and only a few.** A branch taken before a change
-  outlives the window, and it is not free past a point: the org is on Neon's
-  Launch plan, which includes 10 branches a project and bills each one beyond
-  that at $1.50 a branch-month, prorated by the hour. Twenty had piled up; on
+  outlives the window. The Free plan allows 10 branches a project and bills
+  nothing; on Launch each one past ten cost $1.50 a branch-month. The Free plan
+  also pauses a project that uses its 100 compute-hours in a month, so nothing
+  may wake the database on a timer (John's global "Money watch"). Twenty had piled up; on
   2026-09-15 they were pruned to `main` and three `before-*`, and about three is
   the number to keep. John: "we will almost never need backups... store them on
   DiskStation server... so just keep a few going?"
