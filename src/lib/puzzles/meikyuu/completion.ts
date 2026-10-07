@@ -1,5 +1,5 @@
 import { meikyuuLevelCount } from "./levelCounts";
-import { MEIKYUU_SOLID_KINDS, MEIKYUU_SOLID_STEPS, meikyuuSolidSize } from "./sizes";
+import { MEIKYUU_SOLID_STEPS, meikyuuSolidSize, type MeikyuuSolidKind } from "./sizes";
 
 /**
  * HOW FAR A PLAYER HAS COME THROUGH A SIZE, which is what Meikyuu offers in place of locks. John, 2026-10-02: "are any
@@ -43,11 +43,11 @@ export function completesSize(size: number, level: number, ...sources: readonly 
 }
 
 /**
- * The progress of each SOLID, its three sizes together: a row for the cube, the sphere, the octahedron and the icosahedron, "12 of 192", on a front door that
- * would otherwise need twelve rows. The row's `size` is the solid's small size, which names the solid (`progressName`).
+ * The progress of each SOLID, its five sizes together: a row for each solid asked for, "12 of 320", on a front door that would otherwise need ninety rows. The row's `size` is the solid's small
+ * size, which names the solid (`progressName`).
  */
-export function solidProgressOf(...sources: readonly (SolvedLevels | null | undefined)[]): SizeProgress[] {
-  return MEIKYUU_SOLID_KINDS.map((kind) => {
+export function solidProgressOf(kinds: readonly MeikyuuSolidKind[], ...sources: readonly (SolvedLevels | null | undefined)[]): SizeProgress[] {
+  return kinds.map((kind) => {
     const sizes = MEIKYUU_SOLID_STEPS.map((step) => meikyuuSolidSize(kind, step));
     const count = sizes.reduce((total, size) => total + meikyuuLevelCount(size), 0);
     const solved = sizes.reduce((total, size) => total + solvedIn(size, ...sources), 0);

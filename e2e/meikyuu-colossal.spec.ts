@@ -121,7 +121,7 @@ test.describe("the Colossal shape on the set-up", () => {
       await page.goto(AT);
       await expect(page.getByTestId("meikyuu-levels-line")).toContainText("128 in each of two colossal ones");
       const rows = page.getByTestId("meikyuu-front-progress").getByTestId("meikyuu-progress-row");
-      await expect(rows).toHaveCount(4 + 6 + 2 + 4);
+      await expect(rows).toHaveCount(4 + 6 + 2 + 18);
       await expect(page.getByTestId("meikyuu-front-progress").locator('[data-testid="meikyuu-progress-row"][data-size="5"]')).toContainText("0 of 128");
       await expect(page.getByTestId("meikyuu-front-progress").locator('[data-testid="meikyuu-progress-row"][data-size="6496"]')).toContainText("64×96");
       await page.goto(`${AT}/new?size=64x96`);

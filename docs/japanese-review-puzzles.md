@@ -4,7 +4,7 @@ Generated from `src/lib/i18n/dictionaries/puzzles.ja.*` by `src/lib/i18n/puzzleC
 
 Each row is one Japanese line, what it literally says in English, and who has read it. A puzzle's name is its kanji beside the English one, and the names of levels, sizes and chips that sit beside a kanji are shown as the kanji to a Japanese reader, so neither is repeated here. A line with a number or a name in it has `{0}`, `{1}` where the figure goes, in the order the screen gives them; a line that reads differently at 0, at 1 or at a kind is shown once for each, with the figure it is for in braces.
 
-766 lines, 699 distinct. 0 read by a person, 766 by the reviewer agent, 0 drafted and unread.
+862 lines, 794 distinct. 0 read by a person, 862 by the reviewer agent, 0 drafted and unread.
 
 ## Open for a person
 
@@ -225,7 +225,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | puzzle suido: rules[9] | 水が、その形が求めるところに届き、どこからも漏れなくなった瞬間に完成です。どのレベルも盤も、答えはちょうど1つで、時計は最初の1回転で動き出します。 | It is solved the moment the water reaches what its kind asks and nothing runs out. Every level and every board has exactly one answer, and the clock starts on your first turn. | Agent 2026-10-06, native read wanted |
 | puzzle suido: rules[10] | レベルの横にある「盤を作る」は、選んだサイズとレベルで新しい盤を作ります。そこで選ぶと、ヒントは、ポンプにいちばん近い駒から、答えの向きに1つ回し、ヒント1回分の点がかかります。レベルにヒントも時計の制限もありません。 | Make a board, beside the levels, makes a new one at a size and a level you choose, and Hint, if chosen there, turns one piece to face the way the answer has it, starting nearest the pump, and costs a hint. A level has no hint and no clock. | Agent 2026-10-06, native read wanted |
 | puzzle suido: board | 7×7が普段の大きさです。5×5は手早く、9×9は長め、12×12は夜長向きです。スマートフォンでは、10×10以上の盤は拡大され、盤の下の「全体」と矢印で動かします。巨大な20×20、28×28、20×50は、つまむ、ドラッグする、3つのボタンで、拡大して動かします。サイズは16種類で、5×5から14×14、巨大な20×20と28×28、そして縦長の5×7、6×10、8×14、20×50です。「排水口」は予備の駒が残るので、見るべきところが絞れます。「網」はすべての駒を使うので、無視できる駒がありません。「大きな駒」は4マスぶんで、「ブロック回転」は、4つの駒が輪で囲まれて、いっしょに回ります。どちらも網になります。 | 7×7 is the usual size. 5×5 is quick, 9×9 is longer, and 12×12 is an evening; on a phone a board of 10×10 or more zooms, with Fit and the arrows under the board, and the huge 20×20, 28×28 and 20×50 zoom and move by a pinch, a drag and three buttons. There are 16 sizes, 5×5 to 14×14, the huge 20×20 and 28×28, and four long boards taller than they are wide, 5×7, 6×10, 8×14 and 20×50. Drains leaves spare pieces to see past; network uses every piece, so it has no spares to ignore. Big pieces fill four squares, and block turns ring four pieces that turn together; both make a network. | Agent 2026-10-06, native read wanted |
-| puzzle meikyuu: tagline | 指かマウスで、迷路にスタートからゴールまで線を引きます。3,584問のレベルがあり、四角、六角形、三角形、円、それを切り抜いた形があります。スマートフォンを縦に持つための縦長、約1万マスの巨大なもの、立方体、球などの立体の上の迷路もあり、立体は回して線をたどります。 | Draw a line through a maze from the start to the goal, with your finger or the mouse. 3,584 levels, in squares, hexagons, triangles, circles and shapes cut out of them, tall ones for a phone held upright, colossal ones of about ten thousand cells, and mazes over a cube, a sphere and other solids that you turn to follow your line. | Agent 2026-10-06 |
+| puzzle meikyuu: tagline | 指かマウスで、迷路にスタートからゴールまで線を引きます。8,576問のレベルがあり、四角、六角形、三角形、円、それを切り抜いた形があります。スマートフォンを縦に持つための縦長、約1万マスの巨大なもの、立方体、球などの立体の上の迷路もあり、立体は回して線をたどります。 | Draw a line through a maze from the start to the goal, with your finger or the mouse. 8,576 levels, in squares, hexagons, triangles, circles and shapes cut out of them, tall ones for a phone held upright, colossal ones of about ten thousand cells, and mazes over a cube, a sphere and other solids that you turn to follow your line. | Agent 2026-10-06 |
 | puzzle meikyuu: inspiredBy | スタートからゴールまで、鉛筆で線を引いて通り抜ける迷路 | the maze drawn through with a pencil, from its start to its goal | Agent 2026-10-06 |
 | puzzle meikyuu: origin | 線を引いて通り抜ける迷路は、紙の上のパズルでもっとも古いもののひとつです。迷宮は、ラビリンスを表す日本語です。迷は迷うこと、宮は宮殿で、迷わせる宮殿という意味です。日本のゲームでは、プレイヤーが降りていく場所のことばとしてよく使われます。ここの迷路は、迷路づくりのアルゴリズムでよく知られる7つの方法で作っています。Jamis Buckの解説とWalter Pullenの「Think Labyrinth」にある方法です。数マスから数千マスまであり、レベルは短い作り方の記述で、誰にとっても同じ迷路ができます。 | A maze to draw a way through is among the oldest puzzles on paper. 迷宮 (meikyū) is Japanese for labyrinth: 迷 is to get lost and 宮 a palace, so a bewildering palace, and it is the word Japanese games use for the place a player goes down into. The mazes here are made by seven well-known methods, the ones described in Jamis Buck's writing on maze algorithms and Walter Pullen's Think Labyrinth, from a few cells to thousands, and each level is a short recipe that makes the same maze for everybody. | Agent 2026-10-06 |
 | puzzle meikyuu: rules[0] | スタートからゴールまで線を引きます。どの迷路も、抜け道はちょうど1つなので、答えもちょうど1つです。 | Draw a line from the start to the goal. Every maze has exactly one way through, so there is exactly one answer. | Agent 2026-10-06 |
@@ -233,11 +233,11 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | puzzle meikyuu: rules[2] | レベルの遊び方は4通りあります。外壁の1つの出入口から入って、別の出入口から出る。迷路の中のマスから、奥深くに隠れた点まで行く。形の真ん中から、出入口を通って出る。中から出発して、途中の鍵をすべて拾って、出入口へ向かう。鍵は、分かれ道の先にあり、道からそれたところにあるので、1つ拾うたびに回り道になります。戻っても、拾った鍵は、そのままです。 | A level is played one of four ways: in at one door in the outer wall and out at another; from a cell inside to a dot hidden deep in the maze; from the middle of the shape out through a door; or from inside, picking up every key on the way to a door. A key is at the end of a branch, off the way, so each one costs a detour, and stays picked up when you draw back. | Agent 2026-10-06 |
 | puzzle meikyuu: rules[3] | 大きな迷路は、盤を通して見ます。ホイール、つまむ操作、「＋」と「－」のボタンで拡大縮小し、2本の指か、線以外の場所のドラッグで、見る場所を動かします。「全体」で、迷路全体に戻ります。引いている線が端に近づくと、いっしょに見る場所が動きます。 | A big maze is looked at through the board. Zoom with the wheel, a pinch, or the + and − buttons, and move the view with two fingers or by dragging anywhere but the line. Fit brings the whole maze back, and near the edge a line you are drawing moves the view with it. | Agent 2026-10-06 |
 | puzzle meikyuu: rules[4] | 「元に戻す」は直前の1本を戻し、「やり直す」は線を全部消します。キーボードも使えます。矢印キーで線が進み、Backspaceで戻ります。 | Undo takes back your last stroke and Restart clears the line. The keyboard works too: the arrow keys step the line, and Backspace undoes. | Agent 2026-10-06 |
-| puzzle meikyuu: rules[5] | 立体の上では、迷路は立方体、球、八面体、二十面体の表面全体にあり、一度に見えるのは片側だけです。ふだんどおりに線を引き、線の端以外の場所を、ドラッグするか、2本の指か、矢印ボタンで、立体を回します。「こちらを向く」は、線の端が自分のほうを向くよう回します。見えている面の端に線が届くと、立体が自分で回るので、指を離さずに面をまたいで線が引けます。「回すだけ」は、ドラッグがすべて立体を回すだけになります。 | Over a solid, the maze is on the whole surface of a cube, a sphere, an octahedron or an icosahedron, and you see one side of it at a time. Draw as you would, and turn the solid by dragging anywhere that is not the end of your line, with two fingers, with the arrow buttons, or with Face me, which brings the end of your line round to face you. When your line reaches the edge of the side you can see, the solid turns by itself, so the line can cross from one face to the next without letting go. Turn only makes every drag turn the solid. | Agent 2026-10-06 |
+| puzzle meikyuu: rules[5] | 立体の上では、迷路は立方体、球、さまざまな面の数のサイコロ、ハートや星、十字、輪などの形の表面全体にあり、一度に見えるのは片側だけです。ふだんどおりに線を引き、線の端以外の場所を、ドラッグするか、2本の指か、矢印ボタンで、立体を回します。「こちらを向く」は、線の端が自分のほうを向くよう回します。見えている面の端に線が届くと、立体が自分で回るので、指を離さずに面をまたいで線が引けます。「回すだけ」は、ドラッグがすべて立体を回すだけになります。 | Over a solid, the maze is on the whole surface of a cube, a sphere, a die of any number of sides or a shape such as a heart, a star, a cross or a ring, and you see one side of it at a time. Draw as you would, and turn the solid by dragging anywhere that is not the end of your line, with two fingers, with the arrow buttons, or with Face me, which brings the end of your line round to face you. When your line reaches the edge of the side you can see, the solid turns by itself, so the line can cross from one face to the next without letting go. Turn only makes every drag turn the solid. | Agent 2026-10-06 |
 | puzzle meikyuu: rules[6] | 石：行き止まりの通路は、石でふさげます。「石」を押して線のそばのマスをタップするか、指をそこに押し続けるか、Shiftを押しながら線の端で矢印キーを押します。石を置けるのは、線から通路に沿って最大2マスまでで、同時に置ける数にも上限があります。線は石の中に入れません。石をタップすると取り上げます。石は自分のための補助で、答えには入りません。 | Stone: when a passage is a dead end, you can shut it with a stone. Press Stone and tap a cell beside your line, or hold a finger on it, or hold Shift and press an arrow key at the end of your line. A stone goes at most two cells along the passages from your line, only so many at once, and the line cannot enter it. Tap a stone to take it up. A stone is only a help for you and is never part of your answer. | Agent 2026-10-06 |
-| puzzle meikyuu: rules[7] | 決まったレベル：3,584問あり、全員が同じです。4つのサイズが各256問、6つの縦長のサイズが各256問、2つの巨大なサイズが各128問、4つの立体の3つのサイズが各64問です。どのサイズも、前より易しいレベルがないよう、やさしい順から難しい順に並んでいます。レベルにはヒントも時計の制限もないので、誰とでもタイムを比べられます。 | Fixed levels: 3,584 of them, the same for everybody: 256 in each of four sizes, 256 in each of six tall ones, and 128 in each of two colossal ones, and 64 in each of three sizes of four solids, each size ordered from easy to hard so that no level is easier than the one before. A level has no hint and no clock, so a time on it is one anybody can be compared with. | Agent 2026-10-06 |
+| puzzle meikyuu: rules[7] | 決まったレベル：8,576問あり、全員が同じです。4つのサイズが各256問、6つの縦長のサイズが各256問、2つの巨大なサイズが各128問、18の立体の5つのサイズが各64問です。どのサイズも、前より易しいレベルがないよう、やさしい順から難しい順に並んでいます。レベルにはヒントも時計の制限もないので、誰とでもタイムを比べられます。 | Fixed levels: 8,576 of them, the same for everybody: 256 in each of four sizes, 256 in each of six tall ones, and 128 in each of two colossal ones, and 64 in each of five sizes of eighteen solids, each size ordered from easy to hard so that no level is easier than the one before. A level has no hint and no clock, so a time on it is one anybody can be compared with. | Agent 2026-10-06 |
 | puzzle meikyuu: rules[8] | 時計は最初の1本で動き出し、鍵をすべて拾って線がゴールに届いた瞬間に、そのレベルは完成です。 | The clock starts with your first stroke, and the level is solved the moment the line reaches the goal, with every key picked up. | Agent 2026-10-06 |
-| puzzle meikyuu: board | 小さな迷路は150マス未満で、手早く遊べます。中くらいは800マス未満、大きいは4000マス未満、巨大なものは数千マスで、拡大して遊ぶためのものです。サイズごとに、やさしいレベルから難しいレベルまで並び、四角、六角形、三角形、円のほか、ハート、葉、星、輪、ひし形、十字、月の形も出てきます。縦長は、スマートフォンを縦に持つためのもので、横2列に縦3行の比で、6×9から20×30のマスの6つのサイズがあり、画面が広いときは、自動で横に倒れます。超巨大なものは、いちばん大きく、約1万マスで、四角い箱と縦長の箱があります。時間がかかるので、拡大と、いくつかの石が役に立ちます。立体は、立方体、球、八面体、二十面体で、それぞれ約100マスの小、約300マスの中、約650マスの大があります。 | Small mazes have under 150 cells and are the quick ones; medium ones under 800; large under 4,000; and huge ones run to thousands of cells and are meant to be zoomed. Within a size the levels run from easy to hard, and every shape turns up: squares, hexagons, triangles and circles, and a heart, a leaf, a star, a ring, a diamond, a cross and a moon. The tall ones are for a phone held upright, two columns to three rows, in six sizes from 6×9 to 20×30 cells, and turn on their side by themselves on a wide screen. The colossal ones are the biggest there are, about ten thousand cells, in a square box and a tall one: they take a while, and want zooming and a few stones. The solids are the cube, the sphere, the octahedron and the icosahedron, each in a small size of about a hundred cells, a medium one of about three hundred and a large one of about six hundred and fifty. | Agent 2026-10-06 |
+| puzzle meikyuu: board | 小さな迷路は150マス未満で、手早く遊べます。中くらいは800マス未満、大きいは4000マス未満、巨大なものは数千マスで、拡大して遊ぶためのものです。サイズごとに、やさしいレベルから難しいレベルまで並び、四角、六角形、三角形、円のほか、ハート、葉、星、輪、ひし形、十字、月の形も出てきます。縦長は、スマートフォンを縦に持つためのもので、横2列に縦3行の比で、6×9から20×30のマスの6つのサイズがあり、画面が広いときは、自動で横に倒れます。超巨大なものは、いちばん大きく、約1万マスで、四角い箱と縦長の箱があります。時間がかかるので、拡大と、いくつかの石が役に立ちます。立体は18あり、立方体、球、4面から30面までのサイコロ、そして箱、十字、輪、星、ハート、トーラスです。どれも5つのサイズがあり、200マス未満の小から数千マスの超巨大まであって、超巨大なものは拡大して遊びます。 | Small mazes have under 150 cells and are the quick ones; medium ones under 800; large under 4,000; and huge ones run to thousands of cells and are meant to be zoomed. Within a size the levels run from easy to hard, and every shape turns up: squares, hexagons, triangles and circles, and a heart, a leaf, a star, a ring, a diamond, a cross and a moon. The tall ones are for a phone held upright, two columns to three rows, in six sizes from 6×9 to 20×30 cells, and turn on their side by themselves on a wide screen. The colossal ones are the biggest there are, about ten thousand cells, in a square box and a tall one: they take a while, and want zooming and a few stones. There are eighteen solids: the cube, the sphere, the dice from the four-sided to the thirty-sided, and the box, the cross, the ring, the star, the heart and the torus. Each comes in five sizes, from a small one of under two hundred cells to a colossal one of thousands, and the colossal ones want zooming. | Agent 2026-10-06 |
 | puzzle tobiishi: tagline | 駒を、となりの駒を飛び越えて空いた穴へ跳ばし、跳ばした駒を取ります。最後に1つの駒が、ゴールの穴に残れば完成です。9つの盤に、81の名前つきのレベルがあります。 | Jump pegs over each other into empty holes, taking each one you jump, until one peg is left in the goal. 81 named levels on nine boards. | Agent 2026-10-06 |
 | puzzle tobiishi: inspiredBy | ペグソリティア | peg solitaire | Agent 2026-10-06 |
 | puzzle tobiishi: origin | ペグソリティアは、何百年も遊ばれてきた1人用のパズルです。1600年代後半のフランスの王女の肖像画には、その盤がそばに描かれています。33の穴の英国式の十字と、37の穴のフランス式の盤が、いまもいちばんよく売られています。飛び石は、庭の流れに置かれた石のことで、このサイトでつけた名前です。駒が、次の駒を飛び越えて盤を渡る動きと同じです。ここのレベルは、このサイトのパッケージから出した短いもので、どれもゴールから逆向きに作ってあるので、必ず解けます。 | Peg solitaire is a puzzle for one that has been played for centuries: a portrait of a French princess from the late 1600s shows the board beside her, and the English cross of 33 holes and the French board of 37 are still the ones most often sold. 飛び石 (tobiishi) is Japanese for stepping stones, the stones laid across a garden stream, and a name of our own for it: a peg crosses the board the same way, over one to the next. The levels here are short ones from a package of ours, each made backward from its goal so that it always has a way through. | Agent 2026-10-06 |
@@ -385,7 +385,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | card sizes: meikyuu.word{1}; Meikyuu screen: step.small.label | 小 | Small | Agent 2026-10-06 |
 | card sizes: meikyuu.word{3}; Meikyuu screen: step.large.label | 大 | Large | Agent 2026-10-06 |
 | card sizes: meikyuu.word{4} | 巨大 | Huge | Agent 2026-10-06 |
-| card sizes: meikyuu.word{5}; Meikyuu screen: shapeCopy.colossal.label | 超巨大 | Colossal | Agent 2026-10-06 |
+| card sizes: meikyuu.word{5}; Meikyuu screen: step.colossal.label; Meikyuu screen: shapeCopy.colossal.label | 超巨大 | Colossal | Agent 2026-10-06 |
 | card sizes: meikyuu.word{609} | 縦長 6×9 | Tall 6×9 | Agent 2026-10-06 |
 | card sizes: meikyuu.word{812} | 縦長 8×12 | Tall 8×12 | Agent 2026-10-06 |
 | card sizes: meikyuu.word{1015} | 縦長 10×15 | Tall 10×15 | Agent 2026-10-06 |
@@ -396,15 +396,93 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | card sizes: meikyuu.word{7001} | 立方体（小サイズ） | Small cube | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7002} | 立方体（中サイズ） | Medium cube | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7003} | 立方体（大サイズ） | Large cube | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7004} | 立方体（巨大サイズ） | Huge cube | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7005} | 立方体（超巨大サイズ） | Colossal cube | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7011} | 球（小サイズ） | Small sphere | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7012} | 球（中サイズ） | Medium sphere | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7013} | 球（大サイズ） | Large sphere | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7014} | 球（巨大サイズ） | Huge sphere | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7015} | 球（超巨大サイズ） | Colossal sphere | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7021} | 八面体（小サイズ） | Small octahedron | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7022} | 八面体（中サイズ） | Medium octahedron | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7023} | 八面体（大サイズ） | Large octahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7024} | 八面体（巨大サイズ） | Huge octahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7025} | 八面体（超巨大サイズ） | Colossal octahedron | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7031} | 二十面体（小サイズ） | Small icosahedron | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7032} | 二十面体（中サイズ） | Medium icosahedron | Agent 2026-10-06 |
 | card sizes: meikyuu.word{7033} | 二十面体（大サイズ） | Large icosahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7034} | 二十面体（巨大サイズ） | Huge icosahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7035} | 二十面体（超巨大サイズ） | Colossal icosahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7041} | 四面体（小サイズ） | Small tetrahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7042} | 四面体（中サイズ） | Medium tetrahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7043} | 四面体（大サイズ） | Large tetrahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7044} | 四面体（巨大サイズ） | Huge tetrahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7045} | 四面体（超巨大サイズ） | Colossal tetrahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7051} | 三角柱（小サイズ） | Small triangular prism | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7052} | 三角柱（中サイズ） | Medium triangular prism | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7053} | 三角柱（大サイズ） | Large triangular prism | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7054} | 三角柱（巨大サイズ） | Huge triangular prism | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7055} | 三角柱（超巨大サイズ） | Colossal triangular prism | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7061} | 五角偏方面体（小サイズ） | Small trapezohedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7062} | 五角偏方面体（中サイズ） | Medium trapezohedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7063} | 五角偏方面体（大サイズ） | Large trapezohedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7064} | 五角偏方面体（巨大サイズ） | Huge trapezohedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7065} | 五角偏方面体（超巨大サイズ） | Colossal trapezohedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7071} | 十二面体（小サイズ） | Small dodecahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7072} | 十二面体（中サイズ） | Medium dodecahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7073} | 十二面体（大サイズ） | Large dodecahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7074} | 十二面体（巨大サイズ） | Huge dodecahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7075} | 十二面体（超巨大サイズ） | Colossal dodecahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7081} | 菱形十二面体（小サイズ） | Small rhombic dodecahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7082} | 菱形十二面体（中サイズ） | Medium rhombic dodecahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7083} | 菱形十二面体（大サイズ） | Large rhombic dodecahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7084} | 菱形十二面体（巨大サイズ） | Huge rhombic dodecahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7085} | 菱形十二面体（超巨大サイズ） | Colossal rhombic dodecahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7091} | 八角両錐（小サイズ） | Small bipyramid | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7092} | 八角両錐（中サイズ） | Medium bipyramid | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7093} | 八角両錐（大サイズ） | Large bipyramid | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7094} | 八角両錐（巨大サイズ） | Huge bipyramid | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7095} | 八角両錐（超巨大サイズ） | Colossal bipyramid | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7101} | 凧形二十四面体（小サイズ） | Small icositetrahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7102} | 凧形二十四面体（中サイズ） | Medium icositetrahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7103} | 凧形二十四面体（大サイズ） | Large icositetrahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7104} | 凧形二十四面体（巨大サイズ） | Huge icositetrahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7105} | 凧形二十四面体（超巨大サイズ） | Colossal icositetrahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7111} | 菱形三十面体（小サイズ） | Small triacontahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7112} | 菱形三十面体（中サイズ） | Medium triacontahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7113} | 菱形三十面体（大サイズ） | Large triacontahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7114} | 菱形三十面体（巨大サイズ） | Huge triacontahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7115} | 菱形三十面体（超巨大サイズ） | Colossal triacontahedron | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7121} | 直方体（小サイズ） | Small box | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7122} | 直方体（中サイズ） | Medium box | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7123} | 直方体（大サイズ） | Large box | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7124} | 直方体（巨大サイズ） | Huge box | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7125} | 直方体（超巨大サイズ） | Colossal box | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7131} | 十字（小サイズ） | Small cross | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7132} | 十字（中サイズ） | Medium cross | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7133} | 十字（大サイズ） | Large cross | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7134} | 十字（巨大サイズ） | Huge cross | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7135} | 十字（超巨大サイズ） | Colossal cross | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7141} | リング（小サイズ） | Small ring | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7142} | リング（中サイズ） | Medium ring | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7143} | リング（大サイズ） | Large ring | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7144} | リング（巨大サイズ） | Huge ring | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7145} | リング（超巨大サイズ） | Colossal ring | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7151} | トーラス（小サイズ） | Small torus | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7152} | トーラス（中サイズ） | Medium torus | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7153} | トーラス（大サイズ） | Large torus | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7154} | トーラス（巨大サイズ） | Huge torus | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7155} | トーラス（超巨大サイズ） | Colossal torus | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7161} | 星（小サイズ） | Small star | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7162} | 星（中サイズ） | Medium star | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7163} | 星（大サイズ） | Large star | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7164} | 星（巨大サイズ） | Huge star | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7165} | 星（超巨大サイズ） | Colossal star | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7171} | ハート（小サイズ） | Small heart | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7172} | ハート（中サイズ） | Medium heart | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7173} | ハート（大サイズ） | Large heart | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7174} | ハート（巨大サイズ） | Huge heart | Agent 2026-10-06 |
+| card sizes: meikyuu.word{7175} | ハート（超巨大サイズ） | Colossal heart | Agent 2026-10-06 |
 | card sizes: solitaire.legend | めくる枚数 | Draw | Agent 2026-10-06 |
 | card sizes: solitaire.heading | めくる枚数 | Draws | Agent 2026-10-06 |
 | card sizes: solitaire.word | {0}枚めくり | draw {0} | Agent 2026-10-06 |
@@ -480,15 +558,32 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | Meikyuu screen: way.centre-out.says | 形の真ん中から、外壁の出入口を通って出ます。 | From the middle of the shape out through a door in the outer wall. | Agent 2026-10-06 |
 | Meikyuu screen: way.keys.label | 鍵 | Keys | Agent 2026-10-06 |
 | Meikyuu screen: way.keys.says | 中から出発して、途中の鍵をすべて拾い、外壁の出入口へ向かいます。鍵は分かれ道の先にあるので、拾うたびに回り道になります。鍵は上を通ると拾え、線を戻っても拾ったままです。 | From inside, picking up every key on the way to a door in the outer wall. A key is at the end of a branch, so each costs a detour. It is picked up by passing over it, and stays picked up when you draw back. | Agent 2026-10-06 |
-| Meikyuu screen: solid.cube.says | 正方形の6つの面が、それぞれ四角いマスに切られ、どの辺でもつながっています。どのマスからも4方向へ進めます。 | Six square faces, each cut into squares, joined across every edge: four ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.cube.says | サイコロの6面（d6）です。正方形の6つの面が、それぞれ四角いマスに切られ、どの辺でもつながっています。どのマスからも4方向へ進めます。 | A d6: six square faces, each cut into squares, joined across every edge: four ways out of every cell. | Agent 2026-10-06 |
 | Meikyuu screen: solid.sphere.says | サッカーボールのように、地球儀が六角形に切られ、角には12個の五角形があります。マスから6方向へ進め、角では5方向です。 | A globe cut into hexagons, like a football, with twelve pentagons for corners: six ways out of a cell, five at a corner. | Agent 2026-10-06 |
-| Meikyuu screen: solid.octahedron.says | 8つの三角形の面が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。 | Eight triangular faces, each cut into small triangles: three ways out of every cell. | Agent 2026-10-06 |
-| Meikyuu screen: solid.icosahedron.says | 20の三角形の面が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。 | Twenty triangular faces, each cut into small triangles: three ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.octahedron.says | サイコロの8面（d8）です。8つの三角形の面が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。 | A d8: eight triangular faces, each cut into small triangles: three ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.icosahedron.says | サイコロの20面（d20）です。20の三角形の面が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。 | A d20: twenty triangular faces, each cut into small triangles: three ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.tetrahedron.says | サイコロの4面（d4）です。4つの三角形の面が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。 | A d4: four triangular faces, each cut into small triangles: three ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.prism.says | サイコロの3面（d3）で、3つの側面の上を転がる細長いサイコロです。2つの三角形と3つの長い長方形が、四角と三角のマスに切られています。 | A d3, the long die that rolls on its three sides: two triangles and three long rectangles, cut into squares and triangles. | Agent 2026-10-06 |
+| Meikyuu screen: solid.trapezohedron.says | サイコロの10面（d10）です。10枚のたこ形が、それぞれ小さな四角いマスに切られています。どのマスからも4方向へ進めます。 | A d10: ten kites, each cut into small squares: four ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.dodecahedron.says | サイコロの12面（d12）です。12枚の五角形が、それぞれ5つの四角いマスに切られています。どのマスからも4方向へ進めます。 | A d12: twelve pentagons, each cut into five squares: four ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.rhombic-dodecahedron.says | もう1つの12面のサイコロ（d12）です。12枚のひし形が、それぞれ小さな四角いマスに切られています。どのマスからも4方向へ進めます。 | The other d12: twelve diamonds, each cut into small squares: four ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.bipyramid.says | サイコロの16面（d16）です。2つの頂点のまわりの16枚の三角形が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。 | A d16: sixteen triangles round two points, each cut into small triangles: three ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.icositetrahedron.says | サイコロの24面（d24）です。24枚のたこ形が、それぞれ小さな四角いマスに切られています。どのマスからも4方向へ進めます。 | A d24: twenty-four kites, each cut into small squares: four ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.triacontahedron.says | サイコロの30面（d30）です。30枚のひし形が、それぞれ小さな四角いマスに切られています。どのマスからも4方向へ進めます。 | A d30: thirty diamonds, each cut into small squares: four ways out of every cell. | Agent 2026-10-06 |
+| Meikyuu screen: solid.box.says | レンガの形で、縦・横・高さが3・2・1です。6つの面が四角いマスに切られ、どの辺でもつながっています。 | A brick, three by two by one: its six faces cut into squares, joined across every edge. | Agent 2026-10-06 |
+| Meikyuu screen: solid.cross.says | 立体の十字です。立方体7つで、真ん中の立方体の6つの面すべてに立方体が付いています。腕が後ろを隠すことがあるので、隠れたマスのほうへ立体が回ります。 | A plus sign in three dimensions: seven cubes, a cube on every face of the middle one. An arm can hide the part behind it, so the solid turns to a cell it hides. | Agent 2026-10-06 |
+| Meikyuu screen: solid.ring.says | 8つの立方体が四角く並び、真ん中に穴があります。穴から向こう側が見えるので、手前に隠れたマスのほうへ立体が回ります。 | Eight cubes in a square round a hole. The far side shows through the hole, so the solid turns to a cell the near side hides. | Agent 2026-10-06 |
+| Meikyuu screen: solid.torus.says | ドーナツの形です。筒が輪に曲がり、ぐるりと両方向に四角いマスに切られています。穴から向こう側が見えます。 | A doughnut: a tube bent into a ring, cut into squares all the way round both ways. The far side shows through the hole. | Agent 2026-10-06 |
+| Meikyuu screen: solid.star.says | 先を上にした五芒星で、少し厚みがあります。2つの面とそのまわりの縁がひと続きの表面です。線をたどって、裏や縁へ回してください。 | A five-pointed star, tips up, a little thick: its two faces and the rim round them are one surface. Turn it to its back or its rim to follow your line. | Agent 2026-10-06 |
+| Meikyuu screen: solid.heart.says | 上にくぼみのある丸いハートで、小さな三角形のマスに切られています。どのマスからも3方向へ進めます。 | A rounded heart with a cleft at the top, cut into small triangles: three ways out of every cell. | Agent 2026-10-06 |
 | Meikyuu screen: surface.label | 表面を進む | Over the surface | Agent 2026-10-06 |
 | Meikyuu screen: surface.says | 立体の片側のマスから、遠く反対側の点まで、表面全体を通って進みます。立体を回して、自分の線をたどります。見えている面の端に線が届くと、立体が自分で回ります。 | From a cell on one side of the solid to a dot far across it, over the whole surface. Turn the solid to follow your line: it turns by itself when the line reaches the edge of the side you can see. | Agent 2026-10-06 |
 | Meikyuu screen: step.small.says | 約100マス。手早く遊べます。 | About a hundred cells: the quick ones. | Agent 2026-10-06 |
 | Meikyuu screen: step.medium.says | 約300マスです。 | About three hundred cells. | Agent 2026-10-06 |
 | Meikyuu screen: step.large.says | 約650マス。時間がかかり、立体を何度も回す必要があります。 | About six hundred and fifty cells: they take a while, and want the solid turned again and again. | Agent 2026-10-06 |
+| Meikyuu screen: step.huge.label | 特大 | Huge | Agent 2026-10-06 |
+| Meikyuu screen: step.huge.says | 約1300マス。拡大して、立体をたびたび回します。 | About thirteen hundred cells: zoom in, and turn the solid often. | Agent 2026-10-06 |
+| Meikyuu screen: step.colossal.says | 約4000マスで、いちばん難しいサイズです。指の幅のマスになるのは4倍に拡大したときだけなので、拡大して、動かしながら遊びます。 | About four thousand cells, the hardest there are: a cell is a finger wide only when you zoom in four times, so play it zoomed in and move about it. | Agent 2026-10-06 |
 | Meikyuu screen: turn.legend | 立体を回す | Turn the solid | Agent 2026-10-06 |
 | Meikyuu screen: turn.left | 左へ回す | Turn left | Agent 2026-10-06 |
 | Meikyuu screen: turn.right | 右へ回す | Turn right | Agent 2026-10-06 |
@@ -537,12 +632,12 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | Meikyuu screen: shapeCopy.tall.says | 縦長の箱の迷路です。横2列に縦3行で、スマートフォンを縦に持って遊ぶためのものです。広い画面では横に倒れます。 | Mazes in a tall box, two columns to three rows, made to be played on a phone held upright. They lie on their side on a wide screen. | Agent 2026-10-06 |
 | Meikyuu screen: shapeCopy.colossal.says | いちばん大きな迷路で、約1万マスです。四角い箱のものと縦長の箱のものが1つずつあります。拡大して、動かしながら遊びます。 | The biggest mazes there are, about ten thousand cells: one in a square box and one in a tall one. Zoom in, and move about it. | Agent 2026-10-06 |
 | Meikyuu screen: shapeCopy.solid.label | 立体 | 3D | Agent 2026-10-06 |
-| Meikyuu screen: shapeCopy.solid.says | 立体の表面全体にある迷路です。立方体、球、八面体、二十面体があります。立体を回して、線をたどります。 | Mazes over the whole surface of a solid: a cube, a sphere, an octahedron or an icosahedron. Turn it to follow your line round. | Agent 2026-10-06 |
+| Meikyuu screen: shapeCopy.solid.says | 立体の表面全体にある迷路です。サイコロ（3面から30面まで）と、形（球、直方体、十字、リング、トーラス、星、ハート）があります。立体を回して、線をたどります。 | Mazes over the whole surface of a solid: a die (a d3 to a d30) or a shape (a globe, a box, a cross, a ring, a torus, a star or a heart). Turn it to follow your line round. | Agent 2026-10-06 |
 | Meikyuu screen: shapeCopy.stepLegend | 立体のサイズ | Size of the solid | Agent 2026-10-06 |
 | Meikyuu screen: shapeCopy.moreTall | 大きいほうへ、{0}まで → | Bigger, to {0} → | Agent 2026-10-06 |
 | Meikyuu screen: shapeCopy.lessTall | ← 小さいほうへ、{0}から | ← Smaller, from {0} | Agent 2026-10-06 |
 | Meikyuu screen: copy.levelsNote | レベルは1つの迷路で、全員が同じです。どのサイズにも、やさしい順に256問あります（超巨大は各128問、立体は各サイズ64問）。どれでも選べます。「スタート」を押すと、まだ解いていない最初の1問が始まります。レベルにはヒントも時計の制限もないので、誰とでもタイムを比べられます。 | A level is a maze, the same for everybody, and each size has 256 levels in order from easy to hard (128 for each colossal one, 64 for each size of a solid). Pick any of them: Start plays the first one you have not solved. A level has no hint and no clock, so a time on it is one anybody can be compared with. | Agent 2026-10-06 |
-| Meikyuu screen: copy.levelsLine | 4つのサイズ（小、中、大、巨大）と、スマートフォンを縦に持つための6つの縦長のサイズに、各256問のレベルがあり、サイズごとにやさしい順に並びます。約1万マスの超巨大な2つに各128問、回して遊ぶ4つの立体の3つのサイズに各64問あります。 | 256 levels in each of four sizes (small, medium, large, huge) and in each of six tall ones for a phone held upright, each size easy to hard, 128 in each of two colossal ones of about ten thousand cells, and 64 in each of three sizes of four solids to turn. | Agent 2026-10-06 |
+| Meikyuu screen: copy.levelsLine | 4つのサイズ（小、中、大、巨大）と、スマートフォンを縦に持つための6つの縦長のサイズに、各256問のレベルがあり、サイズごとにやさしい順に並びます。約1万マスの超巨大な2つに各128問、回して遊ぶ18の立体の5つのサイズに各64問あります。 | 256 levels in each of four sizes (small, medium, large, huge) and in each of six tall ones for a phone held upright, each size easy to hard, 128 in each of two colossal ones of about ten thousand cells, and 64 in each of five sizes of eighteen solids to turn. | Agent 2026-10-06 |
 | Meikyuu screen: copy.howTo | スタートの点を押して、ドラッグします。線は通路に沿って進み、戻ると短くなります。通路をふさぐには、「石」を押して線のそばのマスをタップするか、そこに指を押し続けます。 | Press the start dot and drag. The line follows the corridors, and drawing back shortens it. To shut a passage, press Stone and tap a cell beside your line, or hold a finger on it. | Agent 2026-10-06 |
 | Meikyuu screen: copy.status{0} | {0}マス引きました。 | {0} cells drawn. | Agent 2026-10-06 |
 | Meikyuu screen: copy.status{other} | {0}マス引きました。鍵は{2}個のうち{1}個を拾いました。 | {0} cells drawn. {1} of {2} keys picked up. | Agent 2026-10-06 |

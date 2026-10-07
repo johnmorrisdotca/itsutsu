@@ -295,6 +295,76 @@ export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Icosahedron",
     review: AGENT_READ,
   },
+  "puzzle.size.tetrahedron": {
+    text: "四面体",
+    back: "Tetrahedron",
+    review: AGENT_READ,
+  },
+  "puzzle.size.prism": {
+    text: "三角柱",
+    back: "Triangular prism",
+    review: AGENT_READ,
+  },
+  "puzzle.size.trapezohedron": {
+    text: "五角偏方面体",
+    back: "Trapezohedron",
+    review: AGENT_READ,
+  },
+  "puzzle.size.dodecahedron": {
+    text: "十二面体",
+    back: "Dodecahedron",
+    review: AGENT_READ,
+  },
+  "puzzle.size.rhombicDodecahedron": {
+    text: "菱形十二面体",
+    back: "Rhombic dodecahedron",
+    review: AGENT_READ,
+  },
+  "puzzle.size.bipyramid": {
+    text: "八角両錐",
+    back: "Bipyramid",
+    review: AGENT_READ,
+  },
+  "puzzle.size.icositetrahedron": {
+    text: "凧形二十四面体",
+    back: "Icositetrahedron",
+    review: AGENT_READ,
+  },
+  "puzzle.size.triacontahedron": {
+    text: "菱形三十面体",
+    back: "Triacontahedron",
+    review: AGENT_READ,
+  },
+  "puzzle.size.box": {
+    text: "直方体",
+    back: "Box",
+    review: AGENT_READ,
+  },
+  "puzzle.size.cross": {
+    text: "十字",
+    back: "Cross",
+    review: AGENT_READ,
+  },
+  "puzzle.size.ring": {
+    text: "リング",
+    back: "Ring",
+    review: AGENT_READ,
+  },
+  "puzzle.size.torus": {
+    text: "トーラス",
+    back: "Torus",
+    review: AGENT_READ,
+  },
+  "puzzle.size.star": {
+    text: "星",
+    back: "Star",
+    review: AGENT_READ,
+  },
+  "puzzle.size.heart": {
+    text: "ハート",
+    back: "Heart",
+    review: AGENT_READ,
+  },
   "puzzle.size.solid": {
     text: "{solid}（{step}サイズ）",
     back: "{step} {solid}",

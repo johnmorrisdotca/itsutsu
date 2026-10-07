@@ -34,7 +34,7 @@ export const PHRASES_BOARDLOOK = {
   "boardlook.gridCellsHint": "Every game inside the squares, as on a chessboard — gomoku included.",
   // A board's size, said for a screen reader
   "boardlook.sizeBy": "{width} by {height} board",
-  "boardlook.solidStep": "{name}, size {step} of 3",
+  "boardlook.solidStep": "{name}, size {step} of 5",
   // Opening one board on its own
   "boardlook.focusThis": "this board",
   "boardlook.focusDialog": "{board}, on its own",

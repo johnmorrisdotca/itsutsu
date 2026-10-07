@@ -15,6 +15,8 @@ import {
   PUZZLE_PRICING,
   SIZE_SERIES,
 } from "./ladder.constants";
+import { solidCellsOf } from "@johnmorrisdotca/meikyuu/3d";
+import { MEIKYUU_SOLID_KINDS, MEIKYUU_SOLID_STEPS, meikyuuSolidSize } from "@/lib/puzzles/meikyuu/sizes";
 import { tobiishiBand } from "@/lib/puzzles/tobiishi/sizes";
 import { bestSolvesSql } from "./ladderSql";
 import { Prisma } from "@prisma/client";
@@ -267,3 +269,40 @@ describe("the ladder in SQL", () => {
     expect(query.sql).toContain("('kumimoji', 0, 'hard', 25,");
   });
 });
+
+describe("Meikyuu's solids are priced by their cells", () => {
+  /* The rung a solid's size takes is where its cells come on a log scale through the flat sizes' typical cells (the geometric mean of each size's levels: 56 cells is 55, 367 is 95, 1,765 is 120, 6,606 is 150, 10,674 is 160), to the nearest five. */
+  const ANCHORS: readonly (readonly [number, number])[] = [[56, 55], [367, 95], [1765, 120], [6606, 150], [10674, 160]];
+  const rungOf = (cells: number): number => {
+    if (cells <= ANCHORS[0]![0]) return ANCHORS[0]![1];
+    if (cells >= ANCHORS[ANCHORS.length - 1]![0]) return ANCHORS[ANCHORS.length - 1]![1];
+    for (let at = 0; at + 1 < ANCHORS.length; at += 1) {
+      const [from, low] = ANCHORS[at]!;
+      const [to, high] = ANCHORS[at + 1]!;
+      if (cells >= from && cells <= to) return toFive(low + ((high - low) * Math.log(cells / from)) / Math.log(to / from));
+    }
+    throw new Error("no rung");
+  };
+
+  it("gives each of the eighteen solids' five sizes the rung its own cells come to, and every solid a series of its own", () => {
+    const pricing = PUZZLE_PRICING.meikyuu;
+    if (pricing.how !== "ranked") throw new Error("Meikyuu is ranked");
+    for (const kind of MEIKYUU_SOLID_KINDS) {
+      for (const step of MEIKYUU_SOLID_STEPS) {
+        const size = meikyuuSolidSize(kind, step);
+        expect(pricing.rungs[size], `${kind} ${step} (${size}, ${solidCellsOf(kind, step)} cells)`).toBe(rungOf(solidCellsOf(kind, step)));
+      }
+    }
+    const series = SIZE_SERIES.meikyuu!;
+    for (const kind of MEIKYUU_SOLID_KINDS) expect(series.some((each) => each.join() === MEIKYUU_SOLID_STEPS.map((step) => meikyuuSolidSize(kind, step)).join()), kind).toBe(true);
+  });
+
+  it("tops the colossal solids at 135 to 145, so the hardest level of one is 195 or under, the family's ceiling being 200", () => {
+    for (const kind of MEIKYUU_SOLID_KINDS) {
+      const size = meikyuuSolidSize(kind, "colossal");
+      expect(price("meikyuu", size, "easy", 1), kind).toBeGreaterThanOrEqual(135);
+      expect(price("meikyuu", size, "hard", 64), kind).toBeLessThanOrEqual(200);
+    }
+  });
+});
+

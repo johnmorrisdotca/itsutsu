@@ -198,8 +198,27 @@ export const PUZZLE_LEVEL_BLURBS_JA = {
 } as const satisfies Partial<Record<PuzzleKind, Partial<Record<PuzzleLevel, JaLine>>>>;
 
 const TOBIISHI_LENGTHS: Readonly<Record<number, string>> = { 3: "短", 6: "中", 9: "長" };
-const SOLID_NAMES: Readonly<Record<string, string>> = { cube: "立方体", sphere: "球", octahedron: "八面体", icosahedron: "二十面体" };
-const SOLID_STEPS: Readonly<Record<string, string>> = { small: "小", medium: "中", large: "大" };
+const SOLID_NAMES: Readonly<Record<string, string>> = {
+  cube: "立方体",
+  sphere: "球",
+  octahedron: "八面体",
+  icosahedron: "二十面体",
+  tetrahedron: "四面体",
+  prism: "三角柱",
+  trapezohedron: "五角偏方面体",
+  dodecahedron: "十二面体",
+  "rhombic-dodecahedron": "菱形十二面体",
+  bipyramid: "八角両錐",
+  icositetrahedron: "凧形二十四面体",
+  triacontahedron: "菱形三十面体",
+  box: "直方体",
+  cross: "十字",
+  ring: "リング",
+  torus: "トーラス",
+  star: "星",
+  heart: "ハート",
+};
+const SOLID_STEPS: Readonly<Record<string, string>> = { small: "小", medium: "中", large: "大", huge: "巨大", colossal: "超巨大" };
 const MAZE_SIZES: Readonly<Record<number, string>> = { 1: "小", 2: "中", 3: "大", 4: "巨大" };
 
 /** A maze's size as a Japanese sentence names it: the kanji its tile carries, or the solid and its step. */

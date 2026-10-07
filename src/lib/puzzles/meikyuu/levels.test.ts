@@ -4,7 +4,8 @@ import { COLOSSAL_TALL_HEIGHT, COLOSSAL_TALL_WIDTH, MEIKYUU_COLOSSAL_LEVELS, MEI
 import { MEIKYUU_TALL_LEVELS, MEIKYUU_TALL_PER_SIZE, MEIKYUU_TALL_SIZES as PACKAGE_TALL_SIZES, TALL_RATIO } from "@johnmorrisdotca/meikyuu/levels/tall";
 import { solutionOf } from "@johnmorrisdotca/meikyuu";
 import { buildSolidMaze, parseSolidRecipe, solidSolutionOf } from "@johnmorrisdotca/meikyuu/3d";
-import { MEIKYUU_SOLID_PER_LIST, solidLevelsOf } from "@johnmorrisdotca/meikyuu/3d/levels";
+import { MEIKYUU_SOLID_PER_LIST } from "@johnmorrisdotca/meikyuu/3d/levels";
+import { solidRecipesOf } from "@johnmorrisdotca/meikyuu/3d/levels/recipes";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { fixedLevelOf, nextLevelLabel } from "../fixedLevel";
@@ -15,7 +16,7 @@ import { MEIKYUU_COLOSSAL_LEVELS_A_SIZE, MEIKYUU_SOLID_LEVELS_A_SIZE, MEIKYUU_LE
 import { loadEveryMeikyuuLevels, meikyuuLevelOfBoard, meikyuuLevelPuzzle, meikyuuLevelsAt } from "./levels";
 import "./levelsModule";
 import { meikyuuCodeFits, MEIKYUU_MOST_STEPS } from "./progress";
-import { isMeikyuuColossal, isMeikyuuSolid, MEIKYUU_SOLID_KINDS, MEIKYUU_SOLID_SIZES, MEIKYUU_SOLID_STEPS, meikyuuSolidOf, meikyuuSolidSize, meikyuuSolidTiles, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_COLOSSAL_TALL_SIZE, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_SIZE_WORDS, MEIKYUU_TALL_RATIO, MEIKYUU_TALL_SIZES, isMeikyuuSize, isMeikyuuTall, meikyuuSizeFromAddress, meikyuuSizeInAddress, meikyuuSizeInWords, meikyuuSizeLabel, meikyuuSizeOfWord, meikyuuSizeWord, meikyuuTallShape } from "./sizes";
+import { isMeikyuuColossal, isMeikyuuSolid, MEIKYUU_SOLID_KINDS, MEIKYUU_SOLID_DICE, MEIKYUU_SOLID_SHAPES, MEIKYUU_SOLID_SHELVES, MEIKYUU_SOLID_SIDES, MEIKYUU_SOLID_SIZES, MEIKYUU_SOLID_STEPS, meikyuuSolidOf, meikyuuSolidShelfOf, meikyuuSolidSize, meikyuuSolidTiles, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_COLOSSAL_TALL_SIZE, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_SIZE_WORDS, MEIKYUU_TALL_RATIO, MEIKYUU_TALL_SIZES, isMeikyuuSize, isMeikyuuTall, meikyuuSizeFromAddress, meikyuuSizeInAddress, meikyuuSizeInWords, meikyuuSizeLabel, meikyuuSizeOfWord, meikyuuSizeWord, meikyuuTallShape } from "./sizes";
 import { decodeWay, encodeCells, wayOfRun } from "./steps";
 import { encodeWay, mazeOf } from "./way";
 
@@ -266,7 +267,7 @@ describe("meikyuu's tall levels are the package's second list, kept under their 
       expect(meikyuuLevelCount(size)).toBe(256);
       expect(meikyuuLevelsAt(size)).toHaveLength(256);
     }
-    expect(MEIKYUU_EVERY_SIZE).toHaveLength(24);
+    expect(MEIKYUU_EVERY_SIZE).toHaveLength(102);
     // No size is two things: the four are under a hundred and the tall ones are not.
     expect(MEIKYUU_SIZES.some(isMeikyuuTall)).toBe(false);
     expect(isMeikyuuSize(610)).toBe(false);
@@ -416,14 +417,20 @@ describe("meikyuu's colossal levels are the package's third list, two sizes of 1
   });
 });
 
-describe("meikyuu's solids are the package's fourth list: four solids, three sizes each, 64 levels to a size", () => {
-  it("are kept as 7000 and the solid and the step, 7001 being the small cube and 7033 the large icosahedron, and no other size is mistaken for one", () => {
-    expect(MEIKYUU_SOLID_KINDS).toEqual(["cube", "sphere", "octahedron", "icosahedron"]);
-    expect(MEIKYUU_SOLID_STEPS).toEqual(["small", "medium", "large"]);
-    expect(MEIKYUU_SOLID_SIZES).toEqual([7001, 7002, 7003, 7011, 7012, 7013, 7021, 7022, 7023, 7031, 7032, 7033]);
+describe("meikyuu's solids are the package's fourth list: eighteen solids, five sizes each, 64 levels to a size", () => {
+  it("are kept as 7000 and the solid and the step, 7001 being the small cube, 7033 the large icosahedron and 7175 the colossal heart, and no other size is mistaken for one", () => {
+    // The first four solids keep the numbers they had when there were four, so a solve kept then is a solve of the same list; the fourteen after them take the numbers after.
+    expect(MEIKYUU_SOLID_KINDS.slice(0, 4)).toEqual(["cube", "sphere", "octahedron", "icosahedron"]);
+    expect(MEIKYUU_SOLID_KINDS).toHaveLength(18);
+    expect(MEIKYUU_SOLID_STEPS).toEqual(["small", "medium", "large", "huge", "colossal"]);
+    expect(MEIKYUU_SOLID_SIZES).toHaveLength(90);
+    expect(MEIKYUU_SOLID_SIZES.slice(0, 5)).toEqual([7001, 7002, 7003, 7004, 7005]);
+    expect(MEIKYUU_SOLID_SIZES.slice(10, 13)).toEqual([7021, 7022, 7023]);
     expect(meikyuuSolidSize("cube", "small")).toBe(7001);
     expect(meikyuuSolidSize("icosahedron", "large")).toBe(7033);
+    expect(meikyuuSolidSize("heart", "colossal")).toBe(7175);
     expect(meikyuuSolidOf(7012)).toEqual({ kind: "sphere", step: "medium" });
+    expect(meikyuuSolidOf(7175)).toEqual({ kind: "heart", step: "colossal" });
     for (const size of MEIKYUU_EVERY_SIZE.filter((each) => !MEIKYUU_SOLID_SIZES.includes(each))) expect(isMeikyuuSolid(size), String(size)).toBe(false);
     for (const size of MEIKYUU_SOLID_SIZES) {
       expect(isMeikyuuSolid(size)).toBe(true);
@@ -432,11 +439,25 @@ describe("meikyuu's solids are the package's fourth list: four solids, three siz
       expect(isMeikyuuColossal(size)).toBe(false);
     }
     expect(meikyuuSolidOf(7000)).toBeNull();
-    expect(meikyuuSolidOf(7004)).toBeNull();
-    expect(meikyuuSolidOf(7041)).toBeNull();
+    expect(meikyuuSolidOf(7006)).toBeNull();
+    expect(meikyuuSolidOf(7010)).toBeNull();
+    expect(meikyuuSolidOf(7181)).toBeNull();
     expect(meikyuuSolidOf(2030)).toBeNull();
-    expect(meikyuuSolidTiles("medium")).toEqual([7002, 7012, 7022, 7032]);
-    expect(meikyuuSolidTiles("medium")).toBe(meikyuuSolidTiles("medium"));
+  });
+
+  it("are on five shelves of four tiles at most, every solid on one: the dice by their sides, then the shapes", () => {
+    expect(MEIKYUU_SOLID_SHELVES).toHaveLength(5);
+    for (const shelf of MEIKYUU_SOLID_SHELVES) expect(shelf.length).toBeLessThanOrEqual(4);
+    expect(MEIKYUU_SOLID_SHELVES.flat().sort()).toEqual([...MEIKYUU_SOLID_KINDS].sort());
+    expect(MEIKYUU_SOLID_DICE.length + MEIKYUU_SOLID_SHAPES.length).toBe(18);
+    // The dice by how many sides they have, as the package's own list has them.
+    expect(MEIKYUU_SOLID_DICE.map((kind) => MEIKYUU_SOLID_SIDES[kind])).toEqual([3, 4, 6, 8, 10, 12, 12, 16, 20, 24, 30]);
+    expect(MEIKYUU_SOLID_SHAPES.every((kind) => MEIKYUU_SOLID_SIDES[kind] === undefined)).toBe(true);
+    expect(meikyuuSolidTiles("medium", 0)).toEqual([meikyuuSolidSize("prism", "medium"), meikyuuSolidSize("tetrahedron", "medium"), meikyuuSolidSize("cube", "medium"), meikyuuSolidSize("octahedron", "medium")]);
+    expect(meikyuuSolidTiles("medium", 2)).toHaveLength(3);
+    expect(meikyuuSolidTiles("medium", 4)).toEqual([meikyuuSolidSize("torus", "medium"), meikyuuSolidSize("star", "medium"), meikyuuSolidSize("heart", "medium")]);
+    expect(meikyuuSolidTiles("huge", 1)).toBe(meikyuuSolidTiles("huge", 1));
+    for (const kind of MEIKYUU_SOLID_KINDS) expect(MEIKYUU_SOLID_SHELVES[meikyuuSolidShelfOf(kind)]).toContain(kind);
   });
 
   it("have 64 levels a size, the package's, in its order", () => {
@@ -447,7 +468,8 @@ describe("meikyuu's solids are the package's fourth list: four solids, three siz
         expect(meikyuuLevelCount(size)).toBe(64);
         const rows = meikyuuLevelsAt(size);
         expect(rows).toHaveLength(64);
-        solidLevelsOf(kind, step).forEach((level, at) => expect(rows[at], `${kind} ${step} ${at}`).toMatchObject({ code: level.code, number: level.number, score: level.score, cells: level.cells }));
+        // On a server (and in this test) the rows are the package's recipes and say which recipe is which level; a browser has the file of the solid, with the cells and the score.
+        solidRecipesOf(kind, step).forEach((code, at) => expect(rows[at], `${kind} ${step} ${at}`).toMatchObject({ code, number: at + 1 }));
       }
     }
     expect(meikyuuLevelBand(7001, 1)).toBe("easy");
@@ -461,7 +483,9 @@ describe("meikyuu's solids are the package's fourth list: four solids, three siz
     expect(meikyuuSizeInAddress(7002)).toBe("cube-medium");
     expect(meikyuuSizeFromAddress("sphere-large")).toBe(7013);
     expect(meikyuuSizeFromAddress("cone-large")).toBeNull();
-    expect(meikyuuSizeFromAddress("cube-huge")).toBeNull();
+    expect(meikyuuSizeFromAddress("cube-huge")).toBe(7004);
+    expect(meikyuuSizeFromAddress("heart-colossal")).toBe(7175);
+    expect(meikyuuSizeFromAddress("cube-gigantic")).toBeNull();
     for (const size of MEIKYUU_SOLID_SIZES) expect(meikyuuSizeFromAddress(meikyuuSizeInAddress(size))).toBe(size);
     const asked = puzzleAsked("meikyuu", { size: "cube-medium", seed: "12" });
     expect(asked).toMatchObject({ size: 7002, seed: 12, level: meikyuuLevelBand(7002, 12), clock: "none" });
@@ -483,7 +507,8 @@ describe("meikyuu's solids are the package's fourth list: four solids, three siz
         longest = Math.max(longest, puzzle.solution.length);
       });
     }
-    expect(longest).toBeLessThan(400);
+    // The longest way of any solid level (a colossal one of some three thousand steps) is within the room a kept line has.
+    expect(longest).toBeLessThanOrEqual(MEIKYUU_MOST_STEPS);
     // A solid's level is none of another solid's, or of another size of its own.
     const cube = meikyuuLevelPuzzle(7001, 1);
     expect(checkSolution("meikyuu", 7002, cube.givens, cube.solution, cube.level).ok).toBe(false);

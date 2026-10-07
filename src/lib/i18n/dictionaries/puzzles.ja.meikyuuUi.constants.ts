@@ -40,15 +40,29 @@ export const MEIKYUU_WORDS_JA = {
     },
   },
   solid: {
-    cube: { says: ["正方形の6つの面が、それぞれ四角いマスに切られ、どの辺でもつながっています。どのマスからも4方向へ進めます。", "Six square faces, each cut into squares, joined across every edge: four ways out of every cell."] },
+    cube: { says: ["サイコロの6面（d6）です。正方形の6つの面が、それぞれ四角いマスに切られ、どの辺でもつながっています。どのマスからも4方向へ進めます。", "A d6: six square faces, each cut into squares, joined across every edge: four ways out of every cell."] },
     sphere: {
       says: [
         "サッカーボールのように、地球儀が六角形に切られ、角には12個の五角形があります。マスから6方向へ進め、角では5方向です。",
         "A globe cut into hexagons, like a football, with twelve pentagons for corners: six ways out of a cell, five at a corner.",
       ],
     },
-    octahedron: { says: ["8つの三角形の面が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。", "Eight triangular faces, each cut into small triangles: three ways out of every cell."] },
-    icosahedron: { says: ["20の三角形の面が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。", "Twenty triangular faces, each cut into small triangles: three ways out of every cell."] },
+    octahedron: { says: ["サイコロの8面（d8）です。8つの三角形の面が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。", "A d8: eight triangular faces, each cut into small triangles: three ways out of every cell."] },
+    icosahedron: { says: ["サイコロの20面（d20）です。20の三角形の面が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。", "A d20: twenty triangular faces, each cut into small triangles: three ways out of every cell."] },
+    tetrahedron: { says: ["サイコロの4面（d4）です。4つの三角形の面が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。", "A d4: four triangular faces, each cut into small triangles: three ways out of every cell."] },
+    prism: { says: ["サイコロの3面（d3）で、3つの側面の上を転がる細長いサイコロです。2つの三角形と3つの長い長方形が、四角と三角のマスに切られています。", "A d3, the long die that rolls on its three sides: two triangles and three long rectangles, cut into squares and triangles."] },
+    trapezohedron: { says: ["サイコロの10面（d10）です。10枚のたこ形が、それぞれ小さな四角いマスに切られています。どのマスからも4方向へ進めます。", "A d10: ten kites, each cut into small squares: four ways out of every cell."] },
+    dodecahedron: { says: ["サイコロの12面（d12）です。12枚の五角形が、それぞれ5つの四角いマスに切られています。どのマスからも4方向へ進めます。", "A d12: twelve pentagons, each cut into five squares: four ways out of every cell."] },
+    "rhombic-dodecahedron": { says: ["もう1つの12面のサイコロ（d12）です。12枚のひし形が、それぞれ小さな四角いマスに切られています。どのマスからも4方向へ進めます。", "The other d12: twelve diamonds, each cut into small squares: four ways out of every cell."] },
+    bipyramid: { says: ["サイコロの16面（d16）です。2つの頂点のまわりの16枚の三角形が、それぞれ小さな三角形に切られています。どのマスからも3方向へ進めます。", "A d16: sixteen triangles round two points, each cut into small triangles: three ways out of every cell."] },
+    icositetrahedron: { says: ["サイコロの24面（d24）です。24枚のたこ形が、それぞれ小さな四角いマスに切られています。どのマスからも4方向へ進めます。", "A d24: twenty-four kites, each cut into small squares: four ways out of every cell."] },
+    triacontahedron: { says: ["サイコロの30面（d30）です。30枚のひし形が、それぞれ小さな四角いマスに切られています。どのマスからも4方向へ進めます。", "A d30: thirty diamonds, each cut into small squares: four ways out of every cell."] },
+    box: { says: ["レンガの形で、縦・横・高さが3・2・1です。6つの面が四角いマスに切られ、どの辺でもつながっています。", "A brick, three by two by one: its six faces cut into squares, joined across every edge."] },
+    cross: { says: ["立体の十字です。立方体7つで、真ん中の立方体の6つの面すべてに立方体が付いています。腕が後ろを隠すことがあるので、隠れたマスのほうへ立体が回ります。", "A plus sign in three dimensions: seven cubes, a cube on every face of the middle one. An arm can hide the part behind it, so the solid turns to a cell it hides."] },
+    ring: { says: ["8つの立方体が四角く並び、真ん中に穴があります。穴から向こう側が見えるので、手前に隠れたマスのほうへ立体が回ります。", "Eight cubes in a square round a hole. The far side shows through the hole, so the solid turns to a cell the near side hides."] },
+    torus: { says: ["ドーナツの形です。筒が輪に曲がり、ぐるりと両方向に四角いマスに切られています。穴から向こう側が見えます。", "A doughnut: a tube bent into a ring, cut into squares all the way round both ways. The far side shows through the hole."] },
+    star: { says: ["先を上にした五芒星で、少し厚みがあります。2つの面とそのまわりの縁がひと続きの表面です。線をたどって、裏や縁へ回してください。", "A five-pointed star, tips up, a little thick: its two faces and the rim round them are one surface. Turn it to its back or its rim to follow your line."] },
+    heart: { says: ["上にくぼみのある丸いハートで、小さな三角形のマスに切られています。どのマスからも3方向へ進めます。", "A rounded heart with a cleft at the top, cut into small triangles: three ways out of every cell."] },
   },
   surface: {
     label: ["表面を進む", "Over the surface"],
@@ -61,6 +75,8 @@ export const MEIKYUU_WORDS_JA = {
     small: { label: ["小", "Small"], says: ["約100マス。手早く遊べます。", "About a hundred cells: the quick ones."] },
     medium: { label: ["中", "Medium"], says: ["約300マスです。", "About three hundred cells."] },
     large: { label: ["大", "Large"], says: ["約650マス。時間がかかり、立体を何度も回す必要があります。", "About six hundred and fifty cells: they take a while, and want the solid turned again and again."] },
+    huge: { label: ["特大", "Huge"], says: ["約1300マス。拡大して、立体をたびたび回します。", "About thirteen hundred cells: zoom in, and turn the solid often."] },
+    colossal: { label: ["超巨大", "Colossal"], says: ["約4000マスで、いちばん難しいサイズです。指の幅のマスになるのは4倍に拡大したときだけなので、拡大して、動かしながら遊びます。", "About four thousand cells, the hardest there are: a cell is a finger wide only when you zoom in four times, so play it zoomed in and move about it."] },
   },
   turn: {
     legend: ["立体を回す", "Turn the solid"],
@@ -172,7 +188,7 @@ export const MEIKYUU_WORDS_JA = {
     },
     solid: {
       label: ["立体", "3D"],
-      says: ["立体の表面全体にある迷路です。立方体、球、八面体、二十面体があります。立体を回して、線をたどります。", "Mazes over the whole surface of a solid: a cube, a sphere, an octahedron or an icosahedron. Turn it to follow your line round."],
+      says: ["立体の表面全体にある迷路です。サイコロ（3面から30面まで）と、形（球、直方体、十字、リング、トーラス、星、ハート）があります。立体を回して、線をたどります。", "Mazes over the whole surface of a solid: a die (a d3 to a d30) or a shape (a globe, a box, a cross, a ring, a torus, a star or a heart). Turn it to follow your line round."],
     },
     stepLegend: ["立体のサイズ", "Size of the solid"],
     moreTall: ["大きいほうへ、{0}まで →", "Bigger, to {0} →"],
@@ -184,8 +200,8 @@ export const MEIKYUU_WORDS_JA = {
       `A level is a maze, the same for everybody, and each size has ${MEIKYUU_LEVELS_A_SIZE} levels in order from easy to hard (${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} for each colossal one, ${MEIKYUU_SOLID_LEVELS_A_SIZE} for each size of a solid). Pick any of them: Start plays the first one you have not solved. A level has no hint and no clock, so a time on it is one anybody can be compared with.`,
     ],
     levelsLine: [
-      `4つのサイズ（${MEIKYUU_SIZE_WORDS.map((word) => JA_SIZE_WORDS[word] ?? word).join("、")}）と、スマートフォンを縦に持つための6つの縦長のサイズに、各${MEIKYUU_LEVELS_A_SIZE}問のレベルがあり、サイズごとにやさしい順に並びます。約1万マスの超巨大な2つに各${MEIKYUU_COLOSSAL_LEVELS_A_SIZE}問、回して遊ぶ4つの立体の3つのサイズに各${MEIKYUU_SOLID_LEVELS_A_SIZE}問あります。`,
-      `${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (${MEIKYUU_SIZE_WORDS.join(", ")}) and in each of six tall ones for a phone held upright, each size easy to hard, ${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} in each of two colossal ones of about ten thousand cells, and ${MEIKYUU_SOLID_LEVELS_A_SIZE} in each of three sizes of four solids to turn.`,
+      `4つのサイズ（${MEIKYUU_SIZE_WORDS.map((word) => JA_SIZE_WORDS[word] ?? word).join("、")}）と、スマートフォンを縦に持つための6つの縦長のサイズに、各${MEIKYUU_LEVELS_A_SIZE}問のレベルがあり、サイズごとにやさしい順に並びます。約1万マスの超巨大な2つに各${MEIKYUU_COLOSSAL_LEVELS_A_SIZE}問、回して遊ぶ18の立体の5つのサイズに各${MEIKYUU_SOLID_LEVELS_A_SIZE}問あります。`,
+      `${MEIKYUU_LEVELS_A_SIZE} levels in each of four sizes (${MEIKYUU_SIZE_WORDS.join(", ")}) and in each of six tall ones for a phone held upright, each size easy to hard, ${MEIKYUU_COLOSSAL_LEVELS_A_SIZE} in each of two colossal ones of about ten thousand cells, and ${MEIKYUU_SOLID_LEVELS_A_SIZE} in each of five sizes of eighteen solids to turn.`,
     ],
     howTo: [
       "スタートの点を押して、ドラッグします。線は通路に沿って進み、戻ると短くなります。通路をふさぐには、「石」を押して線のそばのマスをタップするか、そこに指を押し続けます。",

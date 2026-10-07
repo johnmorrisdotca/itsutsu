@@ -6,7 +6,7 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 5442. Drafted and unread: 0. Read by the reviewer agent: 5442.
+Phrases: 5463. Drafted and unread: 0. Read by the reviewer agent: 5463.
 Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 116
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
@@ -144,7 +144,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Where the account has an address, the operator writes to it to say why. To ask about it, write to {contact}. | **アカウントにメールアドレスがある場合、運営者はそのアドレスに理由を書いて送ります。問い合わせは{contact}までお願いします。** | If the account has an email address, the operator writes the reason and sends it to that address. For enquiries, please contact {contact}. | Agent 2026-10-06, native read wanted | Legal text (the terms of play): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | What we ask of everybody here, and what the site does in return. | **ここをご利用のすべての方にお願いすることと、サイトがその代わりに行うことです。** | What we ask of everyone who uses this place, and what the site does in return. | Agent 2026-10-06, native read wanted | Legal text (the terms of play): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 
-## 2. Written by a machine — please check these (5071)
+## 2. Written by a machine — please check these (5091)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -1724,7 +1724,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Regular | **標準** | Regular | Agent 2026-10-06 |  |
 | — — — | Regular board size, as the page draws it | **ページ本来の標準の大きさ** | Regular board size, as the page draws it | Agent 2026-10-06 |  |
 | — — — | {width} by {height} board | **{width}×{height}の盤** | {width} by {height} board | Agent 2026-10-06 |  |
-| — — — | {name}, size {step} of 3 | **{name}：3段階中{step}段階目** | {name}: stage {step} of 3 | Agent 2026-10-06 |  |
+| — — — | {name}, size {step} of 5 | **{name}：5段階中{step}段階目** | {name}: stage {step} of 5 | Agent 2026-10-06 |  |
 | — — — | blocked | **ふさがれています** | blocked | Agent 2026-10-06 |  |
 | — — — | empty | **空き** | empty | Agent 2026-10-06 |  |
 | — — — | forbidden | **禁じ手** | forbidden | Agent 2026-10-06 |  |
@@ -4376,10 +4376,17 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Level {level} is locked | **レベル{level}はロック中** | Level {level} is locked | Agent 2026-10-06 |  |
 | — — — | How many cells the maze has: the more there are, the more there is to look at, and the bigger ones are zoomed. | **迷路のマスの数です。多いほど見るところが増え、大きい迷路は拡大して遊びます。** | How many cells the maze has: the more there are, the more there is to look at, and the bigger ones are zoomed. | Agent 2026-10-06 |  |
 | — — — | A little maze in these colours | **この色の小さな迷路** | A little maze in these colours | Agent 2026-10-06 |  |
+| — — — | More solids: {to} → | **ほかの立体：{to} →** | More solids: {to} → | Agent 2026-10-06 |  |
 | — — — | {says} This one scores {score}. | **{says}このレベルは{score}点です。** | {says} This one scores {score}. | Agent 2026-10-06 |  |
 | — — — | Colossal, about ten thousand cells: a square box, then a tall one | **超巨大：約1万マス。四角い箱のあと、縦長の箱** | Colossal: about ten thousand cells; a square box, then a tall box | Agent 2026-10-06 |  |
-| — — — | Over a solid: all three sizes of each together | **立体の上：どの立体も、3つのサイズをまとめて** | Over a solid: each solid's three sizes together | Agent 2026-10-06 |  |
+| — — — | Over a shape: all five sizes of each together | **形の上：どの形も、5つのサイズをまとめて** | Over a shape: each shape's five sizes together | Agent 2026-10-06 |  |
+| — — — | Over a die: all five sizes of each together | **サイコロの上：どのサイコロも、5つのサイズをまとめて** | Over a die: each die's five sizes together | Agent 2026-10-06 |  |
 | — — — | Tall, for a phone held upright | **縦長：スマートフォンを縦に持って遊ぶ** | Tall: played with a phone held upright | Agent 2026-10-06 |  |
+| — — — | torus, star, heart | **トーラス、星、ハート** | torus, star, heart | Agent 2026-10-06 |  |
+| — — — | globe, box, cross, ring | **球、直方体、十字、リング** | globe, box, cross, ring | Agent 2026-10-06 |  |
+| — — — | d3 to d8 | **3面から8面まで** | d3 to d8 | Agent 2026-10-06 |  |
+| — — — | d20 to d30 | **20面から30面まで** | d20 to d30 | Agent 2026-10-06 |  |
+| — — — | d10 to d16 | **10面から16面まで** | d10 to d16 | Agent 2026-10-06 |  |
 | — — — | of {count} | **全{count}レベル** | of {count} levels in all | Agent 2026-10-06 |  |
 | — — — | Kind of board | **盤の種類** | Kind of board | Agent 2026-10-06 |  |
 | — — — | Size | **サイズ** | Size | Agent 2026-10-06 |  |
@@ -4828,21 +4835,34 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Sizes | **サイズ** | Sizes | Agent 2026-10-06 |  |
 | — — — | {count} tiles in hand | **手札{count}枚** | {count} tiles in hand | Agent 2026-10-06 |  |
 | — — — | {count} across | **横{count}枚** | {count} across | Agent 2026-10-06 |  |
+| — — — | Bipyramid | **八角両錐** | Bipyramid | Agent 2026-10-06 |  |
+| — — — | Box | **直方体** | Box | Agent 2026-10-06 |  |
 | — — — | Colossal | **超巨大** | Colossal | Agent 2026-10-06 |  |
 | — — — | Colossal tall {width}×{height} | **超巨大の縦長 {width}×{height}** | Colossal tall {width}×{height} | Agent 2026-10-06 |  |
 | — — — | Cube | **立方体** | Cube | Agent 2026-10-06 |  |
+| — — — | Dodecahedron | **十二面体** | Dodecahedron | Agent 2026-10-06 |  |
+| — — — | Heart | **ハート** | Heart | Agent 2026-10-06 |  |
 | — — — | Huge | **巨大** | Huge | Agent 2026-10-06 |  |
 | — — — | Icosahedron | **二十面体** | Icosahedron | Agent 2026-10-06 |  |
+| — — — | Icositetrahedron | **凧形二十四面体** | Icositetrahedron | Agent 2026-10-06 |  |
 | — — — | {size} size | **{size}サイズ** | {size} size | Agent 2026-10-06 |  |
 | — — — | the {size} | **{size}の盤** | the {size} | Agent 2026-10-06 |  |
 | — — — | Long | **長** | Long | Agent 2026-10-06 |  |
 | — — — | Medium | **中** | Medium | Agent 2026-10-06 |  |
 | — — — | Octahedron | **八面体** | Octahedron | Agent 2026-10-06 |  |
+| — — — | Triangular prism | **三角柱** | Triangular prism | Agent 2026-10-06 |  |
+| — — — | Rhombic dodecahedron | **菱形十二面体** | Rhombic dodecahedron | Agent 2026-10-06 |  |
+| — — — | Ring | **リング** | Ring | Agent 2026-10-06 |  |
 | — — — | Short | **短** | Short | Agent 2026-10-06 |  |
 | — — — | Small | **小** | Small | Agent 2026-10-06 |  |
 | — — — | {step} {solid} | **{solid}（{step}サイズ）** | {step} {solid} | Agent 2026-10-06 |  |
 | — — — | Sphere | **球** | Sphere | Agent 2026-10-06 |  |
+| — — — | Star | **星** | Star | Agent 2026-10-06 |  |
 | — — — | Tall {width}×{height} | **縦長 {width}×{height}** | Tall {width}×{height} | Agent 2026-10-06 |  |
+| — — — | Tetrahedron | **四面体** | Tetrahedron | Agent 2026-10-06 |  |
+| — — — | Torus | **トーラス** | Torus | Agent 2026-10-06 |  |
+| — — — | Trapezohedron | **五角偏方面体** | Trapezohedron | Agent 2026-10-06 |  |
+| — — — | Triacontahedron | **菱形三十面体** | Triacontahedron | Agent 2026-10-06 |  |
 | — — — | Draw | **めくる枚数** | Draw | Agent 2026-10-06 |  |
 | — — — | Free cells | **フリーセル** | Free cells | Agent 2026-10-06 |  |
 | — — — | Hand | **手札** | Hand | Agent 2026-10-06 |  |

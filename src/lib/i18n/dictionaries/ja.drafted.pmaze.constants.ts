@@ -206,8 +206,43 @@ export const JA_DRAFTED_PMAZE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pmaze.meikyuu.shelfSolid": {
-    text: "立体の上：どの立体も、3つのサイズをまとめて",
-    back: "Over a solid: each solid's three sizes together",
+    text: "サイコロの上：どのサイコロも、5つのサイズをまとめて",
+    back: "Over a die: each die's five sizes together",
+    review: AGENT_READ,
+  },
+  "pmaze.meikyuu.shelfShapes": {
+    text: "形の上：どの形も、5つのサイズをまとめて",
+    back: "Over a shape: each shape's five sizes together",
+    review: AGENT_READ,
+  },
+  "pmaze.meikyuu.moreSolids": {
+    text: "ほかの立体：{to} →",
+    back: "More solids: {to} →",
+    review: AGENT_READ,
+  },
+  "pmaze.meikyuu.solidShelfOne": {
+    text: "3面から8面まで",
+    back: "d3 to d8",
+    review: AGENT_READ,
+  },
+  "pmaze.meikyuu.solidShelfTwo": {
+    text: "10面から16面まで",
+    back: "d10 to d16",
+    review: AGENT_READ,
+  },
+  "pmaze.meikyuu.solidShelfThree": {
+    text: "20面から30面まで",
+    back: "d20 to d30",
+    review: AGENT_READ,
+  },
+  "pmaze.meikyuu.solidShelfFour": {
+    text: "球、直方体、十字、リング",
+    back: "globe, box, cross, ring",
+    review: AGENT_READ,
+  },
+  "pmaze.meikyuu.solidShelfFive": {
+    text: "トーラス、星、ハート",
+    back: "torus, star, heart",
     review: AGENT_READ,
   },
   "pmaze.meikyuu.colourSample": {

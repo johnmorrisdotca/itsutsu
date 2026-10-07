@@ -143,15 +143,32 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   suido: { how: "ranked", rungs: { 5: 50, 6: 70, 7: 85, 8: 95, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 20: 150, 28: 150, 507: 65, 610: 90, 814: 120, 2050: 150 } },
   // The four square sizes (small to huge, 1 to 4) and the six tall ones (609 is 6×9), and the two colossal ones (2026-10-05, package 2.1): the square list is size 5, the top rung of the squares
   // (160, so its hardest levels reach the 200 ceiling a family of levels has), and the tall list is 6496 (64×96), the top rung of the tall ones (110). A solve is priced at the middle of the third of its list it was in, as every family's is, however many levels the list has (the colossal lists have 128).
-  // The solids (2026-10-05, package 2.2; `meikyuu/sizes.ts`: 7001 is the small cube, 7033 the large icosahedron) are priced by their cells on the rungs the flat sizes already have: a rung is drawn on a log scale
+  // The solids (2026-10-05, package 2.2; `meikyuu/sizes.ts`: 7001 is the small cube, 7033 the large icosahedron, 7175 the colossal heart) are priced by their cells on the rungs the flat sizes already have: a rung is drawn on a log scale
   // through the flat sizes' typical cells (the geometric mean of each size's levels: 56 cells is 55, 367 is 95, 1,765 is 120, 6,606 is 150, 10,674 is 160), and a solid's size takes the rung its own cells
-  // come to, to the nearest five (`levels.test.ts` redoes the sum). So a small solid of about 90 cells is a little above a small maze, a medium one of about 300 is about a medium maze, and a large one
-  // of about 650, which has the cells of a small medium maze, is 105. Their levels add the same 0 to 50 for their place, and the ceiling is the family's 200.
+  // come to, to the nearest five (`ladder.coverage.test.ts` redoes the sum for all ninety). So a small solid of about 90 cells is a little above a small maze, a medium one of about 300 is about a medium maze, and a large one
+  // of about 650, which has the cells of a small medium maze, is 105; a huge one of about 1,300 is 115, and a colossal one of about 4,400 is 140 (3,600 to 3,900 cells, the star, the heart, the cross and the ring, is 135 to 140). Their levels add the same 0 to 50 for their place, and the ceiling is the family's 200.
   meikyuu: {
     how: "ranked",
     rungs: {
       1: 55, 2: 95, 3: 120, 4: 150, 5: 160, 609: 50, 812: 60, 1015: 70, 1218: 80, 1624: 90, 2030: 100, 6496: 110,
-      7001: 65, 7002: 90, 7003: 105, 7011: 65, 7012: 85, 7013: 105, 7021: 60, 7022: 90, 7023: 105, 7031: 65, 7032: 90, 7033: 105,
+      7001: 65, 7002: 90, 7003: 105, 7004: 115, 7005: 140,
+      7011: 65, 7012: 85, 7013: 105, 7014: 115, 7015: 140,
+      7021: 60, 7022: 90, 7023: 105, 7024: 115, 7025: 140,
+      7031: 65, 7032: 90, 7033: 105, 7034: 115, 7035: 140,
+      7041: 65, 7042: 85, 7043: 100, 7044: 115, 7045: 140,
+      7051: 60, 7052: 90, 7053: 105, 7054: 115, 7055: 140,
+      7061: 65, 7062: 85, 7063: 105, 7064: 115, 7065: 140,
+      7071: 55, 7072: 85, 7073: 100, 7074: 115, 7075: 145,
+      7081: 70, 7082: 90, 7083: 105, 7084: 115, 7085: 140,
+      7091: 60, 7092: 85, 7093: 100, 7094: 115, 7095: 140,
+      7101: 65, 7102: 95, 7103: 105, 7104: 115, 7105: 140,
+      7111: 70, 7112: 90, 7113: 105, 7114: 115, 7115: 140,
+      7121: 65, 7122: 95, 7123: 100, 7124: 115, 7125: 140,
+      7131: 70, 7132: 90, 7133: 105, 7134: 115, 7135: 135,
+      7141: 75, 7142: 90, 7143: 105, 7144: 115, 7145: 140,
+      7151: 60, 7152: 90, 7153: 105, 7154: 115, 7155: 140,
+      7161: 55, 7162: 85, 7163: 105, 7164: 115, 7165: 135,
+      7171: 65, 7172: 90, 7173: 105, 7174: 115, 7175: 140,
     },
   },
 };
@@ -174,10 +191,24 @@ export const SIZE_SERIES: Partial<Record<PuzzleKind, readonly (readonly number[]
   meikyuu: [
     [1, 2, 3, 4, 5],
     [609, 812, 1015, 1218, 1624, 2030, 6496],
-    // A solid's three sizes, each solid a series of its own.
-    [7001, 7002, 7003],
-    [7011, 7012, 7013],
-    [7021, 7022, 7023],
-    [7031, 7032, 7033],
+    // A solid's five sizes (small to colossal), each solid a series of its own.
+    [7001, 7002, 7003, 7004, 7005],
+    [7011, 7012, 7013, 7014, 7015],
+    [7021, 7022, 7023, 7024, 7025],
+    [7031, 7032, 7033, 7034, 7035],
+    [7041, 7042, 7043, 7044, 7045],
+    [7051, 7052, 7053, 7054, 7055],
+    [7061, 7062, 7063, 7064, 7065],
+    [7071, 7072, 7073, 7074, 7075],
+    [7081, 7082, 7083, 7084, 7085],
+    [7091, 7092, 7093, 7094, 7095],
+    [7101, 7102, 7103, 7104, 7105],
+    [7111, 7112, 7113, 7114, 7115],
+    [7121, 7122, 7123, 7124, 7125],
+    [7131, 7132, 7133, 7134, 7135],
+    [7141, 7142, 7143, 7144, 7145],
+    [7151, 7152, 7153, 7154, 7155],
+    [7161, 7162, 7163, 7164, 7165],
+    [7171, 7172, 7173, 7174, 7175],
   ],
 };

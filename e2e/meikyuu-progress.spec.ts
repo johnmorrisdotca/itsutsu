@@ -83,10 +83,13 @@ test.describe("how many of each size are solved", () => {
       const colossal = await rows(page, door.getByTestId("meikyuu-progress").nth(2));
       expect(colossal.map((row) => row.size)).toEqual(["5", "6496"]);
       expect(colossal.map((row) => row.text)).toEqual(["0 of 128", "0 of 128"]);
-      // And the four solids (package 2.2), each its three sizes together: 192 levels a solid.
-      const solids = await rows(page, door.getByTestId("meikyuu-progress").last());
-      expect(solids.map((row) => row.size)).toEqual(["7001", "7011", "7021", "7031"]);
-      expect(solids.map((row) => row.text)).toEqual(Array(4).fill("0 of 192"));
+      // And the eighteen solids (package 3.1), each its five sizes together: 320 levels a solid, the eleven dice by their sides and then the seven shapes.
+      const dice = await rows(page, door.getByTestId("meikyuu-progress").nth(3));
+      expect(dice.map((row) => row.size)).toEqual(["7051", "7041", "7001", "7021", "7061", "7071", "7081", "7091", "7031", "7101", "7111"]);
+      expect(dice.map((row) => row.text)).toEqual(Array(11).fill("0 of 320"));
+      const shapes = await rows(page, door.getByTestId("meikyuu-progress").last());
+      expect(shapes.map((row) => row.size)).toEqual(["7011", "7121", "7131", "7141", "7151", "7161", "7171"]);
+      expect(shapes.map((row) => row.text)).toEqual(Array(7).fill("0 of 320"));
     } finally {
       await context.close();
       await away(email, id);

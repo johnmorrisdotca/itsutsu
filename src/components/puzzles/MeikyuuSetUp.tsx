@@ -13,8 +13,9 @@ import { PressLabel } from "@/components/ui/PressLabel";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_BUTTON } from "@/components/ui/ui.constants";
 import { meikyuuBlockOf, meikyuuBlockRange, meikyuuBlocksIn, meikyuuLevelCount } from "@/lib/puzzles/meikyuu/levelCounts";
 import { loadMeikyuuLevelsFor, meikyuuLevelsAt, meikyuuLevelsLoaded } from "@/lib/puzzles/meikyuu/levels";
-import { isMeikyuuColossal, isMeikyuuSolid, isMeikyuuTall, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_SIZES, MEIKYUU_SOLID_STEPS, MEIKYUU_TALL_SIZES, meikyuuSizeLabel, meikyuuSolidOf, meikyuuSolidSize, meikyuuSolidTiles, meikyuuTallShape, type MeikyuuSolidStep } from "@/lib/puzzles/meikyuu/sizes";
+import { isMeikyuuColossal, isMeikyuuSolid, isMeikyuuTall, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_SIZES, MEIKYUU_SOLID_SHELVES, MEIKYUU_SOLID_STEPS, MEIKYUU_TALL_SIZES, meikyuuSizeLabel, meikyuuSolidOf, meikyuuSolidShelfOf, meikyuuSolidSize, meikyuuSolidTiles, meikyuuTallShape, type MeikyuuSolidStep } from "@/lib/puzzles/meikyuu/sizes";
 import { progressOf, type SolvedLevels } from "@/lib/puzzles/meikyuu/completion";
+import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -31,6 +32,9 @@ import { MeikyuuWayUp } from "./MeikyuuStand";
 
 /** How many tall sizes a shelf of the set-up holds: the four tiles every set-up keeps room for. */
 const TALL_SHELF = 4;
+
+/** What is on each shelf of solids, said in the press that turns to it: the d3 to the d8, the d10 to the d16, the d20 to the d30, a globe and three shapes with it, and the last three. */
+const SHELF_NAMES: readonly PhraseKey[] = ["pmaze.meikyuu.solidShelfOne", "pmaze.meikyuu.solidShelfTwo", "pmaze.meikyuu.solidShelfThree", "pmaze.meikyuu.solidShelfFour", "pmaze.meikyuu.solidShelfFive"];
 
 /** The four shapes of the set-up: the squares and shapes, the tall mazes, the colossal ones, and the mazes over a solid. */
 type Shape = "square" | "tall" | "colossal" | "solid";
@@ -58,9 +62,9 @@ function nextLevelOf(count: number, done: ReadonlySet<number>): number {
  *
  * FOUR SHAPES, NO MORE THAN FOUR TILES IN ANY: the squares and shapes have four sizes, so no shelf to turn; the tall ones have six and a
  * shelf that turns; the two COLOSSAL mazes (about ten thousand cells, a square box and a tall one) are a shape of their own, beside the
- * other two; and the SOLIDS (a maze over the whole surface of a cube, a sphere, an octahedron or an icosahedron: the tiles are the four solids)
- * are the fourth, with their three steps (small, medium, large) chosen in the room the tall shelf's press keeps under the tiles, so a set-up
- * never has a fifth tile, nothing that was there moves, and no shape is taller than another. Every level is open: a maze
+ * other two; and the SOLIDS (a maze over the whole surface of a die or a shape: eighteen of them) are the fourth, the tiles the solids of one of
+ * five shelves (the dice by their sides, three shelves, then the shapes, two), turned between with the press the tall shelf has, and their five
+ * steps (small to colossal) chosen in the row under it, so a set-up never has a fifth tile and no shape is taller than another. Every level is open: a maze
  * is not a lesson that needs the one before it (the package orders its list so that
  * none is easier than the one before, which is what the order is for), so a reader
  * may look at and play any. A member's solves are on the account; anybody's are
@@ -99,9 +103,19 @@ export function MeikyuuSetUp({
     colossal: shape === "colossal" ? initialSize : MEIKYUU_COLOSSAL_SIZE,
     solid: shape === "solid" ? initialSize : meikyuuSolidSize("cube", "small"),
   });
+  /* The solids are on five shelves of four tiles at most: the shelf shown, which the press under the tiles turns. */
+  const [shelf, setShelf] = useState(solid === null ? 0 : meikyuuSolidShelfOf(solid.kind));
   const chooseSize = (next: number) => {
     setSize(next);
     setLastOf((before) => ({ ...before, [shapeOf(next)]: next }));
+    const chosen = meikyuuSolidOf(next);
+    if (chosen !== null) setShelf(meikyuuSolidShelfOf(chosen.kind));
+  };
+  const turnSolids = () => {
+    if (solid === null) return;
+    const next = (shelf + 1) % MEIKYUU_SOLID_SHELVES.length;
+    const place = Math.min(MEIKYUU_SOLID_SHELVES[shelf]!.indexOf(solid.kind), MEIKYUU_SOLID_SHELVES[next]!.length - 1);
+    chooseSize(meikyuuSolidSize(MEIKYUU_SOLID_SHELVES[next]![place]!, step));
   };
   /* The tall sizes are six and a shelf holds four: the first four, then the last four, turned between with a press. */
   const [moreTall, setMoreTall] = useState(tall && MEIKYUU_TALL_SIZES.indexOf(initialSize) >= TALL_SHELF);
@@ -133,7 +147,7 @@ export function MeikyuuSetUp({
   const done = useMemo(() => new Set(Object.keys(best).map(Number)), [best]);
   const count = meikyuuLevelCount(size);
   /* HOW FAR THROUGH EACH SIZE ON SHOW: the account's solves, which the page read once for every size, and this browser's, joined (`completion.ts`). */
-  const solidTiles = meikyuuSolidTiles(step);
+  const solidTiles = meikyuuSolidTiles(step, shelf);
   const shownSizes = shape === "solid" ? solidTiles : shape === "colossal" ? MEIKYUU_COLOSSAL_SIZES : tall ? tallShown : MEIKYUU_SIZES;
   const account: SolvedLevels = Object.fromEntries(Object.entries(solved).map(([each, levels]) => [Number(each), Object.keys(levels).map(Number)]));
   const progress = progressOf(shownSizes, account, hydrated && ready ? keptSolvedLevels(shownSizes) : null);
@@ -203,29 +217,46 @@ export function MeikyuuSetUp({
             </div>
           </fieldset>
           <BoardPicker value={size} sizes={shape === "solid" ? solidTiles : shape === "colossal" ? MEIKYUU_COLOSSAL_SIZES : tall ? tallShown : MEIKYUU_SIZES} onChange={chooseSize} names={PUZZLE_SIZE_NAMES.meikyuu} beside legend={say.say(shape === "solid" ? "pmaze.options.legendSolid" : "pmaze.options.legendSize")} />
-          {/* The press that turns the tall sizes' shelf: always in its place, so a square size's screen is as tall as a tall one's. A solid's three steps are chosen in the same room. */}
-          <div className="relative flex w-full justify-center" data-testid="meikyuu-under-tiles">
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} text-sm ${tall ? "" : "invisible"}`} onClick={turnTall} disabled={!tall} aria-hidden={tall ? undefined : true} tabIndex={tall ? undefined : -1} data-testid="meikyuu-more-sizes">
-              {moreTall ? words.shapeCopy.lessTall(sizeFrom(MEIKYUU_TALL_SIZES[0]!)) : words.shapeCopy.moreTall(sizeFrom(MEIKYUU_TALL_SIZES[MEIKYUU_TALL_SIZES.length - 1]!))}
-            </button>
-            {solid === null ? null : (
-              <div className="absolute inset-0 flex items-center justify-center gap-1.5" role="group" aria-label={words.shapeCopy.stepLegend} data-testid="meikyuu-steps">
-                {MEIKYUU_SOLID_STEPS.map((each) => (
-                  <button
-                    key={each}
-                    type="button"
-                    className={`${BUTTON_BASE} !rounded-full ${each === step ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
-                    aria-pressed={each === step}
-                    title={words.step[each].says}
-                    onClick={() => chooseStep(each)}
-                    data-testid={`meikyuu-step-${each}`}
-                    data-chosen={each === step ? "true" : "false"}
-                  >
-                    {words.step[each].label}
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* Two rows under the tiles, kept whatever shape is chosen, so choosing one moves nothing: the press that turns the shelf (the tall sizes' second shelf, or the next shelf of solids), and a solid's five steps. */}
+          <div className="flex w-full flex-col items-center gap-1.5" data-testid="meikyuu-under-tiles">
+            <div className="flex w-full justify-center">
+              <button
+                type="button"
+                className={`${BUTTON_BASE} ${BUTTON_QUIET} min-h-11 max-w-full !whitespace-normal text-center text-sm ${tall || solid !== null ? "" : "invisible"}`}
+                onClick={solid !== null ? turnSolids : turnTall}
+                disabled={!tall && solid === null}
+                aria-hidden={tall || solid !== null ? undefined : true}
+                tabIndex={tall || solid !== null ? undefined : -1}
+                data-testid="meikyuu-more-sizes"
+                data-shelf={solid !== null ? shelf : undefined}
+              >
+                {solid !== null
+                  ? say.say("pmaze.meikyuu.moreSolids", { to: say.say(SHELF_NAMES[(shelf + 1) % MEIKYUU_SOLID_SHELVES.length]!) })
+                  : moreTall
+                    ? words.shapeCopy.lessTall(sizeFrom(MEIKYUU_TALL_SIZES[0]!))
+                    : words.shapeCopy.moreTall(sizeFrom(MEIKYUU_TALL_SIZES[MEIKYUU_TALL_SIZES.length - 1]!))}
+              </button>
+            </div>
+            <div className="relative flex min-h-[6.25rem] w-full justify-center" data-testid="meikyuu-steps-room">
+              {solid === null ? null : (
+                <div className="flex flex-wrap content-start items-start justify-center gap-1.5" role="group" aria-label={words.shapeCopy.stepLegend} data-testid="meikyuu-steps">
+                  {MEIKYUU_SOLID_STEPS.map((each) => (
+                    <button
+                      key={each}
+                      type="button"
+                      className={`${BUTTON_BASE} !rounded-full ${each === step ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`}
+                      aria-pressed={each === step}
+                      title={words.step[each].says}
+                      onClick={() => chooseStep(each)}
+                      data-testid={`meikyuu-step-${each}`}
+                      data-chosen={each === step ? "true" : "false"}
+                    >
+                      {words.step[each].label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           {/* How many of each size on show are solved: every level is open, and this is what there is to finish. Four rows whichever shape is chosen, so nothing moves. */}
           <MeikyuuProgress rows={progress} label={sizeLabel} className="max-w-[14.5rem]" holds={4} />
@@ -248,8 +279,10 @@ export function MeikyuuSetUp({
           <Link href={meikyuuLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
             <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={START_PRESS.start.kanji} />
           </Link>
-          {/* What the level Start plays is, before it is started. */}
-          {row === undefined ? null : <MeikyuuLevelChips code={row.code} cells={row.cells} score={row.score} level={chosen} />}
+          {/* What the level Start plays is, before it is started. The room three rows of chips take (three of 1.375rem and two gaps of 0.375rem): a long solid's name, the rhombic dodecahedron's, wraps the chips onto a third row on a phone, and the screen must not change height when one is chosen. */}
+          <div className="min-h-[4.875rem]" data-testid="meikyuu-chips-room">
+            {row === undefined ? null : <MeikyuuLevelChips code={row.code} cells={row.cells} score={row.score} level={chosen} />}
+          </div>
           <p className="text-xs text-muted" data-testid="meikyuu-kept-where">
             {say.say(hasAccount ? "pmaze.keptAccount" : "pmaze.keptBrowser")}
           </p>

@@ -145,6 +145,34 @@ boards (decision to review below).
   Sizes are steps under the tiles, not twelve tiles and not a 192-level list. The three steps are 90, 300 and 650 cells; a larger size was not made, because a cell on a
   phone needs to be a finger wide.
 
+### More solids (2026-10-06, package 3.1)
+
+Tickets `meikyuu-3d-harder-solids-so-each-shape-reaches-the-top-of-the-difficulty-scale`, `meikyuu-3d-every-dice-shape-d10-d12-and-the-rest-each-with-its-own-levels` and
+`meikyuu-3d-shaped-solids-a-heart-a-star-a-cross-a-box-and-more`. The paragraph above is how it began; this is what it is now, and it replaces the first list's
+numbers (four solids, three sizes, 768 levels).
+
+- **Eighteen solids, five sizes, 5,760 levels** (64 a size). Eleven dice, by their sides: the triangular prism (d3), tetrahedron (d4), cube (d6), octahedron (d8),
+  pentagonal trapezohedron (d10), dodecahedron and rhombic dodecahedron (both d12), octagonal bipyramid (d16), icosahedron (d20), deltoidal icositetrahedron (d24) and
+  rhombic triacontahedron (d30); and seven shapes: the globe (a football), the box, the cross of cubes, the ring, the torus, the star and the heart. Not made: a d2 is a
+  coin, a d100 is a d10, and a d14 was left out. The cross, ring, torus, star and heart are not convex, so a part of them can hide another part: the package paints them
+  back to front, picks the nearer cell, and the edge-turn and Face me reason about what is hidden (`solidReveal.ts`; `solidFollow.test.ts` follows a line round every one
+  without a stall).
+- **Sizes: small, medium, large, huge, colossal**, the number `7000 + kind * 10 + step` (`meikyuu/sizes.ts`: 7001 the small cube, 7035 the colossal icosahedron, 7175 the colossal
+  heart). A size is about 50 to 200 cells small and 1,300 huge, a colossal one 3,600 to 4,500 (the non-convex ones are held to 3,600 to 3,900 so a phone paints them in time). The zoom
+  of a solid goes to six times (package 3.1.1), because a colossal cell is six pixels across with the whole solid in the box.
+- **The set-up.** The same fourth shape ("3D 立体"), the tiles are the solids of one of five shelves of four at most (the d3 to the d8, the d10 to the d16, the d20 to the d30, a globe
+  and three shapes, then the torus, star and heart), turned with the press under the tiles that the tall shape's second shelf uses, and a row of the five steps. Nothing is locked: every
+  size is offered to everybody, a colossal one included. The two rows under the tiles are kept whatever is chosen, so the page never changes height
+  (`e2e/meikyuu-solid.spec.ts`). The progress rows are the eleven dice then the seven shapes, each the five sizes together (0 of 320).
+- **Difficulty.** Package 3.0.0's score counts how much of the map the answer covers (a solid by its three-dimensional zones, over three quarters of them), so a colossal list reaches
+  89 to 93 on the 0-to-100 scale where the old lists topped out in the 70s; the star's colossal list tops at 89, the one list under 90 (decision below).
+- **The points ladder.** Ninety sizes on the same rungs by cells: 55 to 75 small, 85 to 95 medium, 100 to 105 large, 115 huge, 135 to 145 colossal; `ladder.coverage.test.ts` redoes the sum.
+- **Function size.** A server never loads a solid's levels: the check reads `@johnmorrisdotca/meikyuu/levels/solid-recipes` (50 KB of the seed and algorithm of every level, no scores),
+  and the three level files (dice, shapes, the first five) are imported inside `typeof window` blocks, so only a browser fetches them (`pageFunction.coverage.test.ts`). `_not-found` stays at its
+  base.
+- **Decisions to review.** A half-drawn solid kept before this lapses because its level number now points at another maze: beta, no migration (the same as the flat lists after 3.0.0). The star's colossal list tops
+  at 89. The non-convex colossal sizes are smaller than the convex ones. A d14 and a d100 are not offered.
+
 ## Old solves: the first list's numbers
 
 Package 2.0.0 renumbered the maze list. Of the 1,000 levels of 1.0.0, 843 are at the same
@@ -192,7 +220,7 @@ a picture), `puzzleArt.coverage.test.ts` (the picture stamp: `meikyuu/way.ts`,
 `gameEnding.coverage.test.ts` (New game beside Pause), the dead-end and picture
 gates (`GameName`, `GameThumb`), `openSource.test.ts` (the credit under the game),
 `gameAdded.coverage.test.ts` (`pnpm games:added`), and the plain-English gate.
-`e2e/meikyuu-solid.spec.ts` plays all four solids through by mouse and by a real touch, with the set-up held still. `e2e/meikyuu.spec.ts` opens the set-up, draws a level through by mouse and by a
+`e2e/meikyuu-solid.spec.ts` plays a solid of every kind of cut through by mouse and by a real touch, with the set-up held still. `e2e/meikyuu.spec.ts` opens the set-up, draws a level through by mouse and by a
 real touch, keeps and resumes a half-drawn one, zooms a huge maze and checks the
 server's answer.
 

@@ -136,8 +136,8 @@ export const JA_DRAFTED_BOARDLOOK: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "boardlook.solidStep": {
-    text: "{name}：3段階中{step}段階目",
-    back: "{name}: stage {step} of 3",
+    text: "{name}：5段階中{step}段階目",
+    back: "{name}: stage {step} of 5",
     review: AGENT_READ,
   },
   // Opening one board on its own

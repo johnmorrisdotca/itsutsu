@@ -59,17 +59,17 @@ export function meikyuuTallSize(width: number, height: number): number {
 export const MEIKYUU_TALL_SIZES: readonly number[] = MEIKYUU_TALL_SHAPES.map(([width, height]) => meikyuuTallSize(width, height));
 
 /**
- * THE SOLIDS: mazes over the whole surface of a cube, a globe, an octahedron or an icosahedron (`@johnmorrisdotca/meikyuu/3d`, package 2.2): a fourth shape of
- * the set-up, with a tile for each solid. A solid at a size is one list of 64 levels (small, medium or large: about 90, 300 and 600 cells), so a size
- * here is a solid and a step together, kept as one whole number like the tall sizes are: 7000, then ten for the solid and its step from 1: 7001 is the
- * small cube, 7003 the large cube, 7011 the small globe, 7033 the large icosahedron. No other size is seven thousand or more, so the kinds of size cannot be
- * mistaken, and an address says `cube-medium`. The package also makes a tetrahedron; it is not offered, because a shape has at most four boards.
+ * THE SOLIDS: mazes over the whole surface of a die or a shape (`@johnmorrisdotca/meikyuu/3d`, package 2.2, and from 3.1 eighteen of them): a fourth shape of the set-up, with a tile for each solid. A solid at a
+ * size is one list of 64 levels (small, medium, large, huge or colossal: about 90, 300, 650, 1,300 and 4,400 cells), kept as one whole number like the tall sizes are: 7000, then ten for the solid and its step from 1:
+ * 7001 is the small cube, 7003 the large cube, 7011 the small globe, 7033 the large icosahedron, 7175 the colossal heart. No other size is seven thousand or more, so the kinds of size cannot be mistaken, and an
+ * address says `cube-medium`. The first four solids' numbers (cube 0, globe 1, octahedron 2, icosahedron 3) are what they were with three sizes, so a solve kept before the others came is still a solve of the same
+ * list; the fourteen that came after take the numbers after them, whatever row of the set-up they are in.
  */
-export const MEIKYUU_SOLID_KINDS = ["cube", "sphere", "octahedron", "icosahedron"] as const;
+export const MEIKYUU_SOLID_KINDS = ["cube", "sphere", "octahedron", "icosahedron", "tetrahedron", "prism", "trapezohedron", "dodecahedron", "rhombic-dodecahedron", "bipyramid", "icositetrahedron", "triacontahedron", "box", "cross", "ring", "torus", "star", "heart"] as const;
 export type MeikyuuSolidKind = (typeof MEIKYUU_SOLID_KINDS)[number];
 
-/** The three steps a solid comes in, which are the package's words (`SOLID_SIZE_NAMES`). */
-export const MEIKYUU_SOLID_STEPS = ["small", "medium", "large"] as const;
+/** The five steps a solid comes in, which are the package's words (`SOLID_SIZE_NAMES`). */
+export const MEIKYUU_SOLID_STEPS = ["small", "medium", "large", "huge", "colossal"] as const;
 export type MeikyuuSolidStep = (typeof MEIKYUU_SOLID_STEPS)[number];
 
 /** Where the solids' sizes begin. */
@@ -80,7 +80,7 @@ export function meikyuuSolidSize(kind: MeikyuuSolidKind, step: MeikyuuSolidStep)
   return MEIKYUU_SOLID_BASE + MEIKYUU_SOLID_KINDS.indexOf(kind) * 10 + MEIKYUU_SOLID_STEPS.indexOf(step) + 1;
 }
 
-/** Every solid's every size, a solid's three together, the cube's first. */
+/** Every solid's every size, a solid's five together, the cube's first. */
 export const MEIKYUU_SOLID_SIZES: readonly number[] = MEIKYUU_SOLID_KINDS.flatMap((kind) => MEIKYUU_SOLID_STEPS.map((step) => meikyuuSolidSize(kind, step)));
 
 /** The solid and the step a size is, or null for a size that is not one of the solids'. */
@@ -95,16 +95,43 @@ export function isMeikyuuSolid(size: number): boolean {
   return meikyuuSolidOf(size) !== null;
 }
 
-const SOLID_TILES: Readonly<Record<MeikyuuSolidStep, readonly number[]>> = {
-  small: MEIKYUU_SOLID_KINDS.map((kind) => meikyuuSolidSize(kind, "small")),
-  medium: MEIKYUU_SOLID_KINDS.map((kind) => meikyuuSolidSize(kind, "medium")),
-  large: MEIKYUU_SOLID_KINDS.map((kind) => meikyuuSolidSize(kind, "large")),
-};
+/**
+ * THE SHELVES OF THE SOLIDS' TILES. A set-up has four tiles at most, so the eighteen solids are on five shelves, turned between with a press under the tiles, as the tall sizes' two are: the dice by their
+ * sides (the d3 to the d8, the d10 to the d16, the d20 to the d30), then the shapes (a globe, a box, a cross and a ring, then a torus, a star and a heart). A shelf of three leaves its fourth place empty, so
+ * the tiles stand where they would.
+ */
+export const MEIKYUU_SOLID_SHELVES: readonly (readonly MeikyuuSolidKind[])[] = [
+  ["prism", "tetrahedron", "cube", "octahedron"],
+  ["trapezohedron", "dodecahedron", "rhombic-dodecahedron", "bipyramid"],
+  ["icosahedron", "icositetrahedron", "triacontahedron"],
+  ["sphere", "box", "cross", "ring"],
+  ["torus", "star", "heart"],
+];
 
-/** The four solids at one step, the tiles of the set-up's shape: the same array each time, so a page may depend on it. */
-export function meikyuuSolidTiles(step: MeikyuuSolidStep): readonly number[] {
-  return SOLID_TILES[step];
+/** The dice by their sides, and the shapes, in the order a list of them reads (the two rows of the package's picker, `SOLID_DICE` and `SOLID_SHAPES`). */
+export const MEIKYUU_SOLID_DICE: readonly MeikyuuSolidKind[] = ["prism", "tetrahedron", "cube", "octahedron", "trapezohedron", "dodecahedron", "rhombic-dodecahedron", "bipyramid", "icosahedron", "icositetrahedron", "triacontahedron"];
+export const MEIKYUU_SOLID_SHAPES: readonly MeikyuuSolidKind[] = ["sphere", "box", "cross", "ring", "torus", "star", "heart"];
+
+/** The shelf a solid is on, from 0. */
+export function meikyuuSolidShelfOf(kind: MeikyuuSolidKind): number {
+  return MEIKYUU_SOLID_SHELVES.findIndex((shelf) => shelf.includes(kind));
 }
+
+const SOLID_TILES = new Map<string, readonly number[]>();
+
+/** The solids of one shelf at one step, the tiles of the set-up's shape: the same array each time, so a page may depend on it. */
+export function meikyuuSolidTiles(step: MeikyuuSolidStep, shelf = 0): readonly number[] {
+  const key = `${shelf}/${step}`;
+  let tiles = SOLID_TILES.get(key);
+  if (tiles === undefined) {
+    tiles = (MEIKYUU_SOLID_SHELVES[shelf] ?? []).map((kind) => meikyuuSolidSize(kind, step));
+    SOLID_TILES.set(key, tiles);
+  }
+  return tiles;
+}
+
+/** How many sides a die has, for the name a tile or a chip gives it: "d12". Only a die has any; a shape has none. */
+export const MEIKYUU_SOLID_SIDES: Readonly<Partial<Record<MeikyuuSolidKind, number>>> = { prism: 3, tetrahedron: 4, cube: 6, octahedron: 8, trapezohedron: 10, dodecahedron: 12, "rhombic-dodecahedron": 12, bipyramid: 16, icosahedron: 20, icositetrahedron: 24, triacontahedron: 30 };
 
 /** The names of the solids, and the step as the person reads it. */
 const SOLID_WORDS: Readonly<Record<MeikyuuSolidKind, PhraseKey>> = {
@@ -112,17 +139,48 @@ const SOLID_WORDS: Readonly<Record<MeikyuuSolidKind, PhraseKey>> = {
   sphere: "puzzle.size.sphere",
   octahedron: "puzzle.size.octahedron",
   icosahedron: "puzzle.size.icosahedron",
+  tetrahedron: "puzzle.size.tetrahedron",
+  prism: "puzzle.size.prism",
+  trapezohedron: "puzzle.size.trapezohedron",
+  dodecahedron: "puzzle.size.dodecahedron",
+  "rhombic-dodecahedron": "puzzle.size.rhombicDodecahedron",
+  bipyramid: "puzzle.size.bipyramid",
+  icositetrahedron: "puzzle.size.icositetrahedron",
+  triacontahedron: "puzzle.size.triacontahedron",
+  box: "puzzle.size.box",
+  cross: "puzzle.size.cross",
+  ring: "puzzle.size.ring",
+  torus: "puzzle.size.torus",
+  star: "puzzle.size.star",
+  heart: "puzzle.size.heart",
+};
+
+/** A solid's name in kanji, beside its English one on a tile and a chip. */
+export const MEIKYUU_SOLID_KANJI: Readonly<Record<MeikyuuSolidKind, string>> = {
+  cube: "立方体",
+  sphere: "球",
+  octahedron: "八面体",
+  icosahedron: "二十面体",
+  tetrahedron: "四面体",
+  prism: "三角柱",
+  trapezohedron: "十面体",
+  dodecahedron: "十二面体",
+  "rhombic-dodecahedron": "菱形12面体",
+  bipyramid: "八角両錐",
+  icositetrahedron: "二十四面体",
+  triacontahedron: "三十面体",
+  box: "直方体",
+  cross: "十字",
+  ring: "リング",
+  torus: "輪",
+  star: "星",
+  heart: "心",
 };
 
 /** The solids' English names, read from the phrase table that says them in every language (`puzzle.size.*`). */
-export const MEIKYUU_SOLID_NAMES: Readonly<Record<MeikyuuSolidKind, string>> = {
-  cube: PHRASES[SOLID_WORDS.cube],
-  sphere: PHRASES[SOLID_WORDS.sphere],
-  octahedron: PHRASES[SOLID_WORDS.octahedron],
-  icosahedron: PHRASES[SOLID_WORDS.icosahedron],
-};
+export const MEIKYUU_SOLID_NAMES: Readonly<Record<MeikyuuSolidKind, string>> = Object.fromEntries(MEIKYUU_SOLID_KINDS.map((kind) => [kind, PHRASES[SOLID_WORDS[kind]]])) as Record<MeikyuuSolidKind, string>;
 
-const STEP_WORDS: Readonly<Record<MeikyuuSolidStep, PhraseKey>> = { small: "puzzle.size.small", medium: "puzzle.size.medium", large: "puzzle.size.large" };
+const STEP_WORDS: Readonly<Record<MeikyuuSolidStep, PhraseKey>> = { small: "puzzle.size.small", medium: "puzzle.size.medium", large: "puzzle.size.large", huge: "puzzle.size.huge", colossal: "puzzle.size.colossal" };
 const SIZE_WORDS: Readonly<Record<MeikyuuSizeWord, PhraseKey>> = { small: "puzzle.size.small", medium: "puzzle.size.medium", large: "puzzle.size.large", huge: "puzzle.size.huge" };
 
 /** Every size a Meikyuu level comes in: the four, the six tall ones, the two colossal ones, then the solids'. */
@@ -163,7 +221,8 @@ export function meikyuuSizeInAddress(size: number): string {
 
 /** A size read from an address: `2`, `6x9` or `cube-medium`; null for anything that is none of them. */
 export function meikyuuSizeFromAddress(text: string): number | null {
-  const solid = /^([a-z]+)-([a-z]+)$/.exec(text);
+  // The solid's name may have a hyphen in it (`rhombic-dodecahedron-medium`): the step is what follows the last.
+  const solid = /^([a-z-]+)-([a-z]+)$/.exec(text);
   if (solid !== null) {
     const kind = (MEIKYUU_SOLID_KINDS as readonly string[]).includes(solid[1]!) ? (solid[1] as MeikyuuSolidKind) : null;
     const step = (MEIKYUU_SOLID_STEPS as readonly string[]).includes(solid[2]!) ? (solid[2] as MeikyuuSolidStep) : null;

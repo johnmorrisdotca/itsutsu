@@ -1,11 +1,11 @@
 import type { MeikyuuMazeLevel } from "@johnmorrisdotca/meikyuu/levels";
 import type { MeikyuuColossalLevel } from "@johnmorrisdotca/meikyuu/levels/colossal";
 import type { MeikyuuTallLevel } from "@johnmorrisdotca/meikyuu/levels/tall";
-import type { MeikyuuSolidLevel } from "@johnmorrisdotca/meikyuu/3d/levels";
+import type { MeikyuuSolidLevel } from "@johnmorrisdotca/meikyuu/3d/levels/all";
 
 import type { Puzzle } from "../puzzles.types";
 import { isMeikyuuLevelAt, meikyuuLevelBand } from "./levelCounts";
-import { isMeikyuuColossal, isMeikyuuSolid, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_COLOSSAL_TALL_SIZE, isMeikyuuTall, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_SOLID_KINDS, MEIKYUU_SOLID_SIZES, MEIKYUU_SOLID_STEPS, MEIKYUU_TALL_SIZES, meikyuuSizeOfWord, meikyuuSolidSize, meikyuuTallSize } from "./sizes";
+import { isMeikyuuColossal, isMeikyuuSolid, MEIKYUU_COLOSSAL_SIZE, MEIKYUU_COLOSSAL_SIZES, MEIKYUU_COLOSSAL_TALL_SIZE, isMeikyuuTall, MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_SOLID_KINDS, MEIKYUU_SOLID_SIZES, MEIKYUU_SOLID_STEPS, MEIKYUU_TALL_SIZES, meikyuuSizeOfWord, meikyuuSolidOf, meikyuuSolidSize, meikyuuTallSize, type MeikyuuSolidKind, type MeikyuuSolidStep } from "./sizes";
 import { encodeWay } from "./way";
 
 export { nextLevelLabel } from "../fixedLevel";
@@ -46,17 +46,19 @@ export type MeikyuuLevelRow = {
 type Package = typeof import("@johnmorrisdotca/meikyuu/levels");
 type TallPackage = typeof import("@johnmorrisdotca/meikyuu/levels/tall");
 type ColossalPackage = typeof import("@johnmorrisdotca/meikyuu/levels/colossal");
-type SolidPackage = typeof import("@johnmorrisdotca/meikyuu/3d/levels");
+/** What a file of the solids' levels has that is read here (`@johnmorrisdotca/meikyuu/3d/levels`, `/dice`, `/shapes`: three files by when each solid came), and what the recipes alone have (`/recipes`, for a server). */
+type SolidPackage = { solidLevelsOf: (kind: MeikyuuSolidKind, size: MeikyuuSolidStep) => readonly MeikyuuSolidLevel[] };
+type SolidRecipesPackage = { solidRecipesOf: (kind: string, size: string) => readonly string[] };
 
 const bySize = new Map<number, readonly MeikyuuLevelRow[]>();
 
 let fromModule: (() => Promise<Package>) | null = null;
 let tallFromModule: (() => Promise<TallPackage>) | null = null;
 let colossalFromModule: (() => Promise<ColossalPackage>) | null = null;
-let solidFromModule: (() => Promise<SolidPackage>) | null = null;
+let solidFromModule: (() => Promise<SolidRecipesPackage>) | null = null;
 
 /** Used by `levelsModule.ts` only: how to read the lists where there is no browser. */
-export function readMeikyuuLevelsWith(source: () => Promise<Package>, tallSource: () => Promise<TallPackage>, colossalSource: () => Promise<ColossalPackage>, solidSource: () => Promise<SolidPackage>): void {
+export function readMeikyuuLevelsWith(source: () => Promise<Package>, tallSource: () => Promise<TallPackage>, colossalSource: () => Promise<ColossalPackage>, solidSource: () => Promise<SolidRecipesPackage>): void {
   fromModule = source;
   tallFromModule = tallSource;
   colossalFromModule = colossalSource;
@@ -83,12 +85,9 @@ async function importColossalList(): Promise<ColossalPackage> {
   return colossalFromModule();
 }
 
-/** The solids' lists are one script of their own (59 KB, 960 recipes), fetched only when a solid's size is asked for. */
-async function importSolidList(): Promise<SolidPackage> {
-  if (typeof window !== "undefined") return import("@johnmorrisdotca/meikyuu/3d/levels");
-  if (solidFromModule === null) throw new Error("Meikyuu's solid levels are read on the server through levelsModule.ts, which was not imported.");
-  return solidFromModule();
-}
+/** The solids of each of the two later files, as the package keeps them (`SOLID_MORE_DICE`, `SOLID_MORE_SHAPES`); the first five are the first file. */
+const SOLID_DICE_FILE: readonly string[] = ["prism", "trapezohedron", "dodecahedron", "rhombic-dodecahedron", "bipyramid", "icositetrahedron", "triacontahedron"];
+const SOLID_SHAPES_FILE: readonly string[] = ["box", "cross", "ring", "torus", "star", "heart"];
 
 /** The package's list split into the four sizes, each level at the place it says it has in its size. */
 function split(list: Package): void {
@@ -125,14 +124,32 @@ function splitColossal(list: ColossalPackage): void {
   bySize.set(MEIKYUU_COLOSSAL_TALL_SIZE, list.MEIKYUU_COLOSSAL_TALL_LEVELS.map(rowOf));
 }
 
-/** Each solid's three lists, kept under the solid's size (`meikyuuSolidSize`) with the place each has in its list. */
-function splitSolid(list: SolidPackage): void {
-  for (const kind of MEIKYUU_SOLID_KINDS) {
+/** Each solid's five lists, kept under the solid's size (`meikyuuSolidSize`) with the place each has in its list: from a file of levels in a browser, which has everything a page prints of a level. */
+function splitSolid(list: SolidPackage, kinds: readonly MeikyuuSolidKind[]): void {
+  for (const kind of kinds) {
     for (const step of MEIKYUU_SOLID_STEPS) {
       const levels: readonly MeikyuuSolidLevel[] = list.solidLevelsOf(kind, step);
+      if (levels.length === 0) continue;
       bySize.set(
         meikyuuSolidSize(kind, step),
         levels.map((level) => ({ number: level.number, code: level.code, cells: level.cells, effort: level.effort, rating: level.rating, score: level.score })),
+      );
+    }
+  }
+}
+
+/**
+ * The same from the recipes alone, which is all a server has: a row that says which recipe is which level and leaves its cells, its effort and its score at nought (the page that prints them is
+ * made in a browser from the file of its solid, and the server says only whether a maze is a level of a size, and which).
+ */
+function splitSolidRecipes(list: SolidRecipesPackage): void {
+  for (const kind of MEIKYUU_SOLID_KINDS) {
+    for (const step of MEIKYUU_SOLID_STEPS) {
+      const codes = list.solidRecipesOf(kind, step);
+      if (codes.length === 0) continue;
+      bySize.set(
+        meikyuuSolidSize(kind, step),
+        codes.map((code, at) => ({ number: at + 1, code, cells: 0, effort: 0, rating: 0, score: 0 })),
       );
     }
   }
@@ -156,15 +173,42 @@ export async function loadMeikyuuColossalLevels(): Promise<void> {
   splitColossal(await importColossalList());
 }
 
-/** The solids' lists, fetched once. The twelve arrive together: they are one script. */
+/**
+ * The levels of one solid, fetched once: in a browser the file of the solid (the first five are one file, the seven further dice another and the six shapes a third, `@johnmorrisdotca/meikyuu/3d/levels`, `/dice`,
+ * `/shapes`: a page loads only the one it shows), on a server the recipes of every solid (`/recipes`, 50 KB), which say which recipe is which level and are all a server has to say. The imports are inside the
+ * browser's branch, which the build removes from the server's copy, so a page's function carries the recipes and none of the files of levels.
+ */
+export async function loadMeikyuuSolidLevelsOf(kind: MeikyuuSolidKind): Promise<void> {
+  if (MEIKYUU_SOLID_STEPS.every((step) => bySize.has(meikyuuSolidSize(kind, step)))) return;
+  if (typeof window !== "undefined") {
+    const list: SolidPackage = await (SOLID_DICE_FILE.includes(kind) ? import("@johnmorrisdotca/meikyuu/3d/levels/dice") : SOLID_SHAPES_FILE.includes(kind) ? import("@johnmorrisdotca/meikyuu/3d/levels/shapes") : import("@johnmorrisdotca/meikyuu/3d/levels"));
+    splitSolid(list, MEIKYUU_SOLID_KINDS.filter((each) => importedWith(each, kind)));
+    return;
+  }
+  if (solidFromModule === null) throw new Error("Meikyuu's solid levels are read on the server through levelsModule.ts, which was not imported.");
+  splitSolidRecipes(await solidFromModule());
+}
+
+/** Whether two solids are in the one file of levels. */
+function importedWith(a: MeikyuuSolidKind, b: MeikyuuSolidKind): boolean {
+  const file = (kind: MeikyuuSolidKind): number => (SOLID_DICE_FILE.includes(kind) ? 1 : SOLID_SHAPES_FILE.includes(kind) ? 2 : 0);
+  return file(a) === file(b);
+}
+
+/** Every solid's levels, fetched once: the three files in a browser (about 330 KB, for the front door's progress), the recipes on a server. */
 export async function loadMeikyuuSolidLevels(): Promise<void> {
   if (MEIKYUU_SOLID_SIZES.every((size) => bySize.has(size))) return;
-  splitSolid(await importSolidList());
+  if (typeof window !== "undefined") {
+    await Promise.all([MEIKYUU_SOLID_KINDS[0], "prism", "box"].map((kind) => loadMeikyuuSolidLevelsOf(kind as MeikyuuSolidKind)));
+    return;
+  }
+  await loadMeikyuuSolidLevelsOf(MEIKYUU_SOLID_KINDS[0]);
 }
 
 /** The list a size is in, fetched once: the four sizes', the tall one, the colossal one or the solids'. */
 export async function loadMeikyuuLevelsFor(size: number): Promise<void> {
-  if (isMeikyuuSolid(size)) await loadMeikyuuSolidLevels();
+  const solid = meikyuuSolidOf(size);
+  if (solid !== null) await loadMeikyuuSolidLevelsOf(solid.kind);
   else if (isMeikyuuColossal(size)) await loadMeikyuuColossalLevels();
   else await (isMeikyuuTall(size) ? loadMeikyuuTallLevels() : loadMeikyuuLevels());
 }

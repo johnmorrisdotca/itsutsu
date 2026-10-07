@@ -64,14 +64,17 @@ export async function fingerOn(page: Page, touch: boolean): Promise<Finger> {
  * the picture afresh at each move; and, while the next cell is out of sight, keeping the finger on the end of the line as the solid turns by itself to show it.
  * `stopAt` is how many cells of the way to draw; the finger is lifted at the end unless `lift` is false.
  */
-export async function followWay(page: Page, finger: Finger, way: readonly number[], { stopAt = way.length, lift = true }: { stopAt?: number; lift?: boolean } = {}): Promise<void> {
+export async function followWay(page: Page, finger: Finger, way: readonly number[], { stopAt = way.length, lift = true, leastFacing = 0.4 }: { stopAt?: number; lift?: boolean; leastFacing?: number } = {}): Promise<void> {
   let p = await placeOf(page, way[0]!);
   await finger.down(p.x, p.y);
   for (let i = 1; i < stopAt; i += 1) {
     for (let tries = 0; ; tries += 1) {
       p = await placeOf(page, way[i]!);
-      if (p.visible && p.facing > 0.4) break;
+      // In clear view (not facing away, and, on a solid with parts that hide parts, not behind one). Such a solid turns to the cell and the cells round it together, which can leave the cell facing a little less squarely.
+      if (p.visible && p.facing > leastFacing) break;
       expect(tries, `cell ${i} of the way never came into view`).toBeLessThan(200);
+      // Where the solid cannot tell which of two passages is meant (the rim cells of a star above the head and below it), the player presses Face me, and the cell comes round.
+      if (tries === 60) await askBoard(page, "s.faceMe(argument);", way[i]);
       const head = await placeOf(page, way[i - 1]!);
       await finger.move(head.x, head.y);
       await page.waitForTimeout(25);
