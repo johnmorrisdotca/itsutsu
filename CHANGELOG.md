@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.544.0 — 2026-10-07 01:53 UTC
+- Meikyuu over a solid now has eighteen of them, every common die and a box, cross, ring, torus, star and heart, in five sizes up to colossal.
+
 ## 0.543.0 — 2026-10-07 01:51 UTC
 - Meikyuu's difficulty counts how much of the maze its answer covers, and every list is in that order: a level that stays in one corner is no longer called hard.
 
