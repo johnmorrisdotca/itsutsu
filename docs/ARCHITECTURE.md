@@ -274,12 +274,15 @@ knowing before adding anything that runs often.
   developer's machine against the database directly (`pnpm bots:play`), never
   through the deployed API.
 - **Server functions stay small.** The deploy measures every function after
-  the build and fails one over 60 MB, or more than 20% over its recorded size
+  the build and fails one over 39 MB, or more than 20% (and 5 MB) over its recorded size
   (`pnpm functions:size`, `scripts/function-sizes.baseline.json`). A disk read
   must name its folder in a literal, or the tracer packs everything it might
   reach.
-- **Actions minutes count.** A push to `main` runs about eighteen runner jobs,
-  so pushes are batched, and a push of only Markdown or `docs/` runs nothing.
+- **A push costs time and a shared allowance, not money.** Actions minutes are
+  free here (a public repository on standard runners), but a push to `main` runs
+  nineteen jobs against GitHub's twenty at once and spends one of the Vercel
+  team's hundred deployments a day, so pushes are batched, and a push of only
+  Markdown or `docs/` runs nothing.
 
 ## Testing
 
@@ -331,8 +334,11 @@ it is worth reading before believing a red spec.
 Migrations run before the new code goes live and are written to be additive,
 so the old code keeps working while the switch happens. A push cancels a
 deploy still in progress, since a superseded deploy is worth nothing, which
-means the last push of a session should be followed by one check of the live
-version. `ci.yml` runs the same checks on pull requests only.
+means the last push of a session should be followed by one check of what
+production serves: `vercel ls itsutsu --prod --json --limit 1` and its
+`githubCommitSha` (AGENTS.md, step 8 of the checklist), because the site is
+behind a bot challenge that answers a plain `curl` with 429. `ci.yml` runs the
+same checks on pull requests only.
 
 Before any migration or data write against production, take a Neon branch and
 a dump to the DiskStation first. `AGENTS.md`, "Back It Up Before You Migrate

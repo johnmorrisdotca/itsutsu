@@ -19,16 +19,18 @@ Postgres
   [`docs/CORE_CONCEPTS.md`](docs/CORE_CONCEPTS.md) for the ideas it rests on,
   [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how it fits together and
   [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) for the database.
-- **Changing the code?** [`AGENTS.md`](AGENTS.md) is the rulebook. It is long
-  because every rule in it was learned the hard way, and the gates enforce most
-  of it.
+- **Changing the code?** Follow the numbered checklist below, [Making a change
+  and shipping it](#making-a-change-and-shipping-it-read-this-first), from a
+  ticket to a live site. [`AGENTS.md`](AGENTS.md) is the rulebook behind it. It
+  is long because every rule in it was learned the hard way, and the gates
+  enforce most of it.
 
 The site is in beta, free, and joining is by invitation. Anybody can read the
 games and their rules without one.
 
 ## Contents
 
-- [Start here: how work is done](#start-here-how-work-is-done-on-this-repository)
+- [Making a change and shipping it](#making-a-change-and-shipping-it-read-this-first)
 - [Getting started](#getting-started)
 - [What it does](#what-it-does)
 - [How it is put together](#how-it-is-put-together)
@@ -42,59 +44,459 @@ games and their rules without one.
 - [Documentation](#documentation)
 
 <!-- procedures:start -->
-## Start here: how work is done on this repository
+## Making a change and shipping it (read this first)
 
-AGENTS.md and the README carry this same list, so a reader of either one has the
-procedures. The full text of each step is in AGENTS.md, under the section named
-in brackets; a test fails if the two copies differ.
+AGENTS.md and the README carry this same checklist, so a reader of either one
+has it. It is commands, in order, from "somebody asked for something" to "it is
+live". The section named in brackets after a step has the reasons; you do not
+need them to follow the step. A test fails if the two copies differ, or if a
+`pnpm` script named here does not exist.
 
-1. **A ticket before any work.** Every task, follow-up and sub-agent job has a
-   board row first; a request in conversation becomes a row first. `pnpm
-   task:prod add "<title, 120 characters at most>" --kind feature|fix|chore
-   --detail "…" --by "<who>"`, then `grade`. Close a row only through `pnpm
-   release:take:prod --done <exact key>`. [Work Starts With A Ticket, Board Gate]
-2. **Work in your own worktree and branch**, never in the shared checkout. Copy
-   `.env` in before `pnpm install`; stage files by name, never `git add -A`;
-   never `git stash` (one stack for every worktree); scratch files go outside
-   the repository. [Three Things A Worktree Gets Wrong, The Stash Stack]
-3. **Ports 6700 to 6799 only** (dev 6700, worktrees 6701 up); stop your own
-   server by process id, never `pkill`. A bulk bot run is local and in process,
-   never through the live site. [Local Ports, Bulk Play Runs Here]
-4. **Read the gate for the area you touch** before changing it: engine, new
-   game, dead ends, XP columns, set-up heights, the proxy, function size.
-   [Workspace Gates]
-5. **Check locally.** `pnpm quality:check` (lint, sizes, types, unit tests), then
-   `DATABASE_URL=postgresql://x:x@127.0.0.1:1/none pnpm preflight:prod`. The
-   local gate does not run the browser suite and CI's browser suite gates the
-   deploy, so grep `e2e/` for any count, name or text your change moves.
-   [Running the end-to-end suite, Deploys Are Fast By Design]
-6. **A schema change** is a migration from `pnpm db:migrate`; before it touches
-   production, take a Neon branch and a dump on the DiskStation, and never accept
-   a reset. [Back It Up Before You Migrate It]
-7. **Release.** One feature is one version: `pnpm release:take:prod --summary
-   "…" [--patch] [--done <key>]` immediately before pushing, never written on a
-   branch. It commits `package.json` and `CHANGELOG.md` only. [Every Landed
-   Commit Bumps The Version]
-8. **Push** with `git fetch -q origin && git merge-base --is-ancestor
-   origin/main HEAD && git push -q --atomic origin HEAD:main`, only after the
-   previous version is live, about once an hour, with ready work batched. A
-   rerun (`gh run rerun <id> --failed`) beats a new commit. [Fewer Pushes]
-9. **Watch the run for the first failed job**, not only the `deploy` job: a red
-   browser shard skips the deploy. Find the run with `gh run list --workflow
-   vercel-deploy.yml --branch main --limit 1`. Read the live version once with
-   `curl`, never in a loop. [A Killed Job Reports As Cancelled]
-10. **Cost rules.** Nothing on an interval under about 15 seconds, no work
-    repeated per request, no loading the live site in a loop; the team shares one
-    Vercel account with 100 deployments a day. [Function Size, Fewer Pushes]
-11. **Packages.** The @johnmorrisdotca packages are published from their own
-    repositories by pushing a `vX.Y.Z` tag (trusted publishing, no token). The
-    site pins each one exactly; a package release is not finished until the site
-    is on the new version, under its own ticket. [Engine Is Pure; each package's own CONTRIBUTING.md]
-12. **No AI attribution anywhere**: no trailer, no "Generated with" line, no
-    session link, in commits, pull requests, tickets or docs. [No AI Attribution]
-13. **Leave the docs true.** Re-read what `docs/DOCS_UPKEEP.md` maps your changed
-    files to; fix a sentence your change made false in the same commit. List the
-    small decisions you took so the owner can review them. [Documentation Upkeep]
+**How to use it.** Do the steps in order and skip none. Replace every word in
+`<angle brackets>`: `<branch>` is a short kebab-case name for your work
+(`its-dice-sound`); `<key>` is the board row's key, copied exactly from `pnpm
+task:prod`; `$SCRATCH` is a folder outside the repository for your temporary
+files (`SCRATCH=/tmp/its-<branch>; mkdir -p $SCRATCH`, or the scratchpad your
+tool gives you). Each command you run starts a fresh shell, so put `WEB_PORT=…`
+and the like in front of the command that needs them and do not rely on an
+earlier `export`. If a command fails and this list does not say what to do,
+STOP and tell John the command and the last lines it printed. Do not work round
+a failing check, and do not loosen one to make it pass.
+
+**Who lands.** Steps 1 to 5 are for every agent. Steps 6 to 8 (taking a
+release, pushing to `main`, watching the deploy) are done only by the session
+John has told, in this conversation, that it is the one that lands. If that is
+not you, finish step 5 and hand over: your branch name, the head commit, the
+ticket key, the one-line summary you would give the release, the specs you ran
+(and on what: Mac, Linux image) and any Japanese you drafted. Do not take a
+release number and do not push to `main`.
+
+### 1. Ticket before any work
+
+No file is touched, and no agent is started, before the work has a row on the
+live board. A request made in conversation becomes a row first. Run these from
+the main checkout, whose `.env` holds the live board token:
+
+```sh
+cd /Users/john/Projects/itsutsu
+pnpm task:prod
+pnpm task:prod add "<what a person gets, 120 characters or fewer>" --kind feature --detail "<what is wanted in John's own words, where to look, what done looks like>" --by "<your name>"
+pnpm task:prod grade <key> --priority normal --effort medium
+pnpm task:prod claim <key> --by "<your name>"
+```
+
+`--kind` is `feature`, `fix` or `chore`. The first command lists the board: if
+a row already covers the work, use its key and skip `add`. Run `grade` only if
+John said how urgent it is. If a command says a token is missing, STOP and tell
+John; never paste or print a token. Never close or edit a row any other way:
+`release:take:prod --done <key>` (step 6) is the only door to `done`.
+[Work Starts With A Ticket, Board Gate]
+
+### 2. Your own worktree, database and port
+
+Never work in the shared checkout. Copy `.env` in BEFORE `pnpm install`, or the
+Prisma client never loads it.
+
+```sh
+git -C /Users/john/Projects/itsutsu fetch -q origin
+git -C /Users/john/Projects/itsutsu worktree add .claude/worktrees/<branch> -b <branch> origin/main
+cd /Users/john/Projects/itsutsu/.claude/worktrees/<branch>
+cp /Users/john/Projects/itsutsu/.env .env
+pnpm install --frozen-lockfile
+pnpm db:generate
+grep -n "^ADMIN_EMAILS\|^RATE_LIMIT_RELIEF" .env
+```
+
+The last line must show `operator@example.test` at the END of `ADMIN_EMAILS`
+and `RATE_LIMIT_RELIEF=20`; add what is missing. Ports are 6700 to 6799 only
+(Itsutsu's block: 6700 is the main checkout's dev server, worktrees take 6701
+upwards). A port is free when this prints nothing:
+
+```sh
+lsof -nP -iTCP:6701 -sTCP:LISTEN
+```
+
+If it prints a line, try 6702, 6703 and so on. Take three: `<web>` for the
+site, `<db>` for your database and `<pw>` for step 4's Linux browser. Your own
+throwaway database, so that nothing you run touches the shared one on 55434 or
+another session's rows:
+
+```sh
+docker run -d --name its-<branch>-db -e POSTGRES_USER=itsutsu -e POSTGRES_PASSWORD=itsutsu -e POSTGRES_DB=itsutsu -p <db>:5432 postgres:17-alpine
+```
+
+Edit the worktree's `.env` so that `DATABASE_URL` AND `DIRECT_URL` both read
+`postgresql://itsutsu:itsutsu@localhost:<db>/itsutsu` (migrations use
+`DIRECT_URL`, so setting only one points two places at once). Then:
+
+```sh
+pnpm db:deploy
+WEB_PORT=<web> pnpm dev
+```
+
+Run the server in the background. Stop it by process id (`lsof -nP
+-iTCP:<web> -sTCP:LISTEN` shows it, then `kill <pid>`), never with `pkill` or
+`killall`, which stop other sessions' servers. After a `git rebase` or merge
+that changes `prisma/schema.prisma`, run `pnpm db:generate`, `pnpm db:deploy`
+and restart the server, in that order. A `next dev` or Playwright run with no
+`WEB_PORT` is a bug. [Three Things A Worktree Gets Wrong, Local Ports]
+
+### 3. Make the change
+
+- **Read the rule for the area first**, in AGENTS.md "Workspace Gates": the
+  engine, a new game, dead ends and counts, XP columns, set-up heights, Just the
+  board, the proxy, function size. `git grep -n "<name>"` and `ls <folder>`
+  before creating a file: the one you think is new may exist (`src/proxy.ts`).
+- **Every word a person reads goes through the phrase table, in English and
+  Japanese.** The English is a key in `src/lib/i18n/phrases.<area>.constants.ts`
+  (the area is the first word of the key). The Japanese is an entry for the
+  same key in `src/lib/i18n/dictionaries/ja.drafted.<area>.constants.ts` with
+  `text`, `back` (what it literally says, in English) and EITHER
+  `review: { by: "agent", on: "<today>" }`, only after the `japanese-reviewer`
+  agent has passed it, OR `ask: "Written by <you> on <date>; nobody has read it."`
+  and no `review`. Never invent a `review`. Copy that belongs to a game, puzzle,
+  opening, computer player or family is not a phrase: it goes in the sibling
+  Japanese table beside it (AGENTS.md "Every Word Goes Through The Phrase
+  Table" says which). Then run, and commit what they write:
+
+  ```sh
+  pnpm i18n:text
+  WRITE_JAPANESE_REVIEW=1 DATABASE_URL=postgresql://x:x@127.0.0.1:1/none pnpm exec vitest run src/lib/i18n
+  pnpm i18n:check
+  ```
+
+  `pnpm i18n:text` writes `src/lib/i18n/jaText.generated.json.br` and the second
+  command rewrites the `docs/japanese-review*.md` sheets: neither is ever edited
+  by hand. If `pnpm i18n:check` objects to a sentence, put the sentence in the
+  phrase table; do not reword it until the check stops seeing English, and do
+  not add an allowance or shorten a `PENDING_PATHS` list to get past it.
+- **Pictures and generated files** are written by a command, never by hand.
+  After a change to how a board, a puzzle, a party or casual game, or a Houseki
+  game is drawn: `WEB_PORT=<web> pnpm screenshots:games` (or `:puzzles`,
+  `:party`, `:casual`, `:houseki`), which takes the pictures, cuts the
+  thumbnails and writes the stamp that `*Art.coverage.test.ts` compares. Run
+  the stamp alone (`node scripts/board-art-stamp.ts`, `puzzle-art-stamp.ts`,
+  `party-art-stamp.ts`, `casual-art-stamp.ts`, `houseki-art-stamp.ts`) only
+  after you have looked at a picture and your edit to a fingerprinted file
+  cannot change how anything is drawn. Also: `pnpm art:thumbs` after replacing a
+  `public/art/games/*.jpg`; `pnpm games:added` once a new game's picture is
+  committed; `pnpm data:pack` after the data behind `src/lib/packed/*.json.br`
+  changed or a package holding it was bumped; `pnpm functions:size --record`
+  only for a deliberate change in a server function's size (AGENTS.md
+  "Function Size"). Do not edit the ten bot files in `LADDER_FINGERPRINT_FILES`
+  unless the ticket is about the bots: any edit, a comment included, silences
+  the measured ladder until it is measured again.
+- **A new game, puzzle, party or casual game** is not finished until every item
+  of AGENTS.md "New Game Gate" is true; its coverage tests name what is missing.
+- **A package** (an `@johnmorrisdotca/…` library) is changed in its own
+  repository, never here: `gh repo clone johnmorrisdotca/<name>`, read its
+  `CONTRIBUTING.md`, `pnpm install --frozen-lockfile`, `pnpm check`, push to its
+  `main`, watch its CI to success, set the version and its `CHANGELOG.md`, then
+  either push the tag `vX.Y.Z` or run `gh workflow run release.yml --repo
+  johnmorrisdotca/<name> --ref main` (trusted publishing, no token), and wait
+  until `npm view @johnmorrisdotca/<name> version --prefer-online` shows it.
+  Here, `pnpm add @johnmorrisdotca/<name>@<X.Y.Z> --save-exact`, under its own
+  ticket. [Engine Is Pure, each package's CONTRIBUTING.md]
+- **A schema change** is step 9. **Nothing may run on a timer under about 15
+  seconds**, repeat work per request, or wake the database on a schedule; a
+  server call, a search or a replay inside something that repeats is a finding.
+
+### 4. Check it locally
+
+Everything in this step runs in your worktree. First the whole static gate,
+with a database that does not exist, exactly as CI has none (a unit test that
+forgot a stand-in passes here against a real database and fails there):
+
+```sh
+rm -rf .next
+DATABASE_URL=postgresql://x:x@127.0.0.1:1/none pnpm quality:check
+```
+
+That is lint, the 500-line file gate (`pnpm loc:check`), `pnpm i18n:check`,
+`pnpm typecheck` and the unit tests; about four minutes. One test file alone:
+`DATABASE_URL=postgresql://x:x@127.0.0.1:1/none pnpm exec vitest run <path>`.
+
+The local gate does not open a browser, and CI's browser suite decides whether
+the deploy happens, so: grep `e2e/` for every old count, name, label and
+address your change moves (`git grep -n "<old text>" e2e/`), then run the specs
+for the area you touched, and the specs below if you changed a layout, a
+width, a set-up screen, a board, a picture or a play page, on a PRODUCTION
+build (`E2E_SERVER=start`), because that is what CI runs:
+
+```sh
+rm -rf .next && WEB_PORT=<web> pnpm build
+WEB_PORT=<web> E2E_SERVER=start pnpm exec playwright test e2e/<one>.spec.ts e2e/<two>.spec.ts --output $SCRATCH/pw
+```
+
+Always `pnpm exec playwright test …`, never `pnpm test:e2e -- …` (pnpm passes
+the `--` on and Playwright then runs the wrong files). The layout and sweep
+specs: `e2e/set-up-steady.spec.ts`, `e2e/bare-board.spec.ts`,
+`e2e/wide-mode.spec.ts`, `e2e/page-shape.spec.ts`, `e2e/page-width.spec.ts`,
+`e2e/phone-overflow.spec.ts`, `e2e/phone-header.spec.ts`,
+`e2e/game-pictures.spec.ts`, and for anything that loops over every puzzle
+`e2e/puzzle-checks.spec.ts` and `e2e/puzzle-hints.spec.ts`. Do not edit source
+while a run is going, and keep to one browser run at a time on the Mac. Your
+own database means the run's setup may sweep it freely.
+
+CI runs on Linux, and layout specs have passed on the Mac and failed there. Run
+the layout specs a second time in Playwright's own Linux image, which draws
+the browser in a container and reaches your server on the Mac:
+
+```sh
+V=$(pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+docker run -d --rm --name its-<branch>-pw -p <pw>:<pw> --ipc=host mcr.microsoft.com/playwright:v$V-noble /bin/sh -c "npx -y playwright@$V run-server --host 0.0.0.0 --port <pw>"
+sleep 15
+PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:<pw>/ PW_TEST_CONNECT_EXPOSE_NETWORK='*' WEB_PORT=<web> E2E_SERVER=start pnpm exec playwright test e2e/<layout spec>.spec.ts --output $SCRATCH/pw-linux
+docker rm -f its-<branch>-pw
+```
+
+(`--host 0.0.0.0` is needed: without it the container listens only inside
+itself and the connection is reset.) Look at what you built at a phone's width
+(390px) and a desk's (1280px), in light and dark. A green run of specs you
+chose is not "the suite is green": only CI's run is, so say which one you
+mean. [Running the end-to-end suite, Deploys Are Fast By Design]
+
+### 5. Commit
+
+```sh
+git status --short
+git add <path> <path>
+git -c user.name="John Morris" -c user.email="john@johnmorris.ca" commit -m "<what changed and why, one line>" -m "Ticket: <key>"
+git log -1 --format='%an <%ae>%n%B'
+```
+
+Read every line of `git status` first: each file must be yours. Stage by name,
+never `git add -A` or `git add .`, and never `git stash` (the stash is one
+stack for every worktree). One concern per commit. The last command must show
+John Morris and no trailer, no session link and no "Generated with" line.
+Temporary files live in `$SCRATCH`, never in the repository. If you are not
+the landing session, STOP here and hand over (see "Who lands"); a branch
+needs no push for that, because every worktree shares one repository.
+
+### 6. Landing (the landing session only)
+
+**6.1 One deploy at a time.** A push cancels the deploy still running, so
+check the last one is finished:
+
+```sh
+gh run list --workflow vercel-deploy.yml --branch main --limit 1 --json status,conclusion,headSha
+```
+
+If `status` is not `completed`, STOP and wait for it (step 7); push about once
+an hour with the ready work batched, and a fix for something broken live may
+go sooner. Several finished features are several releases and ONE push.
+
+**6.2 Bring the branch up to date and re-read the docs.**
+
+```sh
+git fetch -q origin && git rebase origin/main
+pnpm install --frozen-lockfile && pnpm db:generate
+git diff --name-only origin/main...HEAD
+```
+
+To land a branch another agent handed over, `git merge --no-edit <their-branch>`
+into your worktree first, one branch at a time, oldest first, and run the lines
+above after each.
+
+Find each changed path in the map in `docs/DOCS_UPKEEP.md`, re-read the docs
+it names, and fix a sentence your change made false in its own commit (step 5)
+BEFORE taking the release: the tool commits only `package.json` and
+`CHANGELOG.md`. After a rebase, list the files your branch added
+(`git diff --name-status origin/main...HEAD`) and check none is a file `main`
+deleted or moved. [Documentation Upkeep, A Merge Cannot Conflict With A File
+That No Longer Exists]
+
+**6.3 Take one release per feature, oldest first.** The tree must be clean.
+
+```sh
+GIT_AUTHOR_NAME="John Morris" GIT_AUTHOR_EMAIL=john@johnmorris.ca GIT_COMMITTER_NAME="John Morris" GIT_COMMITTER_EMAIL=john@johnmorris.ca pnpm release:take:prod --summary "<one line a player would read, lower case, continuing the dash>" --done <key>
+GIT_AUTHOR_NAME="John Morris" GIT_AUTHOR_EMAIL=john@johnmorris.ca GIT_COMMITTER_NAME="John Morris" GIT_COMMITTER_EMAIL=john@johnmorris.ca pnpm release:take:prod --patch --summary "<a fix>" --summary "<another fix>" --done <key>
+```
+
+The first form is a minor (something a player would notice: a game, a page, a
+capability) and takes exactly ONE `--summary`; the second is a patch (a fix, a
+rewording, a refactor, a chore) and may take several. Use whichever fits each
+feature, once per feature. It takes the next number, dates `CHANGELOG.md`,
+commits both files with no trailer and closes the row `<key>`; it prints
+`marked done`. Every release needs a `--summary`. Never write the version into
+`package.json` or `CHANGELOG.md` yourself. If closing a row fails, the release
+commit is still right: with a clean tree, run `pnpm release:take:prod --done
+<key>` alone. [Every Landed Commit Bumps The Version]
+
+**6.4 The one chain.** The gate, the fetch, the ancestor check and the push are
+ONE command joined by `&&`: never `;`, never a pipe (a pipe's status is the
+last command's, so a red gate pushed), never a push typed on its own.
+
+```sh
+rm -rf .next && test -z "$(git status --porcelain)" && DATABASE_URL=postgresql://x:x@127.0.0.1:1/none pnpm preflight:prod > $SCRATCH/gate.log 2>&1 && git fetch -q origin && git merge-base --is-ancestor origin/main HEAD && git push -q --atomic origin HEAD:main && echo "PUSHED $(git rev-parse HEAD)"
+```
+
+`pnpm preflight:prod` runs lint, sizes, unit tests, audit, the attribution
+check, the English check, types and the build side by side, about two minutes.
+The answer is the last line: `PUSHED <sha>` means it is on `main`. Anything
+else means the chain stopped before the push, and nothing was pushed:
+
+- **The tree was dirty:** `git status`, stage or remove, commit, and run it again.
+- **The gate is red:** `tail -60 $SCRATCH/gate.log`. Take the release commit(s)
+  back off with `git reset --keep HEAD~<number of releases you took>`, fix the
+  cause in a new commit (step 5), and go again from 6.3. The number is free again.
+- **`origin/main` moved** (the ancestor check failed): somebody pushed first. Take
+  your release commit(s) off the same way, `git fetch -q origin && git rebase
+  origin/main`, and go again from 6.2. A row already closed at a version that
+  did not ship is John's to hear about.
+
+### 7. Watch the deploy
+
+A push to `main` starts `vercel-deploy.yml`: five check legs and fourteen
+browser shards side by side, then, only if all pass, the `deploy` job. Nothing
+is live until the `deploy` job succeeds, about fifteen minutes after the push.
+Find the run by your commit:
+
+```sh
+SHA=$(git rev-parse HEAD)
+gh run list --workflow vercel-deploy.yml --branch main --limit 10 --json databaseId,headSha -q ".[] | select(.headSha==\"$SHA\") | .databaseId"
+```
+
+It prints nothing for the first seconds after a push (wait 30 seconds, ask once
+more) and nothing for ever if every changed file was Markdown or under `docs/`
+(no run is started for those, and none is needed). With the number as `RUN`,
+ask GitHub once a minute and stop at the FIRST failed job, not only at the
+`deploy` job, because a red browser shard skips the deploy and looks like a
+wait:
+
+```sh
+RUN=<run id>
+while true; do
+  JOBS=$(gh run view $RUN --json jobs -q '[.jobs[] | {id: .databaseId, name, status, conclusion}]')
+  echo "$JOBS" | jq -e 'any(.[]; .conclusion=="failure" or .conclusion=="cancelled")' >/dev/null && break
+  echo "$JOBS" | jq -e 'any(.[]; .name=="deploy" and .status=="completed")' >/dev/null && break
+  sleep 60
+done
+echo "$JOBS" | jq -r '.[] | select(.conclusion=="failure" or .conclusion=="cancelled" or .name=="deploy") | "\(.id) \(.name) \(.status) \(.conclusion)"'
+```
+
+Run it from your worktree (`gh` needs a repository around it; outside one the
+loop would wait for ever). If your tool cannot hold a command for that long,
+run the loop in the background and read its output. Never ask faster than once
+a minute.
+
+- **`deploy completed success`:** go to step 8.
+- **A job failed.** Read its log (the number is the first column above), fix
+  forward, and do not retry blind:
+
+  ```sh
+  gh api --allow-escape-sequences repos/johnmorrisdotca/itsutsu/actions/jobs/<job id>/logs | perl -pe 's/\e\[[0-9;]*m//g' > $SCRATCH/job.log
+  grep -n -E "[0-9]+\) \[chromium\]|[0-9]+ failed|Error:|error TS|FAIL" $SCRATCH/job.log | head -40
+  ```
+
+  A real failure gets a new ticket (step 1), a new worktree (step 2), the fix
+  and a `--patch` release, and the chain again: never a force-push, never a
+  revert pushed over a running deploy. `gh run rerun $RUN --failed` is for a
+  failure that is not yours: a spec in a file you did not touch that failed on a
+  timeout or a network error, never an assertion about what you changed. Rerun
+  once; a second red is real. A rerun repeats only the failed jobs, and a push
+  repeats everything.
+- **`deploy` failed with `api-deployments-free-per-day`:** the whole Vercel team
+  is allowed 100 deployments a day. The refusal costs nothing and names its
+  reset time. After that time, `gh run rerun $RUN --failed`, never a new commit.
+  While the cap is spent, push nothing, and after it push a change with no
+  migration before one that has one.
+- **Cancelled** with no failed job: a newer push replaced this run (or a job
+  hit its 30 minute limit, which also reads `cancelled`). Find the run for
+  your commit again; do not push over it.
+
+[A Killed Job Reports As Cancelled, Fewer Pushes]
+
+### 8. Check it is live
+
+`deploy completed success` means `vercel deploy --prod` finished. Check what
+production is serving with ONE call that asks Vercel's API, not the site:
+
+```sh
+npx -y vercel@latest ls itsutsu --prod --scope spxis-projects-0d6306b4 --json --limit 1 2>/dev/null | jq -r '.deployments[0] | "\(.state) \(.meta.githubCommitSha)"'
+```
+
+It must print `READY` and the `$SHA` you pushed; the version is `jq -r .version
+package.json` at that commit. A different sha means the `deploy` job has not
+finished: go back to step 7. Do NOT read the version by loading `itsutsu.com`:
+Vercel Bot Protection answers a plain `curl` with a 429 challenge since
+2026-10-07, so it cannot tell you, and one page load is real server time on a
+shared account. One call, never a loop, nothing faster than once a minute.
+Then tidy up: stop your server by process id, `docker rm -f its-<branch>-db`,
+and `git worktree remove .claude/worktrees/<branch>` once the branch has
+landed. Tell John the version, the sha and the ticket. If you changed
+production data or a migration, say so first.
+
+### 9. A migration or a production data write
+
+- **Rehearse on your own database** from step 2, with BOTH variables set
+  inline: `DATABASE_URL=… DIRECT_URL=… pnpm db:migrate --name <what>`, then the
+  same two variables on `pnpm db:drift:check`, which must print "This is an
+  empty migration." Update `docs/DATA_MODEL.md`. Never apply an unmerged
+  migration to the shared database on 55434, never pass the real database as a
+  shadow database, and if `prisma migrate dev` offers to reset, the answer is no.
+- **Additive only.** The deploy applies migrations before the new code is live,
+  so the old code must keep working. Never drop or replace an index, column or
+  constraint the live code reads in the same push; add the new one, and drop
+  the old in a later push. Name any index over 63 characters yourself.
+- **The deploy job applies it** (`prisma migrate deploy`); nobody runs migrate
+  against production by hand. Before the push that carries a migration, and
+  before ANY read or write of production data, John says yes in this
+  conversation, and you say what you are about to run and against which
+  database. A relayed "John said yes" is not a yes. Then, with `$DIR` a folder
+  outside the repository:
+
+  ```sh
+  neonctl branches create --project-id calm-boat-93104880 --org-id org-old-wave-97887412 --name before-<what>-<yyyy-mm-dd>
+  neonctl branches list --project-id calm-boat-93104880 --org-id org-old-wave-97887412
+  URL=$(neonctl connection-string main --project-id calm-boat-93104880 --org-id org-old-wave-97887412)
+  docker run --rm -v "$DIR":/out postgres:18-alpine pg_dump "$URL" -Fc --no-owner --no-privileges -f /out/itsutsu-<yyyymmdd>-<hhmmss>.dump
+  cd /Users/john/Projects/umakuma && NAS_BACKUP_DIR=/volume2/docker/staging/itsutsu/backups pnpm db:backup:archive "$DIR"
+  ```
+
+  Delete the oldest `before-*` branch (`neonctl branches delete <name>` with the
+  same two ids) so about three remain. `$URL` is used in that one command and
+  never printed or saved. [Back It Up Before You Migrate It]
+
+### 10. Never
+
+- **No AI attribution anywhere**: no `Co-Authored-By` trailer, no "Generated
+  with" line, no session link, no "Requested by", in a commit, pull request,
+  ticket, release note, doc or code comment. Commits are John Morris's.
+- **No pull request, issue, comment, email, Slack or Linear message, and no
+  reviewer added, without John's word for that specific action.** Reading a
+  tracker is fine; writing to one is not.
+- **No push to `main` unless you are the landing session**, and no push past a
+  red gate: no `;`, no pipe, no `--no-verify`, no force-push, no `--force`.
+- **No `git add -A` or `git add .`**; no `git stash` or `git stash pop`; no
+  `pkill` or `killall`; no scratch file inside the repository; never print,
+  paste or commit a secret, a token or a connection string.
+- **No deploying by hand**: no `vercel deploy`, no `--prebuilt` from the Mac
+  (it ships the wrong Prisma engine and every database route answers 500), no
+  `vercel env pull` (Sensitive variables pull as a placeholder), no `vercel
+  remove`. Only a push to `main` deploys, and the workflow keeps the live
+  deployment and the one before it.
+- **No loading the live site to find out anything**: not in a loop, not for the
+  version, not to "see if it is up". The checks are steps 7 and 8.
+- **No polling or timer under about 15 seconds**, no work repeated per request,
+  nothing that wakes the database on a schedule, no bulk play through the
+  site's API (`pnpm bots:play` runs in process on your machine).
+- **No money without John's yes**: no new paid service, plan, add-on, storage
+  tier, larger runner, private repository running a workflow, or extra Neon
+  branches beyond about three `before-*`. Every project shares one Vercel
+  account with 100 deployments a day.
+- **No production database access** without step 9's yes, and no `prisma
+  migrate reset` on any database other people use.
+- **No editing what a command writes**: `CHANGELOG.md`, the version in
+  `package.json`, `jaText.generated.json.br`, `src/lib/packed/*.json.br`, the
+  `docs/japanese-review*.md` sheets, the art stamps, the function-size baseline.
+- **No changing `src/proxy.ts`'s decisions.** A change there only runs after
+  the gate has already said yes.
+- **No loosening a gate to get past it**: no new allowance, no shortened
+  pending list, no trimmed comment, no deleted or skipped test, no `toHaveCount(0)`
+  asserted before something that IS on the page has been waited for. Read what
+  the gate is objecting to.
+- **No guessing a board key**, and no work for which there is no row.
 <!-- procedures:end -->
 
 ## Getting started
@@ -111,7 +513,9 @@ pnpm dev                  # http://localhost:6700
 ```
 
 `WEB_PORT` overrides the port. `pnpm local:db:reset` throws the database away
-and rebuilds it from the migrations. In a git worktree especially, copy `.env`
+and rebuilds it from the migrations. This is the single-person set-up; an agent
+or a second checkout follows the checklist above, which gives each worktree its
+own port and database. In a git worktree especially, copy `.env`
 in before `pnpm install`: the install generates the Prisma client, and a client
 generated before `.env` existed may never load it (`pnpm db:generate` fixes it
 afterwards).
@@ -1349,7 +1753,12 @@ that no server function has grown past its limit, the deploy, and the removal
 of superseded deployments. Migrations run before the new code goes live and
 are all additive, so the old code keeps working during the switch. A push of
 only Markdown or `docs/` runs nothing. How fast that is, and how to keep it
-fast, is in AGENTS.md, "Deploys Are Fast By Design".
+fast, is in AGENTS.md, "Deploys Are Fast By Design". The `deploy` job is the
+only thing that makes a version live, and it keeps the live deployment and the
+one before it. Since 2026-10-07 the site sits behind Vercel Bot Protection set
+to Challenge, so a plain `curl https://itsutsu.com/…` answers 429; what
+production is serving is read from Vercel's API (the checklist's step 8), not
+from a page.
 
 One-time setup:
 
@@ -1404,6 +1813,11 @@ Several features are several runs of it and then one push. See AGENTS.md,
 | Prisma client / browser | `pnpm db:generate` / `pnpm db:studio` |
 | Mint an invite code | `pnpm invite` |
 | Dependency audit | `pnpm security:check` |
+| English typed outside the phrase table | `pnpm i18n:check` |
+| Write the Japanese the site reads / the packed data files | `pnpm i18n:text` / `pnpm data:pack` |
+| Refuse a commit that credits an AI | `pnpm attribution:check` |
+| Measure the server functions after `vercel build` | `pnpm functions:size` |
+| Pictures of the games, puzzles and the rest, with their stamps | `pnpm screenshots:games` / `:puzzles` / `:party` / `:casual` / `:houseki` |
 | The release gate, checks side by side | `pnpm preflight:prod` |
 | Take a release (bumps the version, dates the changelog, closes a live board row) | `pnpm release:take:prod --summary "…" --done <row>` |
 | Write to the features board from a terminal | `pnpm task` (dev board) / `pnpm task:prod` (live board) |
