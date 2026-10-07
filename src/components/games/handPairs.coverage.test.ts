@@ -58,7 +58,7 @@ const EXCEPTIONS: Record<string, { count: number; why: string }> = {
   "src/app/about/about.links.tsx": { count: 1, why: "The `<jp>` tag of the markup a phrase may carry: sets Japanese words that are the subject of a sentence in the mincho face" },
   "src/app/about/about.words.tsx": { count: 1, why: "The glossary's first column: the Japanese word IS the thing being explained, and its reading and meaning are in the columns beside it" },
   "src/app/dice/page.tsx": { count: 1, why: BRAND_IN_PROSE },
-  "src/app/join/page.tsx": { count: 1, why: "The version in three notations (1.2.3 · roman · kanji numerals), a stamp and not a word with its translation" },
+  "src/components/auth/JoinDoor.tsx": { count: 1, why: "The version in three notations (1.2.3 · roman · kanji numerals), a stamp and not a word with its translation" },
   "src/app/layout.tsx": { count: 1, why: "The name of the font's CSS variable, not a span" },
   "src/app/page.tsx": { count: 1, why: BRAND_IN_PROSE },
   "src/components/admin/ControlPanel.tsx": { count: 2, why: OPERATOR },

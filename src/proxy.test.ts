@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 
 import { NextRequest } from "next/server";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { EMBED_TOKEN_PARAM, signEmbedToken } from "@/lib/auth/embedToken";
 import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
@@ -908,5 +908,62 @@ describe("remembering a language asked for in the address", () => {
     // Who is asking is not this file's business: the gate sets the same two
     // cookies either way and never looks up an account to decide.
     expect(cookiesOn(response)["lang-chosen"]).toBe("ja");
+  });
+});
+
+/*
+ * THE KEPT COPY OF AN OPEN PAGE (`strangerRewrite.ts`) is the one thing the
+ * gate does after a yes that changes where the request goes, so it is pinned
+ * here at the gate rather than only on its own: a rewrite must never be the
+ * answer to a request the gate shuts, nor to one that carries a session.
+ */
+describe("a stranger on an open page is answered from the kept copy", () => {
+  const ENV = { ...process.env };
+  const SECRET = "a-secret-long-enough-to-be-accepted";
+
+  // The live site, where the copy is made without being asked for.
+  beforeEach(() => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL", "1");
+  });
+
+  afterEach(() => {
+    process.env = { ...ENV };
+    vi.unstubAllEnvs();
+  });
+
+  function ask(path: string, cookie?: string): NextRequest {
+    process.env.AUTH_SECRET = SECRET;
+    return new NextRequest(`https://itsutsu.com${path}`, cookie === undefined ? undefined : { headers: { cookie } });
+  }
+
+  it("rewrites an open page for a stranger", async () => {
+    const response = await proxy(ask("/games/hex/rules"));
+    expect(response.status).toBe(200);
+    expect(new URL(response.headers.get("x-middleware-rewrite") ?? "https://x.test/").pathname).toBe("/stranger/games/hex/rules");
+  });
+
+  it("does not rewrite for a member: a valid session is answered by the live page", async () => {
+    process.env.AUTH_SECRET = SECRET;
+    const session = await signSession({ kind: "player", memberId: "m-1", code: "x", exp: Math.floor(Date.now() / 1000) + 3600 });
+    const response = await proxy(ask("/games/hex/rules", `${SESSION_COOKIE}=${session}`));
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+  });
+
+  it("still sends a stranger away from a page the gate shuts, and never rewrites it", async () => {
+    for (const path of ["/players", "/history", "/me", "/stranger/games", "/games/hex/play", "/games/hex/standings"]) {
+      const response = await proxy(ask(path));
+      expect(response.status, path).toBe(307);
+      expect(response.headers.get("x-middleware-rewrite"), path).toBeNull();
+      expect(new URL(response.headers.get("location") ?? "https://x.test/").pathname, path).toBe("/join");
+    }
+  });
+
+  it("still takes a language out of the address before anything else, then keeps the page", async () => {
+    const response = await proxy(ask("/games/hex?lang=en"));
+    expect(response.status).toBe(307);
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+    const kept = await proxy(ask("/games/hex", "lang=en; lang-chosen=en"));
+    expect(new URL(kept.headers.get("x-middleware-rewrite") ?? "https://x.test/").pathname).toBe("/stranger/games/hex");
   });
 });

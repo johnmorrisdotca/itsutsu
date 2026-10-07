@@ -77,6 +77,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `README.md`, "Embedding the board", "Embed tokens" | integrators | `src/app/embed/**`, `src/app/api/embed/**`, `src/lib/embed/**` |
 | `README.md`, "The API" | integrators | `src/app/api/**` (new or removed routes) |
 | `README.md`, "Deploying", "Scripts", "Getting started" | engineers | `.github/workflows/**`, `package.json` scripts, `.env.example`, `next.config.ts` |
+| `README.md`, "Getting in" (the open pages kept for strangers); `AGENTS.md`, "Open Pages Are Kept For Strangers" | engineers | `src/lib/stranger/**`, `src/app/stranger/**`, `src/proxy.ts` (the open lists), `src/components/auth/JoinDoor.tsx` |
 | `docs/ARCHITECTURE.md` | engineers | `src/app/api/**`, `src/proxy.ts`, `src/lib/gomoku/engine.ts`, the `@johnmorrisdotca/narabe` version in `package.json`, `src/lib/i18n/**`, `.github/workflows/**`, `next.config.ts` |
 | `docs/CORE_CONCEPTS.md` | anyone new to the code | `src/lib/gomoku/**`, `src/lib/puzzles/**`, `src/lib/party/**`, `src/lib/catalogue/gameKeys.ts`, `src/lib/catalogue/gameSettings.ts`, `src/lib/rating/**`, `src/lib/bots/**`, `src/lib/xp/**`, `src/lib/auth/**` |
 | `docs/DATA_MODEL.md` | engineers | `prisma/schema.prisma` and `prisma/migrations/**`, every time |

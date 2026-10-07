@@ -80,6 +80,7 @@ export const ROUTES: Record<string, Route> = {
   "/join": { skip: "the doorstep a stranger without an invite sees: a centred card, no masthead and no frame" },
   "/learn": { url: () => "/learn" },
   "/learn/cube": { url: () => "/learn/cube" },
+  "/stranger/[[...path]]": { skip: "the kept copy of the open pages, reached only by the gate's rewrite: each page it draws is measured at its own address in this list" },
   "/stop/[token]": { skip: "reached only through a signed link from an email; mail-stop.spec opens it with a real token and measures it at 390px" },
   "/learn/[slug]": { url: () => "/learn/five-in-a-row" },
   "/me": { url: () => "/me" },

@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "@/components/ui/Link";
-import { usePathname } from "next/navigation";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { YourTurnBadge } from "@/components/mine/YourTurnBadge";
 import { BUTTON_BASE, BUTTON_STRONG, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import type { PhraseKey } from "@/lib/i18n/i18n.constants";
+import { useSitePathname } from "@/lib/stranger/useSitePathname";
 
 /** The one screen a game is set up on — see the button after the tabs. */
 const NEW_GAME_HREF = "/games/new";
@@ -113,7 +113,7 @@ function currentHref(pathname: string): string | null {
 
 /** The site's sections, with the one the reader is in underlined. */
 export function NavLinks() {
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const say = useSpeaker();
   const here = currentHref(pathname);
   return (

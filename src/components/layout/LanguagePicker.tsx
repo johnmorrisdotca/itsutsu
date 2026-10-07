@@ -1,8 +1,9 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import type { LanguageOption } from "@/lib/i18n/i18n.types";
+import { useSitePathname } from "@/lib/stranger/useSitePathname";
 
 /**
  * The languages the site speaks, in the colophon.
@@ -74,7 +75,7 @@ export function LanguagePicker({
    */
   onChoose?: (href: string) => void;
 }) {
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const params = useSearchParams();
 
   if (options.length < 2) return null;

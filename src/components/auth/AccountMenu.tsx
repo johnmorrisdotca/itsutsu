@@ -3,7 +3,7 @@
 import { forgetKeptPages } from "@/lib/offline/offlineKeeper";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import Link from "@/components/ui/Link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -13,6 +13,7 @@ import { FEED_PATH } from "@/lib/feed/feed.constants";
 
 import { ADMIN_SHORTCUTS } from "./admin.constants";
 import type { MenuLanguages, MenuVersion } from "./accountMenu.types";
+import { useSitePathname } from "@/lib/stranger/useSitePathname";
 
 export type Who = { signedIn: boolean; admin: boolean; email: string | null; name: string | null; picture: string | null; member: boolean };
 
@@ -67,7 +68,7 @@ export function AccountMenu({
   version: MenuVersion;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   /*
    * The server already knows who is here; the first paint uses that, so nothing
    * flashes in. And it asks again as it arrives ONLY where the asking does
@@ -146,7 +147,7 @@ export function AccountMenu({
   /*
    * A language is chosen INSIDE the menu, so the menu stays. The gate reads
    * `?lang=` off any GET, sets the cookie and redirects to the clean address
-   * (`rememberLanguage` in proxy.ts); a fetch collects that cookie without the
+   * (`rememberLanguage`, called by proxy.ts); a fetch collects that cookie without the
    * page going anywhere, and `router.refresh()` empties the client router
    * cache and redraws every server-rendered word in the new language, this
    * panel included, since `languages` arrives as a prop. The panel is client

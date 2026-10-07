@@ -3,16 +3,9 @@ import type { NextRequest } from "next/server";
 
 import { carriesOwnCredential } from "@/lib/auth/ownCredentials";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
-import { OFFERED_LOCALES } from "@/lib/i18n/dictionaries";
-import {
-  LANG_CHOSEN_COOKIE,
-  LANG_CHOSEN_FOR_SECONDS,
-  LANG_COOKIE,
-  LANG_PARAM,
-  LANG_REMEMBER_FOR_SECONDS,
-} from "@/lib/i18n/i18n.constants";
-import { readLocale } from "@/lib/i18n/locale";
+import { rememberLanguage } from "@/lib/i18n/rememberLanguage";
 import { maintenanceRefusal } from "@/lib/site/maintenance";
+import { strangerRewrite } from "@/lib/stranger/strangerRewrite";
 
 /**
  * The gate.
@@ -258,76 +251,6 @@ function isOpenPath(pathname: string): boolean {
 }
 
 /**
- * A language asked for in the address, remembered and then taken back out of
- * it. Null when the address says nothing about language, which is almost
- * every request.
- *
- * Here because a Server Component can READ a cookie while it renders and
- * cannot SET one, and this is the only thing on the way in that can.
- *
- * It redirects rather than carrying on, and both halves of that are
- * deliberate. Setting the cookie and carrying on would render *this* page in
- * the old language — the cookie only reaches the request after it — so the
- * page you changed the language on would be the one page that did not change,
- * which reads as broken. And the language is not part of what a page is: an
- * address with `?lang=es` stuck to it would get copied, shared and bookmarked,
- * and would then overrule the language of whoever opened it.
- *
- * It cannot turn a yes into a no. It only ever runs after the gate has
- * already said yes, the redirect goes to the same path with one parameter
- * removed, and that request is decided again from scratch exactly as it would
- * have been. GET only, so a form post is never answered with a redirect.
- *
- * It sets two cookies rather than one: the language, kept for a year, and a
- * minute-long marker saying it was chosen just now. Neither is read here. A
- * member's language lives on their account, and the marker is the only thing
- * the gate can offer towards that without asking the database who is asking —
- * which it must not. See `LANG_CHOSEN_COOKIE`.
- */
-function rememberLanguage(request: NextRequest): NextResponse | null {
-  if (request.method !== "GET") return null;
-  const asked = readLocale(request.nextUrl.searchParams.get(LANG_PARAM));
-  if (asked === null || !OFFERED_LOCALES.includes(asked)) return null;
-
-  const clean = new URL(request.url);
-  clean.searchParams.delete(LANG_PARAM);
-  const response = NextResponse.redirect(clean);
-  response.cookies.set({
-    name: LANG_COOKIE,
-    value: asked,
-    // Every page: a language is not about one page.
-    path: "/",
-    maxAge: LANG_REMEMBER_FOR_SECONDS,
-    sameSite: "lax",
-    httpOnly: true,
-  });
-  /*
-   * And a second cookie whose only meaning is "this was chosen just now,
-   * here", so that the render on the other side of the redirect can keep the
-   * choice on the member's account — see `LANG_CHOSEN_COOKIE`, which says why
-   * the cookie above cannot answer that question, and `memberLanguage.ts`,
-   * which does the keeping.
-   *
-   * THIS FILE LEARNS NOTHING. It still does not ask who is signed in, still
-   * reads no database, and still decides nothing: the value is the language
-   * already being written on the line above, and every branch of the gate
-   * arrives here exactly as it did before. A request that was going to be
-   * redirected is redirected, with one more `Set-Cookie` on it. Whether the
-   * marker means anything is decided later, by something that does know who
-   * is asking and is allowed to write.
-   */
-  response.cookies.set({
-    name: LANG_CHOSEN_COOKIE,
-    value: asked,
-    path: "/",
-    maxAge: LANG_CHOSEN_FOR_SECONDS,
-    sameSite: "lax",
-    httpOnly: true,
-  });
-  return response;
-}
-
-/**
  * Carry on — unless the site is being worked on — and keep the language, when
  * one was asked for on the way.
  *
@@ -345,6 +268,14 @@ function rememberLanguage(request: NextRequest): NextResponse | null {
  * that queried Postgres per request would be both the cost fault and a shutter
  * that cannot answer during the hour the database is being worked on.
  *
+ * The kept copy is the last thing on the way through: a reader with no session
+ * asking for an open page is rewritten to a copy of it drawn at most once an
+ * hour (`strangerRewrite`). It wraps the `next()` this decision had already
+ * reached, reads no database, and answers `null` for anybody who might be more
+ * than an ordinary stranger, which leaves the request going exactly where it
+ * was going. Like the shutter and the language it can only narrow or carry on,
+ * and it can never turn a no into a yes: it runs after every yes there is.
+ *
  * The language cookie still decides nothing, and is still here because a
  * Server Component can read a cookie while it renders and cannot set one.
  *
@@ -360,6 +291,7 @@ async function carryOn(request: NextRequest): Promise<NextResponse> {
   return (
     (await maintenanceRefusal(request)) ??
     rememberLanguage(request) ??
+    strangerRewrite(request) ??
     NextResponse.next()
   );
 }

@@ -16,7 +16,14 @@ import {
 import { SITE_NAME } from "@/lib/i18n/siteName";
 import { CODE_WORDS } from "@/lib/invite/inviteCode";
 import type { RegistrationMode } from "@/lib/site/site.types";
+import { safeDestination } from "@/lib/auth/redirect";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+
+/** Where the address says to go afterwards, as the door's page reads it, or the one the page drew. */
+function nextInAddress(drawn: string): string {
+  const asked = new URLSearchParams(window.location.search).get("next");
+  return asked === null ? drawn : safeDestination(asked);
+}
 
 /**
  * The door.
@@ -27,7 +34,8 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
  * nobody is asked twice.
  */
 export function JoinForm({
-  next,
+  next: nextAsDrawn,
+  nextFromAddress = false,
   googleReady,
   pending,
   initialCode = "",
@@ -36,6 +44,13 @@ export function JoinForm({
   notice = "",
 }: {
   next: string;
+  /**
+   * Where to go afterwards is in the address, read here once the form is
+   * hydrated: for the copy of the door a stranger is answered from, which was
+   * drawn for nobody in particular and so cannot know (`JoinDoor`'s `kept`).
+   * Until then, and wherever the address says nothing, it is `next` as drawn.
+   */
+  nextFromAddress?: boolean;
   googleReady: boolean;
   /** A Google account at the door that is not yet a member: one code makes it one. */
   pending: { name: string; email: string } | null;
@@ -55,6 +70,8 @@ export function JoinForm({
 }) {
   const router = useRouter();
   const say = useSpeaker();
+  const hydrated = useHydrated();
+  const next = nextFromAddress && hydrated ? nextInAddress(nextAsDrawn) : nextAsDrawn;
   const mode: "invite" | "admin" = operator ? "admin" : "invite";
   /*
    * Nobody new, and this visitor is nobody yet. Said plainly rather than by
@@ -129,7 +146,7 @@ export function JoinForm({
       onSubmit={submit}
       className={`${PANEL_CLASS} flex w-full max-w-md flex-col gap-4`}
       data-testid="join-form"
-      {...readyMark(useHydrated())}
+      {...readyMark(hydrated)}
     >
       <div className="flex flex-col gap-1">
         {/*

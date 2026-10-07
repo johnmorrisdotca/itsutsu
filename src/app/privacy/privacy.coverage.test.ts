@@ -186,7 +186,7 @@ describe("the privacy page", () => {
     expect(robots.match(/allow: \[([^\]]*)\]/)?.[1] ?? "").toContain('"/privacy"');
     expect(read("src/components/layout/SiteFooter.tsx")).toContain('href: "/privacy", phrase: "nav.privacy"');
     expect(PHRASES["nav.privacy"]).toBe("Privacy");
-    expect(read("src/app/join/page.tsx")).toContain('href="/privacy"');
+    expect(read("src/components/auth/JoinDoor.tsx")).toContain('href="/privacy"');
   });
 
   it("says what an invite request keeps, which is nothing, in the mail's own words", () => {

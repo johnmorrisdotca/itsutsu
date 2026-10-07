@@ -51,6 +51,7 @@ const TITLE_DRAWN_BY: Record<string, { by: string; reason: string }> = {
   "/me/[view]": { by: "src/app/me/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
   "/play/[view]": { by: "src/app/play/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
   "/players/[slug]/[view]": { by: "src/app/players/[slug]/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
+  "/stranger/[[...path]]": { by: "src/app/games/page.tsx", reason: "the kept copy of an open page for a reader with no session (`strangerPages.tsx`): it draws whichever page its address names, and each of those is held to this rule itself" },
   "/players/bots": { by: "src/app/players/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
   "/players/buddies": { by: "src/app/players/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },
   "/players/honors": { by: "src/app/players/page.tsx", reason: "a tab of that page as a path (`tabs.ts`): the same page, handed its segment" },

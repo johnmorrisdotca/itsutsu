@@ -218,6 +218,13 @@ maintenance. The page reads the language of the member its token names, and a
 language asked for there (`?lang=`) is remembered like anywhere else, on the yes
 side of the decision (`rememberLanguage` wraps the `next()`); it decides nothing.
 
+**The open pages are answered from a kept copy, after the gate's yes.** A reader
+with no session who asks for one of the pages the gate opens is rewritten, by
+`strangerRewrite` inside `carryOn`, to a copy of that page drawn at most once an
+hour (`app/stranger/[[...path]]`); see "Open Pages Are Kept For Strangers" below.
+It wraps the `next()` a decision had already reached, reads no database, and can
+only ever send a request to a page it was already allowed to read.
+
 There was a third, until the board moved to Sumilabu: the board token for
 `/api/backlog` and `/api/backlog/[id]` (board convergence ITS-02), so an agent's
 terminal could work the backlog. It is gone, and so are those routes. `pnpm task`
@@ -920,6 +927,70 @@ shows the shut state instead (`GameLadder`'s "who is winning … needs an
 invite", with its "No invite? Ask for one" beside it), never a table with the
 names left out. A page that is open to strangers must be checked with no
 session, because the member's view of it proves nothing about theirs.
+
+### Open Pages Are Kept For Strangers
+
+John, 2026-10-07, with the Hobby account at 7h51m of its 4h of Fluid Active CPU
+in 30 days and Itsutsu's own 2h25m of it mostly crawlers and passers-by on the
+open pages (in twelve hours: `/join` 87 invocations and 16 s of CPU,
+`/games/[slug]` 35 and 10 s, its rules 37 and 7 s, `/` 31 and 7 s): every page
+was a server render, a cold start (20% of them) and a few queries per visit,
+for a page that had not changed since the last one.
+
+**What is kept.** The pages `OPEN_PATTERNS` and its siblings let a stranger read,
+as listed by `strangerRouteFor` (`src/lib/stranger/strangerRoutes.ts`): `/`,
+`/join`, `/about` and its chapters, `/learn` and its guides, `/games` and its
+cards and list views, `/games/<slug>` with its rules, family and background,
+`/privacy`, `/terms`, `/thanks` and `/dice`. A request for one of them with no
+session cookie, no Google sign-in cookie, in English (the site's default), and
+with no query that changes the page, is rewritten by the gate to
+`/stranger/<the same address>`: one optional catch-all route
+(`src/app/stranger/[[...path]]`), `force-static`, `revalidate = 3600`, which
+draws the same page function the live route does (`strangerPages.tsx`) and
+keeps the result. A visit costs no render and no query; the CDN serves it. The
+address in the reader's bar never changes.
+
+**Why `force-static` is the whole trick.** Inside a route drawn ahead of time a
+cookie and a header read as empty, so `currentSession()` says nobody and
+`currentLocale()` says English, which is exactly what the gate guarantees about
+a request it sends there. No page was made cacheable by editing it; the live
+pages are untouched and a member, the operator, a reader with a stale cookie, a
+reader of Japanese, and anybody on an address that reads its query are answered
+live as they always were.
+
+**Rules for anyone touching this.**
+
+- **A kept page never reads a request.** No `cookies()`, `headers()` or
+  `searchParams` of its own in what `strangerPages.tsx` calls, and a thing that
+  must differ for a reader (a stamp that says when a form was drawn, where to go
+  after sign-in) is asked for in the browser, as `AskForInvite`'s `stampOnOpen`
+  and `JoinForm`'s `nextFromAddress` do. `strangerCache.coverage.test.ts` holds
+  the route's shape; reading the page as a stranger with no session is the check
+  for the rest.
+- **Only the language the copy is in is kept.** The root layout draws
+  `<html lang>` from the request, and a copy has none, so a reader of Japanese
+  is answered live and is always shown Japanese. A second kept language is a
+  second tree with its own root layout (`next/root-params`), not a flag.
+- **A new open page is added in three places or it stays live:** the gate's
+  list (`proxy.ts`), `strangerRouteFor`, and `strangerPageFor`. Only slugs the
+  site has are kept, so an address that is no page cannot grow the store; a page
+  that reads its query is `READS_QUERY` and kept only with none.
+- **Read the pathname with `useSitePathname`**, never `usePathname`: inside a
+  copy the server may say `/stranger/…` where the browser says `/…`
+  (`strangerPath.ts`). Held by `strangerCache.coverage.test.ts`.
+- **Freshness is the hour,** plus the tags the data already carries (the door
+  clears with the site's settings, `SITE_SETTINGS_TAG`). A count a copy shows can
+  be an hour old, as the stranger's catalogue figures already were. The home
+  page's "here now" is cached for an hour in `siteNumbers` and was before.
+- **The suite's own build answers every open page live unless a request asks**
+  (`x-itsutsu-kept-copy: 1`, `ASK_FOR_KEPT_COPY`), for the same reason
+  `strangerCatalogueStats` is not kept there: a spec seeds a game and reads the
+  page as a stranger in the same minute. `e2e/stranger-cache.spec.ts` sends the
+  header and is the one that proves a stranger gets the copy, a member does not,
+  and each language gets its own.
+- **Measure before and after** with a production build: send a request with no
+  cookie and another with `Cookie: itsutsu_session=x` (a stranger the gate must
+  answer live) and compare the server's CPU and the database's statements.
 
 ### Back It Up Before You Migrate It
 

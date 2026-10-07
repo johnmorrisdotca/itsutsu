@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useId } from "react";
+import { useActionState, useId, useRef, useState } from "react";
 
-import { askForInvite } from "@/app/join/askForInvite.actions";
+import { askForInvite, issueInviteRequestStamp } from "@/app/join/askForInvite.actions";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { SITE_NAME } from "@/lib/i18n/siteName";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS, PANEL_CLASS, TONE_CLASS } from "@/components/ui/ui.constants";
@@ -24,15 +24,38 @@ const IDLE: AskForInviteState = { kind: "idle" };
  * apart from a script without asking the person anything. Null where the site
  * has no secret to sign with, and the form is then not drawn at all — a form
  * whose every submission would be read as a bot is a form that lies.
+ *
+ * `stampOnOpen` is for the copy of the door a stranger is answered from, which
+ * was drawn hours before anybody read it: its stamp would say the form was
+ * drawn then, and the check that nobody sends faster than they can read would
+ * always pass. So the stamp is asked for when the form is opened, which is
+ * when it is drawn for somebody, and Send waits for it.
  */
-export function AskForInvite({ stamp, open = false }: { stamp: string | null; open?: boolean }) {
+export function AskForInvite({ stamp, open = false, stampOnOpen = false }: { stamp: string | null; open?: boolean; stampOnOpen?: boolean }) {
   const say = useSpeaker();
   const [state, send, sending] = useActionState(askForInvite, IDLE);
   const aboutHint = useId();
-  if (stamp === null) return null;
+  // undefined: not asked for yet. null: asked, and the site has no secret to sign with.
+  const [issued, setIssued] = useState<string | null | undefined>(undefined);
+  const asked = useRef(false);
+  const stampNow = stampOnOpen ? issued : stamp;
+  if (stampNow === null) return null;
+
+  function whenOpened(opened: boolean) {
+    if (!stampOnOpen || !opened || asked.current) return;
+    asked.current = true;
+    void issueInviteRequestStamp().then(setIssued, () => {
+      asked.current = false;
+    });
+  }
 
   return (
-    <details className={`${PANEL_CLASS} w-full max-w-md`} open={open} data-testid="ask-for-invite">
+    <details
+      className={`${PANEL_CLASS} w-full max-w-md`}
+      open={open}
+      data-testid="ask-for-invite"
+      onToggle={(event) => whenOpened(event.currentTarget.open)}
+    >
       <summary className="cursor-pointer text-sm font-medium" data-testid="ask-for-invite-open">
         {say.say("auth.ask.open")}
       </summary>
@@ -45,7 +68,7 @@ export function AskForInvite({ stamp, open = false }: { stamp: string | null; op
           <p className="text-sm text-muted">
             {say.say("auth.ask.lead", { site: SITE_NAME })}
           </p>
-          <input type="hidden" name="stamp" value={stamp} />
+          <input type="hidden" name="stamp" value={stampNow ?? ""} />
           {/*
             THE FIELD NOBODY SEES. Off the screen rather than `display: none`,
             which form-filling scripts know to skip; out of the tab order and
@@ -108,7 +131,7 @@ export function AskForInvite({ stamp, open = false }: { stamp: string | null; op
           ) : null}
           <button
             type="submit"
-            disabled={sending}
+            disabled={sending || stampNow === undefined}
             className={`${BUTTON_BASE} ${BUTTON_STRONG} w-full py-2`}
             data-testid="ask-for-invite-send"
           >

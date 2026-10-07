@@ -1088,7 +1088,8 @@ games: `/games`, every game's page, its rules, family and background, `/about`,
 `/learn` and the dice roller at `/dice`. Everything else — playing, the players, the ladders, the record —
 needs a signed session cookie, enforced in `src/proxy.ts` before a route is
 reached, so a new endpoint is private by default rather than private only if
-someone remembers to guard it. A visitor who knows nobody here can ask for an
+someone remembers to guard it. A reader with no session is answered the open pages from a copy kept
+for an hour (`src/lib/stranger/`), so a crawler's visit costs no render. A visitor who knows nobody here can ask for an
 invite from `/join`; the request is emailed to the site's owner, behind caps
 of its own so a script cannot spend the site's email (`inviteRequest.ts`).
 

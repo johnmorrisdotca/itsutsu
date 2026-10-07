@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
@@ -11,6 +10,7 @@ import { prepareScreenshot, type PreparedScreenshot } from "@/lib/reports/report
 import { reportingOpen, submitReport } from "@/lib/reports/reports.actions";
 import { REPORT_IMAGE_TYPES, REPORT_LIMITS, REPORTER_REF_KEY } from "@/lib/reports/reports.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { useSitePathname } from "@/lib/stranger/useSitePathname";
 
 type Phase = "checking" | "paused" | "writing" | "sending" | "sent";
 
@@ -53,7 +53,7 @@ function reporterRef(): string {
  * anything that is a person.
  */
 export function ReportProblem({ version }: { version: string }) {
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const say = useSpeaker();
   const hydrated = useHydrated();
   const dialog = useRef<HTMLDialogElement>(null);

@@ -60,7 +60,7 @@ describe("the terms of play", () => {
     expect(read("src/proxy.ts")).toMatch(/^\s+"\/terms",$/m);
     expect(read("src/app/robots.ts")).toContain('"/terms"');
     expect(read("src/components/layout/SiteFooter.tsx")).toContain('href: "/terms"');
-    expect(read("src/app/join/page.tsx")).toContain('href="/terms"');
+    expect(read("src/components/auth/JoinDoor.tsx")).toContain('href="/terms"');
   });
 
   it("carries a real date, not one in the future", () => {

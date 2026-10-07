@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 
-import { stampIsAPerson } from "@/lib/auth/inviteRequestStamp";
+import { stampInviteRequestForm, stampIsAPerson } from "@/lib/auth/inviteRequestStamp";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { RATE_LIMITS, checkRateLimit } from "@/lib/api/rateLimit";
 import { mailRefusalText } from "@/lib/mail/mailWords";
@@ -63,4 +63,15 @@ export async function askForInvite(_before: AskForInviteState, form: FormData): 
    * what they are, with the address to write to instead.
    */
   return { kind: "problem", message: mailRefusalText(say, outcome.refusal) };
+}
+
+/**
+ * A stamp for a form being drawn now, for the copy of the door a stranger is
+ * answered from: it cannot carry one of its own (`AskForInvite`'s
+ * `stampOnOpen`). Null where the site has no secret to sign with. It says only
+ * when it was asked, which is all a stamp ever says, so it grants nothing a
+ * visit to the door did not.
+ */
+export async function issueInviteRequestStamp(): Promise<string | null> {
+  return stampInviteRequestForm();
 }

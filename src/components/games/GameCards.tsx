@@ -6,7 +6,7 @@ import { Paired } from "@/components/i18n/Paired";
 import Link from "@/components/ui/Link";
 
 import { gamePath } from "@/lib/gomoku/slugs";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { GameStatsStrip } from "@/components/games/GameStats";
 import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
@@ -23,6 +23,7 @@ import { CARD_LETTERS } from "./games.constants";
 import type { GameCard } from "./games.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { ViewTabs } from "@/components/ui/ViewTabs";
+import { useSitePathname } from "@/lib/stranger/useSitePathname";
 
 /** The letter a name files under: its first letter, accents folded, so Misère sits at M. */
 function initial(label: string): string {
@@ -57,7 +58,7 @@ export function GameCards({
 }) {
   const say = useSpeaker();
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const params = useSearchParams();
   const chosen = (params.get("letter") ?? "").toUpperCase();
   const kind = params.get("kind") ?? "";

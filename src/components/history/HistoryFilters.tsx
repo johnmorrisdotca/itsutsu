@@ -2,7 +2,7 @@
 
 import Link from "@/components/ui/Link";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
@@ -22,6 +22,7 @@ import { variantName } from "@/lib/gomoku/variantCopy";
 import type { PhraseKey } from "@/lib/i18n/i18n.constants";
 import { Field, Select } from "@/components/ui/Controls";
 import { INPUT_CLASS } from "@/components/ui/ui.constants";
+import { useSitePathname } from "@/lib/stranger/useSitePathname";
 
 /**
  * Which option is selected, from either spelling of the address.
@@ -68,7 +69,7 @@ export function HistoryFilters({
   appliedPlayer: AppliedPlayer | null;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const params = useSearchParams();
   const say = useSpeaker();
   const player = appliedPlayer?.name ?? null;
