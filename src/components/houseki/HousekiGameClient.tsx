@@ -26,6 +26,7 @@ const GAMES: Record<HousekiKind, React.ComponentType<HousekiGameProps>> = {
   stoneCollapse: dynamic(() => import("./StoneCollapseGame"), { ssr: false, loading: () => BOX }),
   gemSwap: dynamic(() => import("./GemSwapGame"), { ssr: false, loading: () => BOX }),
   magneticBlocks: dynamic(() => import("./MagneticBlocksGame"), { ssr: false, loading: () => BOX }),
+  tsumiki: dynamic(() => import("./TsumikiGame"), { ssr: false, loading: () => BOX }),
 };
 
 /** The game of this kind, drawn in the browser. */

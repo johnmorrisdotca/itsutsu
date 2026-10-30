@@ -49,6 +49,14 @@ export const COPY_KEYS = {
     boardLabel: "houseki.magneticBlocks.boardLabel",
     keys: "houseki.magneticBlocks.keys",
   },
+  tsumiki: {
+    tagline: "houseki.tsumiki.tagline",
+    origin: "houseki.tsumiki.origin",
+    board: "houseki.tsumiki.board",
+    rules: ["houseki.tsumiki.ruleOne", "houseki.tsumiki.ruleTwo", "houseki.tsumiki.ruleThree", "houseki.tsumiki.ruleFour", "houseki.tsumiki.ruleFive"],
+    boardLabel: "houseki.tsumiki.boardLabel",
+    keys: "houseki.tsumiki.keys",
+  },
 } as const satisfies Record<HousekiKind, { tagline: string; origin: string; board: string; rules: readonly string[]; boardLabel: string; keys: string }>;
 
 /** A campaign's name, as the phrase that says it. */

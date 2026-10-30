@@ -21,7 +21,7 @@ import { ready } from "./support";
  */
 const OUT = "public/art/games";
 /** The level pictured for each: one with a board worth looking at, from the first third of its campaign. */
-const LEVEL_OF = { fallingTriplets: 7, colourChains: 4, stoneCollapse: 9, gemSwap: 3, magneticBlocks: 6 } as const;
+const LEVEL_OF = { fallingTriplets: 7, colourChains: 4, stoneCollapse: 9, gemSwap: 3, magneticBlocks: 6, tsumiki: 6 } as const;
 
 test.skip(process.env.GAME_SCREENSHOTS !== "1", "run on purpose with pnpm screenshots:houseki");
 

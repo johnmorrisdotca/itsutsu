@@ -12,9 +12,10 @@ export const HOUSEKI_KINDS = {
   stoneCollapse: "stoneCollapse",
   gemSwap: "gemSwap",
   magneticBlocks: "magneticBlocks",
+  tsumiki: "tsumiki",
 } as const satisfies Record<HousekiKind, HousekiKind>;
 
-/** The key of the family the five are at home in, and so its address: `/games/houseki`, answered by the game page's own route (`HousekiFamilyPage`). */
+/** The key of the family the six are at home in, and so its address: `/games/houseki`, answered by the game page's own route (`HousekiFamilyPage`). */
 export const HOUSEKI_FAMILY_KEY = "houseki";
 
 /** Every Houseki game, in the order its family shows them. */
@@ -24,6 +25,7 @@ export const HOUSEKI_KIND_LIST: readonly HousekiKind[] = [
   HOUSEKI_KINDS.stoneCollapse,
   HOUSEKI_KINDS.gemSwap,
   HOUSEKI_KINDS.magneticBlocks,
+  HOUSEKI_KINDS.tsumiki,
 ];
 
 /** The campaigns, in the order a game with several offers them. */
@@ -58,7 +60,7 @@ export const HOUSEKI_SPECS: Record<HousekiKind, HousekiSpec> = {
   colourChains: {
     id: "colour-chains",
     motion: "falling",
-    campaigns: { classic: 50, shizen: 50, arashi: 50 },
+    campaigns: { classic: 50, shizen: 128, arashi: 128 },
     lessons: 3,
     daily: true,
     sizes: [
@@ -103,7 +105,7 @@ export const HOUSEKI_SPECS: Record<HousekiKind, HousekiSpec> = {
   magneticBlocks: {
     id: "magnetic-blocks",
     motion: "falling",
-    campaigns: { classic: 50 },
+    campaigns: { classic: 128 },
     lessons: 3,
     daily: false,
     sizes: [
@@ -114,6 +116,17 @@ export const HOUSEKI_SPECS: Record<HousekiKind, HousekiSpec> = {
     ],
     colours: [5, 4, 6],
     arcade: true,
+  },
+  tsumiki: {
+    id: "tsumiki",
+    motion: "turns",
+    campaigns: { classic: 64 },
+    lessons: 3,
+    daily: true,
+    // One board: eight by eight is the game. Its colours are the shapes' own, not a choice.
+    sizes: [{ id: "8x8", width: 8, height: 8 }],
+    colours: [6],
+    arcade: false,
   },
 };
 
@@ -144,6 +157,7 @@ export const HOUSEKI_KANJI: Record<HousekiKind, string> = {
   stoneCollapse: "ストーンコラプス",
   gemSwap: "ジェムスワップ",
   magneticBlocks: "磁石ブロック",
+  tsumiki: "積み木",
 };
 
 /** The family's own name in its own script. */

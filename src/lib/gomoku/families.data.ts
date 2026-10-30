@@ -520,8 +520,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Houseki",
     kanji: "宝石",
-    blurb: "Gem and stone puzzles for one, a level at a time. Cycle a falling column of three, turn a pair into chains, take groups of stones, swap neighbours, or set a magnetic block down on a floor that pulls. Fifty to a hundred graded levels in each, with lessons and a Daily, played alone. A level won earns points.",
-    games: ["fallingTriplets", "colourChains", "stoneCollapse", "gemSwap", "magneticBlocks"],
+    blurb: "Gem and stone puzzles for one, a level at a time. Cycle a falling column of three, turn a pair into chains, take groups of stones, swap neighbours, set a magnetic block down on a floor that pulls, or lay three shapes on a board and clear full lines. Fifty or more graded levels in each, with lessons and a Daily, played alone. A level won earns points.",
+    games: ["fallingTriplets", "colourChains", "stoneCollapse", "gemSwap", "magneticBlocks", "tsumiki"],
     notOnSetUp: "A Houseki game is set up on its own page, where a level, a lesson, the Daily or a free game is chosen; the set-up screen makes a game between two seats.",
   },
 ];

@@ -7,4 +7,4 @@
  *
  *   pnpm screenshots:houseki
  */
-export const HOUSEKI_ART_FINGERPRINT = "d3b148fe5bcc7c0a";
+export const HOUSEKI_ART_FINGERPRINT = "f78c6bcdb8545562";

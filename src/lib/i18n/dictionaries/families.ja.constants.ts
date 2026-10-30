@@ -136,10 +136,11 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
   },
   houseki: {
     blurb: [
-      "1人で遊ぶ宝石と石のパズルで、1回に1レベルずつ進めます。3つ並んだ宝石の列を落として色を入れ替える、2つ組を回して連鎖を作る、同じ色の石のかたまりを取る、隣り合う宝石を入れ替える、引き寄せる床の上にブロックを置く、といった遊びがあります。どれも難しさ順のレベルが50から100あり、レッスンとデイリーもあります。レベルをクリアするとポイントがもらえます。",
-      "Gem and stone puzzles for one, a level at a time. Cycle a falling column of three, turn a pair into chains, take groups of stones, swap neighbours, or set a magnetic block down on a floor that pulls. Fifty to a hundred graded levels in each, with lessons and a Daily, played alone. A level won earns points.",
+      "1人で遊ぶ宝石と石のパズルで、1回に1レベルずつ進めます。3つ並んだ宝石の列を落として色を入れ替える、2つ組を回して連鎖を作る、同じ色の石のかたまりを取る、隣り合う宝石を入れ替える、引き寄せる床の上にブロックを置く、3つの形を盤に置いて列を消す、といった遊びがあります。どれも難しさ順のレベルが50以上あり、レッスンとデイリーもあります。レベルをクリアするとポイントがもらえます。",
+      "Gem and stone puzzles for one, a level at a time. Cycle a falling column of three, turn a pair into chains, take groups of stones, swap neighbours, set a magnetic block down on a floor that pulls, or lay three shapes on a board and clear lines. Fifty or more graded levels in each, with lessons and a Daily, played alone. A level won earns points.",
     ],
     review: AGENT_READ_2026_10_06,
+    ask: "The clause about laying three shapes was added on 2026-10-30 with Tsumiki; nobody has read it.",
   },
 };
 

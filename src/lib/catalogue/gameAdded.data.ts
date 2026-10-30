@@ -77,6 +77,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   longGammon: "2026-10-01",
   loop: "2026-10-05",
   magneticBlocks: "2026-10-06",
+  tsumiki: "2026-10-30",
   mahjong: "2026-09-29",
   makerBreaker: "2026-09-07",
   mancala: "2026-09-28",

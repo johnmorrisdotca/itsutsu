@@ -5,6 +5,7 @@ import * as chains from "@johnmorrisdotca/houseki/colour-chains";
 import * as triplets from "@johnmorrisdotca/houseki/falling-triplets";
 import * as swap from "@johnmorrisdotca/houseki/gem-swap";
 import * as blocks from "@johnmorrisdotca/houseki/magnetic-blocks";
+import * as tsumiki from "@johnmorrisdotca/houseki/tsumiki";
 import * as stones from "@johnmorrisdotca/houseki/stone-collapse";
 import { describe, expect, it } from "vitest";
 
@@ -64,13 +65,15 @@ function packageHas(kind: HousekiKind): { levels: Partial<Record<HousekiCampaign
       return { levels: { classic: swap.GEM_SWAP_CAMPAIGN.length }, lessons: swap.GEM_SWAP_LESSONS.length };
     case "magneticBlocks":
       return { levels: { classic: blocks.levelManifest.length }, lessons: blocks.lessonManifest.length };
+    case "tsumiki":
+      return { levels: { classic: tsumiki.levelManifest.length }, lessons: tsumiki.tutorialManifest.length };
   }
 }
 
 describe("every Houseki game is finished, not just declared", () => {
-  it("lists the package's five, in a list that is the whole of it", () => {
-    expect(HOUSEKI_KIND_LIST).toHaveLength(5);
-    expect(new Set(HOUSEKI_KIND_LIST.map((kind) => HOUSEKI_SPECS[kind].id))).toEqual(new Set(["falling-triplets", "colour-chains", "stone-collapse", "gem-swap", "magnetic-blocks"]));
+  it("lists the package's six, in a list that is the whole of it", () => {
+    expect(HOUSEKI_KIND_LIST).toHaveLength(6);
+    expect(new Set(HOUSEKI_KIND_LIST.map((kind) => HOUSEKI_SPECS[kind].id))).toEqual(new Set(["falling-triplets", "colour-chains", "stone-collapse", "gem-swap", "magnetic-blocks", "tsumiki"]));
   });
 
   it.each(HOUSEKI_KIND_LIST)("%s has the levels and lessons the package has, and no others", (kind) => {

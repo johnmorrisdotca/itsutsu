@@ -27,7 +27,7 @@ export const HOUSEKI_FAMILY_TITLE = HOUSEKI === undefined ? HOUSEKI_FAMILY_KEY :
 /**
  * HOUSEKI, AT /games/houseki (AND UNDER EACH OF ITS GAMES, AT /games/<slug>/family).
  *
- * The family of five gem and stone puzzles: its games, what each is, and who has
+ * The family of six gem and stone puzzles: its games, what each is, and who has
  * won the most points across all of them (`IpBoard`, shut to a stranger). Answered
  * by the game page's own route, like Karakuri's, and not by a folder of its own: every
  * route in the app adds its manifests to the one function the server pages share,

@@ -17,6 +17,7 @@ export const HOUSEKI_LABEL: Record<HousekiKind, string> = {
   stoneCollapse: "Stone Collapse",
   gemSwap: "Gem Swap",
   magneticBlocks: "Magnetic Blocks",
+  tsumiki: "Tsumiki",
 };
 
 const MADE = new Map<string, VariantCopy>();

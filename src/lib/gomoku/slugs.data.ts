@@ -179,4 +179,5 @@ export const HOUSEKI_SLUGS: Record<HousekiKind, string> = {
   stoneCollapse: "stone-collapse",
   gemSwap: "gem-swap",
   magneticBlocks: "magnetic-blocks",
+  tsumiki: "tsumiki",
 };

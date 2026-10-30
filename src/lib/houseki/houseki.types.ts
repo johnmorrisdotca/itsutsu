@@ -1,5 +1,5 @@
 /**
- * THE HOUSEKI GAMES (宝石, the gem and stone puzzles): five games for one
+ * THE HOUSEKI GAMES (宝石, the gem and stone puzzles): six games for one
  * person, from `@johnmorrisdotca/houseki`. They are a fifth kind of game
  * beside the rule variants, the puzzles, the party games and the casual games:
  * a level at a time (fifty to a hundred of them, graded), a Daily for four of
@@ -8,7 +8,7 @@
  * worth Itsutsu Points once the server has replayed it
  * (`docs/plans/houseki/README.md`).
  */
-export type HousekiKind = "fallingTriplets" | "colourChains" | "stoneCollapse" | "gemSwap" | "magneticBlocks";
+export type HousekiKind = "fallingTriplets" | "colourChains" | "stoneCollapse" | "gemSwap" | "magneticBlocks" | "tsumiki";
 
 /** The campaigns a game's levels are in: Colour Chains has three, every other game one. */
 export type HousekiCampaign = "classic" | "shizen" | "arashi";

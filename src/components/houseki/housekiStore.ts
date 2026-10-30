@@ -7,7 +7,7 @@ import { HOUSEKI_STORAGE_KEY, decodeHouseki, encodeHouseki, type HousekiSave } f
 /**
  * WHAT THE HOUSEKI GAMES REMEMBER, kept in this browser: the levels won in each
  * game, the Dailies finished, and the one game left half way
- * (`lib/houseki/housekiProgress.ts`). One key for all five, written when a
+ * (`lib/houseki/housekiProgress.ts`). One key for all six, written when a
  * level is won and when a game is put down, and read by the games, their doors,
  * set-up screens and My games.
  *

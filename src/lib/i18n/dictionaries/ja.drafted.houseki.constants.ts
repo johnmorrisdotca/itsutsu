@@ -12,7 +12,28 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
 
+const TSUMIKI_DRAFTED = "Written on 2026-10-30 with Tsumiki; nobody has read it.";
+
 export const JA_DRAFTED_HOUSEKI: Partial<Record<PhraseKey, DraftedPhrase>> = {
+  "houseki.tsumiki.tagline": { text: "8×8の盤に3つの形を置き、埋まった行と列を消します。", back: "Place three shapes on an 8×8 board and clear the rows and columns that fill.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.origin": { text: "形をマス目に収めるパズルで、木のブロックやタングラムから今のスマートフォンのブロックゲームまで続くものです。積み木は木のブロックのことです。ここのルール、点数、レベルはHousekiパッケージの独自のものです。", back: "A puzzle of fitting shapes into a grid, continuing from wooden blocks and tangrams to today's smartphone block games. 積み木 is wooden blocks. The rules, scores and levels here are Houseki package's own.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.board": { text: "盤は1種類、8×8マスです。レベルには独自の目標があり、消す石があることもあります。デイリーは誰にとっても同じゲームで、フリープレイは毎回新しいゲームです。", back: "There is one board, 8×8 squares. Levels have their own goal, and sometimes stones to clear. The Daily is the same game for everybody, and free play is a new game each time.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.ruleOne": { text: "形が3つあります。1つ選び、左上を置くマスを選ぶか、盤の上までドラッグします。形は回せません。", back: "There are three shapes. Choose one and choose the square for its top left, or drag it onto the board. Shapes cannot be turned.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.ruleTwo": { text: "行か列が埋まると消えます。1つの形で何本も埋まると、同時に消えます。", back: "When a row or column fills, it clears. If one shape fills several, they clear together.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.ruleThree": { text: "3つの形をすべて置くと、次の3つが来ます。置く順番は自由です。", back: "When all three shapes are placed, the next three come. The order is free.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.ruleFour": { text: "形はマス1つにつき1点です。1本消すと10点増え、同時に消すとずっと高くなり、続けて消すとさらに増えます。", back: "A shape is one point per square. Clearing one line adds 10 points; clearing together is much higher, and clearing in succession adds more.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.ruleFive": { text: "レベルには目標があります。点数、列の数、または金色の石をすべて消すことです。残りの形がどこにも置けなくなると終わりです。フリープレイとデイリーでは、そのときの点数が結果です。", back: "A level has a goal: a score, a number of lines, or clearing all the gold stones. It ends when the remaining shapes can go nowhere. In free play and the Daily, the score at that time is the result.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.boardLabel": { text: "積み木の盤", back: "Tsumiki board", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.keys": { text: "キー：Tabで形に移動してEnterで選び、矢印キーでマスを移動してEnterで置きます。", back: "Keys: Tab to a shape and choose with Enter, move among the squares with the arrow keys and place with Enter.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.lines": { text: "列", back: "Lines", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.tray": { text: "置く形", back: "The shapes to place", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.shape": { text: "形{number}、{cells}マス", back: "Shape {number}, {cells} squares", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.choose": { text: "形を選び、次にマスを選びます。", back: "Choose a shape, then a square.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.place": { text: "左上を置くマスを選びます。", back: "Choose the square for its top left.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.noRoom": { text: "そこには置けません。", back: "It cannot be placed there.", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.goalScore": { text: "{total}点中{done}点", back: "{done} points of {total}", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.goalLines": { text: "{total}列中{done}列", back: "{done} lines of {total}", ask: TSUMIKI_DRAFTED },
+  "houseki.tsumiki.goalStones": { text: "{total}個中{done}個の石を消しました", back: "Cleared {done} stones of {total}", ask: TSUMIKI_DRAFTED },
   "houseki.fallingTriplets.tagline": { text: "落ちてくる3つ組の宝石を左右に動かし、色の並びを順に入れ替えて、同じ色を縦・横・斜めに3つそろえます。", back: "Slide a falling triplet of gems left and right, swap the order of its colours in turn, and line up three of one colour across, down or diagonally.", review: AGENT_READ },
   "houseki.fallingTriplets.origin": { text: "ゲームセンターで長く遊ばれてきた、宝石を落とすパズルの一種です。ここの規則はHousekiパッケージ独自のもので、3つ組は回転させるのではなく色の並びを入れ替え、1回の消去から連鎖が続くことがあります。", back: "A kind of gem-dropping puzzle long played in arcades. The rules here are unique to the Houseki package: a triplet is not rotated but has the order of its colours swapped, and a single clear can set off a run of chains.", review: AGENT_READ },
   "houseki.fallingTriplets.board": { text: "幅8列・高さ13段の盤で、上に3段の見えない領域があり、各ピースはそこから入ってきます。フリープレイでは4種類の形の盤から選べ、レベルには決まった盤があります。", back: "A well eight columns wide and thirteen rows deep, with three hidden rows above it where each piece comes in. A free game offers four shapes of well; a level brings its own board.", review: AGENT_READ },
