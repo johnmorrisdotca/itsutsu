@@ -16,7 +16,7 @@ import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
 import { boardOf, decodeBridges } from "../src/lib/puzzles/bridges/code";
-import { decodeLine } from "../src/lib/puzzles/ichifude/code";
+import { decodeLine } from "../src/lib/puzzles/hitofude/code";
 import { decodeLayout as decodeSuido, hintFor, newGame as newSuidoGame, quartersBetween, turnAt } from "@johnmorrisdotca/suido";
 import { decodePicture } from "../src/lib/puzzles/pictureLogic/code";
 import { carriedFrom, columnAt, decodeMoves as decodeSolitaireMoves, isColumnPile, replay } from "@johnmorrisdotca/toranpu/klondike";
@@ -106,8 +106,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "hitori", size: 7, level: "medium", seed: 20261005, fill: 5 },
   { kind: "regions", size: 8, level: "easy", seed: 20261005, fill: 5 },
   { kind: "crossSums", size: 8, level: "medium", seed: 20261005, fill: 10 },
-  // A 6×6 Ichifude part way: the line drawn from 1 through its first numbers, by a held drag as a reader draws it.
-  { kind: "ichifude", size: 6, level: "medium", seed: 20261030, fill: 16 },
+  // A 6×6 Hitofude part way: the line drawn from 1 through its first numbers, by a held drag as a reader draws it.
+  { kind: "hitofude", size: 6, level: "medium", seed: 20261030, fill: 16 },
   // A Hachinosu's hive, its seven letters in the wood.
   { kind: "hachinosu", size: 1, level: "medium", seed: 20261030, fill: 0 },
   // A Kuniate by its outline, two guesses in: the shape in ink on the paper, in the wood every board has.
@@ -160,8 +160,8 @@ test.describe("puzzle screenshots", () => {
         await page.getByTestId("puzzle-grid").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 90 });
         return;
       }
-      if (scene.kind === "ichifude") {
-        const board = page.getByTestId("ichifude-board");
+      if (scene.kind === "hitofude") {
+        const board = page.getByTestId("hitofude-board");
         const box = (await board.boundingBox())!;
         const middle = (square: number) => ({ x: box.x + (((square % scene.size) + 0.5) / scene.size) * box.width, y: box.y + ((Math.floor(square / scene.size) + 0.5) / scene.size) * box.height });
         const way = decodeLine(puzzle.solution, scene.size)!.slice(0, scene.fill);

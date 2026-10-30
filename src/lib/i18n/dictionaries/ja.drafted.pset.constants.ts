@@ -8,6 +8,8 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  * drafted dictionary's own rows take.
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
+/** The reviewer agent's pass over the three 2026-10-30 puzzles' phrases. */
+const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
 export const JA_DRAFTED_PSET: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "pset.options": {
@@ -1108,7 +1110,7 @@ export const JA_DRAFTED_PSET: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "pset.front.todaysWay": {
     text: "今日のパズル：{way}",
     back: "Today's puzzle: {way}",
-    ask: "Written on 2026-10-30 with Kuniate; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "pset.board.pencil": {
     text: "{game}の盤、{size}×{size}",

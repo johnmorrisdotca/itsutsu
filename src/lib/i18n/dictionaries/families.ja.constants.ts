@@ -88,8 +88,7 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
       "鉛筆で解く、1人用のパズルです。盤を長方形に切り分け、すべてのマスを照らし、1本の輪を描き、重なる数字を塗りつぶし、列の合計を求め、区画に数字を入れ、地雷を片づけ、1本の線ですべてのマスを通ります。",
       "Puzzles for one, worked out with a pencil. Cut the grid into rectangles, light every square, draw a single loop, shade the repeated numbers, work out the sums of runs, put numbers in the regions and clear the mines, and pass through every square with one line.",
     ],
-    review: AGENT_READ_2026_10_06,
-    ask: "The last clause, about the one line, was added on 2026-10-30 with Ichifude; nobody has read it.",
+    review: { by: "agent", on: "2026-10-30" },
   },
   cards: {
     blurb: [
@@ -123,11 +122,10 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
   },
   "word-games": {
     blurb: [
-      "文字でできたゲームです。6回の推測で隠れた言葉を当てるもの（英語、フランス語、ドイツ語、かな）、手持ちのタイルでクロスワードを組むもの、6つの言葉を格子に入れ替えるもの、完成させないように文字を足していくもの、形や旗や首都から国の名前を当てるもの、蜂の巣の7文字で言葉を作るものがあります。",
+      "文字でできたゲームです。6回の推測で隠れた言葉を当てるもの（英語、フランス語、ドイツ語、かな）、手持ちのタイルでクロスワードを組むもの、6つの言葉を格子に入れ替えるもの、完成させないように文字を足していくもの、形や旗や首都から国の名前を当てるもの、蜂の巣の7文字で単語を作るものがあります。",
       "Games made of letters. There is one where you find a hidden word in six guesses (in English, French, German or kana), one where you build a crossword from your own tiles, one where you swap six words into a lattice, and one where you add letters to a word without finishing it, one where you name a country from its shape, flag or capital, and one where you make words from the seven letters of a beehive.",
     ],
-    review: AGENT_READ_2026_10_06,
-    ask: "The last two clauses, about the country and the beehive, were added on 2026-10-30 with Kuniate and Hachinosu; nobody has read them.",
+    review: { by: "agent", on: "2026-10-30" },
   },
   karakuri: {
     blurb: [

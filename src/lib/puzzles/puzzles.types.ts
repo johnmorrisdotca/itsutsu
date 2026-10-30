@@ -42,7 +42,7 @@ export type PuzzleKind =
   | "crossSums"
   | "regions"
   | "jirai"
-  | "ichifude"
+  | "hitofude"
   | "kuniate"
   | "hachinosu";
 

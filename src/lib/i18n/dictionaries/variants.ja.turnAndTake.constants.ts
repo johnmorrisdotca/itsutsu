@@ -175,7 +175,7 @@ export const VARIANT_COPY_JA_TURN_AND_TAKE = {
       "Reversi on hexagonal cells arranged in a hexagon. There are six directions to bracket in, and six corners that never turn over.",
     ],
     origin: [
-      "通信対局のサイトがHexversiの名前で行ったように、ひっくり返すゲームを六角形の格子に移したものです。どのマスも8つではなく6つのマスに接し、中央はふさがれていて、その周りの6つの石から始まります。灰色の格子ではなく蜂の巣として描いた、このサイト独自の盤です。",
+      "通信対局のサイトがHexversiの名前で行ったように、ひっくり返すゲームを六角形の格子に移したものです。どのマスも8つではなく6つのマスに接し、中央はふさがれていて、その周りの6つの石から始まります。灰色の格子ではなくハニカム状に描いた、このサイト独自の盤です。",
       "The game of turning discs, moved onto a hexagonal lattice as play-by-mail sites did under the name Hexversi. Every cell touches six cells instead of eight, the centre is sealed, and the game starts from the six discs around it. It is this site's own board, drawn as a honeycomb rather than a grey grid.",
     ],
     rules: [

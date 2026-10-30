@@ -255,7 +255,7 @@ export const GAME_FAMILIES: GameFamily[] = [
      * number the regions, and clear the mines of Jirai (`@johnmorrisdotca/jirai`).
      * Four shipped first ("ship four now"); Akari, Loop and Hitori followed once Kazu
      * 1.3.0 made them as hard as a pencil puzzle should be, which makes seven games and
-     * no guests, on a shelf that shows at most eight. Ichifude (2026-10-30) fills it: a grid
+     * no guests, on a shelf that shows at most eight. Hitofude (2026-10-30) fills it: a grid
      * worked out and drawn on, with one answer, and Logic puzzles beside it was already full.
      * Nothing here is a game between two colours, and each
      * is a `PuzzleKind` (`src/lib/puzzles/pencil/`), with one answer a pencil finds.
@@ -272,7 +272,7 @@ export const GAME_FAMILIES: GameFamily[] = [
     title: "Pencil puzzles",
     kanji: "鉛筆",
     blurb: "Puzzles for one to work out with a pencil: cut a grid into rectangles, light every square, draw one loop, shade the repeats, add up the runs, number the regions, clear the mines and draw one line through every square.",
-    games: ["shikaku", "akari", "loop", "hitori", "crossSums", "regions", "jirai", "ichifude"],
+    games: ["shikaku", "akari", "loop", "hitori", "crossSums", "regions", "jirai", "hitofude"],
   },
   {
     key: "cards",

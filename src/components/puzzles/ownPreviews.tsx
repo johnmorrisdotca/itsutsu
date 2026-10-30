@@ -6,9 +6,9 @@ import { HachinosuHive } from "./hachinosu/HachinosuHive";
 
 /*
  * THE PREVIEWS OF THE PUZZLES THAT DRAW THEIR OWN BOARD, for the set-up screen (`PuzzleBoardPreview`), each what its solve draws.
- * Ichifude's and Kuniate's are made in the browser only: a board is searched for, and the packages that hold a country's shape and flag are fetched there.
+ * Hitofude's and Kuniate's are made in the browser only: a board is searched for, and the packages that hold a country's shape and flag are fetched there.
  */
-export const IchifudePreview = dynamic(() => import("./ichifude/IchifudePreview").then((module) => module.IchifudePreview), { ssr: false });
+export const HitofudePreview = dynamic(() => import("./hitofude/HitofudePreview").then((module) => module.HitofudePreview), { ssr: false });
 export const KuniatePreview = dynamic(() => import("./kuniate/KuniatePreview").then((module) => module.KuniatePreview), { ssr: false });
 
 /** An example hive in each language: a hive is drawn from its letters, so the list of words is not fetched to show one. */

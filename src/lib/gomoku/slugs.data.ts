@@ -111,7 +111,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   crossSums: "cross-sums",
   regions: "regions",
   jirai: "jirai",
-  ichifude: "ichifude",
+  hitofude: "hitofude",
   kuniate: "kuniate",
   hachinosu: "hachinosu",
 };

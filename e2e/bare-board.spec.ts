@@ -463,7 +463,7 @@ const SURVEYED_PUZZLES = [
   "cross-sums",
   "regions",
   "jirai",
-  "ichifude",
+  "hitofude",
   "kuniate",
   "hachinosu",
 ] as const;

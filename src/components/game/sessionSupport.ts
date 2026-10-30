@@ -43,6 +43,9 @@ export function findFatalMove(
   after: Assessment,
   next: GameState,
 ): FatalMove | null {
+  // A game with no reading learns of a loss only once it has happened, so no move was measured as the one that lost it.
+  if (!VARIANT_SPECS[next.settings.variant].analysis) return null;
+
   const loser = newlyLost(before, after);
   if (loser === null) return null;
 

@@ -4,7 +4,7 @@ import type { Puzzle, PuzzleLevel } from "../puzzles.types";
 import { searchLines } from "./solve";
 
 /**
- * MAKING AN ICHIFUDE BOARD, in the browser, from a seed.
+ * MAKING AN HITOFUDE BOARD, in the browser, from a seed.
  *
  * The answer comes first: a line through every cell, shaken from a plain back and
  * forth by the backbite move (join an end of the line to a cell beside it and turn
@@ -106,7 +106,7 @@ function middleOfLongestGap(places: ReadonlySet<number>): number {
   return Math.floor((sorted[widest]! + sorted[widest - 1]!) / 2);
 }
 
-export function generateIchifude(size: number, level: PuzzleLevel, seed: number): Puzzle {
+export function generateHitofude(size: number, level: PuzzleLevel, seed: number): Puzzle {
   const random = seededRandom(seed);
   const line = shakenLine(size, random);
   const cells = size * size;
@@ -140,5 +140,5 @@ export function generateIchifude(size: number, level: PuzzleLevel, seed: number)
     if (!oneAnswer(size, line, [...places]).yes) places.add(place);
   }
 
-  return { kind: "ichifude", size, level, seed, givens: encodeNumbers(numbersAt(line, [...places])), solution: encodeLine(line, size) };
+  return { kind: "hitofude", size, level, seed, givens: encodeNumbers(numbersAt(line, [...places])), solution: encodeLine(line, size) };
 }

@@ -2,7 +2,7 @@ import type { VariantCopy } from "../../gomoku/variants.constants";
 import type { PuzzleSpec } from "../puzzles.types";
 
 /*
- * ICHIFUDE'S SHARE OF THE PUZZLES' TABLES: how big it comes and what a reader is
+ * HITOFUDE'S SHARE OF THE PUZZLES' TABLES: how big it comes and what a reader is
  * told, in the shapes `puzzles.constants.ts` takes. It lives in Pencil puzzles
  * (`families.data.ts`), the eighth on that shelf: a board to work out and draw on,
  * in one line. The name is the site's own, and so is every board: each is made here
@@ -10,7 +10,7 @@ import type { PuzzleSpec } from "../puzzles.types";
  */
 
 /** 64: the cells of an 8×8, a character each, for the board and for the line. */
-export const ICHIFUDE_SPEC: PuzzleSpec = {
+export const HITOFUDE_SPEC: PuzzleSpec = {
   sizes: [5, 6, 7, 8],
   offered: [5, 6, 7, 8],
   defaultSize: 6,
@@ -20,15 +20,15 @@ export const ICHIFUDE_SPEC: PuzzleSpec = {
 };
 
 /** What each size is for, under its picture on the size tiles. */
-export const ICHIFUDE_SIZE_NAMES: Record<number, { label: string; kanji: string }> = {
+export const HITOFUDE_SIZE_NAMES: Record<number, { label: string; kanji: string }> = {
   5: { label: "Quick", kanji: "速" },
   6: { label: "Standard", kanji: "定番" },
   7: { label: "Long", kanji: "長" },
   8: { label: "Longest", kanji: "最長" },
 };
 
-export const ICHIFUDE_DISPLAY: VariantCopy = {
-  label: "Ichifude",
+export const HITOFUDE_DISPLAY: VariantCopy = {
+  label: "Hitofude",
   kanji: "一筆",
   tagline: "Draw one line through every square, passing the numbers in order.",
   inspiredBy: "the one-line number path puzzle",

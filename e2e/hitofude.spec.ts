@@ -2,24 +2,24 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { dailySeed } from "../src/lib/puzzles/daily";
 import { generatePuzzle } from "../src/lib/puzzles/generate";
-import { blankLine, decodeLine, decodeNumbers, encodeLine, neighbours } from "../src/lib/puzzles/ichifude/code";
-import { nextNumberOf } from "../src/lib/puzzles/ichifude/draw";
+import { blankLine, decodeLine, decodeNumbers, encodeLine, neighbours } from "../src/lib/puzzles/hitofude/code";
+import { nextNumberOf } from "../src/lib/puzzles/hitofude/draw";
 import type { Puzzle, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { freshPuzzleSeed, ready } from "./support";
 
 /**
- * ICHIFUDE 一筆: one line through every square, passing the numbers in order.
+ * HITOFUDE 一筆: one line through every square, passing the numbers in order.
  * Drawn the way a reader draws it, with the mouse held down over the squares, a tap
  * beside the head, the buttons under the board, and the keys; the answer made out of
  * the same seed the page uses. Its own, as against every other grid: the line can only
  * go on from its head, a number out of its turn stops it, and it must fill every square.
  */
-const AT = "/games/ichifude";
+const AT = "/games/hitofude";
 
 /** A fresh seed whose board has what a case needs: the rule under test is the point, so a board without it is passed over before the page opens, never skipped after. */
 function seedWhere(size: number, level: PuzzleLevel, wanted: (puzzle: Puzzle) => boolean): number {
   const from = freshPuzzleSeed();
-  for (let seed = from; seed < from + 400; seed += 1) if (wanted(generatePuzzle("ichifude", size, level, seed))) return seed;
+  for (let seed = from; seed < from + 400; seed += 1) if (wanted(generatePuzzle("hitofude", size, level, seed))) return seed;
   throw new Error("no board among four hundred has what this case needs");
 }
 
@@ -27,14 +27,14 @@ async function openPlay(page: Page, size: number, level: PuzzleLevel, extra = ""
   const seed = seedWhere(size, level, wanted);
   await page.goto(`${AT}/play?size=${size}&level=${level}&seed=${seed}${extra}`);
   await ready(page, "puzzle-play");
-  return generatePuzzle("ichifude", size, level, seed);
+  return generatePuzzle("hitofude", size, level, seed);
 }
 
 const codeOnPage = async (page: Page) => (await page.getByTestId("puzzle-play").getAttribute("data-code")) ?? "";
 
 /** The middle of a square on the page. */
 async function middleOf(page: Page, size: number, square: number) {
-  const board = page.getByTestId("ichifude-board");
+  const board = page.getByTestId("hitofude-board");
   await board.scrollIntoViewIfNeeded();
   const box = (await board.boundingBox())!;
   return { x: box.x + (((square % size) + 0.5) / size) * box.width, y: box.y + ((Math.floor(square / size) + 0.5) / size) * box.height };
@@ -57,12 +57,12 @@ async function drag(page: Page, size: number, squares: readonly number[]) {
   await page.mouse.up();
 }
 
-test.describe("Ichifude, for a reader with no account", () => {
+test.describe("Hitofude, for a reader with no account", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test("its front door and rules are open, it is at home in Pencil puzzles, and today's puzzle is one link away", async ({ page }) => {
     await page.goto(AT);
-    await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText("Ichifude");
+    await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText("Hitofude");
     await expect(page.getByTestId("game-family")).toContainText("Pencil puzzles");
     await expect(page.getByTestId("game-daily")).toBeVisible();
     await page.getByTestId("game-rules-link").click();
@@ -71,7 +71,7 @@ test.describe("Ichifude, for a reader with no account", () => {
   });
 });
 
-test.describe("Ichifude", () => {
+test.describe("Hitofude", () => {
   test("set up, drawn by a held drag through every square, solved, scored and kept", async ({ page }) => {
     await page.goto(`${AT}/new`);
     await ready(page, "puzzle-set-up");
@@ -83,7 +83,7 @@ test.describe("Ichifude", () => {
     await expect(page).toHaveURL(/seed=\d+/);
     await ready(page, "puzzle-play");
     const seed = Number(await page.getByTestId("puzzle-play").getAttribute("data-seed"));
-    const puzzle = generatePuzzle("ichifude", 5, "hard", seed);
+    const puzzle = generatePuzzle("hitofude", 5, "hard", seed);
     // Nothing drawn yet: the line is the first number alone, and the clock has not started.
     expect(await codeOnPage(page)).toBe(blankLine(puzzle.givens, 5));
     await expect(page.getByTestId("puzzle-clock")).toHaveText("0:00");
@@ -95,7 +95,7 @@ test.describe("Ichifude", () => {
     // The server's check took it: its own page draws the finished line.
     await page.getByTestId("puzzle-see-solve").click();
     await expect(page.getByTestId("solve-board")).toHaveAttribute("data-state", /replay|finished/);
-    await expect(page.getByTestId("solve-board").getByTestId("ichifude-line")).toBeVisible();
+    await expect(page.getByTestId("solve-board").getByTestId("hitofude-line")).toBeVisible();
   });
 
   test("the line goes on only from its head, a number out of its turn stops it, and a press on the line cuts it back", async ({ page }) => {
@@ -127,16 +127,16 @@ test.describe("Ichifude", () => {
     // Pressed on the line: cut back to there. Undo brings the cut part back, Restart clears it all.
     await tap(page, 6, answer[2]!);
     await expect.poll(async () => decodeLine(await codeOnPage(page), 6)?.length).toBe(3);
-    await page.getByTestId("ichifude-undo").click();
+    await page.getByTestId("hitofude-undo").click();
     await expect.poll(() => codeOnPage(page)).toBe(before);
-    await page.getByTestId("ichifude-restart").click();
+    await page.getByTestId("hitofude-restart").click();
     await expect.poll(() => codeOnPage(page)).toBe(blankLine(puzzle.givens, 6));
   });
 
   test("the arrow keys draw it, and back the way they came", async ({ page }) => {
     const puzzle = await openPlay(page, 5, "easy");
     const answer = decodeLine(puzzle.solution, 5)!;
-    await page.getByTestId("ichifude-board").focus();
+    await page.getByTestId("hitofude-board").focus();
     const arrow = (from: number, to: number) => (to === from - 5 ? "ArrowUp" : to === from + 5 ? "ArrowDown" : to === from - 1 ? "ArrowLeft" : "ArrowRight");
     await page.keyboard.press(arrow(answer[0]!, answer[1]!));
     await expect.poll(async () => decodeLine(await codeOnPage(page), 5)?.length).toBe(2);
@@ -159,7 +159,7 @@ test.describe("Ichifude", () => {
     await page.getByTestId("puzzle-check").click();
     await expect(page.getByTestId("puzzle-checked")).toContainText("1 square is wrong");
     await page.getByTestId("puzzle-show").click();
-    await expect(page.locator(`[data-testid="ichifude-square"][data-square="${wrong}"]`)).toHaveAttribute("data-wrong", "true");
+    await expect(page.locator(`[data-testid="hitofude-square"][data-square="${wrong}"]`)).toHaveAttribute("data-wrong", "true");
     await page.getByTestId("puzzle-hint").click();
     await expect.poll(() => codeOnPage(page)).toBe(encodeLine(answer.slice(0, 2), 6));
     await expect(page.getByTestId("puzzle-hint")).toContainText("1 used");
@@ -177,7 +177,7 @@ test.describe("Ichifude", () => {
     await expect(page).toHaveURL(/\/play$/);
     await ready(page, "tabs");
     await page.locator('[data-testid="tab"][data-tab="going"]').click();
-    const row = page.locator(`[data-testid="puzzle-going"][data-kind="ichifude"][data-seed="${puzzle.seed}"]`);
+    const row = page.locator(`[data-testid="puzzle-going"][data-kind="hitofude"][data-seed="${puzzle.seed}"]`);
     await expect(row).toBeVisible();
     await row.getByTestId("puzzle-going-continue").click();
     await ready(page, "puzzle-play");
@@ -209,21 +209,21 @@ test.describe("Ichifude", () => {
     const last = Math.max(...numbers);
     const end = answer.at(-1)!;
     await drag(page, 5, [...answer.slice(0, -3), end]);
-    await expect(page.getByTestId("ichifude-said")).toContainText("last number");
+    await expect(page.getByTestId("hitofude-said")).toContainText("last number");
     await expect(page.getByTestId("puzzle-done")).toHaveCount(0);
     expect(numbers[end]).toBe(last);
   });
 });
 
-test.describe("Ichifude's family", () => {
+test.describe("Hitofude's family", () => {
   test("is on Pencil puzzles' page and its set-up shelf", async ({ page }) => {
-    await page.goto("/games/ichifude/family");
+    await page.goto("/games/hitofude/family");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Pencil puzzles");
-    await expect(page.getByTestId("family-games")).toContainText("Ichifude");
+    await expect(page.getByTestId("family-games")).toContainText("Hitofude");
     await page.goto("/games/new");
     await ready(page, "set-up-game");
     await page.getByTestId("set-up-family").filter({ hasText: "Pencil puzzles" }).click();
-    await page.locator('[data-testid="set-up-puzzle"][data-kind="ichifude"]').click();
-    await expect(page.getByTestId("set-up-puzzle-preview")).toHaveAttribute("data-kind", "ichifude");
+    await page.locator('[data-testid="set-up-puzzle"][data-kind="hitofude"]').click();
+    await expect(page.getByTestId("set-up-puzzle-preview")).toHaveAttribute("data-kind", "hitofude");
   });
 });

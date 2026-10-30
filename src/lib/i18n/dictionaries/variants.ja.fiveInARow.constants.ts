@@ -193,7 +193,7 @@ export const VARIANT_COPY_JA_FIVE_IN_A_ROW = {
       "Make five in a row on hexagonal cells arranged in a hexagon. Every cell has six neighbours, and there are three directions to line up in.",
     ],
     origin: [
-      "このサイトのオリジナルのゲームです。五目並べを蜂の巣の格子の上に移したもので、盤はHexversiで石をひっくり返す盤と同じです。ここでは列を作るゲームとして読み、中央は開いていて、石を数えることはありません。",
+      "このサイトのオリジナルのゲームです。五目並べをハニカム格子の上に移したもので、盤はHexversiで石をひっくり返す盤と同じです。ここでは列を作るゲームとして読み、中央は開いていて、石を数えることはありません。",
       "A game original to this site. It moves gomoku onto a honeycomb lattice, and the board is the same one Hexversi turns discs on. Here it is read as a line game, the centre is open, and there are no discs to count.",
     ],
     rules: [
@@ -216,8 +216,8 @@ export const VARIANT_COPY_JA_FIVE_IN_A_ROW = {
       ],
     ],
     board: [
-      "4種類の六角形の盤があり、蜂の巣と同じ4つです。一辺4マスで37マス、5マスで61マス、6マスで91マス、7マスで127マスです。初期設定は91マスで、蜂の巣が最初に開く盤と同じです。",
-      "There are four hexagonal boards, the same four that 蜂の巣 (Honeycomb) is played on: 37 cells with four on a side, 61 with five, 91 with six and 127 with seven. The default is 91 cells, the same board that 蜂の巣 opens on.",
+      "4種類の六角形の盤があり、ハニカムと同じ4つです。一辺4マスで37マス、5マスで61マス、6マスで91マス、7マスで127マスです。初期設定は91マスで、ハニカムが最初に開く盤と同じです。",
+      "There are four hexagonal boards, the same four that ハニカム (Honeycomb) is played on: 37 cells with four on a side, 61 with five, 91 with six and 127 with seven. The default is 91 cells, the same board that ハニカム opens on.",
     ],
     review: AGENT_READ_2026_10_06,
   },

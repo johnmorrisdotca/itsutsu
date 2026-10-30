@@ -6,7 +6,7 @@ import { decodeClues, encodePicture } from "./pictureLogic/code";
 import { solutionOf as pictureSolution } from "./pictureLogic/solve";
 import { checkSuidoAnswer } from "@johnmorrisdotca/suido";
 import { suidoAnswerOf } from "./suido/solve";
-import { solutionOf as ichifudeSolution } from "./ichifude/solve";
+import { solutionOf as hitofudeSolution } from "./hitofude/solve";
 import { encodeWay } from "./meikyuu/way";
 import { tobiishiChallengeOf, tobiishiRefOfCode } from "./tobiishi/levels";
 import { encodeAnswer } from "./tobiishi/way";
@@ -52,8 +52,8 @@ function searchAnswer(kind: PuzzleKind, size: number, givens: string): string | 
   // The pencil puzzles: Kazu's solver, which counts the answers and gives the one there is.
   if (isPencilKind(kind)) return pencilEngine(kind).solve(size, givens);
   switch (kind) {
-    case "ichifude":
-      return ichifudeSolution(size, givens);
+    case "hitofude":
+      return hitofudeSolution(size, givens);
     case "hachinosu":
     case "kuniate":
       // Its answer is what was played, which nothing can work out afterwards, as a word's guesses are.

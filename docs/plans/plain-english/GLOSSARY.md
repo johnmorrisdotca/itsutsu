@@ -400,7 +400,7 @@ them (`points/ladder.ts`, `points/gamePoints.ts`).
 | Tsumiki · shape · tray · line · stone | the game's name and its screen | "shape" for what is laid, never "piece" or "block"; "line" for a full row or column |
 | Hachinosu · hive · centre letter · goal · Language | the game's name and its screen | our own name; a hive's tile row is "Language", and its target is the goal, never "rank" |
 | Kuniate · Outline · Flag · Capital · Clue | the game's name and the choices on its set-up | our own name; "Clue" is the tile row's heading, never "Board" or "Size" there |
-| Ichifude | the game's name | our own for a one-line number path puzzle; the rules page says "the line" and "square", never "path" or "cell" |
+| Hitofude | the game's name | our own for a one-line number path puzzle; the rules page says "the line" and "square", never "path" or "cell" |
 | bulb · line · square | what Check counts on Akari, Loop and Hitori | each puzzle's own noun: "2 bulbs are wrong, 1 still to place", "3 lines ...  still to draw", "1 square ... still to shade" |
 | Flag | under a Jirai board | the usual word; pressed, a tap flags. Not "Mark" (the package's word), which a Check also uses |
 | mines left · mistake | the line under a Jirai board | "13 mines left · 1 mistake": the mines not yet flagged, and the mines uncovered by slip |
