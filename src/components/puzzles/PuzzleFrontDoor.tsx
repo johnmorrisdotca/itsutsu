@@ -16,8 +16,9 @@ import { Suspense } from "react";
 
 import { backgroundPath, familyPath, historyPath, joinQuery, myGamePath, playPath, rulesPath, setUpPath, standingsPath } from "@/lib/gomoku/slugs";
 import { DAILY_PARAM } from "@/lib/puzzles/daily";
+import { sizeWordIn } from "@/lib/puzzles/sizeWord";
 import { puzzleRulesPage } from "@/lib/puzzles/puzzleRulesPage";
-import { PUZZLE_KINDS, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_KINDS, PUZZLE_SPECS, sizesOffered } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
 import { dailyWordsPath } from "@/lib/puzzles/dailyWords/dailyAddress";
@@ -88,6 +89,15 @@ export async function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 <Suspense fallback={<DailyWordButtonsShell kind={kind} framed={false} />}>
                   <DailyWordButtonsLive kind={kind} framed={false} />
                 </Suspense>
+              ) : kind === PUZZLE_KINDS.kuniate ? (
+                /* A Kuniate's day is three countries, one for each way of asking, so three links. */
+                <div className="flex flex-col gap-1" data-testid="game-daily-ways">
+                  {sizesOffered(kind).map((way) => (
+                    <Link key={way} href={joinQuery(playPath(kind), `?size=${way}&level=${spec.defaultLevel}&${DAILY_PARAM}=1`)} className="text-center text-sm font-medium underline underline-offset-4" data-testid="game-daily" data-way={way}>
+                      {say.say("pset.front.todaysWay", { way: sizeWordIn(way, kind, say) })}
+                    </Link>
+                  ))}
+                </div>
               ) : spec.fixedLevels === true ? null : (
                 /* The same puzzle for everybody today (`daily.ts`), at the usual size and level. A game of fixed levels has none: every level is the same for everybody every day, and the link only led to its set-up. */
                 <Link

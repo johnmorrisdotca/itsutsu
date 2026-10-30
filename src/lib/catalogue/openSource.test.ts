@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { EVERY_GAME_KEY } from "./gameKeys";
-import { OPEN_SOURCE_PACKAGES, openSourceOf, openSourceVersion, type OpenSourcePackage } from "./openSource";
+import { OPEN_SOURCE_ALSO, OPEN_SOURCE_PACKAGES, openSourceOf, openSourceVersion, type OpenSourcePackage } from "./openSource";
 
 const pkg = JSON.parse(readFileSync("package.json", "utf8")) as { dependencies: Record<string, string> };
 
@@ -18,7 +18,7 @@ describe("the open-source credit under a game", () => {
 
   it("credits every game a package plays, and every package a game here runs on", () => {
     // Each game package the site depends on (bar Tane, seeded randomness under several games, and Korokoro, on the dice page) is credited under some game.
-    const credited = new Set(EVERY_GAME_KEY.map(openSourceOf).filter((one) => one !== null));
+    const credited = new Set([...EVERY_GAME_KEY.map(openSourceOf).filter((one) => one !== null), ...Object.values(OPEN_SOURCE_ALSO).flat()]);
     const games = Object.keys(pkg.dependencies)
       .filter((name) => name.startsWith("@johnmorrisdotca/"))
       .map((name) => name.slice("@johnmorrisdotca/".length))

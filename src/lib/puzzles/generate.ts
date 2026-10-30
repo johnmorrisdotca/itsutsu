@@ -1,6 +1,7 @@
 import { generateBridges } from "./bridges/generate";
 import { generateIchifude } from "./ichifude/generate";
 import { generateJirai } from "./jirai/generate";
+import { generateKuniate } from "./kuniate/generate";
 import { generatePencil } from "./pencil/generate";
 import { generatePictureLogic } from "./pictureLogic/generate";
 import { generateSolitaire } from "./solitaire/generate";
@@ -116,6 +117,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "ichifude":
       // A line through every square, then the numbers that leave it the one answer, from the seed alone (`ichifude/generate.ts`).
       return generateIchifude(size, level, seed);
+    case "kuniate":
+      // A country from the seed, at the level's list; its size is the way it is asked (`kuniate/generate.ts`).
+      return generateKuniate(size, level, seed);
   }
 }
 

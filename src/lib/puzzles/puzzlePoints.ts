@@ -66,6 +66,8 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
   if (isPencilKind(kind)) return pencilEngine(kind).work(size, givens);
   // A Jirai's work is the safe squares its opening leaves covered.
   if (kind === "jirai") return jiraiWork(givens);
+  // A Kuniate's work is one country named, however it was asked: its answer is not a grid to fill.
+  if (kind === "kuniate") return 3;
   if (kind === "bridges") return [...givens.slice(0, area)].reduce((total, cell) => total + (cell === "." ? 0 : Number(cell) || 0), 0);
   if (kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop") return size;
   // Every tile of a Kumimoji's bag is laid by the player: its givens are the bag.

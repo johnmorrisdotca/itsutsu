@@ -4,7 +4,7 @@ Generated from `src/lib/i18n/dictionaries/puzzles.ja.*` by `src/lib/i18n/puzzleC
 
 Each row is one Japanese line, what it literally says in English, and who has read it. A puzzle's name is its kanji beside the English one, and the names of levels, sizes and chips that sit beside a kanji are shown as the kanji to a Japanese reader, so neither is repeated here. A line with a number or a name in it has `{0}`, `{1}` where the figure goes, in the order the screen gives them; a line that reads differently at 0, at 1 or at a kind is shown once for each, with the figure it is for in braces.
 
-870 lines, 802 distinct. 0 read by a person, 862 by the reviewer agent, 8 drafted and unread.
+886 lines, 816 distinct. 0 read by a person, 870 by the reviewer agent, 16 drafted and unread.
 
 ## Open for a person
 
@@ -17,6 +17,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 - **puzzle crossSums**: The English origin and last rule name other places' titles for this puzzle. The Japanese keeps the names the English gives in Latin letters and adds no Japanese brand name (TERMS.md): is that how John wants it?
 - **puzzle regions**: The English origin and last rule name other places' titles for this puzzle. The Japanese keeps the names the English gives in Latin letters and adds no Japanese brand name (TERMS.md): is that how John wants it?
 - **puzzle ichifude**: Written on 2026-10-30 with Ichifude; nobody has read it. 一筆 usually reads ippitsu or hitofude: is Ichifude acceptable as the English name beside it?
+- **puzzle kuniate**: Written on 2026-10-30 with Kuniate; nobody has read it.
 
 ## Every line
 
@@ -324,6 +325,14 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | puzzle ichifude: rules[2] | 線の先からドラッグするか、その隣のマスをタップします。線を戻るようにドラッグするか、線の上のマスをタップすると、そこから先を取り消せます。 | Drag from the end of the line, or tap a square beside it. Dragging back along the line, or tapping a square on it, cancels what comes after. | Question, unread |
 | puzzle ichifude: rules[3] | 答えはちょうど1つです。時計は最初の1歩で動き出し、最後のマスが埋まると止まります。チェックは、答えからはずれているマスの数だけを教えます。どのマスかは教えません。 | There is exactly one answer. The clock starts with the first step and stops when the last square is filled. Check tells you only how many squares are off the answer; it does not say which. | Question, unread |
 | puzzle ichifude: board | 6×6が普段の大きさです。5×5は手早く、7×7と8×8は長めです。どのサイズにも3つのレベルがあり、初級は数字が多く、上級は答えを1つに絞るのに要る数字だけです。 | 6×6 is the usual size. 5×5 is quick; 7×7 and 8×8 are longer. Every size has three levels: easy has many numbers, and hard only the numbers needed to narrow the answer to one. | Question, unread |
+| puzzle kuniate: tagline | 形、旗、首都のどれかを手がかりに、隠された国を6回以内で当てます。 | From one clue among its shape, flag or capital, guess the hidden country within six tries. | Question, unread |
+| puzzle kuniate: inspiredBy | 毎日の国当てパズル | the daily country-guessing puzzle | Question, unread |
+| puzzle kuniate: origin | 国の形を見てどの国か当てる遊びは、学校の地図帳と同じくらい古いものです。今では毎日のパズルとしても親しまれています。国当ては国を当てるという意味です。このサイトの形は公有の地図データNatural Earthから描いたもので、旗と首都は自前のオープンソースのパッケージ、Chizu、Hata、Kuniから取っています。 | The game of looking at a country's shape and guessing which country it is, is about as old as the school atlas. It is now also loved as a daily puzzle. 国当て means guessing a country. The shapes on this site are drawn from the public-domain map data Natural Earth, and the flags and capitals are from our own open-source packages, Chizu, Hata and Kuni. | Question, unread |
+| puzzle kuniate: rules[0] | 国が1つ隠されています。選んだ手がかりとして、その国の形、旗、または首都の名前が示されます。 | One country is hidden. As the clue you chose, its shape, flag or capital's name is shown. | Question, unread |
+| puzzle kuniate: rules[1] | 回答は6回までです。名前を入力しはじめて、一覧から選びます。一覧にはすべての国と地域が、読んでいる言語で載っています。 | You have up to six guesses. Start entering a name and choose from the list. All countries and territories are on the list, in the language you are reading. | Question, unread |
+| puzzle kuniate: rules[2] | はずれると、その場所が答えからどれだけ離れているかと、そこからどちらへ進めばよいかが示されます。 | When you miss, you are shown how far that place is from the answer and which way to go from there. | Question, unread |
+| puzzle kuniate: rules[3] | 今日のパズルは誰にとっても同じで、手がかりごとに別の国です。それ以外は、番号ごとに新しい国が出ます。 | Today's puzzle is the same for everybody, and is a different country for each kind of clue. Otherwise a new country comes with each number. | Question, unread |
+| puzzle kuniate: board | 形は国の形だけを見せます。旗はその国の旗を見せます。首都は首都の名前を見せます。初級はよく知られた国、中級はそれより多くの国、上級は世界の195か国のどれかです。 | Shape shows only the country's shape. Flag shows that country's flag. Capital shows the name of the capital. Easy is well-known countries, medium more countries than that, and hard any of the world's 195 countries. | Question, unread |
 | level names: easy.blurb | どの手も、見るだけで見つかります。試す必要はありません。 | Every step can be found by looking; nothing has to be tried. | Agent 2026-10-06 |
 | level names: medium.blurb | 見るだけでほとんど進みますが、どこかで1つ試して確かめる必要があります。 | Looking gets you most of the way; somewhere you have to try one thing and see. | Agent 2026-10-06 |
 | level names: hard.blurb | 何かを試して確かめる場所が、2か所以上あります。 | More than one place where you have to try something and see. | Agent 2026-10-06 |
@@ -336,6 +345,9 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | clocks: fox.blurb | 3分からのカウントダウンです。時間切れになると、解けないまま終わり、そのときの状態が記録されます。 | Three minutes, counting down. Out of time ends it unsolved, and it is kept as it stood. | Agent 2026-10-06 |
 | clocks: rabbit.label | 兎 | Rabbit | Agent 2026-10-06 |
 | clocks: rabbit.blurb | 1分からのカウントダウンです。時間切れになると、解けないまま終わり、そのときの状態が記録されます。 | One minute, counting down. Out of time ends it unsolved, and it is kept as it stood. | Agent 2026-10-06 |
+| level blurbs: kuniate.easy | よく知られた国です。人口の多い国とヨーロッパの国が中心です。 | Well-known countries. Mainly countries with many people, and the countries of Europe. | Agent 2026-10-06 |
+| level blurbs: kuniate.medium | 多くの人が聞いたことのある、百か国あまりです。 | The hundred or so countries many people have heard of. | Agent 2026-10-06 |
+| level blurbs: kuniate.hard | 世界の195か国のどれかです。 | Any of the world's 195 countries. | Agent 2026-10-06 |
 | level blurbs: gomoji.easy; level blurbs: gomojiMot.easy; level blurbs: gomojiWort.easy | いちばん身近な単語のどれかで、予想は8回です。 | One of the commonest words, and eight guesses to find it in. | Agent 2026-10-06 |
 | level blurbs: gomoji.medium; level blurbs: gomojiMot.medium; level blurbs: gomojiWort.medium | もっと広い単語のリストからで、予想は7回です。 | A wider list of words, and seven guesses. | Agent 2026-10-06 |
 | level blurbs: gomoji.hard; level blurbs: gomoji.extra-hard; level blurbs: gomojiMot.hard; level blurbs: gomojiMot.extra-hard; level blurbs: gomojiWort.hard; level blurbs: gomojiWort.extra-hard | もっと広い単語のリストからで、予想は6回、昔ながらの回数です。 | A wider list of words, and six guesses, the classic count. | Agent 2026-10-06 |
@@ -384,6 +396,11 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | level blurbs: koushi.easy | 8回の入れ替えで解けます。使えるのは13回で、いちばん身近な単語です。 | Solvable in 8 swaps, with 13 to do it in, and the commonest words. | Agent 2026-10-06 |
 | level blurbs: koushi.medium | 10回の入れ替えで解けます。使えるのは15回で、いちばん身近な単語です。 | Solvable in 10 swaps, with 15 to do it in, and the commonest words. | Agent 2026-10-06 |
 | level blurbs: koushi.hard | 12回の入れ替えで解けます。使えるのは17回で、もっと広い単語のリストです。 | Solvable in 12 swaps, with 17 to do it in, and a wider list of words. | Agent 2026-10-06 |
+| card sizes: kuniate.legend | 手がかり | Clue | Agent 2026-10-06 |
+| card sizes: kuniate.heading | 手がかり | Clues | Agent 2026-10-06 |
+| card sizes: kuniate.word{1} | 形 | Outline | Agent 2026-10-06 |
+| card sizes: kuniate.word{2} | 旗 | Flag | Agent 2026-10-06 |
+| card sizes: kuniate.word{3} | 首都 | Capital | Agent 2026-10-06 |
 | card sizes: tobiishi.legend | 長さ | Length | Agent 2026-10-06 |
 | card sizes: tobiishi.heading | 長さ | Lengths | Agent 2026-10-06 |
 | card sizes: tobiishi.word{3} | 短 | Short | Agent 2026-10-06 |

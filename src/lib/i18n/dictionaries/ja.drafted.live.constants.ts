@@ -52,6 +52,11 @@ export const JA_DRAFTED_LIVE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "An example of this layout. The real deal is made when you start.",
     review: AGENT_READ,
   },
+  "live.previewClue": {
+    text: "この手がかりの例です。実際には別の国が出ます。",
+    back: "An example of this clue. Actually, another country comes up.",
+    ask: "Written on 2026-10-30 with Kuniate; nobody has read it.",
+  },
   "live.previewPuzzle": {
     text: "{puzzle}の盤面のプレビューです。まだ何も書き込まれていません。",
     back: "A preview of the grid of {puzzle}. Nothing has been written yet.",

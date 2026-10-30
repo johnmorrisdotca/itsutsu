@@ -1,3 +1,4 @@
+import { KUNIATE_SIZE_NAMES } from "../../puzzles/kuniate/kuniate.constants";
 import { AGENT_READ_2026_10_06, type JaCases, type JaLine, type JaNode } from "../copyJa.types";
 import { KUMIMOJI_HANDS, KUMIMOJI_WILDS } from "../../puzzles/kumimoji/tiles.constants";
 import { SCRAMBLE_LENGTHS } from "../../puzzles/cube/generate";
@@ -28,6 +29,9 @@ export const PUZZLE_LEVEL_DISPLAY_JA: Record<PuzzleLevel, { blurb: JaLine }> = {
  * A line for each size a puzzle offers, for an English word that is made from the size by a function
  * (`CARD_SIZE_WORDS`): what the size is called is looked up, and a size with no line is read in English.
  */
+/** A Kuniate's clues by name: the plain word where its tile's mark is one character. */
+const KUNIATE_CLUES_JA: Readonly<Record<number, string>> = { 1: "形", 2: "旗", 3: "首都" };
+
 function bySize(sizes: readonly number[], line: (size: number) => JaLine): JaCases {
   return { by: 0, is: Object.fromEntries(sizes.map((size): [string, JaNode] => [String(size), line(size)])) };
 }
@@ -100,6 +104,11 @@ export const JIRAI_LEVEL_BLURBS_JA: Record<PuzzleLevel, JaLine> = {
 
 /** `PUZZLE_LEVEL_BLURBS`: what a level means for the kinds that mean something other than "how much has to be tried". */
 export const PUZZLE_LEVEL_BLURBS_JA = {
+  kuniate: {
+    easy: ["よく知られた国です。人口の多い国とヨーロッパの国が中心です。", "Well-known countries. Mainly countries with many people, and the countries of Europe."],
+    medium: ["多くの人が聞いたことのある、百か国あまりです。", "The hundred or so countries many people have heard of."],
+    hard: ["世界の195か国のどれかです。", "Any of the world's 195 countries."],
+  },
   gomoji: WORD_LEVELS,
   gomojiMot: WORD_LEVELS,
   gomojiWort: WORD_LEVELS,
@@ -234,6 +243,11 @@ function mazeSizeJa(size: number): string {
 
 /** `CARD_SIZE_WORDS`: what a card game's size is, in the heading over its tiles and in a sentence. */
 export const CARD_SIZE_WORDS_JA = {
+  kuniate: {
+    legend: ["手がかり", "Clue"],
+    heading: ["手がかり", "Clues"],
+    word: bySize([1, 2, 3], (size) => [KUNIATE_CLUES_JA[size]!, KUNIATE_SIZE_NAMES[size]!.label]),
+  },
   tobiishi: {
     legend: ["長さ", "Length"],
     heading: ["長さ", "Lengths"],

@@ -108,6 +108,7 @@ export const PUZZLE_SLUGS: Record<PuzzleKind, string> = {
   regions: "regions",
   jirai: "jirai",
   ichifude: "ichifude",
+  kuniate: "kuniate",
 };
 
 /**

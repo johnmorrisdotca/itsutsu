@@ -461,10 +461,11 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Word games",
     kanji: "言葉遊び",
-    blurb: "Games made of letters: a hidden word to find in six guesses, in English, French, German or kana, a crossword to build from your own tiles, six words to swap into a lattice, and a word to add letters to without finishing it.",
+    blurb: "Games made of letters: a hidden word to find in six guesses, in English, French, German or kana, a crossword to build from your own tiles, six words to swap into a lattice, a word to add letters to without finishing it, and a country to name from its shape, flag or capital.",
     /* One Gomoji: its languages and word lists are settings of it, chosen on its set-up (`gameSettings.ts`, John, 2026-09-28). */
     /* On the set-up screen since 2026-09-30: its puzzles each draw their own preview there (`PuzzleBoardPreview`). */
-    games: ["gomoji", "kumimoji", "koushi", "superghost"],
+    /* Kuniate (2026-10-30): one card, with its outline, flag and capital chosen on its set-up. Letters are how it is answered: a name typed, in six guesses, as a Gomoji's word is. */
+    games: ["gomoji", "kumimoji", "koushi", "superghost", "kuniate"],
   },
   {
     key: "karakuri",

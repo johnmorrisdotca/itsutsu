@@ -138,6 +138,8 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   jirai: { how: "size", rungs: { 7: 50, 9: 65, 12: 95, 16: 110, 32: 125 } },
   // Ichifude (`ichifude/`, 2026-10-30), rungs spaced by the squares a line has to fill: 25, 36, 49 and 64.
   ichifude: { how: "size", rungs: { 5: 50, 6: 70, 7: 95, 8: 125 } },
+  // A Kuniate's size is the clue it gives (`kuniate/`), one country whichever, so the rungs sit close: the level is most of what makes it harder. A capital says the least about where to look.
+  kuniate: { how: "size", rungs: { 1: 50, 2: 60, 3: 70 } },
   kumimoji: { how: "tiles", full: TILES },
   // The three biggest (2026-10-05) sit at the highest rung a level family has, 150, since a level adds up to 50 and the ceiling is 200: the work is far more than 15×15's, and the ceiling is the ceiling.
   tsunagi: { how: "ranked", rungs: { 4: 50, 5: 70, 6: 85, 7: 95, 8: 110, 9: 110, 10: 120, 11: 130, 12: 130, 13: 140, 14: 150, 15: 150, 20: 150, 25: 150, 30: 150 } },

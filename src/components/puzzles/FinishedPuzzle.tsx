@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState, type ReactNode } from "react";
 
 import { BoardFocus } from "@/components/board/BoardFocus";
@@ -57,6 +58,9 @@ import { resumedGame } from "@/lib/puzzles/suido/play";
 import { checkSuidoAnswer, newGame } from "@johnmorrisdotca/suido";
 import { useWordStyle } from "./WordStyleContext";
 import { WordReplay } from "./WordReplay";
+
+/* A kept Kuniate's clue and guesses read Kuni and fetch the country's shape, in the browser only: no page's function carries them. */
+const KuniateFinished = dynamic(() => import("./kuniate/KuniateFinished").then((module) => module.KuniateFinished), { ssr: false });
 
 const NOTHING = () => undefined;
 /** Every grid here is finished: drawn readOnly, through its `done` mode, with nothing to press. */
@@ -195,6 +199,16 @@ export function FinishedPuzzle({
       <Focused story={story} hydrated={hydrated} testId="solve-board" state="word">
         <div className="mx-auto w-full" data-focus-board>
           <WordReplay kind={kind} size={size} givens={givens} guesses={guesses} level={level} headStart={headStart} style={style} position={{ at: wordAt, go: setWordAt }} animate />
+        </div>
+      </Focused>
+    );
+  }
+
+  if (kind === "kuniate") {
+    return (
+      <Focused story={story} hydrated={hydrated} testId="solve-board" state={answer === null ? "dealt" : "finished"}>
+        <div className="mx-auto w-full" data-focus-board>
+          <KuniateFinished size={size} givens={givens} answer={answer} />
         </div>
       </Focused>
     );

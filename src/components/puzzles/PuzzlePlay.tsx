@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -54,6 +55,9 @@ import { TsunagiSolve } from "./TsunagiSolve";
 import type { ResumedRun, SolveRace } from "./solveShared";
 import type { KumimojiLanguage, KumimojiLength } from "@/lib/puzzles/kumimoji/kumimoji.types";
 
+
+/* Loaded on its own: Kuni's lists are this game's to fetch, and every other puzzle comes through this file. */
+const KuniateSolve = dynamic(() => import("./KuniateSolve").then((module) => module.KuniateSolve), { ssr: false });
 
 type PuzzlePlayProps = Parameters<typeof PuzzlePlayDrawn>[0] & {
   /** The query the server drew this page for (`puzzleQuery`), to tell a page kept for another address from this one. */
@@ -381,6 +385,8 @@ function PuzzlePlayDrawn({
         return <JiraiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
       case "ichifude":
         return <IchifudeSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
+      case "kuniate":
+        return <KuniateSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} />;
       case "koushi":
         return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       default:

@@ -274,6 +274,8 @@ export type BoardSizeMarkProps = {
   size: PictureSize;
   words: BoardSizeMarkWords;
   className?: string;
+  /** What is set large in place of the number, on a tile that is a choice and not a size (a Kuniate's outline, flag or capital), whose name beside it says the rest. */
+  numeral?: string;
 };
 
 /**

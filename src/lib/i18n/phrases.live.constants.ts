@@ -16,6 +16,7 @@ export const PHRASES_LIVE = {
   // The previews on the set-up screen
   "live.previewIs": "A preview of the {game} board. Nothing here is a move.",
   "live.previewMahjong": "A deal of this layout, for a look. Yours is dealt when you start.",
+  "live.previewClue": "An example of this clue. Yours will be another country.",
   "live.previewPuzzle": "A preview of the {puzzle} grid. Nothing is written yet.",
   "live.previewCards": "A deal of {game}, the stock turned once. Nothing is played yet.",
   "live.previewDealt": "This game scatters its board, so the one you play will be different.",

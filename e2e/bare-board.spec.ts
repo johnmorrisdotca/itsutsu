@@ -464,6 +464,7 @@ const SURVEYED_PUZZLES = [
   "regions",
   "jirai",
   "ichifude",
+  "kuniate",
 ] as const;
 
 const SURVEY: Survey[] = [

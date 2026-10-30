@@ -26,6 +26,7 @@ import { hiddenOfPlay } from "./gomoji/backwardsPlay";
 import { isDailyPoolWord } from "./dailyWords/dailyPools";
 import { checkIchifude } from "./ichifude/check";
 import { checkKoushi } from "./koushi/check";
+import { checkKuniate } from "./kuniate/check";
 import { checkNumbers } from "./kazu";
 import { checkTsunagi } from "./tsunagi/check";
 import { ordinaryLevel } from "./ordinaryLevel";
@@ -115,6 +116,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "ichifude":
       // The line, walked in one pass: every square once, each beside the last, the numbers in order from the first place to the last.
       return checkIchifude(size, givens, answer);
+    case "kuniate":
+      // The guesses, each a place once, ending on the hidden country and not before.
+      return checkKuniate(size, givens, answer, "found");
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }
@@ -162,6 +166,8 @@ export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string
   // FreeCell and Spider given up, the same way; each refuses a size it is not played at.
   if (kind === "freecell") return checkFreeCellGivenUp(size, givens, answer);
   if (kind === "spider") return checkSpiderGivenUp(size, givens, answer);
+  // A Kuniate's six guesses, all spent without the country.
+  if (kind === "kuniate") return PUZZLE_SPECS[kind].sizes.includes(size) ? checkKuniate(size, givens, answer, "spent") : { ok: false, reason: `no ${kind} at ${size}` };
   if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "gomojiPop" && kind !== "koushi") {
     return { ok: false, reason: `a ${kind} cannot run out of guesses` };
   }

@@ -54,6 +54,9 @@ function searchAnswer(kind: PuzzleKind, size: number, givens: string): string | 
   switch (kind) {
     case "ichifude":
       return ichifudeSolution(size, givens);
+    case "kuniate":
+      // Its answer is its guesses, which nothing can work out afterwards, as a word's are.
+      return null;
     case "hiddenStones": {
       const regions = decodeRegions(givens, size);
       const stones = regions === null ? null : hiddenStonesSolution(size, regions);

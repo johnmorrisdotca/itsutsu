@@ -13,11 +13,14 @@ import { isRuleVariant, type GameKey } from "./gameKeys";
  * build carries, read from the site's own package.json, which pins each one
  * exactly; a version is never typed twice.
  */
-export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu" | "tobiishi" | "gunjin" | "jirai" | "karakuri" | "houseki";
+export type OpenSourcePackage = "narabe" | "kyuubu" | "kotoba" | "kumimoji" | "toranpu" | "domino" | "hitotsu" | "tenka" | "korokoro" | "tsunagi" | "jarajara" | "suido" | "sugoroku" | "kazu" | "meikyuu" | "tobiishi" | "gunjin" | "jirai" | "karakuri" | "houseki" | "chizu" | "hata" | "kuni";
 
 /** Each package's name as it is written, and its repository. */
 export const OPEN_SOURCE_PACKAGES: Readonly<Record<OpenSourcePackage, { name: string; repo: string }>> = {
   narabe: { name: "Narabe", repo: "https://github.com/johnmorrisdotca/narabe" },
+  chizu: { name: "Chizu", repo: "https://github.com/johnmorrisdotca/chizu" },
+  hata: { name: "Hata", repo: "https://github.com/johnmorrisdotca/hata" },
+  kuni: { name: "Kuni", repo: "https://github.com/johnmorrisdotca/kuni" },
   kyuubu: { name: "Kyuubu", repo: "https://github.com/johnmorrisdotca/kyuubu" },
   kotoba: { name: "Kotoba", repo: "https://github.com/johnmorrisdotca/kotoba" },
   kumimoji: { name: "Kumimoji", repo: "https://github.com/johnmorrisdotca/kumimoji" },
@@ -56,6 +59,7 @@ const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
   sumCages: "kazu",
   moreOrLess: "kazu",
   towers: "kazu",
+  kuniate: "chizu",
   shikaku: "kazu",
   akari: "kazu",
   loop: "kazu",
@@ -80,6 +84,9 @@ const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
 };
 
 /** The package a game runs on, or null for a game whose rules are this site's own. Every board game runs on Narabe. */
+/** The packages a game also runs on, past the one it is credited to first: a Kuniate is Chizu's outlines, Hata's flags and Kuni's names. */
+export const OPEN_SOURCE_ALSO: Partial<Record<GameKey, readonly OpenSourcePackage[]>> = { kuniate: ["hata", "kuni"] };
+
 export function openSourceOf(game: GameKey): OpenSourcePackage | null {
   return BY_GAME[game] ?? (isRuleVariant(game) ? "narabe" : null);
 }

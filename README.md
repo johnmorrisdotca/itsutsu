@@ -709,6 +709,11 @@ through every square, passing the numbers in order, at 5×5 to 8×8 and three le
 answer is made first, the numbers put on until a search that finishes finds exactly one answer and then taken off as far as the
 level asks. A board is searched for, so it is only ever made in the browser, the set-up's preview included; the server walks a finished line in O(cells).
 
+**Kuniate** 国当て (2026-10-30, `src/lib/puzzles/kuniate/`) is in Word games: name a hidden country from its outline, flag or capital in
+six guesses, each wrong one saying how far and which way. One card; the three clues are its set-up's tiles and its puzzle's size, so a day's three questions and their
+fastest times stay apart. Its shapes are Chizu's, its flags Hata's and its names, capitals and distances Kuni's (`@johnmorrisdotca/chizu`, `hata`, `kuni`), fetched a country at a time by the browser and
+in no server function; the answers are the 195 members and observers of the United Nations, and Oman is asked only by outline and capital because Hata 1.7.2 has no flag for it.
+
 **Meikyuu** 迷宮 (2026-10-02, `src/lib/puzzles/meikyuu/`, plan in
 `docs/plans/meikyuu/README.md`): a maze to draw a line through with a finger or the
 mouse, from its start to its goal, in 1,024 fixed levels, 256 to each of four sizes (small,

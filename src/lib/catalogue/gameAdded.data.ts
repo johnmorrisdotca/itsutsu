@@ -67,6 +67,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   hotDrop: "2026-09-07",
   hypergammon: "2026-10-01",
   ichifude: "2026-10-30",
+  kuniate: "2026-10-30",
   internationalDraughts: "2026-09-14",
   jigsaw: "2026-09-24",
   jirai: "2026-10-05",

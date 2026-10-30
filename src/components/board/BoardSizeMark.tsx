@@ -51,7 +51,7 @@ import { boardSizeMarkVoice, boardSizeNumeralPx } from "./boardSizeVoice";
  * in the set-up block, large on the doorstep, twice it. The block's 70px is the
  * size John chose for every picture on the site.
  */
-export function BoardSizeMark({ side, size, words, className = "" }: BoardSizeMarkProps) {
+export function BoardSizeMark({ side, size, words, className = "", numeral }: BoardSizeMarkProps) {
   const say = useSpeaker();
   const box = pictureBox(size);
   // A Meikyuu maze over a solid: the solid, with its step big in the middle (`SolidMark`).
@@ -102,7 +102,7 @@ export function BoardSizeMark({ side, size, words, className = "" }: BoardSizeMa
   }
   return (
     <span
-      {...boardSizeMarkVoice(side, words, say)}
+      {...(numeral === undefined ? boardSizeMarkVoice(side, words, say) : ({ "aria-hidden": "true" } as const))}
       className={className === "" ? BOARD_SIZE_MARK_CLASS : `${BOARD_SIZE_MARK_CLASS} ${className}`}
       style={{
         ...box,
@@ -114,7 +114,7 @@ export function BoardSizeMark({ side, size, words, className = "" }: BoardSizeMa
       data-picture={size}
     >
       <span className={BOARD_SIZE_NUMERAL_CLASS} style={{ fontSize: boardSizeNumeralPx(box.width, side) }}>
-        {side}
+        {numeral ?? side}
       </span>
     </span>
   );

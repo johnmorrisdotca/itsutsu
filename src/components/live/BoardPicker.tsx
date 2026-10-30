@@ -38,6 +38,7 @@ export function BoardPicker({
   beside = false,
   names = BOARD_SIZE_DISPLAY,
   legend,
+  numerals,
 }: {
   /** The chosen board, as the length of one side. */
   value: number;
@@ -57,6 +58,8 @@ export function BoardPicker({
    * the classic one and not the "Mini" a 9×9 board is.
    */
   names?: Record<number, { label: string; kanji: string }>;
+  /** What a tile's big mark shows in place of its number, where the tiles are choices and not sizes. */
+  numerals?: Readonly<Record<number, string>>;
   /** What the choice is called over the tiles: "Board", or "Draw" for a card game, whose tiles are how many cards the stock turns. */
   legend?: string;
 }) {
@@ -149,7 +152,7 @@ export function BoardPicker({
                 to the next. This block's 70px is the size John chose for every
                 picture on the site.
               */}
-              <BoardSizeMark side={size} size="regular" words="none" />
+              <BoardSizeMark side={size} size="regular" words="none" numeral={numerals?.[size]} />
               {/*
                 What that board is FOR — "Mini", "Tournament size" — which is
                 the part a number alone cannot say to somebody meeting these

@@ -42,7 +42,8 @@ export type PuzzleKind =
   | "crossSums"
   | "regions"
   | "jirai"
-  | "ichifude";
+  | "ichifude"
+  | "kuniate";
 
 /** The three levels every puzzle that has levels offers, easiest first: what a table kept for a puzzle that has no extra hard is keyed by. */
 export type OrdinaryLevel = "easy" | "medium" | "hard";

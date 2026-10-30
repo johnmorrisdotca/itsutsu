@@ -15,12 +15,18 @@ importers:
 
   .:
     dependencies:
+      '@johnmorrisdotca/chizu':
+        specifier: 1.5.0
+        version: 1.5.0
       '@johnmorrisdotca/domino':
         specifier: 1.1.1
         version: 1.1.1
       '@johnmorrisdotca/gunjin':
         specifier: 0.2.0
         version: 0.2.0
+      '@johnmorrisdotca/hata':
+        specifier: 1.7.2
+        version: 1.7.2
       '@johnmorrisdotca/hitotsu':
         specifier: 1.3.1
         version: 1.3.1(react@19.2.8)
@@ -48,6 +54,9 @@ importers:
       '@johnmorrisdotca/kumimoji':
         specifier: 1.2.1
         version: 1.2.1(react@19.2.8)
+      '@johnmorrisdotca/kuni':
+        specifier: 1.4.0
+        version: 1.4.0
       '@johnmorrisdotca/kyuubu':
         specifier: 1.12.0
         version: 1.12.0(react@19.2.8)
@@ -442,6 +451,10 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@johnmorrisdotca/chizu@1.5.0':
+    resolution: {integrity: sha512-Nbs+uZHzIlzK/P51ZaCm0tQIu5FVGGRF6RDmUj302Q0O/tfmFeoyf3ZMNBkjaozcxU/1YbCE3FaVfRIX7GhYLg==}
+    engines: {node: '>=22'}
+
   '@johnmorrisdotca/domino@1.1.1':
     resolution: {integrity: sha512-gNTlK6zUWLMReLLgDtOndBMUZdOMqH5o4YGse27E2nHr/MTgCizDsMdZpnrjfBsIzp3Sga/sg8tyiqWqlPeeDw==}
     engines: {node: '>=22'}
@@ -450,6 +463,10 @@ packages:
   '@johnmorrisdotca/gunjin@0.2.0':
     resolution: {integrity: sha512-qz2h+Q7v+m5NRBpvAVdQty9f/u7aN6bC6yv5VJhZzlm7NuGx5EAYgLeyKJtQSY4oNny1+4L0gD3sfUSfC8HIiQ==}
     engines: {node: '>=22'}
+
+  '@johnmorrisdotca/hata@1.7.2':
+    resolution: {integrity: sha512-ULxtLeW1n+GekfILrfFAaDbEegqFpmbc70rI1AzNksmftZvha95lthNmHZdgl6csrACUVZH5Kvqq5VixqYgiog==}
+    engines: {node: '>=24'}
 
   '@johnmorrisdotca/hitotsu@1.3.1':
     resolution: {integrity: sha512-pDY12FpT/Ul6g5iq90kWDqE+P31T1g1dnp8Vk0oqD3HvNw21DnZdUgsB4QmVaunI9lcjGOtEPNpZaZ6zg7oa2w==}
@@ -513,6 +530,10 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@johnmorrisdotca/kuni@1.4.0':
+    resolution: {integrity: sha512-rMal4ngyC4yKmhBZMCrbUolUivAFpqe/tdamJ8Y2qoCtZXdIeCNiwS/HWRcdRgK5yhKMQMZw243saoJx0bJUyQ==}
+    engines: {node: '>=24'}
 
   '@johnmorrisdotca/kyuubu@1.12.0':
     resolution: {integrity: sha512-ePx3KnfUCApzKZE33LmWvovkyh15NiJebkTOS4fn7ybxd6lvcr+kjgeYkZbirs5W49KS/OI9YGq9c/zfLvE0QA==}
@@ -3185,9 +3206,13 @@ snapshots:
   '@img/sharp-win32-x64@0.35.5':
     optional: true
 
+  '@johnmorrisdotca/chizu@1.5.0': {}
+
   '@johnmorrisdotca/domino@1.1.1': {}
 
   '@johnmorrisdotca/gunjin@0.2.0': {}
+
+  '@johnmorrisdotca/hata@1.7.2': {}
 
   '@johnmorrisdotca/hitotsu@1.3.1(react@19.2.8)':
     optionalDependencies:
@@ -3214,6 +3239,8 @@ snapshots:
   '@johnmorrisdotca/kumimoji@1.2.1(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
+
+  '@johnmorrisdotca/kuni@1.4.0': {}
 
   '@johnmorrisdotca/kyuubu@1.12.0(react@19.2.8)':
     optionalDependencies:

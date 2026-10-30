@@ -63,7 +63,9 @@ export function puzzleRulesPage(kind: PuzzleKind, say: Speaker = speaker(DEFAULT
   const object = [copy.tagline, copy.rules[0]!];
   const heading = cardSizeWords(say.locale)[kind]?.heading ?? word(kind === "suido" ? "puzzle.rules.boardsYouMake" : "puzzle.rules.sizes");
   const proof: PhraseKey =
-    kind === "suido"
+    kind === "kuniate"
+      ? "puzzle.rules.proofKuniate"
+      : kind === "suido"
       ? "puzzle.rules.proofSuido"
       : kind === "tobiishi"
         ? "puzzle.rules.proofTobiishi"

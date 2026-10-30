@@ -1105,6 +1105,11 @@ export const JA_DRAFTED_PSET: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "How the grid is drawn",
     review: AGENT_READ,
   },
+  "pset.front.todaysWay": {
+    text: "今日のパズル：{way}",
+    back: "Today's puzzle: {way}",
+    ask: "Written on 2026-10-30 with Kuniate; nobody has read it.",
+  },
   "pset.board.pencil": {
     text: "{game}の盤、{size}×{size}",
     back: "{game} board, {size} by {size}",

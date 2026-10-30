@@ -224,6 +224,7 @@ export const PHRASES_PSET = {
   "pset.words.daily": "Daily words",
   "pset.words.leaderboard": "Leaderboard",
   "pset.words.gridDrawn": "How the grid is drawn",
+  "pset.front.todaysWay": "Today's puzzle: {way}",
   "pset.board.pencil": "{game} board, {size} by {size}",
   "pset.sizes.room": "Longer →",
 } as const;

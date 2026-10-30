@@ -15,7 +15,7 @@ import { joinQuery, mySolvePath, playPath, setUpPath } from "@/lib/gomoku/slugs"
 import { helpOpensOn, solveHelpSays } from "@/lib/puzzles/solveHelp";
 import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { puzzleName } from "@/lib/puzzles/puzzleCopy";
-import { PUZZLE_CLOCK_DISPLAY, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
+import { PUZZLE_CLOCK_DISPLAY, PUZZLE_KINDS, PUZZLE_SPECS } from "@/lib/puzzles/puzzles.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { clockText } from "@/lib/puzzles/clockText";
 import { wordCountOfGivens } from "@/lib/puzzles/gomoji/futago";
@@ -207,7 +207,7 @@ export function SolveDone({
               {anotherLabel}
             </button>
             <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
-              {say.say(cards ? "puzzle.done.changeDraw" : "puzzle.done.changeSize")}
+              {say.say(cards ? "puzzle.done.changeDraw" : puzzle.kind === PUZZLE_KINDS.kuniate ? "puzzle.done.changeClue" : "puzzle.done.changeSize")}
             </Link>
             {/* The solve just kept, to watch again step by step, as every past solve opens. */}
             {done.solveId ? (

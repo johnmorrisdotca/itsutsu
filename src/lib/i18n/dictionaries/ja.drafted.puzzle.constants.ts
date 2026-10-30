@@ -445,6 +445,16 @@ export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Every bag can be finished: the browser that deals it lays its tiles out as one crossword first, and any other crossword of the same tiles counts as well.",
     review: AGENT_READ,
   },
+  "puzzle.done.changeClue": {
+    text: "手がかりやレベルを変える",
+    back: "Change the clue or level",
+    ask: "Written on 2026-10-30 with Kuniate; nobody has read it.",
+  },
+  "puzzle.rules.proofKuniate": {
+    text: "国はパズルの番号から決まるので、同じアドレスならいつも同じ国が出ます。今日のパズルは、誰にとっても同じです。",
+    back: "The country is decided from the puzzle's number, so the same address always gives the same country. Today's puzzle is the same for everybody.",
+    ask: "Written on 2026-10-30 with Kuniate; nobody has read it.",
+  },
   "puzzle.rules.proofGrid": {
     text: "どのパズルも、答えはちょうど1つです。作ったブラウザが、見る前に確かめるので、答えが2つある盤や、1つもない盤はありません。",
     back: "Every puzzle has exactly one answer. The browser that makes it checks that before you see it, so there is never a grid with two answers or none.",

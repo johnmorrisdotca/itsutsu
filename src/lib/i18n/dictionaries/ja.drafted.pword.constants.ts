@@ -9,7 +9,119 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
 
+const KUNIATE_DRAFTED = "Written on 2026-10-30 with Kuniate; nobody has read it.";
+
 export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
+  "pword.kuniate.placeholder": {
+    text: "国名を入力",
+    back: "Type a country name",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.outlineLabel": {
+    text: "隠された国の形",
+    back: "The shape of the hidden country",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.flagLabel": {
+    text: "隠された国の旗",
+    back: "The flag of the hidden country",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.km": {
+    text: "{km}キロ",
+    back: "{km} km",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.way.n": {
+    text: "北へ",
+    back: "to the north",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.way.ne": {
+    text: "北東へ",
+    back: "to the north-east",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.way.e": {
+    text: "東へ",
+    back: "to the east",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.way.se": {
+    text: "南東へ",
+    back: "to the south-east",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.way.s": {
+    text: "南へ",
+    back: "to the south",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.way.sw": {
+    text: "南西へ",
+    back: "to the south-west",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.way.w": {
+    text: "西へ",
+    back: "to the west",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.way.nw": {
+    text: "北西へ",
+    back: "to the north-west",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.left.one": {
+    text: "残り{count}回です。",
+    back: "{count} more tries.",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.left.other": {
+    text: "残り{count}回です。",
+    back: "{count} more tries.",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.capitalIs": {
+    text: "首都：{capital}",
+    back: "Capital: {capital}",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.another": {
+    text: "別の国",
+    back: "Another country",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.refuse.notQuestion": {
+    text: "探す国になっていません。",
+    back: "This is not a country to look for.",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.refuse.notGuesses": {
+    text: "答えが回答の一覧になっていません。",
+    back: "The answer is not a list of guesses.",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.refuse.notFound": {
+    text: "国が当てられていません。",
+    back: "The country has not been guessed.",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.refuse.goesOn": {
+    text: "国を当てたあとも回答が続いています。",
+    back: "Guesses continue after the country was guessed.",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.refuse.wasFound": {
+    text: "国は当てられています。",
+    back: "The country has been guessed.",
+    ask: KUNIATE_DRAFTED,
+  },
+  "pword.kuniate.refuse.guessesLeft": {
+    text: "まだ回答が残っています。",
+    back: "There are still guesses left.",
+    ask: KUNIATE_DRAFTED,
+  },
   "pword.headStart.off": {
     text: "先手なし",
     back: "No head start",

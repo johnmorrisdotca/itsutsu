@@ -178,6 +178,7 @@ export const setUpCopy = (say: Speaker) => {
   previewIs: (game: string) => say.say("live.previewIs", { game }),
   // A puzzle's, in the same shape and length, so the line under the board is the same height whichever is chosen.
   previewMahjong: say.say("live.previewMahjong"),
+  previewClue: say.say("live.previewClue"),
   previewPuzzle: (puzzle: string) => say.say("live.previewPuzzle", { puzzle }),
   /** A card game's, which has a deal and not a grid. */
   previewCards: (game: string) => say.say("live.previewCards", { game }),

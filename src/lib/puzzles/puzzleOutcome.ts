@@ -11,7 +11,7 @@ export type PuzzleOutcome = { words: string; mark: "success" | "failure" };
 const CARD_PUZZLES: ReadonlySet<PuzzleKind> = new Set<PuzzleKind>(["solitaire", "freecell", "spider"]);
 
 /** The word puzzles, which find a word rather than solve a grid. */
-const WORD_PUZZLES: ReadonlySet<PuzzleKind> = new Set<PuzzleKind>(["gomoji", "gomojiKana", "gomojiMot", "gomojiWort", "gomojiPop"]);
+const WORD_PUZZLES: ReadonlySet<PuzzleKind> = new Set<PuzzleKind>(["gomoji", "gomojiKana", "gomojiMot", "gomojiWort", "gomojiPop", "kuniate"]);
 
 /**
  * HOW ONE PUZZLE ENDED, WORKED OUT ONCE. The finished puzzle's page said

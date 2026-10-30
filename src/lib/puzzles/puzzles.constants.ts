@@ -17,6 +17,7 @@ import { TOBIISHI_LEVELS_A_SIZE } from "./tobiishi/levelCounts";
 import { TOBIISHI_SIZES, tobiishiSizeLabel } from "./tobiishi/sizes";
 import { JIRAI_DISPLAY, JIRAI_LEVEL_BLURBS, JIRAI_SIZE_NAMES, JIRAI_SPEC } from "./jirai/jirai.constants";
 import { ICHIFUDE_DISPLAY, ICHIFUDE_SIZE_NAMES, ICHIFUDE_SPEC } from "./ichifude/ichifude.constants";
+import { KUNIATE_DISPLAY, KUNIATE_SIZE_NAMES, KUNIATE_SPEC } from "./kuniate/kuniate.constants";
 import { PENCIL_DISPLAY, PENCIL_KIND_LIST, PENCIL_SIZE_NAMES, PENCIL_SPECS } from "./pencil/pencil.constants";
 import type { OrdinaryLevel, PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
@@ -76,6 +77,7 @@ export const PUZZLE_KINDS = {
   regions: "regions",
   jirai: "jirai",
   ichifude: "ichifude",
+  kuniate: "kuniate",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** How many tiles a Mahjong layout holds, read from the layout rather than typed into its copy. */
@@ -122,6 +124,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   // The pencil puzzles (`pencil/`), in their family's order.
   ...PENCIL_KIND_LIST,
   PUZZLE_KINDS.ichifude,
+  PUZZLE_KINDS.kuniate,
   PUZZLE_KINDS.jirai,
 ];
 
@@ -525,6 +528,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
   },
   ...PENCIL_SPECS,
   ichifude: ICHIFUDE_SPEC,
+  kuniate: KUNIATE_SPEC,
   jirai: JIRAI_SPEC,
 };
 
@@ -787,6 +791,7 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
   },
   ...PENCIL_SIZE_NAMES,
   ichifude: ICHIFUDE_SIZE_NAMES,
+  kuniate: KUNIATE_SIZE_NAMES,
   jirai: JIRAI_SIZE_NAMES,
 };
 
@@ -809,6 +814,11 @@ const KANA_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
   "extra-hard": "A wider list of words, six guesses and no free word.",
 };
 export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<PuzzleLevel, string>>>> = {
+  kuniate: {
+    easy: "The best-known countries: the biggest, and Europe's.",
+    medium: "The hundred or so most people have heard of.",
+    hard: "Any of the world's 195 countries.",
+  },
   gomoji: WORD_LEVEL_BLURBS,
   // French and German are Gomoji in another language (`gameSettings.ts`): their levels mean what English's do, never a number puzzle's "looking" and "trying".
   gomojiMot: WORD_LEVEL_BLURBS,
@@ -900,6 +910,8 @@ export const PUZZLE_LEVEL_BLURBS: Partial<Record<PuzzleKind, Partial<Record<Puzz
  * heading for the list of them.
  */
 export const CARD_SIZE_WORDS: Partial<Record<PuzzleKind, { legend: string; heading: string; word: (size: number) => string }>> = {
+  // A Kuniate's size is the clue it gives: its outline, its flag or its capital (`kuniate/`).
+  kuniate: { legend: "Clue", heading: "Clues", word: (size) => KUNIATE_SIZE_NAMES[size]?.label ?? String(size) },
   // A peg puzzle's size is how long its shortest way is, Short, Medium or Long, the jumps in it being the big number on the tile (`tobiishi/sizes.ts`).
   tobiishi: { legend: "Length", heading: "Lengths", word: (size) => tobiishiSizeLabel(size) },
   // A maze's size is how many cells it has, in the package's four words (`meikyuu/sizes.ts`).
@@ -1492,5 +1504,6 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
   },
   ...PENCIL_DISPLAY,
   ichifude: ICHIFUDE_DISPLAY,
+  kuniate: KUNIATE_DISPLAY,
   jirai: JIRAI_DISPLAY,
 };
