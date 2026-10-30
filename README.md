@@ -1065,7 +1065,7 @@ move.
 | **Anti-Reversi** 逆リバーシ | Everything turns as usual, and the *fewer* discs wins. You may not decline a move that is there. | 8×8 |
 | **Mini Reversi** 小リバーシ | The flipping game small, and it may grow mid-game if both agree: the position moves to the centre of the next size up. | 4×4, 6×6, 8×8 |
 | **Grand Reversi** 大リバーシ | More middle to fight over before anyone reaches an edge. | 10×10 |
-| **Honeycomb** 蜂の巣 | Reversi on a hexagon of hexagons: six ways to bracket a run, six corners that never turn. | hexagon of hexagons |
+| **Honeycomb** ハニカム | Reversi on a hexagon of hexagons: six ways to bracket a run, six corners that never turn. | hexagon of hexagons |
 | **Halma** ハルマ | A race: step, or jump chains over any piece, and fill the far corner first. Nothing is ever captured. | 16×16, 10×10, 8×8 |
 | **Chinese Checkers** ダイヤモンドゲーム | Ten pieces, a six-pointed star, and the point opposite yours to fill. Jumps chain and turn corners. | 17×17 star |
 | **Hex** ヘックス | Join your own two sides with an unbroken chain. A full board always has exactly one winner, so there are no draws — which is why the swap opening is offered. | 11, 13, 19 |
