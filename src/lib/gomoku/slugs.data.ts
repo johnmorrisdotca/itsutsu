@@ -47,6 +47,7 @@ export const GAME_SLUGS: Record<RuleVariant, string> = {
   twistFour: "twist-four",
   trapThree: "trap-three",
   squareFour: "square-four",
+  nineMensMorris: "nine-mens-morris",
   tictactoe: "tic-tac-toe",
   reversi: "reversi",
   classicReversi: "classic-reversi",

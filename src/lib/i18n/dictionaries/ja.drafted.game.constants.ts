@@ -669,6 +669,21 @@ export const JA_DRAFTED_GAME: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "A draw by the {half}-move rule. For {half} moves each, nothing was taken and no ordinary piece moved.",
     review: AGENT_READ,
   },
+  "game.drawNoProgressMilling": {
+    text: "50手ルールで引き分けです。駒を置くことも取ることもないまま、それぞれ{half}手が過ぎました。",
+    back: "A draw by the fifty-move rule. {half} moves each passed with no piece placed or taken.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "game.millPrompt": {
+    text: "ミルができました。相手の駒を1つ取ります。",
+    back: "A mill is made. Take one of the opponent's pieces.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "game.winsByReduced": {
+    text: "{who}の勝ちです。相手の駒が2つになりました。",
+    back: "{who} wins. The opponent's pieces have become two.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
   "game.drawNoProgressPlacing": {
     text: "滑らせるルールによる引き分けです。最後の駒を置いてから{plies}手たちましたが、勝負はつきませんでした。",
     back: "A draw by the sliding rule. {plies} moves have passed since the last piece was placed, and nobody won.",

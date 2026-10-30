@@ -468,6 +468,22 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
     ],
     board: "5×5.",
   },
+  nineMensMorris: {
+    label: "Nine Men's Morris",
+    kanji: "モリス",
+    tagline: "Lay nine men, then move them along the lines. Three in a line take one of your opponent's.",
+    origin: "One of the oldest board games still played. Boards for it are cut into the stones of medieval churches and cloisters across Europe, and Alfonso X's Book of Games described it in 1283.",
+    alsoKnownAs: ["Mills", "Merels", "Mühle"],
+    wikipedia: "Nine_men's_morris",
+    rules: [
+      "Each player has nine men. First they are laid, one a turn, on any empty point.",
+      "Three of your men along one drawn line make a mill. Making one lets you take a man of your opponent's off the board: any that is not in a mill, unless all of them are.",
+      "Once all nine are laid, a turn moves one of your men along a line to the empty point next to it. Pick a man, then the point it goes to.",
+      "Down to three men, yours fly: a move can go to any empty point.",
+      "You win when your opponent is down to two men, or has no move to make. Fifty moves each with no man laid or taken is a draw, which is this site's count and not an old rule.",
+    ],
+    board: "Three squares, one inside another, joined at the middle of each side: twenty-four points.",
+  },
   squareFour: {
     label: "Square Four",
     kanji: "四角四目",

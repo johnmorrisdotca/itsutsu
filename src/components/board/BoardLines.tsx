@@ -2,6 +2,7 @@ import { BLOCKED, STAR_POINTS } from "@/lib/gomoku/gomoku.constants";
 import type { Cell } from "@/lib/gomoku/gomoku.types";
 import { hexagonSealed, inHexagon } from "@/lib/gomoku/rules/hexagon";
 import { STAR_RADIUS as HEXAGRAM_RADIUS, inStar, starCampOf } from "@/lib/gomoku/rules/chineseCheckers";
+import { MILLS, MILL_POINTS } from "@/lib/gomoku/rules/mills";
 import type { LatticeShape } from "./margin";
 import { EDGE_LINE_WIDTH, HEX_LATTICE, LINE_WIDTH, STAR_RADIUS } from "./Board.constants";
 import type { BoardThemeTokens } from "./board.types";
@@ -111,12 +112,31 @@ export function hexagonPoints(cx: number, cy: number): string {
 }
 
 
+/**
+ * THE MILL BOARD: three squares, one inside another, joined at the middle of each side, and a dot on each of its
+ * twenty-four points. Drawn from the rule's own table of runs (`rules/mills.ts`), so a line here is one a man can move along
+ * and a run of three here is one that makes a mill.
+ */
+function MillLines({ size, theme }: { size: number; theme: BoardThemeTokens }) {
+  return (
+    <svg className="absolute inset-0 h-full w-full" viewBox={`0 0 ${size} ${size}`} aria-hidden="true" data-testid="mill-lines">
+      {MILLS.map(([from, , to], at) => (
+        <line key={at} x1={from!.col + 0.5} y1={from!.row + 0.5} x2={to!.col + 0.5} y2={to!.row + 0.5} stroke={theme.line} strokeWidth={EDGE_LINE_WIDTH} strokeLinecap="round" />
+      ))}
+      {MILL_POINTS.map((point) => (
+        <circle key={`${point.row}:${point.col}`} cx={point.col + 0.5} cy={point.row + 0.5} r={STAR_RADIUS * 1.3} fill={theme.line} />
+      ))}
+    </svg>
+  );
+}
+
 export function BoardLines({
   size,
   theme,
   quadrantSize = null,
   cells = false,
   checkered = false,
+  mills = false,
   lattice = null,
 }: {
   size: number;
@@ -127,6 +147,8 @@ export function BoardLines({
   cells?: boolean;
   /** Checkers: shades every other square, so the dark squares in play read at a glance. */
   checkered?: boolean;
+  /** Nine Men's Morris: the three squares and the lines joining them, and nothing else. */
+  mills?: boolean;
   /**
    * A board on the hexagon lattice — Hex's rhombus, Chinese Checkers' star,
    * the honeycomb — drawn as hexagon cells on its own fit. Null for a square
@@ -134,6 +156,7 @@ export function BoardLines({
    */
   lattice?: { shape: LatticeShape; board: readonly Cell[]; transform: string } | null;
 }) {
+  if (mills) return <MillLines size={size} theme={theme} />;
   if (lattice !== null) {
     const { shape, board, transform } = lattice;
     /*

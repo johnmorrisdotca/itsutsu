@@ -1,4 +1,4 @@
-import { AGENT_READ_2026_10_06 } from "../copyJa.types";
+import { AGENT_READ_2026_10_06, type CopyReview } from "../copyJa.types";
 import type { RuleVariant } from "../../gomoku/gomoku.types";
 import type { VariantCopyJa } from "./variants.ja.types";
 
@@ -7,7 +7,27 @@ import type { VariantCopyJa } from "./variants.ja.types";
  * English). 三目並べ is the established name for tic-tac-toe; 作り手 and 壊し手
  * are the game's own roles, as its `kanji` field names them.
  */
+/** Nine Men's Morris is drafted and not yet read: the reviewer agent's stamp goes here, and until then `variants.coverage.test.ts` says so on purpose. */
+const NOT_YET_READ = undefined as unknown as CopyReview;
+
 export const VARIANT_COPY_JA_SMALL_BOARDS = {
+  nineMensMorris: {
+    tagline: ["9つの駒を置き、線に沿って動かします。3つ並ぶと、相手の駒を1つ取ります。", "Place nine pieces and move them along the lines. Three in a line take one of the opponent's pieces."],
+    origin: [
+      "今も遊ばれている、とても古い盤上ゲームの1つです。ヨーロッパ各地の中世の教会や回廊の石に盤が刻まれており、1283年にはアルフォンソ10世の『遊戯の書』に書かれています。",
+      "One of the very old board games still played. Boards are carved in the stones of medieval churches and cloisters around Europe, and it is written of in Alfonso X's Book of Games in 1283.",
+    ],
+    rules: [
+      ["各自9つの駒を持ちます。まず1手に1つずつ、空いている点に置きます。", "Each player has nine pieces. First they are placed one per move on an empty point."],
+      ["描かれた1本の線の上に自分の駒が3つ並ぶと、ミルになります。ミルを作ると、相手の駒を1つ盤から取れます。ミルに入っていない駒から選びますが、すべてミルに入っているときはどれでも取れます。", "Three of your pieces on one drawn line make a mill. Making one lets you take one of the opponent's pieces off the board. You choose from those not in a mill, but when all are in mills any can be taken."],
+      ["9つすべて置いたあとは、1手で自分の駒を1つ、線に沿って隣の空いている点へ動かします。駒を選び、次に動かす先を選びます。", "After all nine are placed, a move moves one of your pieces along a line to the empty point next to it. Choose a piece, then where it goes."],
+      ["駒が3つになると、飛べるようになります。どの空いている点にも動かせます。", "When you are down to three pieces you can fly. You can move to any empty point."],
+      ["相手の駒が2つになるか、相手が動けなくなると勝ちです。駒を置くことも取ることもないままそれぞれ50手が過ぎると引き分けで、これはこのサイト独自の決まりです。", "You win when the opponent has two pieces or cannot move. If fifty moves each pass with no piece placed or taken it is a draw, and this is this site's own rule."],
+    ],
+    board: ["正方形が3つ入れ子になり、各辺の真ん中でつながった盤で、点は24あります。", "A board of three squares nested, joined at the middle of each side, with twenty-four points."],
+    review: NOT_YET_READ,
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it. Its Japanese name here is モリス: is that the right short name beside the English?",
+  },
   tictactoe: {
     tagline: ["3×3の盤で3つ並べる。", "Make three in a row on a 3×3 board."],
     origin: ["誰もが知っているゲームです。", "The game everybody knows."],

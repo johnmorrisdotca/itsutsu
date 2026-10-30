@@ -83,6 +83,46 @@ export const JA_DRAFTED_RULESPAGE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Even if a side keeps pieces at home to block, it loses the moment every other square of its camp has been filled by the opponent.",
     review: AGENT_READ,
   },
+  "rulespage.object.millsWin": {
+    text: "相手の駒を2つまで減らすか、相手が動けないようにします。",
+    back: "Reduce the opponent's pieces to two, or make the opponent unable to move.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "rulespage.object.millsMill": {
+    text: "描かれた1本の線の上に自分の駒が3つ並ぶとミルになり、ミルを作るたびに相手の駒を1つ盤から取ります。",
+    back: "Three of your pieces on one drawn line make a mill, and each time you make a mill you take one of the opponent's pieces off the board.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "rulespage.board.mills": {
+    text: "正方形が3つ入れ子になり、各辺の真ん中でつながった盤です。点は24で、駒はそれぞれ9つです。",
+    back: "A board of three nested squares joined at the middle of each side. There are 24 points, and nine pieces each.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "rulespage.play.millsLay": {
+    text: "まず1手に1つずつ、空いている点に駒を置きます。",
+    back: "First place pieces, one per move, on an empty point.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "rulespage.play.millsTake": {
+    text: "ミルを作るとすぐ駒を1つ取れます。ミルに入っていない駒から選びますが、すべて入っているときはどれでも取れます。",
+    back: "Making a mill lets you take one piece at once. You choose from those not in a mill, but when all are in one any can be taken.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "rulespage.play.millsMove": {
+    text: "9つすべて置いたあとは、1手で駒を1つ、線に沿って隣の空いている点へ動かします。",
+    back: "After all nine are placed, a move moves one piece along a line to the empty point next to it.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "rulespage.play.millsFly": {
+    text: "駒が3つになると飛べます。どの空いている点にも動かせます。",
+    back: "With three pieces you can fly. You can move to any empty point.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "rulespage.play.millsEnd": {
+    text: "駒を置くことも取ることもないままそれぞれ50手が過ぎると引き分けです。この回数はこのサイト独自のものです。",
+    back: "If fifty moves each pass with no piece placed or taken it is a draw. This count is this site's own.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
   "rulespage.object.starFill": {
     text: "自分の真向かいにある星の頂点を、先に自分の駒で埋めた方が勝ちです。駒を取ることはなく、列を作っても何の意味もありません。",
     back: "Whoever first fills the point of the star directly opposite their own with their own pieces wins. Pieces are not captured, and making a line means nothing.",

@@ -135,7 +135,10 @@ export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAUL
   const word = (key: PhraseKey, vars?: Vars) => say.say(key, vars);
 
   const object: string[] = [];
-  if (spec.connects) {
+  if (spec.mills) {
+    object.push(word("rulespage.object.millsWin"));
+    object.push(word("rulespage.object.millsMill"));
+  } else if (spec.connects) {
     object.push(word("rulespage.object.connectsJoin"));
     object.push(word("rulespage.object.connectsNoDraw"));
   } else if (spec.camps) {
@@ -179,7 +182,7 @@ export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAUL
   // The board this game OPENS on, which is not the first of the list: the list
   // is in numerical order and the default is a decision — see `defaultBoardFor`.
   const opens = defaultBoardFor(variant);
-  const board: string[] = spec.hexagon
+  const board: string[] = spec.hexagon || spec.mills
     ? []
     : [
         sizes.length === 1
@@ -211,7 +214,8 @@ export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAUL
   if (spec.wrap === "columns") board.push(word("rulespage.board.wrapColumns"));
   if (spec.wrap === "both") board.push(word("rulespage.board.wrapBoth"));
   if (spec.wormholes > 0) board.push(word("rulespage.board.wormholes"));
-  if (spec.pieces !== null) board.push(word("rulespage.board.pieces", { pieces: say.count("rulespage.count.piece", spec.pieces) }));
+  if (spec.mills) board.push(word("rulespage.board.mills"));
+  if (spec.pieces !== null && !spec.mills) board.push(word("rulespage.board.pieces", { pieces: say.count("rulespage.count.piece", spec.pieces) }));
   if (spec.connects) board.push(word("rulespage.board.connects"));
   if (spec.camps) board.push(word("rulespage.board.camps"));
   if (spec.checkers) board.push(checkersBoardLine(variant, opens, say));
@@ -253,7 +257,13 @@ export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAUL
   }
 
   const play: string[] = [];
-  if (spec.connects) {
+  if (spec.mills) {
+    play.push(word("rulespage.play.millsLay"));
+    play.push(word("rulespage.play.millsTake"));
+    play.push(word("rulespage.play.millsMove"));
+    play.push(word("rulespage.play.millsFly"));
+    play.push(word("rulespage.play.millsEnd"));
+  } else if (spec.connects) {
     play.push(word("rulespage.play.connectsTurn"));
     play.push(word("rulespage.play.connectsLines"));
     play.push(word("rulespage.play.connectsEnd"));
@@ -305,7 +315,7 @@ export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAUL
     play.push(word(spec.captureSizes.length > 1 ? "rulespage.play.capturesBoth" : "rulespage.play.capturesPair"));
   }
   if (spec.lineClear) play.push(word("rulespage.play.lineClear"));
-  if (spec.flips || spec.camps || spec.connects || spec.checkers || spec.chineseCheckers || spec.go) {
+  if (spec.flips || spec.camps || spec.connects || spec.checkers || spec.chineseCheckers || spec.go || spec.mills) {
     // Said above; a full board is only the usual way for both to be stuck, a race has no full board, checkers ends with pieces gone, and Go ends on two passes, not a full board.
   } else if (spec.misere) {
     if (spec.placement === PLACEMENTS.drop) play.push(word("rulespage.play.misereDrop"));

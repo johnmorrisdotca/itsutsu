@@ -10,7 +10,7 @@ import { openSetUpPage } from "./support";
  * one would belong there just as much — "a family is a way of finding a game,
  * not a filing cabinet". So Mini Reversi lived under Turn and take and was listed
  * under Small boards too (`ALSO_LISTED_IN`); on 2026-10-05 that listing made way
- * for Tobiishi, the shelf being full at eight. The case is Chinese Checkers now:
+ * for Tobiishi, and on 2026-10-30 Tobiishi's for Nine Men's Morris, the shelf being full at eight. The case is Chinese Checkers now:
  * at home under Territory and races (it was Races until 2026-09-24) and listed
  * under Checkers for its name. Picked from either shelf it has to be the same
  * game: the same address on the page before it.

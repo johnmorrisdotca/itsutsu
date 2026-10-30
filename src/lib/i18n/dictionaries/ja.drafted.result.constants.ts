@@ -147,6 +147,21 @@ export const JA_DRAFTED_RESULT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "For longer than the rules allow, no piece was taken and no ordinary piece moved.",
     review: AGENT_READ,
   },
+  "result.reduced": {
+    text: "{who}が相手の駒を2つまで減らしました。",
+    back: "{who} reduced the opponent's pieces to two.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "result.reducedYou": {
+    text: "相手の駒を2つまで減らしました。",
+    back: "You reduced the opponent's pieces to two.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
+  "result.noProgressMilling": {
+    text: "駒を置くことも取ることもないまま、規則で認められている期間を超えました。",
+    back: "Without any piece being placed or taken, the period the rules allow was passed.",
+    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+  },
   "result.noProgressPlacing": {
     text: "駒をすべて置き終えたあと、規則で認められている期間を超えて、駒を滑らせ続けました。",
     back: "After every piece was placed, the sliding went on for longer than the rules allow.",

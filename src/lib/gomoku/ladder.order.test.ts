@@ -175,6 +175,8 @@ const LEVEL_AT_THE_TOP: readonly RuleVariant[] = [
   RULE_VARIANTS.trapThree,
   RULE_VARIANTS.squareFour,
   RULE_VARIANTS.wildTicTacToe,
+  // Won by taking men, which the line reading does not count, and a mill is a run of three on a board that is not a grid.
+  RULE_VARIANTS.nineMensMorris,
   /*
    * Hex is the one entry here that is excluded by MEASUREMENT rather than by
    * having nothing to read. How much of an axis a colour spans is a nudge

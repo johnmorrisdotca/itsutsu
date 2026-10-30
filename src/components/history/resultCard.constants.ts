@@ -25,6 +25,7 @@ export const RESULT_REASONS: Record<
   connection: { about: "winner", said: "result.connection", you: "result.connectionYou" },
   blocked: { about: "loser", said: "result.blocked", you: "result.blockedYou" },
   territory: { about: "winner", said: "result.territory", you: "result.territoryYou" },
+  reduced: { about: "winner", said: "result.reduced", you: "result.reducedYou" },
   /*
    * A draw's reasons, in the board's own words (`GAME_COPY.draw…`) less the
    * "Draw." the card's headline has already said.
@@ -32,6 +33,7 @@ export const RESULT_REASONS: Record<
   noProgressRacing: { about: null, said: "result.noProgressRacing", you: null },
   noProgressTaking: { about: null, said: "result.noProgressTaking", you: null },
   noProgressPlacing: { about: null, said: "result.noProgressPlacing", you: null },
+  noProgressMilling: { about: null, said: "result.noProgressMilling", you: null },
   noMoves: { about: null, said: "result.noMoves", you: null },
   repetition: { about: null, said: "result.repetition", you: null },
   endgameCount: { about: null, said: "result.endgameCount", you: null },

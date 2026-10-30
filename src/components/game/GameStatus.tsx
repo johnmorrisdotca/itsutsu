@@ -94,6 +94,7 @@ function ToPlay({ session }: { session: GameSession }) {
     if (state.winBy === WIN_REASONS.captures) return GAME_COPY.winsByCaptures(who, state.settings.capturesToWin);
     if (state.winBy === WIN_REASONS.trap) return GAME_COPY.winsByTrap(who, names[loserSeat].trim() || seatName(say, loserSeat));
     if (state.winBy === WIN_REASONS.square) return GAME_COPY.winsBySquare(who);
+    if (state.winBy === WIN_REASONS.reduced) return GAME_COPY.winsByReduced(who);
     if (state.winBy === WIN_REASONS.count) {
       const discs = discCount(state.board);
       return say.say("gamescreen.winsOnDiscs", { who, black: String(discs.black), white: String(discs.white) });
@@ -251,6 +252,7 @@ function VariantLine({ session }: { session: GameSession }) {
       );
     }
     if (state.pendingTwist) lines.push(GAME_COPY.twistPrompt);
+    if (state.pendingRemoval) lines.push(GAME_COPY.millPrompt);
     else if (inMovePhase(state)) {
       lines.push(
         session.selected === null

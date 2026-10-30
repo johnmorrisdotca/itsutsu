@@ -43,6 +43,8 @@ const SCENES: Record<
   twistFive: { size: 6, moves: [[0, 0], [5, 5], [1, 1]], twists: [[0, true], [3, false], [1, true]] },
   twistFour: { size: 4, moves: [[0, 0], [3, 3]], twists: [[0, true], [3, true]] },
   trapThree: { size: 5, moves: [[1, 1], [3, 3], [1, 3], [3, 1]] },
+  // Men laid on the three squares, and black one short of a mill along the top.
+  nineMensMorris: { size: 7, moves: [[0, 0], [6, 0], [0, 3], [6, 3], [1, 1], [5, 5], [3, 0], [3, 6], [2, 3], [4, 3]] },
   squareFour: { size: 5, moves: [[0, 0], [4, 4], [0, 1], [4, 3], [1, 0], [3, 4], [2, 2], [3, 0]] },
   tictactoe: { size: 3, moves: [[1, 1], [0, 0], [2, 2], [0, 2], [0, 1]] },
   sannuki: { size: 19, moves: [[9, 9], [9, 10], [9, 11], [9, 12], [10, 10], [8, 8], [9, 13]] },

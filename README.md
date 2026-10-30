@@ -720,6 +720,8 @@ word that uses all seven; a hive is drawn from a six-letter word and one more le
 
 **Tsumiki** 積み木 (2026-10-30, the package's `tsumiki` entry) is the Houseki family's sixth: three shapes on an eight by eight board, every full row and column clearing, in 64 levels, three lessons, a Daily and free play (`docs/plans/houseki/README.md`).
 
+**Nine Men's Morris** (2026-10-30, Narabe's `rules/mills.ts`) is at home in Small boards, which it fills at eight: nine men laid and then moved along the lines of three squares, three in a line taking one of the other side's, a side down to three flying, and a side down to two or with no move losing. The taking is the second half of the turn: while it is owed, `legalPoints` and `playMove` read the point played as the man to take, so the record, the replay, the live route and the programs needed nothing new.
+
 **Meikyuu** 迷宮 (2026-10-02, `src/lib/puzzles/meikyuu/`, plan in
 `docs/plans/meikyuu/README.md`): a maze to draw a line through with a finger or the
 mouse, from its start to its goal, in 1,024 fixed levels, 256 to each of four sizes (small,
@@ -745,7 +747,7 @@ is its place in the length, the seed is that number, the givens are the level's 
 (`tobiishi/way.ts`), and the server replays it on the level's own board and accepts any
 legal run that leaves one peg in the goal (`tobiishi/check.ts`). The board is drawn by
 the package and played by a tap, a drag or the keyboard (`TobiishiBoard`). It is at home
-in Numbers and is shown on the Small boards shelf as a guest (`ALSO_LISTED_IN`); its
+in Numbers; its
 level screens are Meikyuu's, with no locks and no hint.
 
 Tsunagi 繋ぎ, our Numberlink (`src/lib/puzzles/tsunagi/`, the levels and rules

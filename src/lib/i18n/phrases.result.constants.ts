@@ -35,6 +35,9 @@ export const PHRASES_RESULT = {
   // Why a game was drawn
   "result.noProgressRacing": "Nobody got a piece any nearer home for longer than its rules allow.",
   "result.noProgressTaking": "Nothing was taken and no man moved for longer than its rules allow.",
+  "result.reduced": "{who} brought the other side down to two men.",
+  "result.reducedYou": "You brought the other side down to two men.",
+  "result.noProgressMilling": "Nobody laid or took a man for longer than the rules allow.",
   "result.noProgressPlacing": "Every piece was down, and the sliding went on longer than its rules allow.",
   "result.noMoves": "Neither side had a move left.",
   "result.repetition": "The same position came round again, with the same side to move.",

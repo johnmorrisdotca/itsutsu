@@ -33,6 +33,14 @@ export const PHRASES_RULESPAGE = {
   "rulespage.object.campsFill":
     "Be the first to fill the far corner camp with your pieces. Nothing is captured and no line counts for anything.",
   "rulespage.object.campsBlock": "A side that keeps pieces at home to block still loses once every other square of its camp is taken.",
+  "rulespage.object.millsWin": "Bring your opponent down to two men, or leave them with no move.",
+  "rulespage.object.millsMill": "Three of your men along one drawn line make a mill, and each mill takes one of your opponent's men off the board.",
+  "rulespage.board.mills": "Three squares, one inside another, joined at the middle of each side: twenty-four points, and nine men for each player.",
+  "rulespage.play.millsLay": "First the men are laid, one a turn, on any empty point.",
+  "rulespage.play.millsTake": "A mill lets you take a man at once: any that is not in a mill, unless all of them are.",
+  "rulespage.play.millsMove": "Once all nine are laid, a turn moves one of your men along a line to the empty point next to it.",
+  "rulespage.play.millsFly": "Down to three men, yours fly: a move can go to any empty point.",
+  "rulespage.play.millsEnd": "Fifty moves each with no man laid or taken is a draw: that count is this site's, not an old rule.",
   "rulespage.object.starFill":
     "Be the first to fill the point of the star directly opposite yours with your own pieces. Nothing is captured and no line counts for anything.",
   "rulespage.object.starBlock": "A side that keeps pieces at home to block still loses once every other cell of the far point is taken.",

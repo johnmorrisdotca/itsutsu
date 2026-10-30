@@ -158,9 +158,9 @@ export const GAME_FAMILIES: GameFamily[] = [
     key: "small-boards",
     title: "Small boards",
     kanji: "小盤",
-    blurb: "Games you can read to the end, and games where the trick is what you must not do.",
+    blurb: "Games you can read to the end, games where the trick is what you must not do, and Nine Men's Morris, where men are laid, moved and taken.",
     /* Dots and Boxes (2026-10-01): a party game for two to six that is a small board at heart, from Party games. */
-    games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker", "dotsAndBoxes"],
+    games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker", "dotsAndBoxes", "nineMensMorris"],
   },
   {
     key: "numbers",

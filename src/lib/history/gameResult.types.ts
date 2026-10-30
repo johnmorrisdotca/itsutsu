@@ -24,6 +24,7 @@ export type DrawReason =
   | "noProgressRacing"
   | "noProgressTaking"
   | "noProgressPlacing"
+  | "noProgressMilling"
   | "noMoves"
   | "repetition"
   | "endgameCount"

@@ -62,10 +62,11 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
   },
   "small-boards": {
     blurb: [
-      "最後まで読み切れるゲームと、してはいけないことが鍵になるゲームです。",
-      "Games you can read through to the end, and games where the key is what you must not do.",
+      "最後まで読み切れるゲーム、してはいけないことが鍵になるゲーム、そして駒を置き、動かし、取り合うモリスです。",
+      "Games you can read through to the end, games where the key is what you must not do, and Morris, where pieces are placed, moved and taken from each other.",
     ],
     review: AGENT_READ_2026_10_06,
+    ask: "The clause about Morris was added on 2026-10-30; nobody has read it.",
   },
   numbers: {
     blurb: [
@@ -149,13 +150,6 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
  * `<game>/<family key>`: the sentences of `ALSO_LISTED_IN` in `familyShelves.ts`.
  */
 export const ALSO_LISTED_COPY_JA: Record<string, { why: JaLine; review?: CopyReview }> = {
-  "tobiishi/small-boards": {
-    why: [
-      "小さな盤でのペグソリティア。1人用のパズルで、最初の1個から最後の1個まで数回の跳びで、1、2分で終わります。",
-      "Peg solitaire on a small board. A puzzle for one that takes a few jumps from the first peg to the last, over in a minute or two.",
-    ],
-    review: AGENT_READ_2026_10_06,
-  },
   "chineseCheckers/checkers": {
     why: [
       "名前がチェッカーというだけです。駒は取られず、キングにもなりません。10個の駒を星の向かい側の頂点へ走らせる競走です。",

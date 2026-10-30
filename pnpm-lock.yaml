@@ -64,8 +64,8 @@ importers:
         specifier: 3.1.1
         version: 3.1.1
       '@johnmorrisdotca/narabe':
-        specifier: 1.2.1
-        version: 1.2.1(react@19.2.8)
+        specifier: file:../itsutsu-quick-wins-packages/johnmorrisdotca-narabe-1.3.0.tgz
+        version: file:../itsutsu-quick-wins-packages/johnmorrisdotca-narabe-1.3.0.tgz(react@19.2.8)
       '@johnmorrisdotca/sugoroku':
         specifier: 1.0.1
         version: 1.0.1
@@ -550,8 +550,9 @@ packages:
     resolution: {integrity: sha512-CUvODE5m/lb+TaU533yxY8EPDha8j9oSTDKny1Xbi5B4tsQfBE9nlixyE69Q8kWIJurotTjsdCOEaToRwbfNdg==}
     engines: {node: '>=22'}
 
-  '@johnmorrisdotca/narabe@1.2.1':
-    resolution: {integrity: sha512-36wHbW+wvTivN3gkp8u8fSi3VTSZk6ROZrZzJA/42dO4/vsylhUVfroiNqPdfmTX+VKTjuWe6oIejyJwowL79g==}
+  '@johnmorrisdotca/narabe@file:../itsutsu-quick-wins-packages/johnmorrisdotca-narabe-1.3.0.tgz':
+    resolution: {integrity: sha512-9EKY7duRzBNVpDwgHUAqtuNnD0QMjBq1xDfjxgWy+Vco4ccxFAqJEa7w1PGUTYb3zJ1YJfwI8lecPdur39qT2g==, tarball: file:../itsutsu-quick-wins-packages/johnmorrisdotca-narabe-1.3.0.tgz}
+    version: 1.3.0
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -3249,7 +3250,7 @@ snapshots:
 
   '@johnmorrisdotca/meikyuu@3.1.1': {}
 
-  '@johnmorrisdotca/narabe@1.2.1(react@19.2.8)':
+  '@johnmorrisdotca/narabe@file:../itsutsu-quick-wins-packages/johnmorrisdotca-narabe-1.3.0.tgz(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 

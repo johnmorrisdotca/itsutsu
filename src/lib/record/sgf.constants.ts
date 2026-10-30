@@ -114,6 +114,7 @@ export const SGF_TYPES: Record<RuleVariant, SgfTypeRow> = {
   notakto: { gm: null, why: `Both players place the same mark, and completing a line loses. ${NO_NUMBER}.` },
   tictactoe: { gm: null, why: `Noughts and crosses. ${NO_NUMBER}.` },
   trapThree: { gm: null, why: `Four wins and three loses, on a 5×5 board. ${NO_NUMBER}.` },
+  nineMensMorris: { gm: null, why: `Nine men each, laid and then moved along the lines, three in a line taking a man. ${NO_NUMBER}.` },
   squareFour: { gm: null, why: `Four pieces each, which move once they are all down. ${NO_NUMBER}.` },
   twistFive: { gm: null, why: `Every move ends with a quadrant turning. ${NO_NUMBER}.` },
   twistFour: { gm: null, why: `Every move ends with a quadrant turning. ${NO_NUMBER}.` },
