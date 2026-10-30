@@ -43,7 +43,7 @@ import { generateBridges } from "@/lib/puzzles/bridges/generate";
 import { PictureLogicGrid } from "@/components/puzzles/PictureLogicGrid";
 import { decodeClues } from "@/lib/puzzles/pictureLogic/code";
 import { generatePictureLogic } from "@/lib/puzzles/pictureLogic/generate";
-import { HachinosuPreview, IchifudePreview, KuniatePreview } from "@/components/puzzles/ownPreviews";
+import { HachinosuPreview, HitofudePreview, KuniatePreview } from "@/components/puzzles/ownPreviews";
 import { PatiencePreview } from "@/components/puzzles/PatiencePreview";
 import { SolitaireTable } from "@/components/puzzles/SolitaireTable";
 import { dealKlondike, dealOfSeed, deckOf, playKlondike } from "@johnmorrisdotca/toranpu/klondike";
@@ -150,8 +150,8 @@ export function PuzzleBoardPreview({
           <HachinosuPreview size={size} />
         ) : kind === "kuniate" ? (
           <KuniatePreview size={size} level={level ?? spec.defaultLevel} />
-        ) : kind === "ichifude" ? (
-          <IchifudePreview size={size} level={level ?? spec.defaultLevel} />
+        ) : kind === "hitofude" ? (
+          <HitofudePreview size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "bridges" ? (
           <BridgesPreview size={size} />
         ) : kind === "suido" ? (

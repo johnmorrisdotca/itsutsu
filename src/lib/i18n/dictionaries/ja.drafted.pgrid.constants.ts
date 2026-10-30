@@ -13,77 +13,77 @@ const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
 const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
 export const JA_DRAFTED_PGRID: Partial<Record<PhraseKey, DraftedPhrase>> = {
-  "pgrid.ichifude.label": {
+  "pgrid.hitofude.label": {
     text: "一筆の盤、{size}×{size}。{howTo}",
-    back: "Ichifude board, {size} by {size}. {howTo}",
+    back: "Hitofude board, {size} by {size}. {howTo}",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.howTo": {
+  "pgrid.hitofude.howTo": {
     text: "1からドラッグするか、線の端の隣のマスをタップします。戻るようにドラッグするか、線をタップすると、その先を取り消せます。",
     back: "Drag from 1, or tap the square beside the end of the line. Drag back, or tap the line, to cancel what comes after.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.next": {
+  "pgrid.hitofude.next": {
     text: "次の数字は{number}です。",
     back: "The next number is {number}.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.left.one": {
+  "pgrid.hitofude.left.one": {
     text: "残り{count}マスです。",
     back: "{count} squares left.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.left.other": {
+  "pgrid.hitofude.left.other": {
     text: "残り{count}マスです。",
     back: "{count} squares left.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.tooSoon": {
+  "pgrid.hitofude.tooSoon": {
     text: "最後の数字に着きましたが、まだ埋まっていないマスがあります。線を戻して、先にそのマスを通りましょう。",
     back: "You have reached the last number, but there are squares not yet filled. Take the line back and go through those squares first.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.refuse.notBoard": {
+  "pgrid.hitofude.refuse.notBoard": {
     text: "与えられた盤が数字の盤になっていません。",
     back: "The given board is not a board of numbers.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.refuse.wrongSize": {
+  "pgrid.hitofude.refuse.wrongSize": {
     text: "このサイズのマス目ではありません。",
     back: "This is not a grid of this size.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.refuse.offLine": {
+  "pgrid.hitofude.refuse.offLine": {
     text: "線の上にないマスがあります。",
     back: "There is a square not on the line.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.refuse.crosses": {
+  "pgrid.hitofude.refuse.crosses": {
     text: "線が交差しています。",
     back: "The line crosses.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.refuse.jumps": {
+  "pgrid.hitofude.refuse.jumps": {
     text: "線が隣のマスにつながっていません。",
     back: "The line does not connect to a neighbouring square.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.refuse.outOfOrder": {
+  "pgrid.hitofude.refuse.outOfOrder": {
     text: "数字の順番がちがいます。",
     back: "The order of the numbers is wrong.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.refuse.wrongStart": {
+  "pgrid.hitofude.refuse.wrongStart": {
     text: "線が最初の数字から始まっていません。",
     back: "The line does not start from the first number.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.refuse.wrongEnd": {
+  "pgrid.hitofude.refuse.wrongEnd": {
     text: "線が最後の数字で終わっていません。",
     back: "The line does not end at the last number.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.ichifude.step": {
+  "pgrid.hitofude.step": {
     text: "線が通った",
     back: "the line passed through it",
     review: AGENT_READ_2026_10_30,

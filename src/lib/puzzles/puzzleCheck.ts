@@ -24,7 +24,7 @@ import { backwardsGuesses, breaksBackwardsRule, isGuessable } from "./gomoji/bac
 import { isBackwardsGivens } from "./gomoji/backwardsSeed";
 import { hiddenOfPlay } from "./gomoji/backwardsPlay";
 import { isDailyPoolWord } from "./dailyWords/dailyPools";
-import { checkIchifude } from "./ichifude/check";
+import { checkHitofude } from "./hitofude/check";
 import { checkHachinosu } from "./hachinosu/check";
 import { checkKoushi } from "./koushi/check";
 import { checkKuniate } from "./kuniate/check";
@@ -114,9 +114,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "jirai":
       // The uncovered clues of a finished board add up to its covered squares, which are exactly its mines: the board cannot be dealt again here (that is a search).
       return jiraiCheck(size, givens, answer);
-    case "ichifude":
+    case "hitofude":
       // The line, walked in one pass: every square once, each beside the last, the numbers in order from the first place to the last.
-      return checkIchifude(size, givens, answer);
+      return checkHitofude(size, givens, answer);
     case "hachinosu":
       // The words handed in, one pass: on the list, of the hive's letters with its centre, and worth its goal by the last and not before.
       return checkHachinosu(size, givens, answer);

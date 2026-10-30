@@ -1,8 +1,8 @@
 import { expect, type Page } from "@playwright/test";
 
 import { generatePuzzle } from "../src/lib/puzzles/generate";
-import { decodeLine, decodeNumbers, neighbours } from "../src/lib/puzzles/ichifude/code";
-import { offTheAnswer } from "../src/lib/puzzles/ichifude/help";
+import { decodeLine, decodeNumbers, neighbours } from "../src/lib/puzzles/hitofude/code";
+import { offTheAnswer } from "../src/lib/puzzles/hitofude/help";
 import { COVERED, FLAG, jiraiMissing, jiraiWrong } from "../src/lib/puzzles/jirai/board";
 import { pencilEngine } from "../src/lib/puzzles/pencil/engines";
 import { isPencilKind } from "../src/lib/puzzles/pencil/pencil.constants";
@@ -27,24 +27,24 @@ import { codeOnPage, makeNextMark, makeWrongMark, pressCell, pressEdge } from ".
  *   boards themselves are watched by the pictures' fingerprint (`puzzleArtFingerprint.ts`), so it is on the screen's
  *   section and not on them.
  */
-export type DrawnKind = PencilKind | "jirai" | "ichifude";
+export type DrawnKind = PencilKind | "jirai" | "hitofude";
 
 /** Whether a kind is one of the eight these helpers move. */
 export function isDrawn(kind: PuzzleKind): kind is DrawnKind {
-  return kind === "jirai" || kind === "ichifude" || isPencilKind(kind);
+  return kind === "jirai" || kind === "hitofude" || isPencilKind(kind);
 }
 
-/** An Ichifude square pressed, as a reader taps it: beside the line's head it is a step, on the line it takes the line back to it. */
+/** An Hitofude square pressed, as a reader taps it: beside the line's head it is a step, on the line it takes the line back to it. */
 async function tapLine(page: Page, square: number) {
   // By where it is rather than by the element: the line drawn over a square is what takes the press on the page, for a reader as here.
-  const place = page.locator(`[data-testid="ichifude-square"][data-square="${square}"]`);
+  const place = page.locator(`[data-testid="hitofude-square"][data-square="${square}"]`);
   await place.scrollIntoViewIfNeeded();
   const box = (await place.boundingBox())!;
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
 
 /** Walks the answer's line from its start until a step off it is open, and takes that step: a blank square beside the head that is not the answer's next. */
-async function ichifudeWrongStep(page: Page, size: number, givens: string, solution: string): Promise<number> {
+async function hitofudeWrongStep(page: Page, size: number, givens: string, solution: string): Promise<number> {
   const line = decodeLine(solution, size)!;
   const numbers = decodeNumbers(givens, size)!;
   for (let at = 0; at + 1 < line.length; at += 1) {
@@ -86,7 +86,7 @@ export async function firstEntry(page: Page, kind: DrawnKind, size: number, seed
   const before = await codeOnPage(page);
   if (kind === "jirai") {
     await square(page, await safeSquare(page, puzzle.solution)).click();
-  } else if (kind === "ichifude") {
+  } else if (kind === "hitofude") {
     await tapLine(page, decodeLine(puzzle.solution, size)![1]!);
   } else {
     await makeNextMark(page, kind, size, puzzle.solution);
@@ -103,8 +103,8 @@ export async function wrongEntry(page: Page, kind: DrawnKind, size: number, seed
     await expect.poll(async () => (await codeOnPage(page))[cell]).toBe(FLAG);
     return cell;
   }
-  if (kind === "ichifude") {
-    const off = await ichifudeWrongStep(page, size, puzzle.givens, puzzle.solution);
+  if (kind === "hitofude") {
+    const off = await hitofudeWrongStep(page, size, puzzle.givens, puzzle.solution);
     await expect.poll(async () => offTheAnswer(size, await codeOnPage(page), puzzle.solution).wrongCells).toContain(off);
     return off;
   }
@@ -130,7 +130,7 @@ export async function expectUnmarked(page: Page, place: number): Promise<void> {
 export async function changeEntry(page: Page, kind: DrawnKind, size: number, place: number): Promise<void> {
   const before = await codeOnPage(page);
   if (kind === "jirai") await flag(page, place);
-  else if (kind === "ichifude") {
+  else if (kind === "hitofude") {
     // The line is taken back to the square before the wrong step.
     const line = decodeLine(before, size)!;
     await tapLine(page, line[line.indexOf(place) - 1]!);
@@ -160,7 +160,7 @@ export async function distance(page: Page, kind: DrawnKind, size: number, seed: 
   const { solution } = solutionOf(kind, size, seed);
   const code = await codeOnPage(page);
   if (kind === "jirai") return jiraiWrong(code, solution).length + jiraiMissing(code, solution);
-  if (kind === "ichifude") {
+  if (kind === "hitofude") {
     const off = offTheAnswer(size, code, solution);
     return off.wrongCells.length + off.left;
   }
@@ -169,4 +169,4 @@ export async function distance(page: Page, kind: DrawnKind, size: number, seed: 
 }
 
 /** Whether a hint on the kind moves the board exactly one mark nearer, or at least one (see `distance`). */
-export const HINT_STEP: Record<DrawnKind, "one" | "some"> = { regions: "one", crossSums: "one", akari: "one", loop: "one", hitori: "one", shikaku: "some", jirai: "some", ichifude: "one" };
+export const HINT_STEP: Record<DrawnKind, "one" | "some"> = { regions: "one", crossSums: "one", akari: "one", loop: "one", hitori: "one", shikaku: "some", jirai: "some", hitofude: "one" };

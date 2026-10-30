@@ -6,8 +6,8 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 5528. Drafted and unread: 65. Read by the reviewer agent: 5463.
-Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 181
+Phrases: 5528. Drafted and unread: 0. Read by the reviewer agent: 5528.
+Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 116
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
 
@@ -20,7 +20,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Waiting for a decision or a native read — start here (180)
+## 1. Waiting for a decision or a native read — start here (115)
 
 A **question** is a wording only the site's owner can choose between. A line the
 agent has read but marked for a native read is high-stakes text (children,
@@ -48,8 +48,6 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | The turns of this step | **この段階の回転** | The turns of this step | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
 | — — — | Watch the turns one at a time. Pause to look closer, step back and on to go over one again, or drag the bar to jump. Turn the cube yourself to carry on by hand from there. | **回転を1手ずつ見ていきます。一時停止してじっくり見たり、「戻る」「進む」で1手ずつ見直したり、バーをドラッグして好きな手へ移動したりできます。キューブを自分で回せば、そこから自分で続けられます。** | Go through the turns one move at a time. You can pause to look closely, go over a move again with Back and Forward, or drag the bar to move to any move. If you turn the cube yourself, you carry on from there yourself. | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
 | — — — | Three more are not built yet, because they all rest on one mechanism this board does not have: black putting down several candidate fifth moves and white removing all but one. Yamaguchi has black declare, before the swap, how many fifth moves it will offer. Soosyrv-8 declares the number after white’s fourth stone, up to eight, and then offers the swap. Taraguchi-10 is Tarannikov’s nested squares with a swap after each of the first four stones, after which white may instead demand ten fifth-move candidates. When the candidate mechanism arrives, all three come with it, along with the fifth-move pair in full RIF. | **あと3つはまだ作っていません。どれも、この盤にない同じ仕組みに頼っているからです。黒が5手目の候補を複数並べ、白が1つを残して取り除くという仕組みです。山口は、入れ替えの前に、黒が示す5手目の数を宣言します。Soosyrv-8は、白の4手目のあとで、最大8つまでの数を宣言し、そのあと入れ替えを認めます。Taraguchi-10は、タラニコフの入れ子の正方形で、最初の4手のあとに入れ替えを行い、そのあと白は代わりに10通りの5手目の候補を求められます。候補の仕組みができたら、3つとも一緒に加わり、正式なRIFの5手目の2択もできます。** | Three more have not been built yet, because they all rely on one mechanism this board does not have: black placing several candidate fifth moves and white removing all but one. In Yamaguchi, black declares before the swap how many fifth moves it will offer. Soosyrv-8 declares the number, up to eight, after white's fourth stone, and then offers the swap. Taraguchi-10 is Tarannikov's nested squares with a swap after each of the first four stones, after which white may instead demand ten candidates for the fifth move. When the candidate mechanism arrives, all three will come with it, along with the pair of fifth-move candidates in full RIF. | Agent 2026-10-06, native read wanted | Names three opening protocols (Yamaguchi, Soosyrv-8, Taraguchi-10) as the sources spell them; their Japanese spellings are not settled, so a renju player should confirm them. |  |
-| — — — | An example of this clue. Yours will be another country. | **この手がかりの例です。実際には別の国が出ます。** | An example of this clue. Actually, another country comes up. | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | An example of a hive. Yours will have other letters. | **蜂の巣の例です。実際には別の文字が出ます。** | An example of a beehive. Actually, other letters come up. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
 | — — — | Sit in with your four words | **4つの合言葉で着席する** | Sit in with my four words | Agent 2026-10-06, native read wanted | The "four words" a member chooses to sit in as themselves are 合言葉 here. The account pages that set them must use the same word; John to confirm 合言葉 is the one he wants. |  |
 | — — — | You are getting this because you play on {site}. Questions? Write to {address}. | **このメールは、{site}で遊んでいる方にお送りしています。ご質問は{address}までお寄せください。** | This email is sent to people who play on {site}. Please send questions to {address}. | Agent 2026-10-06, native read wanted | The line every email carries about how to stop getting it, which Canada's anti-spam law wants to work: a native read is recommended. |  |
 | — — — | You are getting this because {who} typed your address into {site} to send it. {site} has not saved your address, and will not write to you again unless somebody sends you another invitation. | **このメールは、{who}が{site}で宛先としてこのアドレスを入力して送ったものです。{site}はこのアドレスを保存しておらず、ほかの誰かが新たに招待を送らない限り、改めてメールをお送りすることはありません。** | This email was sent by {who} entering this address as the recipient on {site}. {site} has not saved this address, and will not email you again unless somebody else sends a new invitation. | Agent 2026-10-06, native read wanted | Says the site has not saved the recipient's address and will not write again: a promise on the privacy page, so a native read is recommended. |  |
@@ -64,21 +62,6 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | With your name taken off, your old games show an empty seat, and your place on every ladder goes too. | **名前を外すと、過去の対局は空席として表示され、すべての順位表での位置も消えます。** | With my name taken off, my old games show an empty seat, and my place on every ranking table is gone too. | Agent 2026-10-06, native read wanted | Says what happens to the games of a removed account: account text, so a native read is recommended. |  |
 | — — — | This cannot be taken back. Your profile, your messages, your buddies and ignores, your experience points and your puzzle solves go. Any game still waiting for you is resigned, or called off if nobody has moved yet. Your finished games stay, because each belongs to the other player too, with your account taken off them. | **この操作は取り消せません。プロフィール、メッセージ、仲間と無視の設定、経験値、パズルの解答履歴が消えます。自分を待っている対局は投了となり、まだ誰も打っていなければ中止になります。終わった対局は、相手の対局者のものでもあるため残り、アカウントの情報だけが外されます。** | This cannot be undone. Your profile, messages, buddy and ignore settings, experience points and puzzle solving history are deleted. Games still waiting for you are resigned, or called off if no one has moved yet. Finished games stay, because they also belong to the other player, and only your account is taken off them. | Agent 2026-10-06, native read wanted | Says what removing an account does and cannot undo: account text, so a native read is recommended. |  |
 | — — — | You are under 13, so nobody is shown when you are here, and the site never sends you an email. | **13歳未満のため、自分がオンラインかどうかは誰にも表示されず、サイトからメールが届くこともありません。** | Because you are under 13, nobody is shown when you are here, and the site never sends you an email. | Agent 2026-10-06, native read wanted | Tells a member under 13 that the site sends them no email and shows nobody their presence: about children, so a native read is recommended. |  |
-| — — — | Drag from 1, or tap a square beside the end of the line. Drag back, or tap the line, to take a part of it back. | **1からドラッグするか、線の先の隣のマスをタップします。戻るようにドラッグするか、線をタップすると、その先を取り消せます。** | Drag from 1, or tap the square beside the end of the line. Drag back, or tap the line, to cancel what comes after. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | Ichifude board, {size} by {size}. {howTo} | **一筆の盤、{size}×{size}。{howTo}** | Ichifude board, {size} by {size}. {howTo} | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | {count} square still to fill. | **残り{count}マスです。** | {count} squares left. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | {count} squares still to fill. | **残り{count}マスです。** | {count} squares left. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | Next number: {number}. | **次の数字は{number}です。** | The next number is {number}. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | The line crosses itself. | **線が交差しています。** | The line crosses. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | The line jumps. | **線が飛んでいます。** | The line jumps. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | The givens are not a board of numbers. | **与えられた盤が数字の盤になっていません。** | The given board is not a board of numbers. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | A square is not on the line. | **線の上にないマスがあります。** | There is a square not on the line. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | The numbers are out of order. | **数字の順番がちがいます。** | The order of the numbers is wrong. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | The line does not end on the last number. | **線が最後の数字で終わっていません。** | The line does not end at the last number. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | That is not a grid of this size. | **このサイズのマス目ではありません。** | This is not a grid of this size. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | The line does not start on the first number. | **線が最初の数字から始まっていません。** | The line does not start from the first number. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | the line reached it | **線が届いた** | the line reached it | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
-| — — — | That is the last number, with squares still to fill. Take the line back and go through them first. | **最後の数字に着きましたが、まだ埋まっていないマスがあります。線を戻して、先にそのマスを通ります。** | You have reached the last number, but there are squares not yet filled. Take the line back and go through those squares first. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
 | — — — | Changes | **改定** | Revisions | Agent 2026-10-06, native read wanted | Legal text (the Privacy page): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | When the site changes what it keeps or who sees it, this page changes in the same release and the date at the top moves. A test reads this page against the code, so the two cannot quietly drift apart. | **サイトが保存する情報や、それを見られる人が変わるときは、同じ更新でこのページも変わり、上部の日付も新しくなります。このページはテストでコードと突き合わせているため、両者が気づかないうちにずれることはありません。** | When the information the site keeps, or who can see it, changes, this page changes in the same update, and the date at the top is renewed. This page is checked against the code by a test, so the two cannot drift apart without anyone noticing. | Agent 2026-10-06, native read wanted | Legal text (the Privacy page): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | Questions go to {contact}. | **ご質問は{contact}までお寄せください。** | Please send questions to {contact}. | Agent 2026-10-06, native read wanted | Legal text (the Privacy page): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
@@ -138,54 +121,6 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Another site, if the operator gives it a token: an embedded view shows a game or a player's summary, read-only, as a member would see it, and nothing more. | **運営者がトークンを渡したほかのサイト。埋め込み表示で、対局または対局者の概要が、閲覧のみの形で、会員が見るのと同じ内容だけ表示されます。それ以上は表示されません。** | Another site to which the operator has given a token. In an embedded view, a game or a player's summary is shown in read-only form, with only what a member would see. Nothing more is shown. | Agent 2026-10-06, native read wanted | Legal text (the Privacy page): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | The operator, who runs the site: your email address, your invite code, when you were here, and the problems you report. The operator can shut an account, restore it, rename it, set new words for a member who has lost theirs or open the picker so they can choose, attach a record kept under a name nobody had an account for to the member it belongs to, set a member's age band and record a parent's consent for a family by hand, and remove an account when it is asked for. Every such act is logged with who did it, to whom, when and what changed, never the words themselves and never a parent's name. Nobody at the site can sign in as you: there is no such door. | **サイトを運営する運営者には、メールアドレス、招待の合言葉、最後に訪れた日時、報告された不具合が見えます。運営者にできるのは、アカウントの停止と復旧、名前の変更、合言葉をなくした会員への新しい合言葉の設定（または本人が選べるよう選択画面を開くこと）、アカウントを持つ人がいなかった名前で保管されている戦績を、その持ち主の会員に結びつけること、会員の年齢の区分の設定と、家族のための保護者の同意の手作業での記録、そして依頼があったときのアカウントの削除です。これらの操作はすべて、誰が、誰に対して、いつ、何を変えたかとともに記録されます。合言葉そのものや保護者の名前が記録されることは決してありません。サイトの誰も、会員になりすましてサインインすることはできません。そのような入口は存在しません。** | The operator who runs the site can see the email address, the invitation 合言葉, the day and time of the last visit, and reported problems. What the operator can do is: stop and restore an account, change a name, set a new 合言葉 for a member who has lost theirs (or open the choosing screen so the person can choose), tie a record kept under a name for which nobody had an account to the member who owns it, set a member's age band and record a parent's consent by hand for a family, and delete an account when asked. All of these operations are recorded together with who did it, to whom, when, and what was changed. The 合言葉 themselves and a parent's name are never recorded. Nobody at the site can sign in impersonating a member. There is no such entrance. | Agent 2026-10-06, native read wanted | About children and a parent's consent: a native read is required, and the sentence must be as strict in meaning as the English. |  |
 | — — — | An account with words and no Google address lives in one browser for {days} days unless you link Google, and then it goes. | **合言葉を使い、Googleのアドレスがないアカウントは、Googleと連携しない限り、1つのブラウザに{days}日間だけ存在し、その後はなくなります。** | An account that uses 合言葉 and has no Google address exists in one browser for just {days} days unless you link it with Google, and after that it is gone. | Agent 2026-10-06, native read wanted | The English is ambiguous (does the account itself go after the days, or only the limit?). The Japanese says what the English most plainly says; John should settle the English, then a native reader the Japanese. |  |
-| — — — | Today's puzzle: {way} | **今日のパズル：{way}** | Today's puzzle: {way} | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | Change the clue or level | **手がかりやレベルを変える** | Change the clue or level | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | Change the language or level | **言語やレベルを変える** | Change the language or level | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Every hive can be finished with common words: the browser that makes it counts them first, and sets the goal from what they are worth. | **どの蜂の巣も、よく使う言葉だけで終えられます。作るときにブラウザがその言葉を数え、その点数から目標を決めています。** | Every beehive can be finished with commonly used words alone. When making it, the browser counts those words and sets the goal from their points. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | The country comes from the puzzle's number, so one address always asks for the same country, and the day's is the same for everybody. | **国はパズルの番号から決まるので、同じアドレスならいつも同じ国が出ます。今日のパズルは、誰にとっても同じです。** | The country is decided from the puzzle's number, so the same address always gives the same country. Today's puzzle is the same for everybody. | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | You have found that one. | **その言葉はもう見つけています。** | You have already found that word. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Delete | **1文字消す** | Delete one letter | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Enter | **決定** | Decide | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Press the letters or type them, then Enter. Every word needs {letter}. | **文字を押すか入力して、Enterを押します。どの言葉にも{letter}が要ります。** | Press or enter the letters and press Enter. Every word needs {letter}. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Common words you did not find | **見つけなかった、よく使う言葉** | Commonly used words you did not find | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | It needs the centre letter, {letter}. | **真ん中の文字{letter}が要ります。** | It needs the centre letter {letter}. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | That uses a letter that is not in the hive. | **蜂の巣にない文字が入っています。** | It contains a letter not in the beehive. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | That word is not on the list. | **その言葉は一覧にありません。** | That word is not on the list. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | No words yet. | **まだ言葉はありません。** | No words yet. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | {points} of {goal} points | **{goal}点中{points}点** | {points} points of {goal} | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Letter {letter} | **文字 {letter}** | Letter {letter} | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Centre letter {letter} | **真ん中の文字 {letter}** | Centre letter {letter} | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Words go on after the goal was reached. | **目標に届いたあとも言葉が続いています。** | Words continue after reaching the goal. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | The word list is not loaded. | **言葉の一覧が読み込まれていません。** | The word list is not loaded. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | The givens are not a hive. | **与えられたものが蜂の巣になっていません。** | What was given is not a beehive. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | A word uses a letter that is not in the hive, or leaves out its centre. | **蜂の巣にない文字を使っているか、真ん中の文字がない言葉があります。** | A word uses a letter not in the beehive, or lacks the centre letter. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | A word is not on the list. | **一覧にない言葉があります。** | There is a word not on the list. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | The answer is not a list of words. | **答えが言葉の一覧になっていません。** | The answer is not a list of words. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | The words do not reach the goal. | **言葉が目標に届いていません。** | The words do not reach the goal. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Shuffle | **並べ替える** | Rearrange | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Too short: a word has at least four letters. | **短すぎます。言葉は4文字以上です。** | Too short. A word is four letters or more. | Question, unread | Written on 2026-10-30 with Hachinosu; nobody has read it. |  |
-| — — — | Another country | **別の国** | Another country | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | Capital: {capital} | **首都：{capital}** | Capital: {capital} | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | The flag of the hidden country | **隠された国の旗** | The flag of the hidden country | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | {km} km | **{km}キロ** | {km} km | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | {count} guess left. | **残り{count}回です。** | {count} more tries. | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | {count} guesses left. | **残り{count}回です。** | {count} more tries. | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | The outline of the hidden country | **隠された国の形** | The shape of the hidden country | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | Type a country | **国名を入力** | Type a country name | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | Guesses go on after the country was found. | **国を当てたあとも回答が続いています。** | Guesses continue after the country was guessed. | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | There are guesses left. | **まだ回答が残っています。** | There are still guesses left. | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | The country was not guessed. | **国が当てられていません。** | The country has not been guessed. | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | The answer is not a list of guesses. | **答えが回答の一覧になっていません。** | The answer is not a list of guesses. | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | The givens are not a country to find. | **探す国になっていません。** | This is not a country to look for. | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | The country was found. | **国は当てられています。** | The country has been guessed. | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | go east | **東へ** | to the east | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | go north | **北へ** | to the north | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | go north-east | **北東へ** | to the north-east | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | go north-west | **北西へ** | to the north-west | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | go south | **南へ** | to the south | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | go south-east | **南東へ** | to the south-east | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | go south-west | **南西へ** | to the south-west | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
-| — — — | go west | **西へ** | to the west | Question, unread | Written on 2026-10-30 with Kuniate; nobody has read it. |  |
 | — — — | A game somebody stops playing | **途中でやめた対局** | A game somebody stops playing | Agent 2026-10-06, native read wanted | Legal text (the terms of play): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | A game is settled by the rules it was set up with, which are shown beside the board. With a clock, the clock decides: running out of time costs what that game says it costs. With no clock, the game waits for its players; either of them can resign it, unless it was set up so that nobody may. | **対局は、設定されたときの規則で決着します。規則は盤のそばに表示されています。持ち時間がある対局では、時計が決めます。時間切れの扱いは、その対局が定めたとおりです。持ち時間のない対局は、対局者を待ちます。どちらも投了できます。ただし、誰も投了できないように設定されている場合を除きます。** | A game is settled by the rules it was set up with. The rules are shown beside the board. In a game with a time allowance, the clock decides. What happens when time runs out is as that game provides. A game with no time allowance waits for its players. Either can resign, except where it was set up so that nobody can resign. | Agent 2026-10-06, native read wanted | Legal text (the terms of play): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | Be kind at the board | **盤の前では思いやりを** | Kindness in front of the board | Agent 2026-10-06, native read wanted | Legal text (the terms of play): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
@@ -209,7 +144,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Where the account has an address, the operator writes to it to say why. To ask about it, write to {contact}. | **アカウントにメールアドレスがある場合、運営者はそのアドレスに理由を書いて送ります。問い合わせは{contact}までお願いします。** | If the account has an email address, the operator writes the reason and sends it to that address. For enquiries, please contact {contact}. | Agent 2026-10-06, native read wanted | Legal text (the terms of play): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | What we ask of everybody here, and what the site does in return. | **ここをご利用のすべての方にお願いすることと、サイトがその代わりに行うことです。** | What we ask of everyone who uses this place, and what the site does in return. | Agent 2026-10-06, native read wanted | Legal text (the terms of play): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 
-## 2. Written by a machine — please check these (5091)
+## 2. Written by a machine — please check these (5155)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -3183,7 +3118,9 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | It waits on the Games page until somebody takes it. | **誰かが座るまで、ゲームのページで待っています。** | It waits on the Games page until somebody takes it. | Agent 2026-10-06 |  |
 | — — — | Posting a seat: start the game and the other seat goes on the games page for whoever answers first. To change the game or the board first, use Set up, under the board. | **席を掲示します。対局を始めると、もう一方の席が、最初に応じた人のためにゲームのページに載ります。先にゲームや盤を変えるには、盤の下の「設定」を使ってください。** | Putting up a seat. When you start the game, the other seat goes on the games page for whoever answers first. To change the game or the board first, use Settings under the board. | Agent 2026-10-06 |  |
 | — — — | A deal of {game}, the stock turned once. Nothing is played yet. | **{game}の配り方の一例で、山札を1回めくった状態です。まだ何も遊んでいません。** | An example of a deal of {game}, with the stock turned once. Nothing has been played yet. | Agent 2026-10-06 |  |
+| — — — | An example of this clue. Yours will be another country. | **この手がかりの例です。実際には別の国が出ます。** | An example of this clue. Actually, another country comes up. | Agent 2026-10-30 |  |
 | — — — | This game scatters its board, so the one you play will be different. | **このゲームは盤面をランダムに散らすので、実際に遊ぶ盤とは違います。** | This game scatters its board at random, so the board you play will be different. | Agent 2026-10-06 |  |
+| — — — | An example of a hive. Yours will have other letters. | **蜂の巣の例です。実際には別の文字が出ます。** | An example of a beehive. Actually, other letters come up. | Agent 2026-10-30 |  |
 | — — — | A preview of the {game} board. Nothing here is a move. | **{game}の盤のプレビューです。ここでの操作は手になりません。** | A preview of the board of {game}. Nothing done here counts as a move. | Agent 2026-10-06 |  |
 | — — — | A deal of this layout, for a look. Yours is dealt when you start. | **この配置の一例です。実際の配牌は、始めるときに行われます。** | An example of this layout. The real deal is made when you start. | Agent 2026-10-06 |  |
 | — — — | A preview of the {puzzle} grid. Nothing is written yet. | **{puzzle}の盤面のプレビューです。まだ何も書き込まれていません。** | A preview of the grid of {puzzle}. Nothing has been written yet. | Agent 2026-10-06 |  |
@@ -3781,7 +3718,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | The {wind} seat's name | **{wind}の席の名前** | The {wind} seat's name | Agent 2026-10-06 |  |
 | — — — | {wind} seat | **{wind}の席** | {wind} seat | Agent 2026-10-06 |  |
 | — — — | {names} share the win. | **{names}が勝ちを分け合いました。** | {names} share the win. | Agent 2026-10-06 |  |
-| — — — | Shuffle | **シャッフル** | Shuffle | Agent 2026-10-06 |  |
+| — — — | Shuffle | **シャッフル** | Shuffle | Agent 2026-10-06; Agent 2026-10-30 |  |
 | — — — | Shuffle is for when no free pair is left | **シャッフルは、空いているペアがなくなったときに使います** | Shuffle is for when no free pair is left | Agent 2026-10-06 |  |
 | — — — | Start | **スタート** | Start | Agent 2026-10-06 |  |
 | — — — | {tiles} tiles left, {count} pair free | **残り{tiles}枚・空きのペアは{count}組** | {tiles} tiles left, {count} pair free | Agent 2026-10-06 |  |
@@ -3870,6 +3807,21 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | A finished Jirai board, as it stood at this step | **この手順での、終わった地雷の盤** | A finished Jirai board, as it stood at this step | Agent 2026-10-06 |  |
 | — — — | A finished puzzle, as it stood at this step | **この手順での、終わったパズル** | A finished puzzle, as it stood at this step | Agent 2026-10-06 |  |
 | — — — | this puzzle | **このパズル** | this puzzle | Agent 2026-10-06 |  |
+| — — — | Drag from 1, or tap a square beside the end of the line. Drag back, or tap the line, to take a part of it back. | **1からドラッグするか、線の端の隣のマスをタップします。戻るようにドラッグするか、線をタップすると、その先を取り消せます。** | Drag from 1, or tap the square beside the end of the line. Drag back, or tap the line, to cancel what comes after. | Agent 2026-10-30 |  |
+| — — — | Hitofude board, {size} by {size}. {howTo} | **一筆の盤、{size}×{size}。{howTo}** | Hitofude board, {size} by {size}. {howTo} | Agent 2026-10-30 |  |
+| — — — | {count} square still to fill. | **残り{count}マスです。** | {count} squares left. | Agent 2026-10-30 |  |
+| — — — | {count} squares still to fill. | **残り{count}マスです。** | {count} squares left. | Agent 2026-10-30 |  |
+| — — — | Next number: {number}. | **次の数字は{number}です。** | The next number is {number}. | Agent 2026-10-30 |  |
+| — — — | The line crosses itself. | **線が交差しています。** | The line crosses. | Agent 2026-10-30 |  |
+| — — — | The line jumps. | **線が隣のマスにつながっていません。** | The line does not connect to a neighbouring square. | Agent 2026-10-30 |  |
+| — — — | The givens are not a board of numbers. | **与えられた盤が数字の盤になっていません。** | The given board is not a board of numbers. | Agent 2026-10-30 |  |
+| — — — | A square is not on the line. | **線の上にないマスがあります。** | There is a square not on the line. | Agent 2026-10-30 |  |
+| — — — | The numbers are out of order. | **数字の順番がちがいます。** | The order of the numbers is wrong. | Agent 2026-10-30 |  |
+| — — — | The line does not end on the last number. | **線が最後の数字で終わっていません。** | The line does not end at the last number. | Agent 2026-10-30 |  |
+| — — — | That is not a grid of this size. | **このサイズのマス目ではありません。** | This is not a grid of this size. | Agent 2026-10-30 |  |
+| — — — | The line does not start on the first number. | **線が最初の数字から始まっていません。** | The line does not start from the first number. | Agent 2026-10-30 |  |
+| — — — | the line reached it | **線が通った** | the line passed through it | Agent 2026-10-30 |  |
+| — — — | That is the last number, with squares still to fill. Take the line back and go through them first. | **最後の数字に着きましたが、まだ埋まっていないマスがあります。線を戻して、先にそのマスを通りましょう。** | You have reached the last number, but there are squares not yet filled. Take the line back and go through those squares first. | Agent 2026-10-30 |  |
 | — — — | A stone in every row, and it is not right yet. | **どの行にも石がありますが、まだ正しくありません。** | A stone in every row, and it is not right yet. | Agent 2026-10-06 |  |
 | — — — | Tap for a stone, again for a cross, again to clear. | **タップで石、もう1回で×印、もう1回で消えます。** | Tap for a stone, again for a cross, again to clear. | Agent 2026-10-06 |  |
 | — — — | Flag | **旗** | Flag | Agent 2026-10-06 |  |
@@ -4614,6 +4566,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | A {title} puzzle part way through | **途中まで進んだ{title}のパズル** | A {title} puzzle part way through | Agent 2026-10-06 |  |
 | — — — | Today's deal → | **今日の配札 →** | Today's deal → | Agent 2026-10-06 |  |
 | — — — | Today's puzzle → | **今日のパズル →** | Today's puzzle → | Agent 2026-10-06 |  |
+| — — — | Today's puzzle: {way} | **今日のパズル：{way}** | Today's puzzle: {way} | Agent 2026-10-30 |  |
 | — — — | Your words | **自分の言葉** | Your words | Agent 2026-10-06 |  |
 | — — — | Hints | **ヒントあり** | Hints | Agent 2026-10-06 |  |
 | — — — | How the grid is drawn | **盤の描き方** | How the grid is drawn | Agent 2026-10-06 |  |
@@ -4804,7 +4757,9 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | {count} words | **{count}語** | {count} words | Agent 2026-10-06 |  |
 | — — — | Already paid for this puzzle, or the day's allowance is spent — the solve still stands. | **このパズルはすでに経験値が入っているか、その日の上限に達しました。解答は有効です。** | Already paid for this puzzle, or the day's allowance is spent — the solve still stands. | Agent 2026-10-06 |  |
 | — — — | Another {name} → | **別の{name} →** | Another {name} → | Agent 2026-10-06 |  |
+| — — — | Change the clue or level | **手がかりやレベルを変える** | Change the clue or level | Agent 2026-10-30 |  |
 | — — — | Change the draw or passes | **めくる枚数と回数を変える** | Change the draw or passes | Agent 2026-10-06 |  |
+| — — — | Change the language or level | **言語やレベルを変える** | Change the language or level | Agent 2026-10-30 |  |
 | — — — | Change the size or level | **サイズかレベルを変える** | Change the size or level | Agent 2026-10-06 |  |
 | — — — | Deal again → | **もう一度配る →** | Deal again → | Agent 2026-10-06 |  |
 | — — — |  after {time}{moves}. | **：{time}経過{moves}。** |  after {time}{moves}. | Agent 2026-10-06 |  |
@@ -4890,6 +4845,8 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Every scramble can be solved: it is made by turning a solved cube, so turning back the way it came always solves it, and any other way to every face one colour counts as well. | **どのシャッフルも解けます。そろったキューブを回して作るので、来た道を戻れば必ず解けます。ほかの方法で、すべての面を1色にそろえても、解けたことになります。** | Every scramble can be solved: it is made by turning a solved cube, so turning back the way it came always solves it, and any other way to every face one colour counts as well. | Agent 2026-10-06 |  |
 | — — — | Every deal can be won: the browser that deals it has already played it out to the last card, and deals none it has not. | **どの配りも勝てます。配ったブラウザが、最後のカードまで遊び切って確かめてあり、確かめていない配りは配りません。** | Every deal can be won: the browser that deals it has already played it out to the last card, and deals none it has not. | Agent 2026-10-06 |  |
 | — — — | Every puzzle has exactly one answer. The browser that makes it checks that before you see it, so there is never a grid with two answers or none. | **どのパズルも、答えはちょうど1つです。作ったブラウザが、見る前に確かめるので、答えが2つある盤や、1つもない盤はありません。** | Every puzzle has exactly one answer. The browser that makes it checks that before you see it, so there is never a grid with two answers or none. | Agent 2026-10-06 |  |
+| — — — | Every hive can be finished with common words: the browser that makes it counts them first, and sets the goal from what they are worth. | **どの蜂の巣も、よく使う単語だけで終えられます。作るときにブラウザがその単語を数え、その点数から目標を決めています。** | Every beehive can be finished with commonly used words alone. When making it, the browser counts those words and sets the goal from their points. | Agent 2026-10-30 |  |
+| — — — | The country comes from the puzzle's number, so one address always asks for the same country, and the day's is the same for everybody. | **国はパズルの番号から決まるので、同じアドレスならいつも同じ国が出ます。今日のパズルは、誰にとっても同じです。** | The country is decided from the puzzle's number, so the same address always gives the same country. Today's puzzle is the same for everybody. | Agent 2026-10-30 |  |
 | — — — | Every deal can be cleared: the browser that deals it lays the tiles out pair by pair in reverse first, so the order it laid them in clears it, and any other order that clears it counts as well. | **どの配りも、取り切れます。配ったブラウザが、先に牌を2枚ずつ逆の順に並べるので、その順で取り切れます。ほかの順で取り切っても、取り切ったことになります。** | Every deal can be cleared: the browser that deals it lays the tiles out pair by pair in reverse first, so the order it laid them in clears it, and any other order that clears it counts as well. | Agent 2026-10-06 |  |
 | — — — | Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none. | **どのレベルも、答えはちょうど1つです。レベルを作るときにこのサイトの解析プログラムが確かめ、サイトをビルドするたびにもう一度確かめるので、答えが2つある盤や、1つもない盤はありません。** | Every level has exactly one answer. The site's own solver proved it when the levels were made, and proves it again every time the site is built, so there is never a board with two answers or none. | Agent 2026-10-06 |  |
 | — — — | Every maze has exactly one way through: the passages are carved so that there is one path between any two places, and the package they come from proves it again for every level each time it is built. So there is never a maze with two ways through, or none. | **どの迷路も、抜け道はちょうど1つです。通路は、どの2つの場所のあいだにも道が1本だけになるように掘られ、元のパッケージが、ビルドのたびにすべてのレベルでもう一度確かめます。そのため、抜け道が2つある迷路や、1つもない迷路はありません。** | Every maze has exactly one way through: the passages are carved so that there is one path between any two places, and the package they come from proves it again for every level each time it is built. So there is never a maze with two ways through, or none. | Agent 2026-10-06 |  |
@@ -5005,6 +4962,26 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | One hidden word, one board. | **隠れた単語は1つ、盤も1つです。** | One hidden word, one board. | Agent 2026-10-06 |  |
 | — — — | One word | **一語** | One word | Agent 2026-10-06 |  |
 | — — — | Two hidden words, {guesses} guesses: each goes to both words, and each key shows both colours. | **2つの単語が隠れていて、予想は{guesses}回です。予想は両方に送られ、キーは両方の色を表します。** | Two hidden words, {guesses} guesses: each goes to both words, and each key shows both colours. | Agent 2026-10-06 |  |
+| — — — | You have found that one. | **その単語はすでに見つけています。** | You have already found that word. | Agent 2026-10-30 |  |
+| — — — | Delete | **1文字消す** | Delete one letter | Agent 2026-10-30 |  |
+| — — — | Enter | **決定** | Decide | Agent 2026-10-30 |  |
+| — — — | Press the letters or type them, then Enter. Every word needs {letter}. | **文字を押すか入力して、Enterを押します。どの単語にも{letter}が要ります。** | Press or enter the letters and press Enter. Every word needs {letter}. | Agent 2026-10-30 |  |
+| — — — | Common words you did not find | **見つけられなかった、よく使う単語** | Commonly used words you could not find | Agent 2026-10-30 |  |
+| — — — | It needs the centre letter, {letter}. | **真ん中の文字{letter}が要ります。** | It needs the centre letter {letter}. | Agent 2026-10-30 |  |
+| — — — | That uses a letter that is not in the hive. | **蜂の巣にない文字が入っています。** | It contains a letter not in the beehive. | Agent 2026-10-30 |  |
+| — — — | That word is not on the list. | **その単語は一覧にありません。** | That word is not on the list. | Agent 2026-10-30 |  |
+| — — — | No words yet. | **まだ単語はありません。** | No words yet. | Agent 2026-10-30 |  |
+| — — — | {points} of {goal} points | **{goal}点中{points}点** | {points} points of {goal} | Agent 2026-10-30 |  |
+| — — — | Letter {letter} | **文字 {letter}** | Letter {letter} | Agent 2026-10-30 |  |
+| — — — | Centre letter {letter} | **真ん中の文字 {letter}** | Centre letter {letter} | Agent 2026-10-30 |  |
+| — — — | Words go on after the goal was reached. | **目標に届いたあとも単語が続いています。** | Words continue after reaching the goal. | Agent 2026-10-30 |  |
+| — — — | The word list is not loaded. | **単語の一覧が読み込まれていません。** | The word list is not loaded. | Agent 2026-10-30 |  |
+| — — — | The givens are not a hive. | **与えられたものが蜂の巣になっていません。** | What was given is not a beehive. | Agent 2026-10-30 |  |
+| — — — | A word uses a letter that is not in the hive, or leaves out its centre. | **蜂の巣にない文字を使っているか、真ん中の文字がない単語があります。** | A word uses a letter not in the beehive, or lacks the centre letter. | Agent 2026-10-30 |  |
+| — — — | A word is not on the list. | **一覧にない単語があります。** | There is a word not on the list. | Agent 2026-10-30 |  |
+| — — — | The answer is not a list of words. | **答えが単語の一覧になっていません。** | The answer is not a list of words. | Agent 2026-10-30 |  |
+| — — — | The words do not reach the goal. | **単語が目標に届いていません。** | The words do not reach the goal. | Agent 2026-10-30 |  |
+| — — — | Too short: a word has at least four letters. | **短すぎます。単語は4文字以上です。** | Too short. A word is four letters or more. | Agent 2026-10-30 |  |
 | — — — | Played backwards, a head start would only take letters away, so there is none. | **逆さに遊ぶときは、先手は文字を減らすだけなので、ありません。** | Played backwards, a head start would only take letters away, so there is none. | Agent 2026-10-06 |  |
 | — — — | {count} {unit} not in {which} start grey: a free guess that uses no row. It costs {points} points. | **{which}入っていない{unit}が{count}個、最初から灰色になります。行を使わない無料の予想ですが、{points}点かかります。** | {count} {unit} not in {which} start grey: a free guess that uses no row. It costs {points} points. | Agent 2026-10-06 |  |
 | — — — | A word that dodges hides nothing yet, so there is nothing to grey before the first guess. | **逃げる単語は、まだ何も隠していないので、最初の予想の前に灰色にするものはありません。** | A word that dodges hides nothing yet, so there is nothing to grey before the first guess. | Agent 2026-10-06 |  |
@@ -5060,6 +5037,28 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | {kept} of {total} swaps to spare | **余った入れ替えは{total}回中{kept}回** | {kept} of {total} swaps to spare | Agent 2026-10-06 |  |
 | — — — | {count} swap, {kept} to spare{note}. | **入れ替え{count}回、余り{kept}回{note}。** | {count} swap, {kept} to spare{note}. | Agent 2026-10-06 |  |
 | — — — | {count} swaps, {kept} to spare{note}. | **入れ替え{count}回、余り{kept}回{note}。** | {count} swaps, {kept} to spare{note}. | Agent 2026-10-06 |  |
+| — — — | Another country | **別の国** | Another country | Agent 2026-10-30 |  |
+| — — — | Capital: {capital} | **首都：{capital}** | Capital: {capital} | Agent 2026-10-30 |  |
+| — — — | The flag of the hidden country | **隠された国の旗** | The flag of the hidden country | Agent 2026-10-30 |  |
+| — — — | {km} km | **{km}キロ** | {km} km | Agent 2026-10-30 |  |
+| — — — | {count} guess left. | **予想は残り{count}回です。** | {count} guess left. | Agent 2026-10-30 |  |
+| — — — | {count} guesses left. | **予想は残り{count}回です。** | {count} guesses left. | Agent 2026-10-30 |  |
+| — — — | The outline of the hidden country | **隠された国の形** | The shape of the hidden country | Agent 2026-10-30 |  |
+| — — — | Type a country | **国名を入力** | Type a country name | Agent 2026-10-30 |  |
+| — — — | Guesses go on after the country was found. | **国を当てたあとも予想が続いています。** | Guesses continue after the country was guessed. | Agent 2026-10-30 |  |
+| — — — | There are guesses left. | **まだ予想が残っています。** | There are still guesses left. | Agent 2026-10-30 |  |
+| — — — | The country was not guessed. | **国が当てられていません。** | The country has not been guessed. | Agent 2026-10-30 |  |
+| — — — | The answer is not a list of guesses. | **答えが予想の一覧になっていません。** | The answer is not a list of guesses. | Agent 2026-10-30 |  |
+| — — — | The givens are not a country to find. | **探す国になっていません。** | This is not a country to look for. | Agent 2026-10-30 |  |
+| — — — | The country was found. | **国は当てられています。** | The country has been guessed. | Agent 2026-10-30 |  |
+| — — — | go east | **東へ** | to the east | Agent 2026-10-30 |  |
+| — — — | go north | **北へ** | to the north | Agent 2026-10-30 |  |
+| — — — | go north-east | **北東へ** | to the north-east | Agent 2026-10-30 |  |
+| — — — | go north-west | **北西へ** | to the north-west | Agent 2026-10-30 |  |
+| — — — | go south | **南へ** | to the south | Agent 2026-10-30 |  |
+| — — — | go south-east | **南東へ** | to the south-east | Agent 2026-10-30 |  |
+| — — — | go south-west | **南西へ** | to the south-west | Agent 2026-10-30 |  |
+| — — — | go west | **西へ** | to the west | Agent 2026-10-30 |  |
 | — — — | Four words | **4つの単語** | Four words | Agent 2026-10-06 |  |
 | — — — | Two words | **2つの単語** | Two words | Agent 2026-10-06 |  |
 | — — — | fifth | **5つ目** | fifth | Agent 2026-10-06 |  |

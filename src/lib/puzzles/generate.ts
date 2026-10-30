@@ -1,7 +1,7 @@
 import { generateBridges } from "./bridges/generate";
 import { generateHachinosu } from "./hachinosu/generate";
 import { HIVE_LANGUAGES } from "./hachinosu/code";
-import { generateIchifude } from "./ichifude/generate";
+import { generateHitofude } from "./hitofude/generate";
 import { generateJirai } from "./jirai/generate";
 import { generateKuniate } from "./kuniate/generate";
 import { generatePencil } from "./pencil/generate";
@@ -116,9 +116,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "jirai":
       // A board Jirai deals and proves needs no guess, opened at its middle; the way to play is the seed's (`jirai/variants.ts`).
       return generateJirai(size, level, seed);
-    case "ichifude":
-      // A line through every square, then the numbers that leave it the one answer, from the seed alone (`ichifude/generate.ts`).
-      return generateIchifude(size, level, seed);
+    case "hitofude":
+      // A line through every square, then the numbers that leave it the one answer, from the seed alone (`hitofude/generate.ts`).
+      return generateHitofude(size, level, seed);
     case "hachinosu":
       // Seven letters from the seed, kept when its common words are what the level asks (`hachinosu/generate.ts`); its size is its language, whose list `preparePuzzle` loads.
       return generateHachinosu(size, level, seed);

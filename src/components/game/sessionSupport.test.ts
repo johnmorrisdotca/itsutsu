@@ -31,7 +31,7 @@ const OPEN_FOUR = `
 
 const withMoves = (state: GameState): GameState => ({
   ...state,
-  moves: [{ stone: STONES.white, point: { row: 3, col: 8 } } as GameState["moves"][number]],
+  moves: [{ row: 3, col: 8, stone: STONES.white, kind: "place" }],
 });
 
 describe("findFatalMove", () => {

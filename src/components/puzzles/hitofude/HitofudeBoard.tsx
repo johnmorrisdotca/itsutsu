@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, type KeyboardEvent, type PointerEvent } from "react";
 
-import { decodeLine, decodeNumbers } from "@/lib/puzzles/ichifude/code";
+import { decodeLine, decodeNumbers } from "@/lib/puzzles/hitofude/code";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 import { PuzzleBoard } from "../PuzzleBoard";
@@ -25,16 +25,16 @@ const WRONG = "#fecaca";
 const centre = (index: number) => index * CELL + CELL / 2;
 
 /**
- * ICHIFUDE'S BOARD: white paper in the wood every board has (`PuzzleBoard`), the
+ * HITOFUDE'S BOARD: white paper in the wood every board has (`PuzzleBoard`), the
  * numbers in black discs, and the one line drawn thick through the squares it has
  * reached, under the numbers. A number the line has passed takes the line's colour.
  *
  * It draws and reports: a press on a square, and each square a drag enters. What that
- * does to the line is `lineAfter` (`lib/puzzles/ichifude/draw.ts`), and `IchifudeSolve`
+ * does to the line is `lineAfter` (`lib/puzzles/hitofude/draw.ts`), and `HitofudeSolve`
  * holds the line. Nothing on it can be selected or dragged off: the board is a place
  * to draw, so a finger on it draws rather than scrolling the page.
  */
-export function IchifudeBoard({
+export function HitofudeBoard({
   size,
   givens,
   code,
@@ -47,7 +47,7 @@ export function IchifudeBoard({
 }: {
   size: number;
   givens: string;
-  /** The line, as a run keeps it (`ichifude/code.ts`). */
+  /** The line, as a run keeps it (`hitofude/code.ts`). */
   code: string;
   /** The squares Show marked as off the answer. */
   wrong?: ReadonlySet<number>;
@@ -101,7 +101,7 @@ export function IchifudeBoard({
   const inked = solved ? SOLVED_LINE : LINE;
 
   return (
-    <div className="w-full select-none" data-testid="puzzle-grid" data-kind="ichifude" data-size={size} data-read-only={readOnly ? "true" : "false"} data-solved={solved ? "true" : "false"}>
+    <div className="w-full select-none" data-testid="puzzle-grid" data-kind="hitofude" data-size={size} data-read-only={readOnly ? "true" : "false"} data-solved={solved ? "true" : "false"}>
       <PuzzleBoard size={size}>
         <div
           ref={box}
@@ -115,7 +115,7 @@ export function IchifudeBoard({
           onPointerUp={up}
           onPointerCancel={up}
           onKeyDown={readOnly ? undefined : onKey}
-          data-testid="ichifude-board"
+          data-testid="hitofude-board"
         >
           <svg viewBox={`0 0 ${size * CELL} ${size * CELL}`} className="block h-full w-full" aria-hidden="true">
             <rect width={size * CELL} height={size * CELL} fill={PAPER} />
@@ -129,15 +129,15 @@ export function IchifudeBoard({
                 fill={wrong?.has(square) === true ? WRONG : "transparent"}
                 stroke={RULE}
                 strokeWidth={2}
-                data-testid="ichifude-square"
+                data-testid="hitofude-square"
                 data-square={square}
                 data-number={numbers[square] === 0 ? undefined : numbers[square]}
                 data-place={placeOf.get(square) ?? undefined}
                 data-wrong={wrong?.has(square) === true ? "true" : undefined}
               />
             ))}
-            {line.length > 1 ? <polyline points={points} fill="none" stroke={inked} strokeWidth={LINE_WIDTH} strokeLinecap="round" strokeLinejoin="round" data-testid="ichifude-line" /> : null}
-            {head !== undefined && numbers[head] === 0 ? <circle cx={centre(head % size)} cy={centre(Math.floor(head / size))} r={HEAD_RADIUS} fill={PAPER} data-testid="ichifude-head" /> : null}
+            {line.length > 1 ? <polyline points={points} fill="none" stroke={inked} strokeWidth={LINE_WIDTH} strokeLinecap="round" strokeLinejoin="round" data-testid="hitofude-line" /> : null}
+            {head !== undefined && numbers[head] === 0 ? <circle cx={centre(head % size)} cy={centre(Math.floor(head / size))} r={HEAD_RADIUS} fill={PAPER} data-testid="hitofude-head" /> : null}
             {numbers.map((number, square) =>
               number === 0 ? null : (
                 <g key={square}>

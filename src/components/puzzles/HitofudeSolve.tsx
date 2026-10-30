@@ -4,17 +4,17 @@ import { useCallback, useMemo, useState, type KeyboardEvent } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
-import { checkIchifude } from "@/lib/puzzles/ichifude/check";
-import { blankLine, decodeLine, decodeNumbers, encodeLine } from "@/lib/puzzles/ichifude/code";
-import { lineAfter, lineAfterArrow, nextNumberOf } from "@/lib/puzzles/ichifude/draw";
-import { hintedLine, offTheAnswer } from "@/lib/puzzles/ichifude/help";
+import { checkHitofude } from "@/lib/puzzles/hitofude/check";
+import { blankLine, decodeLine, decodeNumbers, encodeLine } from "@/lib/puzzles/hitofude/code";
+import { lineAfter, lineAfterArrow, nextNumberOf } from "@/lib/puzzles/hitofude/draw";
+import { hintedLine, offTheAnswer } from "@/lib/puzzles/hitofude/help";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
 import { ARROW_KEY } from "@/lib/ui/keyNames.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { IchifudeBoard } from "./ichifude/IchifudeBoard";
-import { ichifudeChecked, ichifudeStepWord } from "./ichifude/ichifudeWords";
+import { HitofudeBoard } from "./hitofude/HitofudeBoard";
+import { hitofudeChecked, hitofudeStepWord } from "./hitofude/hitofudeWords";
 import { PuzzleSteps } from "./PuzzleSteps";
 import { SolveCheck, SolveDone, SolveHeader, SolvePaused, type ResumedRun, type SolveRace, useSolve } from "./solveShared";
 import { SolveHint } from "./SolveHint";
@@ -22,10 +22,10 @@ import { SolveShow } from "./SolveShow";
 import { useStepHistory } from "./useStepHistory";
 
 /**
- * Solving an Ichifude: one line from the first number, through every square, passing
+ * Solving an Hitofude: one line from the first number, through every square, passing
  * the numbers in order.
  *
- * What is drawn is one string (`ichifude/code.ts`), and everything on the screen is a
+ * What is drawn is one string (`hitofude/code.ts`), and everything on the screen is a
  * function of it: a press or a drag makes a new string (`lineAfter`), the board draws
  * it, the steps are the strings it has been (`useStepHistory`), and the puzzle is done
  * the moment the string passes the check the server runs. Check, Show and Hint read
@@ -35,7 +35,7 @@ import { useStepHistory } from "./useStepHistory";
  * it, and Restart goes back to the first number. The arrow keys draw when the board has
  * the focus, stepping back along the line where that is the way it came.
  */
-export function IchifudeSolve({
+export function HitofudeSolve({
   puzzle,
   hasAccount,
   race = null,
@@ -85,7 +85,7 @@ export function IchifudeSolve({
       setCode(next);
       for (let place = 0; place < next.length; place += 1) if (next[place] !== code[place]) hinting.unmark(place);
       setChecked(null);
-      if (checkIchifude(size, givens, next).ok) void finish(next, at);
+      if (checkHitofude(size, givens, next).ok) void finish(next, at);
     },
     [code, begin, hinting, size, givens, finish],
   );
@@ -144,39 +144,39 @@ export function IchifudeSolve({
   const last = numbers.reduce((most, number) => Math.max(most, number), 0);
   const next = nextNumberOf(line, numbers);
   const left = size * size - line.length;
-  const said = checked !== null ? ichifudeChecked(checked, say) : line.length === 1 ? say.say("pgrid.ichifude.howTo") : next > last ? say.say("pgrid.ichifude.tooSoon") : `${say.say("pgrid.ichifude.next", { number: String(next) })} ${say.count("pgrid.ichifude.left", left)}`;
+  const said = checked !== null ? hitofudeChecked(checked, say) : line.length === 1 ? say.say("pgrid.hitofude.howTo") : next > last ? say.say("pgrid.hitofude.tooSoon") : `${say.say("pgrid.hitofude.next", { number: String(next) })} ${say.count("pgrid.hitofude.left", left)}`;
 
   return (
     <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-code={code} data-wrong={[...hinting.marked].join(",")} {...readyMark(hydrated)}>
       <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} />
       <SolvePaused pausing={pausing}>
-        <IchifudeBoard
+        <HitofudeBoard
           size={size}
           givens={givens}
           code={history.shown}
           wrong={hinting.marked}
           solved={done !== null && done.outOfGuesses !== true}
           readOnly={done !== null || history.reviewing}
-          label={say.say("pgrid.ichifude.label", { size: String(size), howTo: say.say("pgrid.ichifude.howTo") })}
+          label={say.say("pgrid.hitofude.label", { size: String(size), howTo: say.say("pgrid.hitofude.howTo") })}
           onSquare={onSquare}
           onKey={onKey}
         />
       </SolvePaused>
-      <PuzzleSteps<string> steps={steps} viewing={history.viewing} go={history.go} size={size} say={(value) => ichifudeStepWord(value, say)} />
+      <PuzzleSteps<string> steps={steps} viewing={history.viewing} go={history.go} size={size} say={(value) => hitofudeStepWord(value, say)} />
       {done === null ? (
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className={press} onClick={undo} disabled={!live || strokes.length === 0} data-testid="ichifude-undo">
+            <button type="button" className={press} onClick={undo} disabled={!live || strokes.length === 0} data-testid="hitofude-undo">
               {say.say("puzzle.press.undo")}
             </button>
-            <button type="button" className={press} onClick={() => write(blank)} disabled={!live || code === blank} data-testid="ichifude-restart">
+            <button type="button" className={press} onClick={() => write(blank)} disabled={!live || code === blank} data-testid="hitofude-restart">
               {say.say("puzzle.press.restart")}
             </button>
             <SolveCheck checking={checking} onCheck={check} disabled={disabled} />
             <SolveShow checking={checking} onShow={show} disabled={disabled} />
             <SolveHint hinting={hinting} onHint={hint} disabled={disabled} racing={race !== null} />
           </div>
-          <span className="min-h-10 text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "ichifude-said"} data-left={left} data-next={next} aria-live="polite">
+          <span className="min-h-10 text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "hitofude-said"} data-left={left} data-next={next} aria-live="polite">
             {said}
           </span>
         </div>

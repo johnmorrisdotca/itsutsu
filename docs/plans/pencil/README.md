@@ -1,6 +1,6 @@
 # Pencil puzzles 鉛筆: Kazu's grid puzzles
 
-**Status: added 2026-10-05, four games; Akari, Loop and Hitori and the site's first extra hard level added the same day, seven games; Ichifude, its eighth and the first not from Kazu, 2026-10-30** (board rows
+**Status: added 2026-10-05, four games; Akari, Loop and Hitori and the site's first extra hard level added the same day, seven games; Hitofude, its eighth and the first not from Kazu, 2026-10-30** (board rows
 `pencil-puzzles-a-new-family-with-kazu-1-2-0-s-new-grid-puzzles-and-jirai`,
 `jirai-minesweeper-on-the-site-in-pencil-puzzles`,
 `pencil-puzzles-ships-four-rectangles-cross-sums-regions-and-jirai`,
@@ -95,9 +95,9 @@ The levels are what Kazu says they are, measured by solving: easy and medium nee
 hard needs supposing something (depth 1), extra hard the most of that. On the boards looked at, hard and extra hard both have
 depth 1 (a rare 2 on Regions), so extra hard differs from hard by how much supposing, not by a deeper kind.
 
-## Ichifude 一筆 (board row `ichifude-a-daily-puzzle-where-one-path-runs-through-every-cell-passing-the-numbe`)
+## Hitofude 一筆 (board row `hitofude-a-daily-puzzle-where-one-path-runs-through-every-cell-passing-the-numbe`)
 
-The eighth on the shelf, and the one here that is not Kazu's: `src/lib/puzzles/ichifude/` makes, solves and checks it, because
+The eighth on the shelf, and the one here that is not Kazu's: `src/lib/puzzles/hitofude/` makes, solves and checks it, because
 a line that runs one way from a start has nothing to share with what Kazu's engines keep. Pencil puzzles was the home because
 Logic puzzles is full at eight and a board worked out and drawn on is what this shelf is.
 

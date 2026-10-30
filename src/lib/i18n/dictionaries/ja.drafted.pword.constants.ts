@@ -134,7 +134,7 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ_2026_10_30,
   },
   "pword.kuniate.km": {
-    text: "{km}km",
+    text: "{km}キロ",
     back: "{km} km",
     review: AGENT_READ_2026_10_30,
   },

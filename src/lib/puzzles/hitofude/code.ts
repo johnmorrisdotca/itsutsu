@@ -1,5 +1,5 @@
 /**
- * ICHIFUDE'S TWO STRINGS: the board as it is dealt, and the line drawn on it.
+ * HITOFUDE'S TWO STRINGS: the board as it is dealt, and the line drawn on it.
  *
  * GIVENS are a character a cell, row by row: `.` for a blank cell and a number
  * for a numbered one, written 1 to 9 and then a letter, which is plenty for the

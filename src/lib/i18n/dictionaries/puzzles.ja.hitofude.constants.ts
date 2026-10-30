@@ -2,11 +2,11 @@ import type { CopyReview } from "../copyJa.types";
 
 import type { PuzzleCopyJa } from "./puzzles.ja.types";
 
-/** Ichifude's words in Japanese, the sibling of `ICHIFUDE_DISPLAY`. Read by the reviewer agent on 2026-10-30. */
+/** Hitofude's words in Japanese, the sibling of `HITOFUDE_DISPLAY`. Read by the reviewer agent on 2026-10-30. */
 const AGENT_READ: CopyReview = { by: "agent", on: "2026-10-30" };
 
-export const PUZZLE_COPY_JA_ICHIFUDE = {
-  ichifude: {
+export const PUZZLE_COPY_JA_HITOFUDE = {
+  hitofude: {
     tagline: ["1本の線で数字を順に通りながら、すべてのマスを埋めます。", "Fill every square with one line, passing through the numbers in order."],
     inspiredBy: ["1本の線で数字をたどるパズル", "the puzzle of following the numbers with one line"],
     origin: [
@@ -22,4 +22,4 @@ export const PUZZLE_COPY_JA_ICHIFUDE = {
     board: ["6×6が標準の大きさです。5×5は手早く遊べ、7×7と8×8は長めです。どのサイズにも3つのレベルがあり、初級は数字が多く、上級は答えを1つに絞るのに必要な数字だけです。", "6×6 is the standard size. 5×5 can be played quickly, and 7×7 and 8×8 are longer. Every size has three levels: easy has many numbers, and hard only the numbers necessary to narrow the answer down to one."],
     review: AGENT_READ,
   },
-} as const satisfies Record<"ichifude", PuzzleCopyJa>;
+} as const satisfies Record<"hitofude", PuzzleCopyJa>;

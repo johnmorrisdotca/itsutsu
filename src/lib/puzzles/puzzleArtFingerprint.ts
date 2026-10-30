@@ -46,7 +46,7 @@ export const PUZZLE_ART_FILES: readonly string[] = [
   "node_modules/@johnmorrisdotca/kazu/package.json",
   "src/lib/puzzles/kazu.ts",
   // The six pencil puzzles are Kazu's too: the package above draws them, and these are how the site reads a board into its drawing and writes what is on it.
-  "src/components/puzzles/ichifude/IchifudeBoard.tsx",
+  "src/components/puzzles/hitofude/HitofudeBoard.tsx",
   "src/components/puzzles/hachinosu/HachinosuHive.tsx",
   "src/components/puzzles/kuniate/KuniateClue.tsx",
   "node_modules/@johnmorrisdotca/chizu/package.json",

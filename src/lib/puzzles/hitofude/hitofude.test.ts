@@ -3,19 +3,19 @@ import { describe, expect, it } from "vitest";
 import { checkSolution } from "../puzzleCheck";
 import { generatePuzzle } from "../generate";
 import { solvedAnswerOf } from "../solvedAnswer";
-import { checkIchifude } from "./check";
+import { checkHitofude } from "./check";
 import { adjacent, blankLine, decodeLine, decodeNumbers, encodeLine, encodeNumbers } from "./code";
 import { lineAfter, lineAfterArrow, nextNumberOf } from "./draw";
-import { generateIchifude, shakenLine } from "./generate";
+import { generateHitofude, shakenLine } from "./generate";
 import { hintedLine, offTheAnswer } from "./help";
-import { ICHIFUDE_SPEC } from "./ichifude.constants";
+import { HITOFUDE_SPEC } from "./hitofude.constants";
 import { searchLines, solutionOf } from "./solve";
 import { seededRandom } from "../random";
 
 /** A small board with a known answer: 3×3, the line a plain back and forth, numbered at its two ends and in the middle. */
 const SNAKE = [0, 1, 2, 5, 4, 3, 6, 7, 8];
 
-describe("ichifude: what makes it different", () => {
+describe("hitofude: what makes it different", () => {
   it("walks one line through every cell, and the line it shakes is one", () => {
     for (let seed = 1; seed <= 20; seed += 1) {
       const line = shakenLine(6, seededRandom(seed));
@@ -27,20 +27,20 @@ describe("ichifude: what makes it different", () => {
   it("refuses a line that jumps, crosses itself, skips a square, or takes the numbers out of order", () => {
     const givens = encodeNumbers([1, 0, 0, 0, 2, 0, 0, 0, 3]);
     const right = encodeLine(SNAKE, 3);
-    expect(checkIchifude(3, givens, right)).toEqual({ ok: true });
+    expect(checkHitofude(3, givens, right)).toEqual({ ok: true });
     // Ends one short of the last square.
-    expect(checkIchifude(3, givens, encodeLine(SNAKE.slice(0, -1), 3)).ok).toBe(false);
+    expect(checkHitofude(3, givens, encodeLine(SNAKE.slice(0, -1), 3)).ok).toBe(false);
     // A jump: the last two squares swapped, so the line leaves a neighbour behind.
-    expect(checkIchifude(3, givens, encodeLine([0, 1, 2, 5, 4, 3, 6, 8, 7], 3)).ok).toBe(false);
+    expect(checkHitofude(3, givens, encodeLine([0, 1, 2, 5, 4, 3, 6, 8, 7], 3)).ok).toBe(false);
     // The numbers out of order: a line that meets 3 before 2.
     const swapped = encodeNumbers([1, 0, 0, 0, 3, 0, 0, 0, 2]);
-    expect(checkIchifude(3, swapped, right).ok).toBe(false);
+    expect(checkHitofude(3, swapped, right).ok).toBe(false);
     // Starting anywhere but the first number.
-    expect(checkIchifude(3, encodeNumbers([2, 0, 0, 0, 1, 0, 0, 0, 3]), right).ok).toBe(false);
+    expect(checkHitofude(3, encodeNumbers([2, 0, 0, 0, 1, 0, 0, 0, 3]), right).ok).toBe(false);
     // Ending anywhere but the last number.
-    expect(checkIchifude(3, encodeNumbers([1, 0, 0, 0, 0, 0, 0, 3, 2]), right).ok).toBe(false);
+    expect(checkHitofude(3, encodeNumbers([1, 0, 0, 0, 0, 0, 0, 3, 2]), right).ok).toBe(false);
     // A place used twice.
-    expect(checkIchifude(3, givens, right.replace("8", "7")).ok).toBe(false);
+    expect(checkHitofude(3, givens, right.replace("8", "7")).ok).toBe(false);
   });
 
   it("finds exactly the one answer the numbers leave, and tells two answers from one", () => {
@@ -58,16 +58,16 @@ describe("ichifude: what makes it different", () => {
   });
 
   it("makes every size and level with exactly one answer, proved by a search with no budget to speak of, and the answer is the one the generator kept", () => {
-    for (const size of ICHIFUDE_SPEC.sizes) {
-      for (const level of ICHIFUDE_SPEC.levels) {
+    for (const size of HITOFUDE_SPEC.sizes) {
+      for (const level of HITOFUDE_SPEC.levels) {
         for (const seed of [11, 202, 3003]) {
-          const puzzle = generateIchifude(size, level, seed);
+          const puzzle = generateHitofude(size, level, seed);
           const numbers = decodeNumbers(puzzle.givens, size)!;
           const search = searchLines(size, numbers, 2, 5_000_000);
           expect(search.exhausted, `${size} ${level} ${seed}`).toBe(false);
           expect(search.found, `${size} ${level} ${seed}`).toBe(1);
           expect(encodeLine(search.lines[0]!, size)).toBe(puzzle.solution);
-          expect(checkSolution("ichifude", size, puzzle.givens, puzzle.solution, level)).toEqual({ ok: true });
+          expect(checkSolution("hitofude", size, puzzle.givens, puzzle.solution, level)).toEqual({ ok: true });
         }
       }
     }
@@ -76,7 +76,7 @@ describe("ichifude: what makes it different", () => {
   it("gives fewer numbers as the level rises, on average", () => {
     const count = (level: "easy" | "medium" | "hard") => {
       let total = 0;
-      for (let seed = 1; seed <= 12; seed += 1) total += Math.max(...decodeNumbers(generateIchifude(7, level, seed).givens, 7)!);
+      for (let seed = 1; seed <= 12; seed += 1) total += Math.max(...decodeNumbers(generateHitofude(7, level, seed).givens, 7)!);
       return total;
     };
     expect(count("easy")).toBeGreaterThan(count("medium"));
@@ -84,19 +84,19 @@ describe("ichifude: what makes it different", () => {
   }, 60_000);
 
   it("makes one seed's board in every browser, and a day's seed like any other", () => {
-    expect(generatePuzzle("ichifude", 6, "medium", 20261030)).toEqual(generatePuzzle("ichifude", 6, "medium", 20261030));
-    expect(generatePuzzle("ichifude", 6, "medium", 20261030).givens).not.toBe(generatePuzzle("ichifude", 6, "medium", 20261031).givens);
+    expect(generatePuzzle("hitofude", 6, "medium", 20261030)).toEqual(generatePuzzle("hitofude", 6, "medium", 20261030));
+    expect(generatePuzzle("hitofude", 6, "medium", 20261030).givens).not.toBe(generatePuzzle("hitofude", 6, "medium", 20261031).givens);
   });
 
   it("works a kept solve's answer out again from its givens", () => {
-    const puzzle = generateIchifude(6, "hard", 77);
+    const puzzle = generateHitofude(6, "hard", 77);
     expect(solutionOf(6, puzzle.givens)).toBe(puzzle.solution);
-    expect(solvedAnswerOf("ichifude", 6, "hard", puzzle.givens)).toBe(puzzle.solution);
+    expect(solvedAnswerOf("hitofude", 6, "hard", puzzle.givens)).toBe(puzzle.solution);
     expect(solutionOf(6, "not a board")).toBeNull();
   });
 });
 
-describe("ichifude: drawing the line", () => {
+describe("hitofude: drawing the line", () => {
   const numbers = [1, 0, 0, 0, 2, 0, 0, 0, 3];
 
   it("starts on the first number, and a press beside the head takes a step", () => {
@@ -145,7 +145,7 @@ describe("ichifude: drawing the line", () => {
   });
 });
 
-describe("ichifude: Check, Show and Hint", () => {
+describe("hitofude: Check, Show and Hint", () => {
   const solution = encodeLine(SNAKE, 3);
 
   it("counts the squares after the line leaves the answer, and what is still to fill", () => {
@@ -160,7 +160,7 @@ describe("ichifude: Check, Show and Hint", () => {
   });
 });
 
-describe("ichifude: the strings", () => {
+describe("hitofude: the strings", () => {
   it("reads a board's numbers only where they run 1 to the highest, each once", () => {
     expect(decodeNumbers("1.......2", 3)).not.toBeNull();
     expect(decodeNumbers("1.......3", 3)).toBeNull();
