@@ -10,6 +10,7 @@ import type { GameKey } from "./gameKeys";
  */
 export const GAME_ADDED: Record<GameKey, string> = {
   akari: "2026-10-05",
+  amazons: "2026-10-30",
   antiBackgammon: "2026-10-01",
   antiReversi: "2026-09-07",
   backgammon: "2026-10-01",
@@ -18,6 +19,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   blackAndWhite: "2026-09-24",
   blockFive: "2026-09-07",
   brazilianDraughts: "2026-09-14",
+  breakthrough: "2026-10-30",
   bridges: "2026-09-28",
   canadianCheckers: "2026-09-14",
   caro: "2026-09-07",
@@ -74,6 +76,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   koushi: "2026-09-26",
   kumimoji: "2026-09-26",
   kuniate: "2026-10-30",
+  linesOfAction: "2026-10-30",
   longGammon: "2026-10-01",
   loop: "2026-10-05",
   magneticBlocks: "2026-10-06",
@@ -87,9 +90,6 @@ export const GAME_ADDED: Record<GameKey, string> = {
   moreOrLess: "2026-09-24",
   nackgammon: "2026-10-01",
   nineMensMorris: "2026-10-30",
-  breakthrough: "2026-10-30",
-  linesOfAction: "2026-10-30",
-  amazons: "2026-10-30",
   ninuki: "2026-09-07",
   notakto: "2026-09-07",
   numberPlace: "2026-09-24",
