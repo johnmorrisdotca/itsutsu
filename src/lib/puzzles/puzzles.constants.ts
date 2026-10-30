@@ -16,6 +16,7 @@ import { MEIKYUU_EVERY_SIZE, MEIKYUU_SIZES, MEIKYUU_SOLID_KANJI, MEIKYUU_SOLID_N
 import { TOBIISHI_LEVELS_A_SIZE } from "./tobiishi/levelCounts";
 import { TOBIISHI_SIZES, tobiishiSizeLabel } from "./tobiishi/sizes";
 import { JIRAI_DISPLAY, JIRAI_LEVEL_BLURBS, JIRAI_SIZE_NAMES, JIRAI_SPEC } from "./jirai/jirai.constants";
+import { ICHIFUDE_DISPLAY, ICHIFUDE_SIZE_NAMES, ICHIFUDE_SPEC } from "./ichifude/ichifude.constants";
 import { PENCIL_DISPLAY, PENCIL_KIND_LIST, PENCIL_SIZE_NAMES, PENCIL_SPECS } from "./pencil/pencil.constants";
 import type { OrdinaryLevel, PuzzleClock, PuzzleKind, PuzzleLevel, PuzzleSpec } from "./puzzles.types";
 
@@ -74,6 +75,7 @@ export const PUZZLE_KINDS = {
   crossSums: "crossSums",
   regions: "regions",
   jirai: "jirai",
+  ichifude: "ichifude",
 } as const satisfies Record<PuzzleKind, PuzzleKind>;
 
 /** How many tiles a Mahjong layout holds, read from the layout rather than typed into its copy. */
@@ -119,6 +121,7 @@ export const PUZZLE_KIND_LIST: readonly PuzzleKind[] = [
   PUZZLE_KINDS.tobiishi,
   // The pencil puzzles (`pencil/`), in their family's order.
   ...PENCIL_KIND_LIST,
+  PUZZLE_KINDS.ichifude,
   PUZZLE_KINDS.jirai,
 ];
 
@@ -521,6 +524,7 @@ export const PUZZLE_SPECS: Record<PuzzleKind, PuzzleSpec> = {
     clock: false,
   },
   ...PENCIL_SPECS,
+  ichifude: ICHIFUDE_SPEC,
   jirai: JIRAI_SPEC,
 };
 
@@ -782,6 +786,7 @@ export const PUZZLE_SIZE_NAMES: Record<PuzzleKind, Record<number, { label: strin
     7: { label: "Giant", kanji: "超巨大" },
   },
   ...PENCIL_SIZE_NAMES,
+  ichifude: ICHIFUDE_SIZE_NAMES,
   jirai: JIRAI_SIZE_NAMES,
 };
 
@@ -1486,5 +1491,6 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "The boards are the English cross, a triangle, the European board, a diamond, a heart, a star, a hexagon, and a wide and a tall rectangle. A short level (3 jumps) has four pegs on a board of up to 49 holes, and is quick; a long one (9 jumps) has ten, and the right order has to be found. Every level has at least one answer, because it was made by working backward from the goal.",
   },
   ...PENCIL_DISPLAY,
+  ichifude: ICHIFUDE_DISPLAY,
   jirai: JIRAI_DISPLAY,
 };

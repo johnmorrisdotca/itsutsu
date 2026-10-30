@@ -250,6 +250,7 @@ export const ALLOWED_FILES = new Map([
    * sentence with no Japanese beside it or a Japanese line that answers nothing.
    */
   ["src/lib/puzzles/puzzles.constants.ts", "the English half of every puzzle's words (tagline, origin, rules, levels, clocks, sizes); the Japanese is puzzles.ja.*.constants.ts, held by puzzles.coverage.test.ts and puzzleCopyTables.coverage.test.ts"],
+  ["src/lib/puzzles/ichifude/ichifude.constants.ts", "the English half of Ichifude's words (tagline, origin, rules, sizes); the Japanese is puzzles.ja.ichifude.constants.ts, held by puzzles.coverage.test.ts"],
   ["src/lib/puzzles/pencil/pencil.constants.ts", "the English half of the pencil puzzles' lines under the board; the Japanese is puzzles.ja.pencil.constants.ts, held by puzzleCopyTables.coverage.test.ts"],
   ["src/lib/puzzles/jirai/jirai.constants.ts", "the English half of Jirai's levels, neighbours and size names; the Japanese is puzzles.ja.levels.constants.ts, held by puzzleCopyTables.coverage.test.ts"],
   ["src/lib/puzzles/meikyuu/look.constants.ts", "the English half of Meikyuu's colour chooser, with each colour's name beside its own kanji, which a Japanese reader is shown instead (Speaker.pairName); the Japanese is puzzles.ja.misc.constants.ts, held by puzzleCopyTables.coverage.test.ts"],

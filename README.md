@@ -701,9 +701,13 @@ of their own, each at four levels, easy to extra hard (the site's first extra ha
 draws it as SVG; what is the site's own is here: a board is a string of marks, a
 character a cell, so a kept run, the scrubber and the
 finished page work as they do for a Number Place, and a press on the drawing is read
-from where it lands (`pencil/geometry.ts`). Seven games in all with Jirai: Shikaku, Akari, Loop, Hitori, Cross Sums and Regions. The server's one job is the O(cells) check
+from where it lands (`pencil/geometry.ts`). Eight games in all with Jirai and Ichifude. The server's one job is the O(cells) check
 (`pencil/*.ts`, `puzzleCheck.ts`). **Jirai** 地雷 (`@johnmorrisdotca/jirai`, `src/lib/puzzles/jirai/`) is
 its fourth card: Minesweeper that needs no guess, its neighbours and shape settings of the one card.
+**Ichifude** 一筆 (2026-10-30, `src/lib/puzzles/ichifude/`, no package) is the eighth, which fills the shelf: one line
+through every square, passing the numbers in order, at 5×5 to 8×8 and three levels, with a puzzle of the day. The
+answer is made first, the numbers put on until a search that finishes finds exactly one answer and then taken off as far as the
+level asks. A board is searched for, so it is only ever made in the browser, the set-up's preview included; the server walks a finished line in O(cells).
 
 **Meikyuu** 迷宮 (2026-10-02, `src/lib/puzzles/meikyuu/`, plan in
 `docs/plans/meikyuu/README.md`): a maze to draw a line through with a finger or the

@@ -4,7 +4,7 @@ Generated from `src/lib/i18n/dictionaries/puzzles.ja.*` by `src/lib/i18n/puzzleC
 
 Each row is one Japanese line, what it literally says in English, and who has read it. A puzzle's name is its kanji beside the English one, and the names of levels, sizes and chips that sit beside a kanji are shown as the kanji to a Japanese reader, so neither is repeated here. A line with a number or a name in it has `{0}`, `{1}` where the figure goes, in the order the screen gives them; a line that reads differently at 0, at 1 or at a kind is shown once for each, with the figure it is for in braces.
 
-862 lines, 794 distinct. 0 read by a person, 862 by the reviewer agent, 0 drafted and unread.
+870 lines, 802 distinct. 0 read by a person, 862 by the reviewer agent, 8 drafted and unread.
 
 ## Open for a person
 
@@ -16,6 +16,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 - **puzzle hitori**: The English origin names the publisher's own Japanese title for this puzzle. The Japanese leaves it out, because it is a trademark (TERMS.md); is that how John wants it?
 - **puzzle crossSums**: The English origin and last rule name other places' titles for this puzzle. The Japanese keeps the names the English gives in Latin letters and adds no Japanese brand name (TERMS.md): is that how John wants it?
 - **puzzle regions**: The English origin and last rule name other places' titles for this puzzle. The Japanese keeps the names the English gives in Latin letters and adds no Japanese brand name (TERMS.md): is that how John wants it?
+- **puzzle ichifude**: Written on 2026-10-30 with Ichifude; nobody has read it. 一筆 usually reads ippitsu or hitofude: is Ichifude acceptable as the English name beside it?
 
 ## Every line
 
@@ -315,6 +316,14 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | puzzle jirai: rules[4] | 開いてしまった地雷は、その場所に旗が立ち、まちがいとして数えられ、ヒントと同じ点がかかります。パズルは終わりません。 | A mine you uncover is flagged where it lies and counted as a mistake, which costs what a Hint does; it does not end the puzzle. | Agent 2026-10-06 |
 | puzzle jirai: rules[5] | どの盤にも自分の地雷があります。時計は最初の1手で動き出し、最後の安全なマスが開くと止まります。チェックは、まちがっている旗の数と、残る安全なマスの数だけを教えます。どれかは教えません。「表示」は、まちがっている旗に印をつけます。ヒントは、数字から安全と分かるマスを1つ開きます。 | Every board has its own mines: the clock starts on your first move and stops when the last safe square is uncovered. Check says how many flags are wrong and how many safe squares are left, only; it does not say which. Show marks the wrong flags. Hint uncovers a square the numbers prove safe. | Agent 2026-10-06 |
 | puzzle jirai: board | 9×9が普段の大きさです。7×7は手早く、12×12と16×16は長めで、巨大な32×32は1000マスを超えるので、スマートフォンでは拡大して動かします。ハート、星、六角形の形には、9×9以上が必要です。「四方」は、ふつうの「八方」より空白が多く、数字が少なくなります。六角形は6つ数えます。つながった盤には、端のマスがありません。 | 9×9 is the usual size. 7×7 is quick; 12×12 and 16×16 are longer, and 32×32, the Huge board, is more than a thousand squares: on a phone you zoom in and move about it. The heart, star and hexagon shapes need at least 9×9. Four neighbours gives more blanks and fewer numbers than the classic eight; hexagons count six; wraparound has no edge squares. | Agent 2026-10-06 |
+| puzzle ichifude: tagline | すべてのマスを1本の線で通り、数字を順番に通ります。 | Pass through every square with one line, passing the numbers in order. | Question, unread |
+| puzzle ichifude: inspiredBy | 1本の線で数字をたどるパズル | the puzzle of following the numbers with one line | Question, unread |
+| puzzle ichifude: origin | 盤のすべての点をちょうど1回ずつ通る道筋は、ハミルトン路と呼ばれます。1857年にこれを遊びにしたアイルランドの数学者、ウィリアム・ローワン・ハミルトンにちなむ名前です。マス目に通る順の数字を付けたものは、今では毎日のパズルとして親しまれています。一筆は筆のひとふでのことで、線を途中で離しません。このサイトの盤は、すべて自前のコードで新しく作っています。 | A route that passes each point of a board exactly once is called a Hamiltonian path, a name after William Rowan Hamilton, the Irish mathematician who made a game of it in 1857. With numbers on a grid for the order to pass them, it is now loved as a daily puzzle. 一筆 is one stroke of a brush: the line is not lifted on the way. The boards on this site are all newly made by our own code. | Question, unread |
+| puzzle ichifude: rules[0] | 1のマスからいちばん大きい数字まで、上下左右に1マスずつ進んで、1本の線を引きます。 | From the square of 1 to the largest number, moving up, down, left or right one square at a time, draw one line. | Question, unread |
+| puzzle ichifude: rules[1] | 線は数字を順番に通り、すべてのマスをちょうど1回ずつ通ります。順番の来ていない数字のところで、線は止まります。 | The line passes the numbers in order and goes through every square exactly once. The line stops at a number whose turn has not come. | Question, unread |
+| puzzle ichifude: rules[2] | 線の先からドラッグするか、その隣のマスをタップします。線を戻るようにドラッグするか、線の上のマスをタップすると、そこから先を取り消せます。 | Drag from the end of the line, or tap a square beside it. Dragging back along the line, or tapping a square on it, cancels what comes after. | Question, unread |
+| puzzle ichifude: rules[3] | 答えはちょうど1つです。時計は最初の1歩で動き出し、最後のマスが埋まると止まります。チェックは、答えからはずれているマスの数だけを教えます。どのマスかは教えません。 | There is exactly one answer. The clock starts with the first step and stops when the last square is filled. Check tells you only how many squares are off the answer; it does not say which. | Question, unread |
+| puzzle ichifude: board | 6×6が普段の大きさです。5×5は手早く、7×7と8×8は長めです。どのサイズにも3つのレベルがあり、初級は数字が多く、上級は答えを1つに絞るのに要る数字だけです。 | 6×6 is the usual size. 5×5 is quick; 7×7 and 8×8 are longer. Every size has three levels: easy has many numbers, and hard only the numbers needed to narrow the answer to one. | Question, unread |
 | level names: easy.blurb | どの手も、見るだけで見つかります。試す必要はありません。 | Every step can be found by looking; nothing has to be tried. | Agent 2026-10-06 |
 | level names: medium.blurb | 見るだけでほとんど進みますが、どこかで1つ試して確かめる必要があります。 | Looking gets you most of the way; somewhere you have to try one thing and see. | Agent 2026-10-06 |
 | level names: hard.blurb | 何かを試して確かめる場所が、2か所以上あります。 | More than one place where you have to try something and see. | Agent 2026-10-06 |

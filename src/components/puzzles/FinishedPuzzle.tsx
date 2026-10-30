@@ -35,6 +35,9 @@ import { TsunagiGrid } from "./TsunagiGrid";
 import { TILE_PICTURE_BOX } from "./kumimoji.constants";
 import { bridgesCellWords, pencilCopy, pictureCellWords } from "./gridWords";
 import { PuzzleGrid } from "./PuzzleGrid";
+import { IchifudeBoard } from "./ichifude/IchifudeBoard";
+import { ichifudeStepWord } from "./ichifude/ichifudeWords";
+import { checkIchifude } from "@/lib/puzzles/ichifude/check";
 import { JiraiBoard } from "./JiraiBoard";
 import { jiraiStepWord } from "./jirai.constants";
 import { PencilBoard } from "./pencil/PencilBoard";
@@ -369,6 +372,7 @@ function sayCell(kind: PuzzleKind, value: number | string, say: Speaker): string
   if (kind === "pictureLogic") return pictureCellWords(say.locale)[value === 1 ? "#" : value === 2 ? "x" : "."]!;
   if (isPencilKind(kind)) return pencilStepWord(kind, value, say, pencilCopy(say.locale));
   if (kind === "jirai") return jiraiStepWord(String(value), say);
+  if (kind === "ichifude") return ichifudeStepWord(value, say);
   return value === 0 ? say.say("pgrid.step.cleared") : symbolOf(value as number);
 }
 
@@ -388,6 +392,10 @@ function GridOf({ kind, size, frame }: { kind: PuzzleKind; size: number; frame: 
     // The frame that meets every clue is the picture: drawn clean, as the solve screen shows it when done.
     const solved = checkPictureLogic(size, frame.givens, answerOfCells(frame.cells)).ok;
     return <PictureLogicGrid clues={clues} cells={frame.cells} done finished={solved} readOnly />;
+  }
+  if (frame.kind === "ichifude") {
+    const code = frame.cells.join("");
+    return <IchifudeBoard size={size} givens={frame.givens} code={code} solved={checkIchifude(size, frame.givens, code).ok} readOnly label={say.say("pgrid.finished.puzzle")} />;
   }
   if (frame.kind === "jirai") return <JiraiBoard size={size} givens={frame.givens} code={frame.cells.join("")} readOnly label={say.say("pgrid.finished.jirai")} />;
   if (frame.kind === "pencil") return <PencilBoard kind={frame.pencil} size={size} givens={frame.givens} code={frame.cells.join("")} readOnly label={say.say("pgrid.finished.puzzle")} />;

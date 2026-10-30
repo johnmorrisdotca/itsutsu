@@ -105,6 +105,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   sannuki: "2026-09-07",
   saveTheCharacter: "2026-10-05",
   scatteredRocks: "2026-09-26",
+  ichifude: "2026-10-30",
   shikaku: "2026-10-05",
   solitaire: "2026-09-29",
   spades: "2026-09-30",

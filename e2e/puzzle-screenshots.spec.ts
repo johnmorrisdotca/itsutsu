@@ -16,6 +16,7 @@ import { decodeCells } from "../src/lib/puzzles/puzzleCode";
 import { decodeTowers } from "../src/lib/puzzles/towers/code";
 import { BLACK, decodeBlackAndWhite, EMPTY } from "../src/lib/puzzles/blackAndWhite/code";
 import { boardOf, decodeBridges } from "../src/lib/puzzles/bridges/code";
+import { decodeLine } from "../src/lib/puzzles/ichifude/code";
 import { decodeLayout as decodeSuido, hintFor, newGame as newSuidoGame, quartersBetween, turnAt } from "@johnmorrisdotca/suido";
 import { decodePicture } from "../src/lib/puzzles/pictureLogic/code";
 import { carriedFrom, columnAt, decodeMoves as decodeSolitaireMoves, isColumnPile, replay } from "@johnmorrisdotca/toranpu/klondike";
@@ -105,6 +106,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "hitori", size: 7, level: "medium", seed: 20261005, fill: 5 },
   { kind: "regions", size: 8, level: "easy", seed: 20261005, fill: 5 },
   { kind: "crossSums", size: 8, level: "medium", seed: 20261005, fill: 10 },
+  // A 6×6 Ichifude part way: the line drawn from 1 through its first numbers, by a held drag as a reader draws it.
+  { kind: "ichifude", size: 6, level: "medium", seed: 20261030, fill: 16 },
   // A 9×9 Jirai a good way in: the opening, six more safe squares uncovered, and two mines flagged, as a reader plays it.
   { kind: "jirai", size: 9, level: "medium", seed: 20261005, fill: 6 },
   // A FreeCell with four cells, the first twenty moves of its winning line played: cards in the cells, runs built, a foundation begun.
@@ -142,6 +145,20 @@ test.describe("puzzle screenshots", () => {
         await page.keyboard.press("Escape");
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         await page.getByTestId("puzzle-grid").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
+        return;
+      }
+      if (scene.kind === "ichifude") {
+        const board = page.getByTestId("ichifude-board");
+        const box = (await board.boundingBox())!;
+        const middle = (square: number) => ({ x: box.x + (((square % scene.size) + 0.5) / scene.size) * box.width, y: box.y + ((Math.floor(square / scene.size) + 0.5) / scene.size) * box.height });
+        const way = decodeLine(puzzle.solution, scene.size)!.slice(0, scene.fill);
+        await page.mouse.move(middle(way[0]!).x, middle(way[0]!).y);
+        await page.mouse.down();
+        for (const square of way.slice(1)) await page.mouse.move(middle(square).x, middle(square).y, { steps: 2 });
+        await page.mouse.up();
+        await page.mouse.move(0, 0);
+        await expect.poll(async () => decodeLine((await page.getByTestId("puzzle-play").getAttribute("data-code")) ?? "", scene.size)?.length).toBe(scene.fill);
+        await page.getByTestId("puzzle-grid").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 90 });
         return;
       }
       if (scene.kind === "jirai") {

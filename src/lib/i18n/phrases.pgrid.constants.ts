@@ -5,6 +5,21 @@
  * Its Japanese is `dictionaries/ja.drafted.pgrid.constants.ts`.
  */
 export const PHRASES_PGRID = {
+  "pgrid.ichifude.label": "Ichifude board, {size} by {size}. {howTo}",
+  "pgrid.ichifude.howTo": "Drag from 1, or tap a square beside the end of the line. Drag back, or tap the line, to take a part of it back.",
+  "pgrid.ichifude.next": "Next number: {number}.",
+  "pgrid.ichifude.left.one": "{count} square still to fill.",
+  "pgrid.ichifude.left.other": "{count} squares still to fill.",
+  "pgrid.ichifude.tooSoon": "That is the last number, with squares still to fill. Take the line back and go through them first.",
+  "pgrid.ichifude.step": "the line reached it",
+  "pgrid.ichifude.refuse.notBoard": "The givens are not a board of numbers.",
+  "pgrid.ichifude.refuse.wrongSize": "That is not a grid of this size.",
+  "pgrid.ichifude.refuse.offLine": "A square is not on the line.",
+  "pgrid.ichifude.refuse.crosses": "The line crosses itself.",
+  "pgrid.ichifude.refuse.jumps": "The line jumps.",
+  "pgrid.ichifude.refuse.outOfOrder": "The numbers are out of order.",
+  "pgrid.ichifude.refuse.wrongStart": "The line does not start on the first number.",
+  "pgrid.ichifude.refuse.wrongEnd": "The line does not end on the last number.",
   "pgrid.check.noneWrong": "Nothing wrong so far",
   "pgrid.check.okFilled": "Everything is filled and right.",
   "pgrid.check.okStones": "Every stone is right.",

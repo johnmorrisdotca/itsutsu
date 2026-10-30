@@ -83,10 +83,11 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
   },
   pencil: {
     blurb: [
-      "鉛筆で解く、1人用のパズルです。盤を長方形に切り分け、すべてのマスを照らし、1本の輪を描き、重なる数字を塗りつぶし、列の合計を求め、区画に数字を入れ、地雷を片づけます。",
-      "Puzzles for one, worked out with a pencil. Cut the grid into rectangles, light every square, draw a single loop, shade the repeated numbers, work out the sums of runs, put numbers in the regions and clear the mines.",
+      "鉛筆で解く、1人用のパズルです。盤を長方形に切り分け、すべてのマスを照らし、1本の輪を描き、重なる数字を塗りつぶし、列の合計を求め、区画に数字を入れ、地雷を片づけ、1本の線ですべてのマスを通ります。",
+      "Puzzles for one, worked out with a pencil. Cut the grid into rectangles, light every square, draw a single loop, shade the repeated numbers, work out the sums of runs, put numbers in the regions and clear the mines, and pass through every square with one line.",
     ],
     review: AGENT_READ_2026_10_06,
+    ask: "The last clause, about the one line, was added on 2026-10-30 with Ichifude; nobody has read it.",
   },
   cards: {
     blurb: [

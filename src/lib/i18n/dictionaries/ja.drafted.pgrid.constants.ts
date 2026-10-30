@@ -9,7 +9,84 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
 
+const ICHIFUDE_DRAFTED = "Written on 2026-10-30 with Ichifude; nobody has read it.";
+
 export const JA_DRAFTED_PGRID: Partial<Record<PhraseKey, DraftedPhrase>> = {
+  "pgrid.ichifude.label": {
+    text: "一筆の盤、{size}×{size}。{howTo}",
+    back: "Ichifude board, {size} by {size}. {howTo}",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.howTo": {
+    text: "1からドラッグするか、線の先の隣のマスをタップします。戻るようにドラッグするか、線をタップすると、その先を取り消せます。",
+    back: "Drag from 1, or tap the square beside the end of the line. Drag back, or tap the line, to cancel what comes after.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.next": {
+    text: "次の数字は{number}です。",
+    back: "The next number is {number}.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.left.one": {
+    text: "残り{count}マスです。",
+    back: "{count} squares left.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.left.other": {
+    text: "残り{count}マスです。",
+    back: "{count} squares left.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.tooSoon": {
+    text: "最後の数字に着きましたが、まだ埋まっていないマスがあります。線を戻して、先にそのマスを通ります。",
+    back: "You have reached the last number, but there are squares not yet filled. Take the line back and go through those squares first.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.refuse.notBoard": {
+    text: "与えられた盤が数字の盤になっていません。",
+    back: "The given board is not a board of numbers.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.refuse.wrongSize": {
+    text: "このサイズのマス目ではありません。",
+    back: "This is not a grid of this size.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.refuse.offLine": {
+    text: "線の上にないマスがあります。",
+    back: "There is a square not on the line.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.refuse.crosses": {
+    text: "線が交差しています。",
+    back: "The line crosses.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.refuse.jumps": {
+    text: "線が飛んでいます。",
+    back: "The line jumps.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.refuse.outOfOrder": {
+    text: "数字の順番がちがいます。",
+    back: "The order of the numbers is wrong.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.refuse.wrongStart": {
+    text: "線が最初の数字から始まっていません。",
+    back: "The line does not start from the first number.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.refuse.wrongEnd": {
+    text: "線が最後の数字で終わっていません。",
+    back: "The line does not end at the last number.",
+    ask: ICHIFUDE_DRAFTED,
+  },
+  "pgrid.ichifude.step": {
+    text: "線が届いた",
+    back: "the line reached it",
+    ask: ICHIFUDE_DRAFTED,
+  },
   "pgrid.check.noneWrong": {
     text: "いまのところ、まちがいはありません",
     back: "Nothing wrong so far",

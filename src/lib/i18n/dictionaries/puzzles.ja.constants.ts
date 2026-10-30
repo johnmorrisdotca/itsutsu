@@ -3,6 +3,7 @@ import type { PuzzleKind } from "../../puzzles/puzzles.types";
 import { PUZZLE_COPY_JA_DRAWN } from "./puzzles.ja.drawn.constants";
 import { PUZZLE_COPY_JA_MAZES } from "./puzzles.ja.mazes.constants";
 import { PUZZLE_COPY_JA_NUMBERS } from "./puzzles.ja.numbers.constants";
+import { PUZZLE_COPY_JA_ICHIFUDE } from "./puzzles.ja.ichifude.constants";
 import { PUZZLE_COPY_JA_PENCIL } from "./puzzles.ja.pencil.constants";
 import type { PuzzleCopyJa } from "./puzzles.ja.types";
 import { PUZZLE_COPY_JA_WORDS } from "./puzzles.ja.words.constants";
@@ -19,4 +20,5 @@ export const PUZZLE_COPY_JA: Record<PuzzleKind, PuzzleCopyJa> = {
   ...PUZZLE_COPY_JA_DRAWN,
   ...PUZZLE_COPY_JA_MAZES,
   ...PUZZLE_COPY_JA_PENCIL,
+  ...PUZZLE_COPY_JA_ICHIFUDE,
 };

@@ -1,6 +1,6 @@
 # Pencil puzzles 鉛筆: Kazu's grid puzzles
 
-**Status: added 2026-10-05, four games; Akari, Loop and Hitori and the site's first extra hard level added the same day, seven games** (board rows
+**Status: added 2026-10-05, four games; Akari, Loop and Hitori and the site's first extra hard level added the same day, seven games; Ichifude, its eighth and the first not from Kazu, 2026-10-30** (board rows
 `pencil-puzzles-a-new-family-with-kazu-1-2-0-s-new-grid-puzzles-and-jirai`,
 `jirai-minesweeper-on-the-site-in-pencil-puzzles`,
 `pencil-puzzles-ships-four-rectangles-cross-sums-regions-and-jirai`,
@@ -94,6 +94,25 @@ test of it are gone: a seed is its own puzzle at every size, and the site passes
 The levels are what Kazu says they are, measured by solving: easy and medium need only the rules (easy keeps more numbers),
 hard needs supposing something (depth 1), extra hard the most of that. On the boards looked at, hard and extra hard both have
 depth 1 (a rare 2 on Regions), so extra hard differs from hard by how much supposing, not by a deeper kind.
+
+## Ichifude 一筆 (board row `ichifude-a-daily-puzzle-where-one-path-runs-through-every-cell-passing-the-numbe`)
+
+The eighth on the shelf, and the one here that is not Kazu's: `src/lib/puzzles/ichifude/` makes, solves and checks it, because
+a line that runs one way from a start has nothing to share with what Kazu's engines keep. Pencil puzzles was the home because
+Logic puzzles is full at eight and a board worked out and drawn on is what this shelf is.
+
+- **What is kept.** Givens are a character a square, `.` or a number; what is drawn is a character a square too, `.` or the
+  square's place along the line (`code.ts`), so a kept run, the scrubber and a replay read it as any other grid.
+- **Making one.** A line through every square is shaken from a back and forth by the backbite move; numbers go on until the
+  solver finds exactly one answer in a search that finishes, then come off in the seed's order as far as the level asks.
+  Easy asks for a number every three squares, medium every four and a half, and hard takes off all it can (`generate.ts`).
+- **Unknown is not one.** The solver counts to two on a budget of steps, never of time, so one seed makes one board in every browser, and
+  a search that ran out says so (`exhausted`) and is treated as not proved: the generator adds a number rather than trust it.
+- **Measured** 2026-10-30, on a Mac, forty seeds at each size and level: the slowest board took 0.7 s (8×8), the median at 8×8 hard 0.2 s and at
+  everything else under 0.1 s, all in the browser. The set-up's preview is loaded with `ssr: false` for that reason, so no server ever searches.
+- **Drawing.** A press beside the head takes one step and a press on the line cuts it back there; a drag does the same for each
+  square it enters and follows a straight run a fast finger has crossed. A number out of its turn stops the line
+  (`draw.ts`). Reaching the last number too soon is allowed and does not win, and the line under the board says why.
 
 ## Not done, and why
 

@@ -6,8 +6,8 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 5463. Drafted and unread: 0. Read by the reviewer agent: 5463.
-Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 116
+Phrases: 5478. Drafted and unread: 15. Read by the reviewer agent: 5463.
+Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 131
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
 
@@ -20,7 +20,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Waiting for a decision or a native read — start here (115)
+## 1. Waiting for a decision or a native read — start here (130)
 
 A **question** is a wording only the site's owner can choose between. A line the
 agent has read but marked for a native read is high-stakes text (children,
@@ -62,6 +62,21 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | With your name taken off, your old games show an empty seat, and your place on every ladder goes too. | **名前を外すと、過去の対局は空席として表示され、すべての順位表での位置も消えます。** | With my name taken off, my old games show an empty seat, and my place on every ranking table is gone too. | Agent 2026-10-06, native read wanted | Says what happens to the games of a removed account: account text, so a native read is recommended. |  |
 | — — — | This cannot be taken back. Your profile, your messages, your buddies and ignores, your experience points and your puzzle solves go. Any game still waiting for you is resigned, or called off if nobody has moved yet. Your finished games stay, because each belongs to the other player too, with your account taken off them. | **この操作は取り消せません。プロフィール、メッセージ、仲間と無視の設定、経験値、パズルの解答履歴が消えます。自分を待っている対局は投了となり、まだ誰も打っていなければ中止になります。終わった対局は、相手の対局者のものでもあるため残り、アカウントの情報だけが外されます。** | This cannot be undone. Your profile, messages, buddy and ignore settings, experience points and puzzle solving history are deleted. Games still waiting for you are resigned, or called off if no one has moved yet. Finished games stay, because they also belong to the other player, and only your account is taken off them. | Agent 2026-10-06, native read wanted | Says what removing an account does and cannot undo: account text, so a native read is recommended. |  |
 | — — — | You are under 13, so nobody is shown when you are here, and the site never sends you an email. | **13歳未満のため、自分がオンラインかどうかは誰にも表示されず、サイトからメールが届くこともありません。** | Because you are under 13, nobody is shown when you are here, and the site never sends you an email. | Agent 2026-10-06, native read wanted | Tells a member under 13 that the site sends them no email and shows nobody their presence: about children, so a native read is recommended. |  |
+| — — — | Drag from 1, or tap a square beside the end of the line. Drag back, or tap the line, to take a part of it back. | **1からドラッグするか、線の先の隣のマスをタップします。戻るようにドラッグするか、線をタップすると、その先を取り消せます。** | Drag from 1, or tap the square beside the end of the line. Drag back, or tap the line, to cancel what comes after. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | Ichifude board, {size} by {size}. {howTo} | **一筆の盤、{size}×{size}。{howTo}** | Ichifude board, {size} by {size}. {howTo} | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | {count} square still to fill. | **残り{count}マスです。** | {count} squares left. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | {count} squares still to fill. | **残り{count}マスです。** | {count} squares left. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | Next number: {number}. | **次の数字は{number}です。** | The next number is {number}. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | The line crosses itself. | **線が交差しています。** | The line crosses. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | The line jumps. | **線が飛んでいます。** | The line jumps. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | The givens are not a board of numbers. | **与えられた盤が数字の盤になっていません。** | The given board is not a board of numbers. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | A square is not on the line. | **線の上にないマスがあります。** | There is a square not on the line. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | The numbers are out of order. | **数字の順番がちがいます。** | The order of the numbers is wrong. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | The line does not end on the last number. | **線が最後の数字で終わっていません。** | The line does not end at the last number. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | That is not a grid of this size. | **このサイズのマス目ではありません。** | This is not a grid of this size. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | The line does not start on the first number. | **線が最初の数字から始まっていません。** | The line does not start from the first number. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | the line reached it | **線が届いた** | the line reached it | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
+| — — — | That is the last number, with squares still to fill. Take the line back and go through them first. | **最後の数字に着きましたが、まだ埋まっていないマスがあります。線を戻して、先にそのマスを通ります。** | You have reached the last number, but there are squares not yet filled. Take the line back and go through those squares first. | Question, unread | Written on 2026-10-30 with Ichifude; nobody has read it. |  |
 | — — — | Changes | **改定** | Revisions | Agent 2026-10-06, native read wanted | Legal text (the Privacy page): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | When the site changes what it keeps or who sees it, this page changes in the same release and the date at the top moves. A test reads this page against the code, so the two cannot quietly drift apart. | **サイトが保存する情報や、それを見られる人が変わるときは、同じ更新でこのページも変わり、上部の日付も新しくなります。このページはテストでコードと突き合わせているため、両者が気づかないうちにずれることはありません。** | When the information the site keeps, or who can see it, changes, this page changes in the same update, and the date at the top is renewed. This page is checked against the code by a test, so the two cannot drift apart without anyone noticing. | Agent 2026-10-06, native read wanted | Legal text (the Privacy page): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | Questions go to {contact}. | **ご質問は{contact}までお寄せください。** | Please send questions to {contact}. | Agent 2026-10-06, native read wanted | Legal text (the Privacy page): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |

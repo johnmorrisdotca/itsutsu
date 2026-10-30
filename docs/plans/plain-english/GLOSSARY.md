@@ -394,6 +394,7 @@ them (`points/ladder.ts`, `points/gamePoints.ts`).
 | rectangle · cell | what Check counts ("2 rectangles are wrong, 1 still to draw") | each puzzle's own noun, so a Shikaku never counts "cells" |
 | draw · fill | "still to ..." | the verb of the thing: a rectangle is drawn, a cell filled |
 | Akari · Loop · Hitori | the games' names | Akari and Hitori are the puzzles' own names; Loop is plain English for Slitherlink, and since Kazu 2.0.0 Kazu's own name, and says "known elsewhere as ..." on its rules page and nowhere else (`loop` is its address) |
+| Ichifude | the game's name | our own for a one-line number path puzzle; the rules page says "the line" and "square", never "path" or "cell" |
 | bulb · line · square | what Check counts on Akari, Loop and Hitori | each puzzle's own noun: "2 bulbs are wrong, 1 still to place", "3 lines ...  still to draw", "1 square ... still to shade" |
 | Flag | under a Jirai board | the usual word; pressed, a tap flags. Not "Mark" (the package's word), which a Check also uses |
 | mines left · mistake | the line under a Jirai board | "13 mines left · 1 mistake": the mines not yet flagged, and the mines uncovered by slip |

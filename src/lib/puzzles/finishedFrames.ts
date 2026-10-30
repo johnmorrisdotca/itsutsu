@@ -4,6 +4,7 @@ import { decodeRegions, decodeStones } from "./hiddenStones/code";
 import { decodeCells as decodePictureCells, decodePicture } from "./pictureLogic/code";
 import type { CellState } from "./pictureLogic/pictureLogic.types";
 import { readNumberGivens, type NumberGivens } from "./numberGivens";
+import { blankLine, decodeLine } from "./ichifude/code";
 import { jiraiFits, jiraiRecipeOf } from "./jirai/board";
 import { pencilEngine } from "./pencil/engines";
 import { isPencilKind } from "./pencil/pencil.constants";
@@ -26,7 +27,8 @@ export type Frame =
   | { kind: "bridges"; givens: string; cells: string[] }
   | { kind: "pictureLogic"; givens: string; cells: CellState[] }
   | { kind: "pencil"; pencil: PencilKind; givens: string; cells: string[] }
-  | { kind: "jirai"; givens: string; cells: string[] };
+  | { kind: "jirai"; givens: string; cells: string[] }
+  | { kind: "ichifude"; givens: string; cells: string[] };
 
 export type FinishedFrames = {
   /** The grid as dealt, and as it ended where the answer reads: what a page draws with no steps. */
@@ -111,6 +113,16 @@ export function finishedFrames(kind: PuzzleKind, size: number, givens: string, a
     const finished = solved === null ? null : frame(solved);
     const kept = readSteps(steps, size * size, written);
     return assemble(frame(recipe?.cells ?? ".".repeat(cells)), finished, kept?.map(frame) ?? null, () => finished);
+  }
+
+  if (kind === "ichifude") {
+    // The line as it stood, a character a square (`ichifude/code.ts`): read only where it is one unbroken line.
+    const written = (code: string): string | null => (decodeLine(code, size) === null ? null : code);
+    const frame = (code: string): Frame => ({ kind: "ichifude", givens, cells: [...code] });
+    const solved = answer === null ? null : written(answer);
+    const finished = solved === null ? null : frame(solved);
+    const kept = readSteps(steps, cells, written);
+    return assemble(frame(blankLine(givens, size) ?? ".".repeat(cells)), finished, kept?.map(frame) ?? null, () => finished);
   }
 
   const asked = readNumberGivens(kind, givens, size);

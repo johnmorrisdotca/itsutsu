@@ -24,6 +24,7 @@ import { backwardsGuesses, breaksBackwardsRule, isGuessable } from "./gomoji/bac
 import { isBackwardsGivens } from "./gomoji/backwardsSeed";
 import { hiddenOfPlay } from "./gomoji/backwardsPlay";
 import { isDailyPoolWord } from "./dailyWords/dailyPools";
+import { checkIchifude } from "./ichifude/check";
 import { checkKoushi } from "./koushi/check";
 import { checkNumbers } from "./kazu";
 import { checkTsunagi } from "./tsunagi/check";
@@ -111,6 +112,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "jirai":
       // The uncovered clues of a finished board add up to its covered squares, which are exactly its mines: the board cannot be dealt again here (that is a search).
       return jiraiCheck(size, givens, answer);
+    case "ichifude":
+      // The line, walked in one pass: every square once, each beside the last, the numbers in order from the first place to the last.
+      return checkIchifude(size, givens, answer);
     default:
       return { ok: false, reason: `no check for ${kind}` };
   }

@@ -36,6 +36,7 @@ import { KoushiSolve } from "./KoushiSolve";
 import { MahjongSolve } from "./MahjongSolve";
 import { MahjongTableGame } from "./MahjongTableGame";
 import { NumberSolve } from "./NumberSolve";
+import { IchifudeSolve } from "./IchifudeSolve";
 import { JiraiSolve } from "./JiraiSolve";
 import { PencilSolve } from "./PencilSolve";
 import { FreeCellSolve } from "./FreeCellSolve";
@@ -378,6 +379,8 @@ function PuzzlePlayDrawn({
         return <PencilSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
       case "jirai":
         return <JiraiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
+      case "ichifude":
+        return <IchifudeSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
       case "koushi":
         return <KoushiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} appearance={appearance} />;
       default:

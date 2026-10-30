@@ -63,6 +63,9 @@ const SuidoPreview = dynamic(() => import("@/components/puzzles/SuidoPreview").t
 /* Meikyuu's preview is made in the browser only too: the package that draws a maze is fetched there. */
 const MeikyuuPreview = dynamic(() => import("@/components/puzzles/MeikyuuPreview").then((module) => module.MeikyuuPreview), { ssr: false });
 
+/* Ichifude's preview is made in the browser only too: a board is searched for, and that is not the server's work. */
+const IchifudePreview = dynamic(() => import("@/components/puzzles/ichifude/IchifudePreview").then((module) => module.IchifudePreview), { ssr: false });
+
 /* Tobiishi's preview is made in the browser only too: the package that draws its board is fetched there. */
 const TobiishiPreview = dynamic(() => import("@/components/puzzles/TobiishiPreview").then((module) => module.TobiishiPreview), { ssr: false });
 
@@ -145,6 +148,8 @@ export function PuzzleBoardPreview({
           <PencilPreview kind={kind} size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "jirai" ? (
           <JiraiPreview size={size} level={level ?? spec.defaultLevel} variant={jirai} />
+        ) : kind === "ichifude" ? (
+          <IchifudePreview size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "bridges" ? (
           <BridgesPreview size={size} />
         ) : kind === "suido" ? (
