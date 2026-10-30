@@ -21,11 +21,11 @@ export const KUNIATE_SPEC: PuzzleSpec = {
   layouts: true,
 };
 
-/** Each way of asking, under its tile; the tile's big mark is the kanji (`BoardSizeMark`). */
+/** Each way of asking, under its tile. The tile's big mark is one character (`TILE_MARKS` in `PuzzleBoardAndSizes.tsx`: 形, 旗, 都); the kanji here is the plain word under it. */
 export const KUNIATE_SIZE_NAMES: Record<number, { label: string; kanji: string }> = {
   1: { label: "Outline", kanji: "形" },
   2: { label: "Flag", kanji: "旗" },
-  3: { label: "Capital", kanji: "都" },
+  3: { label: "Capital", kanji: "首都" },
 };
 
 export const KUNIATE_DISPLAY: VariantCopy = {

@@ -8,6 +8,8 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  * drafted dictionary's own rows take.
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
+/** The reviewer agent's pass over the three 2026-10-30 puzzles' phrases. */
+const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
 export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "puzzle.clock.timeUp": {
@@ -448,22 +450,22 @@ export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "puzzle.done.changeLanguage": {
     text: "言語やレベルを変える",
     back: "Change the language or level",
-    ask: "Written on 2026-10-30 with Hachinosu; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "puzzle.rules.proofHachinosu": {
-    text: "どの蜂の巣も、よく使う言葉だけで終えられます。作るときにブラウザがその言葉を数え、その点数から目標を決めています。",
+    text: "どの蜂の巣も、よく使う単語だけで終えられます。作るときにブラウザがその単語を数え、その点数から目標を決めています。",
     back: "Every beehive can be finished with commonly used words alone. When making it, the browser counts those words and sets the goal from their points.",
-    ask: "Written on 2026-10-30 with Hachinosu; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "puzzle.done.changeClue": {
     text: "手がかりやレベルを変える",
     back: "Change the clue or level",
-    ask: "Written on 2026-10-30 with Kuniate; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "puzzle.rules.proofKuniate": {
     text: "国はパズルの番号から決まるので、同じアドレスならいつも同じ国が出ます。今日のパズルは、誰にとっても同じです。",
     back: "The country is decided from the puzzle's number, so the same address always gives the same country. Today's puzzle is the same for everybody.",
-    ask: "Written on 2026-10-30 with Kuniate; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "puzzle.rules.proofGrid": {
     text: "どのパズルも、答えはちょうど1つです。作ったブラウザが、見る前に確かめるので、答えが2つある盤や、1つもない盤はありません。",

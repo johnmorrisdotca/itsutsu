@@ -112,7 +112,7 @@ export const PUZZLE_LEVEL_BLURBS_JA = {
   },
   kuniate: {
     easy: ["よく知られた国です。人口の多い国とヨーロッパの国が中心です。", "Well-known countries. Mainly countries with many people, and the countries of Europe."],
-    medium: ["多くの人が聞いたことのある、百か国あまりです。", "The hundred or so countries many people have heard of."],
+    medium: ["多くの人が聞いたことのある、100か国あまりです。", "The hundred or so countries many people have heard of."],
     hard: ["世界の195か国のどれかです。", "Any of the world's 195 countries."],
   },
   gomoji: WORD_LEVELS,

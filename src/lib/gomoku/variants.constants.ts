@@ -570,7 +570,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
   },
   honeycomb: {
     label: "Honeycomb",
-    kanji: "蜂の巣",
+    kanji: "ハニカム",
     tagline: "Reversi on a hexagon of hexagons: six ways to bracket a run, six corners that never turn.",
     origin: "The flipping game moved onto the hexagon lattice, as the play-by-mail sites did under the name Hexversi. Every cell touches six others instead of eight, the centre is sealed, and the six discs round it are where the game begins. Our own board, drawn as a honeycomb rather than a grey grid.",
     inspiredBy: "Hexversi",

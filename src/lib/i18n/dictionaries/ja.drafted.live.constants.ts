@@ -7,6 +7,8 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  * Each row carries the reviewer's pass (`review`).
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
+/** The reviewer agent's pass over the three 2026-10-30 puzzles' phrases. */
+const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
 export const JA_DRAFTED_LIVE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   // A board that has stopped checking for moves
@@ -55,12 +57,12 @@ export const JA_DRAFTED_LIVE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "live.previewHive": {
     text: "蜂の巣の例です。実際には別の文字が出ます。",
     back: "An example of a beehive. Actually, other letters come up.",
-    ask: "Written on 2026-10-30 with Hachinosu; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "live.previewClue": {
     text: "この手がかりの例です。実際には別の国が出ます。",
     back: "An example of this clue. Actually, another country comes up.",
-    ask: "Written on 2026-10-30 with Kuniate; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "live.previewPuzzle": {
     text: "{puzzle}の盤面のプレビューです。まだ何も書き込まれていません。",
