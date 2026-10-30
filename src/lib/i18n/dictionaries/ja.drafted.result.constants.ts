@@ -7,6 +7,8 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  * Each row carries the reviewer's pass (`review`).
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
+/** The reviewer agent's pass over the 2026-10-30 moving-men phrases (Nine Men's Morris, Breakthrough, Lines of Action, Amazons). */
+const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
 export const JA_DRAFTED_RESULT: Partial<Record<PhraseKey, DraftedPhrase>> = {
   // The headline over a game that was decided between two colours
@@ -148,39 +150,39 @@ export const JA_DRAFTED_RESULT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "result.reached": {
-    text: "{who}が向こうの端に着きました。",
-    back: "{who} reached the far edge.",
-    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+    text: "{who}の駒が向こうの端に着きました。",
+    back: "{who}'s piece reached the far edge.",
+    review: AGENT_READ_2026_10_30,
   },
   "result.reachedYou": {
-    text: "向こうの端に着きました。",
-    back: "You reached the far edge.",
-    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+    text: "駒が向こうの端に着きました。",
+    back: "A piece reached the far edge.",
+    review: AGENT_READ_2026_10_30,
   },
   "result.joined": {
     text: "{who}が駒をすべて1つにつなげました。",
     back: "{who} joined all pieces into one.",
-    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "result.joinedYou": {
     text: "駒をすべて1つにつなげました。",
     back: "You joined all pieces into one.",
-    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "result.reduced": {
     text: "{who}が相手の駒を2つまで減らしました。",
     back: "{who} reduced the opponent's pieces to two.",
-    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "result.reducedYou": {
     text: "相手の駒を2つまで減らしました。",
     back: "You reduced the opponent's pieces to two.",
-    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "result.noProgressMilling": {
-    text: "駒を置くことも取ることもないまま、規則で認められている期間を超えました。",
-    back: "Without any piece being placed or taken, the period the rules allow was passed.",
-    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+    text: "規則で決められた手数のあいだ、駒を置くことも取ることもありませんでした。",
+    back: "For the number of moves the rules set, no piece was placed or taken.",
+    review: AGENT_READ_2026_10_30,
   },
   "result.noProgressPlacing": {
     text: "駒をすべて置き終えたあと、規則で認められている期間を超えて、駒を滑らせ続けました。",

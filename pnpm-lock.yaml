@@ -479,7 +479,7 @@ packages:
         optional: true
 
   '@johnmorrisdotca/houseki@file:../itsutsu-quick-wins-packages/johnmorrisdotca-houseki-0.4.2.tgz':
-    resolution: {integrity: sha512-1LAwWYaaYd1vAaanuT/CqqS58p5ySYYN7i9Ue2YUmLEg8ZDHspbLMa1fxC7w0q1keiOOZdqkAoklD+ZQiuzrjg==, tarball: file:../itsutsu-quick-wins-packages/johnmorrisdotca-houseki-0.4.2.tgz}
+    resolution: {integrity: sha512-C5DlvLKnXqAPMpV7KTgSZKRgd8GOXWpun/Y3WREeOGc6ES+k5xtwXuNjdR29N93xNYnGaTKZxVr1F4zfXnm2yA==, tarball: file:../itsutsu-quick-wins-packages/johnmorrisdotca-houseki-0.4.2.tgz}
     version: 0.4.2
     engines: {node: '>=22'}
 
@@ -551,7 +551,7 @@ packages:
     engines: {node: '>=22'}
 
   '@johnmorrisdotca/narabe@file:../itsutsu-quick-wins-packages/johnmorrisdotca-narabe-1.3.0.tgz':
-    resolution: {integrity: sha512-hqJI3cvuVUNRow1MU0FaNAKOeOkZxRT27XkUFgYnL4+hefmjQ48xs3TBJ+vxTXQ0/LO3+jm2kU+H2Q1Rvlvg3w==, tarball: file:../itsutsu-quick-wins-packages/johnmorrisdotca-narabe-1.3.0.tgz}
+    resolution: {integrity: sha512-em5y2xGl54xUGWGquQBnWoDIbH3PMQt041clLUQVlFJaLKLz1VKDHTEXTGU8vnYHYGK4B4CZT9zwum3ynPAebw==, tarball: file:../itsutsu-quick-wins-packages/johnmorrisdotca-narabe-1.3.0.tgz}
     version: 1.3.0
     engines: {node: '>=22'}
     hasBin: true

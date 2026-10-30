@@ -470,7 +470,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
   },
   breakthrough: {
     label: "Breakthrough",
-    kanji: "突破",
+    kanji: "ブレイクスルー",
     tagline: "Two rows of men each. Step forward, take on the diagonal, and be first to the far side.",
     inspiredBy: "Breakthrough",
     origin: "Dan Troyka's game of 2000, which won the 8×8 Game Design Competition the following year. It has a chess board and no chess in it: one kind of man and one rule for moving it.",
@@ -484,10 +484,10 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
   },
   linesOfAction: {
     label: "Lines of Action",
-    kanji: "連結",
+    kanji: "ラインズオブアクション",
     tagline: "A man moves as far as there are men on its line. Join all of yours to win.",
     inspiredBy: "Lines of Action",
-    origin: "Published in Sid Sackson's book A Gamut of Games in 1969, and a favourite of game-playing programs since. The rule that decides how far a man moves changes every time anything moves or is taken.",
+    origin: "Claude Soucie invented it, and Sid Sackson's book A Gamut of Games published it in 1969. It has been a favourite of game-playing programs since. The rule that decides how far a man moves changes every time anything moves or is taken.",
     rules: [
       "Each player has twelve men on two opposite edges. Black moves first.",
       "A man moves along a row, a column or a diagonal, exactly as many squares as there are men of either colour on that line.",
@@ -499,7 +499,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
   },
   amazons: {
     label: "Amazons",
-    kanji: "アマゾン",
+    kanji: "アマゾンズ",
     tagline: "Move a queen, then shoot an arrow. The side left with no move loses.",
     inspiredBy: "the Game of the Amazons",
     origin: "Walter Zamkauskas of Argentina made it in 1988. There is no taking and no luck: the board fills up with arrows until somebody has nowhere left to go, and much of the game is fencing off a room of your own.",
@@ -513,9 +513,9 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
   },
   nineMensMorris: {
     label: "Nine Men's Morris",
-    kanji: "モリス",
+    kanji: "ナインメンズモリス",
     tagline: "Lay nine men, then move them along the lines. Three in a line take one of your opponent's.",
-    origin: "One of the oldest board games still played. Boards for it are cut into the stones of medieval churches and cloisters across Europe, and Alfonso X's Book of Games described it in 1283.",
+    origin: "One of the oldest board games still played. Monks cut boards for it into the cloister seats of English cathedrals such as Norwich, Canterbury and Westminster Abbey, and Alfonso X's Book of Games described it in 1283.",
     alsoKnownAs: ["Mills", "Merels", "Mühle"],
     wikipedia: "Nine_men's_morris",
     rules: [

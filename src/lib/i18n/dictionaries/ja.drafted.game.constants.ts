@@ -7,6 +7,8 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  * Each row carries the reviewer's pass (`review`).
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
+/** The reviewer agent's pass over the 2026-10-30 moving-men phrases (Nine Men's Morris, Breakthrough, Lines of Action, Amazons). */
+const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
 export const JA_DRAFTED_GAME: Partial<Record<PhraseKey, DraftedPhrase>> = {
   // What each choice of threat reading, hints and history means
@@ -672,47 +674,47 @@ export const JA_DRAFTED_GAME: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "game.drawNoProgressMilling": {
     text: "50手ルールで引き分けです。駒を置くことも取ることもないまま、それぞれ{half}手が過ぎました。",
     back: "A draw by the fifty-move rule. {half} moves each passed with no piece placed or taken.",
-    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "game.pickMan": {
     text: "動かす駒を選びます。",
     back: "Choose a piece to move.",
-    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "game.pickQueen": {
     text: "動かすクイーンを選びます。",
     back: "Choose a queen to move.",
-    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "game.placeMover": {
     text: "進むマスを選ぶか、別の駒を選びます。",
     back: "Choose the square to go to, or choose another piece.",
-    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "game.shootPrompt": {
     text: "矢を放ちます。クイーンから線に沿って届くマスを押します。",
     back: "Shoot an arrow. Press a square reached along a line from the queen.",
-    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "game.winsByReached": {
-    text: "{who}が向こうの端に着いて勝ちました。",
-    back: "{who} won by reaching the far edge.",
-    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+    text: "{who}の駒が向こうの端に着いて勝ちました。",
+    back: "{who} won by a piece reaching the far edge.",
+    review: AGENT_READ_2026_10_30,
   },
   "game.winsByJoined": {
     text: "{who}が駒をすべてつなげて勝ちました。",
     back: "{who} won by joining all pieces.",
-    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "game.millPrompt": {
-    text: "ミルができました。相手の駒を1つ取ります。",
-    back: "A mill is made. Take one of the opponent's pieces.",
-    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+    text: "ミルができました。取る相手の駒を1つ選びます。",
+    back: "A mill is made. Choose one of the opponent's pieces to take.",
+    review: AGENT_READ_2026_10_30,
   },
   "game.winsByReduced": {
     text: "{who}の勝ちです。相手の駒が2つになりました。",
     back: "{who} wins. The opponent's pieces have become two.",
-    ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
+    review: AGENT_READ_2026_10_30,
   },
   "game.drawNoProgressPlacing": {
     text: "滑らせるルールによる引き分けです。最後の駒を置いてから{plies}手たちましたが、勝負はつきませんでした。",
