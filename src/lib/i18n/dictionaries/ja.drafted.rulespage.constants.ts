@@ -99,18 +99,18 @@ export const JA_DRAFTED_RULESPAGE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
   },
   "rulespage.board.breakthrough": {
-    text: "8×8で、それぞれの駒は手前の2列に並びます。",
-    back: "8×8, each side's pieces on the two nearest rows.",
+    text: "それぞれの駒は手前の2列に並びます。",
+    back: "Each side's pieces line up on the two nearest rows.",
     ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
   },
   "rulespage.board.linesOfAction": {
-    text: "8×8で、駒はそれぞれ12個です。黒は上下の辺、白は左右の辺に並び、四隅は空いています。",
-    back: "8×8 with twelve pieces each. Black on the top and bottom edges, white on the left and right, the corners empty.",
+    text: "駒はそれぞれ12個です。黒は上下の辺、白は左右の辺に並び、四隅は空いています。",
+    back: "Twelve pieces each. Black on the top and bottom edges, white on the left and right, the corners empty.",
     ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
   },
   "rulespage.board.amazons": {
-    text: "10×10で、クイーンはそれぞれ4つです。",
-    back: "10×10, with four queens each.",
+    text: "クイーンはそれぞれ4つで、両者とも同じように並びます。",
+    back: "Four queens each, lined up the same way on both sides.",
     ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
   },
   "rulespage.play.breakthroughStep": {
@@ -667,6 +667,11 @@ export const JA_DRAFTED_RULESPAGE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "脅威の読み、ヒント、勝率バーは使えません。ここには列がなく、あるのは石の一団、呼吸点、地だけです。",
     back: "The threat reading, hints and win-rate bar cannot be used. There are no lines here, only groups of stones, liberties and territory.",
     review: AGENT_READ,
+  },
+  "rulespage.house.readingOffMen": {
+    text: "脅威の読み取り、ヒント、勝率バーはオフです。ここには読むべき列はなく、動かす駒があるだけです。",
+    back: "The threat reading, hints and win-rate bar are off. There are no lines to read here, only pieces to move.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
   },
   "rulespage.house.readingOffMoving": {
     text: "脅威の読み、ヒント、勝率バーは使えません。石は置いたあとも動くので、列ごとの読みでは正しいことが分かりません。",

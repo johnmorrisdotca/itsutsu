@@ -24,7 +24,7 @@ export const VARIANT_COPY_JA_SMALL_BOARDS = {
       ["駒が3つになると、飛べるようになります。どの空いている点にも動かせます。", "When you are down to three pieces you can fly. You can move to any empty point."],
       ["相手の駒が2つになるか、相手が動けなくなると勝ちです。駒を置くことも取ることもないままそれぞれ50手が過ぎると引き分けで、これはこのサイト独自の決まりです。", "You win when the opponent has two pieces or cannot move. If fifty moves each pass with no piece placed or taken it is a draw, and this is this site's own rule."],
     ],
-    board: ["正方形が3つ入れ子になり、各辺の真ん中でつながった盤で、点は24あります。", "A board of three squares nested, joined at the middle of each side, with twenty-four points."],
+    board: ["角の点の隣は2つ、真ん中の四角の辺の中点の隣は4つです。あとで動ける余地のある点に置きます。", "A corner point has two neighbours, and the midpoint of a side of the middle square has four. Lay on points that leave room to move later."],
     review: NOT_YET_READ,
     ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it. Its Japanese name here is モリス: is that the right short name beside the English?",
   },

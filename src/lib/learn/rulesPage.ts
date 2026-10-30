@@ -371,7 +371,9 @@ export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAUL
     word(
       spec.analysis
         ? "rulespage.house.readingOn"
-        : spec.flips
+        : spec.movers !== null
+          ? "rulespage.house.readingOffMen"
+          : spec.flips
           ? "rulespage.house.readingOffFlips"
           : spec.camps || spec.chineseCheckers
             ? "rulespage.house.readingOffRace"

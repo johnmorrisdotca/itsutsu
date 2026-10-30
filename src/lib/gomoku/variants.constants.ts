@@ -480,7 +480,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
       "It takes only on the diagonal: step onto an enemy man diagonally ahead, and it is gone. A man straight ahead blocks the way.",
       "The first man to reach the far row wins. So does taking the other side's last man. A man only ever goes forward, so a game cannot be drawn.",
     ],
-    board: "8×8, with the men on its two nearest rows.",
+    board: "8×8. Keep men on your back row as long as you can: a man that has left it never comes back to guard it.",
   },
   linesOfAction: {
     label: "Lines of Action",
@@ -495,7 +495,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
       "Win by joining all your men into one group, touching along sides or corners. A move that joins both sides wins for the one who moved.",
       "A hundred moves each with nothing taken is a draw, which is this site's count and not the published rule.",
     ],
-    board: "8×8, with the corners empty.",
+    board: "8×8. Take with care: the fewer men the other side has, the fewer it has to join.",
   },
   amazons: {
     label: "Amazons",
@@ -509,7 +509,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
       "An arrow's square is gone for good. Nothing can stop on it or cross it. A queen may shoot back the way it came.",
       "A player who cannot move and shoot on their turn has lost. There are no draws.",
     ],
-    board: "10×10.",
+    board: "10×10. Early on, stand where your queens reach the most squares; later, fence off a room only they can get to, and count it.",
   },
   nineMensMorris: {
     label: "Nine Men's Morris",
@@ -525,7 +525,7 @@ export const RULE_VARIANT_DISPLAY: Record<RuleVariant, VariantCopy> = {
       "Down to three men, yours fly: a move can go to any empty point.",
       "You win when your opponent is down to two men, or has no move to make. Fifty moves each with no man laid or taken is a draw, which is this site's count and not an old rule.",
     ],
-    board: "Three squares, one inside another, joined at the middle of each side: twenty-four points.",
+    board: "A corner has two neighbours and the middle of the middle square's side has four. Lay where you will still have room to move.",
   },
   squareFour: {
     label: "Square Four",

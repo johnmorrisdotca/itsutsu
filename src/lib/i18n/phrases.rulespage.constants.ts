@@ -36,9 +36,9 @@ export const PHRASES_RULESPAGE = {
   "rulespage.object.breakthroughWin": "Be the first to get a man to the far row, or take the other side's last man.",
   "rulespage.object.linesOfActionWin": "Join all your men into one group, touching along sides or corners.",
   "rulespage.object.amazonsWin": "Leave your opponent with no move to make. There is no taking: the board fills with arrows until somebody has nowhere to go.",
-  "rulespage.board.breakthrough": "8×8, with each side's men on its two nearest rows.",
-  "rulespage.board.linesOfAction": "8×8. Twelve men each: black on the top and bottom edges, white on the left and right, with the corners empty.",
-  "rulespage.board.amazons": "10×10, with four queens each.",
+  "rulespage.board.breakthrough": "Each side's men fill its two nearest rows.",
+  "rulespage.board.linesOfAction": "Twelve men each: black on the top and bottom edges, white on the left and right, with the corners empty.",
+  "rulespage.board.amazons": "Four queens each, set out the same way on either side.",
   "rulespage.play.breakthroughStep": "A man steps one square forward, straight or on a diagonal, to an empty square. Pick a man, then the square it goes to.",
   "rulespage.play.breakthroughTake": "It takes only on the diagonal, by stepping onto an enemy man. A man straight ahead blocks it.",
   "rulespage.play.breakthroughEnd": "A man only ever goes forward, so a game always ends with a winner.",
@@ -190,6 +190,8 @@ export const PHRASES_RULESPAGE = {
     "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only pieces jumping.",
   "rulespage.house.readingOffGo":
     "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only groups, liberties and territory.",
+  "rulespage.house.readingOffMen":
+    "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines to read here, only men to move.",
   "rulespage.house.readingOffMoving":
     "The threat reading, hints and the chance-of-winning bar are switched off: stones move after they are placed, so a line-by-line reading says nothing true.",
   "rulespage.checkers.board":

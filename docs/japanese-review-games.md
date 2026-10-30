@@ -275,7 +275,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | game breakthrough: rule 2 | 駒は1マス前へ、まっすぐか斜めに、空いているマスへ進みます。 | A piece goes one square forward, straight or diagonally, to an empty square. | Drafted, unread |
 | game breakthrough: rule 3 | 取れるのは斜め前だけです。斜め前の相手の駒の上に進むと取れます。まっすぐ前にある駒には進めません。 | Only diagonally ahead can be taken. Going onto an opponent's piece diagonally ahead takes it. You cannot go onto a piece straight ahead. | Drafted, unread |
 | game breakthrough: rule 4 | 最初に向こうの端へ着いた駒の勝ちです。相手の最後の駒を取っても勝ちです。駒は前にしか進まないので、引き分けはありません。 | The first piece to reach the far edge wins. Taking the opponent's last piece also wins. Pieces only go forward, so there are no draws. | Drafted, unread |
-| game breakthrough: board advice | 8×8で、駒は手前の2列に並びます。 | 8×8, with pieces lined up on the two nearest rows. | Drafted, unread |
+| game breakthrough: board advice | 8×8です。一番手前の列の駒はできるだけ残します。離れた駒は守りに戻れません。 | 8×8. Keep the pieces on your nearest row as long as you can. A piece that has left cannot come back to guard. | Drafted, unread |
 | game linesOfAction: tagline | 駒は、その線上の駒の数だけ動きます。自分の駒をすべてつなげると勝ちです。 | A piece moves as many as the pieces on its line. Joining all your pieces wins. | Question, unread |
 | game linesOfAction: origin | 1969年にシド・サクソンの本『A Gamut of Games』で紹介され、以来ゲームを指すプログラムにも好まれてきました。駒がどれだけ動くかを決める決まりは、何かが動いたり取られたりするたびに変わります。 | Introduced in Sid Sackson's book A Gamut of Games in 1969, and liked by game-playing programs since. The rule deciding how far a piece moves changes whenever anything moves or is taken. | Drafted, unread |
 | game linesOfAction: rule 1 | 各自12個の駒を、向かい合う2辺に持ちます。黒が先に動かします。 | Each player has twelve pieces on two facing edges. Black moves first. | Drafted, unread |
@@ -283,14 +283,14 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | game linesOfAction: rule 3 | 自分の駒は飛び越えられますが、相手の駒は飛び越えられません。相手の駒の上に止まると取れます。 | You can jump your own pieces but not the opponent's. Stopping on an opponent's piece takes it. | Drafted, unread |
 | game linesOfAction: rule 4 | 自分の駒をすべて、辺か角で触れ合う1つのかたまりにすると勝ちです。1手で両者ともつながったときは、動かした側の勝ちです。 | Making all your pieces one group touching at sides or corners wins. When one move joins both, the side that moved wins. | Drafted, unread |
 | game linesOfAction: rule 5 | 何も取らないままそれぞれ100手が過ぎると引き分けです。これはこのサイト独自の回数で、公表されたルールではありません。 | If a hundred moves each pass with nothing taken it is a draw. This is this site's own count, not the published rule. | Drafted, unread |
-| game linesOfAction: board advice | 8×8で、四隅は空いています。 | 8×8, with the four corners empty. | Drafted, unread |
+| game linesOfAction: board advice | 8×8です。取るときは慎重に。相手の駒が減るほど、つなげる駒も減ります。 | 8×8. Take carefully. The fewer the opponent's pieces, the fewer it has to join. | Drafted, unread |
 | game amazons: tagline | クイーンを動かし、矢を放ちます。動けなくなったほうの負けです。 | Move a queen and shoot an arrow. The side that cannot move loses. | Question, unread |
 | game amazons: origin | アルゼンチンのワルテル・サムカウスカスが1988年に作りました。取ることも運もありません。盤が矢で埋まり、誰かの行き場がなくなるまで続き、自分の部屋を囲い込むことが大きな狙いになります。 | Walter Zamkauskas of Argentina made it in 1988. There is no taking and no luck. It goes on until the board fills with arrows and someone has nowhere to go, and fencing in a room of your own is a big aim. | Drafted, unread |
 | game amazons: rule 1 | 各自4つのクイーンを持ちます。白が先に動かします。 | Each player has four queens. White moves first. | Drafted, unread |
 | game amazons: rule 2 | 1手は2つのことからなります。クイーンを1つ、行、列、斜めに沿って何も越えずに好きなだけ動かし、次に止まった場所から同じように矢を放ちます。 | A move is two things. Move one queen any distance along a row, column or diagonal crossing nothing, then shoot an arrow from where it stopped in the same way. | Drafted, unread |
 | game amazons: rule 3 | 矢の落ちたマスはずっと使えません。止まることも越えることもできません。クイーンは来た方向へ矢を放つこともできます。 | A square an arrow fell on can never be used. Nothing can stop on it or cross it. A queen can also shoot back the way it came. | Drafted, unread |
 | game amazons: rule 4 | 自分の番に動いて矢を放てない人の負けです。引き分けはありません。 | A person who cannot move and shoot on their turn loses. There are no draws. | Drafted, unread |
-| game amazons: board advice | 10×10です。 | 10×10. | Drafted, unread |
+| game amazons: board advice | 10×10です。序盤はクイーンが多くのマスに届く場所に立ち、後半は自分のクイーンだけが入れる部屋を囲って数えます。 | 10×10. Early on stand where the queens reach many squares; later fence in a room only your queens can enter and count it. | Drafted, unread |
 | game go: tagline | 盤の広い範囲を相手の色より多く囲む。石の一団の最後の呼吸点をふさぐと取れる。 | Surround more of the board than the other colour. You capture a group of stones by taking its last liberty. | Agent 2026-10-06 |
 | game go: origin | 元の形のまま遊ばれている最古のゲームです。中国で生まれて少なくとも2,500年の歴史があり、世界で最も古い文書の遊戯規則の対象でもあります。7世紀までに日本へ伝わり、世界の多くの国で使われる「Go」という名は、日本語の「囲碁」を縮めたものです。 | The oldest game still played in its original form. It comes from China, is at least 2,500 years old, and is the subject of the earliest written rules of any game anywhere. It reached Japan by the 7th century, and the name "Go" used in much of the world is a shortening of the Japanese 囲碁. | Agent 2026-10-06 |
 | game go: rule 1 | 交互に、空いている交点へ石を1つずつ置きます。先に打つのは必ず黒で、石は一度置いたら動きません。 | Taking turns, you place one stone on an empty intersection. Black always plays first, and stones do not move once placed. | Agent 2026-10-06 |
@@ -327,7 +327,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | game nineMensMorris: rule 3 | 9つすべて置いたあとは、1手で自分の駒を1つ、線に沿って隣の空いている点へ動かします。駒を選び、次に動かす先を選びます。 | After all nine are placed, a move moves one of your pieces along a line to the empty point next to it. Choose a piece, then where it goes. | Drafted, unread |
 | game nineMensMorris: rule 4 | 駒が3つになると、飛べるようになります。どの空いている点にも動かせます。 | When you are down to three pieces you can fly. You can move to any empty point. | Drafted, unread |
 | game nineMensMorris: rule 5 | 相手の駒が2つになるか、相手が動けなくなると勝ちです。駒を置くことも取ることもないままそれぞれ50手が過ぎると引き分けで、これはこのサイト独自の決まりです。 | You win when the opponent has two pieces or cannot move. If fifty moves each pass with no piece placed or taken it is a draw, and this is this site's own rule. | Drafted, unread |
-| game nineMensMorris: board advice | 正方形が3つ入れ子になり、各辺の真ん中でつながった盤で、点は24あります。 | A board of three squares nested, joined at the middle of each side, with twenty-four points. | Drafted, unread |
+| game nineMensMorris: board advice | 角の点の隣は2つ、真ん中の四角の辺の中点の隣は4つです。あとで動ける余地のある点に置きます。 | A corner point has two neighbours, and the midpoint of a side of the middle square has four. Lay on points that leave room to move later. | Drafted, unread |
 | game tictactoe: tagline | 3×3の盤で3つ並べる。 | Make three in a row on a 3×3 board. | Agent 2026-10-06 |
 | game tictactoe: origin | 誰もが知っているゲームです。 | The game everybody knows. | Agent 2026-10-06 |
 | game tictactoe: rule 2 | 縦・横・斜めのどの向きでも、3つ並べば勝ちです。 | Three in a row in any direction (vertical, horizontal or diagonal) wins. | Agent 2026-10-06 |
