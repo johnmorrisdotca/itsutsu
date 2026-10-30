@@ -400,8 +400,8 @@ describe("the tour covers the site", () => {
     // a set that is complete and unpaid.
     // The puzzles count: "every game played" means every puzzle solved too.
     expect(XP_VARIANTS_TO_PLAY).toBe(RULE_VARIANT_LIST.length + PUZZLE_KIND_LIST.length);
-    // Forty-nine since Nine Men's Morris on 2026-10-30.
-    expect(XP_VARIANTS_TO_PLAY).toBe(49 + PUZZLE_KIND_LIST.length);
+    // Fifty-two since Nine Men's Morris, Breakthrough, Lines of Action and Amazons on 2026-10-30.
+    expect(XP_VARIANTS_TO_PLAY).toBe(52 + PUZZLE_KIND_LIST.length);
     // Nine since Other opened with Gomoji on 2026-09-25 — the families a game is played from, which Party games, recording nothing, is not.
     // Ten since Logic puzzles opened with Bridges on 2026-09-28, eleven since Mahjong and twelve since Cards on 2026-09-29, thirteen since Cubes on 2026-09-30, twelve since Mahjong and Cubes became Tiles on 2026-10-01, eleven since Tiles was dissolved into Logic puzzles and Party games the same day.
     // Twelve since Pencil puzzles opened with Shikaku and five more on 2026-10-05.

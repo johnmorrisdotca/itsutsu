@@ -147,6 +147,26 @@ export const JA_DRAFTED_RESULT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "For longer than the rules allow, no piece was taken and no ordinary piece moved.",
     review: AGENT_READ,
   },
+  "result.reached": {
+    text: "{who}が向こうの端に着きました。",
+    back: "{who} reached the far edge.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "result.reachedYou": {
+    text: "向こうの端に着きました。",
+    back: "You reached the far edge.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "result.joined": {
+    text: "{who}が駒をすべて1つにつなげました。",
+    back: "{who} joined all pieces into one.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "result.joinedYou": {
+    text: "駒をすべて1つにつなげました。",
+    back: "You joined all pieces into one.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
   "result.reduced": {
     text: "{who}が相手の駒を2つまで減らしました。",
     back: "{who} reduced the opponent's pieces to two.",

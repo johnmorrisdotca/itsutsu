@@ -88,6 +88,9 @@ export const GAME_POINTS_WEIGHT: Record<RuleVariant, Weight> = {
   trapThree: { weight: 0.3 },
   squareFour: { weight: 0.3 },
   nineMensMorris: { weight: 0.5 },
+  breakthrough: { weight: 0.5 },
+  linesOfAction: { weight: 0.6 },
+  amazons: { weight: 0.6 },
   makerBreaker: { weight: 0.4 },
 };
 

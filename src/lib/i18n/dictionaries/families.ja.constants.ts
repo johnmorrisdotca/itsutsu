@@ -55,10 +55,11 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
   },
   territory: {
     blurb: [
-      "列を作る必要はありません。終わったときにどこに立っているかで勝負が決まります。相手より広く盤を囲むか、自分の二辺をつなぐか、相手より先にすべての駒を向かい側の陣に入れます。",
-      "There are no lines to make. The game is decided by where you stand when it ends: surround more of the board than the other side, connect your own two sides, or get all your pieces into the far camp before the other side does.",
+      "列を作る必要はありません。終わったときにどこに立っているかで勝負が決まります。相手より広く盤を囲むか、自分の駒や二辺をつなぐか、先に向こう側へ着くか、相手の行き場をなくします。",
+      "There are no lines to make. The game is decided by where you stand when it ends: surround more of the board than the other side, connect your own pieces or two sides, reach the far side first, or take away the other side's places to go.",
     ],
-    review: AGENT_READ_2026_10_06,
+    review: undefined as unknown as CopyReview,
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
   },
   "small-boards": {
     blurb: [

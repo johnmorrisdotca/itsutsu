@@ -17,6 +17,8 @@ const SCENES: Record<
     size: number;
     moves: [number, number][];
     twists?: [number, boolean][];
+    /** Amazons: the square each slide's queen then shoots at, one to a slide. */
+    arrows?: [number, number][];
     colours?: ("black" | "white")[];
     /** The race games: pieces already down, so the scene is a run of moves, the opener first. */
     slides?: [[number, number], [number, number]][];
@@ -43,6 +45,27 @@ const SCENES: Record<
   twistFive: { size: 6, moves: [[0, 0], [5, 5], [1, 1]], twists: [[0, true], [3, false], [1, true]] },
   twistFour: { size: 4, moves: [[0, 0], [3, 3]], twists: [[0, true], [3, true]] },
   trapThree: { size: 5, moves: [[1, 1], [3, 3], [1, 3], [3, 1]] },
+  // A few moves in, so that each picture shows what its men do.
+  breakthrough: {
+    size: 8,
+    moves: [],
+    slides: [
+      [[6, 3], [5, 3]], [[1, 4], [2, 4]], [[5, 3], [4, 3]], [[2, 4], [3, 4]],
+      [[6, 1], [5, 2]], [[1, 6], [2, 5]],
+    ],
+  },
+  linesOfAction: {
+    size: 8,
+    moves: [],
+    slides: [[[0, 2], [2, 2]], [[3, 0], [3, 2]], [[7, 4], [5, 4]], [[4, 7], [4, 5]]],
+  },
+  amazons: {
+    size: 10,
+    moves: [],
+    opener: "White",
+    slides: [[[9, 3], [5, 3]], [[0, 3], [4, 3]], [[9, 6], [6, 6]], [[0, 6], [3, 6]]],
+    arrows: [[5, 6], [4, 6], [6, 3], [3, 3]],
+  },
   // Men laid on the three squares, and black one short of a mill along the top.
   nineMensMorris: { size: 7, moves: [[0, 0], [6, 0], [0, 3], [6, 3], [1, 1], [5, 5], [3, 0], [3, 6], [2, 3], [4, 3]] },
   squareFour: { size: 5, moves: [[0, 0], [4, 4], [0, 1], [4, 3], [1, 0], [3, 4], [2, 2], [3, 0]] },
@@ -169,6 +192,8 @@ test.describe("game screenshots", () => {
         const colour = index % 2 === 0 ? first : first === "Black" ? "White" : "Black";
         await page.getByRole("button", { name: `${COLUMN_LETTERS[from[1]]}${scene.size - from[0]}, ${colour} stone` }).click();
         await page.getByRole("button", { name: new RegExp(`^${COLUMN_LETTERS[to[1]]}${scene.size - to[0]}, empty$`) }).click();
+        const arrow = scene.arrows?.[index];
+        if (arrow !== undefined) await page.getByRole("button", { name: new RegExp(`^${COLUMN_LETTERS[arrow[1]]}${scene.size - arrow[0]}, empty$`) }).click();
       }
       const board = page.locator(".aspect-square").first();
       await expect(board).toBeVisible();

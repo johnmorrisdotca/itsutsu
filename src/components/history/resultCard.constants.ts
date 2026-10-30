@@ -26,6 +26,8 @@ export const RESULT_REASONS: Record<
   blocked: { about: "loser", said: "result.blocked", you: "result.blockedYou" },
   territory: { about: "winner", said: "result.territory", you: "result.territoryYou" },
   reduced: { about: "winner", said: "result.reduced", you: "result.reducedYou" },
+  reached: { about: "winner", said: "result.reached", you: "result.reachedYou" },
+  joined: { about: "winner", said: "result.joined", you: "result.joinedYou" },
   /*
    * A draw's reasons, in the board's own words (`GAME_COPY.draw…`) less the
    * "Draw." the card's headline has already said.

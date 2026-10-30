@@ -674,6 +674,36 @@ export const JA_DRAFTED_GAME: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "A draw by the fifty-move rule. {half} moves each passed with no piece placed or taken.",
     ask: "Written on 2026-10-30 with Nine Men's Morris; nobody has read it.",
   },
+  "game.pickMan": {
+    text: "動かす駒を選びます。",
+    back: "Choose a piece to move.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "game.pickQueen": {
+    text: "動かすクイーンを選びます。",
+    back: "Choose a queen to move.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "game.placeMover": {
+    text: "進むマスを選ぶか、別の駒を選びます。",
+    back: "Choose the square to go to, or choose another piece.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "game.shootPrompt": {
+    text: "矢を放ちます。クイーンから線に沿って届くマスを押します。",
+    back: "Shoot an arrow. Press a square reached along a line from the queen.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "game.winsByReached": {
+    text: "{who}が向こうの端に着いて勝ちました。",
+    back: "{who} won by reaching the far edge.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "game.winsByJoined": {
+    text: "{who}が駒をすべてつなげて勝ちました。",
+    back: "{who} won by joining all pieces.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
   "game.millPrompt": {
     text: "ミルができました。相手の駒を1つ取ります。",
     back: "A mill is made. Take one of the opponent's pieces.",

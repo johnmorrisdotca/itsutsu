@@ -4,11 +4,15 @@ Generated from `src/lib/i18n/dictionaries/*.ja.*` by `src/lib/i18n/gameCopyRevie
 
 Each row is one Japanese line, what it literally says in English, and who has read it. A game's, family's or colour's name is its kanji beside the English one and is not repeated here. The attribution paragraphs name each puzzle by its own kanji, written here as the puzzle's key.
 
-501 lines, 460 distinct. 0 read by a person, 493 by the reviewer agent, 8 drafted and unread.
+523 lines, 482 distinct. 0 read by a person, 492 by the reviewer agent, 31 drafted and unread.
 
 ## Open for a person
 
+- **game breakthrough: tagline**: Written on 2026-10-30 with the moving games; nobody has read it.
+- **game linesOfAction: tagline**: Written on 2026-10-30 with the moving games; nobody has read it.
+- **game amazons: tagline**: Written on 2026-10-30 with the moving games; nobody has read it.
 - **game nineMensMorris: tagline**: Written on 2026-10-30 with Nine Men's Morris; nobody has read it. Its Japanese name here is モリス: is that the right short name beside the English?
+- **family territory: blurb**: Written on 2026-10-30 with the moving games; nobody has read it.
 - **family small-boards: blurb**: The clause about Morris was added on 2026-10-30; nobody has read it.
 - **family pencil: blurb**: The last clause, about the one line, was added on 2026-10-30 with Ichifude; nobody has read it.
 - **family table-cards: blurb**: Card-game terms (cribbage, War, hearts) are standard katakana and kanji names, but a native card player should confirm them.
@@ -265,6 +269,28 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | game poolCheckers: rule 4 | ふつうの駒がキングになるのは、その手が奥の段で終わったときだけです。そこからさらに跳ばなければならない駒は、ふつうの駒のままです。キングは飛び、どれだけ離れた駒でも取って、その先の空いているマスのどこにでも着地できます。 | An ordinary piece is crowned a king only if its move ends on the far row. A piece that must jump on from there stays an ordinary piece. A king flies, captures a piece at any distance, and can land on any empty square beyond it. | Agent 2026-10-06 |
 | game poolCheckers: rule 5 | 動かせる駒がなくなった、または駒が1つも残っていない側の負けです。キング3個は、キング1個が13手を指す前に取らなければならず、そうでなければ引き分けです。また、ここのチェッカーと同じく、キングだけが動き何も取られないまま各自40手が過ぎれば引き分けです。これはこのサイトの規則で、協会の規則ではありません。 | A side with no piece that can move, or with no pieces left, has lost. Three kings must capture a lone king before it has made 13 moves, or the game is a draw. Also, as in the checkers here, 40 moves each with only kings moving and nothing captured is a draw. This is this site's rule, not the association's. | Agent 2026-10-06 |
 | game poolCheckers: board advice | 8×8で、濃い色のマスだけを使います。64マスのうち32マスで、各自の手前の左隅は濃い色のマスです。各自12個のふつうの駒が最初の3段を埋めます。 | 8×8, played on the dark squares only: 32 of the 64 squares, with a dark square in each player's near left-hand corner. Each side's 12 ordinary pieces fill the first three rows. | Agent 2026-10-06 |
+| game breakthrough: tagline | それぞれ2列の駒。前へ進み、斜め前の駒を取り、先に向こうの端へ着きます。 | Two rows of pieces each. Go forward, take diagonally ahead, and reach the far edge first. | Question, unread |
+| game breakthrough: origin | ダン・トロイカが2000年に作り、翌年の8×8ゲーム設計コンテストで優勝したゲームです。チェス盤を使いますが、チェスの要素はなく、駒は1種類、動かし方の決まりも1つです。 | A game Dan Troyka made in 2000, which won the 8×8 game design contest the next year. It uses a chess board but has nothing of chess; there is one kind of piece and one rule for moving it. | Drafted, unread |
+| game breakthrough: rule 1 | 各自2列の駒を持ちます。黒が先に、盤の上へ向かって動かします。 | Each player has two rows of pieces. Black moves first, up the board. | Drafted, unread |
+| game breakthrough: rule 2 | 駒は1マス前へ、まっすぐか斜めに、空いているマスへ進みます。 | A piece goes one square forward, straight or diagonally, to an empty square. | Drafted, unread |
+| game breakthrough: rule 3 | 取れるのは斜め前だけです。斜め前の相手の駒の上に進むと取れます。まっすぐ前にある駒には進めません。 | Only diagonally ahead can be taken. Going onto an opponent's piece diagonally ahead takes it. You cannot go onto a piece straight ahead. | Drafted, unread |
+| game breakthrough: rule 4 | 最初に向こうの端へ着いた駒の勝ちです。相手の最後の駒を取っても勝ちです。駒は前にしか進まないので、引き分けはありません。 | The first piece to reach the far edge wins. Taking the opponent's last piece also wins. Pieces only go forward, so there are no draws. | Drafted, unread |
+| game breakthrough: board advice | 8×8で、駒は手前の2列に並びます。 | 8×8, with pieces lined up on the two nearest rows. | Drafted, unread |
+| game linesOfAction: tagline | 駒は、その線上の駒の数だけ動きます。自分の駒をすべてつなげると勝ちです。 | A piece moves as many as the pieces on its line. Joining all your pieces wins. | Question, unread |
+| game linesOfAction: origin | 1969年にシド・サクソンの本『A Gamut of Games』で紹介され、以来ゲームを指すプログラムにも好まれてきました。駒がどれだけ動くかを決める決まりは、何かが動いたり取られたりするたびに変わります。 | Introduced in Sid Sackson's book A Gamut of Games in 1969, and liked by game-playing programs since. The rule deciding how far a piece moves changes whenever anything moves or is taken. | Drafted, unread |
+| game linesOfAction: rule 1 | 各自12個の駒を、向かい合う2辺に持ちます。黒が先に動かします。 | Each player has twelve pieces on two facing edges. Black moves first. | Drafted, unread |
+| game linesOfAction: rule 2 | 駒は行、列、斜めのいずれかに沿って、その線上にある両者の駒の数とちょうど同じマス数だけ動きます。 | A piece moves along a row, column or diagonal exactly as many squares as there are pieces of both sides on that line. | Drafted, unread |
+| game linesOfAction: rule 3 | 自分の駒は飛び越えられますが、相手の駒は飛び越えられません。相手の駒の上に止まると取れます。 | You can jump your own pieces but not the opponent's. Stopping on an opponent's piece takes it. | Drafted, unread |
+| game linesOfAction: rule 4 | 自分の駒をすべて、辺か角で触れ合う1つのかたまりにすると勝ちです。1手で両者ともつながったときは、動かした側の勝ちです。 | Making all your pieces one group touching at sides or corners wins. When one move joins both, the side that moved wins. | Drafted, unread |
+| game linesOfAction: rule 5 | 何も取らないままそれぞれ100手が過ぎると引き分けです。これはこのサイト独自の回数で、公表されたルールではありません。 | If a hundred moves each pass with nothing taken it is a draw. This is this site's own count, not the published rule. | Drafted, unread |
+| game linesOfAction: board advice | 8×8で、四隅は空いています。 | 8×8, with the four corners empty. | Drafted, unread |
+| game amazons: tagline | クイーンを動かし、矢を放ちます。動けなくなったほうの負けです。 | Move a queen and shoot an arrow. The side that cannot move loses. | Question, unread |
+| game amazons: origin | アルゼンチンのワルテル・サムカウスカスが1988年に作りました。取ることも運もありません。盤が矢で埋まり、誰かの行き場がなくなるまで続き、自分の部屋を囲い込むことが大きな狙いになります。 | Walter Zamkauskas of Argentina made it in 1988. There is no taking and no luck. It goes on until the board fills with arrows and someone has nowhere to go, and fencing in a room of your own is a big aim. | Drafted, unread |
+| game amazons: rule 1 | 各自4つのクイーンを持ちます。白が先に動かします。 | Each player has four queens. White moves first. | Drafted, unread |
+| game amazons: rule 2 | 1手は2つのことからなります。クイーンを1つ、行、列、斜めに沿って何も越えずに好きなだけ動かし、次に止まった場所から同じように矢を放ちます。 | A move is two things. Move one queen any distance along a row, column or diagonal crossing nothing, then shoot an arrow from where it stopped in the same way. | Drafted, unread |
+| game amazons: rule 3 | 矢の落ちたマスはずっと使えません。止まることも越えることもできません。クイーンは来た方向へ矢を放つこともできます。 | A square an arrow fell on can never be used. Nothing can stop on it or cross it. A queen can also shoot back the way it came. | Drafted, unread |
+| game amazons: rule 4 | 自分の番に動いて矢を放てない人の負けです。引き分けはありません。 | A person who cannot move and shoot on their turn loses. There are no draws. | Drafted, unread |
+| game amazons: board advice | 10×10です。 | 10×10. | Drafted, unread |
 | game go: tagline | 盤の広い範囲を相手の色より多く囲む。石の一団の最後の呼吸点をふさぐと取れる。 | Surround more of the board than the other colour. You capture a group of stones by taking its last liberty. | Agent 2026-10-06 |
 | game go: origin | 元の形のまま遊ばれている最古のゲームです。中国で生まれて少なくとも2,500年の歴史があり、世界で最も古い文書の遊戯規則の対象でもあります。7世紀までに日本へ伝わり、世界の多くの国で使われる「Go」という名は、日本語の「囲碁」を縮めたものです。 | The oldest game still played in its original form. It comes from China, is at least 2,500 years old, and is the subject of the earliest written rules of any game anywhere. It reached Japan by the 7th century, and the name "Go" used in much of the world is a shortening of the Japanese 囲碁. | Agent 2026-10-06 |
 | game go: rule 1 | 交互に、空いている交点へ石を1つずつ置きます。先に打つのは必ず黒で、石は一度置いたら動きません。 | Taking turns, you place one stone on an empty intersection. Black always plays first, and stones do not move once placed. | Agent 2026-10-06 |
@@ -467,7 +493,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | family flips: blurb | 終わるまで、石は誰のものとも決まりません。相手の色の石の並びを挟んでひっくり返すか、2つ組を盤から取ります。 | Until the end, no stone is anyone's for certain. You bracket a run of the other colour and turn it over, or take a pair off the board. | Agent 2026-10-06 |
 | family strange-boards: blurb | ふつうとは違う動きをする盤です。つながる端、最初からある岩、途中で落ちてくる岩、順番に出てくる駒、そして回る区画があります。 | Boards that behave differently from the usual: edges that join, rocks there from the start, rocks that fall partway through, pieces that come out in order, and sections that turn. | Agent 2026-10-06 |
 | family checkers: blurb | 列も、順番に出てくる駒も、石でいっぱいの盤もありません。相手の駒を飛び越えて取り除くか、自分が動かせる駒をなくすかの勝負です。 | There are no lines, no pieces coming out in order and no board full of stones. It comes down to jumping over the other side's pieces and removing them, or being left with no piece that can move. | Agent 2026-10-06 |
-| family territory: blurb | 列を作る必要はありません。終わったときにどこに立っているかで勝負が決まります。相手より広く盤を囲むか、自分の二辺をつなぐか、相手より先にすべての駒を向かい側の陣に入れます。 | There are no lines to make. The game is decided by where you stand when it ends: surround more of the board than the other side, connect your own two sides, or get all your pieces into the far camp before the other side does. | Agent 2026-10-06 |
+| family territory: blurb | 列を作る必要はありません。終わったときにどこに立っているかで勝負が決まります。相手より広く盤を囲むか、自分の駒や二辺をつなぐか、先に向こう側へ着くか、相手の行き場をなくします。 | There are no lines to make. The game is decided by where you stand when it ends: surround more of the board than the other side, connect your own pieces or two sides, reach the far side first, or take away the other side's places to go. | Question, unread |
 | family small-boards: blurb | 最後まで読み切れるゲーム、してはいけないことが鍵になるゲーム、そして駒を置き、動かし、取り合うモリスです。 | Games you can read through to the end, games where the key is what you must not do, and Morris, where pieces are placed, moved and taken from each other. | Agent 2026-10-06, native read wanted |
 | family numbers: blurb | 1人で解くパズルです。盤面と、いくつかの手がかりから、答えを導きます。時計と競って、自分の力で解きます。 | Puzzles solved alone. From a board and a few clues you work out the answer. You solve it by yourself, against the clock. | Agent 2026-10-06 |
 | family logic: blurb | 1人で筋道を立てて解くパズルです。橋、パイプ、絵、石、ビー玉、麻雀牌、そして回して揃えるキューブがあります。 | Puzzles solved alone by reasoning. There are bridges, pipes, pictures, stones, marbles, mahjong tiles and a cube to turn and match. | Agent 2026-10-06 |

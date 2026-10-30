@@ -83,6 +83,81 @@ export const JA_DRAFTED_RULESPAGE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Even if a side keeps pieces at home to block, it loses the moment every other square of its camp has been filled by the opponent.",
     review: AGENT_READ,
   },
+  "rulespage.object.breakthroughWin": {
+    text: "先に駒を向こうの端へ着けるか、相手の最後の駒を取ります。",
+    back: "Be first to get a piece to the far edge, or take the opponent's last piece.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.object.linesOfActionWin": {
+    text: "自分の駒をすべて、辺か角で触れ合う1つのかたまりにします。",
+    back: "Make all your pieces one group touching at sides or corners.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.object.amazonsWin": {
+    text: "相手が動けないようにします。取ることはなく、誰かの行き場がなくなるまで盤が矢で埋まっていきます。",
+    back: "Make the opponent unable to move. There is no taking; the board fills with arrows until someone has nowhere to go.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.board.breakthrough": {
+    text: "8×8で、それぞれの駒は手前の2列に並びます。",
+    back: "8×8, each side's pieces on the two nearest rows.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.board.linesOfAction": {
+    text: "8×8で、駒はそれぞれ12個です。黒は上下の辺、白は左右の辺に並び、四隅は空いています。",
+    back: "8×8 with twelve pieces each. Black on the top and bottom edges, white on the left and right, the corners empty.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.board.amazons": {
+    text: "10×10で、クイーンはそれぞれ4つです。",
+    back: "10×10, with four queens each.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.play.breakthroughStep": {
+    text: "駒は1マス前へ、まっすぐか斜めに、空いているマスへ進みます。駒を選び、次に進むマスを選びます。",
+    back: "A piece goes one square forward, straight or diagonally, to an empty square. Choose a piece, then the square.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.play.breakthroughTake": {
+    text: "取れるのは斜め前だけで、相手の駒の上に進んで取ります。まっすぐ前の駒には進めません。",
+    back: "Only diagonally ahead can be taken, by going onto the opponent's piece. You cannot go onto a piece straight ahead.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.play.breakthroughEnd": {
+    text: "駒は前にしか進まないので、必ず勝負がつきます。",
+    back: "Pieces only go forward, so a result always comes.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.play.linesOfActionMove": {
+    text: "駒は行、列、斜めのいずれかに沿って、その線上にある両者の駒の数とちょうど同じマス数だけ動きます。",
+    back: "A piece moves along a row, column or diagonal exactly as many squares as there are pieces of both sides on that line.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.play.linesOfActionJump": {
+    text: "自分の駒は飛び越えられますが、相手の駒は飛び越えられません。相手の駒の上に止まると取れます。",
+    back: "You can jump your own pieces, not the opponent's. Stopping on an opponent's piece takes it.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.play.linesOfActionEnd": {
+    text: "1手で両者ともつながったときは動かした側の勝ちです。何も取らないままそれぞれ100手が過ぎると引き分けで、この回数はこのサイト独自のものです。",
+    back: "When one move joins both, the side that moved wins. A hundred moves each with nothing taken is a draw, and this count is this site's own.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.play.amazonsMove": {
+    text: "1手は2つのことからなります。まずクイーンを1つ、行、列、斜めに沿って何も越えずに好きなだけ動かします。",
+    back: "A move is two things. First move one queen any distance along a row, column or diagonal crossing nothing.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.play.amazonsArrow": {
+    text: "次に止まった場所から同じように矢を放ちます。矢の落ちたマスはずっと使えず、止まることも越えることもできません。来た方向へ放つこともできます。",
+    back: "Then shoot an arrow from where it stopped in the same way. A square an arrow fell on can never be used; nothing can stop on it or cross it. You can also shoot back the way you came.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  "rulespage.play.amazonsEnd": {
+    text: "パスも引き分けもありません。自分の番に動いて矢を放てない人の負けです。",
+    back: "There is no pass and no draw. A person who cannot move and shoot on their turn loses.",
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
   "rulespage.object.millsWin": {
     text: "相手の駒を2つまで減らすか、相手が動けないようにします。",
     back: "Reduce the opponent's pieces to two, or make the opponent unable to move.",

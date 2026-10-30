@@ -151,8 +151,9 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Territory and races",
     kanji: "陣地と競走",
-    blurb: "No lines to make. Win by where you stand when it ends: surround more of the board than the other side, join your own two edges, or get every piece into the far camp before they do.",
-    games: ["go", "hex", "halma", "chineseCheckers"],
+    blurb: "No lines to make. Win by where you stand when it ends: surround more of the board than the other side, join your own men or your two edges, reach the far side first, or leave the other side nowhere to go.",
+    /* Breakthrough, Lines of Action and Amazons (2026-10-30): a race to the far row, a group to join and a room to fence off. None of them is a line. */
+    games: ["go", "hex", "halma", "chineseCheckers", "breakthrough", "linesOfAction", "amazons"],
   },
   {
     key: "small-boards",

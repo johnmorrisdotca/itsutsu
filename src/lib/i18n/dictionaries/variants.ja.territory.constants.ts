@@ -1,6 +1,9 @@
-import { AGENT_READ_2026_10_06 } from "../copyJa.types";
+import { AGENT_READ_2026_10_06, type CopyReview } from "../copyJa.types";
 import type { RuleVariant } from "../../gomoku/gomoku.types";
 import type { VariantCopyJa } from "./variants.ja.types";
+
+/** Written on 2026-10-30 and read by nobody yet: the coverage test fails until each is reviewed and stamped. */
+const NOT_YET_READ = undefined as unknown as CopyReview;
 
 /**
  * Japanese copy for the Territory and races family (`variants.constants.ts`
@@ -8,6 +11,46 @@ import type { VariantCopyJa } from "./variants.ja.types";
  * liberty, コウ, コミ, 天元 and 星; 陣 for a camp in the racing games.
  */
 export const VARIANT_COPY_JA_TERRITORY = {
+  breakthrough: {
+    tagline: ["それぞれ2列の駒。前へ進み、斜め前の駒を取り、先に向こうの端へ着きます。", "Two rows of pieces each. Go forward, take diagonally ahead, and reach the far edge first."],
+    origin: ["ダン・トロイカが2000年に作り、翌年の8×8ゲーム設計コンテストで優勝したゲームです。チェス盤を使いますが、チェスの要素はなく、駒は1種類、動かし方の決まりも1つです。", "A game Dan Troyka made in 2000, which won the 8×8 game design contest the next year. It uses a chess board but has nothing of chess; there is one kind of piece and one rule for moving it."],
+    rules: [
+      ["各自2列の駒を持ちます。黒が先に、盤の上へ向かって動かします。", "Each player has two rows of pieces. Black moves first, up the board."],
+      ["駒は1マス前へ、まっすぐか斜めに、空いているマスへ進みます。", "A piece goes one square forward, straight or diagonally, to an empty square."],
+      ["取れるのは斜め前だけです。斜め前の相手の駒の上に進むと取れます。まっすぐ前にある駒には進めません。", "Only diagonally ahead can be taken. Going onto an opponent's piece diagonally ahead takes it. You cannot go onto a piece straight ahead."],
+      ["最初に向こうの端へ着いた駒の勝ちです。相手の最後の駒を取っても勝ちです。駒は前にしか進まないので、引き分けはありません。", "The first piece to reach the far edge wins. Taking the opponent's last piece also wins. Pieces only go forward, so there are no draws."],
+    ],
+    board: ["8×8で、駒は手前の2列に並びます。", "8×8, with pieces lined up on the two nearest rows."],
+    review: NOT_YET_READ,
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  linesOfAction: {
+    tagline: ["駒は、その線上の駒の数だけ動きます。自分の駒をすべてつなげると勝ちです。", "A piece moves as many as the pieces on its line. Joining all your pieces wins."],
+    origin: ["1969年にシド・サクソンの本『A Gamut of Games』で紹介され、以来ゲームを指すプログラムにも好まれてきました。駒がどれだけ動くかを決める決まりは、何かが動いたり取られたりするたびに変わります。", "Introduced in Sid Sackson's book A Gamut of Games in 1969, and liked by game-playing programs since. The rule deciding how far a piece moves changes whenever anything moves or is taken."],
+    rules: [
+      ["各自12個の駒を、向かい合う2辺に持ちます。黒が先に動かします。", "Each player has twelve pieces on two facing edges. Black moves first."],
+      ["駒は行、列、斜めのいずれかに沿って、その線上にある両者の駒の数とちょうど同じマス数だけ動きます。", "A piece moves along a row, column or diagonal exactly as many squares as there are pieces of both sides on that line."],
+      ["自分の駒は飛び越えられますが、相手の駒は飛び越えられません。相手の駒の上に止まると取れます。", "You can jump your own pieces but not the opponent's. Stopping on an opponent's piece takes it."],
+      ["自分の駒をすべて、辺か角で触れ合う1つのかたまりにすると勝ちです。1手で両者ともつながったときは、動かした側の勝ちです。", "Making all your pieces one group touching at sides or corners wins. When one move joins both, the side that moved wins."],
+      ["何も取らないままそれぞれ100手が過ぎると引き分けです。これはこのサイト独自の回数で、公表されたルールではありません。", "If a hundred moves each pass with nothing taken it is a draw. This is this site's own count, not the published rule."],
+    ],
+    board: ["8×8で、四隅は空いています。", "8×8, with the four corners empty."],
+    review: NOT_YET_READ,
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
+  amazons: {
+    tagline: ["クイーンを動かし、矢を放ちます。動けなくなったほうの負けです。", "Move a queen and shoot an arrow. The side that cannot move loses."],
+    origin: ["アルゼンチンのワルテル・サムカウスカスが1988年に作りました。取ることも運もありません。盤が矢で埋まり、誰かの行き場がなくなるまで続き、自分の部屋を囲い込むことが大きな狙いになります。", "Walter Zamkauskas of Argentina made it in 1988. There is no taking and no luck. It goes on until the board fills with arrows and someone has nowhere to go, and fencing in a room of your own is a big aim."],
+    rules: [
+      ["各自4つのクイーンを持ちます。白が先に動かします。", "Each player has four queens. White moves first."],
+      ["1手は2つのことからなります。クイーンを1つ、行、列、斜めに沿って何も越えずに好きなだけ動かし、次に止まった場所から同じように矢を放ちます。", "A move is two things. Move one queen any distance along a row, column or diagonal crossing nothing, then shoot an arrow from where it stopped in the same way."],
+      ["矢の落ちたマスはずっと使えません。止まることも越えることもできません。クイーンは来た方向へ矢を放つこともできます。", "A square an arrow fell on can never be used. Nothing can stop on it or cross it. A queen can also shoot back the way it came."],
+      ["自分の番に動いて矢を放てない人の負けです。引き分けはありません。", "A person who cannot move and shoot on their turn loses. There are no draws."],
+    ],
+    board: ["10×10です。", "10×10."],
+    review: NOT_YET_READ,
+    ask: "Written on 2026-10-30 with the moving games; nobody has read it.",
+  },
   go: {
     tagline: [
       "盤の広い範囲を相手の色より多く囲む。石の一団の最後の呼吸点をふさぐと取れる。",

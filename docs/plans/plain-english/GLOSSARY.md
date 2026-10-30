@@ -395,6 +395,8 @@ them (`points/ladder.ts`, `points/gamePoints.ts`).
 | draw · fill | "still to ..." | the verb of the thing: a rectangle is drawn, a cell filled |
 | Akari · Loop · Hitori | the games' names | Akari and Hitori are the puzzles' own names; Loop is plain English for Slitherlink, and since Kazu 2.0.0 Kazu's own name, and says "known elsewhere as ..." on its rules page and nowhere else (`loop` is its address) |
 | Nine Men's Morris · man · mill · take · fly | the game's name and its words | "man" and "mill" are the game's own, and the status line says "Take one of your opponent's men" |
+| Breakthrough · Lines of Action · man · far row · group | the games' names and their words | "man" for what moves, as in checkers; "group" for men joined along sides or corners |
+| Amazons · queen · arrow | the game's name and its words | "queen" and "arrow" are the game's own; a square an arrow lands on is "gone", never "burned" |
 | Tsumiki · shape · tray · line · stone | the game's name and its screen | "shape" for what is laid, never "piece" or "block"; "line" for a full row or column |
 | Hachinosu · hive · centre letter · goal · Language | the game's name and its screen | our own name; a hive's tile row is "Language", and its target is the goal, never "rank" |
 | Kuniate · Outline · Flag · Capital · Clue | the game's name and the choices on its set-up | our own name; "Clue" is the tile row's heading, never "Board" or "Size" there |

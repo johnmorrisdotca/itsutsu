@@ -95,6 +95,8 @@ function ToPlay({ session }: { session: GameSession }) {
     if (state.winBy === WIN_REASONS.trap) return GAME_COPY.winsByTrap(who, names[loserSeat].trim() || seatName(say, loserSeat));
     if (state.winBy === WIN_REASONS.square) return GAME_COPY.winsBySquare(who);
     if (state.winBy === WIN_REASONS.reduced) return GAME_COPY.winsByReduced(who);
+    if (state.winBy === WIN_REASONS.reached) return GAME_COPY.winsByReached(who);
+    if (state.winBy === WIN_REASONS.joined) return GAME_COPY.winsByJoined(who);
     if (state.winBy === WIN_REASONS.count) {
       const discs = discCount(state.board);
       return say.say("gamescreen.winsOnDiscs", { who, black: String(discs.black), white: String(discs.white) });
@@ -253,15 +255,22 @@ function VariantLine({ session }: { session: GameSession }) {
     }
     if (state.pendingTwist) lines.push(GAME_COPY.twistPrompt);
     if (state.pendingRemoval) lines.push(GAME_COPY.millPrompt);
+    if (state.pendingShot !== null) lines.push(GAME_COPY.shootPrompt);
     else if (inMovePhase(state)) {
       lines.push(
         session.selected === null
-          ? spec.camps || spec.chineseCheckers
-            ? GAME_COPY.pickRacer
-            : GAME_COPY.pickPiece
-          : spec.camps || spec.chineseCheckers
-            ? GAME_COPY.placeRacer
-            : GAME_COPY.placePiece,
+          ? spec.movers === "amazons"
+            ? GAME_COPY.pickQueen
+            : spec.movers !== null
+              ? GAME_COPY.pickMan
+              : spec.camps || spec.chineseCheckers
+                ? GAME_COPY.pickRacer
+                : GAME_COPY.pickPiece
+          : spec.movers !== null
+            ? GAME_COPY.placeMover
+            : spec.camps || spec.chineseCheckers
+              ? GAME_COPY.placeRacer
+              : GAME_COPY.placePiece,
       );
     } else if (spec.placement === PLACEMENTS.drop) lines.push(GAME_COPY.dropPrompt);
   }

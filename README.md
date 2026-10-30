@@ -547,7 +547,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Turn and take | 8 |
 | Strange boards | 8 |
 | Checkers | 6 |
-| Territory and races | 4 |
+| Territory and races | 7 |
 | Small boards | 6 |
 | Numbers | 3 |
 | Logic puzzles | 3 |
@@ -721,6 +721,8 @@ word that uses all seven; a hive is drawn from a six-letter word and one more le
 **Tsumiki** 積み木 (2026-10-30, the package's `tsumiki` entry) is the Houseki family's sixth: three shapes on an eight by eight board, every full row and column clearing, in 64 levels, three lessons, a Daily and free play (`docs/plans/houseki/README.md`).
 
 **Nine Men's Morris** (2026-10-30, Narabe's `rules/mills.ts`) is at home in Small boards, which it fills at eight: nine men laid and then moved along the lines of three squares, three in a line taking one of the other side's, a side down to three flying, and a side down to two or with no move losing. The taking is the second half of the turn: while it is owed, `legalPoints` and `playMove` read the point played as the man to take, so the record, the replay, the live route and the programs needed nothing new.
+
+**Breakthrough**, **Lines of Action** and **Amazons** (2026-10-30, Narabe's `rules/movers.ts`) are at home in Territory and races, each its own game on one row of `spec.movers`. Breakthrough's men step forward and take on the diagonal, first to the far row; a man in Lines of Action moves as far as there are men on its line, and joining all of yours wins; an Amazons turn moves a queen and then shoots an arrow from where it landed, and the arrow's square is gone for good. The arrow is a second press and a second `playMove`, the way a mill's taking is, so no migration and no change to a bot file. The programs play all three in the browser.
 
 **Meikyuu** 迷宮 (2026-10-02, `src/lib/puzzles/meikyuu/`, plan in
 `docs/plans/meikyuu/README.md`): a maze to draw a line through with a finger or the
@@ -1072,6 +1074,9 @@ move.
 | **Honeycomb** 蜂の巣 | Reversi on a hexagon of hexagons: six ways to bracket a run, six corners that never turn. | hexagon of hexagons |
 | **Halma** ハルマ | A race: step, or jump chains over any piece, and fill the far corner first. Nothing is ever captured. | 16×16, 10×10, 8×8 |
 | **Chinese Checkers** ダイヤモンドゲーム | Ten pieces, a six-pointed star, and the point opposite yours to fill. Jumps chain and turn corners. | 17×17 star |
+| **Breakthrough** 突破 | Two rows of men each: step forward, take on the diagonal, and be first to the far side. | 8×8 |
+| **Lines of Action** 連結 | A man moves as far as there are men on its line. Join all of yours to win. | 8×8 |
+| **Amazons** アマゾン | Move a queen, then shoot an arrow. The side left with no move loses. | 10×10 |
 | **Hex** ヘックス | Join your own two sides with an unbroken chain. A full board always has exactly one winner, so there are no draws — which is why the swap opening is offered. | 11, 13, 19 |
 | **Checkers** チェッカー | Jump the other side's pieces off the board. Capturing is forced, a man crowned partway through a chain stops there, and a king moves both ways. | 8×8 |
 | **Russian Draughts** ロシアチェッカー | Flying kings on 8×8: men take backward, any capture may be chosen, and a man crowned mid-capture takes on as a king. | 8×8 |

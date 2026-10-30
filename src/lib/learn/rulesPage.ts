@@ -135,7 +135,13 @@ export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAUL
   const word = (key: PhraseKey, vars?: Vars) => say.say(key, vars);
 
   const object: string[] = [];
-  if (spec.mills) {
+  if (spec.movers === "breakthrough") {
+    object.push(word("rulespage.object.breakthroughWin"));
+  } else if (spec.movers === "linesOfAction") {
+    object.push(word("rulespage.object.linesOfActionWin"));
+  } else if (spec.movers === "amazons") {
+    object.push(word("rulespage.object.amazonsWin"));
+  } else if (spec.mills) {
     object.push(word("rulespage.object.millsWin"));
     object.push(word("rulespage.object.millsMill"));
   } else if (spec.connects) {
@@ -215,6 +221,9 @@ export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAUL
   if (spec.wrap === "both") board.push(word("rulespage.board.wrapBoth"));
   if (spec.wormholes > 0) board.push(word("rulespage.board.wormholes"));
   if (spec.mills) board.push(word("rulespage.board.mills"));
+  if (spec.movers === "breakthrough") board.push(word("rulespage.board.breakthrough"));
+  if (spec.movers === "linesOfAction") board.push(word("rulespage.board.linesOfAction"));
+  if (spec.movers === "amazons") board.push(word("rulespage.board.amazons"));
   if (spec.pieces !== null && !spec.mills) board.push(word("rulespage.board.pieces", { pieces: say.count("rulespage.count.piece", spec.pieces) }));
   if (spec.connects) board.push(word("rulespage.board.connects"));
   if (spec.camps) board.push(word("rulespage.board.camps"));
@@ -257,7 +266,19 @@ export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAUL
   }
 
   const play: string[] = [];
-  if (spec.mills) {
+  if (spec.movers === "breakthrough") {
+    play.push(word("rulespage.play.breakthroughStep"));
+    play.push(word("rulespage.play.breakthroughTake"));
+    play.push(word("rulespage.play.breakthroughEnd"));
+  } else if (spec.movers === "linesOfAction") {
+    play.push(word("rulespage.play.linesOfActionMove"));
+    play.push(word("rulespage.play.linesOfActionJump"));
+    play.push(word("rulespage.play.linesOfActionEnd"));
+  } else if (spec.movers === "amazons") {
+    play.push(word("rulespage.play.amazonsMove"));
+    play.push(word("rulespage.play.amazonsArrow"));
+    play.push(word("rulespage.play.amazonsEnd"));
+  } else if (spec.mills) {
     play.push(word("rulespage.play.millsLay"));
     play.push(word("rulespage.play.millsTake"));
     play.push(word("rulespage.play.millsMove"));
@@ -315,7 +336,7 @@ export function rulesPageFor(variant: RuleVariant, say: Speaker = speaker(DEFAUL
     play.push(word(spec.captureSizes.length > 1 ? "rulespage.play.capturesBoth" : "rulespage.play.capturesPair"));
   }
   if (spec.lineClear) play.push(word("rulespage.play.lineClear"));
-  if (spec.flips || spec.camps || spec.connects || spec.checkers || spec.chineseCheckers || spec.go || spec.mills) {
+  if (spec.flips || spec.camps || spec.connects || spec.checkers || spec.chineseCheckers || spec.go || spec.mills || spec.movers !== null) {
     // Said above; a full board is only the usual way for both to be stuck, a race has no full board, checkers ends with pieces gone, and Go ends on two passes, not a full board.
   } else if (spec.misere) {
     if (spec.placement === PLACEMENTS.drop) play.push(word("rulespage.play.misereDrop"));
