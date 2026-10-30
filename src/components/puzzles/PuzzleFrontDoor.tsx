@@ -89,8 +89,8 @@ export async function PuzzleFrontDoor({ kind }: { kind: PuzzleKind }) {
                 <Suspense fallback={<DailyWordButtonsShell kind={kind} framed={false} />}>
                   <DailyWordButtonsLive kind={kind} framed={false} />
                 </Suspense>
-              ) : kind === PUZZLE_KINDS.kuniate ? (
-                /* A Kuniate's day is three countries, one for each way of asking, so three links. */
+              ) : kind === PUZZLE_KINDS.kuniate || kind === PUZZLE_KINDS.hachinosu ? (
+                /* A Kuniate's day is three countries, one for each clue, and a Hachinosu's three hives, one for each language, so three links. */
                 <div className="flex flex-col gap-1" data-testid="game-daily-ways">
                   {sizesOffered(kind).map((way) => (
                     <Link key={way} href={joinQuery(playPath(kind), `?size=${way}&level=${spec.defaultLevel}&${DAILY_PARAM}=1`)} className="text-center text-sm font-medium underline underline-offset-4" data-testid="game-daily" data-way={way}>

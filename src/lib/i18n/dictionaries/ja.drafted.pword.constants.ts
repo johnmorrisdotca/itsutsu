@@ -9,9 +9,115 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
 
+const HACHINOSU_DRAFTED = "Written on 2026-10-30 with Hachinosu; nobody has read it.";
 const KUNIATE_DRAFTED = "Written on 2026-10-30 with Kuniate; nobody has read it.";
 
 export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
+  "pword.hachinosu.press": {
+    text: "文字 {letter}",
+    back: "Letter {letter}",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.pressCentre": {
+    text: "真ん中の文字 {letter}",
+    back: "Centre letter {letter}",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.howTo": {
+    text: "文字を押すか入力して、Enterを押します。どの言葉にも{letter}が要ります。",
+    back: "Press or enter the letters and press Enter. Every word needs {letter}.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.tooShort": {
+    text: "短すぎます。言葉は4文字以上です。",
+    back: "Too short. A word is four letters or more.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.needsCentre": {
+    text: "真ん中の文字{letter}が要ります。",
+    back: "It needs the centre letter {letter}.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.notInHive": {
+    text: "蜂の巣にない文字が入っています。",
+    back: "It contains a letter not in the beehive.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.notListed": {
+    text: "その言葉は一覧にありません。",
+    back: "That word is not on the list.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.already": {
+    text: "その言葉はもう見つけています。",
+    back: "You have already found that word.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.delete": {
+    text: "1文字消す",
+    back: "Delete one letter",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.shuffle": {
+    text: "並べ替える",
+    back: "Rearrange",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.enter": {
+    text: "決定",
+    back: "Decide",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.points": {
+    text: "{goal}点中{points}点",
+    back: "{points} points of {goal}",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.noWords": {
+    text: "まだ言葉はありません。",
+    back: "No words yet.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.missed": {
+    text: "見つけなかった、よく使う言葉",
+    back: "Commonly used words you did not find",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.refuse.notHive": {
+    text: "与えられたものが蜂の巣になっていません。",
+    back: "What was given is not a beehive.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.refuse.notWords": {
+    text: "答えが言葉の一覧になっていません。",
+    back: "The answer is not a list of words.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.refuse.notInHive": {
+    text: "蜂の巣にない文字を使っているか、真ん中の文字がない言葉があります。",
+    back: "A word uses a letter not in the beehive, or lacks the centre letter.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.refuse.notListed": {
+    text: "一覧にない言葉があります。",
+    back: "There is a word not on the list.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.refuse.noList": {
+    text: "言葉の一覧が読み込まれていません。",
+    back: "The word list is not loaded.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.refuse.goesOn": {
+    text: "目標に届いたあとも言葉が続いています。",
+    back: "Words continue after reaching the goal.",
+    ask: HACHINOSU_DRAFTED,
+  },
+  "pword.hachinosu.refuse.short": {
+    text: "言葉が目標に届いていません。",
+    back: "The words do not reach the goal.",
+    ask: HACHINOSU_DRAFTED,
+  },
   "pword.kuniate.placeholder": {
     text: "国名を入力",
     back: "Type a country name",

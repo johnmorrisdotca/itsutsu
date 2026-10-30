@@ -138,6 +138,8 @@ export const PUZZLE_PRICING: Record<PuzzleKind, Pricing> = {
   jirai: { how: "size", rungs: { 7: 50, 9: 65, 12: 95, 16: 110, 32: 125 } },
   // Ichifude (`ichifude/`, 2026-10-30), rungs spaced by the squares a line has to fill: 25, 36, 49 and 64.
   ichifude: { how: "size", rungs: { 5: 50, 6: 70, 7: 95, 8: 125 } },
+  // A Hachinosu's size is its language (`hachinosu/`), one hive whichever, so the rungs sit close: the level is what makes it harder.
+  hachinosu: { how: "size", rungs: { 1: 50, 2: 55, 3: 60 } },
   // A Kuniate's size is the clue it gives (`kuniate/`), one country whichever, so the rungs sit close: the level is most of what makes it harder. A capital says the least about where to look.
   kuniate: { how: "size", rungs: { 1: 50, 2: 60, 3: 70 } },
   kumimoji: { how: "tiles", full: TILES },

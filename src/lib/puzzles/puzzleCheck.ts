@@ -25,6 +25,7 @@ import { isBackwardsGivens } from "./gomoji/backwardsSeed";
 import { hiddenOfPlay } from "./gomoji/backwardsPlay";
 import { isDailyPoolWord } from "./dailyWords/dailyPools";
 import { checkIchifude } from "./ichifude/check";
+import { checkHachinosu } from "./hachinosu/check";
 import { checkKoushi } from "./koushi/check";
 import { checkKuniate } from "./kuniate/check";
 import { checkNumbers } from "./kazu";
@@ -116,6 +117,9 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "ichifude":
       // The line, walked in one pass: every square once, each beside the last, the numbers in order from the first place to the last.
       return checkIchifude(size, givens, answer);
+    case "hachinosu":
+      // The words handed in, one pass: on the list, of the hive's letters with its centre, and worth its goal by the last and not before.
+      return checkHachinosu(size, givens, answer);
     case "kuniate":
       // The guesses, each a place once, ending on the hidden country and not before.
       return checkKuniate(size, givens, answer, "found");

@@ -66,6 +66,8 @@ export function cellsFilled(kind: PuzzleKind, size: number, givens: string): num
   if (isPencilKind(kind)) return pencilEngine(kind).work(size, givens);
   // A Jirai's work is the safe squares its opening leaves covered.
   if (kind === "jirai") return jiraiWork(givens);
+  // A Hachinosu's work is its seven letters, whatever was made of them: what it asks is written in its goal, not its size.
+  if (kind === "hachinosu") return 7;
   // A Kuniate's work is one country named, however it was asked: its answer is not a grid to fill.
   if (kind === "kuniate") return 3;
   if (kind === "bridges") return [...givens.slice(0, area)].reduce((total, cell) => total + (cell === "." ? 0 : Number(cell) || 0), 0);

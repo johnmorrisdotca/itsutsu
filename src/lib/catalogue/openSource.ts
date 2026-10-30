@@ -60,6 +60,7 @@ const BY_GAME: Partial<Record<GameKey, OpenSourcePackage>> = {
   moreOrLess: "kazu",
   towers: "kazu",
   kuniate: "chizu",
+  hachinosu: "kotoba",
   shikaku: "kazu",
   akari: "kazu",
   loop: "kazu",

@@ -4,7 +4,7 @@ Generated from `src/lib/i18n/dictionaries/puzzles.ja.*` by `src/lib/i18n/puzzleC
 
 Each row is one Japanese line, what it literally says in English, and who has read it. A puzzle's name is its kanji beside the English one, and the names of levels, sizes and chips that sit beside a kanji are shown as the kanji to a Japanese reader, so neither is repeated here. A line with a number or a name in it has `{0}`, `{1}` where the figure goes, in the order the screen gives them; a line that reads differently at 0, at 1 or at a kind is shown once for each, with the figure it is for in braces.
 
-886 lines, 816 distinct. 0 read by a person, 870 by the reviewer agent, 16 drafted and unread.
+902 lines, 831 distinct. 0 read by a person, 878 by the reviewer agent, 24 drafted and unread.
 
 ## Open for a person
 
@@ -18,6 +18,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 - **puzzle regions**: The English origin and last rule name other places' titles for this puzzle. The Japanese keeps the names the English gives in Latin letters and adds no Japanese brand name (TERMS.md): is that how John wants it?
 - **puzzle ichifude**: Written on 2026-10-30 with Ichifude; nobody has read it. 一筆 usually reads ippitsu or hitofude: is Ichifude acceptable as the English name beside it?
 - **puzzle kuniate**: Written on 2026-10-30 with Kuniate; nobody has read it.
+- **puzzle hachinosu**: Written on 2026-10-30 with Hachinosu; nobody has read it.
 
 ## Every line
 
@@ -333,6 +334,14 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | puzzle kuniate: rules[2] | はずれると、その場所が答えからどれだけ離れているかと、そこからどちらへ進めばよいかが示されます。 | When you miss, you are shown how far that place is from the answer and which way to go from there. | Question, unread |
 | puzzle kuniate: rules[3] | 今日のパズルは誰にとっても同じで、手がかりごとに別の国です。それ以外は、番号ごとに新しい国が出ます。 | Today's puzzle is the same for everybody, and is a different country for each kind of clue. Otherwise a new country comes with each number. | Question, unread |
 | puzzle kuniate: board | 形は国の形だけを見せます。旗はその国の旗を見せます。首都は首都の名前を見せます。初級はよく知られた国、中級はそれより多くの国、上級は世界の195か国のどれかです。 | Shape shows only the country's shape. Flag shows that country's flag. Capital shows the name of the capital. Easy is well-known countries, medium more countries than that, and hard any of the world's 195 countries. | Question, unread |
+| puzzle hachinosu: tagline | 7つの文字で言葉を作ります。真ん中の文字は必ず使います。 | Make words from seven letters. Always use the centre letter. | Question, unread |
+| puzzle hachinosu: inspiredBy | 7文字の蜂の巣で言葉を作るパズル | the puzzle of making words from a beehive of seven letters | Question, unread |
+| puzzle hachinosu: origin | 1文字を6文字で囲んだ輪から言葉を作るのは、新聞でおなじみになった言葉のパズルです。蜂の巣はハチの巣のことです。このサイトの蜂の巣は、自前のコードと、自前のオープンソースの単語リストKotobaで作っています。Kotobaは各言語の本物の辞書をもとにしています。 | Making words from a ring of six letters round one is a word puzzle that newspapers made familiar. 蜂の巣 is a bee's nest. The hives on this site are made with our own code and our own open-source word lists, Kotoba, which are based on real dictionaries of each language. | Question, unread |
+| puzzle hachinosu: rules[0] | 蜂の巣の7文字で、4文字以上の言葉を作ります。どの言葉にも真ん中の文字を使い、同じ文字は何回使ってもかまいません。 | With the seven letters of the beehive, make words of four letters or more. Use the centre letter in every word; the same letter may be used any number of times. | Question, unread |
+| puzzle hachinosu: rules[1] | 4文字の言葉は1点です。それより長い言葉は、文字の数だけ点になります。 | A four-letter word is one point. A longer word is as many points as it has letters. | Question, unread |
+| puzzle hachinosu: rules[2] | 目標の点に届くと、その蜂の巣は終わりです。よく使う言葉だけでも必ず届き、一覧にあるほかの言葉も数えます。 | Reaching the goal points ends that beehive. Commonly used words alone will always reach it, and other words on the list also count. | Question, unread |
+| puzzle hachinosu: rules[3] | 今日のパズルは、言語ごとに誰にとっても同じ蜂の巣です。それ以外は、番号ごとに新しい蜂の巣が出ます。 | Today's puzzle is the same beehive for everybody in each language. Otherwise a new beehive comes with each number. | Question, unread |
+| puzzle hachinosu: board | 英語、フランス語、ドイツ語から選びます。アクセント記号とウムラウトは省きます。初級はよく使う言葉の点数の約3分の1、中級は半分近く、上級は5分の3で終わります。 | Choose from English, French or German. Accent marks and umlauts are left out. Easy finishes at about a third of the points of the commonly used words, medium at nearly half, and hard at three fifths. | Question, unread |
 | level names: easy.blurb | どの手も、見るだけで見つかります。試す必要はありません。 | Every step can be found by looking; nothing has to be tried. | Agent 2026-10-06 |
 | level names: medium.blurb | 見るだけでほとんど進みますが、どこかで1つ試して確かめる必要があります。 | Looking gets you most of the way; somewhere you have to try one thing and see. | Agent 2026-10-06 |
 | level names: hard.blurb | 何かを試して確かめる場所が、2か所以上あります。 | More than one place where you have to try something and see. | Agent 2026-10-06 |
@@ -345,6 +354,9 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | clocks: fox.blurb | 3分からのカウントダウンです。時間切れになると、解けないまま終わり、そのときの状態が記録されます。 | Three minutes, counting down. Out of time ends it unsolved, and it is kept as it stood. | Agent 2026-10-06 |
 | clocks: rabbit.label | 兎 | Rabbit | Agent 2026-10-06 |
 | clocks: rabbit.blurb | 1分からのカウントダウンです。時間切れになると、解けないまま終わり、そのときの状態が記録されます。 | One minute, counting down. Out of time ends it unsolved, and it is kept as it stood. | Agent 2026-10-06 |
+| level blurbs: hachinosu.easy | 小さめの蜂の巣で、点数の約3分の1で終わります。 | A smaller beehive, finished at about a third of the points. | Agent 2026-10-06 |
+| level blurbs: hachinosu.medium | 点数の半分近くで終わります。 | Finished at nearly half of the points. | Agent 2026-10-06 |
+| level blurbs: hachinosu.hard | 大きめの蜂の巣で、点数の5分の3で終わります。 | A bigger beehive, finished at three fifths of the points. | Agent 2026-10-06 |
 | level blurbs: kuniate.easy | よく知られた国です。人口の多い国とヨーロッパの国が中心です。 | Well-known countries. Mainly countries with many people, and the countries of Europe. | Agent 2026-10-06 |
 | level blurbs: kuniate.medium | 多くの人が聞いたことのある、百か国あまりです。 | The hundred or so countries many people have heard of. | Agent 2026-10-06 |
 | level blurbs: kuniate.hard | 世界の195か国のどれかです。 | Any of the world's 195 countries. | Agent 2026-10-06 |
@@ -396,6 +408,11 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | level blurbs: koushi.easy | 8回の入れ替えで解けます。使えるのは13回で、いちばん身近な単語です。 | Solvable in 8 swaps, with 13 to do it in, and the commonest words. | Agent 2026-10-06 |
 | level blurbs: koushi.medium | 10回の入れ替えで解けます。使えるのは15回で、いちばん身近な単語です。 | Solvable in 10 swaps, with 15 to do it in, and the commonest words. | Agent 2026-10-06 |
 | level blurbs: koushi.hard | 12回の入れ替えで解けます。使えるのは17回で、もっと広い単語のリストです。 | Solvable in 12 swaps, with 17 to do it in, and a wider list of words. | Agent 2026-10-06 |
+| card sizes: hachinosu.legend | 言語 | Language | Agent 2026-10-06 |
+| card sizes: hachinosu.heading | 言語 | Languages | Agent 2026-10-06 |
+| card sizes: hachinosu.word{1} | 英語 | English | Agent 2026-10-06 |
+| card sizes: hachinosu.word{2} | フランス語 | French | Agent 2026-10-06 |
+| card sizes: hachinosu.word{3} | ドイツ語 | German | Agent 2026-10-06 |
 | card sizes: kuniate.legend | 手がかり | Clue | Agent 2026-10-06 |
 | card sizes: kuniate.heading | 手がかり | Clues | Agent 2026-10-06 |
 | card sizes: kuniate.word{1} | 形 | Outline | Agent 2026-10-06 |

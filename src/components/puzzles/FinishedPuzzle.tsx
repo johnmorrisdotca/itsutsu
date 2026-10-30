@@ -36,6 +36,7 @@ import { TsunagiGrid } from "./TsunagiGrid";
 import { TILE_PICTURE_BOX } from "./kumimoji.constants";
 import { bridgesCellWords, pencilCopy, pictureCellWords } from "./gridWords";
 import { PuzzleGrid } from "./PuzzleGrid";
+import { HachinosuFinished } from "./hachinosu/HachinosuFinished";
 import { IchifudeBoard } from "./ichifude/IchifudeBoard";
 import { ichifudeStepWord } from "./ichifude/ichifudeWords";
 import { checkIchifude } from "@/lib/puzzles/ichifude/check";
@@ -199,6 +200,16 @@ export function FinishedPuzzle({
       <Focused story={story} hydrated={hydrated} testId="solve-board" state="word">
         <div className="mx-auto w-full" data-focus-board>
           <WordReplay kind={kind} size={size} givens={givens} guesses={guesses} level={level} headStart={headStart} style={style} position={{ at: wordAt, go: setWordAt }} animate />
+        </div>
+      </Focused>
+    );
+  }
+
+  if (kind === "hachinosu") {
+    return (
+      <Focused story={story} hydrated={hydrated} testId="solve-board" state={answer === null ? "dealt" : "finished"}>
+        <div className="mx-auto w-full" data-focus-board>
+          <HachinosuFinished givens={givens} answer={answer} />
         </div>
       </Focused>
     );

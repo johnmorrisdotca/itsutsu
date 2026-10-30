@@ -1,3 +1,4 @@
+import { HACHINOSU_SIZE_NAMES } from "../../puzzles/hachinosu/hachinosu.constants";
 import { KUNIATE_SIZE_NAMES } from "../../puzzles/kuniate/kuniate.constants";
 import { AGENT_READ_2026_10_06, type JaCases, type JaLine, type JaNode } from "../copyJa.types";
 import { KUMIMOJI_HANDS, KUMIMOJI_WILDS } from "../../puzzles/kumimoji/tiles.constants";
@@ -104,6 +105,11 @@ export const JIRAI_LEVEL_BLURBS_JA: Record<PuzzleLevel, JaLine> = {
 
 /** `PUZZLE_LEVEL_BLURBS`: what a level means for the kinds that mean something other than "how much has to be tried". */
 export const PUZZLE_LEVEL_BLURBS_JA = {
+  hachinosu: {
+    easy: ["小さめの蜂の巣で、点数の約3分の1で終わります。", "A smaller beehive, finished at about a third of the points."],
+    medium: ["点数の半分近くで終わります。", "Finished at nearly half of the points."],
+    hard: ["大きめの蜂の巣で、点数の5分の3で終わります。", "A bigger beehive, finished at three fifths of the points."],
+  },
   kuniate: {
     easy: ["よく知られた国です。人口の多い国とヨーロッパの国が中心です。", "Well-known countries. Mainly countries with many people, and the countries of Europe."],
     medium: ["多くの人が聞いたことのある、百か国あまりです。", "The hundred or so countries many people have heard of."],
@@ -243,6 +249,11 @@ function mazeSizeJa(size: number): string {
 
 /** `CARD_SIZE_WORDS`: what a card game's size is, in the heading over its tiles and in a sentence. */
 export const CARD_SIZE_WORDS_JA = {
+  hachinosu: {
+    legend: ["言語", "Language"],
+    heading: ["言語", "Languages"],
+    word: bySize([1, 2, 3], (size) => [HACHINOSU_SIZE_NAMES[size]!.kanji, HACHINOSU_SIZE_NAMES[size]!.label]),
+  },
   kuniate: {
     legend: ["手がかり", "Clue"],
     heading: ["手がかり", "Clues"],

@@ -121,10 +121,11 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
   },
   "word-games": {
     blurb: [
-      "文字でできたゲームです。6回の推測で隠れた言葉を当てるもの（英語、フランス語、ドイツ語、かな）、手持ちのタイルでクロスワードを組むもの、6つの言葉を格子に入れ替えるもの、完成させないように文字を足していくものがあります。",
-      "Games made of letters. There is one where you find a hidden word in six guesses (in English, French, German or kana), one where you build a crossword from your own tiles, one where you swap six words into a lattice, and one where you add letters to a word without finishing it.",
+      "文字でできたゲームです。6回の推測で隠れた言葉を当てるもの（英語、フランス語、ドイツ語、かな）、手持ちのタイルでクロスワードを組むもの、6つの言葉を格子に入れ替えるもの、完成させないように文字を足していくもの、形や旗や首都から国の名前を当てるもの、蜂の巣の7文字で言葉を作るものがあります。",
+      "Games made of letters. There is one where you find a hidden word in six guesses (in English, French, German or kana), one where you build a crossword from your own tiles, one where you swap six words into a lattice, and one where you add letters to a word without finishing it, one where you name a country from its shape, flag or capital, and one where you make words from the seven letters of a beehive.",
     ],
     review: AGENT_READ_2026_10_06,
+    ask: "The last two clauses, about the country and the beehive, were added on 2026-10-30 with Kuniate and Hachinosu; nobody has read them.",
   },
   karakuri: {
     blurb: [

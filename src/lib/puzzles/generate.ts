@@ -1,4 +1,6 @@
 import { generateBridges } from "./bridges/generate";
+import { generateHachinosu } from "./hachinosu/generate";
+import { HIVE_LANGUAGES } from "./hachinosu/code";
 import { generateIchifude } from "./ichifude/generate";
 import { generateJirai } from "./jirai/generate";
 import { generateKuniate } from "./kuniate/generate";
@@ -117,6 +119,9 @@ export function generatePuzzle(kind: PuzzleKind, size: number, level: PuzzleLeve
     case "ichifude":
       // A line through every square, then the numbers that leave it the one answer, from the seed alone (`ichifude/generate.ts`).
       return generateIchifude(size, level, seed);
+    case "hachinosu":
+      // Seven letters from the seed, kept when its common words are what the level asks (`hachinosu/generate.ts`); its size is its language, whose list `preparePuzzle` loads.
+      return generateHachinosu(size, level, seed);
     case "kuniate":
       // A country from the seed, at the level's list; its size is the way it is asked (`kuniate/generate.ts`).
       return generateKuniate(size, level, seed);
@@ -140,11 +145,13 @@ export function puzzleLoads(kind: PuzzleKind, seed?: number | null): boolean {
   // Suido's levels, where the seed names one: a board made from any other seed has nothing to load.
   if (kind === "suido") return seed !== undefined && seed !== null && suidoLevelOfSeed(seed) !== null;
   // Every word puzzle's list (`wordData.ts`, the kana lists, Pop's guesses, Kumimoji's tiles), and Tsunagi's and Meikyuu's levels.
-  return kind === "gomoji" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop" || kind === "gomojiKana" || kind === "koushi" || kind === "kumimoji" || kind === "tsunagi" || kind === "meikyuu";
+  return kind === "gomoji" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop" || kind === "gomojiKana" || kind === "koushi" || kind === "kumimoji" || kind === "tsunagi" || kind === "meikyuu" || kind === "hachinosu";
 }
 
 export async function preparePuzzle(kind: PuzzleKind, size: number, language: KumimojiLanguage = "english", seed?: number | null): Promise<void> {
   // Gomoji's lists (`wordData.ts`): French for Mot, German for Wort, English for Gomoji, Pop's dictionary guesses, Koushi's lattice and Kumimoji's grid check.
+  // A hive's language is its size (`hachinosu/code.ts`).
+  if (kind === "hachinosu" && HIVE_LANGUAGES[size] !== undefined) await loadWordData(HIVE_LANGUAGES[size]);
   if (kind === "gomojiMot") await loadWordData("fr");
   if (kind === "gomojiWort") await loadWordData("de");
   if (kind === "gomoji" || kind === "gomojiPop" || kind === "koushi" || kind === "kumimoji") await loadWordData("en");

@@ -37,6 +37,7 @@ import { KoushiSolve } from "./KoushiSolve";
 import { MahjongSolve } from "./MahjongSolve";
 import { MahjongTableGame } from "./MahjongTableGame";
 import { NumberSolve } from "./NumberSolve";
+import { HachinosuSolve } from "./HachinosuSolve";
 import { IchifudeSolve } from "./IchifudeSolve";
 import { JiraiSolve } from "./JiraiSolve";
 import { PencilSolve } from "./PencilSolve";
@@ -385,6 +386,8 @@ function PuzzlePlayDrawn({
         return <JiraiSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
       case "ichifude":
         return <IchifudeSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} checks={checks} hints={hints} resumed={race === null ? opened : null} />;
+      case "hachinosu":
+        return <HachinosuSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} />;
       case "kuniate":
         return <KuniateSolve key={key} puzzle={puzzle} hasAccount={hasAccount} race={seat} resumed={race === null ? opened : null} />;
       case "koushi":

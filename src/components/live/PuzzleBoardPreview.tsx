@@ -43,6 +43,7 @@ import { generateBridges } from "@/lib/puzzles/bridges/generate";
 import { PictureLogicGrid } from "@/components/puzzles/PictureLogicGrid";
 import { decodeClues } from "@/lib/puzzles/pictureLogic/code";
 import { generatePictureLogic } from "@/lib/puzzles/pictureLogic/generate";
+import { HachinosuPreview, IchifudePreview, KuniatePreview } from "@/components/puzzles/ownPreviews";
 import { PatiencePreview } from "@/components/puzzles/PatiencePreview";
 import { SolitaireTable } from "@/components/puzzles/SolitaireTable";
 import { dealKlondike, dealOfSeed, deckOf, playKlondike } from "@johnmorrisdotca/toranpu/klondike";
@@ -62,12 +63,6 @@ const SuidoPreview = dynamic(() => import("@/components/puzzles/SuidoPreview").t
 
 /* Meikyuu's preview is made in the browser only too: the package that draws a maze is fetched there. */
 const MeikyuuPreview = dynamic(() => import("@/components/puzzles/MeikyuuPreview").then((module) => module.MeikyuuPreview), { ssr: false });
-
-/* Ichifude's preview is made in the browser only too: a board is searched for, and that is not the server's work. */
-const IchifudePreview = dynamic(() => import("@/components/puzzles/ichifude/IchifudePreview").then((module) => module.IchifudePreview), { ssr: false });
-
-/* Kuniate's preview too: the packages that hold each country's shape and flag are fetched there. */
-const KuniatePreview = dynamic(() => import("@/components/puzzles/kuniate/KuniatePreview").then((module) => module.KuniatePreview), { ssr: false });
 
 /* Tobiishi's preview is made in the browser only too: the package that draws its board is fetched there. */
 const TobiishiPreview = dynamic(() => import("@/components/puzzles/TobiishiPreview").then((module) => module.TobiishiPreview), { ssr: false });
@@ -151,6 +146,8 @@ export function PuzzleBoardPreview({
           <PencilPreview kind={kind} size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "jirai" ? (
           <JiraiPreview size={size} level={level ?? spec.defaultLevel} variant={jirai} />
+        ) : kind === "hachinosu" ? (
+          <HachinosuPreview size={size} />
         ) : kind === "kuniate" ? (
           <KuniatePreview size={size} level={level ?? spec.defaultLevel} />
         ) : kind === "ichifude" ? (
@@ -180,7 +177,7 @@ export function PuzzleBoardPreview({
         )}
       </div>
       <figcaption className={SET_UP_PREVIEW_CAPTION}>
-        {kind === "kuniate" ? SET_UP_COPY.previewClue : spec.cards === true ? SET_UP_COPY.previewCards(say.pairName(PUZZLE_DISPLAY[kind].label, PUZZLE_DISPLAY[kind].kanji).text) : kind === "mahjong" ? SET_UP_COPY.previewMahjong : SET_UP_COPY.previewPuzzle(say.pairName(PUZZLE_DISPLAY[kind].label, PUZZLE_DISPLAY[kind].kanji).text)}
+        {kind === "kuniate" ? SET_UP_COPY.previewClue : kind === "hachinosu" ? SET_UP_COPY.previewHive : spec.cards === true ? SET_UP_COPY.previewCards(say.pairName(PUZZLE_DISPLAY[kind].label, PUZZLE_DISPLAY[kind].kanji).text) : kind === "mahjong" ? SET_UP_COPY.previewMahjong : SET_UP_COPY.previewPuzzle(say.pairName(PUZZLE_DISPLAY[kind].label, PUZZLE_DISPLAY[kind].kanji).text)}
         {/* The board's colour, in the room the caption keeps, as under a Reversi's preview: only where the puzzle is drawn on the board itself. */}
         {(!onBoard && spec.tiles !== true) || onFelt === undefined ? null : (
           <span className="mt-1 block">

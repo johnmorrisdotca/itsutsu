@@ -714,6 +714,10 @@ six guesses, each wrong one saying how far and which way. One card; the three cl
 fastest times stay apart. Its shapes are Chizu's, its flags Hata's and its names, capitals and distances Kuni's (`@johnmorrisdotca/chizu`, `hata`, `kuni`), fetched a country at a time by the browser and
 in no server function; the answers are the 195 members and observers of the United Nations, and Oman is asked only by outline and capital because Hata 1.7.2 has no flag for it.
 
+**Hachinosu** 蜂の巣 (2026-10-30, `src/lib/puzzles/hachinosu/`) is in Word games too: words of four to six letters from seven in a hive, the centre in every one, until they
+are worth the goal. English, French and German are its set-up's tiles and its puzzle's size, one card, with a hive of the day in each. Its lists are Kotoba's, so a word is at most six letters and there is no
+word that uses all seven; a hive is drawn from a six-letter word and one more letter, kept when its common words suit the level, the goal a share of what they are worth. The server reads only the words handed in, against the same lists.
+
 **Meikyuu** 迷宮 (2026-10-02, `src/lib/puzzles/meikyuu/`, plan in
 `docs/plans/meikyuu/README.md`): a maze to draw a line through with a finger or the
 mouse, from its start to its goal, in 1,024 fixed levels, 256 to each of four sizes (small,

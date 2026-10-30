@@ -65,7 +65,9 @@ export function puzzleRulesPage(kind: PuzzleKind, say: Speaker = speaker(DEFAULT
   const proof: PhraseKey =
     kind === "kuniate"
       ? "puzzle.rules.proofKuniate"
-      : kind === "suido"
+      : kind === "hachinosu"
+        ? "puzzle.rules.proofHachinosu"
+        : kind === "suido"
       ? "puzzle.rules.proofSuido"
       : kind === "tobiishi"
         ? "puzzle.rules.proofTobiishi"

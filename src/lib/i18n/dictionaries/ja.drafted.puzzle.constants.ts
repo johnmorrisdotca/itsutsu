@@ -445,6 +445,16 @@ export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Every bag can be finished: the browser that deals it lays its tiles out as one crossword first, and any other crossword of the same tiles counts as well.",
     review: AGENT_READ,
   },
+  "puzzle.done.changeLanguage": {
+    text: "言語やレベルを変える",
+    back: "Change the language or level",
+    ask: "Written on 2026-10-30 with Hachinosu; nobody has read it.",
+  },
+  "puzzle.rules.proofHachinosu": {
+    text: "どの蜂の巣も、よく使う言葉だけで終えられます。作るときにブラウザがその言葉を数え、その点数から目標を決めています。",
+    back: "Every beehive can be finished with commonly used words alone. When making it, the browser counts those words and sets the goal from their points.",
+    ask: "Written on 2026-10-30 with Hachinosu; nobody has read it.",
+  },
   "puzzle.done.changeClue": {
     text: "手がかりやレベルを変える",
     back: "Change the clue or level",

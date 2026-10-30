@@ -19,8 +19,11 @@ import type { PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 
 import { SIZE_TILES, shelfFor, shelvesOf } from "./sizeShelves";
 
-/** A Kuniate's tiles are its ways of asking, not sizes, so their big mark is the way's own character (`KUNIATE_SIZE_NAMES`). */
-const KUNIATE_MARKS: Readonly<Record<number, string>> = { 1: PUZZLE_SIZE_NAMES.kuniate[1]!.kanji, 2: PUZZLE_SIZE_NAMES.kuniate[2]!.kanji, 3: PUZZLE_SIZE_NAMES.kuniate[3]!.kanji };
+/** Where a puzzle's tiles are choices and not sizes, the big mark on each is the choice's own character (`BoardSizeMark`). */
+const TILE_MARKS: Partial<Record<PuzzleKind, Readonly<Record<number, string>>>> = {
+  kuniate: { 1: "形", 2: "旗", 3: "都" },
+  hachinosu: { 1: "英", 2: "仏", 3: "独" },
+};
 
 /**
  * A puzzle's sizes, as the tiles every board size on this site is chosen
@@ -115,7 +118,7 @@ export function PuzzleSizes({
     const sizes = every.slice(nextShelf, nextShelf + SIZE_TILES);
     if (!sizes.includes(size)) onSize(nextShelf === 0 ? sizes[sizes.length - 1]! : (sizes.find((each) => each > size) ?? sizes[0]!));
   };
-  const picker = <BoardPicker value={size} sizes={shown} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} legend={cardSizeWords(say.locale)[kind]?.legend} numerals={kind === "kuniate" ? KUNIATE_MARKS : undefined} />;
+  const picker = <BoardPicker value={size} sizes={shown} onChange={onSize} names={PUZZLE_SIZE_NAMES[kind]} beside={beside} legend={cardSizeWords(say.locale)[kind]?.legend} numerals={TILE_MARKS[kind]} />;
   /*
    * A setting of a game whose other settings turn shelves keeps the room the
    * press takes, drawn and hidden, so choosing Pop culture on a Gomoji or

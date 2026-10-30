@@ -108,6 +108,8 @@ const SCENES: { kind: PuzzleKind; size: number; level: PuzzleLevel; seed: number
   { kind: "crossSums", size: 8, level: "medium", seed: 20261005, fill: 10 },
   // A 6×6 Ichifude part way: the line drawn from 1 through its first numbers, by a held drag as a reader draws it.
   { kind: "ichifude", size: 6, level: "medium", seed: 20261030, fill: 16 },
+  // A Hachinosu's hive, its seven letters in the wood.
+  { kind: "hachinosu", size: 1, level: "medium", seed: 20261030, fill: 0 },
   // A Kuniate by its outline, two guesses in: the shape in ink on the paper, in the wood every board has.
   { kind: "kuniate", size: 1, level: "easy", seed: 20261030, fill: 2 },
   // A 9×9 Jirai a good way in: the opening, six more safe squares uncovered, and two mines flagged, as a reader plays it.
@@ -147,6 +149,10 @@ test.describe("puzzle screenshots", () => {
         await page.keyboard.press("Escape");
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         await page.getByTestId("puzzle-grid").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 82 });
+        return;
+      }
+      if (scene.kind === "hachinosu") {
+        await page.getByTestId("puzzle-grid").getByTestId("board-surface").first().screenshot({ path: `${OUT}/${scene.kind}.jpg`, type: "jpeg", quality: 90 });
         return;
       }
       if (scene.kind === "kuniate") {

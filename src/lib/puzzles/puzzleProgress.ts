@@ -24,6 +24,7 @@ import { readTileProgress } from "./kumimoji/play";
 import { MOST_GUESSES, guessesEverAllowed } from "./gomoji/layout";
 import { decodePlay } from "./koushi/lattice";
 import { decodeCells, encodeCells } from "./puzzleCode";
+import { readFound } from "./hachinosu/code";
 import { decodeLine } from "./ichifude/code";
 import { jiraiFits } from "./jirai/board";
 import { readGuesses } from "./kuniate/code";
@@ -182,6 +183,8 @@ export function progressFits(kind: PuzzleKind, size: number, code: string): bool
   if (isPencilKind(kind)) return pencilEngine(kind).fits(size, code);
   // An Ichifude keeps its line, a character a square, and a kept one is one unbroken line (`ichifude/code.ts`).
   if (kind === "ichifude") return decodeLine(code, size) !== null;
+  // A Hachinosu keeps its words so far, comma after comma.
+  if (kind === "hachinosu") return readFound(code) !== null;
   // A Kuniate keeps its guesses so far, run together.
   if (kind === "kuniate") return readGuesses(code) !== null;
   // Jirai keeps the board as it stands, a character a square: covered, flagged, or the number an uncovered one shows (`jirai/board.ts`).

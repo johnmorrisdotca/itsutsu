@@ -207,7 +207,7 @@ export function SolveDone({
               {anotherLabel}
             </button>
             <Link href={setUpPath(puzzle.kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="puzzle-set-up">
-              {say.say(cards ? "puzzle.done.changeDraw" : puzzle.kind === PUZZLE_KINDS.kuniate ? "puzzle.done.changeClue" : "puzzle.done.changeSize")}
+              {say.say(cards ? "puzzle.done.changeDraw" : puzzle.kind === PUZZLE_KINDS.kuniate ? "puzzle.done.changeClue" : puzzle.kind === PUZZLE_KINDS.hachinosu ? "puzzle.done.changeLanguage" : "puzzle.done.changeSize")}
             </Link>
             {/* The solve just kept, to watch again step by step, as every past solve opens. */}
             {done.solveId ? (

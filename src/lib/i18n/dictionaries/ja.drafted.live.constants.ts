@@ -52,6 +52,11 @@ export const JA_DRAFTED_LIVE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "An example of this layout. The real deal is made when you start.",
     review: AGENT_READ,
   },
+  "live.previewHive": {
+    text: "蜂の巣の例です。実際には別の文字が出ます。",
+    back: "An example of a beehive. Actually, other letters come up.",
+    ask: "Written on 2026-10-30 with Hachinosu; nobody has read it.",
+  },
   "live.previewClue": {
     text: "この手がかりの例です。実際には別の国が出ます。",
     back: "An example of this clue. Actually, another country comes up.",

@@ -163,6 +163,8 @@ export const PHRASES_PUZZLE = {
   "puzzle.done.dealAgain": "Deal again →",
   "puzzle.done.another": "Another {name} →",
   "puzzle.done.changeDraw": "Change the draw or passes",
+  "puzzle.done.changeLanguage": "Change the language or level",
+  "puzzle.rules.proofHachinosu": "Every hive can be finished with common words: the browser that makes it counts them first, and sets the goal from what they are worth.",
   "puzzle.done.changeClue": "Change the clue or level",
   "puzzle.done.changeSize": "Change the size or level",
   "puzzle.done.seeHowFar": "See how far it got",
