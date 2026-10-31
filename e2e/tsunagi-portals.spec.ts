@@ -79,7 +79,7 @@ test.describe("the set-up offers the levels with portals", () => {
     await expect(page.getByTestId("tsunagi-levels-caption")).toContainText("7×7 with portals: 0 of 32 solved");
     // The preview is the level chosen, with its rings: two for each portal, a portal's two alike.
     const portals = decodeLayout(TSUNAGI_PORTAL_LEVELS[7]![0]![0], 7)!.portalPairs.length;
-    await expect(page.getByTestId("tsunagi-preview").getByTestId("tsunagi-portal")).toHaveCount(portals * 2);
+    await expect(page.getByTestId("tsunagi-preview").locator(".tsu-portal-end")).toHaveCount(portals * 2);
     await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("href", new RegExp(`seed=${seedOf(1)}`));
     // The level's chip says what it asks.
     await expect(page.getByTestId("tsunagi-chip-portals")).toBeVisible();
@@ -107,16 +107,16 @@ test.describe("a level with portals, played with a mouse on a desk", () => {
     await expect(page.getByTestId("tsunagi-level-fastest")).toContainText("Fastest on level 1");
     await expect(page.getByTestId("tsunagi-level-fastest")).not.toContainText("1001");
     const [first, second] = level.layout.portalPairs[0]!;
-    const ring = page.locator(`[data-testid="tsunagi-portal"][data-portal="0"]`);
+    const ring = page.locator('.tsu-portal[data-portal="0"] .tsu-portal-end');
     await expect(ring).toHaveCount(2);
-    const link = page.locator('[data-testid="tsunagi-portal-link"][data-portal="0"]');
-    await expect(link).toHaveAttribute("data-shown", "false");
+    const link = page.locator('.tsu-portal[data-portal="0"]');
+    await expect(link).not.toHaveAttribute("data-linked", "true");
     await page.locator(`[data-testid="puzzle-cell"][data-index="${first}"]`).hover();
-    await expect(link).toHaveAttribute("data-shown", "true");
+    await expect(link).toHaveAttribute("data-linked", "true");
     await page.locator(`[data-testid="puzzle-cell"][data-index="${second}"]`).hover();
-    await expect(link).toHaveAttribute("data-shown", "true");
+    await expect(link).toHaveAttribute("data-linked", "true");
     await page.mouse.move(2, 2);
-    await expect(link).toHaveAttribute("data-shown", "false");
+    await expect(link).not.toHaveAttribute("data-linked", "true");
   });
 
   test("is solved by a finger that goes into one ring while the line comes out of the other, and is kept as solved", async ({ page }) => {
@@ -150,7 +150,7 @@ test.describe("a level with portals, played with a mouse on a desk", () => {
       await page.mouse.move(to.x, to.y, { steps: 3 });
     }
     // In at the ring: the line now holds both rings and the cell the other comes out into.
-    await expect(page.locator(`[data-testid="tsunagi-line"][data-cells="${enter + 3}"]`)).toHaveCount(1);
+    await expect(page.locator(`.tsu-line[data-cells="${enter + 3}"]`)).toHaveCount(1);
     await page.mouse.up();
   });
 });
@@ -173,12 +173,12 @@ test.describe("a level with portals, played by touch on a phone", () => {
     const level = levelOf(6, 1);
     await openPortalLevel(page, 6, 1);
     const [first] = level.layout.portalPairs[0]!;
-    const link = page.locator('[data-testid="tsunagi-portal-link"][data-portal="0"]');
-    await expect(link).toHaveAttribute("data-shown", "false");
+    const link = page.locator('.tsu-portal[data-portal="0"]');
+    await expect(link).not.toHaveAttribute("data-linked", "true");
     await page.getByTestId("tsunagi-board").scrollIntoViewIfNeeded();
     const at = await whereOn(page, 6)(first);
     await page.touchscreen.tap(at.x, at.y);
-    await expect(link).toHaveAttribute("data-shown", "true");
-    await expect(link).toHaveAttribute("data-shown", "false", { timeout: 6000 });
+    await expect(link).toHaveAttribute("data-linked", "true");
+    await expect(link).not.toHaveAttribute("data-linked", "true", { timeout: 6000 });
   });
 });

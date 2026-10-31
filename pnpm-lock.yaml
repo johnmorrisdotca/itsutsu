@@ -85,8 +85,8 @@ importers:
         specifier: 2.14.1
         version: 2.14.1(react@19.2.8)
       '@johnmorrisdotca/tsunagi':
-        specifier: 1.6.1
-        version: 1.6.1
+        specifier: file:../../tsunagi/johnmorrisdotca-tsunagi-one-board.tgz
+        version: file:../../tsunagi/johnmorrisdotca-tsunagi-one-board.tgz
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
@@ -606,8 +606,9 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/tsunagi@1.6.1':
-    resolution: {integrity: sha512-HhUV4j3AzF7wkKnEezo0MYS8t+Fphq+Tm2KHotvrs6ek2L7E2jaJhFF9r6UJ1VTE9ni4bm4FhuNRh3WLKmJbug==}
+  '@johnmorrisdotca/tsunagi@file:../../tsunagi/johnmorrisdotca-tsunagi-one-board.tgz':
+    resolution: {integrity: sha512-rGXlT5OlH9WqHbmSydgx8hjr5KGiU3UJCtuF7mZXdOtNeWwMA374Td6tuejudTYxwwjht1V8VsFtyJmxpTRZ9g==, tarball: file:../../tsunagi/johnmorrisdotca-tsunagi-one-board.tgz}
+    version: 1.7.1
     engines: {node: '>=22'}
 
   '@jridgewell/gen-mapping@0.3.13':
@@ -3272,7 +3273,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/tsunagi@1.6.1': {}
+  '@johnmorrisdotca/tsunagi@file:../../tsunagi/johnmorrisdotca-tsunagi-one-board.tgz': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

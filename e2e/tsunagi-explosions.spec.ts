@@ -47,13 +47,13 @@ async function playLevel(page: Page, size: number, level: number) {
   await page.goto(`${AT}/play?size=${size}&seed=${level}`);
   await ready(page, "puzzle-play");
   if ((await page.getByTestId("puzzle-play").getAttribute("data-reviewing")) === "true") await page.getByTestId("tsunagi-restart-solved").click();
-  await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+  await expect(page.locator(".tsu-line")).toHaveCount(0);
 }
 
 /** How many cells each pair's line has on the page, 0 for none. */
 async function drawnOnPage(page: Page, pairs: number): Promise<number[]> {
   const out = new Array<number>(pairs).fill(0);
-  for (const line of await page.getByTestId("tsunagi-line").all()) out[Number(await line.getAttribute("data-pair"))] = Number(await line.getAttribute("data-cells"));
+  for (const line of await page.locator(".tsu-line").all()) out[Number(await line.getAttribute("data-pair"))] = Number(await line.getAttribute("data-cells"));
   return out;
 }
 
@@ -81,7 +81,7 @@ async function explodeThenSolve(page: Page, size: number, level: number, code: s
   now = now.map((line, pair) => (pair === every - 1 ? lines[pair]! : line));
   const expected = explosionAfter(layout, code, now, every)!;
   await expect(countdown).toContainText(word);
-  await expect(page.getByTestId("tsunagi-blast").first()).toBeVisible();
+  await expect(page.locator(".tsu-blast").first()).toBeVisible();
   // Exactly the line (or lines) the rule chose, broken as it says; the rest as drawn.
   await expect.poll(() => drawnOnPage(page, lines.length)).toEqual(expected.lines.map((line) => line.length));
   // An explosion is not taken back.

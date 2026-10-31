@@ -1,4 +1,6 @@
 import { STONE_SETS } from "@/components/board/Board.constants";
+import type { BoardThemeTokens } from "@/components/board/board.types";
+import { colourOfPair, marbleShades, TSUNAGI_COLOUR_SETS, TSUNAGI_DEFAULT_COLOUR_SET, type TsunagiBoardLook } from "@johnmorrisdotca/tsunagi/draw";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { CARD_SIZE_WORDS, PUZZLE_SIZE_NAMES } from "@/lib/puzzles/puzzles.constants";
 import { suidoSizeWord } from "@/lib/puzzles/suido/sizes";
@@ -283,14 +285,10 @@ export const WORD_KEY_COUNT =
 export const WORD_KEY_PLAIN = "bg-ivory/80 text-ink hover:bg-rule/60";
 
 /*
- * TSUNAGI: marbles joined by lines, on the board itself. A marble is shaded as
- * the board's own stones are (`STONE_SETS`, `WORD_STONE_LOOK`): light at the
- * upper left, deep at the rim. Twelve colours, most of them from Okabe and
- * Ito's palette for colour-blind readers, ordered so the five pairs of a small
- * board are the most unlike (no two blues, and no green, which a green felt
- * would swallow); slate comes last, where a dark felt would hide it. Numbers,
- * the other way to play, puts the pair's number on a plain shell stone and
- * draws every line in a soft tint.
+ * TSUNAGI: marbles joined by lines, on the board itself. Everything on the board,
+ * and every colour of it, is the package's drawing (`TsunagiGrid`). Numbers, the
+ * other way to play, puts the pair's number on a plain shell stone and draws
+ * every line in a soft tint.
  */
 export type TsunagiMarks = "colours" | "numbers";
 
@@ -308,140 +306,42 @@ export type TsunagiExplosionsChoice = "on" | "soft" | "off";
 /** Whether Cheat is offered: off until "Allow cheating" is chosen at set-up. */
 export type TsunagiCheatsChoice = "off" | "allowed";
 
-/** Each pair's colour as hue, saturation and lightness, for the marble, its line and the wash of its cells. */
-export const TSUNAGI_COLOURS: readonly (readonly [number, number, number])[] = [
-  [24, 100, 44], // vermillion
-  [202, 77, 60], // sky blue
-  [54, 88, 56], // yellow
-  [326, 48, 62], // reddish purple
-  [40, 22, 90], // shell
-  [36, 100, 50], // orange
-  [218, 90, 36], // deep blue
-  [164, 100, 31], // bluish green, after the first six so a green felt seldom meets it
-  [340, 82, 74], // pink
-  [85, 58, 47], // leaf
-  [28, 45, 36], // chestnut
-  [220, 8, 22], // slate
-  // Four more for the 12×12 boards, which run to sixteen pairs as Flow Free's biggest do: each well apart from the twelve.
-  [300, 80, 45], // magenta
-  [350, 70, 28], // maroon
-  [186, 90, 48], // cyan
-  [0, 0, 62], // grey
-];
-
-function hsl([hue, saturation, lightness]: readonly [number, number, number], shift = 0, alpha = 1): string {
-  const light = Math.max(4, Math.min(97, lightness + shift));
-  return alpha === 1 ? `hsl(${hue} ${saturation}% ${light}%)` : `hsl(${hue} ${saturation}% ${light}% / ${alpha})`;
+/**
+ * The site's colours for the package's drawing: its marks are ruled on the reader's own board (`theme.line`), and
+ * the wood and the coordinates are `PuzzleBoard`'s, so the drawing brings no paper or frame of its own.
+ */
+export function tsunagiBoardLook(theme: BoardThemeTokens): TsunagiBoardLook {
+  return { paper: "transparent", frame: "transparent", grid: `color-mix(in srgb, ${theme.line} 55%, transparent)`, ink: theme.line, coordinate: theme.line };
 }
 
 /**
- * A pair's colour: the sixteen above for the first sixteen pairs, then, for the dozens a 20×20 to 30×30 board
- * has, the same hues turned round the colour wheel and made lighter or darker, round after round, so that no two
- * pairs of one board wear exactly one colour. The package's colour sets do the same (`TSUNAGI_COLOUR_SETS`).
+ * The largest a marble's number is written, as a share of the board's width: John, 2026-09-28, wanted a 16 on a 12×12
+ * board to sit inside its marble as a 3 does on a 4×4, and a small board's big marble keeps its number at an ordinary
+ * size rather than a poster's.
  */
-function colourOf(pair: number): readonly [number, number, number] {
-  const base = TSUNAGI_COLOURS[pair % TSUNAGI_COLOURS.length]!;
-  const round = Math.floor(pair / TSUNAGI_COLOURS.length);
-  if (round === 0) return base;
-  const [hue, saturation, lightness] = base;
-  return [(hue + 29 * round) % 360, saturation, Math.max(18, Math.min(88, lightness + [14, -14, 8, -8][(round - 1) % 4]!))];
-}
+export const tsunagiLargestNumber = (side: number): number => side * 0.045;
 
-/** A marble's face: a shaded ball of the pair's colour, or a shell stone for Numbers, with the ink its number is written in. */
+/**
+ * A marble as a CSS background, for one drawn beside the board with something other than its pair's number on it (a
+ * level's number in the level picker): the package's own colours and shading, so it is the board's marble. Numbers
+ * puts a plain shell stone under it.
+ */
 export function tsunagiMarbleLook(pair: number, marks: TsunagiMarks): { background: string; color: string } {
-  if (marks === "numbers") return { background: STONE_SETS.classic.white, color: STONE_SETS.classic.whiteInk };
-  const colour = colourOf(pair);
-  return {
-    background: `radial-gradient(circle at 35% 30%, ${hsl(colour, 28)} 0%, ${hsl(colour)} 45%, ${hsl(colour, -22)} 100%)`,
-    color: colour[2] > 55 ? "#1a1a1a" : "#ffffff",
-  };
+  const shades = marbleShades(colourOfPair(TSUNAGI_COLOUR_SETS[TSUNAGI_DEFAULT_COLOUR_SET], pair), marks);
+  return { background: `radial-gradient(circle at 35% 30%, ${shades.light} 0%, ${shades.body} 45%, ${shades.rim} 100%)`, color: shades.ink };
 }
 
-/**
- * A marble on a line's way, between its two ends: the pair's colour, shaded as
- * the ends are, and for Numbers the line's own soft tint, with nothing written
- * on it — the number belongs to the ends, which are the level.
- */
-export function tsunagiBeadLook(pair: number, marks: TsunagiMarks): { background: string } {
-  if (marks === "colours") return { background: tsunagiMarbleLook(pair, marks).background };
-  const tint = [colourOf(pair)[0], 30, 62] as const;
-  return { background: `radial-gradient(circle at 35% 30%, ${hsl(tint, 22)} 0%, ${hsl(tint)} 45%, ${hsl(tint, -18)} 100%)` };
-}
-
-/** The stroke a pair's line is drawn in: its colour, or a soft tint of it for Numbers. */
-export function tsunagiLineColour(pair: number, marks: TsunagiMarks): string {
-  const colour = colourOf(pair);
-  return marks === "numbers" ? hsl([colour[0], 30, 62]) : hsl(colour);
-}
-
-/** The faint wash a line leaves on the cells it runs through. */
-export function tsunagiWash(pair: number, marks: TsunagiMarks): string {
-  const colour = colourOf(pair);
-  return marks === "numbers" ? hsl([colour[0], 30, 70], 0, 0.22) : hsl(colour, 8, 0.28);
-}
-
-/** The faint tint inside a portal's ring: its own colour, mostly clear. */
-export const tsunagiPortalWash = (colour: string): string => `color-mix(in srgb, ${colour} 14%, transparent)`;
-
-/** A marble: round and shaded like a stone, sized to its cell, the pair's number on it for Numbers. */
+/** A marble drawn beside the board, in a list: round and shaded like a stone, the number written on it sized to fit. */
 export const TSUNAGI_MARBLE =
   "flex size-[74%] items-center justify-center rounded-full font-bold leading-none tabular-nums shadow-[0_1px_2px_rgba(0,0,0,0.5)]";
-
-/**
- * The cell a marble sits in, as a container its number is measured against:
- * `cqw` is then a percent of the cell's width, and a marble is 74 of them.
- */
-export const TSUNAGI_MARBLE_CELL = "@container";
-
-/** How wide a marble a board's marble is, in its cell's `cqw`: `TSUNAGI_MARBLE`'s 74%. */
-export const TSUNAGI_MARBLE_ACROSS = "74cqw";
-
-/** A waypoint's ring: three pixels, or less on a cell too small to spare them. */
-export const TSUNAGI_WAYPOINT_RING = "min(3px, 6cqw)";
-
-/** A portal's outer ring: four pixels, or less on a cell too small to spare them. */
-export const TSUNAGI_PORTAL_RING = "min(4px, 8cqw)";
-
-/**
- * How far from the middle of a portal's cell a line stops going in, and starts coming out, as a share of a cell:
- * just inside the ring, on the side it came in by. The same figure as the package's drawing (`PORTAL_STUB`).
- */
-export const TSUNAGI_PORTAL_STUB = 0.3;
-
-/** The colours and the letters that mark portals: two rings alike are one portal, each pair in a colour and a Greek letter of its own (the package's drawing has the same). */
-const PORTAL_COLOURS: readonly (readonly [number, number, number])[] = [
-  [276, 62, 52],
-  [174, 78, 34],
-  [32, 96, 46],
-  [338, 72, 50],
-  [212, 82, 50],
-  [96, 56, 38],
-  [262, 20, 42],
-  [16, 86, 46],
-];
-const PORTAL_MARKS = "αβγδεζηθικλμνξοπρστυφχψω";
-
-/** The colour of portal `index` (from 0), round and round the eight. */
-export function tsunagiPortalColour(index: number): string {
-  return hsl(PORTAL_COLOURS[index % PORTAL_COLOURS.length]!);
-}
-
-/** The letter that marks portal `index`, or its number once the letters are used. */
-export function tsunagiPortalMark(index: number): string {
-  return PORTAL_MARKS[index] ?? String(index + 1);
-}
 
 /** A number's font size as a share of its marble's width, by how many digits it has. */
 const NUMBER_TO_MARBLE = [0.6, 0.52, 0.4] as const;
 
 /**
- * A number's type, sized from the marble it is written on and how many digits
- * it has, so a 16 on a 12×12 board sits inside its marble as a 3 does on a 4×4
- * one. John, 2026-09-28: "higher levels have numbers that are too big since the
- * squares have gotten smaller" — they were a fixed size, whatever the marble.
- * `across` is the marble's width as a CSS length; `largest` keeps a big
- * marble's number at an ordinary size rather than a poster's. Two or more
- * digits are drawn a touch closer together, Geist having no condensed figures.
+ * A number's type, sized from the marble it is written on and how many digits it has. `across` is the marble's width as
+ * a CSS length; `largest` keeps a big marble's number at an ordinary size rather than a poster's. Two or more digits are
+ * drawn a touch closer together, Geist having no condensed figures.
  */
 export function tsunagiNumberType(value: number, across: string, largest = "1rem"): { fontSize: string; letterSpacing?: string } {
   const digits = String(value).length;
@@ -449,9 +349,6 @@ export function tsunagiNumberType(value: number, across: string, largest = "1rem
   const fontSize = `min(calc(${across} * ${share}), ${largest})`;
   return digits === 1 ? { fontSize } : { fontSize, letterSpacing: "-0.04em" };
 }
-
-/** A marble on a line's way: a little smaller than the ends, so the two a line joins still stand out. */
-export const TSUNAGI_BEAD = "size-[56%] rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.45)]";
 
 /**
  * KOUSHI: Gomoji's letter tiles (`WORD_TILE`, `WORD_TILE_MARK`) in a lattice on

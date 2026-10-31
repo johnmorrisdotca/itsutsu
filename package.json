@@ -95,7 +95,7 @@
     "@johnmorrisdotca/tenka": "2.1.1",
     "@johnmorrisdotca/tobiishi": "0.2.2",
     "@johnmorrisdotca/toranpu": "2.14.1",
-    "@johnmorrisdotca/tsunagi": "1.6.1",
+    "@johnmorrisdotca/tsunagi": "file:../../tsunagi/johnmorrisdotca-tsunagi-one-board.tgz",
     "@prisma/client": "^6.19.3",
     "next": "16.4.3",
     "next-auth": "^4.24.15",

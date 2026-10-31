@@ -51,7 +51,7 @@ async function openLevel(page: Page, size: number, level: number) {
   await page.goto(`${AT}/play?size=${size}&seed=${level}`);
   await ready(page, "puzzle-play");
   if ((await page.getByTestId("puzzle-play").getAttribute("data-reviewing")) === "true") await page.getByTestId("tsunagi-restart-solved").click();
-  await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+  await expect(page.locator(".tsu-line")).toHaveCount(0);
 }
 
 const whereOn = (page: Page, size: number) => async (cell: number) => {
@@ -104,7 +104,7 @@ test.describe("the biggest boards on a phone", () => {
       });
       const first = level.lines.find((each) => !each.includes(0))!;
       await drawWithTouch(cdp, whereOn(page, size), strokesOf(level.layout, first));
-      await expect(page.locator(`[data-testid="tsunagi-line"][data-cells="${first.length}"]`)).toHaveCount(1);
+      await expect(page.locator(`.tsu-line[data-cells="${first.length}"]`)).toHaveCount(1);
       // A cell the line did not touch is the very element it was: the board redraws what changed.
       expect(await page.evaluate(() => document.querySelector('[data-testid="puzzle-cell"][data-index="0"]') === (window as unknown as { __cell0: Element | null }).__cell0)).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
@@ -127,7 +127,7 @@ test.describe("the biggest boards on a phone", () => {
     }
     await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
     await expect.poll(async () => Number(await viewport.getAttribute("data-zoom"))).toBeGreaterThan(1.5);
-    await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+    await expect(page.locator(".tsu-line")).toHaveCount(0);
     // Dragged along, the board follows the fingers: its place in the box has moved.
     const before = (await page.getByTestId("tsunagi-board").boundingBox())!;
     await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: middle.x - 30, y: middle.y, id: 1 }, { x: middle.x + 30, y: middle.y, id: 2 }] });
@@ -137,13 +137,13 @@ test.describe("the biggest boards on a phone", () => {
     await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
     const after = (await page.getByTestId("tsunagi-board").boundingBox())!;
     expect(Math.abs(after.x - before.x) + Math.abs(after.y - before.y), "the board followed the two fingers").toBeGreaterThan(10);
-    await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+    await expect(page.locator(".tsu-line")).toHaveCount(0);
     // And Fit shows it whole again, where one finger draws.
     await page.getByTestId("tsunagi-fit").click();
     await expect(viewport).toHaveAttribute("data-zoom", "1.00");
     const first = level.lines.find((each) => each.length >= 4)!;
     await drawWithTouch(cdp, whereOn(page, 30), strokesOf(level.layout, first));
-    await expect(page.locator(`[data-testid="tsunagi-line"][data-cells="${first.length}"]`)).toHaveCount(1);
+    await expect(page.locator(`.tsu-line[data-cells="${first.length}"]`)).toHaveCount(1);
   });
 
   test("30×30: a finger's moves are answered quickly, on a phone's processor slowed four times", async ({ page, browserName }) => {

@@ -124,7 +124,7 @@ test.describe("Tsunagi", () => {
     expect(longest.length).toBeGreaterThanOrEqual(5);
     await openLevel(page, 7, 5);
     await drag(page, 7, longest.slice(0, 5), true);
-    const line = page.getByTestId("tsunagi-line");
+    const line = page.locator(".tsu-line");
     await expect(line).toHaveAttribute("data-cells", "5");
     for (const cell of [longest[3]!, longest[2]!]) {
       const to = await centre(page, 7, cell);
@@ -153,16 +153,16 @@ test.describe("Tsunagi", () => {
     const { through, from, line } = found!;
     await openLevel(page, 7, 6);
     await drag(page, 7, line);
-    const lines = page.getByTestId("tsunagi-line");
+    const lines = page.locator(".tsu-line");
     await expect(lines).toHaveCount(1);
     await expect(lines.first()).toHaveAttribute("data-cells", String(line.length));
     await drag(page, 7, [from, through]);
     await expect(page.locator(`[data-testid="puzzle-cell"][data-index="${through}"]`)).toHaveAttribute("data-owner", String(layout.charCodeAt(from) - 65));
     const cutTo = line.indexOf(through);
     // What is left of the first line: the cells before the crossing, or nothing where only its stone was left.
-    const left = await page.locator(`[data-testid="tsunagi-line"][data-pair="${found!.cut.charCodeAt(0) - 65}"]`).count();
+    const left = await page.locator(`.tsu-line[data-pair="${found!.cut.charCodeAt(0) - 65}"]`).count();
     if (cutTo <= 1) expect(left).toBe(0);
-    else await expect(page.locator(`[data-testid="tsunagi-line"][data-pair="${found!.cut.charCodeAt(0) - 65}"]`)).toHaveAttribute("data-cells", String(cutTo));
+    else await expect(page.locator(`.tsu-line[data-pair="${found!.cut.charCodeAt(0) - 65}"]`)).toHaveAttribute("data-cells", String(cutTo));
   });
 
   test("a stone tapped clears its line, Undo puts it back, and Restart clears the board", async ({ page }) => {
@@ -171,13 +171,13 @@ test.describe("Tsunagi", () => {
     const line = answerLine(level, 5, letter);
     await openLevel(page, 5, 2);
     await drag(page, 5, line.slice(0, 3));
-    await expect(page.getByTestId("tsunagi-line")).toHaveCount(1);
+    await expect(page.locator(".tsu-line")).toHaveCount(1);
     await drag(page, 5, [line[0]!]);
-    await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+    await expect(page.locator(".tsu-line")).toHaveCount(0);
     await page.getByTestId("tsunagi-undo").click();
-    await expect(page.getByTestId("tsunagi-line")).toHaveAttribute("data-cells", "3");
+    await expect(page.locator(".tsu-line")).toHaveAttribute("data-cells", "3");
     await page.getByTestId("tsunagi-restart").click();
-    await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+    await expect(page.locator(".tsu-line")).toHaveCount(0);
   });
 
   test("the board of levels shows a block of sixteen, opens the next once a block is solved, and an open level plays", async ({ page }) => {
@@ -223,7 +223,7 @@ test.describe("Tsunagi", () => {
     await expect(cell(17)).toHaveAttribute("aria-checked", "true");
     await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-level", "17");
     await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-drawn", "true");
-    await expect(page.getByTestId("tsunagi-preview").getByTestId("tsunagi-marble").first()).toBeVisible();
+    await expect(page.getByTestId("tsunagi-preview").locator(".tsu-marble").first()).toBeVisible();
     await expect(page.getByTestId("puzzle-solve")).toHaveAttribute("data-level", "17");
     await page.getByTestId("puzzle-solve").click();
     await ready(page, "puzzle-play");
@@ -239,7 +239,7 @@ test.describe("Tsunagi", () => {
     await page.getByTestId("tsunagi-marks-numbers").click();
     await savedNumbers;
     await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-marks", "numbers");
-    await expect(page.getByTestId("tsunagi-marble").first()).toHaveText("1");
+    await expect(page.locator(".tsu-marble").first()).toHaveText("1");
     await page.reload();
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-marks", "numbers");
@@ -247,7 +247,7 @@ test.describe("Tsunagi", () => {
     await page.getByTestId("tsunagi-marks-colours").click();
     await savedColours;
     await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-marks", "colours");
-    await expect(page.getByTestId("tsunagi-marble").first()).toHaveText("");
+    await expect(page.locator(".tsu-marble").first()).toHaveText("");
     await page.reload();
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-marks", "colours");
@@ -266,7 +266,7 @@ test.describe("Tsunagi", () => {
       await saved;
       await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-fill", fill);
     };
-    const beads = page.getByTestId("tsunagi-bead");
+    const beads = page.locator(".tsu-bead");
 
     await openLevel(page, 4, 3);
     await choose("marbles");
@@ -274,11 +274,11 @@ test.describe("Tsunagi", () => {
     await drag(page, 4, longest, true);
     await expect(beads).toHaveCount(longest.length - 2);
     await page.mouse.up();
-    const pair = await page.getByTestId("tsunagi-line").first().getAttribute("data-pair");
+    const pair = await page.locator(".tsu-line").first().getAttribute("data-pair");
     for (const bead of await beads.all()) await expect(bead).toHaveAttribute("data-pair", pair!);
 
     await choose("lines");
-    await expect(page.getByTestId("tsunagi-line")).toHaveCount(1);
+    await expect(page.locator(".tsu-line")).toHaveCount(1);
     await expect(beads).toHaveCount(0);
     await page.reload();
     await ready(page, "puzzle-play");
@@ -300,7 +300,7 @@ test.describe("Tsunagi", () => {
     const line = answerLine(level, 5, letter);
     await openLevel(page, 5, 7);
     await drag(page, 5, line.slice(0, 3));
-    await expect(page.getByTestId("tsunagi-line")).toHaveAttribute("data-cells", "3");
+    await expect(page.locator(".tsu-line")).toHaveAttribute("data-cells", "3");
     await page.getByTestId("puzzle-pause").click();
     await expect(page.getByTestId("puzzle-paused")).toBeVisible();
     await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
@@ -311,7 +311,7 @@ test.describe("Tsunagi", () => {
     await row.getByTestId("puzzle-going-continue").click();
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("puzzle-asked")).toContainText("Level 7");
-    await expect(page.getByTestId("tsunagi-line")).toHaveAttribute("data-cells", "3");
+    await expect(page.locator(".tsu-line")).toHaveAttribute("data-cells", "3");
   });
 });
 
@@ -363,17 +363,17 @@ test.describe("Tsunagi's Check", () => {
     await openLevel(page, 5, 4);
     await drag(page, 5, whole!);
     await drag(page, 5, short.slice(0, -1));
-    await expect(page.getByTestId("tsunagi-line")).toHaveCount(2);
+    await expect(page.locator(".tsu-line")).toHaveCount(2);
 
     await page.getByTestId("tsunagi-check").click();
     const pairs = lettersOf(level).length;
     await expect(page.getByTestId("tsunagi-check-says")).toContainText(`${pairs - 1} pairs are not joined yet`);
     const pairOf = (cells: readonly number[]) => String(level[0].charCodeAt(cells[0]!) - 65);
-    await expect(page.locator(`[data-testid="tsunagi-flag"][data-pair="${pairOf(short)}"]`)).toHaveCount(2);
-    await expect(page.getByTestId("tsunagi-flag")).toHaveCount(2 * (pairs - 1));
-    await expect(page.locator(`[data-testid="tsunagi-flag"][data-pair="${pairOf(whole!)}"]`)).toHaveCount(0);
+    await expect(page.locator(`.tsu-flag[data-pair="${pairOf(short)}"]`)).toHaveCount(2);
+    await expect(page.locator(".tsu-flag")).toHaveCount(2 * (pairs - 1));
+    await expect(page.locator(`.tsu-flag[data-pair="${pairOf(whole!)}"]`)).toHaveCount(0);
     // A flash, not a mark left on the board: it goes by itself.
-    await expect(page.getByTestId("tsunagi-flag")).toHaveCount(0, { timeout: 5_000 });
+    await expect(page.locator(".tsu-flag")).toHaveCount(0, { timeout: 5_000 });
     await expect(page.getByTestId("tsunagi-check-says")).toBeVisible();
     // And the words go as soon as the board changes.
     await drag(page, 5, short);
@@ -405,13 +405,13 @@ test.describe("a Tsunagi level already solved", () => {
     // Chosen, it shows solved in the preview, lines and all; Start opens it.
     await page.locator('[data-testid="tsunagi-level"][data-level="4"]').click();
     await expect(page.getByTestId("tsunagi-preview")).toHaveAttribute("data-state", "solved");
-    await expect(page.getByTestId("tsunagi-preview").getByTestId("tsunagi-line")).toHaveCount(letters.length);
+    await expect(page.getByTestId("tsunagi-preview").locator(".tsu-line")).toHaveCount(letters.length);
     await expect(page.getByTestId("tsunagi-preview-best")).toHaveAttribute("href", /\/games\/tsunagi\/.+/);
     await page.getByTestId("puzzle-solve").click();
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("puzzle-play")).toHaveAttribute("data-reviewing", "true");
     await expect(page.getByTestId("tsunagi-solved-already")).toBeVisible();
-    await expect(page.getByTestId("tsunagi-line")).toHaveCount(letters.length);
+    await expect(page.locator(".tsu-line")).toHaveCount(letters.length);
     await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-done", "true");
     await expect(page.getByTestId("tsunagi-attempts")).toHaveAttribute("data-count", "1");
     // Its best time opens the solve it was, as every time on the site does.
@@ -419,7 +419,7 @@ test.describe("a Tsunagi level already solved", () => {
 
     // Only Restart starts it again, and the first line drawn is the second attempt.
     await page.getByTestId("tsunagi-restart-solved").click();
-    await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+    await expect(page.locator(".tsu-line")).toHaveCount(0);
     await expect(page.getByTestId("puzzle-grid")).toHaveAttribute("data-done", "false");
     await drag(page, 4, answerLine(level, 4, letters[0]!));
     await expect(page.getByTestId("tsunagi-attempts")).toHaveAttribute("data-count", "2");
@@ -464,7 +464,7 @@ test.describe("Tsunagi on a phone", () => {
       first.y = to.y;
     }
     await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await expect(page.getByTestId("tsunagi-line")).toHaveAttribute("data-cells", String(line.length));
+    await expect(page.locator(".tsu-line")).toHaveAttribute("data-cells", String(line.length));
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
   });
 

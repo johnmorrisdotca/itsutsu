@@ -941,6 +941,14 @@ Held by `boardFrame.coverage.test.ts` and `boardSizeMark.coverage.test.ts`.
 Before a new kind of thing that draws a board, a size or a preview ships, find
 the component that already draws it and use that.
 
+Inside that frame, Tsunagi's board is the package's own drawing and nothing of
+the site's (John, 2026-10-01: "bridges for Tsunagi don't look like the ones in
+Itsutsu... are bridges rendered differently per consumer?"): `TsunagiGrid` lays
+`tsunagiDrawing(layout, { surface: true })` on `PuzzleBoard` and brings only the
+colours for the wood (`tsunagiBoardLook`), the words and the pressing. A spec
+finds what is on the board by the drawing's own classes (`.tsu-line`,
+`.tsu-marble`, `.tsu-bridge`). Held by `tsunagiOneDrawing.coverage.test.ts`.
+
 **And nothing on the set-up screen changes height when something is chosen.**
 John, 2026-09-24: "We cannot have the heights change in Mobile or Desktop."
 A family, a game and a board size are one tile (`PICK_TILE`, fixed width and

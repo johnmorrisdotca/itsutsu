@@ -756,8 +756,10 @@ at most sixteen lines, proved to have one answer by a solver that learns from
 its dead ends, and played on a phone with the zoom pad that starts at 10×10. The three
 biggest (1.5.0, 2026-10-05) have 20 to 80 lines, are made by taking clues away, and are
 looked at through the same box: its pad, the wheel, the edge nudge as a line is dragged near it,
-and two fingers pinching and dragging (`TsunagiViewport`); a finger moving through a cell redraws
-the cells that changed and each pair's own line, and nothing else (`TsunagiGrid`).
+and two fingers pinching and dragging (`TsunagiViewport`). The board is the package's own drawing
+laid on the site's wood (`TsunagiGrid`, `tsunagiDrawing`), the same one its demo and embed show, so a
+bridge or a marble is one picture everywhere; a finger moving through a cell redraws the cells that
+changed and each pair's own line, and nothing else.
 A second set of **levels with portals** sits beside the first (5×5 to 10×10, 12×12 and
 15×15, thirty-two each, chosen by "Portals" in the set-up's options): a portal is two rings
 alike, and a line that goes into one comes out of the other going the same way. A record

@@ -27,15 +27,15 @@ const SIZES = [
   { size: 15, twoDigits: true },
 ] as const;
 
-/** Every marble under `root`, its number's text box against the marble's own box. */
-async function numbersInside(root: Locator, twoDigits: boolean, testId = "tsunagi-marble") {
-  await expect(root.getByTestId(testId).first()).toBeVisible();
-  const found = await root.evaluate((element, id) =>
-    [...element.querySelectorAll<HTMLElement>(`[data-testid="${id}"]`)].map((marble) => {
-      const range = document.createRange();
-      range.selectNodeContents(marble);
-      const text = range.getBoundingClientRect();
-      const box = marble.getBoundingClientRect();
+/** Every marble under `root`, its number's text box against the ball of the marble: the drawing's own text and circle. */
+async function numbersInside(root: Locator, twoDigits: boolean) {
+  await expect(root.locator(".tsu-marble").first()).toBeVisible();
+  const found = await root.evaluate((element) =>
+    [...element.querySelectorAll<SVGGElement>(".tsu-marble")].map((marble) => {
+      const text = marble.querySelector("text")!.getBoundingClientRect();
+      // Its last circle is the ball; the one before it is its shadow.
+      const circles = marble.querySelectorAll("circle");
+      const box = circles[circles.length - 1]!.getBoundingClientRect();
       return {
         number: marble.textContent ?? "",
         inside: text.left >= box.left - 0.5 && text.right <= box.right + 0.5 && text.top >= box.top - 0.5 && text.bottom <= box.bottom + 0.5,
@@ -45,7 +45,6 @@ async function numbersInside(root: Locator, twoDigits: boolean, testId = "tsunag
         marble: `${box.width.toFixed(1)}×${box.height.toFixed(1)}`,
       };
     }),
-    testId,
   );
   expect(found.length).toBeGreaterThan(0);
   // Numbers, not colours: every marble carries its number.
@@ -110,6 +109,19 @@ test.describe("Tsunagi's solved levels carry their number on a marble too", () =
     const block = page.getByTestId("tsunagi-block");
     for (let turn = 0; turn < 8 && !(await block.textContent())?.startsWith("Block 8 of 8"); turn += 1) await page.getByTestId("tsunagi-block-on").click();
     await expect(block).toHaveText("Block 8 of 8 · levels 113–128");
-    await numbersInside(page.getByTestId("tsunagi-levels"), true, "tsunagi-level-marble");
+    // A level's marble in the picker is the site's own, with the level's number on it: read as the text it holds.
+    const marbles = page.getByTestId("tsunagi-levels").getByTestId("tsunagi-level-marble");
+    await expect(marbles.first()).toBeVisible();
+    const found = await page.getByTestId("tsunagi-levels").evaluate((element) =>
+      [...element.querySelectorAll<HTMLElement>('[data-testid="tsunagi-level-marble"]')].map((marble) => {
+        const range = document.createRange();
+        range.selectNodeContents(marble);
+        const text = range.getBoundingClientRect();
+        const box = marble.getBoundingClientRect();
+        return { number: marble.textContent ?? "", fits: text.left >= box.left - 0.5 && text.right <= box.right + 0.5 && text.top >= box.top - 0.5 && text.bottom <= box.bottom + 0.5 && text.width <= box.width * 0.8 };
+      }),
+    );
+    expect(found.length).toBeGreaterThan(0);
+    expect(found.filter((each) => !each.fits), "every level's number sits inside its marble").toEqual([]);
   });
 });

@@ -28,7 +28,7 @@ async function playLevel(page: Page, level: number) {
   await page.goto(`${AT}/play?size=${SIZE}&seed=${level}`);
   await ready(page, "puzzle-play");
   if ((await page.getByTestId("puzzle-play").getAttribute("data-reviewing")) === "true") await page.getByTestId("tsunagi-restart-solved").click();
-  await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+  await expect(page.locator(".tsu-line")).toHaveCount(0);
 }
 
 async function drag(page: Page, cells: readonly number[]) {
@@ -83,7 +83,7 @@ test.describe("Tsunagi: harder without new rules", () => {
     await expect(left).toContainText("Out of strokes");
     // The board takes nothing now: the last line drawn changes nothing.
     await drag(page, lines[0]!);
-    await expect(page.locator(`[data-testid="tsunagi-line"][data-pair="0"]`)).toHaveAttribute("data-cells", "2");
+    await expect(page.locator(`.tsu-line[data-pair="0"]`)).toHaveAttribute("data-cells", "2");
     await expect(page.getByTestId("tsunagi-undo")).toBeDisabled();
     // Restart gives every stroke back, and a clean run solves it.
     await page.getByTestId("tsunagi-restart").click();
