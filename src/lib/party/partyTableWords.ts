@@ -44,6 +44,24 @@ export const PARTY_TABLE_WORDS: Record<PartyKind, { turn: string; house: string;
       "A round that ties again and again goes on; after a hundred wars it is called off and nobody scores, which with two or more sides to a die never happens in practice.",
     ],
   },
+  pig: {
+    turn: "The line at the top says whose turn it is and what the turn has made so far. Press Roll, or tap the tray, to throw the die; press Bank to keep the turn's points. The table lists everybody's score, and what the player to move has at risk.",
+    house: "The die is thrown by the game from a fresh random seed, and every throw is kept with the game, so a reloaded page throws nothing new. A computer can take any seat and plays in the browser, a moment at a time so the table can watch. The sound of the dice stays off until you turn it on.",
+  },
+  tenThousand: {
+    turn: "The line at the top says whose turn it is and what the turn has made so far. Press Roll, or tap the tray, to throw. Tap the dice you want to set aside, and the press under the tray says what they score; press Set aside, then Roll to throw what is left or Bank to keep the turn. Dice that score nothing cannot be chosen together with ones that do.",
+    house: "The dice are thrown by the game from a fresh random seed, and every throw is kept with the game, so a reloaded page throws nothing new. A computer can take any seat and plays in the browser, a moment at a time so the table can watch. The sound of the dice stays off until you turn it on.",
+    more: ["There is no least score to get on the board, and nothing extra for a second set of three thrown later in the turn: only dice from the same throw score together."],
+  },
+  liarsDice: {
+    turn: "Your dice are shown under the table's bid, and nobody else's. Choose how many and which number and press Bid, or press Liar! to call the last bid. Between two people at one device the table covers the dice and names who to pass it to, and shows them only once that player says it is them. After a call everybody's dice are shown until the next one.",
+    house: "Every throw is drawn by the game from a fresh random seed and kept with it, so a reloaded page throws nothing new, and asks who is holding the device before it shows any dice. A computer can take any seat, and plays in the browser from its own dice and how many are on the table.",
+    more: ["Ones are wild and cannot be bid on. A bid may be as many dice as are left on the table and no more, and the loser of a call opens the next round, or the next player round if that was their last die."],
+  },
+  sayu: {
+    turn: "The line at the top says whose turn it is. Press Roll, or tap the tray, to throw a die for each of your counters, three at most. Under each die it says where its counter went, and the table lists everybody's counters and the pot. A player with no counters is passed over until somebody hands them one.",
+    house: "The dice are thrown by the game from a fresh random seed, and every throw is kept with the game, so a reloaded page throws nothing new. Counters exist inside this one game: everybody starts level, and nothing is bought, carried over or swapped for XP, IP or stars.",
+  },
   yacht: {
     turn: "The line at the top says whose turn it is and which roll this is. Press Roll, or tap the dice tray, to throw; tap a die to hold it (it is ringed and marked HELD) and tap again to let it go. Every box you could write the dice into shows what it would score; tap one to write it down, and the dice pass on.",
     house:

@@ -34,7 +34,7 @@ function partyFiles(dir: string = PARTY): string[] {
  * A table whose game is played in a component not named `*Game.tsx`: Tenka's
  * table hands the playing of it to `TenkaPlay`.
  */
-const PLAYED_IN: readonly string[] = [join(PARTY, "tenka", "TenkaPlay.tsx")];
+const PLAYED_IN: readonly string[] = [join(PARTY, "tenka", "TenkaPlay.tsx"), join(PARTY, "diceTable", "DiceTablePlay.tsx")];
 
 function read(path: string): string {
   return readFileSync(path, "utf8");

@@ -316,6 +316,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   // Karakuri's page, the same shelf under its own mark.
   "src/components/casual/CasualFamilyPage.tsx": { FamilyMark: "regular" },
   "src/app/games/table-cards/page.tsx": { FamilyMark: "regular" },
+  "src/app/games/dice/page.tsx": { FamilyMark: "regular" },
   "src/app/games/tables/page.tsx": { FamilyMark: "regular" },
   // The same tab's casual games, a row for each with a level won or in progress, kept in this browser: a row like the rest.
   "src/components/casual/CasualCard.tsx": { GameThumb: "small" },
@@ -337,6 +338,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/party/TrainCard.tsx": { GameThumb: "small" },
   "src/components/party/yacht/YachtCard.tsx": { GameThumb: "small" },
   "src/components/party/diceWar/DiceWarCard.tsx": { GameThumb: "small" },
+  "src/components/party/diceTable/DiceTableCard.tsx": { GameThumb: "small" },
   "src/components/party/pachisi/PachisiCard.tsx": { GameThumb: "small" },
   "src/components/party/gunjin/GunjinCard.tsx": { GameThumb: "small" },
   "src/components/party/hitotsu/HitotsuCard.tsx": { GameThumb: "small" },

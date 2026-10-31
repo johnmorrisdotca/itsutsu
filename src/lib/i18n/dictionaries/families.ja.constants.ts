@@ -111,10 +111,17 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
     review: AGENT_READ_2026_10_06,
     ask: "Backgammon terms (blot, bar, doubling cube) were written from the usual Japanese backgammon words; a backgammon player should confirm them.",
   },
+  dice: {
+    blurb: [
+      "サイコロが決めるゲームです。振って、残したい目を残して点を数える、どこまで運を試すかを決める、全員のカップの中身について宣言する、チップを卓に回す、出た目で駒をゴールまで進める、といったゲームがあります。",
+      "Games the dice decide. There are games of rolling, keeping the numbers you want and counting the score, deciding how far to try your luck, declaring what is in everybody's cups, passing chips round the table, and moving your pieces to the goal by what comes up.",
+    ],
+    ask: "Drafted 2026-10-31 and read by nobody yet: please read it.",
+  },
   party: {
     blurb: [
-      "1台のスマートフォンやタブレットを囲んで遊ぶ、みんな向けのゲームです。自分の番が終わったら次の人へ回します。箱を埋める、種をまく、世界を征服する、サイコロで最高点を競う、出た目で駒をゴールまで進める、隣の人から自分の軍を隠す、といったゲームがあります。",
-      "Games for a group, played round one smartphone or tablet. When your turn is over you pass it to the next person. There are games of filling in boxes, sowing seeds, conquering the world, rolling dice for the highest score, moving pawns home by what the dice show, and hiding your army from the player beside you.",
+      "1台のスマートフォンやタブレットを囲んで遊ぶ、みんな向けのゲームです。自分の番が終わったら次の人へ回します。種をまく、世界を征服する、ドミノを並べる、隣の人から自分の軍を隠す、といったゲームがあります。",
+      "Games for a group, played round one smartphone or tablet. When your turn is over you pass it to the next person. There are games of sowing seeds, conquering the world, laying dominoes, and hiding your army from the person next to you.",
     ],
     review: AGENT_READ_2026_10_06,
   },

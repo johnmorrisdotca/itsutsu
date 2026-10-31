@@ -12,6 +12,8 @@ import { TENKA_MEDIUM_ROUNDS, TENKA_SHORT_ROUNDS, TENKA_WORLD_ROUNDS } from "./t
 import { CARD_GAME_KINDS, CARD_GAME_LIST, CARD_GAME_SPECS } from "../cardGames/cardGames.constants";
 import { CARD_GAME_DISPLAY } from "../cardGames/cardGames.copy";
 import { HITOTSU_DISPLAY } from "./hitotsu/hitotsu.copy";
+import { DICE_TABLE_SPECS } from "./diceTable/diceTable.constants";
+import { DICE_TABLE_DISPLAY } from "./diceTable/diceTable.copy";
 import { GUNJIN_DEFAULT_SIZE, GUNJIN_SIZES } from "./gunjin/gunjin.constants";
 import { GUNJIN_DISPLAY } from "./gunjin/gunjin.copy";
 import { SUGOROKU_DEFAULT_LENGTH, SUGOROKU_KIND_LIST, SUGOROKU_KINDS, SUGOROKU_LENGTHS } from "./sugoroku/sugoroku.constants";
@@ -38,12 +40,16 @@ export const PARTY_KINDS = {
   hitotsu: "hitotsu",
   diceWar: "diceWar",
   gunjin: "gunjin",
+  pig: "pig",
+  tenThousand: "tenThousand",
+  liarsDice: "liarsDice",
+  sayu: "sayu",
   ...SUGOROKU_KINDS,
   ...CARD_GAME_KINDS,
 } as const satisfies Record<PartyKind, PartyKind>;
 
 /** Every party game, in the order its family shows them, the card games after the rest. Read by the gate, the catalogue and the shelf. */
-export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.hitotsu, PARTY_KINDS.yacht, PARTY_KINDS.pachisi, PARTY_KINDS.diceWar, PARTY_KINDS.gunjin, ...SUGOROKU_KIND_LIST, ...CARD_GAME_LIST];
+export const PARTY_KIND_LIST: readonly PartyKind[] = [PARTY_KINDS.dotsAndBoxes, PARTY_KINDS.superghost, PARTY_KINDS.mancala, PARTY_KINDS.tenka, PARTY_KINDS.mexicanTrain, PARTY_KINDS.hitotsu, PARTY_KINDS.yacht, PARTY_KINDS.pachisi, PARTY_KINDS.diceWar, PARTY_KINDS.pig, PARTY_KINDS.tenThousand, PARTY_KINDS.liarsDice, PARTY_KINDS.sayu, PARTY_KINDS.gunjin, ...SUGOROKU_KIND_LIST, ...CARD_GAME_LIST];
 
 export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   dotsAndBoxes: {
@@ -228,6 +234,7 @@ export const PARTY_DISPLAY: Record<PartyKind, VariantCopy> = {
   // The backgammon games' copy, kept beside their rules (`sugoroku.copy.ts`).
   ...SUGOROKU_DISPLAY,
   // The family card games' copy, kept beside their rules (`cardGames.copy.ts`).
+  ...DICE_TABLE_DISPLAY,
   ...CARD_GAME_DISPLAY,
 };
 
@@ -320,6 +327,8 @@ export const PARTY_SPECS: Record<PartyKind, PartySpec> = {
   ...(Object.fromEntries(
     SUGOROKU_KIND_LIST.map((kind) => [kind, { fewestPlayers: 2, mostPlayers: 2, defaultPlayers: 2, sizes: SUGOROKU_LENGTHS[kind], defaultSize: SUGOROKU_DEFAULT_LENGTH }]),
   ) as Record<(typeof SUGOROKU_KIND_LIST)[number], PartySpec>),
+  // Pig, Ten Thousand, Liar's Dice and Sayu: how many at a table, and the score or the dice or counters each starts with.
+  ...DICE_TABLE_SPECS,
   // The family card games: how many at a table, and how long a game lasts in each one's own terms (`cardGames.constants.ts`).
   ...CARD_GAME_SPECS,
 };

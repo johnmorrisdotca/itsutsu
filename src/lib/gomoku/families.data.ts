@@ -379,6 +379,32 @@ export const GAME_FAMILIES: GameFamily[] = [
       "A tables game is played by two, round one device, on two devices or against the computer, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
+    key: "dice",
+    /*
+     * DICE 賽子. John, 2026-09-30: "Did we create a dice rolling game [where]
+     * you just roll a dice and have fun that way?", and 2026-09-29: "several
+     * misc. dice rolling games". A family for the games played with dice alone.
+     *
+     * It was a shelf of its own until 2026-10-01, when John folded its three
+     * games into Party games. It came back on 2026-10-31 with Pig, Ten Thousand, Liar's
+     * Dice and Sayu, because the board row asks for a Dice family and seven dice
+     * games cannot sit on a shelf of eight beside Party games' own four: the
+     * fold was three games with nowhere better to be, and now there is a shelf.
+     * `dice` no longer leads to `party` in `FAMILY_ABSORBED`.
+     *
+     * Its games are party games, played round one device or on several and never
+     * recorded, so it counts towards no award (`RECORDED_FAMILIES`), has a page of
+     * its own at /games/dice, and stays off the set-up screen, which makes games
+     * between two. 賽子 (saikoro) is the everyday word for a die.
+     */
+    title: "Dice",
+    kanji: "賽子",
+    blurb: "Games the dice decide: roll, hold the ones you want and score what they make, press your luck, bid on what is under everybody's cup, pass counters round the table, or race your pawns home by what they show.",
+    games: ["yacht", "pig", "tenThousand", "liarsDice", "sayu", "diceWar", "pachisi"],
+    notOnSetUp:
+      "A dice game is played alone or by a table of people on one device or on several, set up from the game's own page; the set-up screen makes a game between two seats.",
+  },
+  {
     key: "party",
     /*
      * PARTY GAMES. John, 2026-09-28, of Kumimoji's pass and play for up to
@@ -417,17 +443,15 @@ export const GAME_FAMILIES: GameFamily[] = [
      * THE DICE GAMES JOINED IT, 2026-10-01. Dice (賽子, 2026-09-30) had been a
      * shelf of its own for Yacht, Pachisi and Dice War, all party games played
      * round one device and never recorded. John: fold Dice into Party games.
-     * They are at home here now, seven games under the cap of eight; the
-     * `dice` key is `FAMILY_ABSORBED` into this one and /games/dice is gone.
+     * They were at home here until 2026-10-31, when four more dice games gave
+     * them a shelf of their own again (see `dice` above).
      *
-     * GUNJIN 軍人 (2026-10-05) is the seventh at home, so the shelf is full:
-     * six home games and Chinese Checkers as a guest make eight with it. A
-     * hidden-rank game for two, passed round one device with the phone covered
+     * GUNJIN 軍人 (2026-10-05): a hidden-rank game for two, passed round one device with the phone covered
      * between turns, so it is a party game and not a rule variant.
      */
     title: "Party games",
     kanji: "団欒",
-    blurb: "Games for a group round one phone or tablet. Take your turn, then pass it on: fill in boxes, sow seeds, conquer the world, roll dice for the highest score, race your pawns home by what they show, or hide your army from the player beside you.",
+    blurb: "Games for a group round one phone or tablet. Take your turn, then pass it on: sow seeds, conquer the world, lay dominoes, or hide your army from the player beside you.",
     /*
      * And Superghost (2026-09-28), the word game for two to eight, in English
      * or Japanese: the second at home here. And Mancala the same day, Kalah or
@@ -437,9 +461,9 @@ export const GAME_FAMILIES: GameFamily[] = [
      * 2026-10-01 (John): Dots and Boxes went to Small boards, Superghost to
      * Word games, and Mexican Train came in from the dissolved Tiles family.
      */
-    games: ["mancala", "tenka", "yacht", "pachisi", "diceWar", "mexicanTrain", "gunjin"],
+    games: ["mancala", "tenka", "mexicanTrain", "gunjin"],
     notOnSetUp:
-      "A party game, dice game included, is played alone or by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
+      "A party game is played by a table of people on one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
     key: "word-games",

@@ -1115,10 +1115,14 @@ stats. It is Korokoro (github.com/johnmorrisdotca/korokoro: MIT, no
 dependencies, its own README and a GitHub Pages demo), an ordinary dependency
 from npm, `@johnmorrisdotca/korokoro`, at the version in `package.json`. A
 change to the roller is a release of that package and a version bump here.
-**Dice War** 賽合戦 (2026-10-01) is its game, a party game at home in Party games
+**Dice War** 賽合戦 (2026-10-01) is its game, a party game at home in the Dice family
 (`src/components/party/diceWar/`, rules in Korokoro's `diceWar.ts`):
 two to eight round one device, a computer in any seat, everybody rolls and the
 highest total scores, a tie is war; see `docs/plans/party-games/README.md`.
+The **Dice** family 賽子 (`/games/dice`) holds it with Yacht, Pachisi and, from
+2026-10-31, Pig, Ten Thousand, Liar's Dice and Sayu, which share one table
+(`src/components/party/diceTable/`): nothing is at stake in any of them, and what a
+game counts stays in that game.
 
 ### Players, ratings and records
 

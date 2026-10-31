@@ -9,7 +9,11 @@ import { PACHISI_RULES } from "./pachisi/pachisiRules";
 import { YACHT_RULES } from "./yacht/yachtRules";
 import { HITOTSU_RULES } from "./hitotsu/hitotsuRules";
 import { DICE_WAR_RULES } from "./diceWar/diceWarRules";
+import { TEN_THOUSAND_RULES } from "./tenThousand/tenThousand";
 import { GUNJIN_RULES } from "./gunjin/gunjinRules";
+import { LIARS_RULES } from "./liarsDice/liarsDice";
+import { PIG_RULES } from "./pig/pig";
+import { SAYU_RULES } from "./sayu/sayu";
 import { SUGOROKU_RULES } from "./sugoroku/sugorokuRules";
 import { CARD_GAME_RULES } from "../cardGames/cardGameRules";
 
@@ -28,6 +32,10 @@ export const PARTY_RULES: { [K in PartyKind]: PartyRules<PartyPlays[K]["game"], 
   pachisi: PACHISI_RULES,
   hitotsu: HITOTSU_RULES,
   diceWar: DICE_WAR_RULES,
+  pig: PIG_RULES,
+  tenThousand: TEN_THOUSAND_RULES,
+  liarsDice: LIARS_RULES,
+  sayu: SAYU_RULES,
   gunjin: GUNJIN_RULES,
   ...SUGOROKU_RULES,
   ...CARD_GAME_RULES,

@@ -62,7 +62,7 @@ describe("what a click on a family chooses", () => {
   it("offers every family with a game two people can play, and only those", () => {
     // Numbers, Logic puzzles, Pencil puzzles, Cards and Word games hold games for one, Party games holds no game of its own, Karakuri's casual games and Houseki's gem puzzles are set up on their own pages; the set-up screen makes games between two.
     expect(SET_UP_FAMILIES.map((family) => family.key)).toEqual(
-      GAME_FAMILIES.filter((family) => !["numbers", "logic", "pencil", "cards", "table-cards", "word-games", "tables", "party", "karakuri", "houseki"].includes(family.key)).map((family) => family.key),
+      GAME_FAMILIES.filter((family) => !["numbers", "logic", "pencil", "cards", "table-cards", "word-games", "tables", "dice", "party", "karakuri", "houseki"].includes(family.key)).map((family) => family.key),
     );
     expect(GAME_FAMILIES.some((family) => family.key === "numbers")).toBe(true);
   });

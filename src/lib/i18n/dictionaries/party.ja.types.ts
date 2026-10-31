@@ -15,8 +15,8 @@ import type { JaOverlay } from "../copyTable";
  * Japanese with a back-translation, and to a review stamp.
  */
 export type PartyCopyJa = JaOverlay<VariantCopy> & {
-  /** Who read it. */
-  review: CopyReview;
+  /** Who read it. Absent while nobody has, and then `ask` says so. */
+  review?: CopyReview;
   /** What a person still has to decide or read, in English. */
   ask?: string;
 };

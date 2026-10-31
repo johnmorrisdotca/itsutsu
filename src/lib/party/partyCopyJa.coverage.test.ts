@@ -38,8 +38,12 @@ describe("every party, card and casual game speaks Japanese", () => {
   it.each(KINDS)("%s: every line is Japanese with a back-translation, and was read", (kind) => {
     const ja = PARTY_COPY_JA[kind];
     for (const { path, line } of overlayLines(ja)) expect(problemsWith(line), `${kind} ${path}`).toEqual([]);
-    expect(ja.review, kind).toMatchObject({ by: "agent" });
-    expect(ja.review.on, kind).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    // Read, by a stamp; or drafted and not yet read, which it must say by asking (the phrase table's rule, `japanese.coverage.test.ts`).
+    if (ja.review === undefined) expect(ja.ask, `${kind} is unread and asks nothing`).toBeDefined();
+    else {
+      expect(ja.review, kind).toMatchObject({ by: "agent" });
+      expect(ja.review.on, kind).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
   });
 
   it("keeps the English for a reader of English", () => {

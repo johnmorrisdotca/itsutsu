@@ -416,6 +416,63 @@ scores a point, and a tie for the highest is war.
   (`DICE_WAR_RULES.moves`); the rules around a real throw, and the odds and
   words, are tested in `diceWar.test.ts`.
 
+## The plain dice tables: Pig, Ten Thousand, Liar's Dice, Sayu (2026-10-31)
+
+Board row `dice-games-a-dice-family-to-roll-against-the-computer-or-friends-with-nothing-of`.
+John, 2026-09-29: "several misc. dice rolling games… a bare bones basic one, and
+then some of the commercial clones." With Yacht, Dice War and Pachisi they make
+the **Dice** family again (`key: "dice"`, `/games/dice`, its mark `Dice`), seven
+games on a shelf of eight, out of `FAMILY_ABSORBED`, and in no award's count, since
+nothing of them is recorded. Party games keeps Mancala, Tenka, Mexican Train and
+Gunjin at home, with Chinese Checkers as a guest.
+
+- **Nothing is at stake.** What a game counts (points, dice, counters) exists
+  inside that one game, starts level for everybody, and is never bought, carried
+  over or swapped for XP, IP or stars. Nothing here pays anything.
+- **High roll is Dice War.** The board row's "bare bones" game, "you roll dice vs
+  computer or your friends… highest one gets the pot", is what Dice War already
+  is: everybody rolls, the highest total takes what is at stake. So it is not
+  added a second time.
+- **One table for all four**, as the card games have one: `DiceTable`,
+  `DiceTablePlay`, `DiceTableSetUp`, `DiceTableCard` and `DiceTableOffer` in
+  `components/party/diceTable/`, with a row a game in `diceTableRows.ts` (its rules,
+  its board, its one choice). `lib/party/diceTable/diceTable.ts` is what they share:
+  the throw, the seats and the keeping. A game is its table, its seed and its moves.
+- **The dice.** `throwDice(seed, thrown, count)` decides a throw before anything is
+  drawn; Korokoro's die (`PartyDie`, in the shared `DiceTray`) is told the face and
+  tumbles onto it. A reload throws nothing new.
+- **Pig** (`lib/party/pig/`): one die; a 1 loses the turn; bank to keep it; first to
+  50 or 100. The computer banks at twenty, or at once when banking wins, and presses
+  on when somebody is close.
+- **Ten Thousand** (`lib/party/tenThousand/`): six dice; set aside what scores
+  (`tenThousandScore`), throw the rest or bank; a throw that scores nothing is a bust;
+  all six set aside throw again; reaching the score gives everybody else one more
+  turn. Played to 2,000, 5,000 or 10,000. It goes by a plain name of the game's own
+  because the name the ticket used is registered to a company for dice games, as
+  Yacht's and Tenka's boxed names are, and appears nowhere here.
+- **Liar's Dice** (`lib/party/liarsDice/`): hidden dice; bid higher or call; ones are
+  wild and cannot be bid; a call lifts every cup, the loser loses a die and opens; the
+  last with dice wins. Three or five dice each. **Two people on one device** have the
+  board covered between turns (`PartyHandOver`), and a reload covers it again. One
+  person with computers just sees their own dice. The computer (`liarsComputer`) reads
+  its own cup and how many dice are on the table, and a test holds that it chooses the
+  same with everybody else's dice changed.
+- **Sayu 左右** (`lib/party/sayu/`): the pass-the-counters game, under a name of our
+  own, on ordinary dice: a 1 passes left, a 2 right, a 3 to the pot, the rest stay. A
+  die for each counter held, three at most; a seat with none is passed over and is not
+  out; the last holder wins. The word under each die says where its counter went.
+  Two, three or five counters each.
+- **Offline**: each table's page is under `/pass-and-play`, so the keeper takes it
+  like any other.
+- **Japanese**: every line of the four was drafted on 2026-10-31 and is marked unread
+  (`ask`, no `review`), so a review sheet says so.
+
+Decisions to review: the Dice family back rather than folded; Pachisi on it, as it was;
+"Ten Thousand" in place of the ticket's name; the name Sayu and its kanji; the kanji 豚,
+一万点 and 嘘つき賽; the guests that left Party games for room not coming back; no least
+score at Ten Thousand; ones wild and never bid at Liar's Dice; no bluffing by the
+computer beyond what its sums allow; one die at Pig rather than two.
+
 ## Adding the next one
 
 1. Add its key to `PartyKind`, `PARTY_KINDS`, `PARTY_KIND_LIST`,

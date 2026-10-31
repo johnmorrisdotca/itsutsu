@@ -7,6 +7,7 @@ import { pictureBox } from "./picture";
 import { centredBaseline } from "@/lib/ui/svgText";
 
 import type { Mark } from "./familyMark.types";
+import { MarkDice } from "./MarkDice";
 import { FAMILY_MARKS } from "./familyMarks.constants";
 
 export { FAMILY_MARKS };

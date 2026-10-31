@@ -1,5 +1,8 @@
 import type { Card } from "@/lib/cards/cards.types";
 
+/** A die in a family's mark: its top-left corner, in cells (a cell and a half square), its face, and whether it is held. */
+export type MarkDie = { x: number; y: number; face: number; held?: boolean };
+
 /** A stone in a family's mark: grid row and column, colour, and whether it is faded (a stone being taken, or a ghost). */
 export type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean };
 
@@ -10,6 +13,8 @@ export type MarkStone = { r: number; c: number; white?: boolean; faded?: boolean
 export type MarkDigit = { r: number; c: number; value?: number; faded?: boolean; letter?: string; tile?: "hit" | "near" };
 
 export type Mark = {
+  /** Dice lying on the board: the Dice family's throw. */
+  dice?: MarkDie[];
   /** Lines per side of the little board. */
   n: number;
   /** Cells rather than lines: Othello and the drop games. */

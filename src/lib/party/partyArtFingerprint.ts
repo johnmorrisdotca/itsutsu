@@ -71,6 +71,11 @@ export const PARTY_ART_FILES: readonly string[] = [
   "src/lib/party/diceWar/diceWarWords.ts",
   // Dice War's dice are drawn by its package; a new release is a new version here.
   "node_modules/@johnmorrisdotca/korokoro/package.json",
+  "src/components/party/diceTable/PigBoard.tsx",
+  "src/components/party/diceTable/TenThousandBoard.tsx",
+  "src/components/party/diceTable/LiarsBoard.tsx",
+  "src/components/party/diceTable/SayuBoard.tsx",
+  "src/components/party/diceTable/DiceScores.tsx",
   "src/components/party/hitotsu/HitotsuCardView.tsx",
   "src/components/party/hitotsu/HitotsuHand.tsx",
   "src/components/party/hitotsu/HitotsuTableTop.tsx",

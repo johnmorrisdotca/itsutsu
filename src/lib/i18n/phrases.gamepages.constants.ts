@@ -65,6 +65,7 @@ export const PHRASES_GAMEPAGES = {
   "gamepages.inThisFamily": "{count} in this family, including {game}.",
   "gamepages.fromOtherFamilies": "And {count} from other families, listed here too.",
   "gamepages.everyFamily": "Every family, and every game",
+  "gamepages.diceNote": "{count}, played alone or by a table of people on one device or on several, with a computer in any seat. Nothing is at stake: what a game counts stays in that game.",
   "gamepages.partyNote": "{count}, each played by passing one phone or tablet round the table. A game from another family says where it lives.",
   "gamepages.tableCardsNote": "{count}, played by passing one phone or tablet round the table, or on several devices at Hitotsu, with a computer in any seat.",
   "gamepages.tablesNote": "{count}, played round one device, on two devices or against the computer at four strengths.",
