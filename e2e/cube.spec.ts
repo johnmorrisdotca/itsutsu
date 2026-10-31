@@ -111,6 +111,8 @@ test.describe("the Cube", () => {
     await page.goto(`${AT}/play?size=3&level=medium&seed=${freshPuzzleSeed()}`);
     await ready(page, "puzzle-play");
     await expect(page.getByTestId("cube-move-count")).toHaveText("0 moves");
+    // Measured at rest: a cube still settling gave the top's centre taller than it is wide (run 41142674874).
+    await settledCube(page);
     // Drawn inside the board, not merely present: the front's centre sits within the wood.
     const board = (await page.getByTestId("cube").boundingBox())!;
     const centre = (await page.locator('[data-kyuubu] [data-slot="22"]').boundingBox())!;

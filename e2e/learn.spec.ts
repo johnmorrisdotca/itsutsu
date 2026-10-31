@@ -94,13 +94,15 @@ test.describe("rules and learning", () => {
   test("the rules can be narrowed to a first letter", async ({ page }) => {
     await page.goto("/games/cards");
     const cards = page.getByTestId("game-cards").getByRole("listitem");
-    const all = await cards.count();
     /*
      * The two narrowing bars are buttons rather than links — they rewrite
      * the query through the router — so they are real buttons before React
      * attaches and a press then narrows nothing at all.
      */
     await ready(page, "letter-filter");
+    // Counted only once the page has answered: asked sooner, this reads nought (run 41142674874).
+    await expect(cards.first()).toBeVisible();
+    const all = await cards.count();
     // No game starts with X; the button says so by refusing.
     await expect(page.getByTestId("letter-X")).toBeDisabled();
     await page.getByTestId("letter-T").click();

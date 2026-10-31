@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { memberContext, seedMember } from "./members";
 import { suiteOperator } from "./operator";
 import { ready } from "./support";
+import { skipWhenSumilabuRefusesTheToken } from "./sumilabuTestToken";
 
 /**
  * The features board.
@@ -81,6 +82,8 @@ test.afterAll(async ({ browser }, testInfo) => {
 });
 
 test.describe("backlog", () => {
+  skipWhenSumilabuRefusesTheToken();
+
   test("the board renders from Sumilabu, with its filters, and never as an alert on a readable board", async ({ page }) => {
     await page.goto("/backlog");
     await expect(page.getByTestId("backlog")).toBeVisible();

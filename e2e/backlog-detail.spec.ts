@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { ready } from "./support";
+import { skipWhenSumilabuRefusesTheToken } from "./sumilabuTestToken";
 
 /**
  * A long request shows its opening and offers the rest.
@@ -12,6 +13,8 @@ import { ready } from "./support";
  * column is a board you scroll past rather than read.
  */
 test.describe("a long request on the board", () => {
+  skipWhenSumilabuRefusesTheToken();
+
   test("shows its opening, and the whole of it when asked", async ({ page }) => {
     await page.goto("/admin/tickets");
     // The fold is a button inside the board's client component. Waiting for
