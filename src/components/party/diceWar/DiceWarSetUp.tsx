@@ -20,11 +20,13 @@ import { PARTY_NAME_MOST, computerNumberName } from "@/lib/party/partyNames";
 import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { freshSeed } from "@/lib/puzzles/random";
 
+import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "../online/OnlineSetUpParts";
+import type { OnlineOffer, SeatChoice } from "../online/online.types";
 import { usePartyMarbles } from "../partyMarbles";
 import { SeatColourButton } from "../SeatColourButton";
 import { DiceWarBoard } from "./DiceWarBoard";
 import type { DiceWarGame } from "@johnmorrisdotca/korokoro";
-import { diceWarScreenWords, seatColourName } from "@/components/party/partyWords";
+import { diceWarScreenWords, onlineWords, seatColourName } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const COUNTS = Array.from({ length: DICE_WAR_LIMITS_HERE.mostPlayers - DICE_WAR_LIMITS_HERE.fewestPlayers + 1 }, (_, at) => DICE_WAR_LIMITS_HERE.fewestPlayers + at);
@@ -51,7 +53,7 @@ function percent(chance: number): string {
  * laid out (those nobody sits in kept in place and hidden), and the preview's
  * rows are all eight places.
  */
-export function DiceWarSetUp({ onStart, ready }: { onStart: (game: DiceWarGame) => void; ready: { "data-ready": string } }) {
+export function DiceWarSetUp({ onStart, ready, online }: { onStart: (game: DiceWarGame) => void; ready: { "data-ready": string }; online?: OnlineOffer }) {
   const say = useSpeaker();
   const DICE_WAR_COPY = diceWarScreenWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
@@ -63,8 +65,13 @@ export function DiceWarSetUp({ onStart, ready }: { onStart: (game: DiceWarGame) 
   const [names, setNames] = useState<string[]>(() => new Array<string>(DICE_WAR_LIMITS_HERE.mostPlayers).fill(""));
   // The first seat is whoever holds the device; the rest open as computers, so one person can start a game at once.
   const [computers, setComputers] = useState<boolean[]>(() => Array.from({ length: DICE_WAR_LIMITS_HERE.mostPlayers }, (_, seat) => seat > 0));
+  const ONLINE_COPY = onlineWords(say.locale);
+  const [several, setSeveral] = useState(false);
+  const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(online, DICE_WAR_LIMITS_HERE.mostPlayers));
+  const table = useStartTable(online);
+  const severalOffer = several ? online : undefined;
   const seated = computers.slice(0, count);
-  const nobody = seated.every(Boolean);
+  const nobody = severalOffer === undefined && seated.every(Boolean);
 
   const make = (seed: string) => DICE_WAR_RULES.startWith({ players: names.slice(0, count), computers: seated, dice, sides, goal: goal.goal, to: goal.to, seed });
   const preview = make("preview");
@@ -82,10 +89,15 @@ export function DiceWarSetUp({ onStart, ready }: { onStart: (game: DiceWarGame) 
         onSubmit={(event) => {
           event.preventDefault();
           if (nobody) return;
+          if (severalOffer !== undefined) {
+            void table.start(goal.goal === "points" ? goal.to : DICE_WAR_DEFAULTS.to, choices.slice(0, count), { dice, sides, goal: goal.goal, to: goal.to });
+            return;
+          }
           const game = make(String(freshSeed()));
           if (game !== null) onStart(game);
         }}
       >
+        <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <fieldset className="flex flex-col gap-2">
           <legend className={SECTION_TITLE}>{DICE_WAR_COPY.howMany}</legend>
           <div className="grid grid-cols-7 gap-1.5" role="radiogroup" aria-label={DICE_WAR_COPY.howMany}>
@@ -143,6 +155,12 @@ export function DiceWarSetUp({ onStart, ready }: { onStart: (game: DiceWarGame) 
             return (
               <div key={seat} className="flex items-center gap-2 text-sm" data-testid="dicewar-seat-set-up" data-seat={seat}>
                 <SeatColourButton player={seat} playing={count} />
+                {severalOffer !== undefined ? (
+                  <div className="min-w-0 flex-1">
+                    <SeatChoiceSelect offer={severalOffer} seat={seat} choices={choices} onChoose={(at, choice) => setChoices((was) => was.map((one, where) => (where === at ? choice : one)))} />
+                  </div>
+                ) : (
+                  <>
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">
                     {seatColourName(say, seat, marbles[seat])}
@@ -167,15 +185,22 @@ export function DiceWarSetUp({ onStart, ready }: { onStart: (game: DiceWarGame) 
                 >
                   {DICE_WAR_COPY.computer}
                 </button>
+                  </>
+                )}
               </div>
             );
           })}
         </fieldset>
 
-        <p className={`min-h-5 text-xs ${nobody ? "text-shu" : "text-muted"}`}>{nobody ? DICE_WAR_COPY.onePerson : DICE_WAR_COPY.kept}</p>
-        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} disabled={nobody} data-testid="dicewar-start">
-          {DICE_WAR_COPY.start} →
+        <p className={`min-h-5 text-xs ${nobody ? "text-shu" : "text-muted"}`}>{nobody ? DICE_WAR_COPY.onePerson : severalOffer === undefined ? DICE_WAR_COPY.kept : ONLINE_COPY.severalNote}</p>
+        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} disabled={nobody || table.starting || (severalOffer !== undefined && !seatsFillable(severalOffer, count))} data-testid="dicewar-start">
+          {severalOffer === undefined ? DICE_WAR_COPY.start : table.starting ? ONLINE_COPY.starting : ONLINE_COPY.start} →
         </button>
+        {table.problem !== null && severalOffer !== undefined ? (
+          <p className="text-sm text-shu" role="alert" data-testid="online-start-problem">
+            {table.problem}
+          </p>
+        ) : null}
       </form>
     </div>
   );

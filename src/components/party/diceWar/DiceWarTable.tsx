@@ -12,7 +12,7 @@ import { useKeptDiceWarGame } from "./diceWarStore";
  * then played, kept in this browser after every throw (`diceWarStore.ts`) and
  * nowhere else.
  */
-export function DiceWarTable({ gameHref }: PartyTableGameProps) {
+export function DiceWarTable({ gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptDiceWarGame();
 
@@ -21,7 +21,7 @@ export function DiceWarTable({ gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="dicewar-game" data-state="set-up">
-        <DiceWarSetUp onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <DiceWarSetUp onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }

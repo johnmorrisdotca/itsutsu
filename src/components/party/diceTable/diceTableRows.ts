@@ -1,7 +1,7 @@
 "use client";
 
 import type { DiceTableKind } from "@/lib/party/diceTable/diceTable.constants";
-import { scoreWords } from "@/lib/party/diceTable/diceTableRules";
+import { scoreWords } from "@/lib/party/diceTable/diceTableScore";
 import { TEN_THOUSAND_RULES } from "@/lib/party/tenThousand/tenThousand";
 import type { TenThousandGame, TenThousandMove } from "@/lib/party/tenThousand/tenThousand.types";
 import { LIARS_RULES } from "@/lib/party/liarsDice/liarsDice";

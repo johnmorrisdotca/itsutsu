@@ -36,7 +36,7 @@ function seeded(seed: number): () => number {
 
 describe("every game on several devices", () => {
   it("is listed, and nothing else is", () => {
-    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala", "tenka", "mexicanTrain", "hitotsu", "gunjin", "backgammon", "nackgammon", "longGammon", "hypergammon", "backgammonRace", "antiBackgammon", "tabula"]);
+    expect(ONLINE_GAME_LIST).toEqual(["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "go", "kumimoji", "superghost", "mancala", "tenka", "mexicanTrain", "hitotsu", "gunjin", "yacht", "pachisi", "diceWar", "pig", "tenThousand", "liarsDice", "sayu", "hearts", "spades", "euchre", "cribbage", "ohHell", "crazyEights", "goFish", "bigTwo", "president", "ginRummy", "war", "backgammon", "nackgammon", "longGammon", "hypergammon", "backgammonRace", "antiBackgammon", "tabula"]);
     expect(isOnlineGame("dotsAndBoxes")).toBe(true);
     expect(isOnlineGame("freestyle")).toBe(false);
     expect(isOnlineGame("toString")).toBe(false);
@@ -73,9 +73,10 @@ describe("every game on several devices", () => {
     }
   });
 
-  it("offers a computer seat only at Pair Go, Kumimoji, Mexican Train and Hitotsu, the games with a computer player, and the worker can move for each", () => {
+  it("offers a computer seat only at the games with a computer player, and the worker can move for each", () => {
+    const none = ["dotsAndBoxes", "chineseCheckers", "halma", "blockFive", "superghost", "mancala", "tenka", "gunjin"];
     for (const key of ONLINE_GAME_LIST) {
-      expect(hasComputer(key), key).toBe(key === "go" || key === "kumimoji" || key === "mexicanTrain" || key === "hitotsu" || isSugorokuKind(key));
+      expect(hasComputer(key), key).toBe(!none.includes(key));
       expect(computerPlayOf(key) !== undefined, key).toBe(hasComputer(key));
     }
   });

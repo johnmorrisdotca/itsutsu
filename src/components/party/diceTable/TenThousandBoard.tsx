@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_LEAD, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
-import { scoreWords } from "@/lib/party/diceTable/diceTableRules";
+import { scoreWords } from "@/lib/party/diceTable/diceTableScore";
 import { TEN_THOUSAND_DICE } from "@/lib/party/tenThousand/tenThousand";
 import { diceInMask, tenThousandScore } from "@/lib/party/tenThousand/tenThousandScore";
 import type { TenThousandGame, TenThousandMove } from "@/lib/party/tenThousand/tenThousand.types";

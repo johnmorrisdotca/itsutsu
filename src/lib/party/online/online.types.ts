@@ -1,4 +1,6 @@
 import type { PieceColour } from "@/lib/pieces/pieceColours";
+import type { CardGameKind } from "../../cardGames/cardGames.constants";
+import type { DiceTableKind } from "../diceTable/diceTable.constants";
 import type { SugorokuKind } from "../sugoroku/sugoroku.constants";
 /**
  * The vocabulary of a party table played on several devices — see
@@ -14,7 +16,7 @@ import type { SugorokuKind } from "../sugoroku/sugoroku.constants";
  * board in the client's `ONLINE_VIEWS`, both `Record`s over this, so a key
  * added here without either does not compile.
  */
-export type OnlineGameKey = "dotsAndBoxes" | "chineseCheckers" | "halma" | "blockFive" | "go" | "kumimoji" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "hitotsu" | "gunjin" | SugorokuKind;
+export type OnlineGameKey = "dotsAndBoxes" | "chineseCheckers" | "halma" | "blockFive" | "go" | "kumimoji" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "hitotsu" | "gunjin" | "yacht" | "pachisi" | "diceWar" | DiceTableKind | SugorokuKind | CardGameKind;
 
 /** Who sits in a seat: a member, nobody yet (its link is out), or a computer. */
 export type OnlineSeatKind = "member" | "open" | "computer";
@@ -147,6 +149,13 @@ export type OnlineTableView = {
   seats: readonly OnlineSeatView[];
   /** The reader's seat. */
   mySeat: number;
+  /**
+   * For a game that sends each seat its own view (`seatState`), the view of the computer whose
+   * turn it is, sent only to the browser that should work out its move (`computerDriver`) and
+   * only on its turn. A computer's dice or cards can reach that one browser, and nobody else's
+   * ever do. Null otherwise.
+   */
+  computerState: string | null;
   /** Whether the member whose turn it is has been on the site in the last two minutes (never a computer, an open seat or a child). */
   toPlayHere: boolean;
   /** Whether the reader may end the table now, for everybody (`mayEnd`). */

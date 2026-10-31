@@ -22,6 +22,9 @@ import { PARTY_TABLES_AUTHORED } from "./jaText.build";
  * the file on disk and this function disagree; regenerate with `WRITE_JAPANESE_REVIEW=1 pnpm vitest run src/lib/i18n`.
  */
 
+/** Lines reworded on 2026-10-31 for the tables on several devices, and not read since. */
+const REWORDED_UNREAD = new Set(["yacht: lead", "diceWar: lead", "pachisi: lead", "cardTable: lead"]);
+
 type Row = { where: string; line: JaLine; review: CopyReview | undefined; ask?: string };
 
 function cell(text: string): string {
@@ -65,7 +68,7 @@ function rows(): Row[] {
   for (const [name, table] of Object.entries(PARTY_TABLES_AUTHORED)) {
     for (const { path, line } of overlayLines(table)) {
       // The new dice tables' own lines were drafted and not read; the sheet must not stamp them as if they had been.
-      const unread = name === "tableWords" && DICE_TABLE_KINDS.some((kind) => path === kind || path.startsWith(`${kind}.`));
+      const unread = (name === "tableWords" && DICE_TABLE_KINDS.some((kind) => path === kind || path.startsWith(`${kind}.`))) || REWORDED_UNREAD.has(`${name}: ${path}`);
       out.push({ where: `${name}: ${path}`, line, ...(unread ? { review: undefined, ask: DICE_TABLE_UNREAD } : { review: AGENT_READ_2026_10_06 }) });
     }
   }

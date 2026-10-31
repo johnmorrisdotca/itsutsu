@@ -10,11 +10,11 @@ import { AGE_BANDS } from "@/lib/social/ageBand.constants";
 
 import { isKeptStatus } from "../../kept/kept.constants";
 import { retiredSave } from "../../retiredSaves";
-import { PARTY_TURN_WAIT_MS } from "../online.constants";
+import { COMPUTER_TAKEOVER_MS, PARTY_TURN_WAIT_MS } from "../online.constants";
 import type { OnlineGameKey, OnlineSeatKind, OnlineStatus, OnlineTableView } from "../online.types";
 import { onlineRulesOf } from "../onlineGames";
 import { tableSeatPath } from "../onlinePaths";
-import { mayEnd, seatOfMember } from "../onlineSeats";
+import { computerDriver, mayEnd, seatOfMember } from "../onlineSeats";
 
 /**
  * READING A TABLE: the poll's one small read, and the whole table for a page
@@ -22,7 +22,7 @@ import { mayEnd, seatOfMember } from "../onlineSeats";
  */
 
 /** What the poll's one read brings back. */
-type VersionRow = { version: number; here: boolean; stale: boolean; seated: boolean };
+type VersionRow = { version: number; here: boolean; stale: boolean; seated: boolean; takeover: boolean };
 
 /**
  * WHICH VERSION OF A TABLE A PAGE HOLDS, as an HTTP entity tag, for this
@@ -35,18 +35,22 @@ type VersionRow = { version: number; here: boolean; stale: boolean; seated: bool
  * others may end it), and whether the reader has a seat. A computer's seat,
  * an open seat and a member under 13 are never "here": a program's moves come
  * from a browser at the table, an open seat has nobody, and a child's presence
- * is never shown (`childRules.ts`). The two yes-or-noes are part of the tag,
- * so an arrival, a departure or a turn going stale is a full answer, and while
- * none happens the answer is a 304.
+ * is never shown (`childRules.ts`). The yes-or-noes are part of the tag, so an
+ * arrival, a departure or a turn going stale is a full answer, and so is a computer's
+ * turn left waiting past `COMPUTER_TAKEOVER_MS`, which is when any browser at the
+ * table may be sent what it needs to work that turn out. While none happens the
+ * answer is a 304.
  */
 export async function tableVersion(id: string, readerId: string, now: Date = new Date()): Promise<{ tag: string; here: boolean } | null> {
   const since = new Date(now.getTime() - PRESENT_WITHIN_MS);
   const staleBefore = new Date(now.getTime() - PARTY_TURN_WAIT_MS);
+  const takeoverBefore = new Date(now.getTime() - COMPUTER_TAKEOVER_MS);
   const rows = await prisma.$queryRaw<VersionRow[]>`
     SELECT t.version,
       (t.status = 'playing' AND s.kind = 'member' AND m."botTier" IS NULL
         AND m."ageBand" IS DISTINCT FROM ${AGE_BANDS.under13} AND m."lastSeenAt" >= ${since}) IS TRUE AS here,
       (t."movedAt" <= ${staleBefore}) AS stale,
+      (t.status = 'playing' AND s.kind = 'computer' AND t."movedAt" <= ${takeoverBefore}) IS TRUE AS takeover,
       EXISTS (SELECT 1 FROM "PartySeat" r WHERE r."tableId" = t.id AND r."memberId" = ${readerId}) AS seated
     FROM "PartyTable" t
     LEFT JOIN "PartySeat" s ON s."tableId" = t.id AND s.seat = t."toPlay"
@@ -55,12 +59,12 @@ export async function tableVersion(id: string, readerId: string, now: Date = new
   `;
   const row = rows[0];
   if (row === undefined || !row.seated) return null;
-  return { tag: tableTag(row.version, row.here, row.stale), here: row.here };
+  return { tag: tableTag(row.version, row.here, row.stale, row.takeover), here: row.here };
 }
 
 /** The tag itself, quoted as HTTP wants an entity tag to be. */
-export function tableTag(version: number, here: boolean, stale: boolean): string {
-  return `"p${version}-${here ? "h" : "n"}${stale ? "s" : ""}"`;
+export function tableTag(version: number, here: boolean, stale: boolean, takeover = false): string {
+  return `"p${version}-${here ? "h" : "n"}${stale ? "s" : ""}${takeover ? "c" : ""}"`;
 }
 
 /** A table row with its seats, as the database hands it back. */
@@ -101,6 +105,18 @@ function stateFor(game: OnlineGameKey, state: string, seat: number): string {
 }
 
 /**
+ * THE VIEW OF THE COMPUTER WHOSE TURN IT IS, for the one browser that should work out
+ * its move and for no other (`computerDriver`), on a game that sends each seat its own
+ * view. A browser has to hold a computer's cards to choose its move, since no search
+ * runs on the server; a person's cards are never sent to anybody else.
+ */
+function computerStateFor(row: TableRow & { lastMoverId: string | null }, table: ReturnType<typeof tableOf>, readerId: string, now: Date): string | null {
+  const seatState = onlineRulesOf(row.game as OnlineGameKey).seatState;
+  if (seatState === undefined || row.toPlay === null) return null;
+  return computerDriver({ ...table, lastMoverId: row.lastMoverId }, readerId, now) ? seatState(row.state, row.toPlay) : null;
+}
+
+/**
  * THE TABLE AS THIS READER IS SHOWN IT, or null when they do not sit at it.
  * An open seat's link is shown to everybody at the table: any of them may
  * hand it to somebody.
@@ -130,6 +146,7 @@ export function viewOf(row: TableRow & { lastMoverId: string | null }, readerId:
       colour: isPieceColour(one.colour) ? one.colour : null,
     })),
     mySeat,
+    computerState: computerStateFor(row, table, readerId, now),
     toPlayHere: here,
     canEnd: mayEnd(table, mySeat, now),
     lastMoverId: row.lastMoverId,

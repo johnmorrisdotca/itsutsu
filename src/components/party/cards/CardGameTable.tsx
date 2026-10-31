@@ -22,7 +22,7 @@ import { CARD_TABLE_STORES } from "./cardTableStores";
  * My games meanwhile. One component for all five
  * games; what each plays is its adapter (`cardAdapters.ts`) and its rules.
  */
-export function CardGameTable({ kind, appearance, gameHref }: PartyTableGameProps & { kind: CardGameKind }) {
+export function CardGameTable({ kind, appearance, gameHref, online }: PartyTableGameProps & { kind: CardGameKind }) {
   const say = useSpeaker();
   const hydrated = useHydrated();
   const [game, keep] = CARD_TABLE_STORES[kind].useKept();
@@ -34,6 +34,7 @@ export function CardGameTable({ kind, appearance, gameHref }: PartyTableGameProp
           kind={kind}
           appearance={appearance}
           ready={readyMark(hydrated)}
+          online={online}
           onStart={(seed, size, players, computers) => {
             const fresh = CARD_GAME_RULES[kind].start(size, players, undefined, seed, computers);
             if (fresh !== null) keep(fresh);

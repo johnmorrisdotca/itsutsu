@@ -13,6 +13,7 @@ import {
 } from "../sugoroku/sugorokuTable";
 
 import type { OnlineRules } from "./online.types";
+import { freshTableSeed } from "./onlineSeen";
 
 /**
  * THE BACKGAMMON GAMES AT A TABLE ON TWO DEVICES (docs/plans/sugoroku/README.md):
@@ -32,11 +33,6 @@ import type { OnlineRules } from "./online.types";
  * its name; the move is worked out in a browser at the table, as every computer's
  * here is, by the worker (`onlineComputerMoves.ts`).
  */
-
-/** A fresh seed for a table: the platform's own random numbers, 31 bits. */
-function freshTableSeed(): number {
-  return globalThis.crypto.getRandomValues(new Uint32Array(1))[0]! >>> 1;
-}
 
 function onlineOf(kind: SugorokuKind): OnlineRules<SugorokuTable, SugorokuMove> {
   return {

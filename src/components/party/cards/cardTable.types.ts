@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import type { Speaker } from "@/lib/i18n/i18n";
 
 import type { Appearance } from "@/components/board/board.types";
+import type { OnlineOffer } from "@/lib/party/online/online.types";
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import type { CardGameRules, CardId } from "@/lib/cardGames/cardGames.types";
 
@@ -64,4 +65,6 @@ export type CardSetUpProps = {
   appearance: Appearance;
   onStart: (seed: number, size: number, players: readonly string[], computers: readonly boolean[]) => void;
   ready: { "data-ready": string };
+  /** Playing on several devices (`OnlineOffer`). */
+  online?: OnlineOffer;
 };

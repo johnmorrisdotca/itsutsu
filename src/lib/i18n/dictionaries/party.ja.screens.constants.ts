@@ -474,8 +474,8 @@ export const CARD_TABLE_COPY_JA = {
   computerTag: ["コンピュータ", "computer"],
   scores: ["得点", "Scores"],
   lead: [
-    "1台のスマホやタブレットを囲んで遊ぶ、{0}です。どの席も、人でもコンピュータでもかまいません。ここでは評価されず、このブラウザー以外には保存されません。",
-    "{0} round one phone or tablet, with a person or a computer in every seat. Nothing here is rated or saved anywhere but this browser.",
+    "1台のスマホやタブレットを囲んで遊ぶ、{0}です。または「複数の端末」を選ぶこともできます。どの席も、人でもコンピュータでもかまいません。ここでは評価されません。",
+    "{0} round one phone or tablet, or you can choose \"Several devices\". Every seat may be a person or a computer. Nothing here is rated.",
   ],
   play: ["遊ぶ →", "Play →"],
   card: ["この端末でカード", "Cards on this device"],

@@ -9,7 +9,7 @@ export const PACHISI_COMPUTER_PAUSE_REDUCED_MS = 200;
 export const PACHISI_TUMBLE_MS = 650;
 
 export const PACHISI_COPY = {
-  lead: "Pachisi for two to four round one phone or tablet, with a computer in any seat you like: race your four pawns round the cross and home, sending your opponents back as you go. Nothing here is rated or kept anywhere but this browser.",
+  lead: "Pachisi for two to four round one phone or tablet, or choose Several devices, with a computer in any seat you like: race your four pawns round the cross and home, sending your opponents back as you go. Nothing here is rated.",
   play: "Play Pachisi",
   howMany: "How many are playing?",
   seats: "Who is at the table",

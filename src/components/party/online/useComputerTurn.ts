@@ -90,12 +90,14 @@ export function useComputerTurn<S, M>({
     };
   }, [driving]);
 
-  const position = `${view.moveCount}:${view.toPlay}`;
+  // A game that sends each seat its own view hands this browser the computer's only when it is the one to work it out; until then there is nothing to ask with.
+  const state = rules.seatState === undefined ? view.state : view.computerState;
+  const position = `${view.moveCount}:${view.toPlay}:${state === null ? "waiting" : "ready"}`;
   useEffect(() => {
-    if (!driving || sending || worker.current === null || view.toPlay === null || level === null) return;
+    if (!driving || sending || worker.current === null || view.toPlay === null || level === null || state === null) return;
     asked.current += 1;
     setThinking(true);
-    worker.current.postMessage({ id: asked.current, game: view.game, state: view.state, seat: view.toPlay, level } satisfies ComputerAsk);
+    worker.current.postMessage({ id: asked.current, game: view.game, state, seat: view.toPlay, level } satisfies ComputerAsk);
     // The state is read with the position: a new table at the same position is the same question.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [driving, sending, position]);

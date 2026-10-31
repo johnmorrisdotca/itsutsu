@@ -64,7 +64,7 @@ export const CARD_TABLE_COPY = {
   cards: (count: number) => `${count} ${count === 1 ? "card" : "cards"}`,
   computerTag: "computer",
   scores: "Scores",
-  lead: (game: string) => `${game} round one phone or tablet: a person or a computer in every seat. Nothing here is rated or kept anywhere but this browser.`,
+  lead: (game: string) => `${game} round one phone or tablet, or choose Several devices: a person or a computer in every seat. Nothing here is rated.`,
   play: "Play →",
   card: "Cards on this device",
   about: (game: string) => `About ${game}, its rules and its family`,

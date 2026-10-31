@@ -10,12 +10,14 @@ import { PARTY_NAME_MOST, computerNumberName } from "@/lib/party/partyNames";
 import { playerNumberName } from "@/lib/gomoku/seatWords";
 
 import { MarbleChip } from "../MarbleChip";
+import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "../online/OnlineSetUpParts";
+import type { SeatChoice } from "../online/online.types";
 import { CARD_ADAPTERS } from "./cardAdapters";
 import { PREVIEW_SEED } from "./cardTable.constants";
 import type { CardSetUpProps } from "./cardTable.types";
 import { CardTableSurface } from "./CardTableParts";
 import { freshCardSeed } from "./cardTableStores";
-import { cardTableWords } from "@/components/party/partyWords";
+import { cardTableWords, onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import type { Speaker } from "@/lib/i18n/i18n";
 
@@ -54,7 +56,7 @@ function Section({ legend, children }: { legend: string; children: ReactNode }) 
  * is one size, and all the seats a game could need are always laid out, those
  * nobody sits in kept in place and hidden.
  */
-export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) {
+export function CardSetUp({ kind, appearance, onStart, ready, online }: CardSetUpProps) {
   const say = useSpeaker();
   const CARD_TABLE_COPY = cardTableWords(say.locale);
   const spec = CARD_GAME_SPECS[kind];
@@ -63,8 +65,13 @@ export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) 
   const [size, setSize] = useState(spec.defaultSize);
   const [names, setNames] = useState<string[]>(() => new Array<string>(spec.mostPlayers).fill(""));
   const [computers, setComputers] = useState<boolean[]>(() => Array.from({ length: spec.mostPlayers }, (_, seat) => seat > 0));
+  const ONLINE_COPY = onlineWords(say.locale);
+  const [several, setSeveral] = useState(false);
+  const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(online, spec.mostPlayers));
+  const table = useStartTable(online);
+  const severalOffer = several ? online : undefined;
   const seated = computers.slice(0, count);
-  const nobody = seated.every(Boolean);
+  const nobody = severalOffer === undefined && seated.every(Boolean);
   const adapter = CARD_ADAPTERS[kind];
   const preview = CARD_GAME_RULES[kind].start(size, names.slice(0, count), undefined, PREVIEW_SEED, seated.map(() => true));
   const previewNames = names.slice(0, count).map((name, seat) => (name.trim() === "" ? (computers[seat] ? computerNumberName(say, seat + 1) : playerNumberName(say, seat + 1)) : name));
@@ -82,9 +89,11 @@ export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) 
         onSubmit={(event) => {
           event.preventDefault();
           if (nobody) return;
-          onStart(freshCardSeed(), size, names.slice(0, count), seated);
+          if (severalOffer !== undefined) void table.start(size, choices.slice(0, count));
+          else onStart(freshCardSeed(), size, names.slice(0, count), seated);
         }}
       >
+        <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <Section legend={CARD_TABLE_COPY.howMany}>
           <div className="grid grid-cols-7 gap-1.5" role="radiogroup" aria-label={CARD_TABLE_COPY.howMany}>
             {counts.map((option) => (
@@ -109,6 +118,12 @@ export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) 
             return (
               <div key={seat} className="flex items-center gap-2 text-sm" data-testid="cards-seat-set-up" data-seat={seat}>
                 <MarbleChip player={seat} />
+                {severalOffer !== undefined ? (
+                  <div className="min-w-0 flex-1">
+                    <SeatChoiceSelect offer={severalOffer} seat={seat} choices={choices} onChoose={(at, choice) => setChoices((was) => was.map((one, where) => (where === at ? choice : one)))} />
+                  </div>
+                ) : (
+                  <>
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">{playerNumberName(say, seat + 1)}</span>
                   <input
@@ -130,14 +145,21 @@ export function CardSetUp({ kind, appearance, onStart, ready }: CardSetUpProps) 
                 >
                   {CARD_TABLE_COPY.computer}
                 </button>
+                  </>
+                )}
               </div>
             );
           })}
         </Section>
-        <p className={`min-h-5 text-xs ${nobody ? "text-shu" : "text-muted"}`}>{nobody ? CARD_TABLE_COPY.onePerson : CARD_TABLE_COPY.kept}</p>
-        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} disabled={nobody} data-testid="cards-start">
-          {CARD_TABLE_COPY.start} →
+        <p className={`min-h-5 text-xs ${nobody ? "text-shu" : "text-muted"}`}>{nobody ? CARD_TABLE_COPY.onePerson : severalOffer === undefined ? CARD_TABLE_COPY.kept : ONLINE_COPY.severalNote}</p>
+        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} disabled={nobody || table.starting || (severalOffer !== undefined && !seatsFillable(severalOffer, count))} data-testid="cards-start">
+          {severalOffer === undefined ? CARD_TABLE_COPY.start : table.starting ? ONLINE_COPY.starting : ONLINE_COPY.start} →
         </button>
+        {table.problem !== null && severalOffer !== undefined ? (
+          <p className="text-sm text-shu" role="alert" data-testid="online-start-problem">
+            {table.problem}
+          </p>
+        ) : null}
       </form>
     </div>
   );

@@ -14,7 +14,7 @@ export function dieWidth(dice: number): number {
 }
 
 export const DICE_WAR_COPY = {
-  lead: "Dice War for two to eight round one phone or tablet, with a computer in any seat you like: everybody rolls, the highest total scores, and a tie is war. Nothing here is rated or kept anywhere but this browser.",
+  lead: "Dice War for two to eight round one phone or tablet, or choose Several devices, with a computer in any seat you like: everybody rolls, the highest total scores, and a tie is war. Nothing here is rated.",
   play: "Play Dice War",
   howMany: "How many are playing?",
   seats: "Who sits where",

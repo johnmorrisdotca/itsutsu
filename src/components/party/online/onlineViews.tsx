@@ -23,6 +23,10 @@ import { TrainOnline, trainStanding } from "./TrainOnline";
 import { HitotsuOnline, hitotsuStanding } from "./HitotsuOnline";
 import dynamic from "next/dynamic";
 import { gunjinStanding } from "./gunjinStanding";
+import { cardStanding } from "./cardStanding";
+import { CARD_GAME_LIST, type CardGameKind } from "@/lib/cardGames/cardGames.constants";
+import { diceTableStanding, diceWarStanding, pachisiStanding, yachtStanding } from "./diceStanding";
+import { DICE_TABLE_KINDS, type DiceTableKind } from "@/lib/party/diceTable/diceTable.constants";
 import { sugorokuStanding } from "@/lib/party/sugoroku/sugorokuWords";
 import { SUGOROKU_KIND_LIST, type SugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
 
@@ -43,6 +47,15 @@ const GunjinOnline = dynamic(() => import("./GunjinOnline").then((module) => mod
   ssr: false,
   loading: () => <div className="min-h-[30rem]" data-testid="gunjin-game" data-ready="false" aria-busy="true" />,
 });
+
+/** The dice games' boards at a table, loaded in the browser only: Korokoro's die is no server's to draw. Each keeps the room its board will take. */
+const YachtOnline = dynamic(() => import("./YachtOnline").then((module) => module.YachtOnline), { ssr: false, loading: () => <div className="min-h-[30rem]" data-testid="yacht-game" data-ready="false" aria-busy="true" /> });
+const PachisiOnline = dynamic(() => import("./PachisiOnline").then((module) => module.PachisiOnline), { ssr: false, loading: () => <div className="min-h-[30rem]" data-testid="pachisi-game" data-ready="false" aria-busy="true" /> });
+const DiceWarOnline = dynamic(() => import("./DiceWarOnline").then((module) => module.DiceWarOnline), { ssr: false, loading: () => <div className="min-h-[30rem]" data-testid="dicewar-game" data-ready="false" aria-busy="true" /> });
+const DiceTableOnline = dynamic(() => import("./DiceTableOnline").then((module) => module.DiceTableOnline), { ssr: false, loading: () => <div className="min-h-[30rem]" data-testid="dicetable-online" data-ready="false" aria-busy="true" /> });
+
+/** A card game's table, loaded in the browser only as it is on one device: the cards' drawing and the adapters are no server's to carry. */
+const CardOnline = dynamic(() => import("./CardOnline").then((module) => module.CardOnline), { ssr: false, loading: () => <div className="min-h-[36rem]" data-testid="cards-game" data-ready="false" aria-busy="true" /> });
 
 /**
  * EACH GAME'S BOARD AT A TABLE ON SEVERAL DEVICES, by game: a `Record` over
@@ -76,6 +89,14 @@ export const ONLINE_VIEWS: Record<OnlineGameKey, OnlineView<any, any>> = {
   mexicanTrain: { Board: TrainOnline, standing: trainStanding, testId: "train-game" },
   hitotsu: { Board: HitotsuOnline, standing: hitotsuStanding, testId: "hitotsu-game" },
   gunjin: { Board: GunjinOnline, standing: gunjinStanding, testId: "gunjin-game" },
+  yacht: { Board: YachtOnline, standing: yachtStanding, testId: "yacht-game" },
+  pachisi: { Board: PachisiOnline, standing: pachisiStanding, testId: "pachisi-game" },
+  diceWar: { Board: DiceWarOnline, standing: diceWarStanding, testId: "dicewar-game" },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- as the table above.
+  ...(Object.fromEntries(DICE_TABLE_KINDS.map((kind) => [kind, { Board: (props: OnlineBoardProps<any, any>) => <DiceTableOnline kind={kind} {...props} />, standing: diceTableStanding(kind), testId: "dicetable-online" }])) as Record<DiceTableKind, OnlineView<any, any>>), // eslint-disable-line @typescript-eslint/no-explicit-any -- as the table above.
+  // The eleven card games share one table (`CardOnline`).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- as the table above.
+  ...(Object.fromEntries(CARD_GAME_LIST.map((kind) => [kind, { Board: (props: OnlineBoardProps<any, any>) => <CardOnline kind={kind} {...props} />, standing: cardStanding(kind), testId: "cards-game" }])) as Record<CardGameKind, OnlineView<any, any>>), // eslint-disable-line @typescript-eslint/no-explicit-any -- as the table above.
   // The seven backgammon games share one board; it lies across, so, like Tenka's map, it is laid out wide, in its own shape (`tables`).
   ...(Object.fromEntries(SUGOROKU_KIND_LIST.map((kind) => [kind, { Board: SugorokuOnline, standing: sugorokuStanding, testId: "sugoroku-game", wide: true, tables: true }])) as Record<SugorokuKind, OnlineView<any, any>>), // eslint-disable-line @typescript-eslint/no-explicit-any -- as the table above.
 };

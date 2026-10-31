@@ -31,6 +31,13 @@ import { HITOTSU_ONLINE } from "./onlineHitotsu";
 import { GUNJIN_ONLINE } from "./onlineGunjin";
 import type { GunjinGame, GunjinMove } from "../gunjin/gunjin.types";
 import { SUGOROKU_ONLINE } from "./onlineSugoroku";
+import { DICE_TABLES_ONLINE, DICE_WAR_ONLINE, PACHISI_ONLINE, YACHT_ONLINE, type DiceWarPress, type DiceWarTable } from "./onlineDice";
+import type { YachtGame, YachtMove } from "../yacht/yacht.types";
+import type { PachisiGame, PachisiMove } from "../pachisi/pachisi.types";
+import type { DiceTableKind } from "../diceTable/diceTable.constants";
+import type { DiceTableBase } from "../diceTable/diceTable.types";
+import type { CardGameKind } from "../../cardGames/cardGames.constants";
+import { CARD_GAMES_ONLINE } from "./onlineCards";
 import type { SugorokuMove, SugorokuTable } from "../sugoroku/sugoroku.types";
 
 export { fromPartyRules };
@@ -137,7 +144,10 @@ type OnlinePlays = {
   mexicanTrain: { game: TrainGame; move: TrainMove };
   hitotsu: { game: HitotsuGame; move: HitotsuMove };
   gunjin: { game: GunjinGame; move: GunjinMove };
-} & { [K in SugorokuKind]: { game: SugorokuTable; move: SugorokuMove } };
+  yacht: { game: YachtGame; move: YachtMove };
+  pachisi: { game: PachisiGame; move: PachisiMove };
+  diceWar: { game: DiceWarTable; move: DiceWarPress };
+} & { [K in DiceTableKind]: { game: DiceTableBase<unknown>; move: unknown } } & { [K in CardGameKind]: { game: { players: readonly string[]; moves: readonly unknown[] }; move: object } } & { [K in SugorokuKind]: { game: SugorokuTable; move: SugorokuMove } };
 
 /** A table's rules, by game: a mapped type over `OnlineGameKey`, so a game added there does not compile without its row. */
 export const ONLINE_GAMES: { [K in OnlineGameKey]: OnlineRules<OnlinePlays[K]["game"], OnlinePlays[K]["move"]> } = {
@@ -153,6 +163,11 @@ export const ONLINE_GAMES: { [K in OnlineGameKey]: OnlineRules<OnlinePlays[K]["g
   mexicanTrain: TRAIN_ONLINE,
   hitotsu: HITOTSU_ONLINE,
   gunjin: GUNJIN_ONLINE,
+  yacht: YACHT_ONLINE,
+  pachisi: PACHISI_ONLINE,
+  diceWar: DICE_WAR_ONLINE,
+  ...DICE_TABLES_ONLINE,
+  ...CARD_GAMES_ONLINE,
   ...SUGOROKU_ONLINE,
 };
 

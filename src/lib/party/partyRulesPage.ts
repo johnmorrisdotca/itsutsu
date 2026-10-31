@@ -3,7 +3,9 @@ import type { Speaker } from "@/lib/i18n/i18n";
 import { originFor, wikipediaUrl } from "@/lib/learn/origins";
 import type { RulesPage } from "@/lib/learn/rulesPage";
 
+import { CARD_GAME_LIST } from "../cardGames/cardGames.constants";
 import { partyTable } from "../i18n/partyTables";
+import { DICE_TABLE_KINDS } from "./diceTable/diceTable.constants";
 
 import { partyCopy } from "./partyCopy";
 import { partyBoardsWords, partyPlayersWords } from "./partyOfferedWords";
@@ -11,6 +13,9 @@ import { PARTY_TABLE_WORDS } from "./partyTableWords";
 import type { PartyKind } from "./party.types";
 
 export { partyBoardsWords, partyPlayersWords };
+
+/** The games whose table on several devices keeps its dice or its deal on the server, and says so: named here so a rules page does not carry the online rows. */
+const SERVER_DEALS: ReadonlySet<PartyKind> = new Set<PartyKind>(["yacht", "pachisi", "diceWar", ...DICE_TABLE_KINDS, ...CARD_GAME_LIST]);
 
 /**
  * A party game's rules page, in the game template: Object, Board, Play, House.
@@ -29,7 +34,7 @@ export function partyRulesPage(kind: PartyKind, say: Speaker): RulesPage {
   const object = [copy.tagline, copy.rules.at(-1) ?? copy.tagline];
   const board = [say.say("party.rules.played", { words: partyBoardsWords(kind, say), board: copy.board }), say.say("party.rules.forPlayers", { players: partyPlayersWords(kind, say) })];
   const play = [...copy.rules.slice(0, -1), words.turn];
-  const house = [words.house, ...(words.more ?? []), say.say("party.rules.kept"), say.say("party.rules.never")];
+  const house = [words.house, ...(words.more ?? []), ...(SERVER_DEALS.has(kind) ? [say.say("party.rules.serverDeals")] : []), say.say("party.rules.kept"), say.say("party.rules.never")];
 
   return {
     variant: kind,

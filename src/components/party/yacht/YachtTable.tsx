@@ -12,7 +12,7 @@ import { useKeptYachtGame } from "./yachtStore";
  * played, kept in this browser after every move (`yachtStore.ts`) and nowhere
  * else.
  */
-export function YachtTable({ appearance, gameHref }: PartyTableGameProps) {
+export function YachtTable({ appearance, gameHref, online }: PartyTableGameProps) {
   const hydrated = useHydrated();
   const [game, keep] = useKeptYachtGame();
 
@@ -21,7 +21,7 @@ export function YachtTable({ appearance, gameHref }: PartyTableGameProps) {
   if (game === null) {
     return (
       <section className="flex flex-col gap-4" data-testid="yacht-game" data-state="set-up">
-        <YachtSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} />
+        <YachtSetUp appearance={appearance} onStart={(fresh) => keep(fresh)} ready={readyMark(hydrated)} online={online} />
       </section>
     );
   }

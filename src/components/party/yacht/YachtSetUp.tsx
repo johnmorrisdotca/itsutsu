@@ -13,11 +13,13 @@ import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { freshSeed } from "@/lib/puzzles/random";
 
+import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "../online/OnlineSetUpParts";
+import type { OnlineOffer, SeatChoice } from "../online/online.types";
 import { usePartyMarbles } from "../partyMarbles";
 import { SeatColourButton } from "../SeatColourButton";
 import { DiceTray } from "./DiceTray";
 import { YachtSheet } from "./YachtSheet";
-import { partyScreenWords, seatColourName, yachtWords } from "@/components/party/partyWords";
+import { onlineWords, partyScreenWords, seatColourName, yachtWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 const COUNTS = Array.from({ length: YACHT_MOST_PLAYERS - YACHT_FEWEST_ALONE + 1 }, (_, at) => YACHT_FEWEST_ALONE + at);
@@ -34,13 +36,20 @@ const NONE = new Array<boolean>(YACHT_DICE).fill(false);
  * seats' rows are always laid out, those nobody sits in kept invisible, and
  * the sheet's rows are the same thirteen whoever is at the table.
  */
-export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appearance; onStart: (game: YachtGame) => void; ready: { "data-ready": string } }) {
+export function YachtSetUp({ appearance, onStart, ready, online }: { appearance: Appearance; onStart: (game: YachtGame) => void; ready: { "data-ready": string }; online?: OnlineOffer }) {
   const say = useSpeaker();
   const PARTY_COPY = partyScreenWords(say.locale);
   const YACHT_COPY = yachtWords(say.locale);
   // Every place's marble as this table shows it, with any colour a player chose (`usePartyMarbles`).
   const marbles = usePartyMarbles();
-  const [count, setCount] = useState(PARTY_SPECS.yacht.defaultPlayers);
+  const [chosenCount, setCount] = useState(PARTY_SPECS.yacht.defaultPlayers);
+  const ONLINE_COPY = onlineWords(say.locale);
+  const [several, setSeveral] = useState(false);
+  const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(online, YACHT_MOST_PLAYERS));
+  const table = useStartTable(online);
+  const severalOffer = several ? online : undefined;
+  // Alone is for this device: a table on several has somebody else at it.
+  const count = severalOffer !== undefined ? Math.max(chosenCount, PARTY_SPECS.yacht.fewestPlayers) : chosenCount;
   const [names, setNames] = useState<string[]>(() => new Array<string>(YACHT_MOST_PLAYERS).fill(""));
   // The first seat is whoever holds the device; the rest open as computers, so one person can start a game at once.
   const [computers, setComputers] = useState<boolean[]>(() => Array.from({ length: YACHT_MOST_PLAYERS }, (_, seat) => seat > 0));
@@ -60,9 +69,11 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
         {...ready}
         onSubmit={(event) => {
           event.preventDefault();
-          onStart(seated(freshSeed()));
+          if (severalOffer !== undefined) void table.start(PARTY_SPECS.yacht.defaultSize, choices.slice(0, count));
+          else onStart(seated(freshSeed()));
         }}
       >
+        <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <fieldset className="flex flex-col gap-2">
           <legend className={SECTION_TITLE}>{YACHT_COPY.howMany}</legend>
           <div className="grid grid-cols-8 gap-1.5" role="radiogroup" aria-label={YACHT_COPY.howMany}>
@@ -72,6 +83,7 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
                 type="button"
                 role="radio"
                 aria-checked={option === count}
+                disabled={severalOffer !== undefined && option < PARTY_SPECS.yacht.fewestPlayers}
                 onClick={() => setCount(option)}
                 data-testid="yacht-count"
                 data-count={option}
@@ -92,6 +104,12 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
             return (
               <div key={seat} className="flex items-center gap-2 text-sm" data-testid="yacht-seat" data-seat={seat}>
                 <SeatColourButton player={seat} playing={count} />
+                {severalOffer !== undefined ? (
+                  <div className="min-w-0 flex-1">
+                    <SeatChoiceSelect offer={severalOffer} seat={seat} choices={choices} onChoose={(at, choice) => setChoices((was) => was.map((one, where) => (where === at ? choice : one)))} />
+                  </div>
+                ) : (
+                  <>
                 <label className="min-w-0 flex-1">
                   <span className="sr-only">
                     {seatColourName(say, seat, marbles[seat])}
@@ -117,15 +135,22 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
                 >
                   {YACHT_COPY.computer}
                 </button>
+                  </>
+                )}
               </div>
             );
           })}
         </fieldset>
 
-        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} data-testid="yacht-start">
-          {PARTY_COPY.start} →
+        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} disabled={table.starting || (severalOffer !== undefined && !seatsFillable(severalOffer, count))} data-testid="yacht-start">
+          {severalOffer === undefined ? PARTY_COPY.start : table.starting ? ONLINE_COPY.starting : ONLINE_COPY.start} →
         </button>
-        <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
+        {table.problem !== null && severalOffer !== undefined ? (
+          <p className="text-sm text-shu" role="alert" data-testid="online-start-problem">
+            {table.problem}
+          </p>
+        ) : null}
+        <p className="text-xs text-muted">{severalOffer === undefined ? PARTY_COPY.kept : ONLINE_COPY.severalNote}</p>
       </form>
     </div>
   );

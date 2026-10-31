@@ -15,7 +15,16 @@ import { type HitotsuGame, type HitotsuMove, tableComputerMove } from "@johnmorr
 import { SUGOROKU_KIND_LIST, SUGOROKU_STRENGTHS } from "../sugoroku/sugoroku.constants";
 import type { SugorokuMove, SugorokuTable } from "../sugoroku/sugoroku.types";
 import { sugorokuComputerMove } from "../sugoroku/sugorokuTable";
+import { CARD_GAME_RULES } from "@/lib/cardGames/cardGameRules";
+import { CARD_GAME_LIST, type CardGameKind } from "@/lib/cardGames/cardGames.constants";
+import { DICE_TABLE_KINDS, type DiceTableKind } from "../diceTable/diceTable.constants";
+import { DICE_TABLE_RULES } from "../diceTable/diceTableRules";
+import { pachisiComputerMove } from "../pachisi/pachisiComputer";
+import type { PachisiGame, PachisiMove } from "../pachisi/pachisi.types";
+import { yachtComputerMove } from "../yacht/yachtComputer";
+import type { YachtGame, YachtMove } from "../yacht/yacht.types";
 import type { OnlineComputerPlay, OnlineGameKey } from "./online.types";
+import type { DiceWarPress, DiceWarTable } from "./onlineDice";
 import { seatOf, type KumimojiMove, type KumimojiStage } from "./onlineKumimoji";
 import type { PairGoMove } from "./onlinePairGo";
 
@@ -80,12 +89,27 @@ const SUGOROKU_COMPUTER: OnlineComputerPlay<SugorokuTable, SugorokuMove> = {
   },
 };
 
+/** The dice games: the same computer each plays with on one device, reading only what its seat may know. */
+const YACHT_COMPUTER: OnlineComputerPlay<YachtGame, YachtMove> = { move: (game) => yachtComputerMove(game) };
+const PACHISI_COMPUTER: OnlineComputerPlay<PachisiGame, PachisiMove> = { move: (game) => pachisiComputerMove(game) };
+/** A war left to computers: the press that makes the server throw for them. */
+const DICE_WAR_COMPUTER: OnlineComputerPlay<DiceWarTable, DiceWarPress> = { move: () => ({ kind: "roll" }) };
+const diceTableComputer = (kind: DiceTableKind): OnlineComputerPlay<unknown, unknown> => ({ move: (game) => DICE_TABLE_RULES[kind].computer(game) });
+
+/** A card game: Toranpu's computer player, from that seat's own view of the game (`seenByCardSeat`), which is all this worker is handed. */
+const cardComputer = (kind: CardGameKind): OnlineComputerPlay<unknown, unknown> => ({ move: (game) => (CARD_GAME_RULES[kind] as unknown as { computer: (game: unknown) => unknown }).computer(game) });
+
 /** Every game with a computer player, by game; the move and game are each row's own, read one row at a time. */
 const MOVES: Partial<Record<OnlineGameKey, OnlineComputerPlay<never, unknown>>> = {
   go: PAIR_GO_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
   kumimoji: KUMIMOJI_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
   mexicanTrain: TRAIN_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
   hitotsu: HITOTSU_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
+  yacht: YACHT_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
+  pachisi: PACHISI_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
+  diceWar: DICE_WAR_COMPUTER as unknown as OnlineComputerPlay<never, unknown>,
+  ...Object.fromEntries(CARD_GAME_LIST.map((kind) => [kind, cardComputer(kind) as unknown as OnlineComputerPlay<never, unknown>])),
+  ...Object.fromEntries(DICE_TABLE_KINDS.map((kind) => [kind, diceTableComputer(kind) as unknown as OnlineComputerPlay<never, unknown>])),
   ...Object.fromEntries(SUGOROKU_KIND_LIST.map((kind) => [kind, SUGOROKU_COMPUTER as unknown as OnlineComputerPlay<never, unknown>])),
 };
 

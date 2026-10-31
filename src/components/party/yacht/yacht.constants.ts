@@ -15,7 +15,7 @@ export const YACHT_COMPUTER_PAUSE_REDUCED_MS = 200;
 
 
 export const YACHT_COPY = {
-  lead: "Yacht for one to eight round one phone or tablet, with a computer in any seat you like: five dice, three rolls, a sheet of thirteen boxes. Nothing here is rated or kept anywhere but this browser.",
+  lead: "Yacht for one to eight round one phone or tablet, or choose Several devices, with a computer in any seat you like: five dice, three rolls, a sheet of thirteen boxes. Nothing here is rated.",
   play: "Play Yacht",
   howMany: "How many are playing?",
   alone: "Alone: fill the sheet and beat your best.",

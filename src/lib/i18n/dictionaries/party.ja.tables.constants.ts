@@ -145,8 +145,8 @@ export const HITOTSU_COPY_JA = {
 
 export const YACHT_COPY_JA = {
   lead: [
-    "1〜8人で1台のスマホやタブレットを囲んで遊ぶ、ヨットです。どの席にもコンピュータを座らせられます。サイコロ5個、振るのは3回まで、記入欄は13です。ここでは評価されず、このブラウザー以外には保存されません。",
-    "Yacht for one to eight round one phone or tablet, with a computer in any seat you like: five dice, three rolls, thirteen boxes. Nothing here is rated or saved anywhere but this browser.",
+    "1〜8人で1台のスマホやタブレットを囲んで遊ぶ、ヨットです。または「複数の端末」を選ぶこともできます。どの席にもコンピュータを座らせられます。サイコロ5個、振るのは3回まで、記入欄は13です。ここでは評価されません。",
+    "Yacht for one to eight round one phone or tablet, or you can choose \"Several devices\". A computer can sit in any seat. Five dice, three rolls at most, thirteen boxes. Nothing here is rated.",
   ],
   play: ["ヨットを遊ぶ", "Play Yacht"],
   howMany: HOW_MANY,
@@ -261,8 +261,8 @@ export const SUGOROKU_STRENGTH_LINES_JA = {
 
 export const DICE_WAR_COPY_JA = {
   lead: [
-    "2〜8人で1台のスマホやタブレットを囲んで遊ぶ、賽合戦です。どの席にもコンピュータを座らせられます。全員が振り、合計がいちばん高い人が得点し、同点は戦争です。ここでは評価されず、このブラウザー以外には保存されません。",
-    "Dice War for two to eight round one phone or tablet, with a computer in any seat you like: everybody rolls, the highest total scores, and a tie is war. Nothing here is rated or saved anywhere but this browser.",
+    "2〜8人で1台のスマホやタブレットを囲んで遊ぶ、賽合戦です。または「複数の端末」を選ぶこともできます。どの席にもコンピュータを座らせられます。全員が振り、合計がいちばん高い人が得点し、同点は戦争です。ここでは評価されません。",
+    "Dice War for two to eight round one phone or tablet, or you can choose \"Several devices\". A computer can sit in any seat. Everybody rolls, the highest total scores, and a tie is war. Nothing here is rated.",
   ],
   play: ["賽合戦を遊ぶ", "Play Dice War"],
   howMany: HOW_MANY,
@@ -303,8 +303,8 @@ export const DICE_WAR_COPY_JA = {
 
 export const PACHISI_COPY_JA = {
   lead: [
-    "2〜4人で1台のスマホやタブレットを囲んで遊ぶ、二十五（パチーシ）です。どの席にもコンピュータを座らせられます。4つの駒を、十字のコースを回してゴールさせ、途中で相手の駒を送り返しましょう。ここでは評価されず、このブラウザー以外には保存されません。",
-    "二十五 (Pachisi) for two to four round one phone or tablet, with a computer in any seat you like: race your four pawns round the cross and home, sending your opponents back as you go. Nothing here is rated or saved anywhere but this browser.",
+    "2〜4人で1台のスマホやタブレットを囲んで遊ぶ、二十五（パチーシ）です。または「複数の端末」を選ぶこともできます。どの席にもコンピュータを座らせられます。4つの駒を、十字のコースを回してゴールさせ、途中で相手の駒を送り返しましょう。ここでは評価されません。",
+    "二十五 (Pachisi) for two to four round one phone or tablet, or you can choose \"Several devices\". A computer can sit in any seat. Race your four pawns round the cross and home, sending your opponents back as you go. Nothing here is rated.",
   ],
   play: ["二十五を遊ぶ", "Play 二十五"],
   howMany: HOW_MANY,
