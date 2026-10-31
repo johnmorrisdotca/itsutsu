@@ -127,7 +127,7 @@ export function KoushiSolve({
       </SolvePaused>
       {done === null ? (
         <>
-          <p className="text-sm" aria-live="polite">
+          <p className="min-h-[3lh] text-sm" aria-live="polite">
             <strong className="tabular-nums" data-testid="koushi-swaps-left" data-left={left}>
               {say.count("pword.koushi.left", left)}
             </strong>{" "}

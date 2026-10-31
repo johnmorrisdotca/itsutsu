@@ -23,7 +23,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { HOUSEKI_SPECS, type HousekiColour } from "@/lib/houseki/houseki.constants";
 
-import { BoardColumn, Controls, ControlButton, GoalBar, NextPieces, Stat, StatRow } from "./HousekiParts";
+import { BoardColumn, Controls, ControlButton, GoalBar, HousekiObjective, NextPieces, Stat, StatRow } from "./HousekiParts";
 import { HousekiWell, type WellCell } from "./HousekiWell";
 import { freshSeed, useCheckpoints, useGameKeys, useTickLoop, type HousekiGameProps } from "./housekiRuntime";
 
@@ -235,7 +235,7 @@ export default function MagneticBlocksGame(props: HousekiGameProps) {
       )}
       {!readOnly && targets.length > 0 ? <GoalBar text={say.say("houseki.play.goalTargets", { done: String(done), total: String(targets.length) })} done={done} total={targets.length} /> : null}
       {!readOnly && goal?.kind === "clear-all" ? <p className="text-sm font-medium">{say.say("houseki.play.goalEmpty", { left: String(state.board.filter(Boolean).length) })}</p> : null}
-      {level !== null && !readOnly ? <p className="text-sm" data-testid="houseki-objective">{level.objective[locale]}</p> : null}
+      {level !== null && !readOnly ? <HousekiObjective>{level.objective[locale]}</HousekiObjective> : null}
       {lesson !== null && !readOnly ? <p className="text-sm" data-testid="houseki-lesson">{lesson.instruction.map((line) => line[locale]).join(" ")}</p> : null}
       {readOnly ? null : (
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
@@ -254,7 +254,7 @@ export default function MagneticBlocksGame(props: HousekiGameProps) {
       </BoardColumn>
       {readOnly ? null : (
         <div className="flex flex-col gap-3" data-testid="houseki-actions">
-          <p className="min-h-5 text-sm" aria-live="polite" data-testid="houseki-status">
+          <p className="min-h-[2lh] text-sm" aria-live="polite" data-testid="houseki-status">
             {status}
             {impactCount > 0 && state.phase === "falling" ? ` ${say.say(relaxed ? "houseki.play.impactDrop" : "houseki.play.impact", { count: String(impactCount) })}` : ""}
           </p>
@@ -278,7 +278,7 @@ export default function MagneticBlocksGame(props: HousekiGameProps) {
                 <b className="text-sm">{say.say("houseki.floor.switch")}</b>
                 <span className="text-xs text-muted" data-testid="houseki-charges">{state.floorSwitchCharges > 0 ? say.say("houseki.floor.available") : say.say("houseki.floor.spent")}</span>
               </div>
-              <p className="text-xs text-muted" data-chrome>{say.say("houseki.floor.help")}</p>
+              <p className="min-h-[2lh] text-xs text-muted" data-chrome>{say.say("houseki.floor.help")}</p>
               <div className="flex flex-wrap gap-2">
                 {(["calm", "magnetic"] as const).map((floor) => (
                   <button
@@ -299,7 +299,7 @@ export default function MagneticBlocksGame(props: HousekiGameProps) {
               </div>
             </section>
           ) : null}
-          <p className="text-xs text-muted" data-chrome>{say.say("houseki.magneticBlocks.keys")}</p>
+          <p className="min-h-[2lh] text-xs text-muted" data-chrome>{say.say("houseki.magneticBlocks.keys")}</p>
         </div>
       )}
     </>

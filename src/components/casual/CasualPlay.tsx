@@ -8,7 +8,7 @@ import { EndGameButton, GameEnding, NewGameLink } from "@/components/play/GameEn
 import { ENDINGS } from "@/components/play/gameEnding.constants";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE, SECTION_HEADING, SECTION_TITLE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE, ROOM_FOR_TWO_LINES, SECTION_HEADING, SECTION_TITLE } from "@/components/ui/ui.constants";
 import { CASUAL_SPECS } from "@/lib/casual/casual.constants";
 import { casualCopy } from "@/lib/party/partyCopy";
 import type { CasualKind } from "@/lib/casual/casual.types";
@@ -87,7 +87,7 @@ export function CasualPlay({ kind, level }: { kind: CasualKind; level: number })
       {...readyMark(hydrated)}
     >
       <div className="flex min-w-0 flex-col gap-3" data-scale-board data-bare-board>
-        <p className="text-sm font-medium" data-testid="casual-line" aria-live="polite">
+        <p className={`text-sm font-medium ${ROOM_FOR_TWO_LINES} sm:min-h-0`} data-testid="casual-line" aria-live="polite">
           {say.say("casual.levelOf", { word: CASUAL_COPY.levelWord(story), level: String(level), total: String(spec.levels) })}
           {info === "" ? "" : ` · ${info}`}
         </p>

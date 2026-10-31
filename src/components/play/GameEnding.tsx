@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, ROOM_FOR_A_WORD } from "@/components/ui/ui.constants";
 import type { Asking } from "@/components/ui/ui.types";
 import { resignedBy } from "@/lib/party/resign";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
@@ -13,7 +13,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { ENDINGS, gameEndingCopy, type Ending } from "./gameEnding.constants";
 
-const LOOK = `${BUTTON_BASE} ${BUTTON_QUIET}`;
+const LOOK = `${BUTTON_BASE} ${BUTTON_QUIET} ${ROOM_FOR_A_WORD}`;
 
 /**
  * THE ONE ROW FOR ENDING A GAME AND STARTING ANOTHER, under the board of every

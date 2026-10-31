@@ -88,7 +88,7 @@ export function BareBoard({
         onClick={() => writeBare(!bare)}
         className={
           compact && !bare
-            ? `${FOCUS_RING} cursor-pointer rounded-md border border-rule px-2 py-0.5 text-xs text-ink-soft hover:border-rule-strong`
+            ? `${FOCUS_RING} min-w-26 cursor-pointer rounded-md border border-rule px-2 py-0.5 text-xs text-ink-soft hover:border-rule-strong`
             : `${BUTTON_BASE} ${BUTTON_QUIET} ${bare ? "bg-paper shadow-md" : ""}`
         }
         aria-pressed={bare}

@@ -33,7 +33,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { HOUSEKI_SPECS, type HousekiColour } from "@/lib/houseki/houseki.constants";
 import type { HousekiCampaign } from "@/lib/houseki/houseki.types";
 
-import { BoardColumn, Controls, ControlButton, GoalBar, NextPieces, Stat, StatRow } from "./HousekiParts";
+import { BoardColumn, Controls, ControlButton, GoalBar, HousekiObjective, NextPieces, Stat, StatRow } from "./HousekiParts";
 import { HousekiWell, type WellCell } from "./HousekiWell";
 import { freshSeed, todayUtc, useCheckpoints, useGameKeys, useTickLoop, type HousekiGameProps } from "./housekiRuntime";
 
@@ -307,7 +307,7 @@ export default function ColourChainsGame(props: HousekiGameProps) {
       )}
       {progress !== null && !readOnly && progress.total > 0 ? <GoalBar text={progress.text} done={progress.done} total={progress.total} /> : null}
       {progress !== null && !readOnly && progress.total === 0 ? <p className="text-sm font-medium">{progress.text}</p> : null}
-      {level?.objective !== undefined && !readOnly ? <p className="text-sm" data-testid="houseki-objective">{level.objective[locale]}</p> : null}
+      {level?.objective !== undefined && !readOnly ? <HousekiObjective>{level.objective[locale]}</HousekiObjective> : null}
       {lesson !== null && !readOnly ? <p className="text-sm" data-testid="houseki-lesson">{lesson.steps.map((step) => step.instruction[locale]).join(" ")}</p> : null}
       {readOnly ? null : <NextPieces label={say.say("houseki.play.next")} pieces={preview} vertical={false} />}
       </div>
@@ -316,7 +316,7 @@ export default function ColourChainsGame(props: HousekiGameProps) {
       </BoardColumn>
       {readOnly ? null : (
         <div className="flex flex-col gap-3" data-testid="houseki-actions">
-          <p className="min-h-5 text-sm" aria-live="polite" data-testid="houseki-status">
+          <p className="min-h-[2lh] text-sm" aria-live="polite" data-testid="houseki-status">
             {status}
           </p>
           <Controls label={say.say("houseki.play.controls")}>
@@ -333,7 +333,7 @@ export default function ColourChainsGame(props: HousekiGameProps) {
               <ControlButton label={say.say("puzzle.solve.pause")} testId="houseki-pause" onPress={() => edge("pause")} disabled={locked} hidden={relaxedPlay} />
             )}
           </Controls>
-          <p className="text-xs text-muted" data-chrome>{say.say("houseki.colourChains.keys")}</p>
+          <p className="min-h-[2lh] text-xs text-muted" data-chrome>{say.say("houseki.colourChains.keys")}</p>
         </div>
       )}
     </>

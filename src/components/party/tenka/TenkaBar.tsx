@@ -77,7 +77,7 @@ export function TenkaBar({ game, choice, onMove, onArmies, handed, onReady }: Te
       {!handed ? (
         <div className="flex flex-wrap items-center gap-2" data-testid="tenka-pass">
           <MarbleChip player={game.toPlay} />
-          <span className="text-base font-semibold" data-testid="tenka-pass-to">
+          <span className="min-w-64 text-base font-semibold" data-testid="tenka-pass-to">
             {TENKA_COPY.passTo(player)}
           </span>
           <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG}`} onClick={onReady} data-testid="tenka-ready">

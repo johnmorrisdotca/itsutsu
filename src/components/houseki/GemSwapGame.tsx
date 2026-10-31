@@ -187,7 +187,7 @@ export default function GemSwapGame(props: HousekiGameProps) {
       </BoardColumn>
       {readOnly ? null : (
         <div className="flex flex-col gap-3" data-testid="houseki-actions">
-          <p className="min-h-5 text-sm" aria-live="polite" data-testid="houseki-status">
+          <p className="min-h-[2lh] text-sm" aria-live="polite" data-testid="houseki-status">
             {status}
           </p>
           <Controls label={say.say("houseki.play.controls")}>

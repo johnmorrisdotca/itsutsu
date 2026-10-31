@@ -11,6 +11,7 @@ import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { pieceColourName, type PieceColour } from "@/lib/pieces/pieceColours";
 import { refusalWords, seatColourRefusal, type SeatColours } from "@/lib/pieces/seatColours";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { ROOM_FOR_THREE_LINES } from "@/components/ui/ui.constants";
 
 import { rememberPieceColour } from "./rememberPieceColour";
 
@@ -86,7 +87,7 @@ export function SeatColourChooser({
       data-first={first ? "true" : "false"}
       data-colour={chosen ?? "usual"}
     >
-      <p className="text-sm">
+      <p className={first ? `text-sm ${ROOM_FOR_THREE_LINES} sm:min-h-[2lh]` : "text-sm"}>
         {first ? (
           <>
             <span className="font-semibold">{say.say("live.yourPieces")}</span>{" "}

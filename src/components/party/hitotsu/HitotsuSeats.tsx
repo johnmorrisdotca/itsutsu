@@ -4,6 +4,7 @@ import { MarbleChip } from "../MarbleChip";
 import { HitotsuCardView } from "./HitotsuCardView";
 import { hitotsuScreenWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { ROOM_FOR_THREE_LINES } from "@/components/ui/ui.constants";
 
 /**
  * EVERYBODY ELSE AT THE TABLE, in a row over it: their marble and name, a
@@ -46,7 +47,7 @@ export function HitotsuSeats({
               <MarbleChip player={seat} />
               <span className="truncate">{names[seat]}</span>
             </span>
-            <span className="text-xs text-muted">
+            <span className={`text-xs text-muted ${ROOM_FOR_THREE_LINES}`}>
               {HITOTSU_COPY.cards(counts[seat])} · {say.count("party.hitotsu.points", scores[seat])}
               {computers[seat] ? ` · ${say.say("party.computerTag")}` : ""}
               {counts[seat] === 1 ? <strong className="ml-1 text-shu"> {HITOTSU_COPY.one}</strong> : null}

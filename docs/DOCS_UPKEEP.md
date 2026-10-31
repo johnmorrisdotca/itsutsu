@@ -105,6 +105,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `docs/research/*` | John, agents | the site it describes; each page carries the date it was read, and is re-read before a game or language it names is built |
 | `AGENTS.md` | agents | a rule changes; the agent that changes the rule changes the file |
 | `AGENTS.md`, "Function Size" | agents | `src/lib/functionSizeGate.mjs`, `scripts/check-function-sizes.mjs`, `scripts/function-sizes.baseline.json`, `src/lib/pageFunction.coverage.test.ts`, `src/lib/pageFunctionGraph.ts`, `next.config.ts` (the tracing lists) |
+| `AGENTS.md`, "Nothing Moves When The Language Does" | agents | `e2e/language-steady.spec.ts`, `e2e/playSurvey.ts`, the `ROOM_FOR_*` constants in `src/components/ui/ui.constants.ts` |
 | `AGENTS.md`, "Playing Offline" | agents | `public/sw.js`, `src/lib/offline/`, `src/components/offline/`, `playwright.config.ts` (`serviceWorkers`) |
 | `AGENTS.md`, "Every Word Goes Through The Phrase Table" | agents | `scripts/check-i18n-strings.mjs` (its allowances and `PENDING_PATHS`), `src/lib/i18n/inlineEnglish.coverage.test.ts` (`RECORDED`), `src/lib/i18n/phrases.*.constants.ts` and `PHRASE_AREAS` in `i18n.constants.ts`, the `i18n` leg of `verify` in `.github/workflows/vercel-deploy.yml`, the `English in phrases` lane in `scripts/preflight.mjs` |
 

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { phraseWith } from "@/components/i18n/phraseWith";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE, ROOM_FOR_A_WORD, ROOM_FOR_THREE_LINES, ROOM_FOR_TWO_WORDS, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { nextLevelLabel } from "@/lib/puzzles/fixedLevel";
 import { tobiishiLevelCount } from "@/lib/puzzles/tobiishi/levelCounts";
@@ -183,15 +183,15 @@ export function TobiishiSolve({
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2" data-testid="tobiishi-controls">
             <div className="flex flex-wrap gap-1.5" role="group" aria-label={say.say("pmaze.theJumps")}>
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.undo()} disabled={!live || reading?.undoable !== true} data-testid="tobiishi-undo">
+              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press} ${ROOM_FOR_A_WORD}`} onClick={() => handle.current?.undo()} disabled={!live || reading?.undoable !== true} data-testid="tobiishi-undo">
                 {say.say("puzzle.press.undo")}
               </button>
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.restart()} disabled={!live || reading?.undoable !== true} data-testid="tobiishi-restart">
+              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press} ${ROOM_FOR_TWO_WORDS}`} onClick={() => handle.current?.restart()} disabled={!live || reading?.undoable !== true} data-testid="tobiishi-restart">
                 {say.say("puzzle.press.restart")}
               </button>
             </div>
           </div>
-          <span className="text-sm text-muted" data-testid="tobiishi-said" data-jumps={reading?.jumps ?? 0} data-pegs={reading?.pegs ?? 0} aria-live="polite">
+          <span className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid="tobiishi-said" data-jumps={reading?.jumps ?? 0} data-pegs={reading?.pegs ?? 0} aria-live="polite">
             {said}
           </span>
         </div>

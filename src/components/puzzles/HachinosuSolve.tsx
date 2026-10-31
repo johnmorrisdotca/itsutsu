@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE, ROOM_FOR_A_WORD, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { isWord } from "@/lib/puzzles/gomoji/code";
 import { checkHachinosu } from "@/lib/puzzles/hachinosu/check";
 import { encodeFound, HIVE_LANGUAGES, HIVE_LONGEST, lettersProblem, readFound, readHive, wordPoints } from "@/lib/puzzles/hachinosu/code";
@@ -119,7 +119,7 @@ export function HachinosuSolve({ puzzle, hasAccount, race = null, resumed = null
 
   const missed = useMemo(() => (done === null || hive === null ? [] : commonWordsOf(size, hive.centre, hive.letters).filter((word) => !found.includes(word))), [done, hive, size, found]);
   if (hive === null) return null;
-  const button = `${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} px-3 py-1 text-sm`;
+  const button = `${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${ROOM_FOR_A_WORD} px-3 py-1 text-sm`;
 
   return (
     <section className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} data-code={code} data-goal={goal} data-points={points} {...readyMark(hydrated)}>
@@ -139,7 +139,7 @@ export function HachinosuSolve({ puzzle, hasAccount, race = null, resumed = null
             <button type="button" className={button} onClick={shuffle} disabled={!live} data-testid="hachinosu-shuffle">
               {say.say("pword.hachinosu.shuffle")}
             </button>
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} ${TAP_HEIGHT} px-4 py-1 text-sm`} onClick={send} disabled={!live || typed === ""} data-testid="hachinosu-enter">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} ${TAP_HEIGHT} ${ROOM_FOR_A_WORD} px-4 py-1 text-sm`} onClick={send} disabled={!live || typed === ""} data-testid="hachinosu-enter">
               {say.say("pword.hachinosu.enter")}
             </button>
           </div>

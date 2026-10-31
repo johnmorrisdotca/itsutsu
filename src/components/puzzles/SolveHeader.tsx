@@ -44,7 +44,8 @@ export function SolveHeader({
   const say = useSpeaker();
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <p className="text-sm text-muted" data-testid="puzzle-asked">
+      {/* Its own line on a phone, in every language: whether it fitted beside the clock used to depend on how long its words were in this one. */}
+      <p className="basis-full text-sm text-muted sm:basis-auto" data-testid="puzzle-asked">
         {asked ?? (
           <>
             {sizeWordIn(puzzle.size, puzzle.kind, say)}

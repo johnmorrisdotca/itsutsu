@@ -5,6 +5,7 @@ import { PlayingCard } from "@/components/cards/PlayingCard";
 import { MarbleChip } from "../MarbleChip";
 import { cardTableWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { ROOM_FOR_THREE_LINES } from "@/components/ui/ui.constants";
 
 /**
  * EVERYBODY ELSE AT THE TABLE, in a row over it: their marble and name, a
@@ -51,7 +52,7 @@ export function CardSeats({
                 <MarbleChip player={seat} />
                 <span className="truncate">{names[seat]}</span>
               </span>
-              <span className="text-xs text-muted">
+              <span className={`text-xs text-muted ${ROOM_FOR_THREE_LINES}`}>
                 {CARD_TABLE_COPY.cards(counts[seat])} · {score}
                 {computers[seat] ? ` · ${CARD_TABLE_COPY.computerTag}` : ""}
                 {note === undefined ? "" : ` · ${note}`}

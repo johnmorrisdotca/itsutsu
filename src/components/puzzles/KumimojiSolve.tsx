@@ -26,7 +26,7 @@ import { TRAY_ROOM } from "./kumimoji.constants";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 import { tileSaid } from "./kumimojiWords";
 import { sayState, useKumimojiDesk } from "./useKumimojiDesk";
-import { PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
+import { PLAY_SURFACE, ROOM_FOR_THREE_LINES, SELECTABLE } from "@/components/ui/ui.constants";
 
 /**
  * Playing Kumimoji: lay the hand out as one crossword, draw the next tile
@@ -115,7 +115,7 @@ export function KumimojiSolve({
       </SolvePaused>
       {done === null ? (
         <>
-          <p className="min-h-5 text-sm text-muted" data-testid="kumimoji-said" data-sound={verdict.sound ? "true" : "false"} aria-live="polite">
+          <p className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid="kumimoji-said" data-sound={verdict.sound ? "true" : "false"} aria-live="polite">
             {desk.helpSaid ?? sayState(say, play.hand.length, left, verdict)}
           </p>
           {desk.selectedWild ? <KumimojiWildPicker language={language} words={words} tile={desk.selectedTile!} disabled={closed} onChoose={desk.adjustSelected} /> : null}

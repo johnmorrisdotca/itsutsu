@@ -72,6 +72,27 @@ export const PLAY_SURFACE = "play-surface";
  */
 export const SELECTABLE = "select-text";
 
+/*
+ * ROOM THAT DOES NOT DEPEND ON THE LANGUAGE. John, on a game's goal panel and
+ * controls moving when English became Japanese: the words change width, the
+ * board and the presses must not. The set-up screen's `PICK_TILE` is the model,
+ * and `e2e/language-steady.spec.ts` is what holds it.
+ *
+ * A MINIMUM, NEVER A FIXED SIZE, so a translation longer than the room wraps or
+ * grows rather than being cut off.
+ *
+ * `ROOM_FOR_A_WORD` is the width of a press named in a word or two: wider than
+ * Give up, New game, Check, Hint and their Japanese, so a row of them holds its
+ * places in either language. `ROOM_FOR_TWO_WORDS` is the same for Restart, whose
+ * Japanese is 最初からやり直す. `ROOM_FOR_TWO_LINES` and `ROOM_FOR_THREE_LINES` are
+ * the height of a line of words over a board that takes more lines in one
+ * language than in the other, in the lines of its own text size.
+ */
+export const ROOM_FOR_A_WORD = "min-w-24";
+export const ROOM_FOR_TWO_WORDS = "min-w-34";
+export const ROOM_FOR_TWO_LINES = "min-h-[2lh]";
+export const ROOM_FOR_THREE_LINES = "min-h-[3lh]";
+
 export const BUTTON_QUIET =
   "border-rule-strong/80 bg-ivory/80 text-ink hover:bg-rule/60";
 

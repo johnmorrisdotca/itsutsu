@@ -16,7 +16,7 @@ import { forgetRunOnDevice, runKey } from "./runsOnDevice";
 import { SOLVE_QUEUED, queueSolve, sendWaitingSolves } from "./solveOutbox";
 import { WinStack } from "./PuzzleWinSlot";
 
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, ROOM_FOR_A_WORD, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { clockLimitMs } from "@/lib/puzzles/puzzleClock";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 
@@ -413,7 +413,7 @@ export function SolveCheck({ checking, onCheck, disabled }: { checking: Checking
   return (
     <button
       type="button"
-      className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
+      className={`${BUTTON_BASE} ${BUTTON_QUIET} ${ROOM_FOR_A_WORD}`}
       onClick={onCheck}
       disabled={disabled || spent}
       title={spent ? say.say("puzzle.solve.noChecks") : undefined}

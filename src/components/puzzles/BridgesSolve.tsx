@@ -3,7 +3,7 @@
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { checkSentence } from "@/lib/puzzles/checkWords";
 import type { Speaker } from "@/lib/i18n/i18n";
-import { PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { PLAY_SURFACE, ROOM_FOR_THREE_LINES } from "@/components/ui/ui.constants";
 import { useCallback, useMemo, useState } from "react";
 
 import { checkBridges } from "@/lib/puzzles/bridges/check";
@@ -166,12 +166,12 @@ export function BridgesSolve({
       <PuzzleSteps steps={steps} viewing={history.viewing} go={history.go} size={size} say={(value) => bridgesCellWords(say.locale)[value] ?? say.say("pgrid.step.island", { count: value })} />
       {done === null ? (
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
             <SolveShow checking={checking} onShow={show} disabled={startedAt === null || pausing.paused} />
             <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
           </div>
-          <span className="text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "bridges-said"} data-said={said === copy.crossing ? "crossing" : said === copy.allNumbers ? "all-numbers" : undefined} aria-live="polite">
+          <span className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid={checked !== null ? "puzzle-checked" : "bridges-said"} data-said={said === copy.crossing ? "crossing" : said === copy.allNumbers ? "all-numbers" : undefined} aria-live="polite">
             {checked !== null ? checkedLine(checked, say) : (said ?? copy.howTo)}
           </span>
         </div>

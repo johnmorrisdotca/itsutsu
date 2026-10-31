@@ -3,7 +3,7 @@
 import { EndGameButton, GameEnding, NewGameLink } from "@/components/play/GameEnding";
 import { ENDINGS } from "@/components/play/gameEnding.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
-import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, ROOM_FOR_A_WORD, ROOM_FOR_THREE_LINES, ROOM_FOR_TWO_LINES, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 
 import { SolveDone, type Done, type SolveRace } from "./solveShared";
@@ -44,14 +44,14 @@ export function PatienceControls({
   return (
     <>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT}`} onClick={onUndo} disabled={!canUndo} data-testid="patience-undo">
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${ROOM_FOR_A_WORD}`} onClick={onUndo} disabled={!canUndo} data-testid="patience-undo">
           {say.say("puzzle.press.undo")}
         </button>
-        <p className="text-sm tabular-nums" data-testid="patience-move-count">
+        <p className="min-w-16 text-sm tabular-nums" data-testid="patience-move-count">
           {say.count("count.move", moves)}
         </p>
         {extra === null ? null : (
-          <p className="text-sm text-muted" data-testid="patience-extra">
+          <p className={`basis-full text-sm text-muted ${ROOM_FOR_TWO_LINES} sm:order-last sm:min-h-0`} data-testid="patience-extra">
             {extra}
           </p>
         )}
@@ -65,7 +65,7 @@ export function PatienceControls({
         ) : null}
       </div>
       {done === null ? (
-        <p className="min-h-10 text-sm text-muted" data-testid="patience-said" aria-live="polite">
+        <p className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid="patience-said" aria-live="polite">
           {said}
         </p>
       ) : (

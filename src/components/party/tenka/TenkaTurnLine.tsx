@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, ROOM_FOR_TWO_LINES } from "@/components/ui/ui.constants";
 import { TENKA_PHASES } from "@/lib/party/tenka/tenka.constants";
 import { usePartyMarbles } from "../partyMarbles";
 import type { TenkaGame } from "@/lib/party/tenka/tenka.types";
@@ -84,7 +84,7 @@ export function TenkaTurnLine({ game, colour = null }: { game: TenkaGame; colour
     <div className={`${PANEL_CLASS} relative z-20 flex items-center gap-2 py-3`} data-testid="tenka-turn" data-player={game.toPlay} aria-live="polite">
       <MarbleChip player={game.toPlay} />
       <span className="flex min-w-0 flex-col">
-        <span className="text-base">
+        <span className={`text-base ${ROOM_FOR_TWO_LINES} sm:min-h-0`}>
           <span className="font-semibold" data-testid="tenka-turn-name">
             {partyPlayerName(game, game.toPlay, say)}
           </span>

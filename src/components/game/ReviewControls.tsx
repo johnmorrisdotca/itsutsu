@@ -25,7 +25,7 @@ export function ReviewBanner({ session, actions }: GamePanelProps) {
   if (!session.reviewing) {
     return (
       <div
-        className="flex flex-wrap items-center gap-3 rounded-xl border border-rule px-3 py-2.5"
+        className="grid min-h-37 grid-cols-[auto_minmax(0,1fr)] grid-rows-[1fr_auto] items-center gap-3 rounded-xl border border-rule px-3 py-2.5 sm:flex sm:min-h-0 sm:flex-wrap"
         role="status"
         data-testid="review-banner"
         data-reviewing="false"
@@ -39,7 +39,7 @@ export function ReviewBanner({ session, actions }: GamePanelProps) {
           </span>
           <span className="text-xs text-muted">{GAME_COPY.atLatestDetail}</span>
         </span>
-        <span className="ml-auto">
+        <span className="col-span-2 ml-auto min-w-36 [&>button]:w-full">
           <Button onClick={actions.returnToLatest} disabled data-testid="return-to-latest">
             {GAME_COPY.returnToLatest.label}
           </Button>

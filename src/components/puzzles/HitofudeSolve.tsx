@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState, type KeyboardEvent } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE, ROOM_FOR_A_WORD, ROOM_FOR_THREE_LINES, ROOM_FOR_TWO_WORDS, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { checkHitofude } from "@/lib/puzzles/hitofude/check";
 import { blankLine, decodeLine, decodeNumbers, encodeLine } from "@/lib/puzzles/hitofude/code";
 import { lineAfter, lineAfterArrow, nextNumberOf } from "@/lib/puzzles/hitofude/draw";
@@ -166,17 +166,17 @@ export function HitofudeSolve({
       {done === null ? (
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className={press} onClick={undo} disabled={!live || strokes.length === 0} data-testid="hitofude-undo">
+            <button type="button" className={`${press} ${ROOM_FOR_A_WORD}`} onClick={undo} disabled={!live || strokes.length === 0} data-testid="hitofude-undo">
               {say.say("puzzle.press.undo")}
             </button>
-            <button type="button" className={press} onClick={() => write(blank)} disabled={!live || code === blank} data-testid="hitofude-restart">
+            <button type="button" className={`${press} ${ROOM_FOR_TWO_WORDS}`} onClick={() => write(blank)} disabled={!live || code === blank} data-testid="hitofude-restart">
               {say.say("puzzle.press.restart")}
             </button>
             <SolveCheck checking={checking} onCheck={check} disabled={disabled} />
             <SolveShow checking={checking} onShow={show} disabled={disabled} />
             <SolveHint hinting={hinting} onHint={hint} disabled={disabled} racing={race !== null} />
           </div>
-          <span className="min-h-10 text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "hitofude-said"} data-left={left} data-next={next} aria-live="polite">
+          <span className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid={checked !== null ? "puzzle-checked" : "hitofude-said"} data-left={left} data-next={next} aria-live="polite">
             {said}
           </span>
         </div>

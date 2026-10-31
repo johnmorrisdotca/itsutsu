@@ -7,7 +7,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { readerName } from "./readerName";
 
-const CHIP = "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs leading-none whitespace-nowrap";
+const CHIP = "inline-flex min-w-20 items-center justify-center gap-1 rounded-full border px-2.5 py-1 text-xs leading-none sm:min-w-32 sm:whitespace-nowrap";
 
 /** What one chip says: its words (in the reader's language where it has no kanji), its kanji where it has one, and the line a hover or a tap shows. */
 export type LevelChip = { key: string; label: string; kanji?: string; says: string };
@@ -72,7 +72,8 @@ export function LevelChips({
   );
   return (
     <div className="flex flex-col gap-1.5" data-testid={`${prefix}-chips`} data-level={level}>
-      <div className="flex flex-wrap items-center gap-1.5">
+      {/* Two to a row on a phone, so which chip wraps does not depend on how long its words are in this language. */}
+      <div className="grid grid-cols-2 items-stretch gap-1.5 sm:flex sm:flex-wrap sm:items-center">
         {marks === null
           ? null
           : chip(

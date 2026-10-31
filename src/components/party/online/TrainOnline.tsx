@@ -57,7 +57,7 @@ export function TrainOnline({ game, appearance, canMove, onMove, mySeat }: Onlin
       {playing && game.hands[mySeat] !== undefined ? (
         <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="train-desk" data-bare-beside>
           <TrainHand game={game} seat={mySeat} active={active} chosen={chosen} onChoose={choose} onLay={(tile, train) => send({ kind: "play", tile, train })} onDragging={setDragging} />
-          <p className="min-h-10 text-xs text-muted" data-testid="train-hint">
+          <p className="min-h-[3lh] text-xs text-muted" data-testid="train-hint">
             {!active ? "" : mustDraw ? TRAIN_COPY.mustDraw : mustPass ? TRAIN_COPY.mustPass(game.drew) : chosen !== null ? TRAIN_COPY.pick(tileWords(chosen)) : TRAIN_COPY.tap}
           </p>
           <div className="flex flex-wrap gap-2">

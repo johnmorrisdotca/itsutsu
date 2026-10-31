@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 
 import type { Appearance } from "@/components/board/board.types";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, ROOM_FOR_TWO_LINES } from "@/components/ui/ui.constants";
 import { SUGOROKU_SEATS } from "@/lib/party/sugoroku/sugoroku.constants";
 import type { SugorokuMove, SugorokuTable } from "@/lib/party/sugoroku/sugoroku.types";
 import { sugorokuToPlay, viewOf } from "@/lib/party/sugoroku/sugorokuTable";
@@ -112,7 +112,7 @@ export function SugorokuStage({
         <p className="text-sm text-muted" data-testid="sugoroku-news">
           {sugorokuNews(table, say)}
         </p>
-        <p className="text-sm" data-testid="sugoroku-score">
+        <p className={`text-sm ${ROOM_FOR_TWO_LINES} sm:min-h-0`} data-testid="sugoroku-score">
           {sugorokuScoreWords(table, say)}
           {settings.rules.cube ? ` · ${sugorokuCubeWords(table, say)}` : ""}
         </p>
@@ -133,7 +133,7 @@ export function SugorokuStage({
           />
         ),
       )}
-      <div className="grid grid-cols-3 gap-2" data-testid="sugoroku-presses">
+      <div className="grid auto-rows-[minmax(3.5rem,auto)] grid-cols-3 gap-2 sm:auto-rows-auto" data-testid="sugoroku-presses">
         <button type="button" onClick={primary.press} disabled={!primary.on} className={`${BUTTON_BASE} min-h-11 ${primary.on ? BUTTON_STRONG : BUTTON_QUIET}`} data-testid={primary.test}>
           {primary.label}
         </button>
@@ -150,7 +150,7 @@ export function SugorokuStage({
           </button>
         )}
       </div>
-      <p className="min-h-8 text-sm text-muted" data-testid="sugoroku-hint">
+      <p className="min-h-[3lh] text-sm text-muted" data-testid="sugoroku-hint">
         {hint}
         {confirming ? (
           <button type="button" onClick={() => setConfirming(false)} className="ml-2 underline underline-offset-4" data-testid="sugoroku-give-up-no">

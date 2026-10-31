@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { phraseWith } from "@/components/i18n/phraseWith";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE, ROOM_FOR_A_WORD, ROOM_FOR_TWO_WORDS, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { nextLevelLabel } from "@/lib/puzzles/fixedLevel";
 import { completesSize } from "@/lib/puzzles/meikyuu/completion";
@@ -202,12 +202,12 @@ export function MeikyuuSolve({
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.zoomIn()} disabled={!viewable} aria-label={say.say("pmaze.zoomIn")} data-testid="meikyuu-zoom-in">
           +
         </button>
-        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.fit()} disabled={!viewable} data-testid="meikyuu-fit">
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press} min-w-20`} onClick={() => handle.current?.fit()} disabled={!viewable} data-testid="meikyuu-fit">
           {say.say("puzzle.press.fit")}
         </button>
         <button
           type="button"
-          className={`${BUTTON_BASE} ${moving ? BUTTON_STRONG : BUTTON_QUIET} ${TAP_HEIGHT} ${press}`}
+          className={`${BUTTON_BASE} ${moving ? BUTTON_STRONG : BUTTON_QUIET} ${TAP_HEIGHT} ${press} min-w-20`}
           onClick={() => setMoving(handle.current?.pan(!moving) ?? false)}
           disabled={!viewable}
           aria-pressed={moving}
@@ -248,16 +248,16 @@ export function MeikyuuSolve({
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2" data-testid="meikyuu-controls">
             <div className="flex flex-wrap gap-1.5" role="group" aria-label={say.say("pmaze.theLine")}>
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.undo()} disabled={!live || reading?.undoable !== true} data-testid="meikyuu-undo">
+              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press} ${ROOM_FOR_A_WORD}`} onClick={() => handle.current?.undo()} disabled={!live || reading?.undoable !== true} data-testid="meikyuu-undo">
                 {say.say("puzzle.press.undo")}
               </button>
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press}`} onClick={() => handle.current?.restart()} disabled={!live || reading?.clearable !== true} data-testid="meikyuu-restart">
+              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${press} ${ROOM_FOR_TWO_WORDS}`} onClick={() => handle.current?.restart()} disabled={!live || reading?.clearable !== true} data-testid="meikyuu-restart">
                 {say.say("puzzle.press.restart")}
               </button>
               {/* A marble laid beside the line, which the line cannot enter (`meikyuu/stones.ts`): a toggle, like Move, so a tap lays one and nothing draws until it is pressed again. */}
               <button
                 type="button"
-                className={`${BUTTON_BASE} ${stoning ? BUTTON_STRONG : BUTTON_QUIET} ${TAP_HEIGHT} ${press}`}
+                className={`${BUTTON_BASE} ${stoning ? BUTTON_STRONG : BUTTON_QUIET} ${TAP_HEIGHT} ${press} ${ROOM_FOR_A_WORD}`}
                 onClick={() => handle.current?.stoneMode(!stoning)}
                 disabled={!live}
                 aria-pressed={stoning}
@@ -267,7 +267,7 @@ export function MeikyuuSolve({
               >
                 {STONE_COPY.press}
               </button>
-              <span className="min-w-[8.5rem] text-sm text-muted tabular-nums" data-testid="meikyuu-stones-left" data-stones={reading?.stones ?? 0} data-left={reading?.stonesLeft ?? "none"} aria-live="polite">
+              <span className="min-w-[8.5rem] self-center text-sm text-muted tabular-nums" data-testid="meikyuu-stones-left" data-stones={reading?.stones ?? 0} data-left={reading?.stonesLeft ?? "none"} aria-live="polite">
                 {stonesLine}
               </span>
             </div>
@@ -277,7 +277,7 @@ export function MeikyuuSolve({
             {/* A tall maze can lie on its side: which way up is the reader's to choose, beside the colours. */}
             {tall ? <MeikyuuWayUp className="basis-full" /> : null}
           </div>
-          <span className="min-h-10 text-sm text-muted" data-testid="meikyuu-said" data-cells={cells} data-keys={reading?.keys ?? 0} aria-live="polite">
+          <span className="min-h-[3lh] text-sm text-muted" data-testid="meikyuu-said" data-cells={cells} data-keys={reading?.keys ?? 0} aria-live="polite">
             {stoning ? STONE_COPY.how : cells === 0 ? (solid ? TURN_COPY.howTo : MEIKYUU_COPY.howTo) : MEIKYUU_COPY.status(cells, reading?.keys ?? 0, reading?.keysOf ?? 0)}
           </span>
         </div>

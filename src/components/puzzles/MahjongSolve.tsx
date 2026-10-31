@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE, ROOM_FOR_A_WORD } from "@/components/ui/ui.constants";
 import { canTake, freePairs, geometryOf, hintFor, isCleared, matchesOf, tilesLeft } from "@johnmorrisdotca/jarajara";
 import { shuffleTiles } from "@johnmorrisdotca/jarajara";
 import { layoutFor } from "@johnmorrisdotca/jarajara";
@@ -197,12 +197,12 @@ export function MahjongSolve({
             <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={undo} disabled={moves.length === 0 || pausing.paused} data-testid="mahjong-undo">
               {say.say("puzzle.press.undo")}
             </button>
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={shuffle} disabled={!stuck || pausing.paused} title={stuck ? undefined : say.say("pcard.mj.shuffleTitle")} data-testid="mahjong-shuffle">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${ROOM_FOR_A_WORD}`} onClick={shuffle} disabled={!stuck || pausing.paused} title={stuck ? undefined : say.say("pcard.mj.shuffleTitle")} data-testid="mahjong-shuffle">
               {say.say("pcard.mj.shuffle")}
             </button>
             <SolveHint hinting={hinting} onHint={hint} disabled={pausing.paused || pairs.length === 0} racing={race !== null} />
           </div>
-          <p className="min-h-10 text-sm text-muted" data-testid="mahjong-said" data-stuck={stuck ? "true" : "false"} aria-live="polite">
+          <p className="min-h-[4lh] text-sm text-muted sm:min-h-[2lh]" data-testid="mahjong-said" data-stuck={stuck ? "true" : "false"} aria-live="polite">
             {line} <span className="whitespace-nowrap">{say.locale === "ja" ? "・" : "· "}{say.count("pcard.mj.status", pairs.length, { tiles: String(tilesLeft(cells)) })}</span>
           </p>
           <MahjongFreeToggle />

@@ -10,7 +10,7 @@ import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
 import { tableNews } from "@/components/game/winNews";
 import Link from "@/components/ui/Link";
 import { PressLabel } from "@/components/ui/PressLabel";
-import { BUTTON_BASE, BUTTON_LEAD, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_LEAD, BUTTON_QUIET, BUTTON_STRONG, PANEL_CLASS, PLAY_SURFACE, ROOM_FOR_TWO_WORDS } from "@/components/ui/ui.constants";
 import { TRAIN_PHASES, peopleAt, playTrain, tileWords, trainAgain, trainMoves } from "@johnmorrisdotca/domino";
 import type { Domino, TrainGame as TrainGameState, TrainMove } from "@johnmorrisdotca/domino";
 import { freshSeed } from "@/lib/puzzles/random";
@@ -138,11 +138,11 @@ export function TrainGame({ appearance, gameHref, online }: PartyTableGameProps)
           // Beside the table in just the board on a desk, where under it would run past the window's foot (globals.css).
           <div className={`${PANEL_CLASS} flex flex-col gap-3`} data-testid="train-desk" data-bare-beside>
             <TrainHand game={game} seat={handSeat} active={active} chosen={active ? chosen : null} onChoose={setChosen} onLay={(tile, train) => play({ kind: "play", tile, train })} onDragging={setDragging} />
-            <p className="min-h-10 text-xs text-muted" data-testid="train-hint">
+            <p className="min-h-[3lh] text-xs text-muted" data-testid="train-hint">
               {!active ? "" : mustDraw ? TRAIN_COPY.mustDraw : mustPass ? TRAIN_COPY.mustPass(game.drew) : chosen !== null ? TRAIN_COPY.pick(tileWords(chosen)) : TRAIN_COPY.tap}
             </p>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => play({ kind: "draw" })} disabled={!mustDraw} className={`${BUTTON_BASE} ${mustDraw ? BUTTON_STRONG : BUTTON_QUIET}`} data-testid="train-draw">
+              <button type="button" onClick={() => play({ kind: "draw" })} disabled={!mustDraw} className={`${BUTTON_BASE} ${mustDraw ? BUTTON_STRONG : BUTTON_QUIET} ${ROOM_FOR_TWO_WORDS}`} data-testid="train-draw">
                 {TRAIN_COPY.draw}
               </button>
               <button type="button" onClick={() => play({ kind: "pass" })} disabled={!mustPass} className={`${BUTTON_BASE} ${mustPass ? BUTTON_STRONG : BUTTON_QUIET}`} data-testid="train-pass">

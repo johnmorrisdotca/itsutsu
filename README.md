@@ -233,7 +233,7 @@ the `--` on and Playwright then runs the wrong files). The layout and sweep
 specs: `e2e/set-up-steady.spec.ts`, `e2e/bare-board.spec.ts`,
 `e2e/wide-mode.spec.ts`, `e2e/page-shape.spec.ts`, `e2e/page-width.spec.ts`,
 `e2e/phone-overflow.spec.ts`, `e2e/phone-header.spec.ts`,
-`e2e/game-pictures.spec.ts`, and for anything that loops over every puzzle
+`e2e/game-pictures.spec.ts`, `e2e/language-steady.spec.ts`, and for anything that loops over every puzzle
 `e2e/puzzle-checks.spec.ts` and `e2e/puzzle-hints.spec.ts`. Do not edit source
 while a run is going, and keep to one browser run at a time on the Mac. Your
 own database means the run's setup may sweep it freely.

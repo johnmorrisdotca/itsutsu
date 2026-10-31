@@ -19,7 +19,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { HOUSEKI_SPECS } from "@/lib/houseki/houseki.constants";
 
-import { BoardColumn, Controls, ControlButton, GoalBar, Stat, StatRow } from "./HousekiParts";
+import { BoardColumn, Controls, ControlButton, GoalBar, HousekiObjective, Stat, StatRow } from "./HousekiParts";
 import { HousekiWell, type WellCell } from "./HousekiWell";
 import { freshSeed, todayUtc, useCheckpoints, useTickLoop, type HousekiGameProps } from "./housekiRuntime";
 
@@ -167,7 +167,7 @@ export default function StoneCollapseGame(props: HousekiGameProps) {
       {progress !== null && !readOnly && progress.total > 0 ? <GoalBar text={progress.text} done={progress.done} total={progress.total} /> : null}
       {progress !== null && !readOnly && progress.total === 0 ? <p className="text-sm font-medium">{progress.text}</p> : null}
       {lesson !== null && !readOnly ? <p className="text-sm" data-testid="houseki-lesson">{lesson.steps.map((step) => step.instruction[locale]).join(" ")}</p> : null}
-      {level !== null && !readOnly ? <p className="text-sm" data-testid="houseki-objective">{level.title[locale]}</p> : null}
+      {level !== null && !readOnly ? <HousekiObjective>{level.title[locale]}</HousekiObjective> : null}
       </div>
       <BoardColumn>
       <HousekiWell
@@ -182,7 +182,7 @@ export default function StoneCollapseGame(props: HousekiGameProps) {
       </BoardColumn>
       {readOnly ? null : (
         <div className="flex flex-col gap-3" data-testid="houseki-actions">
-          <p className="min-h-5 text-sm" aria-live="polite" data-testid="houseki-status">
+          <p className="min-h-[2lh] text-sm" aria-live="polite" data-testid="houseki-status">
             {status}
           </p>
           <Controls label={say.say("houseki.play.controls")}>
