@@ -437,14 +437,14 @@ export const JA_DRAFTED_GAMEPAGES: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "gamepages.puzzleLine.chip": {
-    text: "1人で遊ぶパズルです。ブラウザーの中で解きます。",
+    text: "1人用のパズルです。ブラウザの中で解きます。",
     back: "A puzzle for one person. You solve it in the browser.",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "gamepages.puzzleLine.join": {
     text: "参加して1問遊ぶ →",
     back: "Join and play one puzzle →",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "gamepages.playOne": {
     text: "遊んでみる →",
