@@ -56,7 +56,7 @@ describe("Gomoji Sakasa 逆さ: played backwards", () => {
     const way = guessesOf(kind, size, puzzle.solution);
     const refused = checkSolution(kind, size, puzzle.givens, [way[0]!, way[0]!, ...way.slice(2)].join(""), "medium");
     expect(refused).toMatchObject({ ok: false, code: "chk.hold.played" });
-    const values = (refused as { values: { unit: string } }).values;
+    const values = (refused as unknown as { values: { unit: string } }).values;
     expect(values.unit).toBe(way[0]!.toUpperCase());
     // The reader's language is chosen by the page: the same key says it in Japanese.
     expect(speaker("ja").say("chk.hold.played", values)).toContain(values.unit);
