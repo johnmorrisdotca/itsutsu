@@ -1,12 +1,13 @@
 import type { PhraseKey } from "../i18n.constants";
-import type { DraftedPhrase } from "./ja.drafted.constants";
+import type { DraftedPhrase, Review } from "./ja.drafted.constants";
 
 /**
  * Japanese for the err.* phrases (ENJA-13), each with what it literally says in `back`. A refusal is a short, polite です/ます sentence
  * ending in 。 (a few are the short noun phrase of a heading, as "リクエストが多すぎます"). Joined into `JA_DRAFTED`.
+ * Every row has been read by the reviewer agent (`review`); the nine that carry an `ask` (removing an account, children under 13) still want a native read.
  */
-const NOBODY_READ = "Written on 2026-11-02; nobody has read it.";
-const r = (text: string, back: string, ask?: string): DraftedPhrase => ({ text, back, ask: ask === undefined ? NOBODY_READ : `${NOBODY_READ} ${ask}` });
+const AGENT_READ: Review = { by: "agent", on: "2026-11-02" };
+const r = (text: string, back: string, ask?: string): DraftedPhrase => ({ text, back, review: AGENT_READ, ...(ask === undefined ? {} : { ask }) });
 
 export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.signIn": r("先にサインインしてください。", "Please sign in first."),
@@ -20,7 +21,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.inviteNeeded": r("このサイトを使うには、招待コードが必要です。", "An invite code is needed to use this site."),
   "err.changeFailed": r("変更できませんでした。", "It could not be changed."),
   "err.sendFailed": r("送信できませんでした。", "It could not be sent."),
-  "err.paging": r("ページの指定が正しくありません。", "The page specification is not correct."),
+  "err.paging": r("ページ送りの指定が正しくありません。", "The paging specification is not correct."),
   "err.game.none": r("その対局は見つかりません。", "That game cannot be found."),
   "err.game.over": r("その対局はすでに終わっています。", "That game has already ended."),
   "err.game.finished": r("その対局は終わっています。", "That game has ended."),
@@ -34,7 +35,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.colourFailed": r("色を変更できませんでした。", "The colour could not be changed."),
   "err.game.starSignIn": r("対局にスターを付けるには、サインインしてください。", "Sign in to put a star on a game."),
   "err.game.starFailed": r("スターを変更できませんでした。", "The star could not be changed."),
-  "err.game.noneOfYours": r("そのIDの対局は、自分の対局にありません。", "There is no game of mine with that ID."),
+  "err.game.noneOfYours": r("あなたの対局に、そのIDのものはありません。", "Among your games, there is none with that ID."),
   "err.game.hideChoice": r("非表示にするかどうかを指定してください。", "Specify whether to hide it or not."),
   "err.game.hideFinished": r("非表示にできるのは、終わった対局だけです。", "Only a game that has ended can be hidden."),
   "err.game.resignFailed": r("その対局を投了できませんでした。", "That game could not be resigned."),
@@ -64,7 +65,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.applause.notAMark": r("それは用意された拍手の種類ではありません。", "That is not one of the kinds of applause provided."),
   "err.applause.onceFinished": r("拍手は、対局が終わってから送れます。", "Applause can be sent once the game has ended."),
   "err.applause.failed": r("拍手を送れませんでした。", "The applause could not be sent."),
-  "err.verdict.choice": r("「上」「下」「どちらでもない」のどれかを指定してください。", "Specify one of up, down or neither."),
+  "err.verdict.choice": r("up、down、nullのどれかを指定してください。", "Specify one of up, down or null."),
   "err.verdict.waitOver": r("対局が終わるまでお待ちください。", "Please wait until the game has ended."),
   "err.verdict.failed": r("記録できませんでした。", "It could not be recorded."),
   "err.settings.started": r("最初の石が置かれたので、規則は変更できません。", "The first stone has been placed, so the rules cannot be changed."),
@@ -156,7 +157,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.invite.createFailed": r("招待を作成できませんでした。", "The invitation could not be created."),
   "err.mail.badForm": r("リクエストの本文がフォーム形式ではありません。", "The body of the request is not in form format."),
   "err.mail.nothingToStop": r("そのリンクでは、止められるメールがありません。", "There is no email that link can stop."),
-  "err.mail.choose": r("このメールか、すべてのメールのどちらかを止めてください。", "Stop either this email or all emails."),
+  "err.mail.choose": r("この種類のメールか、すべてのメールのどちらかを止めてください。", "Stop either this kind of email or all emails."),
   "err.mail.failed": r("記録できませんでした。{address}までご連絡いただければ、手作業で対応します。", "It could not be recorded. If you write to {address}, it will be handled by hand."),
   "err.kept.needAccount": r("対局を履歴に残すには、アカウントが必要です。", "An account is needed to keep a game in the history."),
   "err.kept.badId": r("保存された対局のIDではありません。", "It is not the ID of a kept game."),
@@ -207,7 +208,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.puzzle.notDeal": r("そのシードの配り方ではありません。", "It is not the deal of that seed."),
   "err.puzzle.notCube": r("そのシードのキューブではありません。", "It is not the cube of that seed."),
   "err.puzzle.moreChecks": r("許可されたチェック回数を超えています。", "It is more checks than the allowance."),
-  "err.puzzle.noClock": r("時間切れにはなりません。このパズルは制限時間なしで遊んでいます。", "It cannot run out of time. This puzzle was played without a time limit."),
+  "err.puzzle.noClock": r("時間切れにはなりません。このパズルは制限時間なしで遊ばれたものです。", "It cannot run out of time. This puzzle is one that was played without a time limit."),
   "err.puzzle.notHold": r("その大きさのパズルに入る内容ではありません。", "It is not what a puzzle of that size could hold."),
   "err.puzzle.afterClock": r("制限時間が切れたあとに解いています。", "It was solved after the time limit ran out."),
   "err.puzzle.notOver": r("まだ終わっていません：{reason}。", "It is not over yet: {reason}."),
@@ -220,7 +221,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.puzzle.attemptNeedsAccount": r("挑戦回数を数えるには、アカウントが必要です。", "An account is needed to count attempts."),
   "err.puzzle.attemptFailed": r("挑戦回数を数えられませんでした。", "The attempt could not be counted."),
   "err.game.notYours": r("その対局は自分で打ったものではありません。", "That game is not one I played."),
-  "err.member.notTaking": r("その会員は、いま自分からの対局を受け付けていません。", "That member is not accepting games from me right now."),
+  "err.member.notTaking": r("その会員は、いまあなたからの対局を受け付けていません。", "That member is not accepting games from you right now."),
   "err.member.childBuddiesOnly": r("この対局者は13歳未満のため、本人の仲間リストにいる人だけが対局を申し込めます。", "This player is under 13, so only the people on their own buddy list can propose a game to them.", "About a child under 13 (who may offer them a game): a native read is recommended."),
   "err.game.stillPlaying": r("その対局はまだ続いています。", "That game is still going on."),
   "err.game.signInAgain": r("もう一度対局するには、サインインしてください。", "Sign in to play again."),
@@ -271,7 +272,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.table.movedOn": r("卓の状況が進みました。", "The table has moved on."),
   "err.table.notAMove": r("それはこのゲームの手ではありません。", "That is not a move in this game."),
   "err.table.notAllowed": r("その手は打てません。", "That move cannot be played."),
-  "err.table.seatIgnored": r("その卓にいる誰かが、自分との対局を受け付けていません。", "Somebody at that table is not accepting games with me."),
+  "err.table.seatIgnored": r("その卓にいる誰かが、あなたとの対局を受け付けていません。", "Somebody at that table is not accepting games with you."),
   "err.table.seatChild": r("その卓には13歳未満の対局者がいるため、その人の仲間リストにいる人だけが同席できます。", "A player at that table is under 13, so only the people on that player's own buddy list can sit with them.", "About a child under 13 (who may sit with them): a native read is recommended."),
   "err.table.capYou": r("すでに{most}卓に着いています。先にどれかを最後まで遊ぶか、終了してください。", "I am already at {most} tables. First play one to the end, or end one."),
   "err.table.capThem": r("声をかけた人が、すでに{most}卓に着いています。", "Somebody I asked is already at {most} tables."),

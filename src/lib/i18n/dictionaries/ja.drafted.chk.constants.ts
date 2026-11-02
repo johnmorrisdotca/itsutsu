@@ -4,9 +4,10 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
 /**
  * Japanese for the chk.* phrases (ENJA-13), each with what it literally says in `back`. A refusal is a short, polite です/ます sentence
  * (a clause with no full stop, since it finishes "解けていません：…。"). Joined into `JA_DRAFTED`.
+ * Every row has been read by the reviewer agent (`review`).
  */
-const NOBODY_READ = "Written on 2026-11-02; nobody has read it.";
-const r = (text: string, back: string, ask?: string): DraftedPhrase => ({ text, back, ask: ask === undefined ? NOBODY_READ : `${NOBODY_READ} ${ask}` });
+const AGENT_READ: Review = { by: "agent", on: "2026-11-02" };
+const r = (text: string, back: string): DraftedPhrase => ({ text, back, review: AGENT_READ });
 /** The three games that arrived with their refusals read kept their stamp when those refusals moved here from pword.* and pgrid.*. */
 const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
@@ -99,7 +100,7 @@ export const JA_DRAFTED_CHK: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "chk.notBoardSize": r("最初から出ている部分が、その大きさの盤になっていません", "the part shown from the start is not a board of that size"),
   "chk.notLevelLength": r("最初から出ている部分が、その長さのレベルになっていません", "the part shown from the start is not a level of that length"),
   "chk.notALevel": r("最初から出ている部分が、レベルになっていません", "the part shown from the start is not a level"),
-  "chk.notLegalJumps": r("この盤で打てる跳びの連なりになっていません", "it is not a series of legal jumps on this board"),
+  "chk.notLegalJumps": r("この盤で行える跳びの連なりになっていません", "it is not a series of jumps that can be made on this board"),
   "chk.onePegLeft": r("最後に残る駒は、ゴールの穴にある1つだけでなければなりません", "the last remaining peg must be only one, in the goal hole"),
   "chk.tsunagiLayout": r("最初から出ている部分が、「繋ぎ」の配置になっていません", "the part shown from the start is not a layout of Tsunagi"),
   "chk.notSiteLevel": r("このサイトのレベルのどれでもありません", "it is not one of this site's levels"),
