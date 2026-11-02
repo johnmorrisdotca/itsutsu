@@ -1,9 +1,8 @@
 "use client";
 
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
-import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PartyTableCard } from "@/components/party/PartyTableCard";
+
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 import type { SugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
 import { sugorokuOver, sugorokuToPlay } from "@/lib/party/sugoroku/sugorokuTable";
@@ -27,18 +26,9 @@ export function SugorokuCard({ kind }: { kind: SugorokuKind }) {
   if (table === undefined || table === null || sugorokuOver(table)) return null;
   const to = sugorokuToPlay(table);
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="party-game" data-variant={kind}>
-      <GameThumb variant={kind} size="small" />
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{SUGOROKU_COPY.card}</span>
-        <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={kind} /> · {sugorokuScoreWords(table, say)}
-          {to === null ? "" : ` · ${say.say("party.toPlay", { name: sugorokuNames(table, say)[to] })}`}
-        </span>
-      </div>
-      <Link href={passAndPlayPath(kind)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">
-        {PARTY_COPY.resume} →
-      </Link>
-    </div>
+    <PartyTableCard thumb={kind} heading={SUGOROKU_COPY.card} href={passAndPlayPath(kind)} resume={PARTY_COPY.resume} dataVariant={kind}>
+      <GameName variant={kind} /> · {sugorokuScoreWords(table, say)}
+      {to === null ? "" : ` · ${say.say("party.toPlay", { name: sugorokuNames(table, say)[to] })}`}
+    </PartyTableCard>
   );
 }

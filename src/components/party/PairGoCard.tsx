@@ -1,9 +1,8 @@
 "use client";
 
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
-import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PartyTableCard } from "@/components/party/PartyTableCard";
+
 import { boardWords } from "@/lib/gomoku/boardWords";
 import { GAME_STATUS } from "@/lib/gomoku/gomoku.constants";
 import { stoneName } from "@/lib/gomoku/seatWords";
@@ -28,18 +27,9 @@ export function PairGoCard() {
   const toMove = pairPlayerToMove(game, say);
   const { moves, settings } = game.state;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="pairgo-game">
-      <GameThumb variant={PAIR_GO_VARIANT} size="small" />
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PAIR_GO_COPY.card}</span>
-        <span className="text-sm font-medium">
-          <GameName variant={PAIR_GO_VARIANT} />{say.say("party.pairgo.cardTeams")} · {boardWords(settings.variant, settings.size, say)} · {say.count("count.move", moves.length)}
-          {toMove !== null ? say.say("party.pairgo.cardToPlay", { name: toMove.name, colour: stoneName(say, toMove.stone) }) : ""}
-        </span>
-      </div>
-      <Link href={passAndPlayPath(PAIR_GO_VARIANT)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="pairgo-game-continue">
-        {PAIR_GO_COPY.resume} →
-      </Link>
-    </div>
+    <PartyTableCard thumb={PAIR_GO_VARIANT} heading={PAIR_GO_COPY.card} href={passAndPlayPath(PAIR_GO_VARIANT)} resume={PAIR_GO_COPY.resume} testId="pairgo-game" continueTestId="pairgo-game-continue" flow={false}>
+      <GameName variant={PAIR_GO_VARIANT} />{say.say("party.pairgo.cardTeams")} · {boardWords(settings.variant, settings.size, say)} · {say.count("count.move", moves.length)}
+      {toMove !== null ? say.say("party.pairgo.cardToPlay", { name: toMove.name, colour: stoneName(say, toMove.stone) }) : ""}
+    </PartyTableCard>
   );
 }

@@ -1,9 +1,8 @@
 "use client";
 
+import { GoingCard } from "@/components/mine/GoingCard";
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
-import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+
 import { CASUAL_KIND_LIST, CASUAL_SPECS } from "@/lib/casual/casual.constants";
 import type { CasualKind } from "@/lib/casual/casual.types";
 import { goingLevel, hasProgress, nextLevel, wonLevels } from "@/lib/casual/casualProgress";
@@ -40,21 +39,22 @@ function CasualCard({ kind, going, won, next }: { kind: CasualKind; going: numbe
   const story = kind === "choiceStory";
   const level = going ?? next;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="casual-card" data-kind={kind}>
-      <GameThumb variant={kind} size="small" />
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{CASUAL_COPY.card}</span>
-        <span className="text-sm font-medium">
-          <GameName variant={kind} />
-        </span>
-        <span className="text-xs text-muted">
-          {CASUAL_COPY.wonOf(won, spec.levels, story)}
-          {going === null ? "" : ` · ${say.say("casual.cardGoing", { word: CASUAL_COPY.levelWord(story), level: String(going), going: CASUAL_COPY.going.toLowerCase() })}`}
-        </span>
-      </div>
-      <Link href={casualPlayPath(kind, level)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="casual-card-continue">
-        {going === null ? CASUAL_COPY.start(level, story) : CASUAL_COPY.continueLevel(level, story)}
-      </Link>
-    </div>
+    <GoingCard
+      thumb={kind}
+      heading={CASUAL_COPY.card}
+      href={casualPlayPath(kind, level)}
+      action={going === null ? CASUAL_COPY.start(level, story) : CASUAL_COPY.continueLevel(level, story)}
+      testId="casual-card"
+      continueTestId="casual-card-continue"
+      dataKind={kind}
+    >
+      <span className="text-sm font-medium">
+        <GameName variant={kind} />
+      </span>
+      <span className="text-xs text-muted">
+        {CASUAL_COPY.wonOf(won, spec.levels, story)}
+        {going === null ? "" : ` · ${say.say("casual.cardGoing", { word: CASUAL_COPY.levelWord(story), level: String(going), going: CASUAL_COPY.going.toLowerCase() })}`}
+      </span>
+    </GoingCard>
   );
 }

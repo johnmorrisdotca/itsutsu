@@ -1,9 +1,8 @@
 "use client";
 
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
-import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PartyTableCard } from "@/components/party/PartyTableCard";
+
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { diceWarSeatName } from "@/lib/party/diceWar/diceWar.constants";
@@ -27,18 +26,9 @@ export function DiceWarCard() {
   if (game === undefined || game === null || game.phase === "over") return null;
   const variant = PARTY_KINDS.diceWar;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="party-game" data-variant={variant}>
-      <GameThumb variant={variant} size="small" />
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{DICE_WAR_COPY.card}</span>
-        <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · {say.say("party.diceWar.cardRound", { round: String(game.round) })}
-          {waitsOnPerson(game) ? ` · ${say.count("count.player", game.players.length)}` : ` · ${say.say("party.diceWar.toRoll", { name: diceWarSeatName(game.players, game.computers, game.rollers[0] ?? 0, say) })}`}
-        </span>
-      </div>
-      <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">
-        {PARTY_COPY.resume} →
-      </Link>
-    </div>
+    <PartyTableCard thumb={variant} heading={DICE_WAR_COPY.card} href={passAndPlayPath(variant)} resume={PARTY_COPY.resume} dataVariant={variant}>
+      <GameName variant={variant} /> · {say.say("party.diceWar.cardRound", { round: String(game.round) })}
+      {waitsOnPerson(game) ? ` · ${say.count("count.player", game.players.length)}` : ` · ${say.say("party.diceWar.toRoll", { name: diceWarSeatName(game.players, game.computers, game.rollers[0] ?? 0, say) })}`}
+    </PartyTableCard>
   );
 }

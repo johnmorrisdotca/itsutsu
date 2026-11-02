@@ -1,10 +1,9 @@
 "use client";
 
+import { GoingCard } from "@/components/mine/GoingCard";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
-import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+
 import { HOUSEKI_KIND_LIST, levelsOf } from "@/lib/houseki/houseki.constants";
 import { housekiQuery } from "@/lib/houseki/housekiAddress";
 import { hasProgress, latestRun, wonCount } from "@/lib/houseki/housekiProgress";
@@ -41,22 +40,23 @@ function HousekiCard({ kind }: { kind: HousekiKind }) {
   const run = latestRun(save, kind);
   const waiting = save[kind]?.runs.length ?? 0;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="houseki-card" data-kind={kind}>
-      <GameThumb variant={kind} size="small" />
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{say.say("houseki.card.label")}</span>
-        <span className="text-sm font-medium">
-          <GameName variant={kind} />
-        </span>
-        <span className="text-xs text-muted">
-          {say.say("houseki.card.wonOf", { won: say.number(wonCount(save, kind)), levels: say.number(levelsOf(kind)) })}
-          {run === null ? "" : ` · ${say.say("houseki.card.waiting", { what: requestWords(say, run.request) })}`}
-          {waiting > 1 ? ` · ${say.count("houseki.card.more", waiting - 1)}` : ""}
-        </span>
-      </div>
-      <Link href={run === null ? setUpPath(kind) : housekiPlayPath(kind, housekiQuery(run.request))} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="houseki-card-continue">
-        {run === null ? say.say("catalogue.play") : say.say("ending.continue")}
-      </Link>
-    </div>
+    <GoingCard
+      thumb={kind}
+      heading={say.say("houseki.card.label")}
+      href={run === null ? setUpPath(kind) : housekiPlayPath(kind, housekiQuery(run.request))}
+      action={run === null ? say.say("catalogue.play") : say.say("ending.continue")}
+      testId="houseki-card"
+      continueTestId="houseki-card-continue"
+      dataKind={kind}
+    >
+      <span className="text-sm font-medium">
+        <GameName variant={kind} />
+      </span>
+      <span className="text-xs text-muted">
+        {say.say("houseki.card.wonOf", { won: say.number(wonCount(save, kind)), levels: say.number(levelsOf(kind)) })}
+        {run === null ? "" : ` · ${say.say("houseki.card.waiting", { what: requestWords(say, run.request) })}`}
+        {waiting > 1 ? ` · ${say.count("houseki.card.more", waiting - 1)}` : ""}
+      </span>
+    </GoingCard>
   );
 }

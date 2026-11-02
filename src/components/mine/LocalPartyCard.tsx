@@ -1,14 +1,14 @@
 "use client";
 
+import { GoingCard } from "./GoingCard";
 import { Paired } from "@/components/i18n/Paired";
-import Link from "@/components/ui/Link";
 
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
+
 import { partyAddress } from "@/components/puzzles/KumimojiPartyScreens";
 import { useKeptParty } from "@/components/puzzles/kumimojiPartyKept";
 import { nameOf } from "@/lib/puzzles/kumimoji/party";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+
 import { weave } from "@/lib/i18n/weave";
 import { myGamesCopy } from "./mine.copy";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
@@ -25,19 +25,17 @@ export function LocalPartyCard() {
   const game = useKeptParty();
   if (game === null || game.ending !== null) return null;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="local-party">
-      <GameThumb variant="kumimoji" size="small" />
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-          <Paired en={MY_GAMES_COPY.localParty.label} kanji={MY_GAMES_COPY.localParty.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
-        </span>
-        <span className="text-sm font-medium">
-          {weave(say.say("mine.cardParty", { players: say.count("count.player", game.players.length), who: nameOf(game, game.turn) }), { game: <GameName variant="kumimoji" /> })}
-        </span>
-      </div>
-      <Link href={partyAddress(game)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="local-party-continue">
-        {MY_GAMES_COPY.continueGame} →
-      </Link>
-    </div>
+    <GoingCard
+      thumb="kumimoji"
+      heading={<Paired en={MY_GAMES_COPY.localParty.label} kanji={MY_GAMES_COPY.localParty.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />}
+      href={partyAddress(game)}
+      action={<>{MY_GAMES_COPY.continueGame} →</>}
+      testId="local-party"
+      continueTestId="local-party-continue"
+    >
+      <span className="text-sm font-medium">
+        {weave(say.say("mine.cardParty", { players: say.count("count.player", game.players.length), who: nameOf(game, game.turn) }), { game: <GameName variant="kumimoji" /> })}
+      </span>
+    </GoingCard>
   );
 }
