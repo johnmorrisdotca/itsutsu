@@ -154,9 +154,12 @@ function Outlook({ session }: { session: GameSession }) {
       role="status"
       data-outlook={outlook}
     >
-      <span aria-hidden="true" className="mt-0.5 shrink-0 whitespace-nowrap text-xl leading-none font-semibold">
-        {kanji}
-      </span>
+      {/* A reader of Japanese is told 互角 in the label already, so the glyph beside it (the same two characters) is left out rather than said twice. */}
+      {kanji === label ? null : (
+        <span aria-hidden="true" className="mt-0.5 shrink-0 whitespace-nowrap text-xl leading-none font-semibold">
+          {kanji}
+        </span>
+      )}
       <span className="flex flex-col gap-0.5">
         <span className="text-sm font-semibold">{label}</span>
         <span className="text-xs leading-snug opacity-85">{detail}</span>
