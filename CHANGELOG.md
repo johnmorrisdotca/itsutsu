@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.558.1 — 2026-11-02 18:40 UTC
+- Switching between English and Japanese no longer moves the board, the goal panel or the controls in any game
+
 ## 0.558.0 — 2026-11-02 17:37 UTC
 - A word you lose now shows the answer large, and Gomoji has a Colour guide that explains every colour and arrow
 
