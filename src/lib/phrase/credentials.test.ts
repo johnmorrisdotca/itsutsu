@@ -7,6 +7,7 @@ import {
   mayRemove,
   removalRefusal,
 } from "./credentials";
+import { english } from "@/lib/api/refusal";
 
 describe("credentialsHeld", () => {
   it("counts an address and a phrase as two independent credentials", () => {
@@ -59,7 +60,7 @@ describe("isLastCredential", () => {
 
 describe("removalRefusal", () => {
   it("says what to do about it, not just that it was refused", () => {
-    const said = removalRefusal(CREDENTIALS.phrase);
+    const said = english(removalRefusal(CREDENTIALS.phrase));
     expect(said).toMatch(/email|address/i);
     expect(said.length).toBeGreaterThan(20);
   });

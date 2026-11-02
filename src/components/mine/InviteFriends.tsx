@@ -7,6 +7,7 @@ import { Paired } from "@/components/i18n/Paired";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET, INPUT_CLASS, PANEL_CLASS, SECTION_HEADING } from "@/components/ui/ui.constants";
 import type { InviteFriendsProps, InviteReply } from "./inviteFriends.types";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * A link that lets one friend in. The member asks for it, gets a one-use
@@ -41,7 +42,7 @@ export function InviteFriends({ canEmail }: InviteFriendsProps) {
     );
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? say.say("mine.inviteFailed"));
+      setError(refusalText(body, say, "mine.inviteFailed"));
       setBusy(false);
       return;
     }

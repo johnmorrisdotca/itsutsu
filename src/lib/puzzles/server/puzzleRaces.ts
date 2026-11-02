@@ -10,6 +10,7 @@ import { XP_EVENTS } from "@/lib/xp/xp.constants";
 
 import type { PuzzleKind } from "../puzzles.types";
 import { type RaceOutcome, type RaceSeat, type SeatState, canGiveUp, canStart, raceOutcome, seatState } from "../raceState";
+import { no, type PuzzleReason } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * A race: two people, one puzzle, two clocks, kept in `PuzzleRace`.
@@ -53,7 +54,7 @@ export async function claimGuestSeat(id: string, token: string, memberId: string
     where: { id, guestMemberId: null },
     data: { guestMemberId: memberId, guestName: name },
   });
-  return claimed.count === 1 ? "sat" : "taken";
+  return claimed.count > 0 ? "sat" : "taken";
 }
 
 export type RaceRead = {
@@ -78,7 +79,7 @@ export async function startSeat(id: string, seat: RaceSeat, now = new Date()): P
     where: seat === "host" ? { id, hostStartedAt: null } : { id, guestStartedAt: null, guestMemberId: { not: null } },
     data: seat === "host" ? { hostStartedAt: now } : { guestStartedAt: now },
   });
-  return started.count === 1 ? "started" : "already";
+  return started.count > 0 ? "started" : "already";
 }
 
 /** Read the race again after a seat settled; if that ended it, pay the winner `raceWon` once (its subject is the race). For a seat that gave up here, and one that finished (`puzzleRaceChecks.ts`). */
@@ -98,19 +99,19 @@ export async function settleIfOver(race: RaceRow, memberId: string, fallback: Ra
  * end of the sitting; if the other seat has already finished, it is paid its
  * win here. Nothing to check: giving up only ever costs the seat that does it.
  */
-export async function giveUpSeat(id: string, seat: RaceSeat, memberId: string, now = new Date()): Promise<{ ok: true; outcome: RaceOutcome } | { ok: false; reason: string; status: 404 | 409 }> {
+export async function giveUpSeat(id: string, seat: RaceSeat, memberId: string, now = new Date()): Promise<{ ok: true; outcome: RaceOutcome } | ({ ok: false; status: 404 | 409 } & PuzzleReason)> {
   const race = await raceFor(id);
-  if (race === null) return { ok: false, reason: "no such race", status: 404 };
+  if (race === null) return { ...no("chk.noSuchRace"), status: 404 };
   const before = readRace(race, now);
   const mine = seat === "host" ? before.host : before.guest;
-  if (!canGiveUp(mine)) return { ok: false, reason: mine.state === "finished" ? "already finished" : mine.state === "gaveUp" ? "already over" : "not started", status: 409 };
+  if (!canGiveUp(mine)) return { ...no(mine.state === "finished" ? "chk.alreadyFinished" : mine.state === "gaveUp" ? "chk.alreadyOver" : "chk.notStarted"), status: 409 };
   const stamped = await prisma.puzzleRace.updateMany({
     where: seat === "host"
       ? { id, hostStartedAt: { not: null }, hostFinishedAt: null, hostGaveUpAt: null }
       : { id, guestStartedAt: { not: null }, guestFinishedAt: null, guestGaveUpAt: null },
     data: seat === "host" ? { hostGaveUpAt: now } : { guestGaveUpAt: now },
   });
-  if (stamped.count !== 1) return { ok: false, reason: "already over", status: 409 };
+  if (stamped.count !== 1) return { ...no("chk.alreadyOver"), status: 409 };
   const { outcome } = await settleIfOver(race, memberId, before.outcome, now);
   return { ok: true, outcome };
 }
@@ -141,7 +142,7 @@ export async function offerRace(id: string, host: { id: string; name: string }, 
   if (race.guestMemberId !== null) return "taken";
   if (toMemberId === host.id || !(await peopleBuddyIds(host.id)).has(toMemberId)) return "notBuddy";
   const offered = await prisma.puzzleRace.updateMany({ where: { id, guestMemberId: null }, data: { offeredToMemberId: toMemberId } });
-  if (offered.count !== 1) return "taken";
+  if (offered.count < 1) return "taken";
   if (!(await isIgnoring(toMemberId, host.id))) {
     await recordInbox([{ memberId: toMemberId, kind: INBOX_KINDS.raceOffer, gameId: id, variant: race.kind, fromName: host.name, fromMemberId: host.id }]);
   }

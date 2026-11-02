@@ -6,6 +6,8 @@ import { useState, type FormEvent } from "react";
 import { Paired } from "@/components/i18n/Paired";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_STRONG, INPUT_CLASS } from "@/components/ui/ui.constants";
+import { refusalText } from "@/lib/api/refusalText";
+import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 /** The one thing a new member is asked: the name other players will see. */
 export function NameForm({ initial, next }: { initial: string; next: string | null }) {
@@ -28,7 +30,7 @@ export function NameForm({ initial, next }: { initial: string; next: string | nu
     setBusy(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? say.say("mine.nameFailed"));
+      setError(refusalText(payload, say, "mine.nameFailed"));
       return;
     }
     setSaved(true);
@@ -37,7 +39,7 @@ export function NameForm({ initial, next }: { initial: string; next: string | nu
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-2" data-testid="name-form">
+    <form onSubmit={submit} className="flex flex-col gap-2" data-testid="name-form" {...readyMark(useHydrated())}>
       <label className="text-sm font-medium" htmlFor="display-name">
         <Paired en={say.say("mine.nameLabel")} kanji="名前" kanjiClassName="text-xs font-normal opacity-70" inReadersLanguage />
       </label>

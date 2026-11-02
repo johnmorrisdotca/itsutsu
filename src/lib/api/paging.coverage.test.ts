@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { pagingSpecProblems, sortWords } from "./paging";
+import { columnFor, sortWords } from "./paging";
 import type { SortSpec } from "./paging.types";
 import { GAME_SORT_SPEC } from "@/lib/history/gameHistory.sort";
 import { LADDER_SORT_SPEC } from "@/lib/rating/ladder.sort";
@@ -10,6 +10,55 @@ import { XP_BOARD_EVERYWHERE_SORT_SPEC, XP_BOARD_SORT_SPEC } from "@/lib/xp/xpBo
 import { XP_LEDGER_SORT } from "@/lib/xp/xpHistory.sort";
 import { DIRECTORY_SORT_SPEC } from "@/lib/rating/directory.sort";
 import { MY_FINISHED_SORT } from "@/lib/history/myFinished.sort";
+
+/**
+ * What is wrong with a sort declaration, as a list of sentences.
+ *
+ * A spec is data, and data goes wrong quietly: a fallback naming a column that
+ * was renamed, two columns claiming the same word in the address, a column with
+ * no index and no reason given. None of that fails a build on its own, and all
+ * of it produces a list that orders by something nobody chose. So it is checked,
+ * and this file runs it over every spec on the site. It lives here because nothing
+ * but this gate reads it, and its sentences are for the developer who declares a spec.
+ *
+ * The index rule is the one worth having. TypeScript already forces a column to
+ * carry either an index name or a reason, so what is left for this to catch is a
+ * reason that says nothing — and a blank string satisfies a type.
+ */
+function pagingSpecProblems<Field extends string>(spec: SortSpec<Field>): string[] {
+  const problems: string[] = [];
+  if (spec.columns.length === 0) problems.push(`${spec.of} declares no sortable columns.`);
+
+  const seen = new Set<string>();
+  for (const column of spec.columns) {
+    if (seen.has(column.param)) {
+      problems.push(`${spec.of} declares "${column.param}" twice.`);
+    }
+    seen.add(column.param);
+
+    if (column.param.trim() === "") problems.push(`${spec.of} has a column with no word for it.`);
+    if (column.label.trim() === "") {
+      problems.push(`${spec.of}'s "${column.param}" has no heading.`);
+    }
+    if (/[A-Z]/.test(column.param)) {
+      problems.push(
+        `${spec.of}'s "${column.param}" is camelCase; an address says plain words.`,
+      );
+    }
+    if (column.index === null && (column.unindexedBecause ?? "").trim().length < 20) {
+      problems.push(
+        `${spec.of}'s "${column.param}" has no index and no reason worth reading for why not.`,
+      );
+    }
+  }
+
+  if (columnFor(spec, spec.fallback.param) === undefined) {
+    problems.push(
+      `${spec.of} falls back to "${spec.fallback.param}", which it does not declare.`,
+    );
+  }
+  return problems;
+}
 
 /**
  * THE GATE OVER EVERY SORTABLE LIST ON THE SITE.
@@ -165,5 +214,59 @@ describe("every sort declaration", () => {
    */
   it("is the whole list of them", () => {
     expect(SPECS).toHaveLength(7);
+  });
+});
+
+const SPEC: SortSpec<string> = {
+  of: "the record",
+  columns: [
+    { param: "played", field: "playedAt", label: "Played", firstPress: "desc", index: "Game_playedAt_idx" },
+    {
+      param: "moves",
+      field: "moveCount",
+      label: "Moves",
+      firstPress: "desc",
+      index: null,
+      unindexedBecause: "A hundred and thirty rows, so the sort is done in memory by Postgres.",
+    },
+  ],
+  fallback: { param: "played", direction: "desc" },
+  tiebreak: "id",
+};
+
+describe("pagingSpecProblems", () => {
+  it("passes a sound spec", () => {
+    expect(pagingSpecProblems(SPEC)).toEqual([]);
+  });
+
+  it("catches a fallback naming a column that is not declared", () => {
+    const problems = pagingSpecProblems({ ...SPEC, fallback: { param: "rating", direction: "desc" } });
+    expect(problems.join(" ")).toContain("rating");
+  });
+
+  it("catches the same word declared twice", () => {
+    const problems = pagingSpecProblems({ ...SPEC, columns: [SPEC.columns[0], SPEC.columns[0]] });
+    expect(problems.join(" ")).toContain("twice");
+  });
+
+  it("catches camelCase in an address", () => {
+    const problems = pagingSpecProblems({
+      ...SPEC,
+      columns: [{ param: "moveCount", field: "moveCount", label: "Moves", firstPress: "desc", index: "x" }],
+      fallback: { param: "moveCount", direction: "desc" },
+    });
+    expect(problems.join(" ")).toContain("camelCase");
+  });
+
+  /* A blank reason satisfies the type. It must not satisfy the gate. */
+  it("catches an unindexed column whose reason says nothing", () => {
+    const problems = pagingSpecProblems({
+      ...SPEC,
+      columns: [
+        { param: "moves", field: "moveCount", label: "Moves", firstPress: "desc", index: null, unindexedBecause: "  " },
+      ],
+      fallback: { param: "moves", direction: "desc" },
+    });
+    expect(problems.join(" ")).toContain("no reason");
   });
 });

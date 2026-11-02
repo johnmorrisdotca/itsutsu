@@ -2,13 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import {
-  NO_STORE,
-  badRequest,
-  notFound,
-  readJson,
-  serverError,
-} from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, notFound, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { fetchGameMovesPage } from "@/lib/history/gameHistory";
 import { appendMove } from "@/lib/history/liveGame";
 import { fetchGameDetail } from "@/lib/history/gameHistory";
@@ -23,6 +17,7 @@ import {
 } from "@/lib/history/gameHistory.constants";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { OFFER_NOT_ACCEPTED, OFFER_NOT_ACCEPTED_STATUS } from "@/lib/history/offers.constants";
+import type { RefusalCode } from "@/lib/api/refusal.types";
 
 /**
  * A game's moves are always ordered by move number — a replay has exactly one
@@ -48,16 +43,16 @@ export async function GET(
       page: url.searchParams.get("page") ?? undefined,
       pageSize: url.searchParams.get("limit") ?? undefined,
     });
-    if (!parsed.success) return badRequest("Invalid paging parameters.");
+    if (!parsed.success) return badRequest("err.paging");
 
     const { id } = await ctx.params;
     const page = await fetchGameMovesPage(id, parsed.data.page, parsed.data.pageSize);
-    if (page === null) return notFound("No such game.");
+    if (page === null) return notFound("err.game.none");
 
     return NextResponse.json(page, { status: 200, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not load those moves.");
+    return serverError("err.game.movesLoadFailed");
   }
 }
 
@@ -105,13 +100,13 @@ const REFUSAL_STATUS: Record<string, number> = {
   offered: OFFER_NOT_ACCEPTED_STATUS,
 };
 
-const REFUSAL_MESSAGE: Record<string, string> = {
-  "not-found": "No such game.",
-  finished: "That game is already over.",
-  "wrong-token": "That link does not hold a seat in this game.",
-  "not-your-turn": "It is not your turn.",
-  illegal: "That intersection cannot be played.",
-  conflict: "Someone moved first. Reload to catch up.",
+const REFUSAL_MESSAGE: Record<string, RefusalCode> = {
+  "not-found": "err.game.none",
+  finished: "err.game.over",
+  "wrong-token": "err.game.wrongLink",
+  "not-your-turn": "err.notYourTurn",
+  illegal: "err.game.cannotPlay",
+  conflict: "err.game.movedFirst",
   /*
    * Its own answer rather than "finished" or "not your turn", both of which
    * were in range and both of which would have been lies: the game has not
@@ -135,10 +130,10 @@ export async function POST(
     if (tooMany !== null) return tooMany;
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
 
     const parsed = playSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Invalid move.");
+    if (!parsed.success) return badRequest("err.game.invalidMove");
 
     const { id } = await ctx.params;
     const { row, col, from, twist, cells, pass, stone } = parsed.data;
@@ -155,14 +150,11 @@ export async function POST(
             ? { kind: "move" as const, row, col, from }
             : { kind: "place" as const, row, col, stone }
           : null;
-    if (move === null) return badRequest("Invalid move.");
+    if (move === null) return badRequest("err.game.invalidMove");
     const outcome = await appendMove(id, token, move);
 
     if (!outcome.ok) {
-      return NextResponse.json(
-        { error: REFUSAL_MESSAGE[outcome.reason], reason: outcome.reason },
-        { status: REFUSAL_STATUS[outcome.reason] ?? 400, headers: NO_STORE },
-      );
+      return refuse(REFUSAL_STATUS[outcome.reason] ?? 400, REFUSAL_MESSAGE[outcome.reason], undefined, { reason: outcome.reason, headers: NO_STORE });
     }
 
     /*
@@ -202,7 +194,7 @@ export async function POST(
     return NextResponse.json(game, { status: 201, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not play that move.");
+    return serverError("err.game.moveFailed");
   }
 }
 
@@ -226,21 +218,18 @@ export async function DELETE(
     if (tooMany !== null) return tooMany;
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = truncateSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Invalid request.");
+    if (!parsed.success) return badRequest("err.invalid");
 
     const { id } = await ctx.params;
     const outcome = await truncateMoves(id, await seatToken(id, parsed.data.token), parsed.data.keep);
     if (!outcome.ok) {
-      return NextResponse.json(
-        { error: REFUSAL_MESSAGE[outcome.reason], reason: outcome.reason },
-        { status: REFUSAL_STATUS[outcome.reason] ?? 400, headers: NO_STORE },
-      );
+      return refuse(REFUSAL_STATUS[outcome.reason] ?? 400, REFUSAL_MESSAGE[outcome.reason], undefined, { reason: outcome.reason, headers: NO_STORE });
     }
     return NextResponse.json(outcome.game, { status: 200, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not take that back.");
+    return serverError("err.game.takeBackFailed");
   }
 }

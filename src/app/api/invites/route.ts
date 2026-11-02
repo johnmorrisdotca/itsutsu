@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, operatorRefusal, readJson } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { listInviteCodes, mintInviteCode } from "@/lib/invite/inviteStore";
 import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not load invite codes.");
+    return operatorRefusal(500, "Could not load invite codes.");
   }
 }
 
@@ -44,12 +44,12 @@ export async function POST(request: Request) {
 
     const body = (await readJson(request)) ?? {};
     const parsed = mintSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Invalid invite options.");
+    if (!parsed.success) return operatorRefusal(400, "Invalid invite options.");
 
     const invite = await mintInviteCode(admin.email ?? "operator", parsed.data);
     return NextResponse.json(invite, { status: 201, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not create an invite code.");
+    return operatorRefusal(500, "Could not create an invite code.");
   }
 }

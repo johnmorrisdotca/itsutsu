@@ -69,14 +69,14 @@ export const gameRecordSchema = z
           move.kind === MOVE_KINDS.pass ||
           (move.row >= 0 && move.col >= 0 && move.row < game.size && move.col < game.size),
       ),
-    { message: "A move falls outside the board.", path: ["moves"] },
+    { message: "err.record.offBoard", path: ["moves"] },
   )
   .refine(
     (game) =>
       game.result === "draw" || game.result === "abandoned"
         ? game.winner === null
         : game.winner === game.result,
-    { message: "The winner must match the result.", path: ["winner"] },
+    { message: "err.record.winnerMismatch", path: ["winner"] },
   )
   .refine(
     (game) => {
@@ -86,7 +86,7 @@ export const gameRecordSchema = z
       const seen = new Set(game.moves.map((move) => `${move.row},${move.col}`));
       return seen.size === game.moves.length;
     },
-    { message: "Two moves share an intersection.", path: ["moves"] },
+    { message: "err.record.sharedPoint", path: ["moves"] },
   );
 
 export type GameRecordInput = z.infer<typeof gameRecordSchema>;

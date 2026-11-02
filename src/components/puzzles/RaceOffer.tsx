@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * The other way to fill a race's empty seat: offer it to a buddy by name, who
@@ -40,7 +41,7 @@ export function RaceOffer({ id, buddies, offeredTo }: { id: string; buddies: rea
       });
       if (!answered.ok) {
         const body = (await answered.json().catch(() => null)) as { error?: string } | null;
-        setProblem(body?.error ?? say.say("pset.race.noOffer"));
+        setProblem(refusalText(body, say, "pset.race.noOffer"));
       } else {
         router.refresh();
       }

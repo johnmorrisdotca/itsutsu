@@ -35,6 +35,8 @@ import { JA_DRAFTED_HOUSEKI } from "./ja.drafted.houseki.constants";
 import { JA_DRAFTED_PARTY } from "./ja.drafted.party.constants";
 import { JA_DRAFTED_CASUAL } from "./ja.drafted.casual.constants";
 import { JA_DRAFTED_CTABLE } from "./ja.drafted.ctable.constants";
+import { JA_DRAFTED_ERR } from "./ja.drafted.err.constants";
+import { JA_DRAFTED_CHK } from "./ja.drafted.chk.constants";
 
 import { JA_DRAFTED_XP } from "./ja.drafted.xp.constants";
 import { JA_DRAFTED_COUNTRIES } from "./ja.drafted.countries.constants";
@@ -1064,4 +1066,6 @@ export const JA_DRAFTED: Partial<Record<PhraseKey, DraftedPhrase>> = {
   ...JA_DRAFTED_PARTY,
   ...JA_DRAFTED_CTABLE,
   ...JA_DRAFTED_CASUAL,
+  ...JA_DRAFTED_ERR,
+  ...JA_DRAFTED_CHK,
 };

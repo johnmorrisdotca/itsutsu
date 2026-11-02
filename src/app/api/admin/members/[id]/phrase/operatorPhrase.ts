@@ -5,7 +5,7 @@ import { canBeClaimed } from "@/lib/auth/memberId";
 import { OPERATOR_ACTIONS } from "@/lib/auth/operatorLog.constants";
 import type { OperatorActor } from "@/lib/auth/operatorLog.types";
 
-import { setPhrase } from "./phraseStore";
+import { setPhrase } from "@/lib/phrase/phraseStore";
 
 /**
  * The operator setting somebody else's four words.

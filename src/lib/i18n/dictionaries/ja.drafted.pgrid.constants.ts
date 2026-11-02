@@ -43,46 +43,6 @@ export const JA_DRAFTED_PGRID: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "You have reached the last number, but there are squares not yet filled. Take the line back and go through those squares first.",
     review: AGENT_READ_2026_10_30,
   },
-  "pgrid.hitofude.refuse.notBoard": {
-    text: "与えられた盤が数字の盤になっていません。",
-    back: "The given board is not a board of numbers.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pgrid.hitofude.refuse.wrongSize": {
-    text: "このサイズのマス目ではありません。",
-    back: "This is not a grid of this size.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pgrid.hitofude.refuse.offLine": {
-    text: "線の上にないマスがあります。",
-    back: "There is a square not on the line.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pgrid.hitofude.refuse.crosses": {
-    text: "線が交差しています。",
-    back: "The line crosses.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pgrid.hitofude.refuse.jumps": {
-    text: "線が隣のマスにつながっていません。",
-    back: "The line does not connect to a neighbouring square.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pgrid.hitofude.refuse.outOfOrder": {
-    text: "数字の順番がちがいます。",
-    back: "The order of the numbers is wrong.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pgrid.hitofude.refuse.wrongStart": {
-    text: "線が最初の数字から始まっていません。",
-    back: "The line does not start from the first number.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pgrid.hitofude.refuse.wrongEnd": {
-    text: "線が最後の数字で終わっていません。",
-    back: "The line does not end at the last number.",
-    review: AGENT_READ_2026_10_30,
-  },
   "pgrid.hitofude.step": {
     text: "線が通った",
     back: "the line passed through it",

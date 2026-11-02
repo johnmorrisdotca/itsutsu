@@ -47,18 +47,18 @@ export async function GET(request: Request, ctx: RouteContext<"/api/games/[id]">
       gameVersion(id, now),
       reader === null ? null : touchMemberFromPoll(reader, now).catch((error: unknown) => console.error(error)),
     ]);
-    if (version === null) return notFound("No such game.");
+    if (version === null) return notFound("err.game.none");
     const headers = { ...REVALIDATE, ETag: version.tag };
     if (holdsVersion(request.headers.get("if-none-match"), version.tag)) {
       return new NextResponse(null, { status: 304, headers });
     }
 
     const game = await fetchGameDetail(id);
-    if (game === null) return notFound("No such game.");
+    if (game === null) return notFound("err.game.none");
     return NextResponse.json({ ...game, here: version.here }, { status: 200, headers });
   } catch (error) {
     console.error(error);
-    return serverError("Could not load that game.");
+    return serverError("err.game.loadFailed");
   }
 }
 
@@ -72,7 +72,7 @@ function isOperator(request: Request): boolean {
   const expected = process.env.ADMIN_TOKEN?.trim();
   if (!expected) return false;
   const header = request.headers.get("authorization") ?? "";
-  return header === `Bearer ${expected}`;
+  return /^Bearer (.+)$/.exec(header)?.[1] === expected;
 }
 
 /**
@@ -85,14 +85,14 @@ export async function DELETE(
   ctx: RouteContext<"/api/games/[id]">,
 ) {
   try {
-    if (!isOperator(request)) return notFound("No such game.");
+    if (!isOperator(request)) return notFound("err.game.none");
     const { id } = await ctx.params;
     const removed = await deleteGame(id);
-    if (!removed) return notFound("No such game.");
+    if (!removed) return notFound("err.game.none");
 
     return new NextResponse(null, { status: 204, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not delete that game.");
+    return serverError("err.game.deleteFailed");
   }
 }

@@ -21,6 +21,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
 import type { AgeBandFormProps } from "./ageBandForm.types";
 import { ageCopy } from "./mine.copy";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * The age question: three tiles, and under 13 the parent's or guardian's
@@ -62,7 +63,7 @@ export function AgeBandForm({ band, consented, place }: AgeBandFormProps) {
     setBusy(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? say.say("mine.saveFailed"));
+      setError(refusalText(payload, say, "mine.saveFailed"));
       return;
     }
     setSaved(true);

@@ -220,18 +220,18 @@ describe("checking a Yotsugo, as the server does", () => {
   });
 
   it("refuses a word never guessed, guesses after all four, a wrong word, and more guesses than nine", () => {
-    expect(checkSolution("gomoji", 5, GIVENS, "craneslatepious", "hard")).toEqual({ ok: false, reason: "a word was not guessed" });
-    expect(checkSolution("gomoji", 5, GIVENS, `craneslatepioustempo${others[0]}`, "hard")).toEqual({ ok: false, reason: "guesses go on after all four words were found" });
-    expect(checkSolution("gomoji", 5, GIVENS, "zzzzzcraneslatepioustempo", "hard")).toEqual({ ok: false, reason: "zzzzz is not in the word list" });
-    expect(checkSolution("gomoji", 5, GIVENS, `${others.slice(0, 6).join("")}craneslatepioustempo`, "hard")).toEqual({ ok: false, reason: "more guesses than the rows allow" });
+    expect(checkSolution("gomoji", 5, GIVENS, "craneslatepious", "hard")).toMatchObject({ ok: false, reason: "a word was not guessed" });
+    expect(checkSolution("gomoji", 5, GIVENS, `craneslatepioustempo${others[0]}`, "hard")).toMatchObject({ ok: false, reason: "guesses go on after all four words were found" });
+    expect(checkSolution("gomoji", 5, GIVENS, "zzzzzcraneslatepioustempo", "hard")).toMatchObject({ ok: false, reason: "zzzzz is not in the word list" });
+    expect(checkSolution("gomoji", 5, GIVENS, `${others.slice(0, 6).join("")}craneslatepioustempo`, "hard")).toMatchObject({ ok: false, reason: "more guesses than the rows allow" });
   });
 
   it("ends one unsolved only when all nine rows are spent and a word is still hidden", () => {
     expect(others.length).toBeGreaterThanOrEqual(6);
     const nine = `craneslatepious${others.slice(0, 6).join("")}`;
     expect(checkOutOfGuesses("gomoji", 5, GIVENS, nine, "hard")).toEqual({ ok: true });
-    expect(checkOutOfGuesses("gomoji", 5, GIVENS, nine.slice(5), "hard")).toEqual({ ok: false, reason: "there are guesses left" });
-    expect(checkOutOfGuesses("gomoji", 5, GIVENS, `craneslatepioustempo${others.slice(0, 5).join("")}`, "hard")).toEqual({ ok: false, reason: "all four words were found" });
+    expect(checkOutOfGuesses("gomoji", 5, GIVENS, nine.slice(5), "hard")).toMatchObject({ ok: false, reason: "there are guesses left" });
+    expect(checkOutOfGuesses("gomoji", 5, GIVENS, `craneslatepioustempo${others.slice(0, 5).join("")}`, "hard")).toMatchObject({ ok: false, reason: "all four words were found" });
   });
 });
 

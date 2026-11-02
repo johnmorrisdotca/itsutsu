@@ -1,5 +1,6 @@
 import type { PuzzleCheck } from "../puzzles.types";
 import { ACROSS_ONE, ACROSS_TWO, DOWN_ONE, DOWN_TWO, MOST_BRIDGES, WATER } from "./code";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * Whether a drawing solves a Bridges puzzle: the check the browser makes to
@@ -15,26 +16,26 @@ import { ACROSS_ONE, ACROSS_TWO, DOWN_ONE, DOWN_TWO, MOST_BRIDGES, WATER } from 
  */
 export function checkBridges(size: number, givens: string, answer: string): PuzzleCheck {
   const cells = size * size;
-  if (typeof givens !== "string" || givens.length !== cells) return { ok: false, reason: "the givens are not a grid of islands" };
-  if (typeof answer !== "string" || answer.length !== cells) return { ok: false, reason: "not a grid of that size" };
+  if (typeof givens !== "string" || givens.length !== cells) return no("chk.islandsGivens");
+  if (typeof answer !== "string" || answer.length !== cells) return no("chk.notGridSize");
   const isIsland = (char: string | undefined) => char !== undefined && char >= "1" && char <= String(MOST_BRIDGES);
   let islands = 0;
   let first = -1;
   for (let cell = 0; cell < cells; cell += 1) {
     const given = givens[cell]!;
     const drawn = answer[cell]!;
-    if (given !== WATER && !isIsland(given)) return { ok: false, reason: "the givens are not a grid of islands" };
+    if (given !== WATER && !isIsland(given)) return no("chk.islandsGivens");
     if (isIsland(given)) {
-      if (drawn !== given) return { ok: false, reason: "an island was moved" };
+      if (drawn !== given) return no("chk.islandMoved");
       islands += 1;
       if (first === -1) first = cell;
       continue;
     }
     if (drawn !== WATER && drawn !== ACROSS_ONE && drawn !== ACROSS_TWO && drawn !== DOWN_ONE && drawn !== DOWN_TWO) {
-      return { ok: false, reason: isIsland(drawn) ? "an island was added" : "a cell is neither water nor a bridge" };
+      return no(isIsland(drawn) ? "chk.islandAdded" : "chk.cellNeither");
     }
   }
-  if (islands === 0) return { ok: false, reason: "there are no islands" };
+  if (islands === 0) return no("chk.noIslands");
 
   const at = (row: number, col: number) => (row < 0 || col < 0 || row >= size || col >= size ? undefined : answer[row * size + col]);
   // Every bridge cell runs on to its own kind or an island, both ways along it.
@@ -46,7 +47,7 @@ export function checkBridges(size: number, givens: string, answer: string): Puzz
     const down = drawn === DOWN_ONE || drawn === DOWN_TWO;
     if (!across && !down) continue;
     const ends = across ? [at(row, col - 1), at(row, col + 1)] : [at(row - 1, col), at(row + 1, col)];
-    if (ends.some((end) => end !== drawn && !isIsland(end))) return { ok: false, reason: `the bridge at row ${row + 1}, column ${col + 1} does not reach an island` };
+    if (ends.some((end) => end !== drawn && !isIsland(end))) return no("chk.bridgeNoReach", { row: row + 1, col: col + 1 });
   }
 
   // What each island is given, and every island reached from the first along the bridges.
@@ -70,7 +71,7 @@ export function checkBridges(size: number, givens: string, answer: string): Puzz
       const next = at(row + dr, col + dc);
       if (next !== undefined && (kinds as readonly string[]).includes(next)) given += weight[next]!;
     }
-    if (given !== Number(givens[cell])) return { ok: false, reason: `the island at row ${row + 1}, column ${col + 1} wants ${givens[cell]} and has ${given}` };
+    if (given !== Number(givens[cell])) return no("chk.islandWants", { row: row + 1, col: col + 1, wants: givens[cell]!, has: given });
   }
   // Each bridge is walked at most twice, once from each end: O(cells).
   while (waiting.length > 0) {
@@ -93,6 +94,6 @@ export function checkBridges(size: number, givens: string, answer: string): Puzz
       }
     }
   }
-  if (joined !== islands) return { ok: false, reason: "the islands are not all joined into one" };
+  if (joined !== islands) return no("chk.islandsNotJoined");
   return { ok: true };
 }

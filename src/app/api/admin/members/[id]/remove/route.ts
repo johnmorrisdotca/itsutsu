@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, operatorRefusal, readJson } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
 import { logOperatorAction, operatorActor } from "@/lib/auth/operatorLog";
 import { removalConfirmed } from "@/lib/auth/removeAccountRules";
@@ -34,10 +34,10 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/membe
 
     const { id } = await ctx.params;
     const body = bodySchema.safeParse(await readJson(request));
-    if (!body.success) return badRequest("Say whether the name stays on their old games, and type the confirmation.");
+    if (!body.success) return operatorRefusal(400, "Say whether the name stays on their old games, and type the confirmation.");
 
     const member = await prisma.member.findUnique({ where: { id }, select: { name: true } });
-    if (member === null) return notFound("No such member.");
+    if (member === null) return operatorRefusal(404, "No such member.");
     if (!removalConfirmed(body.data.confirm, member.name)) {
       return NextResponse.json(
         { error: "That is not what the box asks for, so nothing was removed.", reason: "not-confirmed" },
@@ -46,11 +46,11 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/membe
     }
 
     const removal = await removeMember(id, { blankSeats: body.data.blankSeats, by: operatorActor(me), reason: body.data.reason });
-    if (removal === null) return notFound("No such member.");
+    if (removal === null) return operatorRefusal(404, "No such member.");
     logOperatorAction(me.email, `removed member ${id}: ${removalDetail(removal)}`);
     return NextResponse.json({ removal }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not remove that account; it may be only part way. Try again, and it finishes.");
+    return operatorRefusal(500, "Could not remove that account; it may be only part way. Try again, and it finishes.");
   }
 }

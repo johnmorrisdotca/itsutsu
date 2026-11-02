@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, notFound, readJson, refuse, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { isMemberId } from "@/lib/auth/memberId";
 import { STONES } from "@/lib/gomoku/gomoku.constants";
@@ -12,6 +12,7 @@ import { seatStandIn } from "@/lib/phrase/standInSeat";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { shownName } from "@/lib/rating/shownName";
 import { awardSeatClaimedElsewhere } from "@/lib/xp/xpSocial";
+import type { Said } from "@/lib/api/refusal.types";
 
 /** How long the board stays hers on this device — the same as any claimed seat. */
 const SEAT_COOKIE_DAYS = 30;
@@ -71,7 +72,7 @@ const sitAsSchema = z.object({
 });
 
 /** One wording for every failure that could be somebody guessing. */
-const REFUSED = "Those four words do not match that name.";
+const REFUSED = "err.sit.words";
 
 export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/sit-as">) {
   try {
@@ -95,7 +96,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
      * wrong guess rather than explaining what it wanted.
      */
     if (parsed === undefined || !parsed.success) {
-      return NextResponse.json({ error: REFUSED }, { status: 401, headers: NO_STORE });
+      return refuse(401, REFUSED, undefined, { headers: NO_STORE });
     }
 
     /*
@@ -106,7 +107,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
      */
     const claim = await claimOrVerifyPhraseFor({ memberId: parsed.data.memberId }, parsed.data.words);
     if (!claim.ok) {
-      return NextResponse.json({ error: REFUSED }, { status: 401, headers: NO_STORE });
+      return refuse(401, REFUSED, undefined, { headers: NO_STORE });
     }
 
     /*
@@ -116,7 +117,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
      * seat's name, so the one that matters is the member's own.
      */
     const outcome = await seatStandIn(id, claim.memberId, claim.name, parsed.data.seat);
-    if (!outcome.ok) return refusal(outcome.reason, outcome.said);
+    if (!outcome.ok) return refusalOf(outcome.reason, outcome.said);
 
     /*
      * THE SITE'S CLEVEREST FEATURE, AND NOTHING CELEBRATED IT UNTIL NOW. The
@@ -169,7 +170,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
      * what was sent.
      */
     console.error(error);
-    return serverError("Could not take that seat.");
+    return serverError("err.sit.failed");
   }
 }
 
@@ -208,28 +209,20 @@ export async function DELETE(request: Request, ctx: RouteContext<"/api/games/[id
     return response;
   } catch (error) {
     console.error(error);
-    return serverError("Could not hand the board back.");
+    return serverError("err.sit.handBackFailed");
   }
 }
 
 /** What to say about a seat that could not be taken, once the words were right. */
-function refusal(reason: string, said?: string): NextResponse {
-  if (reason === "no-game") return notFound("No such game.");
+function refusalOf(reason: string, said?: Said): NextResponse {
+  if (reason === "no-game") return notFound("err.game.none");
   if (reason === "over-limit") {
-    return unprocessable(said ?? "You have as many games on the go as this site allows at once.");
+    return unprocessable(said?.code ?? "err.game.atLimit", undefined, said?.values);
   }
-  if (reason === "already-seated") {
-    return NextResponse.json(
-      { error: "You already have a seat at this board.", reason },
-      { status: 409, headers: NO_STORE },
-    );
-  }
+  if (reason === "already-seated") return refuse(409, "err.sit.already", undefined, { reason, headers: NO_STORE });
   if (reason === "which-seat") {
-    return unprocessable("Both seats are free — say which one you are taking.");
+    return unprocessable("err.sit.whichSeat");
   }
-  if (reason === "no-name") return badRequest("A seat needs a name on it.");
-  return NextResponse.json(
-    { error: "That seat has been taken.", reason },
-    { status: 409, headers: NO_STORE },
-  );
+  if (reason === "no-name") return badRequest("err.sit.needName");
+  return refuse(409, "err.sit.taken", undefined, { reason, headers: NO_STORE });
 }

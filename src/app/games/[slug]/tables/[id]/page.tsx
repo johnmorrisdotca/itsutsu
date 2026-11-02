@@ -21,6 +21,7 @@ import { readTableView } from "@/lib/party/online/server/tableRead";
 import { SEATING_REFUSALS, type SeatingRefusal } from "@/lib/party/online/server/tableSeating";
 import { liveBoardIntervals } from "@/lib/site/liveBoardIntervals";
 import { nameTagsOf } from "@/lib/xp/nameTagsOf";
+import { sayRefusal } from "@/lib/api/refusalText";
 
 export async function generateMetadata() {
   return {
@@ -35,7 +36,7 @@ function seatNotice(said: string | string[] | undefined, reason: string | string
   const ONLINE_COPY = onlineWords(say.locale);
   if (said === "full") return ONLINE_COPY.full;
   if (said === "over") return ONLINE_COPY.over;
-  if (said === "refused") return typeof reason === "string" && Object.hasOwn(SEATING_REFUSALS, reason) ? `${ONLINE_COPY.refused} ${SEATING_REFUSALS[reason as SeatingRefusal]}` : ONLINE_COPY.refused;
+  if (said === "refused") return typeof reason === "string" && Object.hasOwn(SEATING_REFUSALS, reason) ? `${ONLINE_COPY.refused} ${sayRefusal(say, SEATING_REFUSALS[reason as SeatingRefusal])}` : ONLINE_COPY.refused;
   return null;
 }
 

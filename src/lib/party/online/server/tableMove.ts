@@ -2,18 +2,20 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-import { ONLINE_MOVE_LONGEST, ONLINE_RETIRED_GOING, ONLINE_STATUS } from "../online.constants";
+import { ONLINE_MOVE_LONGEST, ONLINE_STATUS } from "../online.constants";
 import type { OnlineGameKey, OnlineTableView } from "../online.types";
 import { onlineRulesOf } from "../onlineGames";
 import { retiredSave } from "../../retiredSaves";
 import { moveRefusal, standingOf } from "../onlineSeats";
 import { noticeTableOver } from "./tableNotices";
 import { readTableRow, readTableView, tableOf } from "./tableRead";
+import { partOf } from "@/lib/api/refusal";
+import type { RefusalPart } from "@/lib/api/refusal.types";
 
 /** What a move comes to: the new table, or why not, with the table as it stands where the page was behind. */
 export type MoveAnswer =
   | { ok: OnlineTableView }
-  | { refused: string; status: 400 | 403 | 404 | 409 | 422; table?: OnlineTableView | null };
+  | { refused: RefusalPart; status: 400 | 403 | 404 | 409 | 422; table?: OnlineTableView | null };
 
 /**
  * A MOVE SENT FROM A BROWSER, CHECKED AND KEPT. The server trusts the browser
@@ -41,26 +43,26 @@ export async function moveAtTable(
   now: Date = new Date(),
 ): Promise<MoveAnswer> {
   const row = await readTableRow(id);
-  if (row === null) return { refused: "No such table.", status: 404 };
+  if (row === null) return { refused: partOf("err.table.none"), status: 404 };
   const table = tableOf(row);
   const refusal = moveRefusal(table, readerId, seat);
-  if (refusal === "notSeated") return { refused: "No such table.", status: 404 };
-  if (refusal === "over") return { refused: "That table is over.", status: 409, table: await readTableView(id, readerId, now) };
-  if (refusal === "notYourTurn") return { refused: "It is not your turn.", status: 403, table: await readTableView(id, readerId, now) };
-  if (moves !== row.moveCount) return { refused: "The table moved on.", status: 409, table: await readTableView(id, readerId, now) };
+  if (refusal === "notSeated") return { refused: partOf("err.table.none"), status: 404 };
+  if (refusal === "over") return { refused: partOf("err.table.over"), status: 409, table: await readTableView(id, readerId, now) };
+  if (refusal === "notYourTurn") return { refused: partOf("err.notYourTurn"), status: 403, table: await readTableView(id, readerId, now) };
+  if (moves !== row.moveCount) return { refused: partOf("err.table.movedOn"), status: 409, table: await readTableView(id, readerId, now) };
 
   const rules = onlineRulesOf(row.game as OnlineGameKey);
   const game = rules.decode(row.state);
   // A table started under rules that have since changed (`retiredSave`) cannot be played on, and says so rather than failing: its seats and result are still true.
   if (game === null) {
-    if (retiredSave(row.game, row.state)) return { refused: ONLINE_RETIRED_GOING, status: 409, table: await readTableView(id, readerId, now) };
+    if (retiredSave(row.game, row.state)) return { refused: partOf("err.table.retiredGoing"), status: 409, table: await readTableView(id, readerId, now) };
     throw new Error(`Table ${id} holds a game its rules cannot read.`);
   }
   const read = rules.readMove(move);
   const kept = read === null ? "" : JSON.stringify(read);
-  if (read === null || kept.length > (rules.moveLongest ?? ONLINE_MOVE_LONGEST)) return { refused: "That is not a move in this game.", status: 400 };
+  if (read === null || kept.length > (rules.moveLongest ?? ONLINE_MOVE_LONGEST)) return { refused: partOf("err.table.notAMove"), status: 400 };
   const next = rules.play(game, read);
-  if (next === null) return { refused: "That move is not allowed.", status: 422 };
+  if (next === null) return { refused: partOf("err.table.notAllowed"), status: 422 };
   const standing = standingOf(rules, next);
   const over = standing.status !== ONLINE_STATUS.playing;
 
@@ -73,10 +75,10 @@ export async function moveAtTable(
     await tx.partyAction.create({ data: { tableId: id, index: row.moveCount, seat, move: kept, byMemberId: readerId } });
     return true;
   });
-  if (!landed) return { refused: "The table moved on.", status: 409, table: await readTableView(id, readerId, now) };
+  if (!landed) return { refused: partOf("err.table.movedOn"), status: 409, table: await readTableView(id, readerId, now) };
   if (over) await noticeTableOver(row, standing.winners, false);
 
   const after = await readTableView(id, readerId, now);
-  if (after === null) return { refused: "No such table.", status: 404 };
+  if (after === null) return { refused: partOf("err.table.none"), status: 404 };
   return { ok: after };
 }

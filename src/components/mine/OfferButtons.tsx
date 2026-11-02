@@ -9,6 +9,7 @@ import { OFFER_ACTIONS, type OfferAction } from "@/lib/history/offers.types";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { myGamesCopy } from "./mine.copy";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { refusalOr } from "@/lib/api/refusalText";
 
 /**
  * ANSWERING AN OFFER: accept, decline, or take it back.
@@ -63,7 +64,7 @@ export function OfferButtons({
         return;
       }
       const said = (await response.json().catch(() => null)) as { error?: string } | null;
-      setRefused(said?.error ?? myGamesCopy(say).offer[FAILED[action]]);
+      setRefused(refusalOr(said, say, myGamesCopy(say).offer[FAILED[action]]));
     } finally {
       setBusy(false);
     }

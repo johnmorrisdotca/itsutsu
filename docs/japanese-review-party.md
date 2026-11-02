@@ -4,7 +4,7 @@ Generated from `src/lib/i18n/dictionaries/party.ja.*` and the packages' own word
 
 Each row is one Japanese line, what it literally says in English, and who has read it. A game's name is its kanji beside the English one, so it is not repeated here. A line with a number or a name in it has `{0}`, `{1}` where the figure goes, in the order the screen gives them; a line that reads differently at 0, at 1 or at a kind is shown once for each, with the figure it is for in braces. The last rows are words the packages return (Tenka's territory, continent and region names, Hitotsu's colours and cards), which the site shows as the package gives them.
 
-1258 lines, 1075 distinct. 0 read by a person, 1258 by the reviewer agent, 0 drafted and unread.
+1256 lines, 1073 distinct. 0 read by a person, 1256 by the reviewer agent, 0 drafted and unread.
 
 ## Open for a person
 
@@ -670,8 +670,6 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | online: myNoneFinished | 終了した卓は、まだありません。 | No tables finished yet. | Agent 2026-10-06 |
 | online: myFind | パーティーゲームを探す | Find a party game | Agent 2026-10-06 |
 | online: myOpenTable | 開く | Open | Agent 2026-10-06 |
-| online: retiredTable{true} | このゲームは、そのあと変わった版で始まったので、表示も続行もできません。卓にいる誰でも、終えるか、離れられます。 | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Anybody at the table can end it, or leave it. | Agent 2026-10-06 |
-| online: retiredTable{other} | このゲームは、そのあと変わった版で始まったので、表示も続行もできません。誰が座り、どう終わったかは、ここに表示されます。 | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Who sat at it and how it ended are shown here. | Agent 2026-10-06 |
 | online: myRetired | 古い版のゲームで始まったので、続けられません： | Started on an older version of the game, so it cannot be played on: | Agent 2026-10-06 |
 | online: myLook | 見る | Look | Agent 2026-10-06 |
 | online: result.won | あなたの勝ちです。 | You won. | Agent 2026-10-06 |

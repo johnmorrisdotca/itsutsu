@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { NO_STORE, notFound, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, refuse, serverError } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { giveUpSeat, raceFor, seatOf } from "@/lib/puzzles/server/puzzleRaces";
@@ -15,12 +15,12 @@ export async function POST(request: Request, ctx: RouteContext<"/api/puzzles/rac
     const race = await raceFor(id);
     if (race === null) return notFound();
     const seat = seatOf(race, memberId);
-    if (seat === null || memberId === null) return NextResponse.json({ error: "You are not in this race." }, { status: 403, headers: NO_STORE });
+    if (seat === null || memberId === null) return refuse(403, "err.race.notIn", undefined, { headers: NO_STORE });
     const given = await giveUpSeat(id, seat, memberId);
-    if (!given.ok) return NextResponse.json({ error: given.reason }, { status: given.status, headers: NO_STORE });
+    if (!given.ok) return refuse(given.status, given.code ?? "err.race.giveUpFailed", given.values, { headers: NO_STORE });
     return NextResponse.json({ ok: true, seat, outcome: given.outcome }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not give up.");
+    return serverError("err.race.giveUpFailed");
   }
 }

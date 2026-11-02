@@ -1,3 +1,5 @@
+import type { PuzzleReason } from "./puzzleReasons";
+
 /**
  * The vocabulary of the puzzles: one solver, no turns, no colours.
  *
@@ -210,4 +212,4 @@ export type Puzzle = {
 };
 
 /** The verdict on a submitted answer, from the one O(cells) check the server also runs. */
-export type PuzzleCheck = { ok: true } | { ok: false; reason: string };
+export type PuzzleCheck = { ok: true } | ({ ok: false } & PuzzleReason);

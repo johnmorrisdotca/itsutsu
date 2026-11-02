@@ -13,6 +13,7 @@ import {
   type KoushiGivens,
   type KoushiPlay,
 } from "./lattice";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * THE SERVER'S CHECK OF A KOUSHI, O(cells + swaps), no search.
@@ -37,22 +38,22 @@ export function checkKoushi(
   level: PuzzleLevel | undefined,
   lang: GomojiLanguage = "en",
 ): PuzzleCheck {
-  if (size !== LATTICE_SIDE) return { ok: false, reason: `a lattice is ${LATTICE_SIDE} across` };
+  if (size !== LATTICE_SIDE) return no("chk.latticeSide", { side: LATTICE_SIDE });
   const asked = decodeGivens(givens);
-  if (asked === null) return { ok: false, reason: "the givens are not a scrambled lattice and its solution" };
+  if (asked === null) return no("chk.latticeGivens");
   const played = decodePlay(answer);
-  if (played === null) return { ok: false, reason: "the answer is not a lattice and its swaps" };
-  if (level === undefined) return { ok: false, reason: "no level to count the swaps by" };
+  if (played === null) return no("chk.latticeAnswer");
+  if (level === undefined) return no("chk.noLevelSwaps");
   const unknown = wordsOf(asked.solution).find((word) => !isWord(word, LATTICE_SIDE, lang));
-  if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
+  if (unknown !== undefined) return no("chk.notInList", { word: unknown });
   const allowed = swapsAllowed(level);
-  if (played.swaps.length > allowed) return { ok: false, reason: "more swaps than the level allows" };
+  if (played.swaps.length > allowed) return no("chk.moreSwaps");
   const made = replay(asked.scramble, played.swaps);
-  if (LETTER_CELLS.some((cell) => made[cell] !== played.grid[cell])) return { ok: false, reason: "the swaps do not make that grid" };
+  if (LETTER_CELLS.some((cell) => made[cell] !== played.grid[cell])) return no("chk.swapsNoMake");
   const solved = isSolved(played.grid, asked.solution);
-  if (ending === "found") return solved ? { ok: true } : { ok: false, reason: "the grid is not the solution" };
-  if (solved) return { ok: false, reason: "the grid was solved" };
-  return played.swaps.length === allowed ? { ok: true } : { ok: false, reason: "there are swaps left" };
+  if (ending === "found") return solved ? { ok: true } : no("chk.gridNotSolution");
+  if (solved) return no("chk.gridWasSolved");
+  return played.swaps.length === allowed ? { ok: true } : no("chk.swapsLeft");
 }
 
 /** A kept answer read back, with its givens: null for either not being a Koushi's. */

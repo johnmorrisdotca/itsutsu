@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { NO_STORE, notFound, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, refuse, serverError } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { setFavourite } from "@/lib/history/favourites";
@@ -16,14 +16,14 @@ async function answer(request: Request, ctx: RouteContext<"/api/games/[id]/favou
     const tooMany = overLimit(request, "favourite");
     if (tooMany !== null) return tooMany;
     const mine = await currentMemberId();
-    if (mine === null) return NextResponse.json({ error: "Sign in to star a game." }, { status: 401, headers: NO_STORE });
+    if (mine === null) return refuse(401, "err.game.starSignIn", undefined, { headers: NO_STORE });
     const { id } = await ctx.params;
     const outcome = await setFavourite(mine, id, on);
-    if (outcome === "not-yours") return notFound("No game of yours by that id.");
+    if (outcome === "not-yours") return notFound("err.game.noneOfYours");
     return NextResponse.json({ starred: outcome === "starred" }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not change that star.");
+    return serverError("err.game.starFailed");
   }
 }
 

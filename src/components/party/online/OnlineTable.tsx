@@ -28,6 +28,7 @@ import { onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { playerNumberName } from "@/lib/gomoku/seatWords";
 import { onlineSeatName } from "./onlineSeatName";
+import { refusalOr, refusalText } from "@/lib/api/refusalText";
 
 /**
  * A PARTY TABLE ON SEVERAL DEVICES, at /games/<slug>/tables/<id>: the game's
@@ -72,7 +73,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
         if (answer.ok && body !== null) await mutate(body, { revalidate: false });
         else {
           if (body?.table) await mutate(body.table, { revalidate: false });
-          setProblem(body?.error ?? ONLINE_COPY.couldNotStart);
+          setProblem(refusalOr(body, say, ONLINE_COPY.couldNotStart));
         }
       } catch {
         setProblem(say.say("party.online.unreachable"));
@@ -90,7 +91,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
     setConfirming(null);
     if (answer === null || !answer.ok) {
       const body = (await answer?.json().catch(() => null)) as { error?: string } | null;
-      setProblem(body?.error ?? say.say("party.online.unreachable"));
+      setProblem(refusalText(body, say, "party.online.unreachable"));
       return;
     }
     if (what === "leave") router.push("/play");
@@ -130,7 +131,7 @@ export function OnlineTable({ initial, appearance, intervals, gameHref, gameLabe
       {game === null ? (
         // The game the table holds cannot be read by the rules now (they changed after it was started): said, never a blank board.
         <p className={`${PANEL_CLASS} text-sm`} role="status" data-testid="online-retired">
-          {ONLINE_COPY.retiredTable(view.status === ONLINE_STATUS.playing)}
+          {say.say(view.status === ONLINE_STATUS.playing ? "err.table.retiredGoing" : "err.table.retiredOver")}
         </p>
       ) : (
         <WinCoverOver news={news} onClose={moment.close}>

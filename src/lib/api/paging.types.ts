@@ -1,3 +1,5 @@
+import type { Said } from "./refusal.types";
+
 /**
  * The shapes of the one paging convention. See `paging.ts` for the parsing and
  * `paging.cursor.ts` for the cursor itself.
@@ -153,4 +155,4 @@ export type PagedEnvelope<Item> = {
 };
 
 /** What a refused listing parameter says, for the route to turn into a 400. */
-export type PagingRefusal = { readonly error: string };
+export type PagingRefusal = Said;

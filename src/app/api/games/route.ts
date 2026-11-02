@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server";
 
-import {
-  NO_STORE,
-  badRequest,
-  readJson,
-  serverError,
-  unprocessable,
-} from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuseWith, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { isRefusal } from "@/lib/api/paging";
 import { fetchGameHistoryPage } from "@/lib/history/gameHistory";
 import { toGameHistoryQuery } from "@/lib/history/gameHistoryQuery";
@@ -43,7 +37,7 @@ export async function GET(request: Request) {
     if (tooMany !== null) return tooMany;
 
     const parsed = toGameHistoryQuery(new URL(request.url));
-    if (isRefusal(parsed)) return badRequest(parsed.error);
+    if (isRefusal(parsed)) return badRequest(parsed.code, parsed.values);
 
     /*
      * AN ID THAT NAMES NOBODY IS REFUSED, and by name, the way an unknown sort
@@ -66,9 +60,9 @@ export async function GET(request: Request) {
      * comment gives. Two readers, two right answers, one lookup each.
      */
     const { query, unknown, againstUnknown } = await resolveMember(parsed);
-    if (unknown) return badRequest(memberUnknownRefusal(parsed.member ?? ""));
+    if (unknown) return refuseWith(400, memberUnknownRefusal(parsed.member ?? ""));
     // The other half of a pair, refused by name for the same reason.
-    if (againstUnknown) return badRequest(againstUnknownRefusal(parsed.against ?? ""));
+    if (againstUnknown) return refuseWith(400, againstUnknownRefusal(parsed.against ?? ""));
 
     return NextResponse.json(await fetchGameHistoryPage(query), {
       status: 200,
@@ -76,7 +70,7 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error(error);
-    return serverError("Could not load game history.");
+    return serverError("err.game.historyFailed");
   }
 }
 
@@ -87,11 +81,11 @@ export async function POST(request: Request) {
     if (tooMany !== null) return tooMany;
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
 
     const parsed = gameRecordSchema.safeParse(body);
     if (!parsed.success) {
-      return unprocessable("That game could not be recorded.", parsed.error.issues);
+      return unprocessable("err.game.recordInvalid", parsed.error.issues);
     }
 
     const game = await recordGame(parsed.data);
@@ -101,6 +95,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error(error);
-    return serverError("Could not record that game.");
+    return serverError("err.game.recordFailed");
   }
 }

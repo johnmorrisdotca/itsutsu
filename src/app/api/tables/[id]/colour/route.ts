@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, notFound, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { setTableColour } from "@/lib/party/online/server/tableColour";
@@ -17,20 +17,20 @@ export async function POST(request: Request, ctx: RouteContext<"/api/tables/[id]
     const tooMany = overLimit(request, "table-colour", RATE_LIMITS.write);
     if (tooMany !== null) return tooMany;
     const readerId = await currentMemberId();
-    if (readerId === null) return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+    if (readerId === null) return refuse(401, "err.signIn", undefined, { headers: NO_STORE });
     const body = await readJson(request);
     const parsed = bodySchema.safeParse(body);
-    if (!parsed.success) return badRequest("A colour from the palette, or null.");
+    if (!parsed.success) return badRequest("err.game.colourChoice");
     const { id } = await ctx.params;
     const outcome = await setTableColour(id, readerId, parsed.data.colour as PieceColour | null);
-    if (outcome === "none") return notFound("No such table, or no seat of yours at it.");
-    if (outcome === "over") return NextResponse.json({ error: "That table is over." }, { status: 409, headers: NO_STORE });
+    if (outcome === "none") return notFound("err.table.noneOrNoSeat");
+    if (outcome === "over") return refuse(409, "err.table.over", undefined, { headers: NO_STORE });
     if (typeof outcome === "object") {
       return NextResponse.json({ error: tableRefusalWords(outcome.refused, await currentSpeaker()), reason: "refused", offer: outcome.refused.offer }, { status: 409, headers: NO_STORE });
     }
     return NextResponse.json({ ok: true }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not change that colour.");
+    return serverError("err.colourFailed");
   }
 }

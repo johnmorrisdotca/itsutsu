@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, notFound, readJson, refuse, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { CREDENTIALS, removalRefusal } from "@/lib/phrase/credentials";
 import { completedPhrase, readTicket } from "@/lib/phrase/pickTicket";
 import { clearPhrase, phraseStatus, setPhrase } from "@/lib/phrase/phraseStore";
+import { issueCode } from "@/lib/api/refusal";
 
 /**
  * A member's four-word phrase: whether there is one, setting one, removing one.
@@ -29,11 +30,11 @@ export async function GET(request: Request) {
 
     const me = await currentMemberId();
     if (me === null) {
-      return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+      return refuse(401, "err.signIn", undefined, { headers: NO_STORE });
     }
 
     const status = await phraseStatus(me);
-    if (status === null) return notFound("No account to read.");
+    if (status === null) return notFound("err.phrase.noAccountRead");
 
     return NextResponse.json(
       {
@@ -47,7 +48,7 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not read that.");
+    return serverError("err.phrase.readFailed");
   }
 }
 
@@ -73,11 +74,11 @@ export async function PUT(request: Request) {
 
     const me = await currentMemberId();
     if (me === null) {
-      return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+      return refuse(401, "err.signIn", undefined, { headers: NO_STORE });
     }
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = setSchema.safeParse(body);
     if (!parsed.success) {
       /*
@@ -87,11 +88,7 @@ export async function PUT(request: Request) {
        * meant to see and act on.
        */
       const unacknowledged = parsed.error.issues.some((issue) => issue.path[0] === "acknowledged");
-      return badRequest(
-        unacknowledged
-          ? "Write the four words down somewhere first, then tick the box."
-          : (parsed.error.issues[0]?.message ?? "That is not a finished phrase."),
-      );
+      return badRequest(unacknowledged ? "err.phrase.writeDown" : issueCode(parsed.error.issues, "err.phrase.notFinished"));
     }
 
     /*
@@ -103,19 +100,16 @@ export async function PUT(request: Request) {
      */
     const state = await readTicket(parsed.data.ticket, me);
     if (state === null) {
-      return NextResponse.json(
-        { error: "That pick has expired. Choose four words again — it takes half a minute." },
-        { status: 409, headers: NO_STORE },
-      );
+      return refuse(409, "err.phrase.expiredChoose", undefined, { headers: NO_STORE });
     }
     const words = completedPhrase(state);
-    if (words === null) return unprocessable("That phrase is not finished: four words are needed.");
+    if (words === null) return unprocessable("err.phrase.needFour");
 
     const outcome = await setPhrase(me, words);
     if (!outcome.ok) {
       return outcome.reason === "no-member"
-        ? notFound("No account to set a phrase on.")
-        : unprocessable("Those are not four words from the list.");
+        ? notFound("err.phrase.noAccountSet")
+        : unprocessable("err.phrase.notFromList");
     }
     /*
      * `ok` and nothing else. Not the words, not the hash, not an echo of the
@@ -125,7 +119,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ ok: true }, { status: 200, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not set those words.");
+    return serverError("err.phrase.setFailed");
   }
 }
 
@@ -143,18 +137,18 @@ export async function DELETE(request: Request) {
 
     const me = await currentMemberId();
     if (me === null) {
-      return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+      return refuse(401, "err.signIn", undefined, { headers: NO_STORE });
     }
 
     const outcome = await clearPhrase(me);
     if (!outcome.ok) {
       return outcome.reason === "no-member"
-        ? notFound("No account to change.")
+        ? notFound("err.phrase.noAccountChange")
         : unprocessable(removalRefusal(CREDENTIALS.phrase));
     }
     return NextResponse.json({ ok: true }, { status: 200, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not remove those words.");
+    return serverError("err.phrase.removeFailed");
   }
 }

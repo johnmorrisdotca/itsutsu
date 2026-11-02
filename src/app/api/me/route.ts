@@ -5,7 +5,7 @@ import { ageBandGate, ageBandOf, recordAgeBand } from "@/lib/auth/ageBandStore";
 import { asksWithheld, CHILD_PROFILE_REFUSAL, isChild } from "@/lib/social/childRules";
 import { AGE_BAND_LIST, AGE_BAND_PROBLEMS, CONSENT_LIMITS } from "@/lib/social/ageBand.constants";
 
-import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { fetchProfile, renameMember, updateProfile, type ProfileUpdate } from "@/lib/auth/members";
@@ -22,6 +22,7 @@ import { acceptPreferences } from "@/lib/preferences/preferences";
 import { awardNameSet, awardProfileXp } from "@/lib/xp/xpProfile";
 import { zoneWrite } from "@/lib/auth/zoneGuess";
 import { ZONE_SOURCE } from "@/lib/auth/zoneSource.constants";
+import { issueCode } from "@/lib/api/refusal";
 
 const nameSchema = z.object({
   /*
@@ -38,9 +39,9 @@ const nameSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "At least two characters.")
+    .min(2, "err.name.short")
     .max(PLAYER_NAME_MAX)
-    .regex(/^[^\s<>\/\\]+(?: [^\s<>\/\\]+)*$/, "Letters, numbers and single spaces.")
+    .regex(/^[^\s<>\/\\]+(?: [^\s<>\/\\]+)*$/, "err.name.letters")
     .optional(),
   city: z.string().trim().max(60).optional(),
   country: z.string().trim().max(60).optional(),
@@ -58,7 +59,7 @@ const nameSchema = z.object({
   keepFinishedDays: z
     .number()
     .int()
-    .refine(isKeepFinishedDays, { message: "Not a length this site offers." })
+    .refine(isKeepFinishedDays, { message: "err.me.keepLength" })
     .optional(),
   /**
    * The days of the week they do not play. Cleaned rather than refused: an
@@ -115,21 +116,21 @@ export async function PATCH(request: Request) {
 
     const [me, mine] = await Promise.all([currentSession(), currentMemberId()]);
     if (me === null || mine === null) {
-      return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+      return refuse(401, "err.signIn", undefined, { headers: NO_STORE });
     }
 
     const say = await currentSpeaker();
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = nameSchema.safeParse(body);
-    if (!parsed.success) return badRequest(parsed.error.issues[0]?.message ?? "That name will not do.");
+    if (!parsed.success) return badRequest(issueCode(parsed.error.issues, "err.name.wontDo"));
 
     const member = await fetchProfile(mine);
     if (member === null) {
-      return NextResponse.json({ error: "There is no account behind this session." }, { status: 404, headers: NO_STORE });
+      return refuse(404, "err.me.noAccount", undefined, { headers: NO_STORE });
     }
     const { name, awayFrom, awayUntil, preferences, timeZoneFrom, ageBand, consent, ...rest } = parsed.data;
-    if (consent !== undefined && ageBand === undefined) return badRequest(say.say(AGE_BAND_PROBLEMS.consentAlone));
+    if (consent !== undefined && ageBand === undefined) return NextResponse.json({ error: say.say(AGE_BAND_PROBLEMS.consentAlone) }, { status: 400 });
     if (ageBand !== undefined) {
       const decision = await ageBandGate(mine, ageBand, consent ?? null);
       if (!decision.ok) {
@@ -143,7 +144,7 @@ export async function PATCH(request: Request) {
      * half-applied by the time it does.
      */
     const kept = preferences === undefined ? null : acceptPreferences(preferences);
-    if (kept !== null && !kept.ok) return badRequest(kept.problem);
+    if (kept !== null && !kept.ok) return NextResponse.json({ error: kept.problem }, { status: 400 });
     // Cleaned once, here, so nothing unusable ever reaches the column.
     const { appearance, gameDefaults, daysOff, ...plain } = rest;
     const profile: ProfileUpdate = {
@@ -166,19 +167,18 @@ export async function PATCH(request: Request) {
      * The zone, and where it came from, both decided before anything is written:
      * a device writing over a zone the member chose is refused here, whole.
      */
-    if (profile.timeZone !== undefined && !knownTimeZone(profile.timeZone)) return badRequest("Unknown time zone.");
+    if (profile.timeZone !== undefined && !knownTimeZone(profile.timeZone)) return badRequest("err.me.timeZone");
     const zone = zoneWrite({ asked: profile.timeZone, from: timeZoneFrom, preferences: kept?.ok ? kept.patch : null, row: member });
     if (!zone.ok) return NextResponse.json({ error: zone.problem }, { status: zone.status, headers: NO_STORE });
     if (awayFrom !== undefined || awayUntil !== undefined) {
       const from = awayFrom ? new Date(awayFrom) : null;
       const until = awayUntil ? new Date(awayUntil) : null;
-      if ((from !== null && Number.isNaN(from.getTime())) || (until !== null && Number.isNaN(until.getTime()))) return badRequest("Those are not dates.");
+      if ((from !== null && Number.isNaN(from.getTime())) || (until !== null && Number.isNaN(until.getTime()))) return badRequest("err.me.notDates");
       const away = await setAway(mine, from, until);
       if (!away.ok) {
-        return NextResponse.json(
-          { error: away.reason === "allowance" ? `Only ${AWAY_DAYS_A_YEAR} away days a year; ${away.used} used.` : "The range must end after it starts." },
-          { status: 409, headers: NO_STORE },
-        );
+        return away.reason === "allowance"
+          ? refuse(409, "err.me.awayAllowance", { days: AWAY_DAYS_A_YEAR, used: away.used }, { headers: NO_STORE })
+          : refuse(409, "err.me.awayRange", undefined, { headers: NO_STORE });
       }
     }
     if (Object.keys(profile).length > 0) await updateProfile(mine, profile);
@@ -203,10 +203,7 @@ export async function PATCH(request: Request) {
     if (name !== undefined) {
       const renamed = await renameMember(mine, name);
       if (renamed === null) {
-        return NextResponse.json(
-          { error: "That name is not free: somebody here goes by it, it is kept for a remembered player, or a record already stands under it." },
-          { status: 409, headers: NO_STORE },
-        );
+        return refuse(409, "err.name.notFree", undefined, { headers: NO_STORE });
       }
       shown = renamed.name;
       // A name they chose, once ever. Only on the rename that was allowed: the
@@ -218,6 +215,6 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ ok: true, name: shown }, { headers: response.headers });
   } catch (error) {
     console.error(error);
-    return serverError("Could not change the name.");
+    return serverError("err.name.failed");
   }
 }

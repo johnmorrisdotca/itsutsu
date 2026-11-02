@@ -1,5 +1,6 @@
 import type { PuzzleCheck } from "../puzzles.types";
 import { decodeClues, decodePicture, runsOf } from "./code";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * Whether a grid solves a Picture logic puzzle: the check the browser makes to
@@ -11,15 +12,15 @@ import { decodeClues, decodePicture, runsOf } from "./code";
  */
 export function checkPictureLogic(size: number, givens: string, answer: string): PuzzleCheck {
   const clues = decodeClues(givens, size);
-  if (clues === null) return { ok: false, reason: "the givens are not a set of clues" };
+  if (clues === null) return no("chk.cluesGivens");
   const picture = decodePicture(answer, size);
-  if (picture === null) return { ok: false, reason: "not a grid of shaded and empty cells that size" };
+  if (picture === null) return no("chk.shadedGrid");
   const same = (runs: number[], clue: readonly number[]) => runs.length === clue.length && runs.every((run, at) => run === clue[at]);
   for (let line = 0; line < size; line += 1) {
     const row = runsOf(picture.slice(line * size, (line + 1) * size));
-    if (!same(row, clues.rows[line]!)) return { ok: false, reason: `row ${line + 1} does not match its clue` };
+    if (!same(row, clues.rows[line]!)) return no("chk.rowNoClue", { n: line + 1 });
     const col = runsOf(Array.from({ length: size }, (_, at) => picture[at * size + line]!));
-    if (!same(col, clues.cols[line]!)) return { ok: false, reason: `column ${line + 1} does not match its clue` };
+    if (!same(col, clues.cols[line]!)) return no("chk.columnNoClue", { n: line + 1 });
   }
   return { ok: true };
 }

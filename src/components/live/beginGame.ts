@@ -7,6 +7,7 @@ import type { Speaker } from "@/lib/i18n/i18n";
 
 import { doorstepCopy } from "./live.constants";
 import { drawnCreation } from "./setUpStart";
+import { refusalOr } from "@/lib/api/refusalText";
 
 /**
  * WRITING THE GAME — the one act in this flow that writes anything, in one
@@ -89,7 +90,7 @@ export async function create(
   });
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    return { error: body?.error ?? doorstepCopy(say).refused };
+    return { error: refusalOr(body, say, doorstepCopy(say).refused) };
   }
   const created = (await response.json()) as { id: string; blackToken?: string };
   /*
@@ -110,7 +111,7 @@ export async function takeSeat(begin: { id: string }, say: Speaker): Promise<str
   const sat = await fetch(`/api/games/${begin.id}/sit`, { method: "POST" });
   if (!sat.ok) {
     const body = (await sat.json().catch(() => null)) as { error?: string } | null;
-    return { error: body?.error ?? doorstepCopy(say).seatGone };
+    return { error: refusalOr(body, say, doorstepCopy(say).seatGone) };
   }
   const { path } = (await sat.json()) as { path: string };
   return path;

@@ -3,6 +3,7 @@ import { isGameSolved } from "@johnmorrisdotca/tobiishi";
 import type { PuzzleCheck } from "../puzzles.types";
 import { tobiishiChallengeOf, tobiishiLevelOfBoard, tobiishiRefOfCode } from "./levels";
 import { replayJumps } from "./way";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * Whether an answer solves a Tobiishi level: a run of jumps, every one legal
@@ -13,11 +14,11 @@ import { replayJumps } from "./way";
  * run to the goal solves it, not only the package's own answer.
  */
 export function checkTobiishi(size: number, givens: string, answer: string): PuzzleCheck {
-  if (tobiishiLevelOfBoard(size, givens) === null) return { ok: false, reason: "the givens are not a level of that length" };
+  if (tobiishiLevelOfBoard(size, givens) === null) return no("chk.notLevelLength");
   const ref = tobiishiRefOfCode(givens);
-  if (ref === null) return { ok: false, reason: "the givens are not a level" };
+  if (ref === null) return no("chk.notALevel");
   const played = replayJumps(tobiishiChallengeOf(ref).game, answer);
-  if (played === null) return { ok: false, reason: "that is not a run of legal jumps on this board" };
-  if (!isGameSolved(played)) return { ok: false, reason: "one peg must be left, in the goal hole" };
+  if (played === null) return no("chk.notLegalJumps");
+  if (!isGameSolved(played)) return no("chk.onePegLeft");
   return { ok: true };
 }

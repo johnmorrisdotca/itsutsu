@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { preparePuzzleOnServer } from "@/lib/puzzles/prepareOnServer";
@@ -22,6 +22,7 @@ import type { PuzzleLevel } from "@/lib/puzzles/puzzles.types";
 import { awardXp } from "@/lib/xp/awardXp";
 import { puzzleAwards } from "@/lib/xp/xpPuzzle";
 import { awardTourBonuses } from "@/lib/xp/xpTour";
+import { reasonValue } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * The steps a solve is kept with, for the replay on its page: the log as sent
@@ -133,34 +134,34 @@ export async function POST(request: Request) {
 
     const memberId = await currentMemberId();
     if (memberId === null) {
-      return NextResponse.json({ error: "Solving for XP needs an account." }, { status: 401, headers: NO_STORE });
+      return refuse(401, "err.puzzle.solveNeedsAccount", undefined, { headers: NO_STORE });
     }
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = bodySchema.safeParse(body);
-    if (!parsed.success) return badRequest("A puzzle, its size and level, the givens and the answer.");
+    if (!parsed.success) return badRequest("err.puzzle.solveShape");
     const { size, givens, answer } = parsed.data;
     const kind = parsed.data.kind as (typeof PUZZLE_KIND_LIST)[number];
     const spec = PUZZLE_SPECS[kind];
-    if (!spec.sizes.includes(size)) return unprocessable(`No ${kind} at ${size}.`);
-    if (!levelAskable(kind, parsed.data.level as PuzzleLevel)) return unprocessable(`No ${parsed.data.level} ${kind}.`);
-    if (givens.length > spec.mostCells || answer.length > spec.mostCells) return unprocessable("Not a grid of that size.");
+    if (!spec.sizes.includes(size)) return unprocessable("err.puzzle.noKindAt", undefined, { kind, size });
+    if (!levelAskable(kind, parsed.data.level as PuzzleLevel)) return unprocessable("err.puzzle.noLevel", undefined, { level: parsed.data.level, kind });
+    if (givens.length > spec.mostCells || answer.length > spec.mostCells) return unprocessable("err.puzzle.notGridSize");
     /* A card game's deal is the plain shuffle of its seed (`cardDealOfSeed`), so the one it
        names is checked in a pass: a won game of some other deal is not a game of this one. */
     if (spec.cards === true && (parsed.data.seed === undefined || !isSeed(parsed.data.seed) || cardDealOfSeed(kind, size, parsed.data.seed) !== givens)) {
-      return unprocessable("Not the deal of that seed.");
+      return unprocessable("err.puzzle.notDeal");
     }
     /* A cube's scramble is its seed's (`cube/generate.ts`), so the one it names is checked the same way:
        a solve of some other cube is not a solve of this one. */
     if (kind === "cube" && (parsed.data.seed === undefined || !isSeed(parsed.data.seed) || cubeOfSeed(size, parsed.data.level as PuzzleLevel, parsed.data.seed) !== givens)) {
-      return unprocessable("Not the cube of that seed.");
+      return unprocessable("err.puzzle.notCube");
     }
 
     const checksAllowed = parsed.data.checksAllowed ?? null;
-    if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
+    if (!isCheckAllowance(checksAllowed)) return unprocessable("err.puzzle.noAllowance");
     const checksUsed = parsed.data.checksUsed ?? 0;
-    if (checksAllowed !== null && checksUsed > checksAllowed) return unprocessable("More checks than the allowance.");
+    if (checksAllowed !== null && checksUsed > checksAllowed) return unprocessable("err.puzzle.moreChecks");
     // A word puzzle's only help is its Head start; every other puzzle's hints are the ones it says it pressed.
     const words = spec.helps === false;
     const headStart = parsed.data.headStart === true && offersHeadStart(kind, parsed.data.level as PuzzleLevel);
@@ -172,9 +173,9 @@ export async function POST(request: Request) {
 
     if (parsed.data.outOfTime === true) {
       const seed = parsed.data.seed;
-      if (limit === null) return unprocessable("No clock to run out: this puzzle was not played on one.");
-      if (seed === undefined || !isSeed(seed)) return badRequest("Not a seed.");
-      if (!progressFits(kind, size, answer) || !runGuessesFit(kind, size, level, seed, answer)) return unprocessable("Not what a puzzle of that size could hold.");
+      if (limit === null) return unprocessable("err.puzzle.noClock");
+      if (seed === undefined || !isSeed(seed)) return badRequest("err.puzzle.notSeed");
+      if (!progressFits(kind, size, answer) || !runGuessesFit(kind, size, level, seed, answer)) return unprocessable("err.puzzle.notHold");
       const solveId = await keepSolve({
         memberId,
         kind,
@@ -203,7 +204,7 @@ export async function POST(request: Request) {
       );
     }
     // Solved after its countdown ran out is not a solve on that clock; the browser ends it at the allowance.
-    if (limit !== null && (parsed.data.elapsedMs ?? 0) > limit) return unprocessable("Solved after its clock ran out.");
+    if (limit !== null && (parsed.data.elapsedMs ?? 0) > limit) return unprocessable("err.puzzle.afterClock");
 
     // A kana Gomoji's word list is loaded a length at a time; the check needs this one.
     const language = kind === "kumimoji" ? parsed.data.language ?? "english" : "english";
@@ -211,7 +212,7 @@ export async function POST(request: Request) {
 
     if (parsed.data.outOfGuesses === true) {
       const ended = checkOutOfGuesses(kind, size, givens, answer, level);
-      if (!ended.ok) return unprocessable(`Not over: ${ended.reason}.`);
+      if (!ended.ok) return unprocessable("err.puzzle.notOver", undefined, { reason: reasonValue(ended) });
       /* Kept, not solved: it scores the letters it found (`wordScore`) on the
          points boards and waits in the member's own list, and nothing that
          counts solves ever sees it. John, 2026-09-25: "0 points is only
@@ -247,11 +248,11 @@ export async function POST(request: Request) {
       doubleSet: parsed.data.doubleSet ?? false,
       diagonals: parsed.data.diagonals ?? false,
     });
-    if (!verdict.ok) return unprocessable(`Not solved: ${verdict.reason}.`);
+    if (!verdict.ok) return unprocessable("err.puzzle.notSolved", undefined, { reason: reasonValue(verdict) });
     const helped = parsed.data.helped ?? null;
-    if (helped !== null && !helpOffered(kind, helped)) return unprocessable("No help is offered on this puzzle.");
+    if (helped !== null && !helpOffered(kind, helped)) return unprocessable("err.puzzle.noHelp");
     if ((helped === SOLVE_HELPS.explosionsOff || helped === SOLVE_HELPS.explosionsSoft) && decodeLayout(givens, size)?.explosions == null) {
-      return unprocessable("This level has no explosions to ease.");
+      return unprocessable("err.puzzle.noExplosions");
     }
 
     const now = new Date();
@@ -288,6 +289,6 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not record that puzzle.");
+    return serverError("err.puzzle.recordFailed");
   }
 }

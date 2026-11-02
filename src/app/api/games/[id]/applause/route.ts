@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, notFound, readJson, refuse, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { APPLAUSE_EMOJI, type ApplauseEmoji } from "@/lib/history/applause.constants";
 import { setApplause } from "@/lib/history/applause";
@@ -28,13 +28,13 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
 
     const mine = await currentMemberId();
     if (mine === null) {
-      return NextResponse.json({ error: "Sign in to leave a mark." }, { status: 401, headers: NO_STORE });
+      return refuse(401, "err.applause.signIn", undefined, { headers: NO_STORE });
     }
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = applauseSchema.safeParse(body);
-    if (!parsed.success) return badRequest("That is not one of the marks.");
+    if (!parsed.success) return badRequest("err.applause.notAMark");
 
     const { id } = await ctx.params;
     const outcome = await setApplause(id, mine, parsed.data.emoji as ApplauseEmoji);
@@ -49,10 +49,10 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
       }
       return NextResponse.json(outcome.tally, { headers: NO_STORE });
     }
-    if (outcome.reason === "not-found") return notFound("No such game.");
-    return unprocessable("A game is applauded once it is finished.");
+    if (outcome.reason === "not-found") return notFound("err.game.none");
+    return unprocessable("err.applause.onceFinished");
   } catch (error) {
     console.error(error);
-    return serverError("Could not leave that mark.");
+    return serverError("err.applause.failed");
   }
 }

@@ -19,6 +19,7 @@ import { XP_VARIANTS_TO_PLAY } from "@/lib/xp/xpGame";
 import { xpForBadge } from "@/lib/xp/xpScope";
 import type { XpLedgerRow } from "@/lib/xp/xpHistory.types";
 import { TABLE_SCROLL } from "@/components/ui/ui.constants";
+import { sayRefusal } from "@/lib/api/refusalText";
 
 /**
  * A MEMBER'S OWN XP: WHAT THEY HAVE, AND EVERY AWARD THAT MADE IT.
@@ -265,7 +266,7 @@ export async function MyXp({
          * and the ledger's own address is one link away from being right.
          */
         <p className="text-sm text-ink-soft" data-testid="my-xp-refused">
-          {page.error}{" "}
+          {sayRefusal(say, page)}{" "}
           <Link href="/me/xp" className="underline underline-offset-4">
             {say.say("mine.xpStartAgain")}
           </Link>

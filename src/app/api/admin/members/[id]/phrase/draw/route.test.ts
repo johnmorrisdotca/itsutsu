@@ -44,7 +44,7 @@ vi.mock("@/lib/auth/operatorLog", () => ({
     email: session?.email ?? null,
   }),
 }));
-vi.mock("@/lib/phrase/operatorPhrase", () => ({ phraseTarget: (id: string) => phraseTarget(id) }));
+vi.mock("../operatorPhrase", () => ({ phraseTarget: (id: string) => phraseTarget(id) }));
 vi.mock("@/lib/phrase/pickTicket", () => ({
   freshTicket: (member: string) => freshTicket(member),
   readTicket: (...args: Parameters<typeof readTicket>) => readTicket(...args),

@@ -4,6 +4,7 @@ import type { Against } from "./liveAgainst";
 import { settingsAsPlayed } from "./liveAsPlayed";
 import { createdResponse, refusalResponse } from "./liveResponse";
 import { liveGameSchema, type CreationAsked } from "./liveRequest";
+import { said } from "@/lib/api/refusal";
 
 /**
  * WHAT THE CALLER IS TOLD, INCLUDING WHICH SEAT KEYS THE ANSWER MAY HOLD.
@@ -64,33 +65,34 @@ describe("refusalResponse", () => {
    * the wire that nothing asked for and nothing else would catch.
    */
   it("answers a 400 the way badRequest always has", async () => {
-    const response = refusalResponse({ status: 400, error: "That game has fewer moves." });
+    const response = refusalResponse({ status: 400, ...said("err.game.fewerMoves") });
 
     expect(response.status).toBe(400);
-    expect(await response.json()).toEqual({ error: "That game has fewer moves." });
+    expect(await response.json()).toEqual({ error: "That game has fewer moves.", code: "err.game.fewerMoves" });
     expect(response.headers.get("Cache-Control")).toBeNull();
   });
 
   it("answers a 422 with the schema's own account of what was wrong", async () => {
     const response = refusalResponse({
       status: 422,
-      error: "That game could not be started.",
+      ...said("err.game.notStarted"),
       issues: [{ path: ["variant"] }],
     });
 
     expect(response.status).toBe(422);
     expect(await response.json()).toEqual({
       error: "That game could not be started.",
+      code: "err.game.notStarted",
       details: [{ path: ["variant"] }],
     });
   });
 
   it("answers every other refusal with its status and no-store", async () => {
     for (const status of [401, 403, 404] as const) {
-      const response = refusalResponse({ status, error: "No such member." });
+      const response = refusalResponse({ status, ...said("err.member.none") });
       expect(response.status).toBe(status);
       expect(response.headers.get("Cache-Control")).toBe("no-store");
-      expect(await response.json()).toEqual({ error: "No such member." });
+      expect(await response.json()).toEqual({ error: "No such member.", code: "err.member.none" });
     }
   });
 });

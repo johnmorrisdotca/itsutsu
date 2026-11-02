@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { NO_STORE, notFound, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, operatorRefusal } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { revokeInviteCode } from "@/lib/invite/inviteStore";
 import { overLimit } from "@/lib/api/rateLimit";
@@ -18,11 +18,11 @@ export async function DELETE(
 
     const { code } = await ctx.params;
     if (!(await revokeInviteCode(decodeURIComponent(code)))) {
-      return notFound("No such invite code.");
+      return operatorRefusal(404, "No such invite code.");
     }
     return new NextResponse(null, { status: 204, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not revoke that invite code.");
+    return operatorRefusal(500, "Could not revoke that invite code.");
   }
 }

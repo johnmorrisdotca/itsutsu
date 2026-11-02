@@ -163,10 +163,10 @@ describe("checking a Futago, as the server does", () => {
   });
 
   it("refuses one word left unguessed, guesses after both were found, and more guesses than a Futago has", () => {
-    expect(checkSolution("gomoji", 5, givens, `${words[0]}crane`, "hard")).toEqual({ ok: false, reason: "a word was not guessed" });
-    expect(checkSolution("gomoji", 5, givens, `slatecrane${words[0]}`, "hard")).toEqual({ ok: false, reason: "guesses go on after both words were found" });
+    expect(checkSolution("gomoji", 5, givens, `${words[0]}crane`, "hard")).toMatchObject({ ok: false, reason: "a word was not guessed" });
+    expect(checkSolution("gomoji", 5, givens, `slatecrane${words[0]}`, "hard")).toMatchObject({ ok: false, reason: "guesses go on after both words were found" });
     expect(checkSolution("gomoji", 5, givens, `${words[0]!.repeat(7)}slatecrane`, "hard").ok).toBe(false);
-    expect(checkSolution("gomoji", 5, givens, "zzzzzcraneslate", "hard")).toEqual({ ok: false, reason: "zzzzz is not in the word list" });
+    expect(checkSolution("gomoji", 5, givens, "zzzzzcraneslate", "hard")).toMatchObject({ ok: false, reason: "zzzzz is not in the word list" });
   });
 
   it("ends one unsolved only when every row a Futago has is spent and a word is still hidden", () => {
@@ -174,8 +174,8 @@ describe("checking a Futago, as the server does", () => {
     expect(words.length).toBeGreaterThanOrEqual(6);
     expect(checkOutOfGuesses("gomoji", 5, givens, seven, "hard")).toEqual({ ok: true });
     // Six is one word's hard count, and a Futago has seven: a guess is left.
-    expect(checkOutOfGuesses("gomoji", 5, givens, seven.slice(5), "hard")).toEqual({ ok: false, reason: "there are guesses left" });
-    expect(checkOutOfGuesses("gomoji", 5, givens, `slate${words.slice(0, 5).join("")}crane`, "hard")).toEqual({ ok: false, reason: "both words were found" });
+    expect(checkOutOfGuesses("gomoji", 5, givens, seven.slice(5), "hard")).toMatchObject({ ok: false, reason: "there are guesses left" });
+    expect(checkOutOfGuesses("gomoji", 5, givens, `slate${words.slice(0, 5).join("")}crane`, "hard")).toMatchObject({ ok: false, reason: "both words were found" });
   });
 
   it("checks a kana Futago's guesses against the kana list", () => {
@@ -183,7 +183,7 @@ describe("checking a Futago, as the server does", () => {
     const [first, second] = hiddenWordsOf("gomojiKana", 3, puzzle.givens)!.words;
     const other = [...kanaWordsOf(3).allowed].find((word) => word !== first && word !== second)!;
     expect(checkSolution("gomojiKana", 3, puzzle.givens, `${other}${second}${first}`, "hard")).toEqual({ ok: true });
-    expect(checkSolution("gomojiKana", 3, puzzle.givens, `${other}${first}`, "hard")).toEqual({ ok: false, reason: "a word was not guessed" });
+    expect(checkSolution("gomojiKana", 3, puzzle.givens, `${other}${first}`, "hard")).toMatchObject({ ok: false, reason: "a word was not guessed" });
   });
 });
 

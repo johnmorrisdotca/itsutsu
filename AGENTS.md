@@ -689,6 +689,29 @@ rule that stops the gap growing, and the gate that holds it.
   (`puzzleArtFingerprint.ts`): a word is never edited in a stamped file, so its
   Japanese sits beside it. The screens' sentences are phrases (`pset.*`,
   `pword.*`, `pgrid.*`, `pmaze.*`, `pkumi.*`, `pcard.*`, `puzzle.*`).
+- **A refusal is a key and its values, never a sentence (ENJA-13).** A route, a
+  library or a puzzle's check that says no names the phrase (`err.*` for the API
+  and the tables, `chk.*` for why a puzzle's check will not take an answer) and
+  fills its gaps: `badRequest("err.name.short")`, `refuse(409, "err.sit.taken",
+  undefined, { reason })`, `no("chk.noMoveMade")`, `said("err.game.limit", { count,
+  limit })`. The answer keeps its shape and grows two fields: `error` is still
+  the sentence in English, for a script, a test and a log (`src/lib/api/refusal.ts`
+  reads it from the catalogue, so no route types it), and `code` and `values` are
+  the key the page says in the reader's language (`refusalText`, `refusalOr`,
+  `sayRefusal` in `src/lib/api/refusalText.ts`; a page that shows `body.error`
+  directly shows English to a reader of Japanese). The status is not touched.
+  A key inside a value is said the same way (`Not solved: {reason}`), and a
+  schema's `message` is a key too (`issueCode` reads it). **Operator-only routes
+  are the exception**: `src/app/api/admin` and the five routes beside it that
+  `currentAdmin` shuts (members, invites, invites/[code], site, embed-tokens) are
+  listed in `EXCLUDED_PATHS` in the gate and answer in English through
+  `operatorRefusal`, as the Admin pages do. The proxy says its two refusals the
+  same way and leaves what it decides alone. **A check from a package has no key:**
+  Kazu's six, Awase and Kumimoji give a `reason` in the package's English, and a
+  page shows it as it came, the one place a refusal is still English to a reader of
+  Japanese, until those packages take their words as an option. A new game's check says
+  `no("chk.<game>.<why>")`, never `speaker(DEFAULT_LOCALE).say(…)`
+  (`src/lib/api/refusal.test.ts`).
 - **The Japanese is drafted with `back`, and the `japanese-reviewer` agent
   checks it before the change lands.** John does not read Japanese and both
   sites publish it under his name, so a phrase that no reader has passed does
@@ -737,15 +760,11 @@ rule that stops the gap growing, and the gate that holds it.
   Japanese beside it.
   Adding an allowance because the gate is in the way is the move "Nothing
   Answers What It Cannot Answer" describes: read what it objects to first.
-- **The pending list only shrinks.** `PENDING_PATHS` in the script is every
-  folder or file that held English on 2026-10-06, each with the ENJA ticket
-  that takes it off, and `i18n:check` prints how many strings each still holds.
-  Finishing an area is taking its path off the list in the script **and** in
-  `RECORDED` in `src/lib/i18n/inlineEnglish.coverage.test.ts`; the script fails
-  a pending path that holds no English or no longer exists, and the test fails
-  a path that was not on the recorded list. A new path is never the way out of
-  a red gate: the text goes through `PHRASES`. The list names folders where it
-  can, so renaming a file inside one breaks nothing.
+- **The pending list is empty and stays empty.** `PENDING_PATHS` in the script
+  held every folder or file with English on 2026-10-06, and the ENJA tickets took
+  them off one by one, the last with ENJA-13.
+  `src/lib/i18n/inlineEnglish.coverage.test.ts` fails if a path is ever put back.
+  A new path is never the way out of a red gate: the text goes through `PHRASES`.
 - **Dates, numbers, lists and counts follow the reader, with no `Intl` and no
   locale typed in.** The months, weekdays, thousands mark, list joins and date
   shapes of each language are one table, `src/lib/i18n/format.constants.ts`,

@@ -14,6 +14,8 @@ import { onlineRulesOf } from "../onlineGames";
 import { seatAsksRefusal, standingOf } from "../onlineSeats";
 import { noticeInvited } from "./tableNotices";
 import { SEATING_REFUSALS, seatingRefusal, tablesCapRefusal } from "./tableSeating";
+import { partOf } from "@/lib/api/refusal";
+import type { RefusalPart } from "@/lib/api/refusal.types";
 
 /** A new open seat's link: the whole credential for taking it, so long and random. */
 export function seatToken(): string {
@@ -56,15 +58,15 @@ export async function createTable({
   maker: Maker;
   /** What the game's set-up sends beyond a size and the seats (Kumimoji's settings and bag), checked by its rules. */
   setup?: unknown;
-}): Promise<{ refused: string; status: 403 | 404 | 422 } | { id: string }> {
+}): Promise<{ refused: RefusalPart; status: 403 | 404 | 422 } | { id: string }> {
   const rules = onlineRulesOf(game);
   const band = await prisma.member.findUnique({ where: { id: maker.id }, select: { ageBand: true } });
   const shape = seatAsksRefusal(asks, { counts: rules.counts, levels: rules.computers?.levels ?? [], links: !isChild(band?.ageBand), makerId: maker.id });
-  if (shape !== null) return { refused: shape, status: 422 };
+  if (shape !== null) return { refused: partOf(shape), status: 422 };
   const boardSize = rules.sizes.length === 0 ? 0 : size;
   const computers = asks.flatMap((ask, seat) => (ask.kind === "computer" ? [seat] : []));
   const started = rules.start(boardSize, asks.length, { setup, computers });
-  if (started === null) return { refused: "That game is not offered at that size.", status: 422 };
+  if (started === null) return { refused: partOf("err.table.notThatSize"), status: 422 };
 
   const mine = await tablesCapRefusal(maker.id, "you");
   if (mine !== null) return { refused: mine, status: 422 };
@@ -76,7 +78,7 @@ export async function createTable({
   const seated = [maker.id];
   for (const id of buddyIds) {
     const buddy = buddies.find((one) => one.id === id);
-    if (buddy === undefined || !listable(buddy) || !mayAsk.has(id)) return { refused: "You can ask the people on your buddy list.", status: 404 };
+    if (buddy === undefined || !listable(buddy) || !mayAsk.has(id)) return { refused: partOf("err.table.askBuddies"), status: 404 };
     const company = await seatingRefusal(id, seated);
     const refusal = company === null ? await tablesCapRefusal(id, "them") : SEATING_REFUSALS[company];
     if (refusal !== null) return { refused: refusal, status: 403 };

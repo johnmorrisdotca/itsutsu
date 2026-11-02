@@ -83,41 +83,6 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Commonly used words you could not find",
     review: AGENT_READ_2026_10_30,
   },
-  "pword.hachinosu.refuse.notHive": {
-    text: "与えられたものが蜂の巣になっていません。",
-    back: "What was given is not a beehive.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.hachinosu.refuse.notWords": {
-    text: "答えが単語の一覧になっていません。",
-    back: "The answer is not a list of words.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.hachinosu.refuse.notInHive": {
-    text: "蜂の巣にない文字を使っているか、真ん中の文字がない単語があります。",
-    back: "A word uses a letter not in the beehive, or lacks the centre letter.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.hachinosu.refuse.notListed": {
-    text: "一覧にない単語があります。",
-    back: "There is a word not on the list.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.hachinosu.refuse.noList": {
-    text: "単語の一覧が読み込まれていません。",
-    back: "The word list is not loaded.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.hachinosu.refuse.goesOn": {
-    text: "目標に届いたあとも単語が続いています。",
-    back: "Words continue after reaching the goal.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.hachinosu.refuse.short": {
-    text: "単語が目標に届いていません。",
-    back: "The words do not reach the goal.",
-    review: AGENT_READ_2026_10_30,
-  },
   "pword.kuniate.placeholder": {
     text: "国名を入力",
     back: "Type a country name",
@@ -196,36 +161,6 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "pword.kuniate.another": {
     text: "別の国",
     back: "Another country",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.kuniate.refuse.notQuestion": {
-    text: "探す国になっていません。",
-    back: "This is not a country to look for.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.kuniate.refuse.notGuesses": {
-    text: "答えが予想の一覧になっていません。",
-    back: "The answer is not a list of guesses.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.kuniate.refuse.notFound": {
-    text: "国が当てられていません。",
-    back: "The country has not been guessed.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.kuniate.refuse.goesOn": {
-    text: "国を当てたあとも予想が続いています。",
-    back: "Guesses continue after the country was guessed.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.kuniate.refuse.wasFound": {
-    text: "国は当てられています。",
-    back: "The country has been guessed.",
-    review: AGENT_READ_2026_10_30,
-  },
-  "pword.kuniate.refuse.guessesLeft": {
-    text: "まだ予想が残っています。",
-    back: "There are still guesses left.",
     review: AGENT_READ_2026_10_30,
   },
   "pword.headStart.off": {

@@ -36,21 +36,21 @@ export async function GET(request: Request, ctx: RouteContext<"/api/tables/[id]"
      */
     const key = memberKeyOf(await verifySession((await cookies()).get(SESSION_COOKIE)?.value));
     const readerId = key === null ? null : key.by === "id" ? key.value : ((await memberRowFor(key.by, key.value))?.id ?? null);
-    if (key === null || readerId === null) return notFound("No such table.");
+    if (key === null || readerId === null) return notFound("err.table.none");
     const [version] = await Promise.all([
       tableVersion(id, readerId, now),
       touchMemberFromPoll(key, now).catch((error: unknown) => console.error(error)),
     ]);
-    if (version === null) return notFound("No such table.");
+    if (version === null) return notFound("err.table.none");
     const headers = { ...REVALIDATE, ETag: version.tag };
     if (holdsVersion(request.headers.get("if-none-match"), version.tag)) return new NextResponse(null, { status: 304, headers });
 
     const row = await readTableRow(id);
     const view = row === null ? null : viewOf(row, readerId, version.here, now);
-    if (view === null) return notFound("No such table.");
+    if (view === null) return notFound("err.table.none");
     return NextResponse.json(view, { status: 200, headers });
   } catch (error) {
     console.error(error);
-    return serverError("Could not read that table.");
+    return serverError("err.table.readFailed");
   }
 }

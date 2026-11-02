@@ -14,7 +14,7 @@ import { unwinnableBecause } from "./winnableGame";
 describe("a game has to be winnable to be written", () => {
   it("refuses the game John was given", () => {
     // The exact row that was on production, in the words of the bug.
-    expect(unwinnableBecause({ variant: "tictactoe", size: 3, winLength: 5 })).toContain("3 in a row");
+    expect(unwinnableBecause({ variant: "tictactoe", size: 3, winLength: 5 })?.error).toContain("3 in a row");
   });
 
   it("allows the same game under its own rules", () => {
@@ -27,7 +27,7 @@ describe("a game has to be winnable to be written", () => {
      * choose, and the address accepts anything from three to nineteen — so a
      * nine-by-nine board asking for nineteen in a row is reachable today.
      */
-    expect(unwinnableBecause({ variant: "freestyle", size: 9, winLength: 19 })).toContain("will not fit");
+    expect(unwinnableBecause({ variant: "freestyle", size: 9, winLength: 19 })?.error).toContain("will not fit");
   });
 
   it("allows a chosen line that does fit", () => {
@@ -45,11 +45,11 @@ describe("a game has to be winnable to be written", () => {
   });
 
   it("refuses a board the game is not played on", () => {
-    expect(unwinnableBecause({ variant: "tictactoe", size: 9, winLength: 3 })).toContain("not played on");
+    expect(unwinnableBecause({ variant: "tictactoe", size: 9, winLength: 3 })?.error).toContain("not played on");
   });
 
   it("refuses a game this site does not have", () => {
-    expect(unwinnableBecause({ variant: "backgammon", size: 9, winLength: 5 })).toContain("not a game");
+    expect(unwinnableBecause({ variant: "backgammon", size: 9, winLength: 5 })?.error).toContain("not a game");
   });
 });
 

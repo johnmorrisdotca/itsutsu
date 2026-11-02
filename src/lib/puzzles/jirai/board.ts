@@ -1,5 +1,8 @@
 import { activeCell, activeCells, makeBoard, neighbours, newGame, play, validSettings, visibleGame, withBoard, hintFor, type Board, type Game, type Settings } from "@johnmorrisdotca/jirai";
 
+import { assertedRangeError } from "@/lib/puzzles/assertedRangeError";
+import { no } from "@/lib/puzzles/puzzleReasons";
+
 import type { PuzzleCheck, PuzzleLevel } from "../puzzles.types";
 import { jiraiVariantOfSeed, jiraiSideFor, type JiraiGrid, type JiraiShape } from "./variants";
 
@@ -44,7 +47,7 @@ const keyOf = <T extends string>(table: Record<T, string>, code: string): T | nu
 export function jiraiSettings(size: number, level: PuzzleLevel, seed: number): Settings {
   const variant = jiraiVariantOfSeed(seed);
   // A shape needs nine squares each way; an address that asks for less is put right before it gets here (`puzzleAsked`).
-  if (jiraiSideFor(variant, size) !== size) throw new RangeError(`no shaped Jirai at ${size}`);
+  if (jiraiSideFor(variant, size) !== size) throw assertedRangeError(`no shaped Jirai at ${size}`);
   const base: Settings = { shape: variant.shape, width: size, height: size, mines: 0, grid: variant.grid, noGuess: true, opening: "clear", seed };
   const mines = Math.max(1, Math.round(activeCells(base).length * JIRAI_DENSITY[level]));
   return { ...base, mines };
@@ -219,28 +222,28 @@ export function jiraiFits(size: number, code: string): boolean {
  */
 export function jiraiCheck(size: number, givens: string, answer: string): PuzzleCheck {
   const recipe = jiraiRecipeOf(size, givens);
-  if (recipe === null) return { ok: false, reason: "the givens are not a Jirai board" };
+  if (recipe === null) return no("chk.jirai.givens");
   const { settings, cells } = recipe;
-  if (answer.length !== cells.length || !/^[.f\-0-8]+$/.test(answer)) return { ok: false, reason: "the answer is not a grid of squares" };
+  if (answer.length !== cells.length || !/^[.f\-0-8]+$/.test(answer)) return no("chk.jirai.answer");
   let covered = 0;
   for (let cell = 0; cell < answer.length; cell += 1) {
     const character = answer[cell]!;
     if (!activeCell(settings, cell)) {
-      if (character !== OUTSIDE) return { ok: false, reason: "the answer has a square outside the shape" };
+      if (character !== OUTSIDE) return no("chk.jirai.outside");
       continue;
     }
-    if (character === OUTSIDE) return { ok: false, reason: "the answer is missing a square" };
+    if (character === OUTSIDE) return no("chk.jirai.missing");
     const printed = cells[cell]!;
-    if (printed !== COVERED && printed !== character) return { ok: false, reason: "a square the opening uncovered was changed" };
+    if (printed !== COVERED && printed !== character) return no("chk.jirai.openingChanged");
     if (character === COVERED || character === FLAG) covered += 1;
   }
-  if (covered !== settings.mines) return { ok: false, reason: covered > settings.mines ? "there are safe squares still covered" : "a mine was uncovered" };
+  if (covered !== settings.mines) return no(covered > settings.mines ? "chk.jirai.safeCovered" : "chk.jirai.mineUncovered");
   for (let cell = 0; cell < answer.length; cell += 1) {
     const character = answer[cell]!;
     if (character < "0" || character > "8") continue;
     const near = neighbours(settings, cell).filter((each) => answer[each] === COVERED || answer[each] === FLAG).length;
-    if (near !== Number(character)) return { ok: false, reason: "a number does not match the covered squares round it" };
+    if (near !== Number(character)) return no("chk.jirai.numberWrong");
   }
-  if (answer[recipe.first]! < "0" || answer[recipe.first]! > "8") return { ok: false, reason: "the opening was covered again" };
+  if (answer[recipe.first]! < "0" || answer[recipe.first]! > "8") return no("chk.jirai.openingCovered");
   return { ok: true };
 }

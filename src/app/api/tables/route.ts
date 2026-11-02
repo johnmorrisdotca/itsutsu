@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, refuseWith, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberRow } from "@/lib/auth/currentSession";
 import { ONLINE_GAME_LIST } from "@/lib/party/online/onlineGames";
@@ -30,14 +30,14 @@ export async function POST(request: Request) {
     const tooMany = overLimit(request, "table", RATE_LIMITS.createGame);
     if (tooMany !== null) return tooMany;
     const me = await currentMemberRow();
-    if (me === null) return NextResponse.json({ error: "Sign in to set a table." }, { status: 401, headers: NO_STORE });
+    if (me === null) return refuse(401, "err.table.signInSet", undefined, { headers: NO_STORE });
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = bodySchema.safeParse(body);
-    if (!parsed.success) return badRequest("A game, its board and its seats.");
+    if (!parsed.success) return badRequest("err.table.setShape");
     const asks = parsed.data.seats.map(readSeatAsk);
-    if (asks.some((ask) => ask === null)) return badRequest("Each seat is you, a buddy, a link or a computer.");
+    if (asks.some((ask) => ask === null)) return badRequest("err.table.seatKinds");
 
     const made = await createTable({
       game: parsed.data.game,
@@ -46,10 +46,10 @@ export async function POST(request: Request) {
       maker: { id: me.id, name: me.name ?? "" },
       setup: parsed.data.setup,
     });
-    if ("refused" in made) return NextResponse.json({ error: made.refused }, { status: made.status, headers: NO_STORE });
+    if ("refused" in made) return refuseWith(made.status, made.refused, { headers: NO_STORE });
     return NextResponse.json({ id: made.id, at: tablePath(parsed.data.game, made.id) }, { status: 201, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not set that table.");
+    return serverError("err.table.setFailed");
   }
 }

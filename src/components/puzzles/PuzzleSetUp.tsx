@@ -50,6 +50,7 @@ import { JiraiSetUpOptions, useJiraiChoice } from "./JiraiSetUpOptions";
 import { freshJiraiSeed } from "@/lib/puzzles/jirai/variants";
 import { useKumimojiChoice } from "./useKumimojiChoice";
 import { useWordStyle } from "./WordStyleContext";
+import { refusalText } from "@/lib/api/refusalText";
 
 
 /**
@@ -194,7 +195,7 @@ export function PuzzleSetUp({
       });
       const body = (await answered.json().catch(() => null)) as { at?: string; error?: string } | null;
       if (!answered.ok || body?.at === undefined) {
-        setRacing(body?.error ?? say.say("pset.raceCouldNotMake"));
+        setRacing(refusalText(body, say, "pset.raceCouldNotMake"));
         return;
       }
       router.push(body.at);

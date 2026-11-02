@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { NO_STORE, badRequest, notFound, serverError } from "@/lib/api/apiResponse";
 import { isStopKind, stopPagePath, verifyStopToken } from "@/lib/mail/mailStop";
 import { setMailWanted } from "@/lib/mail/mailStopWrite";
+import { CONTACT_ADDRESS } from "@/lib/mail/mail.constants";
+import { english } from "@/lib/api/refusal";
 
 /**
  * WHERE A STOP IS RECORDED, with no sign-in: the token in the address is the
@@ -28,27 +30,27 @@ export async function POST(request: Request) {
     const url = new URL(request.url);
     const token = url.searchParams.get("token");
     const stop = await verifyStopToken(token);
-    if (stop === null || token === null) return notFound("That link does not stop anything.");
+    if (stop === null || token === null) return notFound("err.mail.nothingToStop");
 
     const form = await request.formData().catch(() => null);
-    if (form === null) return badRequest("Expected a form.");
+    if (form === null) return badRequest("err.mail.badForm");
 
-    if (form.get("List-Unsubscribe") === "One-Click") {
-      if (!(await setMailWanted(stop.member, stop.mail, false))) return notFound("That link does not stop anything.");
-      return new NextResponse("Stopped.", { status: 200, headers: NO_STORE });
+    if (/^One-Click$/.test(String(form.get("List-Unsubscribe")))) {
+      if (!(await setMailWanted(stop.member, stop.mail, false))) return notFound("err.mail.nothingToStop");
+      return new NextResponse(english("err.mail.stopped"), { status: 200, headers: NO_STORE });
     }
 
     // The token names one member and the kind it came with; it can say that kind, or all of it.
     const what = form.get("what");
-    if (what !== "all" && !(isStopKind(what) && what === stop.mail)) return badRequest("Stop this kind of email, or all of it.");
+    if (what !== "all" && !(isStopKind(what) && what === stop.mail)) return badRequest("err.mail.choose");
     const on = form.get("on") === "1";
-    if (!(await setMailWanted(stop.member, what, on))) return notFound("That link does not stop anything.");
+    if (!(await setMailWanted(stop.member, what, on))) return notFound("err.mail.nothingToStop");
 
     const back = new URL(stopPagePath(token), url);
     back.searchParams.set("done", `${what}-${on ? "on" : "off"}`);
     return NextResponse.redirect(back, { status: 303, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not record that. Please write to hello@itsutsu.com and it will be done by hand.");
+    return serverError("err.mail.failed", { address: CONTACT_ADDRESS });
   }
 }

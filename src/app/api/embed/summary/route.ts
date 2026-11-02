@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { badRequest, notFound, serverError } from "@/lib/api/apiResponse";
+import { EMBED_SUMMARY_CACHE } from "@/lib/api/cacheControl.data";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import {
   EMBED_TOKEN_PARAM,
@@ -39,17 +40,14 @@ export async function GET(request: Request) {
     const parsed = querySchema.safeParse({
       player: url.searchParams.get("player") ?? undefined,
     });
-    if (!parsed.success) return badRequest("Invalid summary parameters.");
+    if (!parsed.success) return badRequest("err.embed.invalidSummary");
 
     return NextResponse.json(
       await fetchEmbedSummary(parsed.data.player ?? null),
-      {
-        // A board in someone else's page can afford to be a few seconds stale.
-        headers: { "Cache-Control": "public, max-age=15, stale-while-revalidate=60" },
-      },
+      { headers: EMBED_SUMMARY_CACHE },
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not load the summary.");
+    return serverError("err.embed.summaryFailed");
   }
 }

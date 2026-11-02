@@ -59,7 +59,7 @@ export const boardSizeSchema = z
   .number()
   .int()
   .refine((size) => (ALL_BOARD_SIZES as readonly number[]).includes(size), {
-    message: "Not a board size this game offers.",
+    message: "err.settings.boardSize",
   });
 
 /** Every opening a recorded game may carry. */
@@ -196,5 +196,5 @@ export const playerNameSchema = z
   .string()
   .max(PLAYER_NAME_MAX)
   .refine((name) => !isReservedKey(playerKey(name)), {
-    message: "That name is kept for a player who is remembered here.",
+    message: "err.name.remembered",
   });

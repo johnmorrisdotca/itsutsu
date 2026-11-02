@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { HEAD_START_HINTS, offersHeadStart } from "@/lib/puzzles/gomoji/headStart";
@@ -61,21 +61,21 @@ export async function POST(request: Request) {
     if (tooMany !== null) return tooMany;
     const memberId = await currentMemberId();
     // Nobody to keep it for: a visitor's puzzle lasts the page, as it always did.
-    if (memberId === null) return NextResponse.json({ error: "Keeping a puzzle needs an account." }, { status: 401, headers: NO_STORE });
+    if (memberId === null) return refuse(401, "err.puzzle.keepNeedsAccount", undefined, { headers: NO_STORE });
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = bodySchema.safeParse(body);
-    if (!parsed.success) return badRequest("A puzzle, its size, level and seed, and what is written on it.");
+    if (!parsed.success) return badRequest("err.puzzle.runShape");
     const kind = parsed.data.kind as PuzzleKind;
     const { size, seed, progress } = parsed.data;
-    if (!PUZZLE_SPECS[kind].sizes.includes(size)) return unprocessable(`No ${kind} at ${size}.`);
-    if (!levelAskable(kind, parsed.data.level as PuzzleLevel)) return unprocessable(`No ${parsed.data.level} ${kind}.`);
-    if (!isSeed(seed)) return badRequest("Not a seed.");
-    if (!progressFits(kind, size, progress)) return unprocessable("Not a grid of that size.");
-    if (!runGuessesFit(kind, size, parsed.data.level as PuzzleLevel, seed, progress)) return unprocessable("More guesses than that puzzle has.");
+    if (!PUZZLE_SPECS[kind].sizes.includes(size)) return unprocessable("err.puzzle.noKindAt", undefined, { kind, size });
+    if (!levelAskable(kind, parsed.data.level as PuzzleLevel)) return unprocessable("err.puzzle.noLevel", undefined, { level: parsed.data.level, kind });
+    if (!isSeed(seed)) return badRequest("err.puzzle.notSeed");
+    if (!progressFits(kind, size, progress)) return unprocessable("err.puzzle.notGridSize");
+    if (!runGuessesFit(kind, size, parsed.data.level as PuzzleLevel, seed, progress)) return unprocessable("err.puzzle.tooManyGuesses");
     const checksAllowed = parsed.data.checksAllowed ?? null;
-    if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
+    if (!isCheckAllowance(checksAllowed)) return unprocessable("err.puzzle.noAllowance");
 
     const level = parsed.data.level as PuzzleLevel;
     const headStart = parsed.data.headStart === true && offersHeadStart(kind, level);
@@ -102,6 +102,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not keep that puzzle.");
+    return serverError("err.puzzle.keepFailed");
   }
 }

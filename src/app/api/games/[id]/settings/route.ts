@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import {
-  NO_STORE,
-  badRequest,
-  readJson,
-  serverError,
-  unprocessable,
-} from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { DEFAULT_SETTINGS, NO_HANDICAP } from "@/lib/gomoku/gomoku.constants";
 import {
   boardSizeSchema,
@@ -21,6 +15,7 @@ import {
 } from "@/lib/history/gameSettingsSchema";
 import { updateLiveGameSettings } from "@/lib/history/liveGameSettings";
 import { overLimit } from "@/lib/api/rateLimit";
+import type { RefusalCode } from "@/lib/api/refusal.types";
 
 const settingsSchema = z.object({
   token: z.string().min(1).max(128),
@@ -70,14 +65,14 @@ const REFUSAL_STATUS: Record<string, number> = {
   "different-game": 409,
 };
 
-const REFUSAL_MESSAGE: Record<string, string> = {
-  "not-found": "No such game.",
-  finished: "That game is already over.",
-  "wrong-token": "That link does not hold a seat in this game.",
-  started: "The first stone is down, so the rules are fixed.",
-  settled: "Somebody has taken the other seat, so the rules are what they agreed to.",
+const REFUSAL_MESSAGE: Record<string, RefusalCode> = {
+  "not-found": "err.game.none",
+  finished: "err.game.over",
+  "wrong-token": "err.game.wrongLink",
+  started: "err.settings.started",
+  settled: "err.settings.settled",
   "different-game":
-    "The game is in this match's address, so it cannot be changed. Cancel this board and set up the game you want.",
+    "err.settings.differentGame",
 };
 
 /**
@@ -102,11 +97,11 @@ export async function PUT(
     if (tooMany !== null) return tooMany;
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
 
     const parsed = settingsSchema.safeParse(body);
     if (!parsed.success) {
-      return unprocessable("Those rules could not be applied.", parsed.error.issues);
+      return unprocessable("err.settings.notApplied", parsed.error.issues);
     }
 
     const { id } = await ctx.params;
@@ -124,14 +119,11 @@ export async function PUT(
     const outcome = await updateLiveGameSettings(id, token, asked);
 
     if (!outcome.ok) {
-      return NextResponse.json(
-        { error: REFUSAL_MESSAGE[outcome.reason], reason: outcome.reason },
-        { status: REFUSAL_STATUS[outcome.reason] ?? 400, headers: NO_STORE },
-      );
+      return refuse(REFUSAL_STATUS[outcome.reason] ?? 400, REFUSAL_MESSAGE[outcome.reason], undefined, { reason: outcome.reason, headers: NO_STORE });
     }
     return NextResponse.json(outcome.game, { status: 200, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not change those rules.");
+    return serverError("err.settings.failed");
   }
 }

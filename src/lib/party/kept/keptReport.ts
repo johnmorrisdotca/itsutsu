@@ -4,6 +4,7 @@ import { PARTY_KIND_LIST } from "../party.constants";
 import { RULE_VARIANTS } from "../../gomoku/gomoku.constants";
 import { KEPT_NAME_LONGEST, KEPT_SEATS_MOST, KEPT_STATE_LONGEST, KEPT_STATUS } from "./kept.constants";
 import type { KeptReport, KeptStatus } from "./kept.types";
+import type { RefusalCode } from "@/lib/api/refusal.types";
 
 /**
  * EVERY GAME A BROWSER KEEPS ON ONE DEVICE, and so every game it may file: the
@@ -40,13 +41,13 @@ const reportSchema = z.object({
  * shape — a game this site keeps, seats it could have, winners who sat there —
  * so a record never names a seat that was not at the table.
  */
-export function readKeptReport(body: unknown): KeptReport | { refused: string } {
+export function readKeptReport(body: unknown): KeptReport | { refused: RefusalCode } {
   const parsed = reportSchema.safeParse(body);
-  if (!parsed.success) return { refused: "A game, how it stands, and who sat where." };
+  if (!parsed.success) return { refused: "err.table.keptShape" };
   const { game, state, seats, over } = parsed.data;
-  if (!KEPT_GAME_KEYS.includes(game)) return { refused: "That game is not played on one device here." };
+  if (!KEPT_GAME_KEYS.includes(game)) return { refused: "err.table.notOneDevice" };
   const winners = [...new Set(parsed.data.winners)].sort((a, b) => a - b);
-  if (winners.some((seat) => seat >= seats.length)) return { refused: "A winner who was not at the table." };
+  if (winners.some((seat) => seat >= seats.length)) return { refused: "err.table.winnerAbsent" };
   return {
     game,
     state,

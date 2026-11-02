@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, refuseWith, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberRow } from "@/lib/auth/currentSession";
 import { matchPath, seatPath } from "@/lib/gomoku/slugs";
@@ -38,16 +38,16 @@ export async function POST(request: Request) {
     const tooMany = overLimit(request, "puzzle-race", RATE_LIMITS.createGame);
     if (tooMany !== null) return tooMany;
     const me = await currentMemberRow();
-    if (me === null) return NextResponse.json({ error: "Racing needs an account." }, { status: 401, headers: NO_STORE });
+    if (me === null) return refuse(401, "err.race.needAccount", undefined, { headers: NO_STORE });
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = bodySchema.safeParse(body);
-    if (!parsed.success) return badRequest("A puzzle, its size, level and seed, the givens and the answer.");
-    if (!isSeed(parsed.data.seed)) return badRequest("Not a seed.");
-    if (!levelAskable(parsed.data.kind as PuzzleKind, parsed.data.level as PuzzleLevel)) return unprocessable(`No ${parsed.data.level} ${parsed.data.kind}.`);
+    if (!parsed.success) return badRequest("err.race.shape");
+    if (!isSeed(parsed.data.seed)) return badRequest("err.puzzle.notSeed");
+    if (!levelAskable(parsed.data.kind as PuzzleKind, parsed.data.level as PuzzleLevel)) return unprocessable("err.puzzle.noLevel", undefined, { level: parsed.data.level, kind: parsed.data.kind });
     const checksAllowed = parsed.data.checksAllowed ?? null;
-    if (!isCheckAllowance(checksAllowed)) return unprocessable("No such Check allowance.");
+    if (!isCheckAllowance(checksAllowed)) return unprocessable("err.puzzle.noAllowance");
 
     const made = await createRace({
       kind: parsed.data.kind as PuzzleKind,
@@ -64,13 +64,13 @@ export async function POST(request: Request) {
       hostMemberId: me.id,
       hostName: me.name ?? "",
     });
-    if ("refused" in made) return unprocessable(made.refused);
+    if ("refused" in made) return refuseWith(422, made.refused);
     return NextResponse.json(
       { id: made.id, at: matchPath(parsed.data.kind, made.id), seat: seatPath(parsed.data.kind, made.id, made.guestToken) },
       { status: 201, headers: NO_STORE },
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not make that race.");
+    return serverError("err.race.makeFailed");
   }
 }

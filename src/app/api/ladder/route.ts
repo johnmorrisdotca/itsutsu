@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     if (tooMany !== null) return tooMany;
 
     const asked = readLadderPaging(new URL(request.url).searchParams);
-    if (isRefusal(asked)) return badRequest(asked.error);
+    if (isRefusal(asked)) return badRequest(asked.code, asked.values);
 
     return NextResponse.json(await fetchLadderPage(asked), {
       status: 200,
@@ -39,6 +39,6 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error(error);
-    return serverError("Could not load the ladder.");
+    return serverError("err.ladder.failed");
   }
 }

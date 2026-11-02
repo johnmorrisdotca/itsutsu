@@ -32,6 +32,7 @@ import { NOT_A_REFUSED_OFFER } from "./offers";
 import { monthBounds, readMonth, readWeek, weekBounds } from "./recordMonth";
 import { GAME_SORT_SPEC, gameSortChoice, readGamePaging } from "./gameHistory.sort";
 import type { GameHistoryQuery } from "./gameHistory.types";
+import { partOf, said } from "@/lib/api/refusal";
 
 /**
  * Reading, filtering and ordering game history.
@@ -120,9 +121,9 @@ export function toGameHistoryQuery(url: URL): GameHistoryQuery | PagingRefusal {
      * object fails, which is why the fallback is there rather than assumed away.
      */
     const named = [
-      ...new Set(parsed.error.issues.map((issue) => String(issue.path[0] ?? "the query"))),
+      ...new Set(parsed.error.issues.flatMap((issue) => (issue.path[0] === undefined ? [] : [String(issue.path[0])]))),
     ];
-    return { error: `These listing filters are not valid: ${named.join(", ")}.` };
+    return said("err.query.invalid", { names: named.length > 0 ? named.join(", ") : partOf("err.query.theQuery") });
   }
 
   const { data } = parsed;

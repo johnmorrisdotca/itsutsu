@@ -2,6 +2,7 @@ import { checkTsunagiAnswer, decodeLayout } from "@johnmorrisdotca/tsunagi";
 
 import { tsunagiLevelOf } from "./levels";
 import type { PuzzleCheck } from "../puzzles.types";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * Whether an answer joins a Tsunagi level: the check the browser makes to say
@@ -13,7 +14,7 @@ import type { PuzzleCheck } from "../puzzles.types";
  * (`checkTsunagiAnswer`).
  */
 export function checkTsunagi(size: number, givens: string, answer: string): PuzzleCheck {
-  if (decodeLayout(givens, size) === null) return { ok: false, reason: "the givens are not a Tsunagi layout" };
-  if (tsunagiLevelOf(size, givens) === null) return { ok: false, reason: "not one of the site's levels" };
+  if (decodeLayout(givens, size) === null) return no("chk.tsunagiLayout");
+  if (tsunagiLevelOf(size, givens) === null) return no("chk.notSiteLevel");
   return checkTsunagiAnswer(size, givens, answer);
 }

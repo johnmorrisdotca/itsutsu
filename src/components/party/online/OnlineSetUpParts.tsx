@@ -9,6 +9,7 @@ import type { OnlineSeatAsk } from "@/lib/party/online/online.types";
 import type { OnlineOffer, SeatChoice } from "./online.types";
 import { onlineWords } from "@/components/party/partyWords";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { refusalOr } from "@/lib/api/refusalText";
 
 /**
  * THE PARTS EVERY PARTY TABLE'S SET-UP GAINS FOR SEVERAL DEVICES: the
@@ -151,7 +152,7 @@ export function useStartTable(offer: OnlineOffer | undefined) {
         router.push(body.at);
         return;
       }
-      setProblem(body?.error ?? ONLINE_COPY.couldNotStart);
+      setProblem(refusalOr(body, say, ONLINE_COPY.couldNotStart));
     } catch {
       setProblem(say.say("party.online.unreachable"));
     }

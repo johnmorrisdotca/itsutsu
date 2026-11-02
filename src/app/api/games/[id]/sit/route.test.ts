@@ -33,8 +33,11 @@ const bindSeat = vi.fn(async () => {});
 
 vi.mock("@/lib/history/activeGames", () => ({
   memberOverActiveLimit: (ids: readonly (string | null | undefined)[]) => overActiveLimit(ids),
-  activeLimitRefusal: (over: { count: number; limit: number }) =>
-    `You have ${over.count} games on the go, and ${over.limit} at once is the limit here.`,
+  activeLimitRefusal: (over: { count: number; limit: number }) => ({
+    error: `You have ${over.count} games on the go, and ${over.limit} at once is the limit here.`,
+    code: "err.game.limit",
+    values: { count: over.count, limit: over.limit },
+  }),
 }));
 vi.mock("@/lib/api/rateLimit", () => ({ overLimit: () => null, RATE_LIMITS: {} }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));

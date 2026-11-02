@@ -13,6 +13,7 @@ import { refusalWords, seatColourRefusal, type SeatColours } from "@/lib/pieces/
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import { rememberPieceColour } from "./rememberPieceColour";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * YOUR PIECES' COLOUR IN A LIVE GAME, AND ONLY YOURS. John, 2026-09-29: "allow
@@ -68,7 +69,7 @@ export function SeatColourChooser({
       });
       const answer = (await response.json().catch(() => null)) as { colours?: SeatColours; error?: string } | null;
       if (!response.ok || answer?.colours === undefined) {
-        setProblem(answer?.error ?? say.say("live.seatColourFailed"));
+        setProblem(refusalText(answer, say, "live.seatColourFailed"));
         return;
       }
       onChanged(answer.colours);

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, operatorRefusal, readJson } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
 import { claimRecord, previewClaim } from "@/lib/auth/claimRecord";
 import { CLAIM_REFUSAL_COPY, claimDetail } from "@/lib/auth/claimRecord.constants";
@@ -43,7 +43,7 @@ const claimSchema = z.object({
 /** The outcome as the modal reads it: what moved or would, or the refusal in a sentence and a word. */
 function answer(outcome: ClaimOutcome): NextResponse {
   if (outcome.ok) return NextResponse.json({ member: outcome.member, plan: outcome.plan }, { headers: NO_STORE });
-  if (outcome.reason === "no-member") return notFound(CLAIM_REFUSAL_COPY["no-member"]);
+  if (outcome.reason === "no-member") return operatorRefusal(404, CLAIM_REFUSAL_COPY["no-member"]);
   return NextResponse.json(
     { error: CLAIM_REFUSAL_COPY[outcome.reason], reason: outcome.reason },
     { status: 422, headers: NO_STORE },
@@ -61,9 +61,9 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/membe
 
     const { id } = await ctx.params;
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return operatorRefusal(400, "Expected a JSON body.");
     const parsed = claimSchema.safeParse(body);
-    if (!parsed.success) return badRequest(CLAIM_REFUSAL_COPY["no-name"]);
+    if (!parsed.success) return operatorRefusal(400, CLAIM_REFUSAL_COPY["no-name"]);
 
     if (parsed.data.confirm !== true) return answer(await previewClaim(parsed.data.name, id));
 
@@ -73,6 +73,6 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/membe
     return answer(outcome);
   } catch (error) {
     console.error(error);
-    return serverError("Could not attach that record.");
+    return operatorRefusal(500, "Could not attach that record.");
   }
 }

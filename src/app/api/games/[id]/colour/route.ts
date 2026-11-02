@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { setSeatColour } from "@/lib/history/seatColour";
@@ -30,29 +30,23 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     const tooMany = overLimit(request, "seat-colour");
     if (tooMany !== null) return tooMany;
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = bodySchema.safeParse(body);
-    if (!parsed.success) return badRequest("A colour from the palette, or null.");
+    if (!parsed.success) return badRequest("err.game.colourChoice");
 
     const { id } = await ctx.params;
     const claim = await resolveSeat(id, parsed.data.token ?? (await cookies()).get(seatCookieName(id))?.value, await currentMemberId());
     if (claim === null) {
-      return NextResponse.json({ error: "You do not hold a seat in this game.", reason: "wrong-token" }, { status: 403, headers: NO_STORE });
+      return refuse(403, "err.game.notSeated", undefined, { reason: "wrong-token", headers: NO_STORE });
     }
     const outcome = await setSeatColour(id, claim.seat, parsed.data.colour as Parameters<typeof setSeatColour>[2]);
     if (outcome.ok) return NextResponse.json({ colours: outcome.colours }, { status: 200, headers: NO_STORE });
     if (outcome.reason === "refused") {
-      return NextResponse.json(
-        { error: refusalWords(outcome.refusal, await currentSpeaker()), reason: "refused", offer: outcome.refusal.offer },
-        { status: 409, headers: NO_STORE },
-      );
+      return NextResponse.json({ error: refusalWords(outcome.refusal, await currentSpeaker()), reason: "refused", offer: outcome.refusal.offer }, { status: 409, headers: NO_STORE });
     }
-    return NextResponse.json(
-      { error: outcome.reason === "finished" ? "That game is over." : "No such game.", reason: outcome.reason },
-      { status: outcome.reason === "finished" ? 409 : 404, headers: NO_STORE },
-    );
+    return refuse(outcome.reason === "finished" ? 409 : 404, outcome.reason === "finished" ? "err.game.finished" : "err.game.none", undefined, { reason: outcome.reason, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not change that colour.");
+    return serverError("err.colourFailed");
   }
 }

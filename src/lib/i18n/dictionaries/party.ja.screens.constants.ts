@@ -592,19 +592,6 @@ export const ONLINE_COPY_JA = {
   myNoneFinished: ["終了した卓は、まだありません。", "No tables finished yet."],
   myFind: ["パーティーゲームを探す", "Find a party game"],
   myOpenTable: ["開く", "Open"],
-  retiredTable: {
-    by: 0,
-    is: {
-      true: [
-        "このゲームは、そのあと変わった版で始まったので、表示も続行もできません。卓にいる誰でも、終えるか、離れられます。",
-        "This game was started on a version of the game that has since changed, so it cannot be shown or played on. Anybody at the table can end it, or leave it.",
-      ],
-    },
-    other: [
-      "このゲームは、そのあと変わった版で始まったので、表示も続行もできません。誰が座り、どう終わったかは、ここに表示されます。",
-      "This game was started on a version of the game that has since changed, so it cannot be shown or played on. Who sat at it and how it ended are shown here.",
-    ],
-  },
   myRetired: ["古い版のゲームで始まったので、続けられません：", "Started on an older version of the game, so it cannot be played on:"],
   myLook: ["見る", "Look"],
   result: {

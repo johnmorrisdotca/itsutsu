@@ -1,7 +1,7 @@
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, operatorRefusal, readJson } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { MAINTENANCE_ENV } from "@/lib/site/site.constants";
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not read the site settings.");
+    return operatorRefusal(500, "Could not read the site settings.");
   }
 }
 
@@ -69,10 +69,10 @@ export async function PUT(request: Request) {
 
     const body = await readJson(request);
     if (body === null || typeof body !== "object" || Array.isArray(body)) {
-      return badRequest("Expected a JSON body of { key, value }.");
+      return operatorRefusal(400, "Expected a JSON body of { key, value }.");
     }
     const { key, value } = body as { key?: unknown; value?: unknown };
-    if (typeof key !== "string") return badRequest("Expected a setting name.");
+    if (typeof key !== "string") return operatorRefusal(400, "Expected a setting name.");
 
     /*
      * The registry decides, not this route. 422 with the reason, because an
@@ -82,10 +82,10 @@ export async function PUT(request: Request) {
      * shut when it is open.
      */
     const accepted = acceptSiteSetting(key, value === undefined ? null : value);
-    if (!accepted.ok) return unprocessable(accepted.problem);
+    if (!accepted.ok) return operatorRefusal(422, accepted.problem);
     // Game emails cannot be switched on where email cannot be sent at all (John, 2026-09-26): off is always allowed.
     const emailLocked = accepted.key === "gameEmails" && accepted.value === "on" ? gameEmailsUnavailable() : null;
-    if (emailLocked !== null) return unprocessable(emailLocked);
+    if (emailLocked !== null) return operatorRefusal(422, emailLocked);
 
     await writeSiteSetting(accepted.key, accepted.value, admin.email ?? "operator");
     // The boards read their intervals through a cache (`liveBoardIntervals`); the next board page reads this write.
@@ -96,6 +96,6 @@ export async function PUT(request: Request) {
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not save that setting.");
+    return operatorRefusal(500, "Could not save that setting.");
   }
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentEmail, currentMemberRow } from "@/lib/auth/currentSession";
 import { mintInviteCode } from "@/lib/invite/inviteStore";
@@ -50,19 +50,16 @@ export async function POST(request: Request) {
 
     const [row, email] = await Promise.all([currentMemberRow(), currentEmail()]);
     if (row === null) {
-      return NextResponse.json({ error: "Sign in to invite someone." }, { status: 401, headers: NO_STORE });
+      return refuse(401, "err.invite.signIn", undefined, { headers: NO_STORE });
     }
 
     const body = await readJson(request);
     const parsed = inviteSchema.safeParse(body ?? {});
-    if (!parsed.success) return badRequest("That does not look like an email address.");
+    if (!parsed.success) return badRequest("err.invite.notEmail");
     const sendTo = parsed.data.sendTo;
     // A member under 13 may hand a link over in person, but the site sends no email on their behalf (childRules.ts, PRIV-03).
     if (sendTo !== undefined && !mayEmailInvites((await ageBandOf(row.id)).band)) {
-      return NextResponse.json(
-        { error: "Members under 13 can share the link themselves, but the site does not send invitations by email for them.", reason: "child" },
-        { status: 403, headers: NO_STORE },
-      );
+      return refuse(403, "err.invite.child", undefined, { reason: "child", headers: NO_STORE });
     }
 
     const invite = await mintInviteCode(email ?? `member:${row.id}`, {
@@ -98,6 +95,6 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not create an invitation.");
+    return serverError("err.invite.createFailed");
   }
 }

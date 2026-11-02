@@ -1,3 +1,4 @@
+import type { Said } from "@/lib/api/refusal.types";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 
 /**
@@ -81,4 +82,4 @@ export type OfferRefusal =
 
 export type OfferOutcome =
   | { ok: true; seat: Stone; variant: string }
-  | { ok: false; reason: OfferRefusal; said?: string };
+  | { ok: false; reason: OfferRefusal; said?: Said };

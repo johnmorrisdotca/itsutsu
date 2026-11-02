@@ -65,10 +65,11 @@ export async function InboxList({ items }: { items: readonly InboxItemShown[] })
 }
 
 /**
- * How an offer's `detail` was written before it was a phrase: "a match of 3 games", stored as English by the route
- * that makes a match. Read back as its number, so that the reader's own language says it.
+ * How an offer's `detail` names a match: `match:3`, written by the route that makes one, and "a match of 3 games", which
+ * that route wrote as English before ENJA-13 and which rows already kept still hold. Read back as its number, so that
+ * the reader's own language says it.
  */
-const LEGACY_MATCH = /^a match of (\d+) games$/;
+const LEGACY_MATCH = /^(?:match:|a match of )(\d+)(?: games)?$/;
 
 /** The phrase for what a finished game or table came to for the reader. */
 const GAME_OVER: Readonly<Record<string, PhraseKey>> = { won: "inbox.gameWon", lost: "inbox.gameLost", drawn: "inbox.gameDrawn" };

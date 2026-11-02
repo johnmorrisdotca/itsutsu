@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
 import { currentMemberRow, currentSession } from "@/lib/auth/currentSession";
 import { removalConfirmed, signedInRecently } from "@/lib/auth/removeAccountRules";
@@ -29,22 +29,16 @@ export async function POST(request: Request) {
     const session = await currentSession();
     const row = await currentMemberRow();
     if (session === null || row === null) {
-      return NextResponse.json({ error: "Sign in to remove your account." }, { status: 401, headers: NO_STORE });
+      return refuse(401, "err.remove.signIn", undefined, { headers: NO_STORE });
     }
     const body = bodySchema.safeParse(await readJson(request));
-    if (!body.success) return badRequest("Say whether your name stays on your old games, and type the confirmation.");
+    if (!body.success) return badRequest("err.remove.shape");
 
     if (!removalConfirmed(body.data.confirm, row.name)) {
-      return NextResponse.json(
-        { error: "That is not what the box asks for, so nothing was removed.", reason: "not-confirmed" },
-        { status: 422, headers: NO_STORE },
-      );
+      return refuse(422, "err.remove.notConfirmed", undefined, { reason: "not-confirmed", headers: NO_STORE });
     }
     if (!signedInRecently(session)) {
-      return NextResponse.json(
-        { error: "Sign in with Google again first, so we know it is you asking.", reason: "sign-in-again" },
-        { status: 409, headers: NO_STORE },
-      );
+      return refuse(409, "err.remove.signInAgain", undefined, { reason: "sign-in-again", headers: NO_STORE });
     }
 
     const removal = await removeMember(row.id, { blankSeats: body.data.blankSeats });
@@ -53,6 +47,6 @@ export async function POST(request: Request) {
     return response;
   } catch (error) {
     console.error(error);
-    return serverError("Your account could not be removed, and it may be only part way. Write to us and we will finish it.");
+    return serverError("err.remove.failed");
   }
 }

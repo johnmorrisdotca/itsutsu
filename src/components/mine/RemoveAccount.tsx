@@ -11,6 +11,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { removeCopy } from "./mine.copy";
 import type { RemoveAccountProps } from "./removeAccount.types";
+import { refusalText } from "@/lib/api/refusalText";
 
 /** Back to this tab after Google, through the route that turns Google's answer into a session. */
 const AFTER_GOOGLE = `/api/session/google?next=${encodeURIComponent("/me/profile")}`;
@@ -54,7 +55,7 @@ export function RemoveAccount({ name, google, fresh }: RemoveAccountProps) {
       return;
     }
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    setError(body?.error ?? say.say("mine.removeFailed"));
+    setError(refusalText(body, say, "mine.removeFailed"));
     setBusy(false);
   }
 

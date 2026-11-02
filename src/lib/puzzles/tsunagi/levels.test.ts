@@ -30,8 +30,8 @@ describe("each level, as a puzzle of the site", () => {
   it("refuses a board that is not one of the levels, and a layout that is no layout", () => {
     const [givens, answer] = tsunagiLevelsOf(5)[0]!;
     // A level mirrored (and its marbles lettered afresh) is a sound board, and no level: the levels hold no two boards that are each other turned or mirrored.
-    expect(checkSolution("tsunagi", 5, relettered(transformed(givens, 5, 0, true)), answer)).toEqual({ ok: false, reason: "not one of the site's levels" });
-    expect(checkSolution("tsunagi", 5, "nonsense", answer)).toEqual({ ok: false, reason: "the givens are not a Tsunagi layout" });
+    expect(checkSolution("tsunagi", 5, relettered(transformed(givens, 5, 0, true)), answer)).toMatchObject({ ok: false, reason: "not one of the site's levels" });
+    expect(checkSolution("tsunagi", 5, "nonsense", answer)).toMatchObject({ ok: false, reason: "the givens are not a Tsunagi layout" });
   });
 
   it.each(TSUNAGI_SIZES.map((size) => [size]))("fits every %i×%i level's layout and answer within what the solve and race routes accept", (size) => {
