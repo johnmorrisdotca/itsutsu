@@ -210,7 +210,7 @@ export function NumberSolve({
           </div>
           <div className="flex flex-col gap-2">
             {/* Check and Show at one end of the row, Hint at the other (John: "LHS Check, Show, RHS Hint"). */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <SolveCheck checking={checking} onCheck={check} disabled={startedAt === null || pausing.paused} />
               <SolveShow checking={checking} onShow={show} disabled={startedAt === null || pausing.paused} />
               <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />

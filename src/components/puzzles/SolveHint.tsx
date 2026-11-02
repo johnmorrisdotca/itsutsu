@@ -1,7 +1,7 @@
 "use client";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, ROOM_FOR_A_WORD } from "@/components/ui/ui.constants";
 
 import type { Hinting } from "./useHints";
 
@@ -19,7 +19,7 @@ export function SolveHint({ hinting, onHint, disabled, racing, without }: { hint
   return (
     <button
       type="button"
-      className={`${BUTTON_BASE} ${BUTTON_QUIET} ml-auto`}
+      className={`${BUTTON_BASE} ${BUTTON_QUIET} ${ROOM_FOR_A_WORD} ml-auto`}
       onClick={onHint}
       disabled={disabled || !hinting.allowed}
       title={why}

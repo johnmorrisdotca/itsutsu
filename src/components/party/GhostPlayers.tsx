@@ -72,7 +72,7 @@ export function GhostPlayers({ game, room = 0 }: GhostPlayersProps) {
           );
         })}
       </ol>
-      <p className="text-xs text-muted">
+      <p className="min-h-[3lh] text-xs text-muted">
         {GHOST_COPY.rounds(game.rounds.length)} {GHOST_COPY.outAt} {PARTY_COPY.kept}
       </p>
     </section>

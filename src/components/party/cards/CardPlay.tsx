@@ -206,7 +206,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
           !over && (
             <div className="flex flex-wrap items-center gap-2" data-testid="cards-actions">
               {actions.map((action) => (
-                <button key={action.testId} type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} min-h-11`} disabled={turning} onClick={() => play(action.move)} data-testid={action.testId}>
+                <button key={action.testId} type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} min-h-11 min-w-44`} disabled={turning} onClick={() => play(action.move)} data-testid={action.testId}>
                   {action.label}
                 </button>
               ))}
@@ -241,7 +241,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
                   <button
                     key={action.testId}
                     type="button"
-                    className={`${BUTTON_BASE} ${action.strong === true ? BUTTON_STRONG : BUTTON_QUIET} min-h-11`}
+                    className={`${BUTTON_BASE} ${action.strong === true ? BUTTON_STRONG : BUTTON_QUIET} min-h-11 min-w-40`}
                     disabled={action.move === null}
                     onClick={() => play(action.move)}
                     data-testid={action.testId}
@@ -249,7 +249,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
                     {action.label}
                   </button>
                 ))}
-                {stuck?.why === undefined ? null : <span className="text-xs text-muted">{stuck.why}</span>}
+                {stuck?.why === undefined ? null : <span className="min-h-[3lh] basis-full text-xs text-muted">{stuck.why}</span>}
               </div>
             )}
           </div>
@@ -283,7 +283,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
         />
       </div>
       {over ? <TableWallpaper game={adapter.kind} result={resultLine(names, winners, ending?.draw === true, say)} /> : null}
-      <p className="text-xs text-muted">{CARD_TABLE_COPY.kept}</p>
+      <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{CARD_TABLE_COPY.kept}</p>
       <p className="text-sm">
         <Link href={gameHref} className="underline underline-offset-4">
           {CARD_TABLE_COPY.about(gameName)} →

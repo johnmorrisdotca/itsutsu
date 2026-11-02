@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, ROOM_FOR_A_WORD } from "@/components/ui/ui.constants";
 import type { HitotsuCard, HitotsuGame, HitotsuMove } from "@johnmorrisdotca/hitotsu";
 
 import { HitotsuHand } from "./HitotsuHand";
@@ -73,7 +73,7 @@ export function HitotsuDesk({ game, seat, active, label, name, onMove }: { game:
             <button
               key={one.testId}
               type="button"
-              className={`${BUTTON_BASE} ${one.strong === true ? BUTTON_STRONG : BUTTON_QUIET} min-h-11`}
+              className={`${BUTTON_BASE} ${one.strong === true ? BUTTON_STRONG : BUTTON_QUIET} ${ROOM_FOR_A_WORD} min-h-11`}
               style={one.colour === undefined ? undefined : { borderColor: one.colour, boxShadow: `inset 0.4rem 0 0 ${one.colour}` }}
               disabled={one.move === null}
               onClick={() => send(one.move)}
@@ -82,7 +82,7 @@ export function HitotsuDesk({ game, seat, active, label, name, onMove }: { game:
               {one.label}
             </button>
           ))}
-          {stuck?.why === undefined ? null : <span className="text-xs text-muted">{stuck.why}</span>}
+          {stuck?.why === undefined ? null : <span className="min-h-[3lh] basis-full text-xs text-muted">{stuck.why}</span>}
         </div>
       )}
     </div>

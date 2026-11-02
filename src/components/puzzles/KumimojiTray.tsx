@@ -81,13 +81,13 @@ export function KumimojiTray({
     >
       <div className="flex items-baseline justify-between text-xs text-muted">
         <span className="flex items-baseline gap-2">
-          <span>
+          <span className="min-w-20">
             <Paired en={say.say("pkumi.tray.hand")} kanji="手札" inReadersLanguage />
           </span>
           {/* On the hand's own line, so the four presses under it keep a quarter each. */}
           <button
             type="button"
-            className="rounded px-1 text-moss underline underline-offset-2 enabled:cursor-pointer disabled:opacity-50 disabled:no-underline"
+            className="min-w-16 rounded px-1 text-moss underline underline-offset-2 enabled:cursor-pointer disabled:opacity-50 disabled:no-underline"
             disabled={disabled || !presses.sort.can}
             onClick={presses.sort.run}
             data-testid="kumimoji-sort"
@@ -97,7 +97,7 @@ export function KumimojiTray({
           </button>
           <button
             type="button"
-            className="rounded px-1 text-moss underline underline-offset-2 enabled:cursor-pointer disabled:opacity-50 disabled:no-underline"
+            className="min-w-12 rounded px-1 text-moss underline underline-offset-2 enabled:cursor-pointer disabled:opacity-50 disabled:no-underline"
             disabled={disabled || !presses.help.can}
             onClick={presses.help.run}
             title={say.say(presses.help.offered ? "pkumi.tray.helpOffered" : "pkumi.tray.helpNot")}
@@ -139,13 +139,13 @@ export function KumimojiTray({
         )}
       </div>
       {/* Four presses a quarter of the row each, so a phone keeps them on one line under the thumb. */}
-      <div className="grid grid-cols-4 gap-1.5 sm:flex sm:flex-wrap">
+      <div className="grid auto-rows-[minmax(3.5rem,auto)] grid-cols-4 gap-1.5 sm:flex sm:flex-wrap">
         <button type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} px-2`} disabled={disabled || !presses.draw.can} onClick={presses.draw.run} data-testid="kumimoji-draw">
           {say.say("pkumi.tray.draw")} <span className="hidden font-mincho opacity-70 sm:inline">{say.pairsWithKanji ? "引く" : ""}</span>
         </button>
         <button
           type="button"
-          className={`${BUTTON_BASE} ${presses.trade.urge === true ? BUTTON_STRONG : BUTTON_QUIET} px-2`}
+          className={`${BUTTON_BASE} ${presses.trade.urge === true ? BUTTON_STRONG : BUTTON_QUIET} px-2 sm:min-w-24`}
           disabled={disabled || !presses.trade.can}
           onClick={presses.trade.run}
           title={say.say("pkumi.tray.tradeSays", { take: String(KUMIMOJI_TRADE.take) })}
@@ -153,10 +153,10 @@ export function KumimojiTray({
         >
           {say.say("pkumi.tray.trade")}
         </button>
-        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2`} disabled={disabled || !presses.back.can} onClick={presses.back.run} data-testid="kumimoji-back">
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 sm:min-w-24`} disabled={disabled || !presses.back.can} onClick={presses.back.run} data-testid="kumimoji-back">
           {say.say("pkumi.tray.toHand")}
         </button>
-        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2`} disabled={disabled || !presses.allBack.can} onClick={presses.allBack.run} data-testid="kumimoji-all-back">
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} px-2 sm:min-w-24`} disabled={disabled || !presses.allBack.can} onClick={presses.allBack.run} data-testid="kumimoji-all-back">
           {say.say("pkumi.tray.allBack")}
         </button>
       </div>

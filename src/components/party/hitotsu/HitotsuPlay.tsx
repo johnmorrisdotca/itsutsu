@@ -144,7 +144,7 @@ export function HitotsuPlay({ game, keep, appearance, gameHref, ready }: { game:
         />
       </div>
       {over ? <TableWallpaper game="hitotsu" result={resultLine(names, winners, false, say)} /> : null}
-      <p className="text-xs text-muted">{HITOTSU_COPY.kept}</p>
+      <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{HITOTSU_COPY.kept}</p>
       <p className="text-sm">
         <Link href={gameHref} className="underline underline-offset-4">
           {HITOTSU_COPY.about} →

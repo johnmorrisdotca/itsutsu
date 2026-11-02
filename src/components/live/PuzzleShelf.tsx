@@ -40,7 +40,7 @@ export function PuzzleShelf({
   const locale = useLocale();
   return (
     <>
-      <span className="text-xs leading-snug text-muted" data-testid="set-up-family-blurb">
+      <span className="min-h-[3lh] text-xs leading-snug text-muted md:max-lg:min-h-0" data-testid="set-up-family-blurb">
         {familyBlurb(family, locale)}
       </span>
       <div className={PICK_TILE_GRID} role="radiogroup" aria-label={family.title}>

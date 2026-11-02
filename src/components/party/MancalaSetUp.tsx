@@ -132,7 +132,7 @@ export function MancalaSetUp({ appearance, onStart, ready, online }: MancalaSetU
             {table.problem}
           </p>
         ) : null}
-        <p className="text-xs text-muted">{severalOffer === undefined ? PARTY_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, SPEC.mostPlayers))}</p>
+        <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{severalOffer === undefined ? PARTY_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, SPEC.mostPlayers))}</p>
       </form>
     </div>
   );

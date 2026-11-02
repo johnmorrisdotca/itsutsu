@@ -3,7 +3,7 @@
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useCallback, useMemo, useState, type KeyboardEvent } from "react";
 
-import { PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { PLAY_SURFACE, ROOM_FOR_THREE_LINES } from "@/components/ui/ui.constants";
 import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
 import { entered, FRESH_UI, moved, pressed, type PencilPress, type PencilUi } from "@/lib/puzzles/pencil/input";
 import { pencilEngine } from "@/lib/puzzles/pencil/engines";
@@ -212,7 +212,7 @@ export function PencilSolve({
             </div>
           ) : null}
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <SolveCheck checking={checking} onCheck={check} disabled={disabled} />
               <SolveShow checking={checking} onShow={show} disabled={disabled} />
               {kind === "shikaku" ? (
@@ -229,7 +229,7 @@ export function PencilSolve({
               ) : null}
               <SolveHint hinting={hinting} onHint={hint} disabled={disabled} racing={race !== null} />
             </div>
-            <span className="text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "pencil-said"} aria-live="polite">
+            <span className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid={checked !== null ? "puzzle-checked" : "pencil-said"} aria-live="polite">
               {checked !== null ? pencilChecked(kind, checked, say) : (said ?? (kind === "shikaku" && ui.erase ? say.say("pgrid.pencil.removeSays") : copy.howTo))}
             </span>
           </div>

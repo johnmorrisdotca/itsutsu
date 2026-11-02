@@ -257,6 +257,44 @@ body {
 }
 
 /*
+ * A KANJI BESIDE A WORD DOES NOT MAKE ITS LINE TALLER. Mincho sits on the
+ * baseline differently from the sans around it, so at the line's own height it
+ * stood a pixel or two proud of the line, and a label reading "Regular 標準" in
+ * English stood taller than "標準" in Japanese: every board under one moved when
+ * the language did. At a line height of 1 it fits inside the line it is on.
+ * `!important` because a size on the span (`text-2xl`) brings a line height with
+ * it, and that is the case that moves most: a page title's kanji was eight pixels
+ * of the difference. Only inline, since a span that is a box of its own, or an
+ * item of a flex or grid row, is a line of its own and keeps its height.
+ */
+@layer base {
+  :where(span.font-mincho:not(.block, .inline-block, .inline-flex, .flex, .grid, .flex > *, .inline-flex > *, .grid > *)) {
+    line-height: 1 !important;
+  }
+
+  /*
+   * A heading's second half (the kanji beside "Moves", set a size up in its own
+   * span and often a flex item, which the rule above leaves alone) must not
+   * make the heading taller than its English alone: the span's own line height
+   * was 19px against the heading's 17, so every section title with a kanji
+   * stood 2.4px taller in English than the same title in Japanese and moved
+   * everything under it when the language did.
+   */
+  :where(h1, h2, h3, h4, h5, h6) > span:not(.block, .inline-block, .flex, .grid) {
+    line-height: 1 !important;
+  }
+
+  /*
+   * And a heading is never shorter than one of its own lines. A heading that is
+   * a flex row holds only the kanji in Japanese, and the kanji is shorter than
+   * the line the English word stood on (a title of 32px was 24px).
+   */
+  :where(h1, h2, h3, h4, h5, h6) {
+    min-height: 1lh;
+  }
+}
+
+/*
  * A faint paper grain behind the page. Two offset gradients rather than an
  * image, so it costs nothing to load and scales to any viewport.
  */

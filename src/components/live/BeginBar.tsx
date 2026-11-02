@@ -145,7 +145,7 @@ export function BeginBar({
       */}
       {pieceColour !== null ? (
         <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="set-up-piece-colour">
-          <span className="text-muted">
+          <span className="min-w-24 text-muted">
             {say.say("live.yourPieces")}{say.pairsWithKanji ? <> <span className="font-mincho">色</span></> : null}
           </span>
           <PieceColourPicker

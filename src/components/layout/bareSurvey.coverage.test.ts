@@ -15,9 +15,10 @@ import { CASUAL_SLUGS, GAME_SLUGS, HOUSEKI_SLUGS, PARTY_SLUGS, PUZZLE_SLUGS } fr
  * leaves an empty column. A survey is only as good as its list, and a new
  * puzzle or table added without joining it would ship a modal nobody measured,
  * so the list is held here to the catalogue: every puzzle with an address of
- * its own, every party and card table, and every game played round a table.
+ * its own, every party and card table, and every game played round a table. The
+ * same list is what `e2e/language-steady.spec.ts` walks.
  */
-const SPEC = readFileSync("e2e/bare-board.spec.ts", "utf8");
+const SPEC = readFileSync("e2e/playSurvey.ts", "utf8");
 const SURVEY = SPEC.slice(SPEC.indexOf("const SURVEYED_PUZZLES"));
 
 describe("the just-the-board survey covers every play", () => {
@@ -27,23 +28,28 @@ describe("the just-the-board survey covers every play", () => {
       .map(([, slug]) => slug);
     expect(puzzles.length).toBeGreaterThan(10);
     const missing = puzzles.filter((slug) => !SURVEY.includes(`"${slug}"`) && !SURVEY.includes(`/games/${slug}/play`));
-    expect(missing, "a puzzle whose just-the-board modal nothing measures: add it to SURVEYED_PUZZLES in e2e/bare-board.spec.ts").toEqual([]);
+    expect(missing, "a puzzle whose just-the-board modal nothing measures: add it to SURVEYED_PUZZLES in e2e/playSurvey.ts").toEqual([]);
   });
 
   it("names every party and card table, and every game played round a table", () => {
     const tables = [...Object.values(PARTY_SLUGS), ...PARTY_PLAY_GAMES.map((variant) => GAME_SLUGS[variant])];
     const missing = tables.filter((slug) => !SURVEY.includes(`table("${slug}"`));
-    expect(missing, "a table whose just-the-board modal nothing measures: add a table(...) line to SURVEY in e2e/bare-board.spec.ts").toEqual([]);
+    expect(missing, "a table whose just-the-board modal nothing measures: add a table(...) line to SURVEY in e2e/playSurvey.ts").toEqual([]);
   });
 
   it("names every casual game", () => {
     const missing = Object.values(CASUAL_SLUGS).filter((slug) => !SURVEY.includes("CASUAL_SLUGS") && !SURVEY.includes(`casual("${slug}"`));
-    expect(missing, "a casual game whose just-the-board modal nothing measures: add it to SURVEY in e2e/bare-board.spec.ts").toEqual([]);
+    expect(missing, "a casual game whose just-the-board modal nothing measures: add it to SURVEY in e2e/playSurvey.ts").toEqual([]);
   });
 
   it("names every Houseki game", () => {
     const missing = Object.values(HOUSEKI_SLUGS).filter((slug) => !SURVEY.includes("HOUSEKI_SLUGS") && !SURVEY.includes(`houseki("${slug}"`));
-    expect(missing, "a Houseki game whose just-the-board modal nothing measures: add it to SURVEY in e2e/bare-board.spec.ts").toEqual([]);
+    expect(missing, "a Houseki game whose just-the-board modal nothing measures: add it to SURVEY in e2e/playSurvey.ts").toEqual([]);
+  });
+
+  it("is the list the language survey walks too", () => {
+    const language = readFileSync("e2e/language-steady.spec.ts", "utf8");
+    expect(language, "e2e/language-steady.spec.ts no longer walks surveyOfPlays, so a new game would join one survey and not the other").toContain("surveyOfPlays(");
   });
 
   it("names the practice board and a live game", () => {

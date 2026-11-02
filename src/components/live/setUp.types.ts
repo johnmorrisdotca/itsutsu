@@ -82,6 +82,8 @@ export type SetUpNoticesProps = {
 export type SettingWordsProps = {
   words: readonly SettingWord[];
   testId: string;
+  /** Keeps two lines' height below a desk's width, for a summary one language says in one line and the other in two. */
+  room?: boolean;
 };
 
 /**

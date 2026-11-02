@@ -1,7 +1,7 @@
 "use client";
 
 import { GameEnding, NewGameLink } from "@/components/play/GameEnding";
-import { BUTTON_BASE, BUTTON_QUIET, TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, ROOM_FOR_A_WORD, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { PUZZLE_KINDS } from "@/lib/puzzles/puzzles.constants";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
@@ -27,7 +27,7 @@ export function PuzzleNewGameBeside({ kind }: { kind: PuzzleKind }) {
   if (HAS_OWN_ENDING_ROW.has(kind)) return null;
   return (
     <span className={ended ? "invisible" : undefined} aria-hidden={ended || undefined}>
-      <NewGameLink href={setUpPath(kind)} testId="puzzle-new" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} px-3 py-1 text-sm`} />
+      <NewGameLink href={setUpPath(kind)} testId="puzzle-new" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${ROOM_FOR_A_WORD} px-3 py-1 text-sm`} />
     </span>
   );
 }

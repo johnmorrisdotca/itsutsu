@@ -89,14 +89,14 @@ export function SeatCard({
         <button
           type="button"
           onClick={copy}
-          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:bg-shade"
+          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-center text-sm font-medium hover:bg-shade"
           data-testid={`${testId}-copy`}
         >
           {say.say(copied ? "live.copied" : "live.copyLink")}
         </button>
         <a
           href={`sms:?&body=${encodeURIComponent(message)}`}
-          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-sm font-medium whitespace-nowrap hover:bg-shade"
+          className="inline-flex items-center justify-center rounded-lg border border-rule px-3 py-1.5 text-center text-sm font-medium hover:bg-shade"
         >
           {say.say("live.textIt")}
         </a>

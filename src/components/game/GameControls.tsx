@@ -199,7 +199,7 @@ export function GameControls({ session, actions, computerSeat = null }: GamePane
 
       {settings.hintPolicy !== HINT_POLICIES.off && reads ? (
         <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 [&>button]:min-w-28">
             <Button
               onClick={actions.askHint}
               disabled={!hintsAvailable}

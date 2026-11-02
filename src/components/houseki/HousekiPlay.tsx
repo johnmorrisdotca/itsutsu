@@ -199,7 +199,7 @@ export function HousekiPlay({ kind, request, appearance }: { kind: HousekiKind; 
             <Paired en={label} kanji={HOUSEKI_KANJI[kind]} kanjiClassName="normal-case tracking-normal" />
           </h2>
           <p className="text-sm">{save === undefined ? "" : say.say("houseki.card.wonOf", { won: say.number(won), levels: say.number(levelsOf(kind)) })}</p>
-          <p className="text-xs text-muted">{say.say("houseki.play.kept")}</p>
+          <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{say.say("houseki.play.kept")}</p>
         </section>
         <p className="text-sm" data-chrome>
           <Link href={rulesPath(kind)} className="underline underline-offset-4">
