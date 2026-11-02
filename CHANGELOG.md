@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.553.0 — 2026-11-02 14:38 UTC
+- Pig joins the Dice family: roll one die as often as you dare, bank to keep the turn, and a 1 loses it
+
 ## 0.552.1 — 2026-11-02 12:23 UTC
 - When the site says no (a name that is taken, a twenty-first game, a seat or a move it will not take), it now says so in your language.
 
