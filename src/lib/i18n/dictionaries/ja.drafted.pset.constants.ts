@@ -470,7 +470,7 @@ export const JA_DRAFTED_PSET: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "pset.solve.inMode": {
     text: "（{mode}の分）",
     back: " (the {mode} ones)",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "pset.solve.allYours": {
     text: "自分の{name}すべて",
