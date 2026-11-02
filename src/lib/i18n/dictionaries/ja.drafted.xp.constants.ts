@@ -1038,6 +1038,11 @@ export const JA_DRAFTED_XP: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Be the first →",
     review: READ,
   },
+  "points.board.guest": {
+    text: "ゲスト",
+    back: "Guest",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
   "points.board.aMember": {
     text: "会員",
     back: "A member",

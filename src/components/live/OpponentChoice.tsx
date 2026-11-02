@@ -3,6 +3,7 @@
 import { useId, useState, type ReactNode } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { inReadersLanguage } from "@/lib/rating/guestName";
 import { speaker as speakerFor } from "@/lib/i18n/i18n";
 import { weave } from "@/lib/i18n/weave";
 import { Paired } from "@/components/i18n/Paired";
@@ -389,7 +390,7 @@ function markLetter(tile: OpponentTile): string {
 /** A tile's picture and words, from who it is and which game is being set up. */
 function tileWords(tile: OpponentTile, variant: string, locale: Locale) {
   const random = tile.value === RANDOM_COMPUTER;
-  const shownAs = random ? randomComputerWords(speakerFor(locale)).name : tile.computer ? tile.name : shownName(tile.name);
+  const shownAs = random ? randomComputerWords(speakerFor(locale)).name : tile.computer ? tile.name : inReadersLanguage(shownName(tile.name), speakerFor(locale));
   const profile = tile.tier === null ? null : botProfile(tile.tier, locale);
   const initial = markLetter(tile);
   return {
