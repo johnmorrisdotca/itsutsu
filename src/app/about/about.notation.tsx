@@ -58,6 +58,7 @@ export const notationSection = (say: Speaker): AboutSection => ({
     rich(say, "about.notation.c"),
     rich(say, "about.notation.d"),
     rich(say, "about.notation.e"),
+    rich(say, "about.notation.f"),
   ],
   figures: { 0: centre(say), 3: coordinates(say) },
 });
