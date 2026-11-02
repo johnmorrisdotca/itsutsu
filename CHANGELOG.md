@@ -10,6 +10,21 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.547.2 — 2026-11-02 09:37 UTC
+- A test login that stopped working no longer holds new versions back from the site.
+
+## 0.547.1 — 2026-10-30 23:06 UTC
+- Reversi, Checkers, Go and other games no longer call the loser's last move the one that handed the game away, because nothing measured it. Honeycomb's Japanese name is now ハニカム, so it no longer shares one with Hachinosu.
+
+## 0.547.0 — 2026-10-30 23:06 UTC
+- Hachinosu is a new daily word game: make words from seven letters in a hive, the centre letter in every one, in English, French or German.
+
+## 0.546.0 — 2026-10-30 23:06 UTC
+- Kuniate is a new daily game: name the hidden country from its outline, its flag or its capital, in six guesses.
+
+## 0.545.0 — 2026-10-30 23:06 UTC
+- Hitofude joins the Pencil puzzles: draw one line through every square, passing the numbers in order, with a new board every day.
+
 ## 0.544.3 — 2026-10-26 14:05 UTC
 - Updated the site's framework to Next.js 16.4.3, which closes three security holes, two of them critical.
 
