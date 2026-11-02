@@ -11,6 +11,7 @@ import { endedWithNoMoves } from "@/lib/gomoku/rules/forcedPass";
 import { gameCopy } from "@/components/game/game.constants";
 import { passedTurnWords } from "@/components/game/passedTurn";
 import { LocalTime } from "@/components/ui/LocalTime";
+import { useRevealOnMount } from "@/components/ui/useRevealOnMount";
 import { TONE_CLASS } from "@/components/ui/ui.constants";
 
 /**
@@ -177,9 +178,7 @@ export function TurnBanner({
         : say.say("live.waitingFor", { colour: stoneName(say, state.toPlay) })}
       {/* A turn of two parts says which part is owed: a mill's man to take, or a queen's arrow to shoot. */}
       {yourTurn && (state.pendingRemoval || state.pendingShot !== null) ? (
-        <span className="block text-xs font-normal" data-testid="turn-owed">
-          {state.pendingRemoval ? gameCopy(say).millPrompt : gameCopy(say).shootPrompt}
-        </span>
+        <TurnOwed>{state.pendingRemoval ? gameCopy(say).millPrompt : gameCopy(say).shootPrompt}</TurnOwed>
       ) : null}
       {/* A turn that passed itself is said on both boards, so neither player is left wondering where it went. */}
       {passedTurnWords(state, seat, say) !== null ? (
@@ -188,5 +187,20 @@ export function TurnBanner({
         </span>
       ) : null}
     </p>
+  );
+}
+
+/**
+ * THE PART OF A TURN STILL OWED, said when the first part is made. A phone's page is scrolled to
+ * the squares being pressed, which leaves this line above the screen, so the player was told
+ * nothing about the arrow or the man to take (looked at on 2026-11-02, Amazons at 390 wide):
+ * it is brought into view when it appears.
+ */
+function TurnOwed({ children }: { children: string }) {
+  const ref = useRevealOnMount<HTMLSpanElement>();
+  return (
+    <span ref={ref} className="block text-xs font-normal" data-testid="turn-owed">
+      {children}
+    </span>
   );
 }

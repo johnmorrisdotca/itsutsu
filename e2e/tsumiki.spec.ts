@@ -42,6 +42,8 @@ test.describe("Tsumiki, for a reader with no account", () => {
 
 test.describe("Tsumiki", () => {
   test("a level, set up on its page, played by pressing shape then square, wins on its goal", async ({ page }) => {
+    // At a phone's width, where the board and its shapes fill the screen and the ending is drawn under them.
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${AT}/new`);
     await ready(page, "houseki-set-up");
     await page.locator('[data-testid="houseki-level"][data-level="1"]').click();
@@ -55,6 +57,8 @@ test.describe("Tsumiki", () => {
       await playStep(page, step, moves);
     }
     await expect(page.locator('[data-testid="houseki-result"][data-result="won"]')).toBeVisible();
+    // The win is brought into view when it appears, not left below the fold (looked at on 2026-11-02).
+    await expect(page.getByTestId("houseki-result")).toBeInViewport({ ratio: 0.9 });
     await expect(full(page)).toHaveAttribute("data-phase", "won");
   });
 

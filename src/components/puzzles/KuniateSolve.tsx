@@ -1,5 +1,6 @@
 "use client";
 
+import { RevealOnMount } from "@/components/ui/RevealOnMount";
 import { country } from "@johnmorrisdotca/kuni";
 import { useCallback, useState } from "react";
 
@@ -79,7 +80,7 @@ export function KuniateSolve({ puzzle, hasAccount, race = null, resumed = null }
         </p>
       )}
       {done === null ? null : done.outOfGuesses === true ? (
-        <div className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
+        <RevealOnMount className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
           <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
             <ResultMark kind="failure" className="mr-1.5" />
             {done.outOfTime ? <Paired en={say.say("puzzle.outcome.outOfTime")} kanji="時間切れ" /> : say.say("pword.out.guesses", { rows: String(KUNIATE_GUESS_COUNT) })}
@@ -103,7 +104,7 @@ export function KuniateSolve({ puzzle, hasAccount, race = null, resumed = null }
             <PuzzleWayBack kind={kind} />
           </div>
           <PuzzleWallpaper puzzle={puzzle} result={say.say("pword.out.guesses", { rows: String(KUNIATE_GUESS_COUNT) })} />
-        </div>
+        </RevealOnMount>
       ) : (
         <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} />
       )}
