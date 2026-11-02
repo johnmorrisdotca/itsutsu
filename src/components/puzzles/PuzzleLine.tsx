@@ -3,7 +3,7 @@
 import Link from "@/components/ui/Link";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { STAT_CHIP, STAT_LINK } from "@/components/games/games.constants";
+import { STAT_CHIP, STAT_LINK, STAT_STRIP } from "@/components/games/games.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 
@@ -20,7 +20,7 @@ import type { PuzzleKind } from "@/lib/puzzles/puzzles.types";
 export function PuzzleLine({ kind, signedIn }: { kind: PuzzleKind; signedIn: boolean }) {
   const say = useSpeaker();
   return (
-    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs" data-testid="puzzle-line" data-variant={kind}>
+    <div className={STAT_STRIP} data-testid="puzzle-line" data-variant={kind}>
       <span className={`${STAT_CHIP} text-muted`}>{say.say("gamepages.puzzleLine.chip")}</span>
       {signedIn ? (
         <Link href={setUpPath(kind)} className={STAT_LINK} data-testid="puzzle-line-solve">

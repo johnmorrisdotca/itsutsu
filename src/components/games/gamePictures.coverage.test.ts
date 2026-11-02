@@ -275,7 +275,7 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/app/learn/[slug]/page.tsx": { GameThumb: "small" },
   // The cube's guide names its game in a tag under the title, as a strategy guide does.
   "src/app/learn/cube/page.tsx": { GameThumb: "small" },
-  "src/components/games/GameList.tsx": { GameThumb: "small" },
+  "src/components/games/GameListRows.tsx": { GameThumb: "small" },
   "src/components/history/HistoryTable.tsx": { GameThumb: "small" },
   "src/components/inbox/InboxList.tsx": { GameThumb: "small" },
   "src/components/feed/FeedLine.tsx": { GameThumb: "small" },

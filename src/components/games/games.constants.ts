@@ -1,4 +1,3 @@
-import { RAISED_LINK } from "@/components/ui/ui.constants";
 
 import type { PictureSize } from "./games.types";
 
@@ -51,7 +50,10 @@ export const PICTURE_PX = {
  * line, and a chip wraps whole. `bg-shade` is a token with a light and a dark
  * value, so the chips read in both themes without a second class.
  */
-export const STAT_CHIP = "inline-flex flex-wrap items-baseline gap-x-1 rounded-md bg-shade px-1.5 py-0.5";
+// Each name below is a utility in globals.css that holds the classes the old constant spelled out.
+export const STAT_CHIP = "stat-chip";
+/** The row of chips under a game. */
+export const STAT_STRIP = "stat-strip";
 /** The small capital label in a chip — TOP PLAYER, MOST CROWNS. */
 export const STAT_LABEL = "text-[0.62rem] font-semibold tracking-[0.12em] text-muted uppercase";
 /** Which ladder a top player tops, as a tag after their record. */
@@ -59,13 +61,25 @@ export const STAT_POOL_TAG = "rounded-full border border-rule px-1.5 text-[0.62r
 /** 首, the mark of a first place, in the vermilion-adjacent ochre the site uses for a highlight. */
 export const CROWN_MARK = "font-mincho text-ochre";
 /** A link inside a strip: above the card's stretched face, which is the game. */
-export const STAT_LINK = `${RAISED_LINK} underline-offset-2 hover:underline`;
+export const STAT_LINK = "stat-link";
 
 /** The A–Z bar over the card view. */
 export const CARD_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 /** A quiet text link in a row of them, as the plain list uses. */
-export const CATALOGUE_LINK_CLASS = "text-muted underline-offset-2 hover:text-ink hover:underline";
+export const CATALOGUE_LINK_CLASS = "catalogue-link";
+
+/** A game's card on the Cards tab: the panel, the stretched card and its row layout. */
+export const GAME_CARD_CLASS = "group/card game-card";
+
+/** A game's row on the List tab: its picture and name beside what it is. */
+export const LIST_ROW_CLASS = "list-row";
+
+/** A game's Japanese name after its English one. */
+export const NAME_KANJI_CLASS = "name-kanji";
+
+/** The frame of a game's small picture. */
+export const THUMB_FRAME_CLASS = "thumb-frame";
 
 /*
  * ONE RIGHT-HAND COLUMN AND ONE LARGE PICTURE, on a game's page, its rules page

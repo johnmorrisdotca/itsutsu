@@ -3,7 +3,7 @@
 import Link from "@/components/ui/Link";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { STAT_CHIP, STAT_LINK } from "@/components/games/games.constants";
+import { STAT_CHIP, STAT_LINK, STAT_STRIP } from "@/components/games/games.constants";
 import { levelsOf } from "@/lib/houseki/houseki.constants";
 import type { HousekiKind } from "@/lib/houseki/houseki.types";
 import { setUpPath } from "@/lib/gomoku/slugs";
@@ -21,7 +21,7 @@ import { setUpPath } from "@/lib/gomoku/slugs";
 export function HousekiLine({ kind, signedIn }: { kind: HousekiKind; signedIn: boolean }) {
   const say = useSpeaker();
   return (
-    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs" data-testid="houseki-line" data-variant={kind}>
+    <div className={STAT_STRIP} data-testid="houseki-line" data-variant={kind}>
       <span className={`${STAT_CHIP} text-muted`}>{say.say("houseki.line.summary", { levels: say.number(levelsOf(kind)) })}</span>
       {signedIn ? (
         <Link href={setUpPath(kind)} className={STAT_LINK} data-testid="houseki-line-play">

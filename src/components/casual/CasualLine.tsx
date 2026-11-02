@@ -3,7 +3,7 @@
 import Link from "@/components/ui/Link";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
-import { STAT_CHIP, STAT_LINK } from "@/components/games/games.constants";
+import { STAT_CHIP, STAT_LINK, STAT_STRIP } from "@/components/games/games.constants";
 import type { CasualKind } from "@/lib/casual/casual.types";
 import { casualLevelsWords } from "@/lib/casual/casualRulesPage";
 import { setUpPath } from "@/lib/gomoku/slugs";
@@ -21,7 +21,7 @@ import { setUpPath } from "@/lib/gomoku/slugs";
 export function CasualLine({ kind, signedIn }: { kind: CasualKind; signedIn: boolean }) {
   const say = useSpeaker();
   return (
-    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs" data-testid="casual-line" data-variant={kind}>
+    <div className={STAT_STRIP} data-testid="casual-line" data-variant={kind}>
       <span className={`${STAT_CHIP} text-muted`}>
         {say.say("casual.line", { levels: casualLevelsWords(kind, say) })}
       </span>

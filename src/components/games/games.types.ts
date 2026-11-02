@@ -50,6 +50,21 @@ export type CatalogueFamily = {
   guests: CatalogueGuest[];
 };
 
+/**
+ * One game's row on the plain list, as the server hands it to the rows: copy
+ * already in the reader's language, and the figures of a game with a record.
+ */
+export type GameListEntry = {
+  variant: GameKey;
+  tagline: string;
+  /** The published game this one is our version of, if it is. */
+  inspiredBy?: string;
+  /** What other sites called it; empty for every kind but a rule set. */
+  aliases: string[];
+  /** The game's figures; a puzzle, party, casual or Houseki game has none here. */
+  stats?: GameStats;
+};
+
 /** The figures strip under one game, in any of the three views. */
 export type GameStatsStripProps = {
   stats: GameStats;

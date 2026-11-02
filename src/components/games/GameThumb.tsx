@@ -1,5 +1,6 @@
 import { THUMB_SIZE, gameThumbPath } from "@/lib/gomoku/artwork";
 
+import { THUMB_FRAME_CLASS } from "./games.constants";
 import type { PictureSize } from "./games.types";
 import { pictureBox } from "./picture";
 import { pictureOf } from "./gamePicture";
@@ -70,7 +71,7 @@ export function GameThumb({
   /** Placement only — a margin or an alignment. Never a size. */
   className?: string;
 }) {
-  const frame = `shrink-0 rounded-md border border-rule ${className}`.trim();
+  const frame = `${THUMB_FRAME_CLASS} ${className}`.trim();
   const box = pictureBox(size);
   const game = pictureOf({ variant, name });
   if (game === null) {

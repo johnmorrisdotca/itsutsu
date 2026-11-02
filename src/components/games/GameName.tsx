@@ -4,6 +4,7 @@ import Link from "@/components/ui/Link";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { RAISED_LINK, STRETCHED_LINK } from "@/components/ui/ui.constants";
+import { NAME_KANJI_CLASS } from "./games.constants";
 import { type GameKey, gameCopyOf } from "@/lib/catalogue/gameKeys";
 import { aliasQuery, aliasedVariant } from "@/lib/legacy/gameAliases";
 import { gameKeyFor, gamePath } from "@/lib/gomoku/slugs";
@@ -98,9 +99,7 @@ export function GameName({
       data-variant={known}
       // The mark the card and its arrow answer to; see `card-hover` in globals.css.
       data-card-link={stretched ? "" : undefined}
-      className={`underline-offset-2 hover:underline ${raised ? RAISED_LINK : ""} ${
-        stretched ? STRETCHED_LINK : ""
-      } ${className}`}
+      className={["name-link", raised ? RAISED_LINK : "", stretched ? STRETCHED_LINK : "", className].filter(Boolean).join(" ")}
     >
       {/*
         Every game's Japanese name has been sitting in `copy.kanji` since the
@@ -114,7 +113,7 @@ export function GameName({
       */}
       {name ?? shown.text}
       {kanji && shown.kanji !== null ? (
-        <span className="font-mincho ml-1.5 text-xs font-normal opacity-70">{shown.kanji}</span>
+        <span className={NAME_KANJI_CLASS}>{shown.kanji}</span>
       ) : null}
     </Link>
   );

@@ -177,7 +177,7 @@ describe("the ladders are reachable without the footer", () => {
      */
     const elsewhere = [
       "src/components/players/Ladder.tsx",
-      "src/components/games/GameList.tsx",
+      "src/components/games/GameListRows.tsx",
     ].filter((path) => /\/champions|standingsPath/.test(read(path)));
     expect(elsewhere.length, "something other than the footer must lead to the ladders").toBeGreaterThan(0);
   });

@@ -17,7 +17,7 @@ import type { Speaker } from "@/lib/i18n/i18n";
 import { countText } from "@/lib/rating/figures";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 
-import { CROWN_MARK, STAT_CHIP, STAT_LABEL, STAT_LINK, STAT_POOL_TAG } from "./games.constants";
+import { CROWN_MARK, STAT_CHIP, STAT_LABEL, STAT_LINK, STAT_POOL_TAG, STAT_STRIP } from "./games.constants";
 import type { FamilyStatsLineProps, GameStatsStripProps } from "./games.types";
 
 /**
@@ -58,7 +58,7 @@ export function GameStatsStrip({ stats, signedIn, compact = false, standings = t
   const hydrated = useHydrated();
   const variant = stats.variant;
   const strip = {
-    className: "flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs",
+    className: STAT_STRIP,
     "data-testid": "game-stats",
     "data-variant": variant,
     ...readyMark(hydrated),

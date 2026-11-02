@@ -1,31 +1,15 @@
 import { Paired } from "@/components/i18n/Paired";
-import { ReadyOffline } from "@/components/offline/ReadyOffline";
-import Link from "@/components/ui/Link";
 
-import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
-import { GameStatsStrip } from "@/components/games/GameStats";
+import { GameListRows } from "@/components/games/GameListRows";
+import type { GameListEntry } from "@/components/games/games.types";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import { HOME_FAMILIES, familyPagePath } from "@/lib/gomoku/families";
 import { RULE_VARIANT_LIST } from "@/lib/gomoku/gomoku.constants";
-import {
-  familyPath,
-  historyPath,
-  passAndPlayPath,
-  playPath,
-  rulesPath,
-  setUpPath,
-  standingsPath,
-} from "@/lib/gomoku/slugs";
-import { gameCopyFor, isCasualKind, isHousekiKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
-import { HousekiLine } from "@/components/houseki/HousekiLine";
-import { CasualLine } from "@/components/casual/CasualLine";
-import { PartyLine } from "@/components/party/PartyLine";
+import { type GameKey, gameCopyFor, isCasualKind, isHousekiKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
 import { familyBlurb } from "@/lib/gomoku/familyCopy";
 import { aliasesFor } from "@/lib/legacy/gameAliases";
-import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
+import type { Locale } from "@/lib/i18n/i18n.types";
 
-import { CATALOGUE_LINK_CLASS } from "./games.constants";
 import { SECTION_HEADING } from "@/components/ui/ui.constants";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
 
@@ -68,94 +52,30 @@ export async function GameList({ stats, signedIn }: { stats: CatalogueStats; sig
             </span>
           </h2>
           <p className="text-sm text-muted">{familyBlurb(family, locale)}</p>
-          <dl className="flex flex-col gap-3">
-            {family.games.map((variant) => {
-              const copy = gameCopyFor(variant, locale);
-              const aliases = isPuzzleKind(variant) || isPartyKind(variant) || isCasualKind(variant) || isHousekiKind(variant) ? [] : aliasesFor(variant);
-              return (
-                <div key={variant} className="grid gap-x-6 gap-y-1 sm:grid-cols-[14rem_1fr]" data-testid={`every-game-${variant}`}>
-                  <dt className="flex items-center gap-2 font-medium">
-                    {/*
-                      Its board at a table's size, beside the name that leads to
-                      the game like every other name on the site.
-                    */}
-                    <GameThumb variant={variant} size="small" />
-                    <GameName variant={variant} kanji />
-                  </dt>
-                  <dd className="flex flex-col gap-0.5 text-sm">
-                    <span>{copy.tagline}</span>
-                    <ReadyOffline game={variant} />
-                    {copy.inspiredBy !== undefined ? (
-                      <span className="text-xs text-muted italic">{say.say("gamescreen.inspiredBy", { name: copy.inspiredBy })}</span>
-                    ) : null}
-                    {aliases.length > 0 ? (
-                      <span className="text-xs text-muted">{say.say("gamepages.alsoKnownAs", { names: say.joined(aliases) })}</span>
-                    ) : null}
-                    {/*
-                      The row's own figures. John: "The List View shows no row
-                      info either". The whole strip, since a plain list has the
-                      width a card does not — less its standings link, which
-                      the row of links just below already carries.
-                    */}
-                    {isPuzzleKind(variant) ? (
-                      // A puzzle has no record and no standings yet, so its row offers what it has.
-                      <>
-                        <PuzzleLine kind={variant} signedIn={signedIn} />
-                        <span className="flex flex-wrap gap-x-3 text-xs">
-                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
-                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>
-                          <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetFamily")}</Link>
-                        </span>
-                      </>
-                    ) : isPartyKind(variant) ? (
-                      // A party game is kept in one browser: no record, no standings, and its family has a page of its own.
-                      <>
-                        <PartyLine kind={variant} signedIn={signedIn} />
-                        <span className="flex flex-wrap gap-x-3 text-xs">
-                          <Link href={passAndPlayPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
-                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>
-                          <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetFamily")}</Link>
-                        </span>
-                      </>
-                    ) : isCasualKind(variant) ? (
-                      // A casual game is kept in one browser: no record, no standings, and its family has a page of its own.
-                      <>
-                        <CasualLine kind={variant} signedIn={signedIn} />
-                        <span className="flex flex-wrap gap-x-3 text-xs">
-                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
-                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>
-                          <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetFamily")}</Link>
-                        </span>
-                      </>
-                    ) : isHousekiKind(variant) ? (
-                      // A Houseki game is kept in one browser: no record of games, and its points and its family are on pages of their own.
-                      <>
-                        <HousekiLine kind={variant} signedIn={signedIn} />
-                        <span className="flex flex-wrap gap-x-3 text-xs">
-                          <Link href={setUpPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
-                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>
-                          <Link href={familyPagePath(family)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetFamily")}</Link>
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <GameStatsStrip stats={stats.games[variant]} signedIn={signedIn} standings={false} />
-                        <span className="flex flex-wrap gap-x-3 text-xs">
-                          <Link href={playPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetPlay")}</Link>
-                          <Link href={rulesPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkRules")}</Link>
-                          <Link href={historyPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.linkHistory")}</Link>
-                          <Link href={standingsPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetLeaderboard")}</Link>
-                          <Link href={familyPath(variant)} className={CATALOGUE_LINK_CLASS}>{say.say("gamepages.facetFamily")}</Link>
-                        </span>
-                      </>
-                    )}
-                  </dd>
-                </div>
-              );
-            })}
-          </dl>
+          <GameListRows
+            entries={family.games.map((variant) => entryFor(variant, stats, locale))}
+            familyHref={familyPagePath(family)}
+            signedIn={signedIn}
+          />
         </section>
       ))}
     </div>
   );
+}
+
+/**
+ * One row's words and figures, read here on the server because the tables they
+ * come from (a game's copy, the names other sites gave it) are not for a
+ * browser; the rows draw them (`GameListRows`).
+ */
+function entryFor(variant: GameKey, stats: CatalogueStats, locale: Locale): GameListEntry {
+  const copy = gameCopyFor(variant, locale);
+  const board = !(isPuzzleKind(variant) || isPartyKind(variant) || isCasualKind(variant) || isHousekiKind(variant));
+  return {
+    variant,
+    tagline: copy.tagline,
+    ...(copy.inspiredBy === undefined ? {} : { inspiredBy: copy.inspiredBy }),
+    aliases: board ? aliasesFor(variant) : [],
+    ...(board ? { stats: stats.games[variant] } : {}),
+  };
 }

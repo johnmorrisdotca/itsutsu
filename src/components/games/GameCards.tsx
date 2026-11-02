@@ -16,10 +16,10 @@ import { CasualLine } from "@/components/casual/CasualLine";
 import { PartyLine } from "@/components/party/PartyLine";
 import { GameThumb } from "@/components/games/GameThumb";
 import { CardArrow } from "@/components/ui/CardArrow";
-import { PANEL_CLASS, STRETCHED_CARD, STRETCHED_LINK } from "@/components/ui/ui.constants";
+import { STRETCHED_LINK } from "@/components/ui/ui.constants";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import { GAME_CARD_KINDS } from "./cardKinds.constants";
-import { CARD_LETTERS } from "./games.constants";
+import { CARD_LETTERS, GAME_CARD_CLASS } from "./games.constants";
 import type { GameCard } from "./games.types";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { ViewTabs } from "@/components/ui/ViewTabs";
@@ -49,11 +49,11 @@ export function GameCards({
 }: {
   cards: GameCard[];
   /**
-   * What has been played of each, shaped for this reader already — the same
-   * whole `CatalogueStats` the other two views are handed, so the three views
-   * of one catalogue take one shape.
+   * What has been played of each, shaped for this reader already. Only the
+   * games' half of `CatalogueStats`: the families' half is for the Families
+   * tab, and handed to this client component it would travel in the page twice.
    */
-  stats: CatalogueStats;
+  stats: Pick<CatalogueStats, "games">;
   signedIn: boolean;
 }) {
   const say = useSpeaker();
@@ -131,7 +131,7 @@ export function GameCards({
           */
           <li
             key={copy.variant}
-            className={`${PANEL_CLASS} ${STRETCHED_CARD} flex h-full items-center justify-between gap-3`}
+            className={GAME_CARD_CLASS}
             data-testid="game-card"
             data-variant={copy.variant}
           >
@@ -143,7 +143,7 @@ export function GameCards({
                 data-card-link=""
                 className={`${STRETCHED_LINK} flex items-baseline gap-2 font-semibold`}
               >
-                <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="text-xs font-normal opacity-70" />
+                <Paired en={copy.label} kanji={copy.kanji} kanjiClassName="card-kanji" />
               </Link>
               <span className="text-xs text-muted">{copy.tagline}</span>
               <ReadyOffline game={copy.variant} />

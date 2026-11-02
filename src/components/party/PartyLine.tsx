@@ -2,7 +2,7 @@
 
 import Link from "@/components/ui/Link";
 
-import { STAT_CHIP, STAT_LINK } from "@/components/games/games.constants";
+import { STAT_CHIP, STAT_LINK, STAT_STRIP } from "@/components/games/games.constants";
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { partyPlayersWords } from "@/lib/party/partyRulesPage";
@@ -21,7 +21,7 @@ import type { PartyKind } from "@/lib/party/party.types";
 export function PartyLine({ kind, signedIn }: { kind: PartyKind; signedIn: boolean }) {
   const say = useSpeaker();
   return (
-    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs" data-testid="party-line" data-variant={kind}>
+    <div className={STAT_STRIP} data-testid="party-line" data-variant={kind}>
       <span className={`${STAT_CHIP} text-muted`}>{say.say("party.front.chip", { players: partyPlayersWords(kind, say) })}</span>
       {signedIn ? (
         <Link href={passAndPlayPath(kind)} className={STAT_LINK} data-testid="party-line-play">

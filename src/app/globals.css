@@ -170,6 +170,46 @@
 }
 
 /*
+ * THE GAMES PAGES' ROW AND CARD CLASS LISTS, WRITTEN ONCE. The List tab drew
+ * these strings about 1,500 times and the Cards tab about 700, 570 KB and
+ * 330 KB of HTML on 2026-11-02, so each is named here and `games.constants.ts`
+ * names it in the markup. Each says what the constant of the same name says.
+ * `game-card` repeats `PANEL_CLASS` (ui.constants.ts) rather than naming it,
+ * because PANEL_CLASS is in 150 files that sort their own classes against it;
+ * `gameLists.coverage.test.ts` fails if the two come apart.
+ */
+@utility catalogue-link {
+  @apply text-muted underline-offset-2 hover:text-ink hover:underline;
+}
+@utility stat-chip {
+  @apply inline-flex flex-wrap items-baseline gap-x-1 rounded-md bg-shade px-1.5 py-0.5;
+}
+@utility stat-strip {
+  @apply flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs;
+}
+@utility stat-link {
+  @apply relative z-10 underline-offset-2 hover:underline;
+}
+@utility name-link {
+  @apply underline-offset-2 hover:underline;
+}
+@utility name-kanji {
+  @apply ml-1.5 font-mincho text-xs font-normal opacity-70;
+}
+@utility card-kanji {
+  @apply text-xs font-normal opacity-70;
+}
+@utility thumb-frame {
+  @apply shrink-0 rounded-md border border-rule;
+}
+@utility list-row {
+  @apply grid gap-x-6 gap-y-1 sm:grid-cols-[14rem_1fr];
+}
+@utility game-card {
+  @apply rounded-2xl border border-rule bg-ivory/60 p-4 backdrop-blur-sm stretched-card flex h-full items-center justify-between gap-3;
+}
+
+/*
  * The page's own accent, for a mark drawn ROUND a light surface rather than on
  * it — a chosen tile's ring stands on the tray, which does turn charcoal. Set
  * on :root alone, it keeps the page's value inside a `surface-light`, where

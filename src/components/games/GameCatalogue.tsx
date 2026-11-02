@@ -75,7 +75,7 @@ export function GameCatalogue({
       {view === CATALOGUE_VIEWS.cards ? (
         // The filters read the query on the client, so they render once that is known.
         <Suspense>
-          <GameCards cards={cardsFor(locale)} stats={stats} signedIn={signedIn} />
+          <GameCards cards={cardsFor(locale)} stats={{ games: stats.games }} signedIn={signedIn} />
         </Suspense>
       ) : null}
       {view === CATALOGUE_VIEWS.families ? <Families families={families} stats={stats} signedIn={signedIn} folds={folds} keepsFolds={keepsFolds} say={say} /> : null}
