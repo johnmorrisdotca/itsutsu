@@ -648,6 +648,19 @@ export async function forgetFamilyFolds(page: Page) {
 }
 
 /**
+ * Forgets the language this member chose, so the browser's own is what answers.
+ *
+ * The suite's operator is one account across every spec, and a spec that chooses a language in the account menu
+ * (`account-menu.spec.ts` chooses 日本語 and back) leaves the choice on the account, where it outranks the browser's
+ * `Accept-Language` (`currentLocale`: what was just chosen, then the account, then the cookie, then the browser). A spec
+ * that is about a browser asking for Japanese has to start from a member who never chose, whichever shard it falls in.
+ */
+export async function forgetLanguage(page: Page) {
+  const forgotten = await page.request.patch("/api/me", { data: { preferences: { language: null } } });
+  expect(forgotten.ok(), "the operator's chosen language could not be forgotten").toBe(true);
+}
+
+/**
  * A family on the Families tab opened, and its games arrived. A family that is shut when the page is drawn does not carry
  * its games: they are asked for when it is first opened (`FamilyFold`), so a spec that reads a card in one opens it first.
  */

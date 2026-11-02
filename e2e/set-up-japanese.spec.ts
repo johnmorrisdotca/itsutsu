@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { ready } from "./support";
+import { forgetLanguage, ready } from "./support";
 
 /**
  * WHAT A READER OF JAPANESE IS SHOWN WHERE A SCREEN BUILDS ITS WORDS FROM A CONSTANT (looked at on 2026-11-02).
@@ -11,6 +11,9 @@ import { ready } from "./support";
  * read, not the address: a reader whose browser asks for Japanese opens the pages as anybody would.
  */
 test.use({ locale: "ja-JP", timezoneId: "Asia/Tokyo" });
+
+// The operator is one account for the whole suite: a language another spec chose on it would outrank the browser.
+test.beforeEach(async ({ page }) => forgetLanguage(page));
 
 test("a puzzle's set-up presses say Start alone and Start with a friend in Japanese", async ({ page }) => {
   await page.goto("/games/hitofude/new");

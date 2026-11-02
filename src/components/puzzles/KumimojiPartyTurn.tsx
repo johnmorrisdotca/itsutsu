@@ -1,6 +1,5 @@
 "use client";
 
-import { ROOM_FOR_THREE_LINES } from "@/components/ui/ui.constants";
 import { Paired } from "@/components/i18n/Paired";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { EndGameButton, GameEnding } from "@/components/play/GameEnding";
@@ -161,7 +160,7 @@ export function KumimojiPartyTurn({
           handle={table}
         />
       </div>
-      <p className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid="kumimoji-said" data-sound={verdict.sound ? "true" : "false"} aria-live="polite">
+      <p className={`text-sm text-muted min-h-[2lh] max-sm:min-h-[3lh]`} data-testid="kumimoji-said" data-sound={verdict.sound ? "true" : "false"} aria-live="polite">
         {desk.helpSaid ?? said}
       </p>
       {desk.selectedWild ? <KumimojiWildPicker language={game.settings.language} words={words} tile={desk.selectedTile!} disabled={false} onChoose={desk.adjustSelected} /> : null}

@@ -222,7 +222,10 @@ function TsunagiSetUpFor({
             </Link>
           )}
           {/* What the level Start plays asks, before it is started. */}
-          <TsunagiLevelChips size={size} level={chosen} set={set} challenges={tsunagiRole(size, chosen, set)?.challenges ?? (set === "portals" ? ["portals"] : [])} />
+          {/* The room three rows of chips take (two to a row on a phone), the most any level wraps to, so choosing a level never moves what is under it. */}
+          <div className="min-h-[4.875rem]" data-testid="tsunagi-chips-room">
+            <TsunagiLevelChips size={size} level={chosen} set={set} challenges={tsunagiRole(size, chosen, set)?.challenges ?? (set === "portals" ? ["portals"] : [])} />
+          </div>
           {skippedPast ? (
             <p className="text-xs text-muted" data-testid="tsunagi-first-unsolved">
               {say.say("pmaze.firstUnfinished", { level: String(gap) })}

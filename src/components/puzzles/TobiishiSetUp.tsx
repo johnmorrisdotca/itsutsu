@@ -99,8 +99,8 @@ export function TobiishiSetUp({
             <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={startPress(say).start.kanji} />
           </Link>
           {/* What the level Start plays is, before it is started. */}
-          {/* The room three rows of chips take (three of 1.375rem and two gaps of 0.375rem), the most any level's wrap to at any width: a board's and a goal's names are longer for some levels than others, and the screen must not change height when one is chosen. */}
-          <div className="min-h-[4.875rem]" data-testid="tobiishi-chips-room">
+          {/* The room four rows of chips take (four of 1.375rem and three gaps of 0.375rem), chips being a fixed width so that two to a row is the most a narrow column holds, the most any level's wrap to at any width: a board's and a goal's names are longer for some levels than others, and the screen must not change height when one is chosen. */}
+          <div className="min-h-[6.625rem]" data-testid="tobiishi-chips-room">
             {ref === null ? null : <TobiishiLevelChips code={tobiishiCodeOf(ref)} level={chosen} />}
           </div>
           <p className="text-xs text-muted" data-testid="tobiishi-kept-where">

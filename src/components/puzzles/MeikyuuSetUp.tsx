@@ -279,8 +279,8 @@ export function MeikyuuSetUp({
           <Link href={meikyuuLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
             <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={startPress(say).start.kanji} />
           </Link>
-          {/* What the level Start plays is, before it is started. The room three rows of chips take (three of 1.375rem and two gaps of 0.375rem): a long solid's name, the rhombic dodecahedron's, wraps the chips onto a third row on a phone, and the screen must not change height when one is chosen. */}
-          <div className="min-h-[4.875rem]" data-testid="meikyuu-chips-room">
+          {/* What the level Start plays is, before it is started. The room four rows of chips take (four of 1.375rem and three gaps of 0.375rem), chips being a fixed width so that two to a row is the most a narrow column holds: a long solid's name, the rhombic dodecahedron's, wraps the chips onto a third row on a phone, and the screen must not change height when one is chosen. */}
+          <div className="min-h-[6.625rem]" data-testid="meikyuu-chips-room">
             {row === undefined ? null : <MeikyuuLevelChips code={row.code} cells={row.cells} score={row.score} level={chosen} />}
           </div>
           <p className="text-xs text-muted" data-testid="meikyuu-kept-where">
