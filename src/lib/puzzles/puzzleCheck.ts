@@ -20,7 +20,7 @@ import { checkKumimoji } from "./kumimoji/check";
 import type { KumimojiOptions } from "./kumimoji/kumimoji.types";
 import { dodgeGuesses, readDodge } from "./gomoji/dodgePlay";
 import { decodeDodgeGivens } from "./gomoji/dodgeSeed";
-import { backwardsGuesses, breaksBackwardsRule, isGuessable } from "./gomoji/backwards";
+import { backwardsGuesses, brokenBackwardsRule, isGuessable } from "./gomoji/backwards";
 import { isBackwardsGivens } from "./gomoji/backwardsSeed";
 import { hiddenOfPlay } from "./gomoji/backwardsPlay";
 import { isDailyPoolWord } from "./dailyWords/dailyPools";
@@ -269,8 +269,9 @@ function checkBackwards(kind: PuzzleKind, size: number, givens: string, answer: 
       return no("chk.wordsNotLoaded");
     }
     if (!known) return no("chk.notInList", { word: guess });
-    const breaks = breaksBackwardsRule(kind, guesses.slice(0, at), word, guess);
-    if (breaks !== null) return { ok: false, reason: breaks };
+    // The rule broken is refused by key, so a page says it in the reader's language (`chk.hold.*`).
+    const breaks = brokenBackwardsRule(kind, guesses.slice(0, at), word, guess);
+    if (breaks !== null) return no(breaks.code, breaks.values);
   }
   const caught = guesses.indexOf(word);
   if (ending === "found") {

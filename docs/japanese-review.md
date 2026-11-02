@@ -6,8 +6,8 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 6079. Drafted and unread: 1. Read by the reviewer agent: 6078.
-Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 125
+Phrases: 6083. Drafted and unread: 5. Read by the reviewer agent: 6078.
+Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 129
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
 
@@ -20,7 +20,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Waiting for a decision or a native read — start here (124)
+## 1. Waiting for a decision or a native read — start here (128)
 
 A **question** is a wording only the site's owner can choose between. A line the
 agent has read but marked for a native read is high-stakes text (children,
@@ -36,6 +36,10 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Terms of play | **利用規約** | Terms of use | Agent 2026-10-06; Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 | — — — | Choose which emails from {site} you get. You do not need to sign in. | **{site}から届くメールを選べます。サインインは不要です。** | You can choose which emails you receive from {site}. Signing in is not required. | Agent 2026-10-06, native read wanted | The page an email's stop link opens, where Canada's anti-spam law wants a way out that needs no sign-in: a native read is recommended. |  |
 | — — — | Slate & shell | **那智黒と蛤** | Slate and clam shell | Agent 2026-10-06, native read wanted | The five stone-set names are renderings of English names (那智黒と蛤, 翡翠と骨, 梅と桜, 藍と米, ネオン). A Go player should confirm they read as the stones' materials and colours. |  |
+| — — — | {unit} was grey, and may not be used again | **{unit}は灰色だったので、もう使えません** | {unit} was grey, and may not be used again | Question, unread; Agent 2026-10-06 | Written on 2026-11-02; nobody has read it. |  |
+| — — — | {unit} has been played already | **{unit}は、もう打ちました** | {unit} has been played already | Question, unread; Agent 2026-10-06 | Written on 2026-11-02; nobody has read it. |  |
+| — — — | the one in place {place} must stay {unit} | **{place}番目は、{unit}のままにします** | the one in place {place} must stay {unit} | Question, unread | Written on 2026-11-02; nobody has read it. |  |
+| — — — | the guess must use {unit} | **予想には、{unit}を使う必要があります** | the guess must use {unit} | Question, unread; Agent 2026-10-06 | Written on 2026-11-02; nobody has read it. |  |
 | — — — | The step begins here | **この段階のはじめ** | The start of this step | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
 | — — — | Hide the turns | **回転を隠す** | Hide the turns | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
 | — — — | Done: that step is finished, and the cube is as it should be. Go back over any turn, replay it from the start, or turn the cube yourself. | **できました。この段階は完了で、キューブは正しい状態です。好きな手まで戻って見直したり、最初から再生し直したり、自分で回したりできます。** | Done. This step is complete and the cube is in the right state. You can go back to any move to look again, play it again from the start, or turn it yourself. | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
@@ -153,7 +157,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Where the account has an address, the operator writes to it to say why. To ask about it, write to {contact}. | **アカウントにメールアドレスがある場合、運営者はそのアドレスに理由を書いて送ります。問い合わせは{contact}までお願いします。** | If the account has an email address, the operator writes the reason and sends it to that address. For enquiries, please contact {contact}. | Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 | — — — | What we ask of everybody here, and what the site does in return. | **ここをご利用のすべての方にお願いすることと、サイトがその代わりに行うことです。** | What we ask of everyone who uses this place, and what the site does in return. | Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 
-## 2. Written by a machine — please check these (5691)
+## 2. Written by a machine — please check these (5688)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -5542,13 +5546,10 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Your newest {count} of {total}. | **{total}件のうち、新しい{count}件です。** | Your newest {count} of {total}. | Agent 2026-10-06 |  |
 | — — — | Its guesses were not kept: it was played before they were. | **予想は保存されていません。保存される前に遊んだものです。** | Its guesses were not kept: it was played before they were. | Agent 2026-10-06 |  |
 | — — — | Not found | **見つからなかった** | Not found | Agent 2026-10-06 |  |
-| — — — | {unit} was grey, and may not be used again | **{unit}は灰色だったので、もう使えません** | {unit} was grey, and may not be used again | Agent 2026-10-06 |  |
 | — — — | {kana} must stay in place {place} | **{kana}は、{place}番目のままにします** | {kana} must stay in place {place} | Agent 2026-10-06 |  |
 | — — — | {kana} must be used | **{kana}を使う必要があります** | {kana} must be used | Agent 2026-10-06 |  |
 | — — — | the {ordinal} letter must be {unit} | **{ordinal}の文字は、{unit}のままにします** | the {ordinal} letter must be {unit} | Agent 2026-10-06 |  |
-| — — — | {unit} has been played already | **{unit}は、もう打ちました** | {unit} has been played already | Agent 2026-10-06 |  |
 | — — — | the {ordinal} must stay {unit} | **{ordinal}は、{unit}のままにします** | the {ordinal} must stay {unit} | Agent 2026-10-06 |  |
-| — — — | the guess must use {unit} | **予想には、{unit}を使う必要があります** | the guess must use {unit} | Agent 2026-10-06 |  |
 | — — — | change the kana: {what} | **かなを変える：{what}** | change the kana: {what} | Agent 2026-10-06 |  |
 | — — — | its column is here | **この列にある** | its column is here | Agent 2026-10-06 |  |
 | — — — | delete a kana | **かなを消す** | delete a kana | Agent 2026-10-06 |  |
