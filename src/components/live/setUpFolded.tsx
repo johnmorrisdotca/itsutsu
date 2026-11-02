@@ -58,11 +58,12 @@ export function foldedWords({
   }).slice(1);
 
   return {
-    rules: <SettingWords words={describeSettings(settled, refused, say)} testId="set-up-rules-words" />,
+    rules: <SettingWords words={describeSettings(settled, refused, say)} testId="set-up-rules-words" room />,
     handicap: (
       <SettingWords
         words={handicap.length > 0 ? handicap : [{ text: setUpCopy(say).noHandicap, notable: false }]}
         testId="set-up-handicap-words"
+        room
       />
     ),
   };

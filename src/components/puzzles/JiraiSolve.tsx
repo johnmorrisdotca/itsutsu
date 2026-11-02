@@ -3,7 +3,7 @@
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { useCallback, useMemo, useState } from "react";
 
-import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE, ROOM_FOR_THREE_LINES } from "@/components/ui/ui.constants";
 import { COVERED, FLAG, jiraiBoardOf, jiraiCheck, jiraiFix, jiraiMissing, jiraiPress, jiraiRecipeOf, jiraiWon, jiraiWrong, type JiraiMove } from "@/lib/puzzles/jirai/board";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { encodeStepLog, openingSteps } from "@/lib/puzzles/stepLog";
@@ -148,7 +148,7 @@ export function JiraiSolve({
       <PuzzleSteps<string> steps={steps} viewing={history.viewing} go={history.go} size={size} say={(value) => jiraiStepWord(value, say)} />
       {done === null ? (
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <SolveCheck checking={checking} onCheck={check} disabled={disabled} />
             <SolveShow checking={checking} onShow={show} disabled={disabled} />
             <button
@@ -166,7 +166,7 @@ export function JiraiSolve({
           <span className="text-sm text-muted" data-testid="jirai-mines" data-left={left} data-covered={count}>
             {copy.minesLeft(left, mistakes)}
           </span>
-          <span className="text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "jirai-said"} aria-live="polite">
+          <span className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid={checked !== null ? "puzzle-checked" : "jirai-said"} aria-live="polite">
             {checked !== null ? jiraiChecked(checked, say) : (said ?? (flagging ? copy.flagging : copy.howTo))}
           </span>
         </div>

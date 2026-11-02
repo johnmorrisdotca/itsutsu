@@ -200,7 +200,7 @@ the `--` on and Playwright then runs the wrong files). The layout and sweep
 specs: `e2e/set-up-steady.spec.ts`, `e2e/bare-board.spec.ts`,
 `e2e/wide-mode.spec.ts`, `e2e/page-shape.spec.ts`, `e2e/page-width.spec.ts`,
 `e2e/phone-overflow.spec.ts`, `e2e/phone-header.spec.ts`,
-`e2e/game-pictures.spec.ts`, and for anything that loops over every puzzle
+`e2e/game-pictures.spec.ts`, `e2e/language-steady.spec.ts`, and for anything that loops over every puzzle
 `e2e/puzzle-checks.spec.ts` and `e2e/puzzle-hints.spec.ts`. Do not edit source
 while a run is going, and keep to one browser run at a time on the Mac. Your
 own database means the run's setup may sweep it freely.
@@ -1148,6 +1148,36 @@ Held by `boardScale.coverage.test.ts`, `e2e/wide-mode.spec.ts`, and the survey
 in `e2e/bare-board.spec.ts`, which opens every play at 1280×800 and 1920×1080
 and fails on a scroll or an empty column; `bareSurvey.coverage.test.ts` holds
 its list to the catalogue, so a new play joins it.
+
+### Nothing Moves When The Language Does
+
+John, 2026-10-31, switching Colour Chains from English to Japanese: the board,
+the goal panel and the controls jumped, because the words around them are a
+different width. The board and the presses stay where they are; the words
+around them change.
+
+- **Reserve room by what the longer language needs, never fix a size.** A
+  minimum, not a width, so a longer translation wraps or grows and is never cut
+  off: `ROOM_FOR_A_WORD`, `ROOM_FOR_TWO_WORDS`, `ROOM_FOR_TWO_LINES` and
+  `ROOM_FOR_THREE_LINES` in `ui.constants.ts`, and `min-h-[2lh]` on a line of
+  words over something that must stay put (a status line, a note, a hint). A
+  press that holds its place in a row names its room (`ControlButton`'s `wide`).
+  Where a desk's width holds the words on one line in both languages, the room
+  is dropped there (`md:min-h-0`, `lg:min-h-8`): the modal of Just the board
+  has no height to spare.
+- **A heading is never shorter than one of its own lines, and the kanji beside
+  its word never makes it taller** (`globals.css`, `line-height: 1` on the span
+  and `min-height: 1lh` on the heading).
+- **`e2e/language-steady.spec.ts` holds it.** It opens every play in
+  `e2e/playSurvey.ts` (the list `bare-board.spec.ts` walks too, held to the
+  catalogue by `bareSurvey.coverage.test.ts`), chooses Japanese by clicking the
+  account menu's picker, then English again, and fails if the board moved, a
+  press slid, words were cut off, the page scrolled sideways or anything did not
+  come back. Each play is read at one of three widths and a few at all three
+  (`LANGUAGE_STEADY_EVERY_WIDTH=1` runs every play at every width); the few
+  also take large counters and long labels written into the page. A link inside
+  a sentence is text, not a press, a name shortened with an ellipsis is cut on
+  purpose, and the welcome toast stands on the window, not on the page.
 
 ### Playing Offline
 

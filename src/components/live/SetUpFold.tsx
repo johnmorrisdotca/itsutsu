@@ -87,9 +87,11 @@ export function SetUpFold({
          * the posted-seat tile, with its 70px mark — and a closed row that
          * stopped at its own height would leave a strip of nothing under it.
          * Grown, every closed answer is one card of one height with its words
-         * in the middle. In a column it has nothing to grow into.
+         * in the middle. In a column it has nothing to grow into. `min-h-24`: the
+         * height English takes when its title and summary each wrap in a narrow tile, so that
+         * Japanese, which wraps less, does not stand the row shorter (`language-steady.spec.ts`).
          */
-        className={`flex w-full min-w-0 grow cursor-pointer items-center justify-between gap-3 rounded-xl border border-rule px-3 py-2 text-left hover:border-ink/30 ${
+        className={`flex min-h-24 w-full min-w-0 grow cursor-pointer items-center justify-between gap-3 rounded-xl border border-rule px-3 py-2 text-left hover:border-ink/30 ${
           place === undefined ? "" : ANSWER_PART
         }`}
         style={place?.head}

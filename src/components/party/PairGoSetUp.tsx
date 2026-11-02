@@ -126,7 +126,7 @@ export function PairGoSetUp({ appearance, onStart, ready, online }: PairGoSetUpP
             {table.problem}
           </p>
         ) : null}
-        <p className="text-xs text-muted">{severalOffer === undefined ? PAIR_GO_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, PAIR_PLAYERS))}</p>
+        <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{severalOffer === undefined ? PAIR_GO_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, PAIR_PLAYERS))}</p>
       </form>
     </div>
   );

@@ -24,7 +24,7 @@ const FILLS: readonly { fill: TsunagiFill; label: PhraseKey; kanji: string }[] =
 export function TsunagiMarksPicker({ marks, onChoose }: { marks: TsunagiMarks; onChoose: (next: TsunagiMarks) => void }) {
   const say = useSpeaker();
   return (
-    <div className="flex gap-1.5" role="radiogroup" aria-label={say.say("pmaze.tsunagi.joinBy")} data-testid="tsunagi-marks">
+    <div className="grid basis-full grid-cols-2 gap-1.5 sm:flex sm:basis-auto" role="radiogroup" aria-label={say.say("pmaze.tsunagi.joinBy")} data-testid="tsunagi-marks">
       {CHOICES.map((each) => (
         <button
           key={each.marks}
@@ -46,7 +46,7 @@ export function TsunagiMarksPicker({ marks, onChoose }: { marks: TsunagiMarks; o
 export function TsunagiFillPicker({ fill, onChoose }: { fill: TsunagiFill; onChoose: (next: TsunagiFill) => void }) {
   const say = useSpeaker();
   return (
-    <div className="flex gap-1.5" role="radiogroup" aria-label={say.say("pmaze.tsunagi.fillWith")} data-testid="tsunagi-fill">
+    <div className="grid basis-full grid-cols-2 gap-1.5 sm:flex sm:basis-auto" role="radiogroup" aria-label={say.say("pmaze.tsunagi.fillWith")} data-testid="tsunagi-fill">
       {FILLS.map((each) => (
         <button
           key={each.fill}

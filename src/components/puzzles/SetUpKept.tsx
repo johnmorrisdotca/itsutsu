@@ -34,7 +34,7 @@ export function SetUpKept({ href, detail, count }: { href: string; detail: strin
         <span className="flex-1">{say.say("live.keptContinue", { run: detail })}</span>
         <span aria-hidden="true">→</span>
       </Link>
-      <p className="text-xs text-muted">{say.say("live.keptNote")}</p>
+      <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{say.say("live.keptNote")}</p>
       {count > 1 ? (
         <Link href="/play" className="text-sm underline underline-offset-4" data-testid="set-up-kept-all">
           {say.say("live.keptMyGames")} →

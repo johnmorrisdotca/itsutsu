@@ -111,7 +111,7 @@ export function SugorokuPlay({ table, keep, appearance, gameHref, ready }: { tab
           </button>
         ) : null}
         <FeltPatches felt={felt} wood={appearance.boardTheme} onChoose={chooseFelt} />
-        <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
+        <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET} min-w-40`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? SUGOROKU_COPY.soundOn : SUGOROKU_COPY.soundOff}
         </button>
         <GameEnding>
@@ -119,7 +119,7 @@ export function SugorokuPlay({ table, keep, appearance, gameHref, ready }: { tab
         </GameEnding>
       </div>
       {over ? <TableWallpaper game={table.kind} result={resultLine(names, winners, winners.length === 2, say)} /> : null}
-      <p className="text-xs text-muted">{SUGOROKU_COPY.kept}</p>
+      <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{SUGOROKU_COPY.kept}</p>
       <p className="text-sm">
         <Link href={gameHref} className="underline underline-offset-4">
           {SUGOROKU_COPY.about} →

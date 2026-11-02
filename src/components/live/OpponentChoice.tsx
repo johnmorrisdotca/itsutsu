@@ -189,7 +189,7 @@ export function OpponentChoice({
         names above cannot be chosen — in words, not by tiles that simply refuse.
       */}
       {canAsk ? (
-        <p className="text-xs text-muted md:pt-3" style={answerRowFoot(answers)} data-testid="set-up-opponent-elsewhere">
+        <p className="min-h-[3lh] text-xs text-muted md:min-h-0 md:pt-3" style={answerRowFoot(answers)} data-testid="set-up-opponent-elsewhere">
           {weave(SET_UP_COPY.elsewhere, {
             link: (
               <Link href="/players" className="underline underline-offset-4 hover:text-ink">

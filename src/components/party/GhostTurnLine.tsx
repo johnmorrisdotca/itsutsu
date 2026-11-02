@@ -6,7 +6,7 @@ import { usePartyMarbles } from "./partyMarbles";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
 import type { Speaker } from "@/lib/i18n/i18n";
-import { PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PANEL_CLASS, ROOM_FOR_TWO_LINES } from "@/components/ui/ui.constants";
 import { partyPlayerName } from "@/lib/party/partyNames";
 import { GHOST_LOSS, GHOST_PHASE, ghostStillIn } from "@/lib/party/superghost/superghost";
 import type { GhostGame, GhostJudge, GhostRound } from "@/lib/party/superghost/superghost.types";
@@ -53,7 +53,7 @@ export function GhostTurnLine({ game, judge }: { game: GhostGame; judge: GhostJu
       aria-live="polite"
     >
       <MarbleChip player={game.toPlay} />
-      <span className="min-w-0">
+      <span className={`min-w-0 ${ROOM_FOR_TWO_LINES} sm:min-h-0`}>
         <span className="font-semibold" data-testid="ghost-turn-name">
           {partyPlayerName(game, game.toPlay, say)}
         </span>

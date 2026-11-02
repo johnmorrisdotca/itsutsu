@@ -30,7 +30,7 @@ export function PracticeMark({ variant }: { variant: RuleVariant }) {
   const PRACTICE_COPY = practiceCopy(useSpeaker());
   return (
     <section
-      className="flex flex-col gap-2 rounded-2xl border border-ochre/50 bg-ochre-soft p-3"
+      className="flex min-h-43 flex-col gap-2 rounded-2xl border border-ochre/50 bg-ochre-soft p-3 lg:min-h-0"
       data-testid="practice-mark"
     >
       <h2 className={SECTION_TITLE}>

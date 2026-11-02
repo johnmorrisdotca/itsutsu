@@ -81,7 +81,7 @@ export function BeginBar({
         two screens could be made one: everything else it said, this screen
         was already saying.
       */}
-      <p className="text-sm text-ink-soft" data-testid="set-up-seating">
+      <p className="min-h-[3lh] text-sm text-ink-soft md:min-h-0" data-testid="set-up-seating">
         {sitting}
       </p>
       {/*
@@ -145,7 +145,7 @@ export function BeginBar({
       */}
       {pieceColour !== null ? (
         <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="set-up-piece-colour">
-          <span className="text-muted">
+          <span className="min-w-24 text-muted">
             {say.say("live.yourPieces")}{say.pairsWithKanji ? <> <span className="font-mincho">色</span></> : null}
           </span>
           <PieceColourPicker

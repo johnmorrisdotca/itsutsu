@@ -48,7 +48,7 @@ export function PartyBlocksTray({ game, hold, onHold, onRotate, onFlip, refusal 
           <span className="w-full text-[0.7rem] text-muted">{PARTY_BLOCKS_COPY.keys}</span>
         </div>
       </div>
-      <p className={`min-h-[2.5rem] text-xs ${refusal === null ? "text-muted" : "text-shu"}`} data-testid="blocks-hint" aria-live="polite">
+      <p className={`min-h-[3lh] text-xs ${refusal === null ? "text-muted" : "text-shu"}`} data-testid="blocks-hint" aria-live="polite">
         {refusal ?? PARTY_BLOCKS_COPY.how}
       </p>
       <ul className="grid grid-cols-7 gap-1" aria-label={PARTY_BLOCKS_COPY.tray}>

@@ -125,7 +125,7 @@ export function YachtSetUp({ appearance, onStart, ready }: { appearance: Appeara
         <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} data-testid="yacht-start">
           {PARTY_COPY.start} →
         </button>
-        <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
+        <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{PARTY_COPY.kept}</p>
       </form>
     </div>
   );

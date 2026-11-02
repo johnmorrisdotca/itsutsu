@@ -8,7 +8,7 @@ import type { Appearance } from "@/components/board/board.types";
 import { FeltPatches } from "@/components/board/FeltPatches";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE, ROOM_FOR_A_WORD, ROOM_FOR_TWO_WORDS } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { decodeLayout } from "@johnmorrisdotca/tsunagi";
@@ -406,27 +406,27 @@ export function TsunagiSolve({
       {done === null ? (
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={takeBack} disabled={undo.length === 0 || pausing.paused || spent} data-testid="tsunagi-undo">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} min-w-28`} onClick={takeBack} disabled={undo.length === 0 || pausing.paused || spent} data-testid="tsunagi-undo">
               {say.say("puzzle.press.undo")}
             </button>
             <button
               type="button"
-              className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
+              className={`${BUTTON_BASE} ${BUTTON_QUIET} ${ROOM_FOR_TWO_WORDS}`}
               onClick={restart}
               disabled={startedAt === null || pausing.paused || lines.every((line) => line.length === 0)}
               data-testid="tsunagi-restart"
             >
               {say.say("puzzle.press.restart")}
             </button>
-            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={check} disabled={pausing.paused} data-testid="tsunagi-check">
+            <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} min-w-28`} onClick={check} disabled={pausing.paused} data-testid="tsunagi-check">
               {say.say("puzzle.solve.check")}
             </button>
             {cheatOffered ? (
-              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET}`} onClick={cheat} disabled={pausing.paused || spent} title={say.say("pmaze.tsunagi.cheatSays")} data-testid="tsunagi-cheat">
+              <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${ROOM_FOR_A_WORD}`} onClick={cheat} disabled={pausing.paused || spent} title={say.say("pmaze.tsunagi.cheatSays")} data-testid="tsunagi-cheat">
                 {say.say("puzzle.press.cheat")}
               </button>
             ) : null}
-            <span className="text-sm text-muted tabular-nums" data-testid="tsunagi-progress" data-joined={pairsJoined} data-filled={cover.done} aria-live="polite">
+            <span className="min-h-[2lh] basis-full text-sm text-muted tabular-nums" data-testid="tsunagi-progress" data-joined={pairsJoined} data-filled={cover.done} aria-live="polite">
               {pairsJoined === pairs && cover.done < cover.of
                 ? say.count("pmaze.tsunagi.joinedEmpty", cover.of - cover.done)
                 : say.say("pmaze.tsunagi.progress", { joined: String(pairsJoined), pairs: String(pairs), percent: String(Math.round((100 * cover.done) / cover.of)) })}
@@ -464,7 +464,7 @@ export function TsunagiSolve({
               {checkSays}
             </p>
           )}
-          <p className="text-sm text-muted">{say.say("pmaze.tsunagi.howTo")}</p>
+          <p className="min-h-[2lh] text-sm text-muted">{say.say("pmaze.tsunagi.howTo")}</p>
         </div>
       ) : (
         <SolveDone
