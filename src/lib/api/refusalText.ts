@@ -1,6 +1,7 @@
 import { PHRASES, type PhraseKey } from "@/lib/i18n/i18n.constants";
 import type { Speaker } from "@/lib/i18n/i18n";
 
+import { clause } from "./refusal";
 import type { RefusalPart, RefusalValue, RefusalValues } from "./refusal.types";
 
 /**
@@ -16,7 +17,7 @@ export type RefusalBody = { error?: unknown; code?: unknown; values?: unknown } 
 function value(say: Speaker, given: RefusalValue): string {
   if (typeof given === "string") return given;
   if (typeof given === "number") return say.number(given);
-  return sayCode(say, given.code, given.values) ?? "";
+  return clause(sayCode(say, given.code, given.values) ?? "");
 }
 
 function sayCode(say: Speaker, code: unknown, values: unknown): string | null {

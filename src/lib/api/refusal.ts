@@ -16,7 +16,12 @@ const ENGLISH: Readonly<Record<RefusalCode, string>> = { ...PHRASES_ERR, ...PHRA
 function plain(value: RefusalValue): string {
   if (typeof value === "string") return value;
   if (typeof value === "number") return String(value);
-  return english(value.code, value.values);
+  return clause(english(value.code, value.values));
+}
+
+/** A refusal said inside another ends where the outer one does: "Not solved: {reason}." has its own full stop. */
+export function clause(sentence: string): string {
+  return sentence.replace(/[.。]$/, "");
 }
 
 /** The refusal in English, its values filled and any refusal inside them said the same way. */

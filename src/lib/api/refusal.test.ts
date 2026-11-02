@@ -26,6 +26,13 @@ describe("a refusal as a key and its values", () => {
     expect(english("err.puzzle.notSolved", { reason: inner })).toBe("Not solved: no move was made.");
   });
 
+  it("does not end twice when the refusal inside already has its full stop", () => {
+    const inner = partOf("chk.hachinosu.notHive");
+    expect(english("err.puzzle.notSolved", { reason: inner })).toBe("Not solved: The givens are not a hive.");
+    const body = said("err.puzzle.notSolved", { reason: inner });
+    expect(refusalOr(body, speaker("ja"), "")).not.toMatch(/。。/);
+  });
+
   it("has English for every key it is asked for, and nothing in it is a blank", () => {
     for (const key of Object.keys(PHRASES).filter((one) => one.startsWith("err.") || one.startsWith("chk."))) {
       expect(isRefusalCode(key)).toBe(true);
