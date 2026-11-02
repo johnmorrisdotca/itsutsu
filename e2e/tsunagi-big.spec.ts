@@ -25,7 +25,7 @@ async function openLevel(page: Page, level: number) {
   await page.goto(`/games/tsunagi/play?size=${SIZE}&seed=${level}`);
   await ready(page, "puzzle-play");
   if ((await page.getByTestId("puzzle-play").getAttribute("data-reviewing")) === "true") await page.getByTestId("tsunagi-restart-solved").click();
-  await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+  await expect(page.locator(".tsu-line")).toHaveCount(0);
 }
 
 async function centre(page: Page, cell: number) {
@@ -71,7 +71,7 @@ test.describe("Tsunagi at 10×10 on a phone", () => {
       await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: to.x, y: to.y }] });
     }
     await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await expect(page.getByTestId("tsunagi-line")).toHaveAttribute("data-cells", String(line.length));
+    await expect(page.locator(".tsu-line")).toHaveAttribute("data-cells", String(line.length));
     expect(await page.evaluate(() => window.scrollY)).toBe(before);
   });
 
@@ -106,7 +106,7 @@ test.describe("Tsunagi at 10×10 on a phone", () => {
         await page.mouse.move(to.x, to.y, { steps: 3 });
       }
       await page.mouse.up();
-      await expect(page.locator(`[data-testid="tsunagi-line"][data-cells="${line.length}"]`)).toHaveCount(1);
+      await expect(page.locator(`.tsu-line[data-cells="${line.length}"]`)).toHaveCount(1);
       drawn = true;
       break;
     }
@@ -223,7 +223,7 @@ async function openBig(page: Page, size: number, level: number) {
   await page.goto(`/games/tsunagi/play?size=${size}&seed=${level}`);
   await ready(page, "puzzle-play");
   if ((await page.getByTestId("puzzle-play").getAttribute("data-reviewing")) === "true") await page.getByTestId("tsunagi-restart-solved").click();
-  await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+  await expect(page.locator(".tsu-line")).toHaveCount(0);
 }
 
 async function drag(page: Page, size: number, line: readonly number[]) {
@@ -299,7 +299,7 @@ test.describe("Tsunagi at 13×13 to 15×15 on a phone", () => {
     const [shortest] = [...lines].sort((a, b) => a.length - b.length);
     await page.getByTestId("tsunagi-board").scrollIntoViewIfNeeded();
     await drag(page, size, shortest!);
-    await expect(page.locator(`[data-testid="tsunagi-line"][data-cells="${shortest!.length}"]`)).toHaveCount(1);
+    await expect(page.locator(`.tsu-line[data-cells="${shortest!.length}"]`)).toHaveCount(1);
     await page.getByTestId("tsunagi-arrows").click();
     await page.getByTestId("tsunagi-pad-in").click();
     await page.getByTestId("tsunagi-pad-in").click();
@@ -318,7 +318,7 @@ test.describe("Tsunagi at 13×13 to 15×15 on a phone", () => {
       for (const line of lines) {
         if (line === shortest || !(await Promise.all(line.map(inView))).every(Boolean)) continue;
         await drag(page, size, line);
-        await expect(page.locator(`[data-testid="tsunagi-line"][data-cells="${line.length}"]`).first()).toBeVisible();
+        await expect(page.locator(`.tsu-line[data-cells="${line.length}"]`).first()).toBeVisible();
         drawn = true;
         break;
       }
@@ -349,9 +349,9 @@ test.describe("Tsunagi at 15×15 on a desk", () => {
       expect(await page.evaluate(() => document.documentElement.scrollWidth), `${scale}: the page scrolls sideways`).toBeLessThanOrEqual(1280);
       await page.getByTestId("tsunagi-board").scrollIntoViewIfNeeded();
       await drag(page, size, lines[0]!);
-      await expect(page.locator(`[data-testid="tsunagi-line"][data-cells="${lines[0]!.length}"]`).first()).toBeVisible();
+      await expect(page.locator(`.tsu-line[data-cells="${lines[0]!.length}"]`).first()).toBeVisible();
       await page.getByTestId("tsunagi-restart").click();
-      await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+      await expect(page.locator(".tsu-line")).toHaveCount(0);
     }
     await page.locator('[data-testid="board-scale-option"][data-scale="regular"]').click();
   });

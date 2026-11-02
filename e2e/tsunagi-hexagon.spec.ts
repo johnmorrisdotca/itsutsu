@@ -29,7 +29,7 @@ async function playLevel(page: Page, level: number) {
   await page.goto(`${AT}/play?size=${SIZE}&seed=${level}`);
   await ready(page, "puzzle-play");
   if ((await page.getByTestId("puzzle-play").getAttribute("data-reviewing")) === "true") await page.getByTestId("tsunagi-restart-solved").click();
-  await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+  await expect(page.locator(".tsu-line")).toHaveCount(0);
 }
 
 /** A line drawn through the middle of each cell as the page draws it. */
@@ -61,7 +61,7 @@ test.describe("Tsunagi on a hexagon", () => {
     await expect(page.getByTestId("tsunagi-chip-teaches")).toContainText("Hexagon");
     // The hexagon's 37 cells, and none of the square's corners.
     await expect(page.getByTestId("puzzle-cell")).toHaveCount(Array.from({ length: SIZE * SIZE }, (_, at) => at).filter((at) => inHex(SIZE, at)).length);
-    await expect(page.getByTestId("tsunagi-hex-cell")).toHaveCount(37);
+    await expect(page.locator(".tsu-hex-cell")).toHaveCount(37);
     const lines = linesOfAnswer(layout, answer)!;
     // The answer takes a slanting step somewhere: the whole point of the board.
     expect(lines.some((line) => line.some((cell, at) => at > 0 && Math.abs(cell - line[at - 1]!) === SIZE - 1))).toBe(true);

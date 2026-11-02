@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { acceptPreferences, preferencesFrom } from "@/lib/preferences/preferences";
 
-import { tsunagiBeadLook, tsunagiMarbleLook } from "./puzzles.constants";
+import { beadShades, colourOfPair, marbleShades, TSUNAGI_COLOUR_SETS } from "@johnmorrisdotca/tsunagi/draw";
+
+import { tsunagiMarbleLook } from "./puzzles.constants";
 import { keepFillHere, keptFill } from "./tsunagiKept";
 
 afterEach(() => {
@@ -21,16 +23,22 @@ function storage(): Map<string, string> {
 }
 
 describe("Tsunagi's marbles along a line", () => {
+  const colour = (pair: number) => colourOfPair(TSUNAGI_COLOUR_SETS.marble, pair);
+
   it("are the pair's own marble with Colours, so the line reads as one colour end to end", () => {
-    for (const pair of [0, 3, 11]) expect(tsunagiBeadLook(pair, "colours").background).toBe(tsunagiMarbleLook(pair, "colours").background);
+    for (const pair of [0, 3, 11]) expect(beadShades(colour(pair), "colours")).toEqual(marbleShades(colour(pair), "colours"));
   });
 
   it("take the line's tint with Numbers, not the plain shell the numbered ends are", () => {
-    const bead = tsunagiBeadLook(0, "numbers").background;
-    expect(bead).not.toBe(tsunagiMarbleLook(0, "numbers").background);
-    expect(bead).toMatch(/^radial-gradient\(/);
+    const bead = beadShades(colour(0), "numbers");
+    expect(bead.body).not.toBe(marbleShades(colour(0), "numbers").body);
     // Two pairs are still told apart by their tint.
-    expect(bead).not.toBe(tsunagiBeadLook(1, "numbers").background);
+    expect(bead.body).not.toBe(beadShades(colour(1), "numbers").body);
+  });
+
+  it("are the board's own marble beside the board too, in the level picker", () => {
+    const shades = marbleShades(colour(3), "colours");
+    expect(tsunagiMarbleLook(3, "colours")).toEqual({ background: `radial-gradient(circle at 35% 30%, ${shades.light} 0%, ${shades.body} 45%, ${shades.rim} 100%)`, color: shades.ink });
   });
 
   it("are on until somebody turns them off, and the account keeps only the two answers", () => {

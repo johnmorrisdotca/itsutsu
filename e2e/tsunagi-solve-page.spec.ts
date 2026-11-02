@@ -40,7 +40,7 @@ test("another member's solve of a level shows its marbles and keeps the lines ba
     // Kept back three days on, because a level does not change: the marbles as dealt, no lines, and why.
     await expect(page.getByTestId("solve-page")).toHaveAttribute("data-kept", "false");
     await expect(page.getByTestId("solve-board").getByTestId("tsunagi-board")).toBeVisible();
-    await expect(page.getByTestId("solve-board").locator('[data-testid="tsunagi-line"][data-cells]:not([data-cells="0"])')).toHaveCount(0);
+    await expect(page.getByTestId("solve-board").locator('.tsu-line[data-cells]:not([data-cells="0"])')).toHaveCount(0);
     await expect(page.getByTestId("solve-kept-back")).toContainText("until you have solved it yourself");
     await expect(page.getByTestId("solve-kept-back")).not.toContainText("tomorrow");
 
@@ -54,7 +54,7 @@ test("another member's solve of a level shows its marbles and keeps the lines ba
     await page.goto(`/games/${PUZZLE_SLUGS.tsunagi}/history/${theirs.id}`);
     await ready(page, "solve-board");
     await expect(page.getByTestId("solve-page")).toHaveAttribute("data-kept", "true");
-    await expect(page.getByTestId("solve-board").locator('[data-testid="tsunagi-line"]:not([data-cells="0"])').first()).toBeVisible();
+    await expect(page.getByTestId("solve-board").locator('.tsu-line:not([data-cells="0"])').first()).toBeVisible();
   } finally {
     await prisma.puzzleSolve.deleteMany({ where: { givens, kind: "tsunagi", memberId: { in: [other.id, operator!.id] } } });
     await prisma.member.delete({ where: { id: other.id } });

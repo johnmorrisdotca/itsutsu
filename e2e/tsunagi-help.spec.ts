@@ -91,7 +91,7 @@ async function solve(page: Page, level: number) {
   for (let round = 0; round < 6 && !(await done.isVisible()); round += 1) {
     for (const [pair, line] of lines.entries()) {
       if (await done.isVisible()) break;
-      const onPage = page.locator(`[data-testid="tsunagi-line"][data-pair="${pair}"]`);
+      const onPage = page.locator(`.tsu-line[data-pair="${pair}"]`);
       if ((await onPage.count()) === 0 || (await onPage.getAttribute("data-cells")) !== String(line.length)) await drag(page, line);
     }
   }
