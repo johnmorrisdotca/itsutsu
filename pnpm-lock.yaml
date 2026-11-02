@@ -607,7 +607,7 @@ packages:
         optional: true
 
   '@johnmorrisdotca/tsunagi@file:../../tsunagi/johnmorrisdotca-tsunagi-one-board.tgz':
-    resolution: {integrity: sha512-rGXlT5OlH9WqHbmSydgx8hjr5KGiU3UJCtuF7mZXdOtNeWwMA374Td6tuejudTYxwwjht1V8VsFtyJmxpTRZ9g==, tarball: file:../../tsunagi/johnmorrisdotca-tsunagi-one-board.tgz}
+    resolution: {integrity: sha512-F40n9ktSKngWdgknJ3P5kEoxn46LybYIe266TXuPtZbBacsJiSVY+zz5Dafb7inHVpSWqa+Qc8tRMfPwVrXtwA==, tarball: file:../../tsunagi/johnmorrisdotca-tsunagi-one-board.tgz}
     version: 1.7.1
     engines: {node: '>=22'}
 
