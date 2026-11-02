@@ -65,7 +65,7 @@ export const PHRASES_GAMESCREEN = {
   "gamescreen.winsCamp": "{who} wins: the far camp is full",
   "gamescreen.winsTopBottom": "{who} wins: top and bottom are joined",
   "gamescreen.winsLeftRight": "{who} wins: left and right are joined",
-  "gamescreen.winsBlocked": "{who} wins: the other side has no move left",
+  "gamescreen.winsBlocked": "{who} won: the other side has no move left.",
   "gamescreen.winsResign": "{who} wins by resignation",
   "gamescreen.winsIn": "{who} wins in {moves}",
   "gamescreen.whoToPlay": "{who} to play",

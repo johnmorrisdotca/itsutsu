@@ -3036,7 +3036,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Undo is switched off for this game. | **この対局では、待ったは使えません。** | Taking moves back is turned off for this game. | Agent 2026-10-06 |  |
 | — — — | Warn before a three forms | **三ができる前に警告** | Warn before a three forms | Agent 2026-10-06 |  |
 | — — — | {who} to play | **{who}の手番** | {who} to play | Agent 2026-10-06 |  |
-| — — — | {who} wins: the other side has no move left | **{who}の勝ちです。相手に打てる手がなくなりました。** | {who} wins. The other side has no move left. | Agent 2026-10-06 |  |
+| — — — | {who} won: the other side has no move left. | **{who}の勝ちです。相手に打てる手がなくなりました。** | {who} wins. The other side has no move left. | Agent 2026-10-06 |  |
 | — — — | {who} wins: the far camp is full | **{who}の勝ちです。向こう側の陣地が埋まりました。** | {who} wins. The far camp is full. | Agent 2026-10-06 |  |
 | — — — | {who} wins in {moves} | **{who}の勝ちです（{moves}）** | {who} wins ({moves}) | Agent 2026-10-06 |  |
 | — — — | {who} wins: left and right are joined | **{who}の勝ちです。左と右がつながりました。** | {who} wins. Left and right are joined. | Agent 2026-10-06 |  |
@@ -3765,7 +3765,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Waiting for {colour}… | **{colour}の手番を待っています…** | Waiting for {colour}'s move… | Agent 2026-10-06 |  |
 | — — — | You are watching. {colour} to play. | **観戦中です。{colour}の手番です。** | You are watching. It is {colour}'s turn. | Agent 2026-10-06 |  |
 | — — — | White, and move second | **白（後手）** | White (plays second) | Agent 2026-10-06 |  |
-| — — — | {colour} wins: the other side has no move left. | **{colour}の勝ちです。相手に打てる手がなくなりました。** | {colour} wins. The other side has no move left. | Agent 2026-10-06 |  |
+| — — — | {colour} won: the other side has no move left. | **{colour}の勝ちです。相手に打てる手がなくなりました。** | {colour} wins. The other side has no move left. | Agent 2026-10-06 |  |
 | — — — | {colour} wins: the far camp is full. | **{colour}の勝ちです。向こう側の陣地が埋まりました。** | {colour} wins. The far camp is full. | Agent 2026-10-06 |  |
 | — — — | {colour} wins: their two sides are joined. | **{colour}の勝ちです。盤の両側がつながりました。** | {colour} wins. Their two sides are joined. | Agent 2026-10-06 |  |
 | — — — | {colour} wins on discs, {black} to {white}. | **{colour}が石の数で勝ちました（{black}対{white}）。** | {colour} wins on discs ({black} to {white}). | Agent 2026-10-06 |  |
