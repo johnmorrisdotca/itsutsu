@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.551.0 — 2026-11-02 12:00 UTC
+- Lines of Action joins the board games: a man moves as far as there are men on its line, and joining all of yours wins.
+
 ## 0.550.0 — 2026-11-02 12:00 UTC
 - Breakthrough joins the board games: step forward, take on the diagonal, and be first to the far row.
 
