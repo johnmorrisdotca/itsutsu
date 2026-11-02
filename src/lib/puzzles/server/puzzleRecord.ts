@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { monthBounds, weekBounds } from "@/lib/history/recordMonth";
 import { prisma } from "@/lib/prisma";
 
+import { wordCountOfGivens } from "../gomoji/futago";
 import { guessesTaken, type GuessesTaken } from "../gomoji/guessesTaken";
 import { PUZZLE_RECORD_SORTS, type PuzzleRecordAsked } from "../puzzleRecordAddress";
 import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
@@ -61,6 +62,18 @@ function periodsOf(asked: Pick<PuzzleRecordAsked, "month" | "week">): { start: D
   );
 }
 
+/**
+ * The solves of one count of words. One word is every solve with no "+" in its
+ * givens; two or four are found among those that have one, which are few, by
+ * reading the joins (`wordCountOfGivens`, the same count the fastest tables cut by).
+ */
+async function wordsWhereOf(kind: PuzzleKind, asked: PuzzleRecordAsked): Promise<Prisma.PuzzleSolveWhereInput> {
+  if (asked.words === null) return {};
+  if (asked.words === 1) return { NOT: { givens: { contains: "+" } } };
+  const rows = await prisma.puzzleSolve.findMany({ where: { ...whereOf(kind, { ...asked, words: null }), givens: { contains: "+" } }, select: { id: true, givens: true } });
+  return { id: { in: rows.filter((row) => wordCountOfGivens(row.givens) === asked.words).map((row) => row.id) } };
+}
+
 function whereOf(kind: PuzzleKind, asked: PuzzleRecordAsked): Prisma.PuzzleSolveWhereInput {
   const spans = periodsOf(asked);
   return {
@@ -78,7 +91,7 @@ function whereOf(kind: PuzzleKind, asked: PuzzleRecordAsked): Prisma.PuzzleSolve
 
 /** One page of a puzzle's record. */
 export async function puzzleRecordOf(kind: PuzzleKind, asked: PuzzleRecordAsked): Promise<PuzzleRecord> {
-  const where = whereOf(kind, asked);
+  const where: Prisma.PuzzleSolveWhereInput = { AND: [whereOf(kind, asked), await wordsWhereOf(kind, asked)] };
   const orderBy: Prisma.PuzzleSolveOrderByWithRelationInput[] =
     asked.sort === PUZZLE_RECORD_SORTS.fastest
       ? [{ elapsedMs: "asc" }, { finishedAt: "asc" }, { id: "asc" }]

@@ -96,6 +96,7 @@ export const PHRASES_PSET = {
   "pset.solve.allTheirs": "All their {name}",
   "pset.solve.fastestSame": "Fastest times, same {size} and level",
   "pset.solve.onClock": " on the {clock}",
+  "pset.solve.inMode": " in {mode}",
   "pset.solve.allYours": "All your {name}",
   "pset.solve.playAnother": "Play another",
   "pset.me.lead.guest": "This page lists your own solves, and it does not know who you are yet.",
