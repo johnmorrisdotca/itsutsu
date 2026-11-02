@@ -26,6 +26,10 @@ import { playYacht, startYacht } from "../src/lib/party/yacht/yacht";
 import { encodeYacht } from "../src/lib/party/yacht/yachtCodec";
 import { encodeHitotsu, hitotsuComputer, playHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
 import { encodeDiceWar, playDiceWar, startDiceWar } from "@johnmorrisdotca/korokoro";
+import { LIARS_RULES } from "../src/lib/party/liarsDice/liarsDice";
+import { PIG_RULES } from "../src/lib/party/pig/pig";
+import { SAYU_RULES } from "../src/lib/party/sayu/sayu";
+import { TEN_THOUSAND_RULES } from "../src/lib/party/tenThousand/tenThousand";
 import { SUGOROKU_KIND_LIST, sugorokuStorageKey, type SugorokuKind } from "../src/lib/party/sugoroku/sugoroku.constants";
 import { encodeSugoroku, playSugoroku, startSugoroku, sugorokuComputerMove, sugorokuOver, sugorokuToPlay } from "../src/lib/party/sugoroku/sugorokuTable";
 import { ready } from "./support";
@@ -81,6 +85,37 @@ function yachtScene(): string {
   const most = counts.indexOf(Math.max(...counts));
   const hold = game.dice.reduce((mask, die, at) => (die === most ? mask | (1 << at) : mask), 0);
   return encodeYacht(playYacht(game, { kind: "roll", hold: hold === 31 ? 0 : hold })!);
+}
+
+/** A game played on from a start until `done` says it has reached the picture wanted: the rules' own moves, the first one that gets there. */
+function playUntil<S, M>(rules: { play: (game: S, move: M) => S | null; computer: (game: S) => M }, start: S, done: (game: S) => boolean): S {
+  let game = start;
+  for (let step = 0; step < 500 && !done(game); step += 1) {
+    const next = rules.play(game, rules.computer(game));
+    if (next === null) throw new Error("the scene ended before it reached the picture wanted");
+    game = next;
+  }
+  return game;
+}
+
+function pigScene(): string {
+  const start = PIG_RULES.start(100, ["Ann", "Ben", "Cy"], undefined, 20261031, [false, false, false])!;
+  return PIG_RULES.encode(playUntil(PIG_RULES, start, (game) => game.toPlay === 1 && game.turnPoints >= 12));
+}
+
+function tenThousandScene(): string {
+  const start = TEN_THOUSAND_RULES.start(10000, ["Ann", "Ben"], undefined, 20261031, [false, false])!;
+  return TEN_THOUSAND_RULES.encode(playUntil(TEN_THOUSAND_RULES, start, (game) => game.stage === "keep" && game.dice.length === 6 && game.thrown > 8));
+}
+
+function liarsScene(): string {
+  const start = LIARS_RULES.start(5, ["Ann", "Ben", "Cy"], undefined, 20261031, [false, true, true])!;
+  return LIARS_RULES.encode(playUntil(LIARS_RULES, start, (game) => game.toPlay === 0 && game.bid !== null));
+}
+
+function sayuScene(): string {
+  const start = SAYU_RULES.start(3, ["Ann", "Ben", "Cy", "Dee"], undefined, 20261031, [false, false, false, false])!;
+  return SAYU_RULES.encode(playUntil(SAYU_RULES, start, (game) => game.thrown >= 4 && game.dice.length === 3 && game.pot > 0));
 }
 
 /**
@@ -268,6 +303,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     scale: 2,
     stored: diceWarScene(),
   },
+  // Pig for three: Ben has made seventeen this turn and the table is deciding whether he should stop.
+  { kind: "pig", key: "itsutsu.pig", table: "dicetable-game", shot: "board-surface", stored: pigScene() },
+  // Ten Thousand for two: six dice in the tray, a throw that scores, waiting on what to set aside.
+  { kind: "tenThousand", key: "itsutsu.tenThousand", table: "dicetable-game", shot: "board-surface", stored: tenThousandScene() },
+  // Liar's Dice: one person and two computers, so the table opens straight on Ann's own dice, with a bid to answer.
+  { kind: "liarsDice", key: "itsutsu.liarsDice", table: "dicetable-game", shot: "board-surface", stored: liarsScene() },
+  // Sayu for four, a few throws in: three dice in the tray, each saying where its counter went.
+  { kind: "sayu", key: "itsutsu.sayu", table: "dicetable-game", shot: "board-surface", stored: sayuScene() },
   // Hearts for four, four tricks gone and three cards on the fifth: Ann to play to it, her hand under the table.
   {
     kind: "hearts",

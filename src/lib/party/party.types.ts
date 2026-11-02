@@ -26,6 +26,11 @@ import type { PachisiGame, PachisiMove } from "./pachisi/pachisi.types";
 import type { YachtGame, YachtMove } from "./yacht/yacht.types";
 import type { HitotsuGame, HitotsuMove } from "@johnmorrisdotca/hitotsu";
 import type { DiceWarGame, DiceWarMove } from "@johnmorrisdotca/korokoro";
+import type { DiceTableKind } from "./diceTable/diceTable.constants";
+import type { TenThousandGame, TenThousandMove } from "./tenThousand/tenThousand.types";
+import type { LiarsGame, LiarsMove } from "./liarsDice/liarsDice.types";
+import type { PigGame, PigMove } from "./pig/pig.types";
+import type { SayuGame, SayuMove } from "./sayu/sayu.types";
 import type { CardGameKind } from "../cardGames/cardGames.constants";
 import type { SugorokuKind } from "./sugoroku/sugoroku.constants";
 import type { GunjinGame, GunjinMove } from "./gunjin/gunjin.types";
@@ -37,7 +42,7 @@ import type { CardGamePlays } from "../cardGames/cardGameRules";
  * Hearts, Big Two, President, Go Fish, Crazy Eights), which are party games
  * too — a table round one device — with a computer in any empty seat.
  */
-export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "yacht" | "pachisi" | "hitotsu" | "diceWar" | "gunjin" | SugorokuKind | CardGameKind;
+export type PartyKind = "dotsAndBoxes" | "superghost" | "mancala" | "tenka" | "mexicanTrain" | "yacht" | "pachisi" | "hitotsu" | "diceWar" | "gunjin" | DiceTableKind | SugorokuKind | CardGameKind;
 
 /**
  * The languages a word game at the table is played in: the two Kumimoji's
@@ -133,5 +138,9 @@ export type PartyPlays = {
   pachisi: { game: PachisiGame; move: PachisiMove };
   hitotsu: { game: HitotsuGame; move: HitotsuMove };
   diceWar: { game: DiceWarGame; move: DiceWarMove };
+  pig: { game: PigGame; move: PigMove };
+  tenThousand: { game: TenThousandGame; move: TenThousandMove };
+  liarsDice: { game: LiarsGame; move: LiarsMove };
+  sayu: { game: SayuGame; move: SayuMove };
   gunjin: { game: GunjinGame; move: GunjinMove };
 } & { [K in SugorokuKind]: { game: SugorokuTable; move: SugorokuMove } } & CardGamePlays;

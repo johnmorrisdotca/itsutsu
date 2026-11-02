@@ -16,11 +16,10 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
  * throughout. A held die is ringed in vermilion and marked, and does not move.
  * A die not thrown yet is a pale empty square.
  */
-function Die({ value, at, held, rollKey, tumbles, onPress }: { value: number; at: number; held: boolean; rollKey: number; tumbles: boolean; onPress?: () => void }) {
+function Die({ value, at, held, rollKey, tumbles, onPress, ring, word, width }: { value: number; at: number; held: boolean; rollKey: number; tumbles: boolean; onPress?: () => void; ring: boolean; word: string; width: string }) {
   const say = useSpeaker();
-  const YACHT_COPY = yachtWords(say.locale);
   const picture = (
-    <span className={`relative block aspect-square w-full rounded-[18%] ${held ? "ring-[3px] ring-shu" : ""}`}>
+    <span className={`relative block aspect-square w-full rounded-[18%] ${held && ring ? "ring-[3px] ring-shu" : ""}`}>
       {/* Mounted before the first throw too, so the first roll tumbles; hidden under the empty square until then. */}
       <span className={`block ${value === 0 ? "invisible" : ""}`}>
         <PartyDie face={value} rollKey={rollKey} tumble={tumbles} tumbleMs={DICE_TUMBLE_MS} />
@@ -28,13 +27,13 @@ function Die({ value, at, held, rollKey, tumbles, onPress }: { value: number; at
       {value === 0 ? <span className="absolute inset-[4%] rounded-[18%] border-[2.5px] border-black/55 bg-[rgba(255,253,246,0.55)]" aria-hidden="true" /> : null}
     </span>
   );
-  const label = value === 0 ? say.say("party.yacht.dieNone") : held ? say.say("party.yacht.dieHeld", { value: String(value), held: YACHT_COPY.held.toLowerCase() }) : String(value);
-  const mark = <span className={`text-[0.65rem] font-semibold tracking-[0.12em] uppercase ${held ? "text-shu" : "invisible"}`}>{YACHT_COPY.held}</span>;
+  const label = value === 0 ? say.say("party.yacht.dieNone") : held ? say.say("party.yacht.dieHeld", { value: String(value), held: word.toLowerCase() }) : String(value);
+  const mark = <span className={`text-[0.65rem] font-semibold tracking-[0.12em] uppercase ${word === "" ? "invisible" : !ring ? "text-ink" : held ? "text-shu" : "invisible"}`}>{word === "" ? "\u00a0" : word}</span>;
   // ONE ELEMENT WHETHER OR NOT IT CAN BE PRESSED: a die that changed from a span to a button would be mounted afresh, and a die mounted afresh has no earlier roll to tumble from.
   const pressable = onPress !== undefined;
   return (
     <span
-      className={`relative z-10 flex w-[17%] max-w-24 flex-col items-center gap-1 ${pressable ? "cursor-pointer touch-manipulation" : ""}`}
+      className={`relative z-10 flex ${width} max-w-24 flex-col items-center gap-1 ${pressable ? "cursor-pointer touch-manipulation" : ""}`}
       data-testid="dice-die"
       data-at={at}
       data-value={value}
@@ -77,6 +76,9 @@ export function DiceTray({
   onDie,
   onTray,
   label,
+  heldWord,
+  ringsHeld = true,
+  marks,
 }: {
   dice: readonly number[];
   held: readonly boolean[];
@@ -88,6 +90,12 @@ export function DiceTray({
   onDie?: (at: number) => void;
   onTray?: () => void;
   label: string;
+  /** What a held die is marked with: "Held" unless a game's own word differs. */
+  heldWord?: string;
+  /** Whether a held die is ringed; a game that marks every die with a word of its own says no. */
+  ringsHeld?: boolean;
+  /** A word under each die, in place of the held mark (Sayu's: where its counter went). */
+  marks?: readonly string[];
 }) {
   const say = useSpeaker();
   const YACHT_COPY = yachtWords(say.locale);
@@ -99,7 +107,7 @@ export function DiceTray({
           <button type="button" className="absolute inset-0 z-0 cursor-pointer touch-manipulation" onClick={onTray} aria-label={YACHT_COPY.roll} data-testid="dice-tray-roll" />
         )}
         {dice.map((value, at) => (
-          <Die key={at} value={value} at={at} held={held[at] ?? false} rollKey={rollKey} tumbles={rolled[at] ?? false} onPress={onDie === undefined || value === 0 ? undefined : () => onDie(at)} />
+          <Die key={at} value={value} at={at} held={held[at] ?? false} rollKey={rollKey} tumbles={rolled[at] ?? false} onPress={onDie === undefined || value === 0 ? undefined : () => onDie(at)} ring={ringsHeld} word={marks?.[at] ?? heldWord ?? YACHT_COPY.held} width={dice.length > 5 ? "w-[14.5%]" : "w-[17%]"} />
         ))}
       </div>
     </BoardFrame>

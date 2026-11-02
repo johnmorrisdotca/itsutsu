@@ -3,6 +3,7 @@ import type { PartyKind } from "../../party/party.types";
 
 import { PARTY_COPY_JA_CARDS } from "./party.ja.cards.constants";
 import { PARTY_COPY_JA_CASUAL } from "./party.ja.casual.constants";
+import { PARTY_COPY_JA_DICE, PARTY_TABLE_WORDS_JA_DICE } from "./party.ja.dice.constants";
 import { PARTY_COPY_JA_GAMES } from "./party.ja.games.constants";
 import { PARTY_COPY_JA_SUGOROKU } from "./party.ja.sugoroku.constants";
 import { PARTY_TABLE_WORDS_JA_GAMES } from "./party.ja.tableWords.constants";
@@ -18,6 +19,7 @@ import type { PartyCopyJa } from "./party.ja.types";
  */
 export const PARTY_COPY_JA: Record<PartyKind | CasualKind, PartyCopyJa> = {
   ...PARTY_COPY_JA_GAMES,
+  ...PARTY_COPY_JA_DICE,
   ...PARTY_COPY_JA_SUGOROKU,
   ...PARTY_COPY_JA_CARDS,
   ...PARTY_COPY_JA_CASUAL,
@@ -26,6 +28,7 @@ export const PARTY_COPY_JA: Record<PartyKind | CasualKind, PartyCopyJa> = {
 /** What every party game's table says of itself on its rules page, in Japanese (`PARTY_TABLE_WORDS`). */
 export const PARTY_TABLE_WORDS_JA = {
   ...PARTY_TABLE_WORDS_JA_GAMES,
+  ...PARTY_TABLE_WORDS_JA_DICE,
   ...PARTY_TABLE_WORDS_JA_SUGOROKU,
   ...PARTY_TABLE_WORDS_JA_CARDS,
 };

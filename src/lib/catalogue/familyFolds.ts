@@ -31,6 +31,7 @@ export const FAMILY_FOLD_KEYS = [
   "cards",
   "table-cards",
   "tables",
+  "dice",
   "party",
   "word-games",
   "karakuri",

@@ -28,10 +28,12 @@ import { PachisiOffer } from "./pachisi/PachisiOffer";
 import { YachtCardClient, YachtTableClient } from "./yacht/yachtClient";
 import { YachtOffer } from "./yacht/YachtOffer";
 import { GunjinCardClient, GunjinOfferClient, GunjinTableClient } from "./gunjin/gunjinClient";
+import { LiarsCard, LiarsOffer, LiarsTable, PigCard, PigOffer, PigTable, SayuCard, SayuOffer, SayuTable, TenThousandCard, TenThousandOffer, TenThousandTable } from "./diceTable/diceTableClient";
 import { DiceWarCardClient, DiceWarOfferClient, DiceWarTableClient } from "./diceWar/diceWarClient";
 import { HitotsuCardClient, HitotsuOfferClient, HitotsuTableClient } from "./hitotsu/hitotsuClient";
 import { SUGOROKU_COMPONENTS } from "./sugoroku/sugorokuRows";
 import { SUGOROKU_KIND_LIST, type SugorokuKind } from "@/lib/party/sugoroku/sugoroku.constants";
+import type { DiceTableKind } from "@/lib/party/diceTable/diceTable.constants";
 
 /**
  * EACH PARTY GAME'S TABLE, one row a `PartyKind`: what its table page at
@@ -41,6 +43,19 @@ import { SUGOROKU_KIND_LIST, type SugorokuKind } from "@/lib/party/sugoroku/sugo
  * not compile until it has all four — the way `PARTY_TABLES` is the same
  * table for the pass-and-play modes of the rule variants.
  */
+/** What each plain dice game's table says first. */
+const DICE_TABLE_LEADS = { pig: "party.dice.lead.pig", tenThousand: "party.dice.lead.tenThousand", liarsDice: "party.dice.lead.liarsDice", sayu: "party.dice.lead.sayu" } as const satisfies Record<DiceTableKind, string>;
+
+/** A plain dice game's row: its lead is a phrase of its own, and the table, the button and the card are named components of `diceTableClient.tsx`. */
+function diceTable(kind: DiceTableKind, Game: ComponentType<PartyTableGameProps>, Offer: ComponentType<{ href: string }>, Card: ComponentType): PartyTable & { Card: ComponentType } {
+  return {
+    words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: speaker(locale).say(DICE_TABLE_LEADS[kind]) }),
+    Game,
+    Offer,
+    Card,
+  };
+}
+
 export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: ComponentType }> = {
   dotsAndBoxes: {
     words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: dotsWords(locale).lead }),
@@ -94,6 +109,11 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
     Offer: DiceWarOfferClient,
     Card: DiceWarCardClient,
   },
+  // The plain dice games, one table for all four (`diceTable/DiceTable.tsx`), loaded in the browser only.
+  pig: diceTable("pig", PigTable, PigOffer, PigCard),
+  tenThousand: diceTable("tenThousand", TenThousandTable, TenThousandOffer, TenThousandCard),
+  liarsDice: diceTable("liarsDice", LiarsTable, LiarsOffer, LiarsCard),
+  sayu: diceTable("sayu", SayuTable, SayuOffer, SayuCard),
   // Hidden-rank games for two (`gunjin/`), loaded in the browser only, as the card games' are: the package's engine stays out of the server's function.
   gunjin: {
     words: (locale) => ({ title: partyScreenWords(locale).title, kanji: partyScreenWords(locale).kanji, lead: gunjinWords(locale).lead }),

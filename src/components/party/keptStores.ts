@@ -17,6 +17,10 @@ const STORES: Record<string, () => Promise<Adopt>> = {
   mancala: async () => (await import("./mancalaStore")).adoptKeptMancalaGame,
   tenka: async () => (await import("./tenka/tenkaStore")).adoptKeptTenkaGame,
   mexicanTrain: async () => (await import("./trainStore")).adoptKeptTrainGame,
+  pig: async () => (await import("./diceTable/diceTableStores")).DICE_TABLE_STORES.pig.adopt,
+  tenThousand: async () => (await import("./diceTable/diceTableStores")).DICE_TABLE_STORES.tenThousand.adopt,
+  liarsDice: async () => (await import("./diceTable/diceTableStores")).DICE_TABLE_STORES.liarsDice.adopt,
+  sayu: async () => (await import("./diceTable/diceTableStores")).DICE_TABLE_STORES.sayu.adopt,
   yacht: async () => (await import("./yacht/yachtStore")).adoptKeptYachtGame,
   pachisi: async () => (await import("./pachisi/pachisiStore")).adoptKeptPachisiGame,
   // The package's engine is fetched by a browser only (`typeof window`), as Korokoro's is: a kept game is opened in the browser, and the pages' server function does not carry it.

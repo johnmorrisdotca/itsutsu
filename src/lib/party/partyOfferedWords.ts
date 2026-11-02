@@ -99,6 +99,10 @@ const OFFERED_WORDS: Record<PartyKind, (say: Speaker, spec: PartySpec) => string
       points: defaulted(say, spec, String),
       rounds: orList(say, DICE_WAR_ROUND_GOALS.map(String)),
     }),
+  pig: (say, spec) => say.say("party.rules.offerPig", { list: defaulted(say, spec, String) }),
+  tenThousand: (say, spec) => say.say("party.rules.offerTenThousand", { list: defaulted(say, spec, String) }),
+  liarsDice: (say, spec) => say.say("party.rules.offerLiarsDice", { list: defaulted(say, spec, String) }),
+  sayu: (say, spec) => say.say("party.rules.offerSayu", { list: defaulted(say, spec, String) }),
   yacht: (say) => say.say("party.rules.offerYacht"),
   pachisi: (say) => say.say("party.rules.offerPachisi"),
   hitotsu: (say, spec) =>

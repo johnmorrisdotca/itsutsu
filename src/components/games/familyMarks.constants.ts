@@ -304,6 +304,22 @@ export const FAMILY_MARKS: Record<string, Mark> = {
     ],
     ink: "M 1 4.95 L 1.5 3.4 L 2 4.95 M 2.3 4.95 L 2.8 3.4 L 3.3 4.95 M 3 0.05 L 3.5 1.6 L 4 0.05 M 1.7 0.05 L 2.2 1.6 L 2.7 0.05",
   },
+  /*
+   * DICE: five dice from a throw of Yacht, three fives held (ringed as the
+   * table rings a held die) and two left free to roll again.
+   */
+  Dice: {
+    n: 5,
+    cells: true,
+    stones: [],
+    dice: [
+      { x: 0.2, y: 0.3, face: 5, held: true },
+      { x: 1.75, y: 0.3, face: 5, held: true },
+      { x: 3.3, y: 0.3, face: 5, held: true },
+      { x: 0.95, y: 2.3, face: 2 },
+      { x: 2.55, y: 2.3, face: 6 },
+    ],
+  },
   "Party games": {
     n: 5,
     stones: [

@@ -128,9 +128,9 @@ describe("counting families over rows written before the merge", () => {
     expect(GAME_FAMILIES.find((family) => family.key === "table-cards")?.games).toContain("hitotsu");
   });
 
-  it("reads Dice as Party games, whose shelf now holds the three dice games at home", () => {
-    expect(familyKeyNow("dice")).toBe("party");
-    expect(GAME_FAMILIES.find((family) => family.key === "party")?.games).toEqual(expect.arrayContaining(["yacht", "pachisi", "diceWar"]));
+  it("keeps Dice as a family of its own again, its games at home on its own shelf", () => {
+    expect(familyKeyNow("dice")).toBe("dice");
+    expect(GAME_FAMILIES.find((family) => family.key === "dice")?.games).toEqual(expect.arrayContaining(["yacht", "pachisi", "diceWar", "pig", "tenThousand", "liarsDice", "sayu"]));
   });
 
   it("counts the races and the territory games as one family since they merged", () => {

@@ -7,6 +7,7 @@ import type { PartyBlocksState } from "@/lib/gomoku/party/partyBlocks.types";
 import { PARTY_STATUS } from "@/lib/gomoku/party/partyRace";
 import type { PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 
+import type { DiceTableBase } from "./diceTable/diceTable.types";
 import { DOTS_STATUS } from "./dotsAndBoxes/dotsAndBoxes";
 import type { DotsGame } from "./dotsAndBoxes/dotsAndBoxes.types";
 import { MANCALA_STATUS } from "./mancala/mancala";
@@ -37,6 +38,8 @@ export const resignTenka = (game: TenkaGame, seat: number) => resigning(game, se
 export const resignYacht = (game: YachtGame, seat: number) => resigning(game, seat, { phase: YACHT_PHASES.finished, winners: winnersOf(game, seat) });
 export const resignPachisi = (game: PachisiGame, seat: number) => resigning(game, seat, { phase: "finished", pending: [], winners: winnersOf(game, seat) });
 export const resignHitotsu = (game: HitotsuGame, seat: number) => resigning(game, seat, { phase: "over", toPlay: null });
+/** Pig, Ten Thousand, Liar's Dice and Sayu: one shape of table, one way of ending it. */
+export const resignDiceTable = <G extends DiceTableBase<unknown>>(game: G, seat: number): G => resigning(game as DiceTableBase<unknown>, seat, { phase: "over", winners: winnersOf(game, seat) }) as unknown as G;
 export const resignDiceWar = (game: DiceWarGame, seat: number) => resigning(game, seat, { phase: "over" });
 export const resignBlocks = (game: PartyBlocksState, seat: number) => resigning(game, seat, { status: BLOCKS_STATUS.over });
 
