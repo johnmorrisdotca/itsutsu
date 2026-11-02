@@ -25,9 +25,8 @@ export function chanceOfAtLeast(needed: number, dice: number): number {
 
 /**
  * THE COMPUTER AT LIAR'S DICE reads its own cup, how many dice everybody else
- * still has, and the bid. It never reads another cup, so a table on several
- * devices can hand it its own seat's view and nothing more (`seenByLiar`), and
- * it chooses the same move from that as from the whole game; a test holds that.
+ * still has, and the bid. It never reads another cup: it chooses the same move
+ * whatever lies under them, and a test holds that.
  */
 export function liarsComputer(game: LiarsGame): LiarsMove {
   const seat = game.toPlay;

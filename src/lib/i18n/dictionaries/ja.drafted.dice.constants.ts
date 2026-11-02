@@ -3,29 +3,22 @@ import type { DraftedPhrase } from "./ja.drafted.constants";
 
 /**
  * Japanese for the plain dice tables' phrases (Pig, Ten Thousand, Liar's Dice,
- * Sayu). Drafted on 2026-10-31 and NOT READ: each row asks instead of carrying a
+ * Sayu). Drafted on 2026-10-31, reworded on 2026-11-02, and NOT READ: each row asks instead of carrying a
  * `review`, which is how the phrase table says nobody has read a line yet.
  */
-const ASK = "Drafted 2026-10-31 with the new dice games, read by nobody yet: please read it.";
+const ASK = "Written on 2026-11-02; nobody has read it.";
 const r = (text: string, back: string): DraftedPhrase => ({ text, back, ask: ASK });
 
 export const JA_DRAFTED_DICE: Partial<Record<PhraseKey, DraftedPhrase>> = {
-  "party.rules.serverDeals": r("設定で「複数の端末」を選ぶと、全員が自分のスマホやパソコンで遊べます。バディ、リンクを開いた人、どの席にもコンピュータを座らせられます。サイコロを振るのもカードを配るのもサーバーで、各端末には、その人が見てよいものだけが送られます。", "Choose \"Several devices\" at the set-up and everybody can play on their own smartphone or computer. A buddy, a person who opens the link, and a computer in any seat. Rolling the dice and dealing the cards are done on the server, and each device is sent only what that person may see."),
   "party.rules.offerPig": r("サイコロ1個で{list}点まで", "with one die, up to {list} points"),
   "party.rules.offerTenThousand": r("サイコロ6個で{list}点まで", "with six dice, up to {list} points"),
   "party.rules.offerLiarsDice": r("1人{list}個の隠したサイコロで", "with {list} hidden dice each"),
   "party.rules.offerSayu": r("1人{list}枚のチップで", "with {list} chips each"),
-  "party.dice.lead.pig": r("ピッグを2〜8人で、1台のスマホやタブレットを囲んで、または複数の端末で遊びます。どの席にもコンピュータを座らせられます。サイコロ1個と、やめどきのゲームです。ここでは評価されません。", "Pig for two to eight, round one smartphone or tablet or on several devices. A computer can sit in any seat. A game of one die and when to stop. Nothing here is rated."),
-  "party.dice.lead.tenThousand": r("一万点を2〜8人で、1台のスマホやタブレットを囲んで、または複数の端末で遊びます。どの席にもコンピュータを座らせられます。サイコロ6個で、どこまで運を試すかのゲームです。ここでは評価されません。", "Ten Thousand for two to eight, round one smartphone or tablet or on several devices. A computer can sit in any seat. A game of six dice and how far to try your luck. Nothing here is rated."),
-  "party.dice.lead.liarsDice": r("嘘つき賽を2〜8人で、1台のスマホやタブレットを囲んで、または複数の端末で遊びます。どの席にもコンピュータを座らせられます。隠したサイコロ、全員の分への宣言、そして「嘘だ！」のゲームです。ここでは評価されません。", "Liar's Dice for two to eight, round one smartphone or tablet or on several devices. A computer can sit in any seat. A game of hidden dice, a declaration on everybody's, and \"Lie!\". Nothing here is rated."),
-  "party.dice.lead.sayu": r("左右を2〜8人で、1台のスマホやタブレットを囲んで、または複数の端末で遊びます。どの席にもコンピュータを座らせられます。サイコロを振って、チップを左へ、右へ、ポットへ回します。ここでは評価されず、チップはそのゲームの外では何の価値もありません。", "Sayu for two to eight, round one smartphone or tablet or on several devices. A computer can sit in any seat. Roll the dice and pass your chips left, right or to the pot. Nothing here is rated, and a chip has no value outside its game."),
-  "party.online.cardsHeld.one": r("{count}枚", "{count} card"),
-  "party.online.cardsHeld.other": r("{count}枚", "{count} cards"),
-  "party.online.books.one": r("{count}組", "{count} set"),
-  "party.online.books.other": r("{count}組", "{count} sets"),
+  "party.dice.lead.pig": r("ピッグを2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。サイコロ1個と、やめどきのゲームです。ここでは評価されません。", "Pig for two to eight, round one smartphone or tablet. A computer can sit in any seat. A game of one die and when to stop. Nothing here is rated."),
+  "party.dice.lead.tenThousand": r("一万点を2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。サイコロ6個で、どこまで運を試すかのゲームです。ここでは評価されません。", "Ten Thousand for two to eight, round one smartphone or tablet. A computer can sit in any seat. A game of six dice and how far to try your luck. Nothing here is rated."),
+  "party.dice.lead.liarsDice": r("嘘つき賽を2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。隠したサイコロ、全員の分への宣言、そして「嘘だ！」のゲームです。ここでは評価されません。", "Liar's Dice for two to eight, round one smartphone or tablet. A computer can sit in any seat. A game of hidden dice, a declaration on everybody's, and \"Lie!\". Nothing here is rated."),
+  "party.dice.lead.sayu": r("左右を2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。サイコロを振って、チップを左へ、右へ、ポットへ回します。ここでは評価されず、チップはそのゲームの外では何の価値もありません。", "Sayu for two to eight, round one smartphone or tablet. A computer can sit in any seat. Roll the dice and pass your chips left, right or to the pot. Nothing here is rated, and a chip has no value outside its game."),
   "party.dice.play": r("遊ぶ", "Play"),
-  "party.dice.home": r("{home}個がゴール（全4個）", "{home} home (of 4)"),
-  "party.dice.war.waiting": r("{names}が振るのを待っています。", "Waiting for {names} to roll."),
   "party.dice.playGame": r("{game}を遊ぶ", "Play {game}"),
   "party.dice.about": r("{game}について：規則と、同じ系統のゲーム", "About {game}: its rules and games of the same family"),
   "party.dice.soundOn": r("サイコロの音をオン", "Dice sound on"),
@@ -83,5 +76,5 @@ export const JA_DRAFTED_DICE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "party.dice.sayu.startWith": r("1人のチップの数", "Chips per person"),
   "party.dice.sayu.count.one": r("{count}枚", "{count} chip"),
   "party.dice.sayu.count.other": r("{count}枚", "{count} chips"),
-  "gamepages.diceNote": r("{count}。1人でも、1台の端末や複数の端末を囲む卓でも遊べ、どの席にもコンピュータを座らせられます。賭けるものはなく、ゲームで数えるものはそのゲームの中だけのものです。", "{count}. It can be played alone or by a table round one device or several, and a computer can sit in any seat. Nothing is staked, and what a game counts belongs only inside that game."),
+  "gamepages.diceNote": r("{count}。1人でも、1台の端末を囲む卓でも遊べ、どの席にもコンピュータを座らせられます。賭けるものはなく、ゲームで数えるものはそのゲームの中だけのものです。", "{count}. It can be played alone or by a table round one device, and a computer can sit in any seat. Nothing is staked, and what a game counts belongs only inside that game."),
 };

@@ -12,9 +12,7 @@ import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { PARTY_NAME_MOST, computerNumberName, seatedName } from "@/lib/party/partyNames";
 import { freshSeed } from "@/lib/puzzles/random";
 
-import { SeatChoiceSelect, WhereChoice, firstChoices, seatsFillable, useStartTable } from "../online/OnlineSetUpParts";
-import type { OnlineOffer, SeatChoice } from "../online/online.types";
-import { cardTableWords, onlineWords } from "../partyWords";
+import { cardTableWords } from "../partyWords";
 import { SeatColourButton } from "../SeatColourButton";
 import { DICE_TABLE_ROWS } from "./diceTableRows";
 
@@ -28,16 +26,15 @@ function Section({ legend, children }: { legend: string; children: ReactNode }) 
 }
 
 /**
- * THE TABLE, BEFORE THE FIRST THROW: where it is played, how many, the game's one
+ * THE TABLE, BEFORE THE FIRST THROW: how many, the game's one
  * choice, and who sits where, a person named if they like or a computer. The
  * first seat is whoever holds the device and the rest open as computers, so one
  * person can start at once. Beside it the live board for that table, with nothing
  * to press: every set-up preview on this site is the board itself.
  */
-export function DiceTableSetUp({ kind, appearance, ready, online, onStart }: { kind: DiceTableKind; appearance: Appearance; ready: { "data-ready": string }; online?: OnlineOffer; onStart: (game: unknown) => void }) {
+export function DiceTableSetUp({ kind, appearance, ready, onStart }: { kind: DiceTableKind; appearance: Appearance; ready: { "data-ready": string }; onStart: (game: unknown) => void }) {
   const say = useSpeaker();
   const CARD_TABLE_COPY = cardTableWords(say.locale);
-  const ONLINE_COPY = onlineWords(say.locale);
   const row = DICE_TABLE_ROWS[kind];
   const spec = PARTY_SPECS[kind];
   const counts = Array.from({ length: spec.mostPlayers - spec.fewestPlayers + 1 }, (_, at) => spec.fewestPlayers + at);
@@ -45,20 +42,11 @@ export function DiceTableSetUp({ kind, appearance, ready, online, onStart }: { k
   const [size, setSize] = useState<number>(spec.defaultSize);
   const [names, setNames] = useState<string[]>(() => new Array<string>(spec.mostPlayers).fill(""));
   const [computers, setComputers] = useState<boolean[]>(() => Array.from({ length: spec.mostPlayers }, (_, seat) => seat > 0));
-  const [several, setSeveral] = useState(false);
-  const [choices, setChoices] = useState<SeatChoice[]>(() => firstChoices(online, spec.mostPlayers));
-  const table = useStartTable(online);
-  const severalOffer = several ? online : undefined;
   const seated = computers.slice(0, count);
-  const nobody = severalOffer === undefined && seated.every(Boolean);
+  const nobody = seated.every(Boolean);
   const preview = row.rules.start(size, names.slice(0, count), undefined, 1, seated);
   const previewNames = names.slice(0, count).map((_, seat) => seatedName({ players: names.slice(0, count), computers: seated }, seat, say));
-  const onChoose = (seat: number, choice: SeatChoice) => setChoices((was) => was.map((one, at) => (at === seat ? choice : one)));
   const start = () => {
-    if (severalOffer !== undefined) {
-      void table.start(size, choices.slice(0, count));
-      return;
-    }
     const fresh = row.rules.start(size, names.slice(0, count), undefined, freshSeed(), seated);
     if (fresh !== null) onStart(fresh);
   };
@@ -78,7 +66,6 @@ export function DiceTableSetUp({ kind, appearance, ready, online, onStart }: { k
           if (!nobody) start();
         }}
       >
-        <WhereChoice offer={online} several={several} onChange={setSeveral} />
         <Section legend={CARD_TABLE_COPY.howMany}>
           <div className="grid grid-cols-7 gap-1.5" role="radiogroup" aria-label={CARD_TABLE_COPY.howMany}>
             {counts.map((option) => (
@@ -103,42 +90,29 @@ export function DiceTableSetUp({ kind, appearance, ready, online, onStart }: { k
             return (
               <div key={seat} className="flex items-center gap-2 text-sm" data-testid="dicetable-seat" data-seat={seat}>
                 <SeatColourButton player={seat} playing={count} />
-                {severalOffer !== undefined ? (
-                  <div className="min-w-0 flex-1">
-                    <SeatChoiceSelect offer={severalOffer} seat={seat} choices={choices} onChoose={onChoose} />
-                  </div>
-                ) : (
-                  <>
-                    <label className="min-w-0 flex-1">
-                      <span className="sr-only">{playerNumberName(say, seat + 1)}</span>
-                      <input
-                        type="text"
-                        value={name}
-                        maxLength={PARTY_NAME_MOST}
-                        placeholder={computers[seat] ? computerNumberName(say, seat + 1) : playerNumberName(say, seat + 1)}
-                        onChange={(event) => setNames((was) => was.map((one, at) => (at === seat ? event.target.value : one)))}
-                        className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
-                        data-testid="dicetable-name"
-                      />
-                    </label>
-                    <button type="button" aria-pressed={computers[seat]} onClick={() => setComputers((was) => was.map((one, at) => (at === seat ? !one : one)))} className={`min-h-11 shrink-0 rounded-lg border px-2.5 text-xs font-semibold ${computers[seat] ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`} data-testid="dicetable-computer">
-                      {CARD_TABLE_COPY.computer}
-                    </button>
-                  </>
-                )}
+                <label className="min-w-0 flex-1">
+                  <span className="sr-only">{playerNumberName(say, seat + 1)}</span>
+                  <input
+                    type="text"
+                    value={name}
+                    maxLength={PARTY_NAME_MOST}
+                    placeholder={computers[seat] ? computerNumberName(say, seat + 1) : playerNumberName(say, seat + 1)}
+                    onChange={(event) => setNames((was) => was.map((one, at) => (at === seat ? event.target.value : one)))}
+                    className="min-h-11 w-full min-w-0 rounded-lg border border-rule-strong bg-paper px-3 text-base"
+                    data-testid="dicetable-name"
+                  />
+                </label>
+                <button type="button" aria-pressed={computers[seat]} onClick={() => setComputers((was) => was.map((one, at) => (at === seat ? !one : one)))} className={`min-h-11 shrink-0 rounded-lg border px-2.5 text-xs font-semibold ${computers[seat] ? PICK_CHIP_OPEN : PICK_CHIP_SHUT}`} data-testid="dicetable-computer">
+                  {CARD_TABLE_COPY.computer}
+                </button>
               </div>
             );
           })}
         </Section>
-        <p className={`min-h-5 text-xs ${nobody ? "text-shu" : "text-muted"}`}>{nobody ? CARD_TABLE_COPY.onePerson : severalOffer === undefined ? CARD_TABLE_COPY.kept : ONLINE_COPY.severalNote}</p>
-        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} disabled={nobody || table.starting || (severalOffer !== undefined && !seatsFillable(severalOffer, count))} data-testid="dicetable-start">
-          {severalOffer === undefined ? CARD_TABLE_COPY.start : table.starting ? ONLINE_COPY.starting : ONLINE_COPY.start} →
+        <p className={`min-h-5 text-xs ${nobody ? "text-shu" : "text-muted"}`}>{nobody ? CARD_TABLE_COPY.onePerson : CARD_TABLE_COPY.kept}</p>
+        <button type="submit" className={`${BUTTON_LEAD} ${BUTTON_STRONG}`} disabled={nobody} data-testid="dicetable-start">
+          {CARD_TABLE_COPY.start} →
         </button>
-        {table.problem !== null && severalOffer !== undefined ? (
-          <p className="text-sm text-shu" role="alert" data-testid="online-start-problem">
-            {table.problem}
-          </p>
-        ) : null}
       </form>
     </div>
   );

@@ -72,7 +72,7 @@ function computer(game: PigGame): PigMove {
   if (game.turnPoints === 0) return { kind: "roll" };
   const mine = game.banked[game.toPlay]!;
   if (mine + game.turnPoints >= game.size) return { kind: "bank" };
-  const threat = Math.max(...game.banked) >= game.size - PIG_COMPUTER_STOPS_AT;
+  const threat = Math.max(...game.banked.filter((_, seat) => seat !== game.toPlay)) >= game.size - PIG_COMPUTER_STOPS_AT;
   return game.turnPoints >= PIG_COMPUTER_STOPS_AT && !threat ? { kind: "bank" } : { kind: "roll" };
 }
 

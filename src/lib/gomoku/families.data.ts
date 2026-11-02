@@ -393,7 +393,7 @@ export const GAME_FAMILIES: GameFamily[] = [
      * fold was three games with nowhere better to be, and now there is a shelf.
      * `dice` no longer leads to `party` in `FAMILY_ABSORBED`.
      *
-     * Its games are party games, played round one device or on several and never
+     * Its games are party games, played round one device and never
      * recorded, so it counts towards no award (`RECORDED_FAMILIES`), has a page of
      * its own at /games/dice, and stays off the set-up screen, which makes games
      * between two. 賽子 (saikoro) is the everyday word for a die.
@@ -403,7 +403,7 @@ export const GAME_FAMILIES: GameFamily[] = [
     blurb: "Games the dice decide: roll, hold the ones you want and score what they make, press your luck, bid on what is under everybody's cup, pass counters round the table, or race your pawns home by what they show.",
     games: ["yacht", "pig", "tenThousand", "liarsDice", "sayu", "diceWar", "pachisi"],
     notOnSetUp:
-      "A dice game is played alone or by a table of people on one device or on several, set up from the game's own page; the set-up screen makes a game between two seats.",
+      "A dice game is played alone or by a table of people round one device, set up from the game's own page; the set-up screen makes a game between two seats.",
   },
   {
     key: "party",

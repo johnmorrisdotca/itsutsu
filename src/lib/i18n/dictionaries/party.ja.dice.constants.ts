@@ -8,7 +8,8 @@ import type { PartyCopyJa } from "./party.ja.types";
  * and no `review`, and the sheet says "Question, unread". Stamp a row only when it
  * has been read.
  */
-export const DICE_TABLE_UNREAD = "Drafted 2026-10-31 with the new dice games, and read by nobody yet: please read it, and check 確定 for Bank, 宣言 for a bid, 取り分ける for Set aside and チップ for a counter.";
+/* A reader might check 確定 for Bank, 宣言 for a bid, 取り分ける for Set aside and チップ for a counter. */
+export const DICE_TABLE_UNREAD = "Written on 2026-11-02; nobody has read it.";
 
 export const PARTY_COPY_JA_DICE: Record<DiceTableKind, PartyCopyJa> = {
   pig: {

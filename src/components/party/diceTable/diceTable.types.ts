@@ -5,10 +5,9 @@ import type { Speaker } from "@/lib/i18n/i18n";
 import type { DiceTableRules } from "@/lib/party/diceTable/diceTable.types";
 
 /**
- * WHAT ONE PLAIN DICE GAME'S BOARD IS HANDED, on one device and at a table on
- * several: the game, whose dice it may show, whether the reader may move now, and
+ * WHAT ONE PLAIN DICE GAME'S BOARD IS HANDED: the game, whose dice it may show, whether the reader may move now, and
  * the hand that makes the move. The set-up, the keeping, the computer and the
- * ending are the table's (`DiceTablePlay`, or `DiceTableOnline`); this only draws
+ * ending are the table's (`DiceTablePlay`); this only draws
  * the game and turns a press into a move the rules decide.
  */
 export type DiceBoardProps<S, M> = {

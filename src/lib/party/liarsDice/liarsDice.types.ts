@@ -22,8 +22,7 @@ export type LiarsCall = {
 /**
  * A GAME OF LIAR'S DICE: `size` is how many dice each player starts with.
  * Everybody's dice are under `cups`, so a table on one device covers the screen
- * between people, and a table on several sends each seat only its own
- * (`seenByLiar`).
+ * between people.
  */
 export type LiarsGame = DiceTableBase<LiarsMove> & {
   /** Each seat's dice. A die lost is gone; a seat with none is out. */
