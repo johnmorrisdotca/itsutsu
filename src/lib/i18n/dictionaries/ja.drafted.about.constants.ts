@@ -1364,6 +1364,26 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "PuzzleMadness is a site I would like people who like the Numbers shelf here to open. It is a hobby site made by one developer, registering is free, and the contents are only puzzles. There are nearly forty kinds of Sudoku, from a giant 16×16 board that writes the numbers past nine as letters to Samurai, where five boards overlap. Besides that there are over fifty logic puzzles, such as Nonograms, Kakuro, Slitherlink, Star Battle, inequality puzzles and Towers. What there is to learn from is the leaderboards. Every puzzle's page has an all-time and a monthly board, simple enough to read at a glance, and the star beside a name shows how many puzzles that person has solved. The score is five points for each square you fill in yourself, and fifty points are taken off if you ask it to write in the candidates. So a harder puzzle is simply worth more, and the clock never costs you. This is what was read on 24 September and 2 November 2026. The site itself is the authority. A dash in the table above means a fact that could not be confirmed, so it is not listed.",
     ask: "Written on 2026-11-02; nobody has read it.",
   },
+  "about.sites.vintGames": {
+    text: "30超：チェス、ドラフツ、五目並べ、連珠、オセロなど",
+    back: "over thirty: chess, draughts, gomoku, renju, Othello and more",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "about.sites.vintPaid": {
+    text: "VIPのページあり",
+    back: "a VIP page",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "about.sites.vintRatings": {
+    text: "いくつかのゲームの上位5人（名前の横に数字）",
+    back: "a top five for several games, with a number beside each name",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "about.sites.g": {
+    text: "<out https://www.vint.ee/>Vint.ee</out>は、NewRock Solutions OÜが作っているエストニアのゲームサイトで、自らを「知的な娯楽の本拠地」と称しています。ホームページには30を超えるオンラインゲームが並び、チェス、フィッシャーランダムチェス、国際式とロシア式のドラフツ、五目並べ、連珠、オセロ、エントロピー、ラインズ・オブ・アクション、数独などがあります。いくつかのゲームには上位5人の表があり、チェスの対局数を数えるカウンターは1,828,831局でした。ゲームのほかに、掲示板、イベントカレンダー、マインドスポーツ・オリンピアードのページ、指導者向けのページ、VIPのページがあり、13の言語で使え、日本語もその1つです。アカウントは、メールアドレス、Google、Facebookのいずれかで作ります。読めたのはそのホームページだけで、2026年11月2日のことです。サイトのほかの部分は、スクリプトからの接続にチャレンジで応じるからです。始まった時期、無料で遊べるかどうか、VIPのページで何を提供しているか、会員が何人いるか、そして世界チャンピオンがその盤で打っているかどうかは、ここではわかっていないので、どれも主張しません。",
+    back: "Vint.ee is an Estonian games site made by NewRock Solutions OÜ, and it calls itself the home of intelligent entertainment. Its home page lines up over thirty online games, among them chess, Fischer random chess, international and Russian draughts, gomoku, renju, Othello, Entropy, Lines of Action and Sudoku. Several of the games have a table of the top five, and the counter of chess games played read 1,828,831. Besides the games there are a forum, an events calendar, a page for the Mind Sports Olympiad, a page for trainers and a VIP page; it can be used in thirteen languages, Japanese being one. An account is made with an email address, Google or Facebook. Only that home page could be read, on 2 November 2026, because the rest of the site answers connections from a script with a challenge. When it began, whether it is free to play, what the VIP page offers, how many members it has and whether a world champion plays on its boards are not known here, so none of them is claimed.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
 
   // The screenshots
   "about.shots.boardDesk": r(

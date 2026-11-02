@@ -127,6 +127,7 @@ const sites = (say: Speaker) => (
       [<Out key="pente" href="https://pente.org/">Pente.org</Out>, say.say("about.sites.gtSince"), say.say("about.sites.penteGames"), say.say("about.sites.lgFree"), say.say("about.sites.pentePaid"), say.say("about.sites.penteRatings")],
       [<Out key="playok" href="https://www.playok.com/">PlayOK</Out>, say.say("about.sites.playokSince"), say.say("about.sites.playokGames"), say.say("about.sites.lgFree"), say.say("about.sites.playokPaid"), say.say("about.sites.playokRatings")],
       [<Out key="pm" href="https://www.puzzlemadness.co.uk/">PuzzleMadness</Out>, "–", say.say("about.sites.pmGames"), say.say("about.sites.pmFree"), "–", say.say("about.sites.pmRatings")],
+      [<Out key="vint" href="https://www.vint.ee/">Vint.ee</Out>, "–", say.say("about.sites.vintGames"), "–", say.say("about.sites.vintPaid"), say.say("about.sites.vintRatings")],
     ]}
     caption={say.say("about.sites.caption", { site: SITE_NAME, games: String(RULE_VARIANT_LIST.length), limit: String(ACTIVE_GAME_LIMIT) })}
   />
@@ -176,6 +177,7 @@ export const sitesSection = (say: Speaker): AboutSection => ({
     rich(say, "about.sites.b"),
     rich(say, "about.sites.c"),
     rich(say, "about.sites.f"),
+    rich(say, "about.sites.g"),
     /*
       The one invitation on this page, and every clause is load-bearing
       (board: say-that-we-will-bring-your-record-over). It is done BY HAND,
