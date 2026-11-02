@@ -10,6 +10,11 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.558.4 — 2026-11-02 22:23 UTC
+- The kana word games no longer take words that are not for a child, as answers or as guesses
+- The Games page's List and Cards tabs load lighter
+- The word games' tiles in dark mode are easier to tell apart for readers who see colour differently
+
 ## 0.558.3 — 2026-11-02 20:32 UTC
 - A level's chips on Tobiishi, Meikyuu and Tsunagi no longer move the set-up screen when another level is chosen, and on a desk a card table's hand and Kumimoji's tiles sit where they did
 
