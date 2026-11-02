@@ -27,7 +27,7 @@ export function LocalPartyCard() {
   return (
     <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="local-party">
       <GameThumb variant="kumimoji" size="small" />
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
           <Paired en={MY_GAMES_COPY.localParty.label} kanji={MY_GAMES_COPY.localParty.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
         </span>

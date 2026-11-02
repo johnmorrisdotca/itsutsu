@@ -42,7 +42,7 @@ function CasualCard({ kind, going, won, next }: { kind: CasualKind; going: numbe
   return (
     <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="casual-card" data-kind={kind}>
       <GameThumb variant={kind} size="small" />
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{CASUAL_COPY.card}</span>
         <span className="text-sm font-medium">
           <GameName variant={kind} />

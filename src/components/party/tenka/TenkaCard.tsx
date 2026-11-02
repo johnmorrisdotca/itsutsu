@@ -31,7 +31,7 @@ export function TenkaCard() {
   return (
     <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="party-game" data-variant={variant}>
       <GameThumb variant={variant} size="small" />
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
         <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_COPY.card}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
           <GameName variant={variant} /> · {say.count("count.player", game.players.length)} · {tenkaRoundLine(say, game.round, game.rounds, TENKA_WORLD_ROUNDS)} ·
