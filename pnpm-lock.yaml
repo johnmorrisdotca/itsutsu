@@ -35,8 +35,8 @@ importers:
         specifier: 0.5.0
         version: 0.5.0
       '@johnmorrisdotca/jarajara':
-        specifier: 1.6.1
-        version: 1.6.1
+        specifier: 1.8.0
+        version: 1.8.0
       '@johnmorrisdotca/jirai':
         specifier: 0.4.1
         version: 0.4.1(react@19.2.8)
@@ -44,8 +44,8 @@ importers:
         specifier: 0.1.1
         version: 0.1.1
       '@johnmorrisdotca/kazu':
-        specifier: 2.0.0
-        version: 2.0.0
+        specifier: 2.2.0
+        version: 2.2.0
       '@johnmorrisdotca/korokoro':
         specifier: 1.15.1
         version: 1.15.1(react@19.2.8)
@@ -53,8 +53,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       '@johnmorrisdotca/kumimoji':
-        specifier: 1.2.1
-        version: 1.2.1(react@19.2.8)
+        specifier: 1.4.0
+        version: 1.4.0(react@19.2.8)
       '@johnmorrisdotca/kuni':
         specifier: 1.4.0
         version: 1.4.0
@@ -489,8 +489,8 @@ packages:
     resolution: {integrity: sha512-OUQzyu66pTZOOp2lqTY1WZ2FFz1ErwTnb6DsSdVjCpgk+qkNEXQlSubeMALYStuI5l5HzMufuZcsfLIfGdOl6A==}
     engines: {node: '>=22'}
 
-  '@johnmorrisdotca/jarajara@1.6.1':
-    resolution: {integrity: sha512-WFS/jxjQwClF8pGnyvqrdodsRwPe1dmM+2xqbI+UDgegCCA1k5RM9XEiJ4HInlig2UOrVeYAfMW1ndltbyma4w==}
+  '@johnmorrisdotca/jarajara@1.8.0':
+    resolution: {integrity: sha512-BNwYs3ub1kje7ZWNm7NuIPwDNQ8v2Y7PRkkYRrgMUZhVRVFpTVsxpT1xj7jHT7HmdASKKrkt/biVJwohkMAUqw==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -507,8 +507,8 @@ packages:
     resolution: {integrity: sha512-YBuHfoTBfXti2zafjBFWNJ0FsWHhfxLheFBAqkfKowxxbnpiGtE3fScZYqyqOaTMBERVnVfpoa0VR+TCHd8OhQ==}
     engines: {node: '>=22'}
 
-  '@johnmorrisdotca/kazu@2.0.0':
-    resolution: {integrity: sha512-zjHDbWZ8kA4H7y2tDWQJRLXsC0/Qw+x0IedipKwhT/gATU9ZihKw8Z9TEdkMWgEQQ+K+uRHL9vrQGdLoWqkEQg==}
+  '@johnmorrisdotca/kazu@2.2.0':
+    resolution: {integrity: sha512-mNA/diMavmMoUWcNIJNPkwFJNwWY22IUUGyuCWAxT269EHNS/urfEpNVkcPFkJuH0nyY2eAVYO8vxdQdBn6IPg==}
     engines: {node: '>=22'}
 
   '@johnmorrisdotca/korokoro@1.15.1':
@@ -529,8 +529,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@johnmorrisdotca/kumimoji@1.2.1':
-    resolution: {integrity: sha512-osVu+z4eMnJ+PMzrBa6YafLBzX32kC5tVquumLojm/VwCfI+qZeTJz1WYPrHDHSATVrujzTTBWyQrj14xjzmlA==}
+  '@johnmorrisdotca/kumimoji@1.4.0':
+    resolution: {integrity: sha512-QSNW/WqO7TKzW2szWn1rW7vHbVtEzCoflg7280nJTWucgb8NImcz+aea9LNAzKdXpInqqzCQu4aHBNXjkpL2Fg==}
     engines: {node: '>=22'}
     peerDependencies:
       react: '>=18'
@@ -3227,7 +3227,7 @@ snapshots:
 
   '@johnmorrisdotca/houseki@0.5.0': {}
 
-  '@johnmorrisdotca/jarajara@1.6.1': {}
+  '@johnmorrisdotca/jarajara@1.8.0': {}
 
   '@johnmorrisdotca/jirai@0.4.1(react@19.2.8)':
     optionalDependencies:
@@ -3235,7 +3235,7 @@ snapshots:
 
   '@johnmorrisdotca/karakuri@0.1.1': {}
 
-  '@johnmorrisdotca/kazu@2.0.0': {}
+  '@johnmorrisdotca/kazu@2.2.0': {}
 
   '@johnmorrisdotca/korokoro@1.15.1(react@19.2.8)':
     optionalDependencies:
@@ -3243,7 +3243,7 @@ snapshots:
 
   '@johnmorrisdotca/kotoba@1.4.0': {}
 
-  '@johnmorrisdotca/kumimoji@1.2.1(react@19.2.8)':
+  '@johnmorrisdotca/kumimoji@1.4.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 

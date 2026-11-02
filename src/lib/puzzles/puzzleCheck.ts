@@ -4,6 +4,7 @@ import { checkSolitaire, checkSolitaireGivenUp } from "./solitaire/check";
 import { checkFreeCell, checkFreeCellGivenUp } from "./freecell/check";
 import { checkSpider, checkSpiderGivenUp } from "./spider/check";
 import { checkAwase } from "@johnmorrisdotca/jarajara/awase";
+import { awaseVerdict } from "./packageRefusals";
 import { checkCube, checkCubeGivenUp } from "./cube/check";
 import { checkSuido } from "./suido/check";
 import { checkMeikyuu } from "./meikyuu/check";
@@ -91,7 +92,7 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
     case "spider":
       return checkSpider(size, givens, answer);
     case "mahjong":
-      return checkAwase(size, givens, answer);
+      return awaseVerdict(checkAwase(size, givens, answer));
     case "cube":
       // The turns, turned from the scramble: every face one colour at the end.
       return checkCube(size, givens, answer);

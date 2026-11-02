@@ -6,7 +6,7 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 6130. Drafted and unread: 0. Read by the reviewer agent: 6130.
+Phrases: 6163. Drafted and unread: 0. Read by the reviewer agent: 6163.
 Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 125
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
@@ -153,7 +153,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Where the account has an address, the operator writes to it to say why. To ask about it, write to {contact}. | **アカウントにメールアドレスがある場合、運営者はそのアドレスに理由を書いて送ります。問い合わせは{contact}までお願いします。** | If the account has an email address, the operator writes the reason and sends it to that address. For enquiries, please contact {contact}. | Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 | — — — | What we ask of everybody here, and what the site does in return. | **ここをご利用のすべての方にお願いすることと、サイトがその代わりに行うことです。** | What we ask of everyone who uses this place, and what the site does in return. | Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 
-## 2. Written by a machine — please check these (5737)
+## 2. Written by a machine — please check these (5767)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -1871,6 +1871,10 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | the answer is not whole guesses | **答えが、推測の形になっていません** | the answer is not in the form of guesses | Agent 2026-11-02 |  |
 | — — — | the answer is not whole guesses in hiragana | **答えが、ひらがなで書かれた推測の形になっていません** | the answer is not in the form of guesses written in hiragana | Agent 2026-11-02 |  |
 | — — — | the answer does not solve the puzzle: {reason} | **その答えでは、パズルが解けていません：{reason}** | the answer does not solve the puzzle: {reason} | Agent 2026-11-02 |  |
+| — — — | the answer is not a list of moves | **答えが、手の並びになっていません** | the answer is not a sequence of moves | Agent 2026-11-02 |  |
+| — — — | the givens are not a deal of that layout | **最初から出ている部分が、その配置の配牌になっていません** | the part shown from the start is not a deal for that layout | Agent 2026-11-02 |  |
+| — — — | a move the rules do not allow | **ルールで認められていない手があります** | there is a move the rules do not allow | Agent 2026-11-02 |  |
+| — — — | tiles are left on the layout | **配置に、牌が残っています** | tiles are left on the layout | Agent 2026-11-02 |  |
 | — — — | a word was not guessed | **当てられていない言葉があります** | there is a word that was not guessed | Agent 2026-11-02 |  |
 | — — — | the bridge at row {row}, column {col} does not reach an island | **{row}行{col}列の橋が、島につながっていません** | the bridge at row {row}, column {col} is not connected to an island | Agent 2026-11-02 |  |
 | — — — | a {kind} cannot run out of guesses | **{kind}は、推測の回数がなくなることはありません** | {kind} cannot run out of guesses | Agent 2026-11-02 |  |
@@ -1939,6 +1943,30 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | the answer has a square outside the shape | **答えに形の外のマスがあります** | the answer has a square outside the shape | Agent 2026-11-02 |  |
 | — — — | there are safe squares still covered | **安全なマスがまだ閉じたままです** | a safe square is still closed | Agent 2026-11-02 |  |
 | — — — | the kana word list is not loaded | **仮名の言葉の一覧が読み込まれていません** | the list of words in kana is not loaded | Agent 2026-11-02 |  |
+| — — — | the answer is not a grid | **答えがマス目になっていません** | the answer is not a grid | Agent 2026-11-02 |  |
+| — — — | box {n} repeats a number | **{n}番目のブロックに、同じ数字が2回以上入っています** | block {n} has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | cage {n} repeats a number | **{n}番目のケージに、同じ数字が2回以上入っています** | cage {n} has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | cage {n} does not add to {sum} | **{n}番目のケージの合計が{sum}になっていません** | the total of cage {n} is not {sum} | Agent 2026-11-02 |  |
+| — — — | the {side} clue {clue} sees {seen} | **{side}の手がかり{clue}に対して、見えるビルの数が{seen}になっています** | for the {side} clue {clue}, the number of buildings that can be seen is {seen} | Agent 2026-11-02 |  |
+| — — — | column {n} repeats a number | **{n}列目に、同じ数字が2回以上入っています** | column {n} has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | a diagonal repeats a number | **対角線に、同じ数字が2回以上入っています** | a diagonal has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | a given was changed | **最初から出ている数字が変えられています** | a number shown from the start was changed | Agent 2026-11-02 |  |
+| — — — | the givens are not a grid with cages | **最初から出ている部分が、ケージのあるマス目になっていません** | the part shown from the start is not a grid with cages | Agent 2026-11-02 |  |
+| — — — | the givens are not a square with clues | **最初から出ている部分が、手がかりのある正方形になっていません** | the part shown from the start is not a square with clues | Agent 2026-11-02 |  |
+| — — — | the givens are not a grid | **最初から出ている部分が、マス目になっていません** | the part shown from the start is not a grid | Agent 2026-11-02 |  |
+| — — — | the givens are not a grid with marks | **最初から出ている部分が、不等号のあるマス目になっていません** | the part shown from the start is not a grid with inequality signs | Agent 2026-11-02 |  |
+| — — — | the givens are not a grid with regions | **最初から出ている部分が、領域のあるマス目になっていません** | the part shown from the start is not a grid with regions | Agent 2026-11-02 |  |
+| — — — | a mark is not true | **不等号と合っていないところがあります** | there is a place that does not agree with an inequality sign | Agent 2026-11-02 |  |
+| — — — | region {n} repeats a number | **{n}番目の領域に、同じ数字が2回以上入っています** | region {n} has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | the regions do not divide the grid | **領域がマス目をきちんと分けていません** | the regions do not divide the grid properly | Agent 2026-11-02 |  |
+| — — — | row {n} repeats a number | **{n}行目に、同じ数字が2回以上入っています** | row {n} has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | the bag exceeds the tile set | **袋の中身が、タイルのセットに入っている数を超えています** | what is in the bag goes beyond the number in the tile set | Agent 2026-11-02 |  |
+| — — — | the givens are not a bag of tiles | **最初から出ている部分が、タイルの袋になっていません** | the part shown from the start is not a bag of tiles | Agent 2026-11-02 |  |
+| — — — | the grid is not finished | **マス目がまだ完成していません** | the grid is not finished yet | Agent 2026-11-02 |  |
+| — — — | the grid does not use exactly the tiles of the bag | **マス目に使われているタイルが、袋のタイルと一致していません** | the tiles used in the grid do not match the tiles of the bag | Agent 2026-11-02 |  |
+| — — — | no Kumimoji with a hand of {size} | **手札が{size}枚の組文字はありません** | there is no Kumimoji with a hand of {size} tiles | Agent 2026-11-02 |  |
+| — — — | the tiles are not all joined | **つながっていないタイルがあります** | there are tiles that are not joined | Agent 2026-11-02 |  |
+| — — — | the bag has the wrong number of wild tiles | **袋の中のワイルドタイルの数が正しくありません** | the number of wild tiles in the bag is not right | Agent 2026-11-02 |  |
 | — — — | Guesses go on after the country was found. | **国を当てたあとも予想が続いています。** | Guesses continue after the country was guessed. | Agent 2026-10-30 |  |
 | — — — | There are guesses left. | **まだ予想が残っています。** | There are still guesses left. | Agent 2026-10-30 |  |
 | — — — | The country was not guessed. | **国が当てられていません。** | The country has not been guessed. | Agent 2026-10-30 |  |
@@ -2004,6 +2032,10 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | the givens are not a Shikaku board | **最初から出ている部分が、「四角」の盤になっていません** | the part shown from the start is not a board of Shikaku | Agent 2026-11-02 |  |
 | — — — | a rectangle does not hold exactly one number, or its area | **数字を1つだけ含んでいないか、数字と面積が合っていない長方形があります** | there is a rectangle that does not hold exactly one number, or whose area does not match it | Agent 2026-11-02 |  |
 | — — — | some cells are in no rectangle | **どの長方形にも入っていないマスがあります** | there are cells that are in no rectangle | Agent 2026-11-02 |  |
+| — — — | bottom | **下** | bottom | Agent 2026-11-02 |  |
+| — — — | left | **左** | left | Agent 2026-11-02; Agent 2026-10-06 |  |
+| — — — | right | **右** | right | Agent 2026-11-02; Agent 2026-10-06 |  |
+| — — — | top | **上** | top | Agent 2026-11-02 |  |
 | — — — | the sitting is over | **この回は終わっています** | this sitting is over | Agent 2026-11-02 |  |
 | — — — | Solitaire turns one card or three | **ソリティアは、1枚めくりか3枚めくりです** | Solitaire turns one card or three | Agent 2026-11-02 |  |
 | — — — | Spider is played with {suits} suits | **スパイダーのスートの数は、{suits}のどれかです** | the number of suits in Spider is one of {suits} | Agent 2026-11-02 |  |
@@ -4554,8 +4586,6 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | typing across, {way} on the screen | **横に入力中、画面では{way}向き** | typing across, which is the {way} direction on the screen | Agent 2026-10-06 |  |
 | — — — | typing down, {way} on the screen | **縦に入力中、画面では{way}向き** | typing down, which is the {way} direction on the screen | Agent 2026-10-06 |  |
 | — — — | down | **下** | down | Agent 2026-10-06 |  |
-| — — — | left | **左** | left | Agent 2026-10-06 |  |
-| — — — | right | **右** | right | Agent 2026-10-06 |  |
 | — — — | up | **上** | up | Agent 2026-10-06 |  |
 | — — — | Wild, {glyph} | **ワイルド、{glyph}** | Wild, {glyph} | Agent 2026-10-06 |  |
 | — — — | Wild, unassigned | **ワイルド、未設定** | Wild, unassigned | Agent 2026-10-06 |  |

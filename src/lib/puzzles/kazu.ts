@@ -13,6 +13,7 @@ import {
 } from "@johnmorrisdotca/kazu";
 
 import { ordinaryLevel } from "./ordinaryLevel";
+import { kazuVerdict } from "./packageRefusals";
 import type { Puzzle, PuzzleCheck, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 
 /**
@@ -57,9 +58,9 @@ export const generateSumCages = (size: number, level: PuzzleLevel, seed: number)
 export const generateMoreOrLess = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("moreOrLess", kazuMoreOrLess(size, ordinaryLevel(level), seed));
 export const generateTowers = (size: number, level: PuzzleLevel, seed: number): Puzzle => asPuzzle("towers", kazuTowers(size, ordinaryLevel(level), seed));
 
-/** Whether an answer solves one of the six: Kazu's check, O(cells), the one the server also runs. The reasons are Kazu's words, which are the ones the site has always said. */
+/** Whether an answer solves one of the six: Kazu's check, O(cells), the one the server also runs. A refusal is said as the site's phrase for Kazu's code (`packageRefusals.ts`), in the reader's language. */
 export function checkNumbers(kind: NumberKind, size: number, givens: string, answer: string): PuzzleCheck {
-  return checkKazu(KAZU_KIND_OF[kind], size, givens, answer);
+  return kazuVerdict(checkKazu(KAZU_KIND_OF[kind], size, givens, answer));
 }
 
 /**
