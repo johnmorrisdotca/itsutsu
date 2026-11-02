@@ -253,7 +253,7 @@ function PartRows({
  * to the stone, bold, in the letter's colour; down for the wrong size, up for
  * the wrong mark, both side by side for both.
  */
-function ArrowMark({ arrow }: { arrow: Exclude<CellArrow, ""> }) {
+export function ArrowMark({ arrow }: { arrow: Exclude<CellArrow, ""> }) {
   const ways = arrow === "↓↑" ? (["down", "up"] as const) : arrow === "↓" ? (["down"] as const) : (["up"] as const);
   return (
     <span className="absolute right-[4%] bottom-[4%] flex h-[38%] gap-[1px]" aria-hidden="true" data-testid="word-arrow">

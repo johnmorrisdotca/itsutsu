@@ -9,6 +9,9 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
 
+/** The Japanese expert's pass over the colour guide and the kana-row words, 2026-11-02. */
+const AGENT_READ_2026_11_02: Review = { by: "agent", on: "2026-11-02" };
+
 /** The reviewer agent's pass over Hachinosu's and Kuniate's phrases, 2026-10-30. */
 const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
@@ -383,21 +386,6 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "It was still hiding among {count} words, one of them",
     review: AGENT_READ,
   },
-  "pword.out.tail": {
-    text: "でした。",
-    back: ".",
-    review: AGENT_READ,
-  },
-  "pword.out.caughtHead": {
-    text: "{rows}行中{n}行めで引っかかりました：",
-    back: "Caught on row {n} of {rows}: ",
-    review: AGENT_READ,
-  },
-  "pword.out.caughtTail": {
-    text: "が、その単語でした。",
-    back: " was the word.",
-    review: AGENT_READ,
-  },
   "pword.out.caughtShort": {
     text: "{n}行めで引っかかった",
     back: "Caught on row {n}",
@@ -584,9 +572,9 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pword.key.column": {
-    text: "この列にある",
-    back: "its column is here",
-    review: AGENT_READ,
+    text: "この行にある",
+    back: "its row of the chart is here",
+    review: AGENT_READ_2026_11_02,
   },
   "pword.key.notTried": {
     text: "まだ試していない",
@@ -639,9 +627,9 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pword.score.columns": {
-    text: "列",
-    back: "Columns",
-    review: AGENT_READ,
+    text: "同じ行",
+    back: "Same row",
+    review: AGENT_READ_2026_11_02,
   },
   "pword.score.theWord": {
     text: "単語",
@@ -999,9 +987,9 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pword.cell.kin": {
-    text: "同じ列の別のかなが単語にある",
-    back: "the word has another kana from the same column",
-    review: AGENT_READ,
+    text: "同じ行の別のかなが単語にある",
+    back: "the word has another kana from the same row",
+    review: AGENT_READ_2026_11_02,
   },
   "pword.cell.miss": {
     text: "単語にない",
@@ -1047,5 +1035,215 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "どちらの単語にも不要",
     back: "not needed by either word",
     review: AGENT_READ,
+  },
+  "pword.out.kind": {
+    text: "よくがんばりました。これで、この単語を知ることができました。",
+    back: "You did your best. Now you have come to know this word.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.open": {
+    text: "色の見かた",
+    back: "How to read the colours",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.openLong": {
+    text: "色と矢印の見かた",
+    back: "How to read the colours and arrows",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.title": {
+    text: "色と矢印の意味",
+    back: "What the colours and arrows mean",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.close": {
+    text: "閉じる",
+    back: "Close",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.gotIt": {
+    text: "わかった",
+    back: "Got it",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.board": {
+    text: "ボードの上で",
+    back: "On the board",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.boardLetters": {
+    text: "予想するたびに、文字ごとに色がつきます。色を見ると、その文字がかくれた単語にどう合っているかがわかります。",
+    back: "Every time you guess, each letter gets a colour. From the colour you can tell how that letter fits the hidden word.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.boardKana": {
+    text: "予想するたびに、かなごとに色がつきます。色を見ると、そのかながかくれた単語にどう合っているかがわかります。",
+    back: "Every time you guess, each kana gets a colour. From the colour you can tell how that kana fits the hidden word.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.greenName": {
+    text: "緑色",
+    back: "Green",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.greenLetter": {
+    text: "文字が合っていて、場所も合っています。",
+    back: "The letter is right, and the place is right too.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.greenKana": {
+    text: "かなが合っていて、場所も合っています。",
+    back: "The kana is right, and the place is right too.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.orangeName": {
+    text: "オレンジ色",
+    back: "Orange",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.orangeLetter": {
+    text: "この文字は単語にありますが、場所がちがいます。",
+    back: "The word has this letter, but the place is different.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.orangeKana": {
+    text: "このかなは単語にありますが、場所がちがいます。",
+    back: "The word has this kana, but the place is different.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.yellowName": {
+    text: "黄色",
+    back: "Yellow",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.yellowKana": {
+    text: "このかなではありませんが、同じ行のかなが、ここに入ります。五十音表で、か・き・く・け・こは「か行」です。「か」を入れて、単語のそこが「き」なら、どちらも「か行」なので黄色です。",
+    back: "It is not this kana, but a kana from the same row goes here. In the fifty-sound chart, か, き, く, け, こ are the 「か row」. If you put in か and the word has き there, both are in the か row, so it is yellow.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.blackName": {
+    text: "黒色",
+    back: "Black",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.blackLetter": {
+    text: "この文字は単語にまったくありません。",
+    back: "The word does not have this letter at all.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.blackKana": {
+    text: "このかなは単語になく、同じ行のかなもここには入りません。",
+    back: "The word does not have this kana, and no kana from the same row goes here either.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.arrows": {
+    text: "矢印",
+    back: "Arrows",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.arrowsLead": {
+    text: "緑色やオレンジ色のかなについた小さな矢印は、かなは合っているけれど、単語のかなとは少しちがう、という意味です。矢印が消えるまでは、見つかったことにはなりません。",
+    back: "A small arrow on a green or orange kana means that the kana is right, but is a little different from the word's kana. Until the arrow is gone, it does not count as found.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.arrowDownName": {
+    text: "下向きの矢印",
+    back: "Downward arrow",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.arrowDown": {
+    text: "大きさがちがいます。たとえば、大きい「つ」と小さい「っ」です。「小」キーで大きさをかえられます。",
+    back: "The size is different. For example, a big つ and a small っ. The 「小」 key changes the size.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.arrowUpName": {
+    text: "上向きの矢印",
+    back: "Upward arrow",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.arrowUp": {
+    text: "点や丸（濁点・半濁点）がちがいます。たとえば、「は」「ば」「ぱ」です。「゛゜」キーで点や丸をかえられます。",
+    back: "The dots or circles (dakuten, handakuten) are different. For example, 「は」「ば」「ぱ」. The 「゛゜」 key changes the dots or circles.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.arrowBothName": {
+    text: "両方の矢印",
+    back: "Both arrows",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.arrowBoth": {
+    text: "大きさも、点や丸も、どちらもちがいます。",
+    back: "The size, and the dots or circles, are both different.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyboard": {
+    text: "キーボードの上で",
+    back: "On the keyboard",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyboardLead": {
+    text: "それぞれのキーには、これまでのすべての予想から、その文字についていちばんよかった結果が出ます。",
+    back: "On each key appears the best result for that letter from all your guesses so far.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyGreenName": {
+    text: "緑色のキー",
+    back: "Green key",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyGreen": {
+    text: "予想で、正しい場所に入れたことがあります。",
+    back: "In a guess, you have put it in the right place.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyOrangeName": {
+    text: "オレンジ色のキー",
+    back: "Orange key",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyOrange": {
+    text: "単語にありますが、場所はまだ見つかっていません。",
+    back: "It is in the word, but its place has not been found yet.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyYellowName": {
+    text: "黄色のキー",
+    back: "Yellow key",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyYellow": {
+    text: "この行のかなが単語にありますが、このかなではありません。",
+    back: "A kana from this row is in the word, but it is not this kana.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyBlackName": {
+    text: "黒色のキー",
+    back: "Black key",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyBlack": {
+    text: "単語にないので、使わなくて大丈夫です。",
+    back: "It is not in the word, so you do not need to use it.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyWhiteName": {
+    text: "白いキー",
+    back: "White key",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyWhite": {
+    text: "まだためしていません。",
+    back: "You have not tried it yet.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyRingName": {
+    text: "輪と数字",
+    back: "Ring and number",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.keyRing": {
+    text: "キーのまわりの輪や小さな数字は、いま打っている単語のことです。その文字が今の行に入っていて、数字は何回入っているかを表します。",
+    back: "A ring around a key or a small number is about the word you are typing now. It means that letter is in the current row, and the number shows how many times it is in.",
+    review: AGENT_READ_2026_11_02,
   },
 };

@@ -6,7 +6,7 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 6090. Drafted and unread: 12. Read by the reviewer agent: 6078.
+Phrases: 6129. Drafted and unread: 12. Read by the reviewer agent: 6117.
 Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 136
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
@@ -164,7 +164,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Where the account has an address, the operator writes to it to say why. To ask about it, write to {contact}. | **アカウントにメールアドレスがある場合、運営者はそのアドレスに理由を書いて送ります。問い合わせは{contact}までお願いします。** | If the account has an email address, the operator writes the reason and sends it to that address. For enquiries, please contact {contact}. | Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 | — — — | What we ask of everybody here, and what the site does in return. | **ここをご利用のすべての方にお願いすることと、サイトがその代わりに行うことです。** | What we ask of everyone who uses this place, and what the site does in return. | Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 
-## 2. Written by a machine — please check these (5688)
+## 2. Written by a machine — please check these (5725)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -1809,7 +1809,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | since {when} | **{when}から** | since {when} | Agent 2026-10-06 |  |
 | — — — | Our beta testers | **ベータ版の協力者** | Beta-version collaborators | Agent 2026-10-06 |  |
 | — — — | Thank you | **感謝** | Thanks | Agent 2026-10-06 |  |
-| — — — | Close | **閉じる** | Close | Agent 2026-10-06 |  |
+| — — — | Close | **閉じる** | Close | Agent 2026-10-06; Agent 2026-11-02 |  |
 | — — — | Close, and bring back the rest of the page (Esc) | **閉じて、ページのほかの部分を戻します（Esc）** | Close, and bring back the rest of the page (Esc) | Agent 2026-10-06 |  |
 | — — — | Just the board | **盤だけ表示** | Just the board | Agent 2026-10-06 |  |
 | — — — | Read this page as the board and the moves alone | **このページを、盤と棋譜だけで表示します** | Show this page as the board and the moves alone | Agent 2026-10-06 |  |
@@ -4970,7 +4970,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Size | **サイズ** | Size | Agent 2026-10-06 |  |
 | — — — | Solid | **立体** | Solid | Agent 2026-10-06 |  |
 | — — — | Pieces | **駒** | Pieces | Agent 2026-10-06 |  |
-| — — — | Arrows | **矢印** | Arrows | Agent 2026-10-06 |  |
+| — — — | Arrows | **矢印** | Arrows | Agent 2026-10-06; Agent 2026-11-02 |  |
 | — — — | Move the view down | **表示を下へ動かす** | Move the view down | Agent 2026-10-06 |  |
 | — — — | Hide the arrows | **矢印をかくす** | Hide the arrows | Agent 2026-10-06 |  |
 | — — — | Move the view left | **表示を左へ動かす** | Move the view left | Agent 2026-10-06 |  |
@@ -5479,7 +5479,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | chosen | **選択中** | chosen | Agent 2026-10-06 |  |
 | — — — | given free | **無料で入っている** | in for free | Agent 2026-10-06 |  |
 | — — — | in its place | **合っている場所** | in the right place | Agent 2026-10-06 |  |
-| — — — | the word has another kana of its column here | **同じ列の別のかなが単語にある** | the word has another kana from the same column | Agent 2026-10-06 |  |
+| — — — | the word has another kana of its column here | **同じ行の別のかなが単語にある** | the word has another kana from the same row | Agent 2026-11-02 |  |
 | — — — | letter {n} | **{n}文字目** | letter {n} | Agent 2026-10-06 |  |
 | — — — | not in the word | **単語にない** | not in the word | Agent 2026-10-06 |  |
 | — — — | in the word elsewhere | **単語の別の場所にある** | in the word elsewhere | Agent 2026-10-06 |  |
@@ -5548,6 +5548,45 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | any of the four words | **4つの単語のどれにも** | any of the four words | Agent 2026-10-06 |  |
 | — — — | the word | **単語に** | the word | Agent 2026-10-06 |  |
 | — — — | either word | **どちらの単語にも** | either word | Agent 2026-10-06 |  |
+| — — — | The size and the mark are both wrong. | **大きさも、点や丸も、どちらもちがいます。** | The size, and the dots or circles, are both different. | Agent 2026-11-02 |  |
+| — — — | Both arrows | **両方の矢印** | Both arrows | Agent 2026-11-02 |  |
+| — — — | The size is wrong: big つ or small っ. The 小 key changes the size. | **大きさがちがいます。たとえば、大きい「つ」と小さい「っ」です。「小」キーで大きさをかえられます。** | The size is different. For example, a big つ and a small っ. The 「小」 key changes the size. | Agent 2026-11-02 |  |
+| — — — | Arrow down | **下向きの矢印** | Downward arrow | Agent 2026-11-02 |  |
+| — — — | A small arrow on a green or orange kana means the kana is right, but it is not quite the one the word has. It is not found until the arrow is gone. | **緑色やオレンジ色のかなについた小さな矢印は、かなは合っているけれど、単語のかなとは少しちがう、という意味です。矢印が消えるまでは、見つかったことにはなりません。** | A small arrow on a green or orange kana means that the kana is right, but is a little different from the word's kana. Until the arrow is gone, it does not count as found. | Agent 2026-11-02 |  |
+| — — — | The mark is wrong: は, ば or ぱ. The ゛゜ key changes the mark. | **点や丸（濁点・半濁点）がちがいます。たとえば、「は」「ば」「ぱ」です。「゛゜」キーで点や丸をかえられます。** | The dots or circles (dakuten, handakuten) are different. For example, 「は」「ば」「ぱ」. The 「゛゜」 key changes the dots or circles. | Agent 2026-11-02 |  |
+| — — — | Arrow up | **上向きの矢印** | Upward arrow | Agent 2026-11-02 |  |
+| — — — | The word does not have this kana, and nothing from its column belongs here. | **このかなは単語になく、同じ行のかなもここには入りません。** | The word does not have this kana, and no kana from the same row goes here either. | Agent 2026-11-02 |  |
+| — — — | The word does not have this letter at all. | **この文字は単語にまったくありません。** | The word does not have this letter at all. | Agent 2026-11-02 |  |
+| — — — | Black | **黒色** | Black | Agent 2026-11-02 |  |
+| — — — | On the board | **ボードの上で** | On the board | Agent 2026-11-02 |  |
+| — — — | Every guess puts a colour on each kana. The colour tells you how that kana fits the hidden word. | **予想するたびに、かなごとに色がつきます。色を見ると、そのかながかくれた単語にどう合っているかがわかります。** | Every time you guess, each kana gets a colour. From the colour you can tell how that kana fits the hidden word. | Agent 2026-11-02 |  |
+| — — — | Every guess puts a colour on each letter. The colour tells you how that letter fits the hidden word. | **予想するたびに、文字ごとに色がつきます。色を見ると、その文字がかくれた単語にどう合っているかがわかります。** | Every time you guess, each letter gets a colour. From the colour you can tell how that letter fits the hidden word. | Agent 2026-11-02 |  |
+| — — — | Got it | **わかった** | Got it | Agent 2026-11-02 |  |
+| — — — | The kana is right, and it is in the right place. | **かなが合っていて、場所も合っています。** | The kana is right, and the place is right too. | Agent 2026-11-02 |  |
+| — — — | The letter is right, and it is in the right place. | **文字が合っていて、場所も合っています。** | The letter is right, and the place is right too. | Agent 2026-11-02 |  |
+| — — — | Green | **緑色** | Green | Agent 2026-11-02 |  |
+| — — — | It is not in the word, so you can skip it. | **単語にないので、使わなくて大丈夫です。** | It is not in the word, so you do not need to use it. | Agent 2026-11-02 |  |
+| — — — | Black key | **黒色のキー** | Black key | Agent 2026-11-02 |  |
+| — — — | On the keyboard | **キーボードの上で** | On the keyboard | Agent 2026-11-02 |  |
+| — — — | Each key shows the best news you have had about that letter so far, from all your guesses. | **それぞれのキーには、これまでのすべての予想から、その文字についていちばんよかった結果が出ます。** | On each key appears the best result for that letter from all your guesses so far. | Agent 2026-11-02 |  |
+| — — — | You had this in the right place in a guess. | **予想で、正しい場所に入れたことがあります。** | In a guess, you have put it in the right place. | Agent 2026-11-02 |  |
+| — — — | Green key | **緑色のキー** | Green key | Agent 2026-11-02 |  |
+| — — — | The word has it, but you have not found its place yet. | **単語にありますが、場所はまだ見つかっていません。** | It is in the word, but its place has not been found yet. | Agent 2026-11-02 |  |
+| — — — | Orange key | **オレンジ色のキー** | Orange key | Agent 2026-11-02 |  |
+| — — — | A ring around a key, or a small number on it, is for the word you are typing now: it is in your row, and the number says how many times. | **キーのまわりの輪や小さな数字は、いま打っている単語のことです。その文字が今の行に入っていて、数字は何回入っているかを表します。** | A ring around a key or a small number is about the word you are typing now. It means that letter is in the current row, and the number shows how many times it is in. | Agent 2026-11-02 |  |
+| — — — | Ring and number | **輪と数字** | Ring and number | Agent 2026-11-02 |  |
+| — — — | You have not tried it yet. | **まだためしていません。** | You have not tried it yet. | Agent 2026-11-02 |  |
+| — — — | White key | **白いキー** | White key | Agent 2026-11-02 |  |
+| — — — | A kana from this column is in the word, but not this one. | **この行のかなが単語にありますが、このかなではありません。** | A kana from this row is in the word, but it is not this kana. | Agent 2026-11-02 |  |
+| — — — | Yellow key | **黄色のキー** | Yellow key | Agent 2026-11-02 |  |
+| — — — | Colour guide | **色の見かた** | How to read the colours | Agent 2026-11-02 |  |
+| — — — | How to read the colours and arrows | **色と矢印の見かた** | How to read the colours and arrows | Agent 2026-11-02 |  |
+| — — — | The word has this kana, but in a different place. | **このかなは単語にありますが、場所がちがいます。** | The word has this kana, but the place is different. | Agent 2026-11-02 |  |
+| — — — | The word has this letter, but in a different place. | **この文字は単語にありますが、場所がちがいます。** | The word has this letter, but the place is different. | Agent 2026-11-02 |  |
+| — — — | Orange | **オレンジ色** | Orange | Agent 2026-11-02 |  |
+| — — — | What the colours and arrows mean | **色と矢印の意味** | What the colours and arrows mean | Agent 2026-11-02 |  |
+| — — — | Not this kana, but one from the same column of the kana chart belongs here. If you play か and the word has き there, you get yellow: both are in the K column. | **このかなではありませんが、同じ行のかなが、ここに入ります。五十音表で、か・き・く・け・こは「か行」です。「か」を入れて、単語のそこが「き」なら、どちらも「か行」なので黄色です。** | It is not this kana, but a kana from the same row goes here. In the fifty-sound chart, か, き, く, け, こ are the 「か row」. If you put in か and the word has き there, both are in the か row, so it is yellow. | Agent 2026-11-02 |  |
+| — — — | Yellow | **黄色** | Yellow | Agent 2026-11-02 |  |
 | — — — | Found in {count} | **{count}で発見** | Found in {count} | Agent 2026-10-06 |  |
 | — — — | Guesses: {list} | **予想：{list}** | Guesses: {list} | Agent 2026-10-06 |  |
 | — — — | Your newest {count} of {total}. | **{total}件のうち、新しい{count}件です。** | Your newest {count} of {total}. | Agent 2026-10-06 |  |
@@ -5558,7 +5597,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | the {ordinal} letter must be {unit} | **{ordinal}の文字は、{unit}のままにします** | the {ordinal} letter must be {unit} | Agent 2026-10-06 |  |
 | — — — | the {ordinal} must stay {unit} | **{ordinal}は、{unit}のままにします** | the {ordinal} must stay {unit} | Agent 2026-10-06 |  |
 | — — — | change the kana: {what} | **かなを変える：{what}** | change the kana: {what} | Agent 2026-10-06 |  |
-| — — — | its column is here | **この列にある** | its column is here | Agent 2026-10-06 |  |
+| — — — | its column is here | **この行にある** | its row of the chart is here | Agent 2026-11-02 |  |
 | — — — | delete a kana | **かなを消す** | delete a kana | Agent 2026-10-06 |  |
 | — — — | delete a letter | **文字を消す** | delete a letter | Agent 2026-10-06 |  |
 | — — — | in the word elsewhere | **単語のほかの場所** | in the word elsewhere | Agent 2026-10-06 |  |
@@ -5618,21 +5657,19 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Four more words → | **さらに4つの単語 →** | Four more words → | Agent 2026-10-06 |  |
 | — — — | Another word → | **別の単語 →** | Another word → | Agent 2026-10-06 |  |
 | — — — | Two more words → | **さらに2つの単語 →** | Two more words → | Agent 2026-10-06 |  |
-| — — — | Caught on row {n} of {rows}:  | **{rows}行中{n}行めで引っかかりました：** | Caught on row {n} of {rows}:  | Agent 2026-10-06 |  |
 | — — — | Caught on row {n} | **{n}行めで引っかかった** | Caught on row {n} | Agent 2026-10-06 |  |
-| — — — |  was the word. | **が、その単語でした。** |  was the word. | Agent 2026-10-06 |  |
 | — — — | Out of {rows} guesses | **予想{rows}回を使い切りました** | Out of {rows} guesses | Agent 2026-10-06 |  |
 | — — — | with your guesses. | **に保存されています。** | with your guesses. | Agent 2026-10-06 |  |
 | — — — | Kept in | **予想といっしょに** | Kept in | Agent 2026-10-06 |  |
+| — — — | Good try. Now you know this word. | **よくがんばりました。これで、この単語を知ることができました。** | You did your best. Now you have come to know this word. | Agent 2026-11-02 |  |
 | — — — | +{points} XP for playing it out.  | **最後まで遊んで+{points}経験値。** | +{points} XP for playing it out.  | Agent 2026-10-06 |  |
 | — — — | It was still hiding among {count} words, one of them | **まだ{count}個の単語のどれかに隠れていました。その1つは** | It was still hiding among {count} words, one of them | Agent 2026-10-06 |  |
-| — — — | . | **でした。** | . | Agent 2026-10-06 |  |
 | — — — | The word was | **単語は** | The word was | Agent 2026-10-06 |  |
 | — — — | The words were | **単語は** | The words were | Agent 2026-10-06 |  |
 | — — — | Categories | **カテゴリ** | Categories | Agent 2026-10-06 |  |
 | — — — | Category | **カテゴリ** | Category | Agent 2026-10-06 |  |
 | — — — | — caught on the first row. | **— 最初の行で引っかかりました。** | — caught on the first row. | Agent 2026-10-06 |  |
-| — — — | Columns | **列** | Columns | Agent 2026-10-06 |  |
+| — — — | Columns | **同じ行** | Same row | Agent 2026-11-02 |  |
 | — — — | Found elsewhere | **ほかの場所で発見** | Found elsewhere | Agent 2026-10-06 |  |
 | — — — | Every row | **すべての行** | Every row | Agent 2026-10-06 |  |
 | — — — | In place | **正しい場所** | In place | Agent 2026-10-06 |  |

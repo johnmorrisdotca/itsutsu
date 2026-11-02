@@ -3,7 +3,6 @@
 import { RevealOnMount } from "@/components/ui/RevealOnMount";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { phraseWith } from "@/components/i18n/phraseWith";
-import { stopOf } from "@/lib/puzzles/puzzleText";
 import Link from "@/components/ui/Link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -16,7 +15,7 @@ import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeGomojiProgress, encodeGomojiProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { breaksHardRule, isWord, languageOf, markGuess } from "@/lib/puzzles/gomoji/code";
-import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsResumed, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsResumed } from "@/lib/puzzles/gomoji/futago";
 import { futagoScore } from "@/lib/puzzles/gomoji/futagoScore";
 import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
 import { dodgeGuesses, readDodge } from "@/lib/puzzles/gomoji/dodgePlay";
@@ -33,6 +32,8 @@ import { viewHref } from "@/lib/history/myGamesViews";
 
 import { WordBoards } from "./WordBoards";
 import { GomojiGrid } from "./GomojiGrid";
+import { WordAnswerCard } from "./WordAnswerCard";
+import { helpOwnsKey, WordMarksHelp } from "./WordMarksHelp";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
 import { SakasaScoreLine } from "./SakasaScoreLine";
@@ -47,7 +48,6 @@ import { PuzzleWayBack } from "./PuzzleWayBack";
 import { WinStack } from "./PuzzleWinSlot";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
 import { PopClue } from "./PopClue";
-import { ResultMark } from "@/components/game/ResultMark";
 import { BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
 import { DELETE_KEY, ENTER_KEY } from "@/lib/ui/keyNames.constants";
 
@@ -216,6 +216,7 @@ export function GomojiSolve({
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select") !== null) return;
+      if (helpOwnsKey(event)) return;
       if (/^[a-zA-ZäöüÄÖÜ]$/.test(event.key)) {
         event.preventDefault();
         letter(event.key.toLowerCase());
@@ -237,9 +238,20 @@ export function GomojiSolve({
     return () => window.removeEventListener("keydown", onKey);
   }, [closed, letter, enter, back, edit]);
 
+  // How it ended, said over the answer, which is the biggest thing on the page (`WordAnswerCard`).
+  const answerCard =
+    done !== null && done.outOfGuesses ? (
+      <WordAnswerCard
+        outOfTime={done.outOfTime}
+        headline={backwards && !done.outOfTime ? say.say("pword.out.caughtShort", { n: String(guesses.length) }) : done.outOfTime ? say.say("puzzle.outcome.outOfTime") : say.say("pword.out.guesses", { rows: String(rows) })}
+        label={!backwards && many ? say.say("pword.out.theWords") : !backwards && dodge !== null && dodge.standing > 1 ? say.say("pword.out.stillHiding", { count: String(dodge.standing) }) : say.say("pword.out.theWord")}
+        words={words.words}
+        kana={false}
+      />
+    ) : null;
   return (
     <section ref={playRoot} className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
-      <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} />
+      <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} help={<WordMarksHelp kana={false} />} />
       {/* Pop Gomoji's clue: each hidden word's category, from the first guess (`PopClue`). */}
       {kind === "gomojiPop" ? <PopClue words={words.words} /> : null}
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
@@ -264,6 +276,7 @@ export function GomojiSolve({
       ) : (
         <WinStack>
           <WordReplay
+            answer={answerCard}
             kind={kind === "gomojiKana" ? "gomojiKana" : kind === "gomojiMot" ? "gomojiMot" : kind === "gomojiWort" ? "gomojiWort" : kind === "gomojiPop" ? "gomojiPop" : "gomoji"}
             size={size}
             givens={puzzle.givens}
@@ -297,25 +310,6 @@ export function GomojiSolve({
         </>
       ) : done.outOfGuesses ? (
         <RevealOnMount className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
-          {backwards && !done.outOfTime ? (
-            <p className="text-base">
-              <ResultMark kind="failure" className="mr-1.5" />
-              {say.say("pword.out.caughtHead", { n: String(guesses.length), rows: String(rows) })}
-              <strong className="uppercase tracking-wide" data-testid="word-was">{hidden}</strong>
-              {say.say("pword.out.caughtTail")}
-            </p>
-          ) : (
-            <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
-              <ResultMark kind="failure" className="mr-1.5" />
-              {done.outOfTime ? say.say("puzzle.outcome.outOfTime") : say.say("pword.out.guesses", { rows: String(rows) })}
-              {stopOf(say)}
-              {say.pairsWithKanji ? " " : ""}
-              {many ? say.say("pword.out.theWords") : dodge === null || dodge.standing <= 1 ? say.say("pword.out.theWord") : say.say("pword.out.stillHiding", { count: String(dodge.standing) })}
-              {say.pairsWithKanji ? " " : ""}
-              <strong className="uppercase tracking-wide" data-testid="word-was">{wordsShown(kind, words.words)}</strong>
-              {say.say("pword.out.tail")}
-            </p>
-          )}
           {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />}
           {/* Where the word went, and what playing it out paid: a loss is kept, never lost. */}
           {hasAccount && race === null ? (

@@ -31,6 +31,7 @@ export function SolveHeader({
   pausing,
   headStart = false,
   asked,
+  help,
 }: {
   puzzle: Puzzle;
   elapsedMs: number;
@@ -38,12 +39,15 @@ export function SolveHeader({
   headStart?: boolean;
   /** What a puzzle of fixed levels says in place of size, level and number (Tsunagi's "Level 12 of 100"). */
   asked?: ReactNode;
+  /** A button on the same line as what was asked, right of it: the word games' colour guide (`WordMarksHelp`). */
+  help?: ReactNode;
 }) {
   // A countdown where one was chosen (`PuzzleClockContext`), in the clock's own place.
   const clock = usePuzzleClock();
   const say = useSpeaker();
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+      <div className={help === undefined ? "contents" : "flex w-full min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1"}>
       <p className="text-sm text-muted" data-testid="puzzle-asked">
         {asked ?? (
           <>
@@ -80,6 +84,8 @@ export function SolveHeader({
           </>
         )}
       </p>
+      {help}
+      </div>
       {/*
         THE CLOCK ON THE LEFT, PAUSE ON THE RIGHT, and Pause always there. John,
         2026-09-25: "Pause button and clock should swap, since button has fixed

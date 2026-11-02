@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { ReplayScrubber } from "@/components/history/ReplayScrubber";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
@@ -55,6 +55,7 @@ export function WordReplay({
   appearance = DEFAULT_APPEARANCE,
   position,
   animate = true,
+  answer = null,
 }: {
   kind: "gomoji" | "gomojiKana" | "gomojiMot" | "gomojiWort" | "gomojiPop";
   size: number;
@@ -78,6 +79,8 @@ export function WordReplay({
    * On unless a consumer turns it off; a device that asks for less motion never sees it either way.
    */
   animate?: boolean;
+  /** What stands under the board and over the scrubber: the answer of a word not found (`WordAnswerCard`). Not in the wallpaper's picture. */
+  answer?: ReactNode;
 }) {
   const last = guesses.length;
   const [own, setOwn] = useState(last);
@@ -161,6 +164,7 @@ export function WordReplay({
         />
       )}
       </div>
+      {answer}
       <ReplayScrubber index={Math.min(at, last)} last={last} onGo={setAt} testId="word-replay" />
       {kana ? (
         <KanaKeyboard

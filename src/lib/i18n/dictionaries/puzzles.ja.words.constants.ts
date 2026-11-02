@@ -65,12 +65,12 @@ export const PUZZLE_COPY_JA_WORDS = {
   },
   gomojiKana: {
     tagline: [
-      "隠れた単語をかなで見つけます。予想するたびに、合っているかな、単語に入っているかな、正しいかなが入る列が分かります。",
-      "Find the hidden word in kana. Each guess shows which kana are right, which are in the word, and which column the right one is in.",
+      "隠れた単語をかなで見つけます。予想するたびに、合っているかな、単語に入っているかな、正しいかなが入る行が分かります。",
+      "Find the hidden word in kana. Each guess shows which kana are right, which are in the word, and which row of the kana chart the right one is in.",
     ],
     origin: [
-      "日本語版の五文字です。隠れた単語をひらがなで探す遊びは同じですが、かなには文字では起こらない「惜しい」があります。大きさ、印、列の決まりはこのサイトのものです。",
-      "Gomoji in Japanese: the same hunt for a hidden word, played in hiragana, where a kana can be nearly right in ways a letter cannot. The rules for size, marks and columns are our own.",
+      "日本語版の五文字です。隠れた単語をひらがなで探す遊びは同じですが、かなには文字では起こらない「惜しい」があります。大きさ、印、かな表の行の決まりはこのサイトのものです。",
+      "Gomoji in Japanese: the same hunt for a hidden word, played in hiragana, where a kana can be nearly right in ways a letter cannot. The rules for size, marks and rows of the kana chart are our own.",
     ],
     rules: [
       [
@@ -78,8 +78,8 @@ export const PUZZLE_COPY_JA_WORDS = {
         "A word is hidden, three, four or five kana long, in hiragana. The rows are eight on easy, seven on medium and six on hard, at every length: on easy and medium the first row is the free grey word, so you get seven guesses on easy and six on medium, and six with no free word on hard. Every guess must be a real word.",
       ],
       [
-        "緑は、正しいかなが正しい場所にあることです。オレンジは、そのかなが単語のほかの場所にあることです。黄色は、この場所に入る単語のかなが、かな表で同じ列にあることです（か・き・く・け・こは同じ列です）。灰色は、そのどれでもありません。",
-        "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same column of the kana table (か き く け こ are one column). Grey is none of those.",
+        "緑は、正しいかなが正しい場所にあることです。オレンジは、そのかなが単語のほかの場所にあることです。黄色は、この場所に入る単語のかなが、かな表で同じ行にあることです（か・き・く・け・こは「か行」です）。灰色は、そのどれでもありません。",
+        "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same row of the kana table (か き く け こ are one row). Grey is none of those.",
       ],
       [
         "矢印は、かなは合っているが、惜しいという意味です。下向きは大きさのちがい（「っ」のところに「つ」）、上向きは濁点や半濁点のちがい（「ば」や「ぱ」のところに「は」）です。すべての場所がふつうの緑になったときに、単語が見つかったことになります。",
