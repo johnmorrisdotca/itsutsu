@@ -18,7 +18,7 @@ language here: nothing ships without a reader who can sign it off.**
 ## What there is today (read 2026-09-25)
 
 **Updated 2026-11-02 (ENJA-14): the "outside the dictionary" list below is now empty.** Every word a reader sees on
-Itsutsu goes through `PHRASES` (about 5,900 phrases) or a Japanese table beside its data (the games', puzzles', party
+Itsutsu goes through `PHRASES` (6,093 phrases when counted on 2026-11-02) or a Japanese table beside its data (the games', puzzles', party
 tables' and packages' words), so a new language is a full translation of all of it, not a frame. The figures below are
 the plan's starting point as it was written.
 
