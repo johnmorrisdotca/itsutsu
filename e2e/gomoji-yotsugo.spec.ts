@@ -212,7 +212,8 @@ test.describe("Gomoji Yotsugo", () => {
     await page.clock.runFor("01:01");
     await expect(page.getByTestId("word-out")).toBeVisible();
     await expect(page.getByTestId("puzzle-out-of-time")).toContainText("Out of time");
-    await expect(page.getByTestId("word-was")).toHaveText(wordsShown("gomoji", words));
+    // Each word is its own row of tiles, in the order the board's quarters hold them.
+    await expect(page.getByTestId("word-was-word")).toHaveText(words, { ignoreCase: true });
     await expect(page.getByTestId("word-replay").getByTestId("word-part")).toHaveCount(4);
     // Another is four more words on the same clock.
     await expect(page.getByTestId("word-another")).toHaveText(/Four more words/);

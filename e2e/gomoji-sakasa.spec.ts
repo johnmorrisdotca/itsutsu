@@ -85,7 +85,7 @@ test("typing the word ends it, caught on that row", async ({ page }) => {
   // Nothing is refused for a word that keeps to the first row, as the hidden word always does.
   await page.keyboard.type(word);
   await page.keyboard.press("Enter");
-  await expect(page.getByTestId("word-out")).toContainText("Caught on row 2");
+  await expect(page.getByTestId("word-out-card")).toContainText("Caught on row 2");
   await expect(page.getByTestId("word-was")).toHaveText(new RegExp(word, "i"));
 });
 

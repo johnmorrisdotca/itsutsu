@@ -421,6 +421,47 @@ test.describe("the word puzzle", () => {
     await expect(row.getByTestId("puzzle-going-continue")).toHaveAttribute("href", /strict=1/);
   });
 
+
+  test("the colour guide opens and closes by click, key and outside press, and leaves the game as it was", async ({ page }) => {
+    const seed = freshPuzzleSeed();
+    await page.goto(`${AT}/play?size=4&level=hard&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    await ready(page, "word-help-open");
+    const open = page.getByTestId("word-help-open");
+    const dialog = page.getByTestId("word-help-dialog");
+    // A labelled button on the game itself, in view without scrolling.
+    await expect(open).toContainText("Colour guide");
+    await expect(open).toBeInViewport();
+    await expect(dialog).toHaveCount(0);
+    await open.click();
+    await expect(dialog).toBeVisible();
+    // Every colour is named, each beside a real mark of that colour.
+    for (const name of ["Green", "Orange", "Black"]) await expect(dialog).toContainText(name);
+    await expect(dialog.getByTestId("word-help-mark")).toHaveCount(3);
+    await expect(dialog.getByTestId("word-help-key").first()).toBeVisible();
+    // Escape leaves it, and the focus is back on the button that opened it.
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(open).toBeFocused();
+    // The × leaves it.
+    await open.click();
+    await page.getByTestId("word-help-close").click();
+    await expect(dialog).toHaveCount(0);
+    // So does Got it, pressed by keyboard alone.
+    await open.focus();
+    await page.keyboard.press("Enter");
+    await expect(dialog).toBeVisible();
+    await page.getByTestId("word-help-done").focus();
+    await page.keyboard.press("Enter");
+    await expect(dialog).toHaveCount(0);
+    // And a press outside it, on the backdrop.
+    await open.click();
+    await page.mouse.click(2, 2);
+    await expect(dialog).toHaveCount(0);
+    // The game is as it was: nothing guessed, the clock not started by looking.
+    await expect(page.locator('[data-testid="word-tile"][data-mark="hit"], [data-testid="word-tile"][data-mark="near"], [data-testid="word-tile"][data-mark="miss"]')).toHaveCount(0);
+  });
+
   test("running out of guesses ends it and shows the word", async ({ page }) => {
     // Hard: six guesses, as at every length (four letters had five before 2026-09-28).
     const seed = freshPuzzleSeed();
@@ -435,10 +476,16 @@ test.describe("the word puzzle", () => {
       await page.keyboard.press("Enter");
     }
     await expect(page.getByTestId("word-out")).toBeVisible();
-    // Printed in capitals since Futago, which names two words the same way ("DART and SNOW").
+    // The answer is the biggest thing in that part of the screen (John, 2026-11-02: "it should be obvious what the word was"):
+    // a card of tiles, a letter each, written in capitals, with a fingertip's height at least and the card in view.
     await expect(page.getByTestId("word-was")).toHaveText(puzzle.solution, { ignoreCase: true });
+    const card = page.getByTestId("word-out-card");
+    await expect(card).toBeInViewport();
+    expect((await page.getByTestId("word-was-word").locator("span").first().boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    expect(await page.getByTestId("word-was-word").locator("span").first().evaluate((tile) => parseFloat(getComputedStyle(tile).fontSize))).toBeGreaterThanOrEqual(24);
     // The line says how many guesses there were (John, 2026-09-26: "Text is missing numbers").
-    await expect(page.getByTestId("word-was").locator("..")).toContainText(/Out of \d+ guesses\./);
+    await expect(card).toContainText(/Out of \d+ guesses/);
+    await expect(card).toContainText("The word was");
     // A word not found still scores the letters it found, and says where it is kept.
     const scored = wordScore(puzzle.solution, wrong, guessesFor(KIND, 4, "hard", 0), 0).total;
     await expect(page.getByTestId("word-score")).toHaveAttribute("data-total", String(scored));

@@ -383,21 +383,6 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "It was still hiding among {count} words, one of them",
     review: AGENT_READ,
   },
-  "pword.out.tail": {
-    text: "でした。",
-    back: ".",
-    review: AGENT_READ,
-  },
-  "pword.out.caughtHead": {
-    text: "{rows}行中{n}行めで引っかかりました：",
-    back: "Caught on row {n} of {rows}: ",
-    review: AGENT_READ,
-  },
-  "pword.out.caughtTail": {
-    text: "が、その単語でした。",
-    back: " was the word.",
-    review: AGENT_READ,
-  },
   "pword.out.caughtShort": {
     text: "{n}行めで引っかかった",
     back: "Caught on row {n}",
@@ -1047,5 +1032,215 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "どちらの単語にも不要",
     back: "not needed by either word",
     review: AGENT_READ,
+  },
+  "pword.out.kind": {
+    text: "よくがんばりました。この単語はもう覚えましたね。",
+    back: "Good try. Now you know this word.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.open": {
+    text: "色の見かた",
+    back: "Colour guide",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.openLong": {
+    text: "色と矢印の見かたを開く",
+    back: "How to read the colours and arrows",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.title": {
+    text: "色と矢印の意味",
+    back: "What the colours and arrows mean",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.close": {
+    text: "閉じる",
+    back: "Close",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.gotIt": {
+    text: "わかった",
+    back: "Got it",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.board": {
+    text: "ボードの上で",
+    back: "On the board",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.boardLetters": {
+    text: "予想するたびに、文字ごとに色がつきます。その色で、隠れた単語とどれくらい合っているかがわかります。",
+    back: "Every guess puts a colour on each letter. The colour tells you how that letter fits the hidden word.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.boardKana": {
+    text: "予想するたびに、かなごとに色がつきます。その色で、隠れた単語とどれくらい合っているかがわかります。",
+    back: "Every guess puts a colour on each kana. The colour tells you how that kana fits the hidden word.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.greenName": {
+    text: "緑",
+    back: "Green",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.greenLetter": {
+    text: "文字が合っていて、場所も合っています。",
+    back: "The letter is right, and it is in the right place.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.greenKana": {
+    text: "かなが合っていて、場所も合っています。",
+    back: "The kana is right, and it is in the right place.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.orangeName": {
+    text: "橙（だいだい）",
+    back: "Orange",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.orangeLetter": {
+    text: "この文字は単語にありますが、場所がちがいます。",
+    back: "The word has this letter, but in a different place.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.orangeKana": {
+    text: "このかなは単語にありますが、場所がちがいます。",
+    back: "The word has this kana, but in a different place.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.yellowName": {
+    text: "黄色",
+    back: "Yellow",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.yellowKana": {
+    text: "このかなではありませんが、ここには五十音表の同じ列のかなが入ります。「か」を入れて、単語のそこが「き」なら黄色です。どちらも「か」の列だからです。",
+    back: "Not this kana, but one from the same column of the kana chart belongs here. If you play か and the word has き there, you get yellow: both are in the K column.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.blackName": {
+    text: "黒",
+    back: "Black",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.blackLetter": {
+    text: "この文字は単語にまったくありません。",
+    back: "The word does not have this letter at all.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.blackKana": {
+    text: "このかなは単語になく、同じ列のかなもここには入りません。",
+    back: "The word does not have this kana, and nothing from its column belongs here.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.arrows": {
+    text: "矢印",
+    back: "Arrows",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.arrowsLead": {
+    text: "緑や橙のかなについた小さな矢印は、かなは合っているけれど、単語のかなとは少しちがう、という意味です。矢印が消えるまでは、見つかったことになりません。",
+    back: "A small arrow on a green or orange kana means the kana is right, but it is not quite the one the word has. It is not found until the arrow is gone.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.arrowDownName": {
+    text: "下向きの矢印",
+    back: "Arrow down",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.arrowDown": {
+    text: "大きさがちがいます。大きい「つ」と小さい「っ」のようなものです。「小」キーで大きさを変えられます。",
+    back: "The size is wrong: big つ or small っ. The 小 key changes the size.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.arrowUpName": {
+    text: "上向きの矢印",
+    back: "Arrow up",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.arrowUp": {
+    text: "点や丸の印がちがいます。「は」「ば」「ぱ」のようなものです。「゛゜」キーで印を変えられます。",
+    back: "The mark is wrong: は, ば or ぱ. The ゛゜ key changes the mark.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.arrowBothName": {
+    text: "両方の矢印",
+    back: "Both arrows",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.arrowBoth": {
+    text: "大きさも印も、どちらもちがいます。",
+    back: "The size and the mark are both wrong.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyboard": {
+    text: "キーボードの上で",
+    back: "On the keyboard",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyboardLead": {
+    text: "それぞれのキーには、これまでの予想でわかった、いちばんよい知らせが出ます。",
+    back: "Each key shows the best news you have had about that letter so far, from all your guesses.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyGreenName": {
+    text: "緑のキー",
+    back: "Green key",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyGreen": {
+    text: "予想で、正しい場所に入れたことがあります。",
+    back: "You had this in the right place in a guess.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyOrangeName": {
+    text: "橙のキー",
+    back: "Orange key",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyOrange": {
+    text: "単語にありますが、場所はまだ見つかっていません。",
+    back: "The word has it, but you have not found its place yet.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyYellowName": {
+    text: "黄色のキー",
+    back: "Yellow key",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyYellow": {
+    text: "この列のかなが単語にありますが、このかなではありません。",
+    back: "A kana from this column is in the word, but not this one.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyBlackName": {
+    text: "黒のキー",
+    back: "Black key",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyBlack": {
+    text: "単語にないので、使わなくて大丈夫です。",
+    back: "It is not in the word, so you can skip it.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyWhiteName": {
+    text: "白のキー",
+    back: "White key",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyWhite": {
+    text: "まだ試していません。",
+    back: "You have not tried it yet.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyRingName": {
+    text: "輪と数字",
+    back: "Ring and number",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "pword.help.keyRing": {
+    text: "キーのまわりの輪や小さな数字は、いま入力している単語のことです。その行に入っていて、数字は何回入っているかを表します。",
+    back: "A ring around a key, or a small number on it, is for the word you are typing now: it is in your row, and the number says how many times.",
+    ask: "Written on 2026-11-02; nobody has read it.",
   },
 };

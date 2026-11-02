@@ -2,7 +2,6 @@
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { phraseWith } from "@/components/i18n/phraseWith";
-import { stopOf } from "@/lib/puzzles/puzzleText";
 import Link from "@/components/ui/Link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -16,7 +15,7 @@ import { puzzleQuery } from "@/lib/puzzles/puzzleAddress";
 import { decodeKanaProgress, encodeKanaProgress } from "@/lib/puzzles/puzzleProgress";
 import type { Puzzle } from "@/lib/puzzles/puzzles.types";
 import { backspace, choose, clearAt, emptyRow, step, typeLetter, wordOf, type TypingRow } from "@/lib/puzzles/gomoji/typingRow";
-import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsResumed, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { boardGuesses, everyWordFound, hiddenWordsOf, wordRowsResumed } from "@/lib/puzzles/gomoji/futago";
 import { asWordCount } from "@/lib/puzzles/gomoji/wordsSeed";
 import { dodgeGuesses, readDodge } from "@/lib/puzzles/gomoji/dodgePlay";
 import { decodeDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
@@ -35,6 +34,8 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { KanaKeyboard } from "./KanaKeyboard";
 import { WordBoards } from "./WordBoards";
 import { GomojiGrid, type CellArrow } from "./GomojiGrid";
+import { WordAnswerCard } from "./WordAnswerCard";
+import { helpOwnsKey, WordMarksHelp } from "./WordMarksHelp";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
 import { SakasaScoreLine } from "./SakasaScoreLine";
@@ -47,7 +48,6 @@ import { PuzzleWallpaper } from "./PuzzleWallpaper";
 import { PuzzleWayBack } from "./PuzzleWayBack";
 import { WinStack } from "./PuzzleWinSlot";
 import { BUTTON_BASE, BUTTON_STRONG, PLAY_SURFACE, SELECTABLE } from "@/components/ui/ui.constants";
-import { ResultMark } from "@/components/game/ResultMark";
 import { BACKWARDS_DISPLAY } from "@/lib/puzzles/gomoji/backwardsWords";
 import { DELETE_KEY, ENTER_KEY } from "@/lib/ui/keyNames.constants";
 
@@ -259,6 +259,7 @@ export function GomojiKanaSolve({
     const onKey = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey || event.isComposing) return;
       if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select") !== null) return;
+      if (helpOwnsKey(event)) return;
       if (/^[a-zA-Z'-]$/.test(event.key)) {
         event.preventDefault();
         roman(event.key.toLowerCase());
@@ -285,9 +286,20 @@ export function GomojiKanaSolve({
 
   const left = rows - guesses.length;
   const score = done === null ? null : futagoKanaScore(given.words, guesses, rows, done.elapsedMs);
+  // How it ended, said over the answer, which is the biggest thing on the page (`WordAnswerCard`).
+  const answerCard =
+    done !== null && done.outOfGuesses ? (
+      <WordAnswerCard
+        outOfTime={done.outOfTime}
+        headline={backwards && !done.outOfTime ? say.say("pword.out.caughtShort", { n: String(guesses.length) }) : done.outOfTime ? say.say("puzzle.outcome.outOfTime") : say.say("pword.out.guesses", { rows: String(rows) })}
+        label={!backwards && many ? say.say("pword.out.theWords") : !backwards && dodge !== null && dodge.standing > 1 ? say.say("pword.out.stillHiding", { count: String(dodge.standing) }) : say.say("pword.out.theWord")}
+        words={given.words}
+        kana={true}
+      />
+    ) : null;
   return (
     <section ref={playRoot} className={`${PLAY_SURFACE} flex flex-col gap-4`} data-testid="puzzle-play" data-kind={kind} data-seed={seed} {...readyMark(hydrated)}>
-      <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} />
+      <SolveHeader puzzle={puzzle} elapsedMs={elapsedMs} pausing={pausing} headStart={headStart} help={<WordMarksHelp kana={true} />} />
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
       {done === null && many ? (
         <SolvePaused pausing={pausing}>
@@ -312,7 +324,8 @@ export function GomojiKanaSolve({
       ) : (
         // The board over, as its replay: the cell a win's cover is drawn over (`PuzzleWinSlot`).
         <WinStack>
-          <WordReplay kind="gomojiKana" size={size} givens={puzzle.givens} guesses={guesses} level={level} headStart={headStart} style={style} appearance={dressed} />
+          <WordReplay
+            answer={answerCard} kind="gomojiKana" size={size} givens={puzzle.givens} guesses={guesses} level={level} headStart={headStart} style={style} appearance={dressed} />
         </WinStack>
       )}
       {done === null ? (
@@ -351,25 +364,6 @@ export function GomojiKanaSolve({
         </>
       ) : done.outOfGuesses ? (
         <div className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
-          {backwards && !done.outOfTime ? (
-            <p className="text-base">
-              <ResultMark kind="failure" className="mr-1.5" />
-              {say.say("pword.out.caughtHead", { n: String(guesses.length), rows: String(rows) })}
-              <strong className="tracking-wide" data-testid="word-was">{hidden}</strong>
-              {say.say("pword.out.caughtTail")}
-            </p>
-          ) : (
-            <p className="text-base" data-testid={done.outOfTime ? "puzzle-out-of-time" : undefined}>
-              <ResultMark kind="failure" className="mr-1.5" />
-              {done.outOfTime ? say.say("puzzle.outcome.outOfTime") : say.say("pword.out.guesses", { rows: String(rows) })}
-              {stopOf(say)}
-              {say.pairsWithKanji ? " " : ""}
-              {many ? say.say("pword.out.theWords") : dodge === null || dodge.standing <= 1 ? say.say("pword.out.theWord") : say.say("pword.out.stillHiding", { count: String(dodge.standing) })}
-              {say.pairsWithKanji ? " " : ""}
-              <strong className="tracking-wide" data-testid="word-was">{wordsShown(kind, given.words)}</strong>
-              {say.say("pword.out.tail")}
-            </p>
-          )}
           {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={score!} headStart={headStart} />}
           {hasAccount && race === null ? (
             <p className="text-xs text-muted" data-testid="word-kept">
