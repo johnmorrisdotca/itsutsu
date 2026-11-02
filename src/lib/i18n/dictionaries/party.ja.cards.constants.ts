@@ -353,8 +353,8 @@ export const PARTY_COPY_JA_CARDS = {
         "If you cannot play without passing thirty-one, you say go, and the other person plays on for as long as they can. Whoever laid the last card scores one for the go, and the count starts again from nought. The very last card scores one.",
       ],
       [
-        "ショー：4枚の手札に、スターターを加えて、合計が15になる札の組ごとに2点、ペアごとに2点、ランは1枚につき1点、手札の4枚が同じスートなら4点（スターターも同じなら5点）、スターターと同じスートのジャックで1点（ノブス）を得ます。クリブは配る人のもので、フラッシュは、5枚すべてが同じスートのときだけ得点になります。",
-        "The show: each hand of four, with the starter, scores two for every set of cards adding up to fifteen, two for every pair, a point a card for every run, four for four of one suit in the hand (five with the starter), and one for the jack of the starter's suit (his nobs). The crib is the dealer's, and scores a flush only when all five cards are one suit.",
+        "ショー：4枚の手札に、スターターを加えて、合計が15になる札の組ごとに2点、ペアごとに2点、ランは1枚につき1点、手札の4枚が同じスートなら4点（スターターも同じなら5点）、スターターと同じスートのジャックで1点を得ます。クリブは配る人のもので、フラッシュは、5枚すべてが同じスートのときだけ得点になります。",
+        "The show: each hand of four, with the starter, scores two for every set of cards adding up to fifteen, two for every pair, a point a card for every run, four for four of one suit in the hand (five with the starter), and one for the jack of the starter's suit. The crib is the dealer's, and scores a flush only when all five cards are one suit.",
       ],
       [
         "ショーは、配る人の相手が先で、次に配る人、最後に配る人のクリブの順です。そのあと、配る人が交代します。ゲームの合計点（121点か61点）に最初に届いた人は、ショーの途中でも、その瞬間に勝ちです。",

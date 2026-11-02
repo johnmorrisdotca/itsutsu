@@ -4,20 +4,22 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
 /**
  * Japanese for the privacy.* phrases (ENJA-11): the Privacy page, and the line that says which version governs.
  *
- * Legal text, and text about children and a parent's consent (PRIV-02, PRIV-03). Every row has been read by the
- * reviewer agent (`AGENT_READ`) and every row also carries an `ask`, so the review sheet lists each of them for a
- * native reader: the agent's pass is required and is not enough for this page. The meaning is held as strict as the
- * English, sentence for sentence, and a term is the one the site's own pages already use (年齢の区分, 保護者, 合言葉,
- * アカウントを削除, 保存している情報, 近況, 全員).
+ * Legal text, and text about children and a parent's consent (PRIV-02, PRIV-03). Every row has been read, clause for
+ * clause against the English, by the Japanese expert (`AGENT_READ`, 2026-11-02), and every row also carries an `ask`,
+ * so the review sheet still lists each of them: no person who reads Japanese has read this page. The meaning is held
+ * as strict as the English, sentence for sentence, and a term is the one the site's own pages already use (年齢の区分,
+ * 保護者, 合言葉, アカウントを削除, 保存している情報, 近況, 全員).
  */
-const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
+const AGENT_READ: Review = { by: "agent", on: "2026-11-02" };
 
 const ASK_LEGAL =
-  "Legal text (the Privacy page): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it.";
+  "Legal text (the Privacy page). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it.";
 const ASK_CHILD =
-  "About children and a parent's consent: a native read is required, and the sentence must be as strict in meaning as the English.";
+  "About children and a parent's consent. The Japanese expert read it clause for clause against the English on 2026-11-02 and it is as strict in meaning as the English; no person who reads Japanese has read it, so a native read is still wanted.";
 const ASK_GOVERNING =
-  "The line that says the English version governs: a native read to confirm the wording (参考訳, 優先) is how a Japanese site usually says it, and whether 正本 or 正文 is wanted instead.";
+  "The line that says the English version governs. The Japanese expert read it on 2026-11-02: 参考訳 and 優先 are how a Japanese site usually says it, and 正文 is an alternative a native reader may prefer. No person who reads Japanese has read it.";
+const ASK_DELETE_GAMES =
+  `${ASK_LEGAL} Also doubtful, in the English: it says a game still waiting for you "goes" once it is resigned or called off, while the account page says a resigned game stays as a finished game. The Japanese follows the English.`;
 
 const r = (text: string, back: string, ask: string = ASK_LEGAL): DraftedPhrase => ({ text, back, review: AGENT_READ, ask });
 const child = (text: string, back: string): DraftedPhrase => r(text, back, ASK_CHILD);
@@ -30,13 +32,13 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
   ),
   "privacy.lastChanged": r("最終更新：{date}", "Last updated: {date}"),
   "privacy.governing": r(
-    "このページの日本語版は参考訳です。英語版が正式な文書で、内容に違いがあるときは英語版が優先されます。",
-    "The Japanese version of this page is a reference translation. The English version is the official document, and where the content differs the English version takes precedence.",
+    "このページの日本語版は参考訳です。英語版が正式なもので、両者に違いがあるときは英語版が優先されます。",
+    "The Japanese version of this page is a reference translation. The English version is the official one, and where the two differ the English version takes precedence.",
     ASK_GOVERNING,
   ),
   "privacy.wordsAccount": {
-    text: "合言葉を使い、Googleのアドレスがないアカウントは、Googleを連携しない限り、1つのブラウザで{days}日間だけ使えます。その後は誰もサインインできなくなりますが、対局はサイトに残ります。",
-    back: "An account that uses 合言葉 and has no Google address can be used in one browser for just {days} days unless you link Google. After that nobody can sign in to it, but its games stay on the site.",
+    text: "合言葉でサインインし、Googleのメールアドレスがないアカウントは、Googleと連携しない限り、1つのブラウザの中で{days}日間だけ使えます。その後は誰もサインインできなくなりますが、対局はサイトに残ります。",
+    back: "An account that signs in with 合言葉 and has no Google email address can be used inside one browser for just {days} days unless you link it with Google. After that nobody can sign in to it, but its games stay on the site.",
     review: { by: "agent", on: "2026-11-02" },
     ask: ASK_LEGAL,
   },
@@ -57,20 +59,20 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "There are two ways to sign in to an account, and we keep only the information each one needs.",
   ),
   "privacy.what.pointA": r(
-    "サインインの方法。Googleの場合は、メールアドレス、名前、画像を受け取ります。アドレスは次回も本人と分かるように保存し、名前と画像は、あとから変更できるプロフィールの最初の内容として保存します。代わりに4つの合言葉を使う場合は、合言葉そのものではなく、パスワードと同じように、元に戻せない形（ハッシュ）に変換した値だけを保存します。そのため元の言葉は読み戻せず、サイトの誰にも、どんな言葉だったかは分かりません。{wordsAccount}",
-    "How you sign in. With Google, we receive your email address, name and picture. We keep the address so we recognise you next time, and the name and picture as the first content of a profile you can change later. If you use four 合言葉 instead, we keep not the 合言葉 themselves but only a value converted, as a password is, into a form that cannot be turned back (a hash). So the original words cannot be read back, and nobody at the site can know what the words were. {wordsAccount}",
+    "サインインの方法。Googleの場合は、メールアドレス、名前、画像を受け取ります。アドレスは次回も本人と分かるように保存し、名前と画像は、あとから変更できるプロフィールの最初の内容として保存します。代わりに4語の合言葉を使う場合は、合言葉そのものではなく、パスワードと同じように、元に戻せない形（ハッシュ）に変換した値だけを保存します。そのため元の言葉は読み戻せず、サイトの誰にも、どんな言葉だったかは分かりません。{wordsAccount}",
+    "How you sign in. With Google, we receive your email address, name and picture. We keep the address so we recognise you next time, and the name and picture as the first content of a profile you can change later. If you use a four-word 合言葉 instead, we keep not the 合言葉 itself but only a value converted, as a password is, into a form that cannot be turned back (a hash). So the original words cannot be read back, and nobody at the site can know what the words were. {wordsAccount}",
   ),
   "privacy.what.pointB": r(
     "参加の経緯。使った招待の合言葉、いつ参加したか、最後にいつ訪れたか。",
     "How you joined. The invitation 合言葉 you used, when you joined, and when you last visited.",
   ),
   "privacy.what.pointC": r(
-    "プロフィール。すべて任意で、ご自身のページでいつでも変更できます。遊ぶときの名前、市区町村と国、タイムゾーン、自己紹介、対局しない日と不在の期間、盤の見た目の好み、新しい対局の始め方の設定、オンライン中として表示するかどうか、自分の手番のときにメールを受け取るかどうか。",
-    "Your profile. All of it is optional, and you can change it at any time on your own page. The name you play under, your city and country, your time zone, your self-introduction, the days you do not play and the periods you are away, your preference for how a board looks, your setting for how a new game starts, whether you are shown as online, and whether you receive email when it is your move.",
+    "プロフィール。すべて任意で、ご自身のページで変更できます。遊ぶときの名前、市区町村と国、タイムゾーン、自己紹介、対局しない日と不在の期間、盤の見た目の好み、新しい対局の始め方の設定、オンライン中として表示するかどうか、自分の手番のときにメールを受け取るかどうか。",
+    "Your profile. All of it is optional, and you can change it on your own page. The name you play under, your city and country, your time zone, your self-introduction, the days you do not play and the periods you are away, your preference for how a board looks, your setting for how a new game starts, whether you are shown as online, and whether you receive email when it is your move.",
   ),
   "privacy.what.pointD": r(
-    "対局。遊んだすべての対局の、すべての手、その手を打った日時、双方の席に誰が座ったか、結果。レーティング、戦績、連続記録、経験値、レベルは、これらの対局から計算されます。対局に付いた拍手、リアクション、メモも保存します。終了した対局はその対局専用のアドレスに残り、ご自身の一覧から隠しても、ほかの場所からは消えません。",
-    "Games. Every move of every game you played, the day and time the move was made, who sat in each seat, and the result. Rating, record, streaks, experience points and level are calculated from these games. The applause, reactions and notes attached to games are also kept. A finished game stays at the address dedicated to that game, and hiding it from your own list does not remove it from any other place.",
+    "対局。遊んだすべての対局の、すべての手、その手を打った日時、双方の席に誰が座ったか、結果。レーティング、戦績、連続記録、経験値、レベルは、これらの対局から計算されます。対局に付いた拍手、リアクション、メモも保存します。終了した対局はその対局専用のページに残り、ご自身の一覧から隠しても、ほかの場所からは消えません。",
+    "Games. Every move of every game you played, the day and time the move was made, who sat in each seat, and the result. Rating, record, streaks, experience points and level are calculated from these games. The applause, reactions and notes attached to games are also kept. A finished game stays on the page dedicated to that game, and hiding it from your own list does not remove it from any other place.",
   ),
   "privacy.what.pointE": r(
     "パズル。解き終えたパズルごとに、どのパズルか、かかった時間、いつ解いたか。参加したレースがあれば、相手が誰か、双方の所要時間も保存します。パズルそのものはお使いのブラウザの中で作られ、解いている途中のものはどこにも送られません。",
@@ -91,21 +93,21 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
 
   "privacy.not.h": r("保存しない情報", "Information we do not keep"),
   "privacy.not.paraA": r(
-    "住所、電話番号、支払いカードは、決してお聞きしません。ここには、お金を払うものがありません。",
-    "We never ask for your address, phone number or payment card. There is nothing here to pay for.",
+    "住所、電話番号、支払いカードは、決してお聞きしません。ここには有料のものはありません。",
+    "We never ask for your address, phone number or payment card. There is nothing here that costs money.",
   ),
   "privacy.not.paraB": r(
-    "参加ページで招待を依頼すると、お名前、アドレス、書いた内容が1通のメールとして私たちに届きますが、サイトはその内容を一切保存しません。保存するのは、同じ場所からの依頼が多すぎないかを見分けるための、元の値が分からない形の回数だけです。会員が友人にメールで招待を送るときは、友人のアドレスはそのメール1通に使われるだけで、保存されません。",
-    "When you ask for an invitation on the join page, your name, address and what you wrote reach us as one email, but the site saves none of that content. What it keeps is only a count, in a form from which the original value cannot be known, for telling too many requests from the same place from a person. When a member sends an invitation to a friend by email, the friend's address is used only for that one email and is not kept.",
+    "参加ページで招待を依頼すると、お名前、メールアドレス、書いた内容が1通のメールとして私たちに届きますが、サイトはその内容を一切保存しません。保存するのは、同じ場所からの依頼が多すぎないかを見分けるための、元の値が分からないよう変換した形の回数だけです。会員が友人にメールで招待を送るときは、友人のメールアドレスはそのメール1通に使われるだけで、保存されません。",
+    "When you ask for an invitation on the join page, your name, email address and what you wrote reach us as one email, but the site saves none of that content. What it keeps is only a count, kept in a converted form from which the original value cannot be known, for telling too many requests from the same place from a person. When a member sends an invitation to a friend by email, the friend's email address is used only for that one email and is not kept.",
   ),
   "privacy.not.paraC": r(
-    "サイトは、見たページの記録を残さず、分析も行いません。サイトを置いているホスティング会社は、どこでもそうであるように、通常のリクエストの記録（ネットワークアドレス、ページ、時刻）を短期間保存しており、私たちはそれを不具合を探すときにだけ読みます。",
-    "The site keeps no record of the pages you viewed and does no analytics. The hosting company that hosts the site, as any does, keeps ordinary request logs (network address, page, time) for a short period, and we read them only when looking for a fault.",
+    "サイトは、見たページの記録を残さず、分析も行いません。サイトを置いているホスティング会社は、どこでもそうであるように、通常のリクエストの記録（IPアドレス、ページ、時刻）を短期間保存しており、私たちはそれを不具合を探すときにだけ読みます。",
+    "The site keeps no record of the pages you viewed and does no analytics. The hosting company that hosts the site, as any does, keeps ordinary request logs (IP address, page, time) for a short period, and we read them only when looking for a fault.",
   ),
 
   "privacy.who.h": r("誰に見えるか", "Who can see it"),
   "privacy.who.paraA": r(
-    "招待のない訪問者に見えるのは、ゲームとその規則、「五つについて」「学び」「感謝」のページ、そしてこのページです。会員についての情報は届きません。ただし「感謝」のページには、公に感謝されることを希望したベータ版のテスターの名前が載っています。",
+    "招待のない訪問者に見えるのは、ゲームとその規則、「五つについて」「学び」「感謝」のページ、そしてこのページです。会員についての情報は届きません。ただし「感謝」のページには、公に感謝されることを希望したベータテスターの名前が載っています。",
     "What a visitor with no invitation can see is the games and their rules, the pages \"五つについて\", \"学び\" and \"感謝\", and this page. No information about members reaches them. However, the \"感謝\" page carries the names of beta testers who asked to be thanked publicly.",
   ),
   "privacy.who.paraB": r(
@@ -125,14 +127,14 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "Another site to which the operator has given a token. In an embedded view, a game or a player's summary is shown in read-only form, with only what a member would see. Nothing more is shown.",
   ),
   "privacy.who.paraF": child(
-    "サイトを運営する運営者には、メールアドレス、招待の合言葉、最後に訪れた日時、報告された不具合が見えます。運営者にできるのは、アカウントの停止と復旧、名前の変更、合言葉をなくした会員への新しい合言葉の設定（または本人が選べるよう選択画面を開くこと）、アカウントを持つ人がいなかった名前で保管されている戦績を、その持ち主の会員に結びつけること、会員の年齢の区分の設定と、家族のための保護者の同意の手作業での記録、そして依頼があったときのアカウントの削除です。これらの操作はすべて、誰が、誰に対して、いつ、何を変えたかとともに記録されます。合言葉そのものや保護者の名前が記録されることは決してありません。サイトの誰も、会員になりすましてサインインすることはできません。そのような入口は存在しません。",
-    "The operator who runs the site can see the email address, the invitation 合言葉, the day and time of the last visit, and reported problems. What the operator can do is: stop and restore an account, change a name, set a new 合言葉 for a member who has lost theirs (or open the choosing screen so the person can choose), tie a record kept under a name for which nobody had an account to the member who owns it, set a member's age band and record a parent's consent by hand for a family, and delete an account when asked. All of these operations are recorded together with who did it, to whom, when, and what was changed. The 合言葉 themselves and a parent's name are never recorded. Nobody at the site can sign in impersonating a member. There is no such entrance.",
+    "サイトを運営する運営者には、メールアドレス、招待の合言葉、最後に訪れた日時、報告された不具合が見えます。運営者は、アカウントの停止と復旧、名前の変更、合言葉をなくした会員への新しい合言葉の設定（または本人が選べるよう選択画面を開くこと）、アカウントを持つ人がいなかった名前で保管されている戦績の、その持ち主の会員への結びつけ、会員の年齢の区分の設定、保護者の同意の、家族に代わっての手作業での記録、そして依頼があったときのアカウントの削除を行えます。これらの操作はすべて、誰が、誰に対して、いつ、何を変えたかとともに記録されます。合言葉そのものや保護者の名前が記録されることは決してありません。サイトの誰も、会員になりすましてサインインすることはできません。そのような入口は存在しません。",
+    "The operator who runs the site can see the email address, the invitation 合言葉, the day and time of the last visit, and reported problems. The operator can stop and restore an account, change a name, set a new 合言葉 for a member who has lost theirs (or open the choosing screen so the person can choose), tie a record kept under a name for which nobody had an account to the member who owns it, set a member's age band, record a parent's consent by hand for a family, and delete an account when asked. All of these operations are recorded together with who did it, to whom, when, and what was changed. The 合言葉 themselves and a parent's name are never recorded. Nobody at the site can sign in impersonating a member. There is no such entrance.",
   ),
 
   "privacy.reports.h": r("不具合の報告", "Reporting a problem"),
   "privacy.reports.paraA": r(
-    "不具合は、どのページの下部からでも、誰でも報告できます。保存するのは、書かれた内容、報告したときに開いていたページ（URLの「?」より後ろは除きます。その部分には非公開のリンクが含まれることがあるためです）、サイトのバージョン、日付、追加した場合はスクリーンショット、サインインしている場合はこのサイトでの名前です。報告は、このサイトの作業を計画しているボードのSumilabuに保存され、修正する人が読みます。",
-    "Anyone can report a problem from the bottom of any page. What we keep is what was written, the page that was open when you reported (leaving out everything after the \"?\" in the URL, because that part can contain a private link), the version of the site, the date, a screenshot if you added one, and your name on this site if you are signed in. Reports are kept on Sumilabu, the board on which the work of this site is planned, and are read by the people who fix things.",
+    "不具合は、どのページの下部からでも、誰でも報告できます。保存するのは、書かれた内容、報告したときに開いていたページ（URLの「?」より後ろは除きます。その部分には非公開のリンクが含まれることがあるためです）、サイトのバージョン、日付、追加した場合はスクリーンショット、サインインしている場合はこのサイトでの名前です。報告は、このサイトの作業を計画しているボード「Sumilabu」に保存され、修正する人が読みます。",
+    "Anyone can report a problem from the bottom of any page. What we keep is what was written, the page that was open when you reported (leaving out everything after the \"?\" in the URL, because that part can contain a private link), the version of the site, the date, a screenshot if you added one, and your name on this site if you are signed in. Reports are kept on the board \"Sumilabu\", on which the work of this site is planned, and are read by the people who fix things.",
   ),
 
   "privacy.cookies.h": r("クッキー", "Cookies"),
@@ -145,7 +147,7 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "The browser also keeps some information for this site in its own storage area. These stay inside your device. A practice-board game you stopped partway, your own private notes on a game, which way round you turned a board, whether you chose \"盤だけ表示\", result cards you closed, and the choices you are partway through making on the new-game screen. Only one of these leaves your device. When you report a problem, the browser keeps a random ID for itself and sends it with each report, so that several reports from the same browser can be told apart from reports by many people. It is not your name, your address or your account. If you clear this site's data in your browser, all of these disappear.",
   ),
 
-  "privacy.services.h": r("委託先", "Who else handles it"),
+  "privacy.services.h": r("ほかに情報を扱うところ", "Who else handles the information"),
   "privacy.services.paraA": r(
     "サイトの運営を支えるサービスがいくつかあり、それぞれが、必要な情報だけを扱います。",
     "There are several services that support the running of the site, and each handles only the information it needs.",
@@ -163,8 +165,8 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "Resend, which delivers the few emails the site sends.",
   ),
   "privacy.services.pointD": r(
-    "報告された不具合を保管する、私たち自身のボードのSumilabu。",
-    "Sumilabu, our own board, which keeps the reported problems.",
+    "私たち自身のボードであるSumilabu。報告された不具合を保管します。",
+    "Sumilabu, our own board. It keeps the reported problems.",
   ),
   "privacy.services.pointE": r(
     "広告ネットワーク、分析サービス、トラッキングピクセルは使っていません。",
@@ -173,8 +175,8 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
 
   "privacy.email.h": r("メール", "Email"),
   "privacy.email.paraA": r(
-    "サイトが自らメールを送るのは、何かがきっかけになったときだけです。会員が友人に送る招待と、サイトで対局のメールが有効になっている間の、ご自身の対局についてのお知らせ（対局が終わったとき、または自分の手番のとき）で、ご自身のページで選んだ種類に限ります。どのメールにも、サインインしなくても受信を止められる方法が書かれています。招待を依頼したり不具合を報告したりした場合、返事は人から、ご記入のアドレスに届きます。アドレスが販売されたり、他者に渡されたりすることは決してありません。",
-    "The site itself sends email only when something prompts it. An invitation a member sends to a friend, and notices about your own games (when a game has ended, or when it is your move) while game emails are switched on at the site, limited to the kinds you chose on your own page. Every email says how to stop receiving it without signing in. When you ask for an invitation or report a problem, the reply comes from a person, to the address you entered. Your address is never sold or given to others.",
+    "サイトが自らメールを送るのは、何かがきっかけになったときだけです。会員が友人に送る招待と、サイトで対局のメールが有効になっている間の、ご自身の対局についてのお知らせ（対局が終わったとき、または自分の手番のとき）で、ご自身のページで選んだ種類に限ります。どのメールにも、サインインしなくても受信を止められる方法が書かれています。招待を依頼したり不具合を報告したりした場合、返事は人から、ご記入のメールアドレスに届きます。メールアドレスが販売されたり、他者に渡されたりすることは決してありません。",
+    "The site itself sends email only when something prompts it. An invitation a member sends to a friend, and notices about your own games (when a game has ended, or when it is your move) while game emails are switched on at the site, limited to the kinds you chose on your own page. Every email says how to stop receiving it without signing in. When you ask for an invitation or report a problem, the reply comes from a person, to the email address you entered. Your email address is never sold or given to others.",
   ),
 
   "privacy.children.h": child("子ども", "Children"),
@@ -183,8 +185,8 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "Among the people who play here are children, who play together with their families. The site is built with that in mind. Information about members does not reach visitors with no invitation, members' pages cannot be opened without an invitation, and there is no advertising.",
   ),
   "privacy.children.paraB": child(
-    "参加するとき、ほかの何よりも先に、年齢の区分をお聞きします。13歳未満、13〜17歳、18歳以上のいずれかです。これより詳しいことは聞きもしませんし、保存もしません。13歳未満の会員がここでアカウントを続けるには、親または保護者の同意が必要です。同じページで、親または保護者がお名前を入力し、親か保護者かを答えます。その内容を日付とともに保存します。同意がなければ、アカウントは続けられません。この質問ができる前に参加した会員には、次にご自身のページを開いたときにお尋ねします。運営者が、家族のために回答を手作業で記録することもできます。",
-    "When you join, before anything else, we ask your age band. It is one of under 13, 13 to 17, or 18 and over. We neither ask nor keep anything more detailed than that. For a member under 13 to keep an account here, the consent of a parent or guardian is needed. On the same page, the parent or guardian enters their name and answers whether they are a parent or a guardian. We keep that together with the date. Without consent, the account cannot continue. Members who joined before this question existed are asked the next time they open their own page. The operator can also record the answer by hand for a family.",
+    "参加するとき、ほかの何よりも先に、年齢の区分をお聞きします。13歳未満、13〜17歳、18歳以上のいずれかです。これより詳しいことは聞きもしませんし、保存もしません。13歳未満の会員がここでアカウントを続けるには、親または保護者の同意が必要です。同じページで、親または保護者がお名前を入力し、親か保護者かを答えます。その内容を日付とともに保存します。同意がなければ、アカウントは続けられません。この質問を始める前に参加した会員には、次にご自身のページを開いたときにお尋ねします。運営者が、家族のために回答を手作業で記録することもできます。",
+    "When you join, before anything else, we ask your age band. It is one of under 13, 13 to 17, or 18 and over. We neither ask nor keep anything more detailed than that. For a member under 13 to keep an account here, the consent of a parent or guardian is needed. On the same page, the parent or guardian enters their name and answers whether they are a parent or a guardian. We keep that together with the date. Without consent, the account cannot continue. Members who joined before this question was started are asked the next time they open their own page. The operator can also record the answer by hand for a family.",
   ),
   "privacy.children.paraC": child(
     "親または保護者は、お子さまのページ（プロフィール）から、保存しているお子さまの情報を確認し、お子さまのアカウントを削除できます。または{contact}にご連絡いただければ、運営者が代わりに行います。",
@@ -219,10 +221,11 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "privacy.keeping.paraB": r(
     "アカウントを削除するには、ご自身のページを開き、「プロフィール」を選んで、下にある「アカウントを削除」を使ってください。または{contact}にご連絡いただければ、運営者が削除します。プロフィール、手紙、リスト、経験値、パズルの解答記録は削除されます。自分の手を待っている対局も削除されますが、その前に、投了または中止の扱いになります。終了した対局は、相手の対局者のものでもあるため、記録に残ります。ただし、アカウントとの結びつきは外されます。名前を残すか、名前も外すかは、ご自身で選べます。",
     "To delete your account, open your own page, choose \"プロフィール\", and use \"アカウントを削除\" at the bottom. Or if you contact {contact}, the operator will delete it. Your profile, letters, lists, experience points and puzzle solve records are deleted. A game still waiting for your move is also deleted, but before that it is treated as resigned or called off. Finished games remain in the record, because they also belong to the other player. However, the tie to your account is removed. You can choose yourself whether to leave your name on them or take your name off as well.",
+    ASK_DELETE_GAMES,
   ),
   "privacy.keeping.paraC": r(
-    "保存している情報は、同じページの「保存している情報」に、平易な言葉と件数で一覧になっています。このページで説明していない情報は、何も保存していません。",
-    "The information we keep is listed, in plain words and counts, under \"保存している情報\" on the same page. We keep no information that this page does not describe.",
+    "保存している情報は、同じ「プロフィール」のページの「保存している情報」に、平易な言葉と件数で一覧になっています。このページで説明していない情報は、何も保存していません。",
+    "The information we keep is listed, in plain words and counts, under \"保存している情報\" on the same \"プロフィール\" page. We keep no information that this page does not describe.",
   ),
 
   "privacy.changes.h": r("改定", "Revisions"),

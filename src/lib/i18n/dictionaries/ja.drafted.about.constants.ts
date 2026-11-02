@@ -1779,8 +1779,8 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "Join",
   ),
   "about.page.joinWhat": r(
-    "招待コードを使うか、コードを頼みます。",
-    "Use an invitation code, or ask for one.",
+    "招待の合言葉を使うか、合言葉を頼みます。",
+    "Use an invitation 合言葉, or ask for one.",
   ),
   "about.page.play": r(
     "自分の対局",
@@ -1949,8 +1949,8 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "How to get in",
   ),
   "about.how.gettingInBody": r(
-    "招待コードで入れます。会員か私たちから受け取ります",
-    "By an invitation code, from a member or from us",
+    "招待の合言葉で入れます。会員か私たちから受け取ります",
+    "By an invitation 合言葉, from a member or from us",
   ),
   "about.how.games": r(
     "ゲーム",

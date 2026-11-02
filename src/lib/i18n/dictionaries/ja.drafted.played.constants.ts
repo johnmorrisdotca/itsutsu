@@ -72,8 +72,8 @@ export const JA_DRAFTED_PLAYED: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "played.applauseNoAccount": {
-    text: "印を残すにはアカウントが必要です。招待コードだけではアカウントになりません。",
-    back: "Leaving a mark needs an account. An invite code alone does not make an account.",
+    text: "印を残すにはアカウントが必要です。招待の合言葉だけではアカウントになりません。",
+    back: "Leaving a mark needs an account. An invitation 合言葉 alone does not make an account.",
     review: AGENT_READ,
   },
   // The ten reactions beside a game, and the six quick phrases

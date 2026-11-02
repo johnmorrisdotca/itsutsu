@@ -336,8 +336,8 @@ export const JA_DRAFTED_LIVE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "live.askNeedsAccount": {
-    text: "会員やコンピュータを指名すると、その相手に対局を申し込むことになり、アカウントが必要です。招待コードだけではアカウントになりません。誰でも座れる席と、1つの画面で2人で打つ対局は、いまのまま使えます。",
-    back: "Naming a member or a computer offers them a game, and that needs an account. An invite code alone does not make an account. A seat anyone can take, and a game for two on one screen, work as you are.",
+    text: "会員やコンピュータを指名すると、その相手に対局を申し込むことになり、アカウントが必要です。招待の合言葉だけではアカウントになりません。誰でも座れる席と、1つの画面で2人で打つ対局は、いまのまま使えます。",
+    back: "Naming a member or a computer offers them a game, and that needs an account. An invitation 合言葉 alone does not make an account. A seat anyone can take, and a game for two on one screen, work as you are.",
     review: AGENT_READ,
   },
   // The doorstep: what will be played, before it exists

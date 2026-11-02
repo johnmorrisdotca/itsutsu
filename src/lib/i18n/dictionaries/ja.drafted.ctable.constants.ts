@@ -639,8 +639,8 @@ export const JA_DRAFTED_CTABLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "ctable.crib.nobs": {
-    text: "ノブス {n}",
-    back: "nobs {n}",
+    text: "ジャック {n}",
+    back: "jack {n}",
     review: AGENT_READ,
   },
   "ctable.crib.nothing": {

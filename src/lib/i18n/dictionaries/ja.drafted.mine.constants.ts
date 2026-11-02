@@ -1105,8 +1105,8 @@ export const JA_DRAFTED_MINE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "To confirm it is you, please sign in with Google again",
   ),
   "mine.removeSignInNote": r(
-    "Googleのアカウントは先にもう一度サインインするため、サインインしたまま置かれたスマートフォンから削除されることはありません。",
-    "A Google account signs in again first, so it cannot be deleted from a smartphone left signed in.",
+    "Googleのアカウントは、先にもう一度サインインする必要があるため、サインインしたまま置かれたスマートフォンからは削除できません。",
+    "A Google account has to sign in again first, so it cannot be deleted from a smartphone left signed in.",
   ),
   "mine.removePress": r(
     "アカウントを削除する",

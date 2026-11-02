@@ -4,10 +4,17 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
 /**
  * Japanese for the err.* phrases (ENJA-13), each with what it literally says in `back`. A refusal is a short, polite です/ます sentence
  * ending in 。 (a few are the short noun phrase of a heading, as "リクエストが多すぎます"). Joined into `JA_DRAFTED`.
- * Every row has been read by the reviewer agent (`review`); the nine that carry an `ask` (removing an account, children under 13) still want a native read.
+ * Every row has been read by the reviewer agent (`review`); the nine that carry an `ask` (removing an account, children under 13) were read again clause for clause by the Japanese expert on 2026-11-02, and no person who reads Japanese has read them, so they stay on the review sheet.
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-11-02" };
 const r = (text: string, back: string, ask?: string): DraftedPhrase => ({ text, back, review: AGENT_READ, ...(ask === undefined ? {} : { ask }) });
+
+const READ_NOTE = "The Japanese expert read it against the English on 2026-11-02; no person who reads Japanese has read it, so a native read is still wanted.";
+const ASK_REMOVE = `An account page: removing an account. ${READ_NOTE}`;
+const ASK_CHILD_INVITE = `About a child under 13: the site does not email invitations for them. ${READ_NOTE}`;
+const ASK_CHILD_OFFER = `About a child under 13 (who may offer them a game). ${READ_NOTE}`;
+const ASK_CHILD_LINK = `About a child under 13 (invitations by name, not by link). ${READ_NOTE}`;
+const ASK_CHILD_SEAT = `About a child under 13 (who may sit with them). ${READ_NOTE}`;
 
 export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.signIn": r("先にサインインしてください。", "Please sign in first."),
@@ -18,7 +25,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.tooMany": r("リクエストが多すぎます", "Too many requests"),
   "err.rateLimited": r("リクエストの上限を超えました。{seconds}秒後にもう一度お試しください。", "The request limit was exceeded. Please try again in {seconds} seconds."),
   "err.unconfigured": r("このサイトは正しく設定されていません。", "This site is not set up correctly."),
-  "err.inviteNeeded": r("このサイトを使うには、招待コードが必要です。", "An invite code is needed to use this site."),
+  "err.inviteNeeded": r("このサイトを使うには、招待の合言葉が必要です。", "An invitation 合言葉 is needed to use this site."),
   "err.changeFailed": r("変更できませんでした。", "It could not be changed."),
   "err.sendFailed": r("送信できませんでした。", "It could not be sent."),
   "err.paging": r("ページ送りの指定が正しくありません。", "The paging specification is not correct."),
@@ -130,11 +137,11 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.me.notDates": r("日付として正しくありません。", "Those are not valid as dates."),
   "err.me.awayAllowance": r("休暇日は年に{days}日までです。すでに{used}日使っています。", "Away days are up to {days} a year. {used} have already been used."),
   "err.me.awayRange": r("終わりの日は、始まりの日より後にしてください。", "Make the end date later than the start date."),
-  "err.remove.signIn": r("アカウントを削除するには、サインインしてください。", "Sign in to delete the account.", "An account page: removing an account. A native read is recommended."),
-  "err.remove.shape": r("過去の対局に名前を残すかどうかを選び、確認の文字を入力してください。", "Choose whether the name stays on past games, and type the confirmation.", "An account page: removing an account. A native read is recommended."),
-  "err.remove.notConfirmed": r("入力欄で求められている内容と違うため、何も削除していません。", "It differs from what the box asks for, so nothing was deleted.", "An account page: removing an account. A native read is recommended."),
-  "err.remove.signInAgain": r("ご本人確認のため、先にもう一度Googleでサインインしてください。", "To confirm it is you, first sign in with Google again.", "An account page: removing an account. A native read is recommended."),
-  "err.remove.failed": r("アカウントを削除できませんでした。途中までになっている可能性があります。ご連絡いただければ、最後まで対応します。", "The account could not be deleted, and it may be only partway done. If you contact us, we will finish it.", "An account page: removing an account. A native read is recommended."),
+  "err.remove.signIn": r("アカウントを削除するには、サインインしてください。", "Sign in to delete the account.", ASK_REMOVE),
+  "err.remove.shape": r("過去の対局に名前を残すかどうかを選び、確認の文字を入力してください。", "Choose whether the name stays on past games, and type the confirmation.", ASK_REMOVE),
+  "err.remove.notConfirmed": r("入力欄で求められている内容と違うため、何も削除していません。", "It differs from what the box asks for, so nothing was deleted.", ASK_REMOVE),
+  "err.remove.signInAgain": r("ご本人確認のため、先にもう一度Googleでサインインしてください。", "To confirm it is you, first sign in with Google again.", ASK_REMOVE),
+  "err.remove.failed": r("アカウントを削除できませんでした。一部だけ削除されている可能性があります。ご連絡いただければ、こちらで最後まで削除します。", "The account could not be deleted. It may have been only partly deleted. If you contact us, we will delete the rest on our side.", ASK_REMOVE),
   "err.phrase.keepOrDrop": r("言葉を残すか戻すか、どちらか一方にしてください。", "Either keep a word or take one back, one of the two."),
   "err.phrase.notAPick": r("それは選択として正しくありません。", "That is not valid as a pick."),
   "err.phrase.expired": r("選択の有効期限が切れました。最初からやり直してください。30秒ほどで済みます。", "The pick has expired. Please start again. It takes about 30 seconds."),
@@ -153,7 +160,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.phrase.noAccountChange": r("変更できるアカウントがありません。", "There is no account to change."),
   "err.invite.signIn": r("誰かを招待するには、サインインしてください。", "Sign in to invite someone."),
   "err.invite.notEmail": r("メールアドレスの形式になっていません。", "It is not in the form of an email address."),
-  "err.invite.child": r("13歳未満の会員は、リンクを自分で共有できます。ただし、サイトから代わりに招待メールを送ることはありません。", "Members under 13 can share the link themselves. However, the site does not send invitation emails on their behalf.", "About a child under 13: the site does not email invitations for them. A native read is recommended."),
+  "err.invite.child": r("13歳未満の会員は、リンクを自分で共有できます。ただし、サイトから代わりに招待メールを送ることはありません。", "Members under 13 can share the link themselves. However, the site does not send invitation emails on their behalf.", ASK_CHILD_INVITE),
   "err.invite.createFailed": r("招待を作成できませんでした。", "The invitation could not be created."),
   "err.mail.badForm": r("リクエストの本文がフォーム形式ではありません。", "The body of the request is not in form format."),
   "err.mail.nothingToStop": r("そのリンクでは、止められるメールがありません。", "There is no email that link can stop."),
@@ -222,7 +229,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.puzzle.attemptFailed": r("挑戦回数を数えられませんでした。", "The attempt could not be counted."),
   "err.game.notYours": r("その対局は自分で打ったものではありません。", "That game is not one I played."),
   "err.member.notTaking": r("その会員は、いまあなたからの対局を受け付けていません。", "That member is not accepting games from you right now."),
-  "err.member.childBuddiesOnly": r("この対局者は13歳未満のため、本人の仲間リストにいる人だけが対局を申し込めます。", "This player is under 13, so only the people on their own buddy list can propose a game to them.", "About a child under 13 (who may offer them a game): a native read is recommended."),
+  "err.member.childBuddiesOnly": r("この対局者は13歳未満のため、本人の仲間リストにいる人だけが対局を申し込めます。", "This player is under 13, so only the people on their own buddy list can propose a game to them.", ASK_CHILD_OFFER),
   "err.game.stillPlaying": r("その対局はまだ続いています。", "That game is still going on."),
   "err.game.signInAgain": r("もう一度対局するには、サインインしてください。", "Sign in to play again."),
   "err.game.fewerMoves": r("その対局には、それだけの手数がありません。", "That game does not have that many moves."),
@@ -265,7 +272,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.table.seatOne": r("1番の席は自分の席です。", "Seat 1 is my seat."),
   "err.table.oneSeat": r("座れる席は1つだけです。", "I can sit in only one seat."),
   "err.table.noComputer": r("そのゲームには、そのようなコンピュータはありません。", "That game has no such computer player."),
-  "err.table.childLink": r("13歳未満の会員は、誰でも開けるリンクではなく、名前で仲間を招待します。", "A member under 13 invites buddies by name, not by a link anybody could open.", "About a child under 13 (invitations by name, not by link): a native read is recommended."),
+  "err.table.childLink": r("13歳未満の会員は、誰でも開けるリンクではなく、名前で仲間を招待します。", "A member under 13 invites buddies by name, not by a link anybody could open.", ASK_CHILD_LINK),
   "err.table.oneBuddySeat": r("仲間が座れる席は、1人につき1つです。", "Each buddy can sit in one seat."),
   "err.table.notThatSize": r("そのゲームは、その大きさでは用意されていません。", "That game is not offered at that size."),
   "err.table.askBuddies": r("声をかけられるのは、仲間リストにいる人です。", "The people I can ask are those on my buddy list."),
@@ -273,7 +280,7 @@ export const JA_DRAFTED_ERR: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "err.table.notAMove": r("それはこのゲームの手ではありません。", "That is not a move in this game."),
   "err.table.notAllowed": r("その手は打てません。", "That move cannot be played."),
   "err.table.seatIgnored": r("その卓にいる誰かが、あなたとの対局を受け付けていません。", "Somebody at that table is not accepting games with you."),
-  "err.table.seatChild": r("その卓には13歳未満の対局者がいるため、その人の仲間リストにいる人だけが同席できます。", "A player at that table is under 13, so only the people on that player's own buddy list can sit with them.", "About a child under 13 (who may sit with them): a native read is recommended."),
+  "err.table.seatChild": r("その卓には13歳未満の対局者がいるため、その人の仲間リストにいる人だけが同席できます。", "A player at that table is under 13, so only the people on that player's own buddy list can sit with them.", ASK_CHILD_SEAT),
   "err.table.capYou": r("すでに{most}卓に着いています。先にどれかを最後まで遊ぶか、終了してください。", "I am already at {most} tables. First play one to the end, or end one."),
   "err.table.capThem": r("声をかけた人が、すでに{most}卓に着いています。", "Somebody I asked is already at {most} tables."),
   "err.paging.noSort": r("「{word}」は、{of}にない並べ替えです。次のどれかを指定してください：{sorts}。", "\"{word}\" is a sort that {of} does not have. Specify one of the following: {sorts}."),
