@@ -190,12 +190,24 @@ export const WORD_TILE =
 // A white tile in both themes, so the light theme's inks (`surface-light`): a typed letter was ivory on white by night.
 export const WORD_TILE_EMPTY = "surface-light border-rule bg-white text-ink";
 export const WORD_TILE_TYPED = "surface-light border-ink-soft bg-white text-ink";
+/*
+ * The `dark:` colours are chosen for a reader who cannot tell green from grey
+ * or orange from yellow, and `wordTileColours.coverage.test.ts` holds them to
+ * it. John's ticket, 2026-11-02: the dark theme's moss, ochre, kana yellow and
+ * muted grey came out as green against grey 10 to 19 apart and orange against
+ * yellow 9 to 18 apart (CIE Lab distance, Machado's simulation of protanopia,
+ * deuteranopia and tritanopia), where the light theme's are 31 or more. Hue is
+ * what those readers lose, so the four are told apart by LIGHTNESS as well: a
+ * dark grey for not in the word, a mid mint, a deeper orange, a bright yellow.
+ * Each pair is at least 31 apart in all three, and each letter reads at 4.5:1.
+ * The light theme keeps the site's own tokens.
+ */
 export const WORD_TILE_MARK: Record<"hit" | "near" | "kin" | "miss", string> = {
-  hit: "border-moss bg-moss text-ivory",
-  near: "border-ochre bg-ochre text-ivory",
+  hit: "border-moss bg-moss text-ivory dark:border-[#79ac8c] dark:bg-[#79ac8c]",
+  near: "border-ochre bg-ochre text-ivory dark:border-[#d68141] dark:bg-[#d68141]",
   // The kana version's yellow: the word's kana here is in this one's column. Brighter than ochre's orange, dark ink on it.
-  kin: "surface-light border-[#d8b23a] bg-[#e3c24f] text-ink",
-  miss: "border-muted bg-muted text-ivory",
+  kin: "surface-light border-[#d8b23a] bg-[#e3c24f] text-ink dark:border-[#ffdb42] dark:bg-[#ffdb42]",
+  miss: "border-muted bg-muted text-ivory dark:border-rule-strong dark:bg-[#403d3a] dark:text-ink",
 };
 
 /** The keyboard under the grid: three rows, each key a fingertip tall. */
