@@ -172,9 +172,9 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pword.headStart.dodge": {
-    text: "逃げる単語は、まだ何も隠していないので、最初の予想の前に灰色にするものはありません。",
-    back: "A word that dodges hides nothing yet, so there is nothing to grey before the first guess.",
-    review: AGENT_READ,
+    text: "逃げる単語は、まだ何も隠していないので、最初の予想の前に黒にするものはありません。",
+    back: "A word that dodges hides nothing yet, so there is nothing to turn black before the first guess.",
+    ask: "Written on 2026-11-02; nobody has read it.",
   },
   "pword.headStart.backwards": {
     text: "逆さに遊ぶときは、先手は文字を減らすだけなので、ありません。",
@@ -187,9 +187,9 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pword.headStart.chosen": {
-    text: "{which}入っていない{unit}が{count}個、最初から灰色になります。行を使わない無料の予想ですが、{points}点かかります。",
-    back: "{count} {unit} not in {which} start grey: a free guess that uses no row. It costs {points} points.",
-    review: AGENT_READ,
+    text: "{which}入っていない{unit}が{count}個、最初から黒になります。行を使わない無料の予想ですが、{points}点かかります。",
+    back: "{count} {unit} not in {which} start black: a free guess that uses no row. It costs {points} points.",
+    ask: "Written on 2026-11-02; nobody has read it.",
   },
   "pword.headStart.letters": {
     text: "文字",
@@ -332,19 +332,19 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pword.solve.freeFirst": {
-    text: "最初の単語は無料で、すべて灰色です。",
-    back: "The first word is free, grey everywhere.  ",
-    review: AGENT_READ,
+    text: "最初の単語は無料で、すべて黒です。",
+    back: "The first word is free, black everywhere.  ",
+    ask: "Written on 2026-11-02; nobody has read it.",
   },
   "pword.solve.freeFirstTwo": {
-    text: "最初の単語は無料で、両方の単語に対してすべて灰色です。",
-    back: "The first word is free, grey everywhere for both words.  ",
-    review: AGENT_READ,
+    text: "最初の単語は無料で、両方の単語に対してすべて黒です。",
+    back: "The first word is free, black everywhere for both words.  ",
+    ask: "Written on 2026-11-02; nobody has read it.",
   },
   "pword.solve.freeFirstFour": {
-    text: "最初の単語は無料で、4つの区画のすべてに対してすべて灰色です。",
-    back: "The first word is free, grey everywhere in all four quarters.  ",
-    review: AGENT_READ,
+    text: "最初の単語は無料で、4つの区画のすべてに対してすべて黒です。",
+    back: "The first word is free, black everywhere in all four quarters.  ",
+    ask: "Written on 2026-11-02; nobody has read it.",
   },
   "pword.solve.allFour": {
     text: "予想は、4つすべての単語に送られます。",
@@ -907,9 +907,9 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "pword.hold.grey": {
-    text: "{unit}は灰色だったので、もう使えません",
-    back: "{unit} was grey, and may not be used again",
-    review: AGENT_READ,
+    text: "{unit}は黒だったので、もう使えません",
+    back: "{unit} was black, and may not be used again",
+    ask: "Written on 2026-11-02; nobody has read it.",
   },
   "pword.hold.letterMust": {
     text: "{ordinal}の文字は、{unit}のままにします",
@@ -1120,6 +1120,11 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "このかなではありませんが、同じ行のかなが、ここに入ります。五十音表で、か・き・く・け・こは「か行」です。「か」を入れて、単語のそこが「き」なら、どちらも「か行」なので黄色です。",
     back: "It is not this kana, but a kana from the same row goes here. In the fifty-sound chart, か, き, く, け, こ are the 「か row」. If you put in か and the word has き there, both are in the か row, so it is yellow.",
     review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.greyName": {
+    text: "濃い灰色",
+    back: "Dark grey",
+    ask: "Written on 2026-11-02; nobody has read it.",
   },
   "pword.help.blackName": {
     text: "黒色",

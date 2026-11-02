@@ -813,8 +813,8 @@ const WORD_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
 };
 /** Kana: the free grey word is one of the level's rows (`layout.ts`), so easy and medium are a guess shorter than their rows. */
 const KANA_LEVEL_BLURBS: Record<PuzzleLevel, string> = {
-  easy: "One of the commonest words, a free grey word and seven guesses: eight rows.",
-  medium: "A wider list of words, a free grey word and six guesses: seven rows.",
+  easy: "One of the commonest words, a free black word and seven guesses: eight rows.",
+  medium: "A wider list of words, a free black word and six guesses: seven rows.",
   hard: "A wider list of words, six guesses and no free word.",
   "extra-hard": "A wider list of words, six guesses and no free word.",
 };
@@ -1090,8 +1090,8 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Guessing a word from what each guess gives away is an old parlour game: Jotto (1955) counted the letters two words share, and the television game Lingo (1987) coloured each letter in its place or not. Josh Wardle's Wordle (2021) made the five-letter form a daily habit.",
     rules: [
       "A word is hidden: five letters, four in the short form, or six in the long one. Type a word of that length and press Enter to guess it.",
-      "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
-      "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
+      "Each letter of the guess turns green if it is in the word in that place, orange if it is in the word somewhere else, and black if it is not in the word at all.",
+      "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes black.",
       "Easy gives eight guesses, medium seven and hard six, at every length: a short word is no easier to find, since it gives away fewer letters a guess and many four-letter words differ by one letter. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Strict, a choice at any level, keeps you honest: every letter already found must be used again, a green one in its place.",
       HEAD_START_RULE,
@@ -1107,12 +1107,12 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     origin:
       "Gomoji in Japanese: the same hunt for a hidden word, played in hiragana, where a kana can be nearly right in ways a letter cannot. The rules for size, marks and columns are our own.",
     rules: [
-      "A word is hidden, three, four or five kana long, in hiragana. Easy gives eight rows, medium seven and hard six, at every length: on easy and medium the first is the free grey word, so easy is seven guesses and medium six, and hard six with no free word. Every guess must be a real word.",
-      "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same column of the kana table (か き く け こ are one column). Grey is none of those.",
+      "A word is hidden, three, four or five kana long, in hiragana. Easy gives eight rows, medium seven and hard six, at every length: on easy and medium the first is the free black word, so easy is seven guesses and medium six, and hard six with no free word. Every guess must be a real word.",
+      "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same column of the kana table (か き く け こ are one column). Black is none of those.",
       "An arrow means right kana, not quite: down for the wrong size (つ for っ), up for the wrong mark (は for ば or ぱ). The word is found only when every place is plain green.",
-      "On easy and medium the puzzle opens with a free word already played that is grey everywhere, so its kana are out before you start.",
+      "On easy and medium the puzzle opens with a free word already played that is black everywhere, so its kana are out before you start.",
       "Type with the kana keys, or in romaji on your own keyboard (ka, kya, tsu; a double consonant for っ, nn for ん, - for ー). Strict, a choice at any level, keeps you honest: every kana found must be used again, a green one in its place.",
-      "Head start, a choice at easy, greys as many kana keys as the word is long before the first guess, none of them in the word nor in the free grey word: a free guess that takes no row, at a cost of 50 points.",
+      "Head start, a choice at easy, turns as many kana keys black as the word is long before the first guess, none of them in the word nor in the free black word: a free guess that takes no row, at a cost of 50 points.",
     ],
     board:
       "Three kana is the gentlest, five the hardest. The words come from JMdict, the Japanese dictionary of the Electronic Dictionary Research and Development Group, used under its licence and refreshed every month. The answers are the commonest words by a fixed rule — textbook-common words first, then by how often newspapers use them: easy hides one of the 900 commonest at its length, medium and hard one of the 2,000 commonest, and any word in the dictionary may be guessed.",
@@ -1127,8 +1127,8 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     country: "FR",
     rules: [
       "A word is hidden: five letters, four in the short form, or six in the long one. Type a word of that length and press Enter to guess it.",
-      "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
-      "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
+      "Each letter of the guess turns green if it is in the word in that place, orange if it is in the word somewhere else, and black if it is not in the word at all.",
+      "A letter appears in the colours as often as it is in the word: guess two E's against a word with one, and one E lights up while the other goes black.",
       "Eight guesses at easy, seven at medium and six at hard, at every length. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
       HEAD_START_RULE,
@@ -1146,7 +1146,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
     country: "DE",
     rules: [
       "A word is hidden: five letters, four in the short form, or six in the long one. Type a word of that length and press Enter to guess it.",
-      "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
+      "Each letter of the guess turns green if it is in the word in that place, orange if it is in the word somewhere else, and black if it is not in the word at all.",
       "Ä, Ö and Ü are letters of their own, not vowels with a fold: a guess for ä only matches ä.",
       "Eight guesses at easy, seven at medium and six at hard, at every length. Every guess must be a real word; a word the list does not know is refused and costs nothing.",
       "Hard keeps you honest: every letter already found must be used again, a green one in its place.",
@@ -1163,7 +1163,7 @@ export const PUZZLE_DISPLAY: Record<PuzzleKind, VariantCopy> = {
       "Gomoji with a quiz inside it: the hunt for a hidden word Josh Wardle's Wordle (2021) made a daily habit, over a list of the games, films, myths, music, sport and Japanese culture people know by name, each word shown with the category it comes from.",
     rules: [
       "A word is hidden, three to seven letters long, and its category is shown above the board: a Pokemon, a Greek deity, a musical instrument. Type a word of that length and press Enter to guess it.",
-      "Each letter of the guess turns green if it is in the word in that place, gold if it is in the word somewhere else, and grey if it is not in the word at all.",
+      "Each letter of the guess turns green if it is in the word in that place, orange if it is in the word somewhere else, and black if it is not in the word at all.",
       "Any English word of the length may be guessed, and any word of the pop list, names included: MARIO and ZELDA are words here.",
       "Easy gives eight guesses, medium seven and hard six, at every length. A word the list does not know is refused and costs nothing.",
       "Strict, a choice at any level, keeps you honest: every letter already found must be used again, a green one in its place.",

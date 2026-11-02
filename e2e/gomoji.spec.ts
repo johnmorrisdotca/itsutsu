@@ -462,6 +462,27 @@ test.describe("the word puzzle", () => {
     await expect(page.locator('[data-testid="word-tile"][data-mark="hit"], [data-testid="word-tile"][data-mark="near"], [data-testid="word-tile"][data-mark="miss"]')).toHaveCount(0);
   });
 
+  test("the colour guide names the colours as the chosen style paints them: black on stones, dark grey on tiles", async ({ page }) => {
+    const seed = freshPuzzleSeed();
+    await page.goto(`${AT}/play?size=4&level=hard&seed=${seed}`);
+    await ready(page, "puzzle-play");
+    await ready(page, "word-help-open");
+    await page.getByTestId("word-style-reversi").click();
+    await page.getByTestId("word-help-open").click();
+    const dialog = page.getByTestId("word-help-dialog");
+    await expect(dialog).toContainText("Black");
+    await expect(dialog).not.toContainText("Dark grey");
+    await page.getByTestId("word-help-done").click();
+    await page.getByTestId("word-style-tiles").click();
+    await page.getByTestId("word-help-open").click();
+    await expect(dialog).toContainText("Dark grey");
+    await page.getByTestId("word-help-done").click();
+    // Back to Reversi, where the account started, and waited for: the next spec must not open on Tiles.
+    const back = page.waitForResponse((answer) => answer.url().endsWith("/api/me") && answer.request().method() === "PATCH");
+    await page.getByTestId("word-style-reversi").click();
+    expect((await back).ok()).toBe(true);
+  });
+
   test("running out of guesses ends it and shows the word", async ({ page }) => {
     // Hard: six guesses, as at every length (four letters had five before 2026-09-28).
     const seed = freshPuzzleSeed();

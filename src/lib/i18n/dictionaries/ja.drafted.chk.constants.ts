@@ -64,7 +64,7 @@ export const JA_DRAFTED_CHK: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "chk.hold.played": unread("{unit}は、もう打ちました", "{unit} has been played already"),
   "chk.hold.stay": unread("{place}番目は、{unit}のままにします", "the one in place {place} must stay {unit}"),
   "chk.hold.use": unread("予想には、{unit}を使う必要があります", "the guess must use {unit}"),
-  "chk.hold.grey": unread("{unit}は灰色だったので、もう使えません", "{unit} was grey, and may not be used again"),
+  "chk.hold.grey": unread("{unit}は黒だったので、もう使えません", "{unit} was black, and may not be used again"),
   "chk.rowsLeft": r("行がまだ残っています", "there are rows left"),
   "chk.neverTyped": r("言葉が一度も入力されていません", "the word was never typed"),
   "chk.goOnAfterTyped": r("言葉が入力されたあとも、推測が続いています", "guesses go on after the word was typed"),

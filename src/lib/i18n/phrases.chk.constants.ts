@@ -55,7 +55,7 @@ export const PHRASES_CHK = {
   "chk.hold.played": "{unit} has been played already",
   "chk.hold.stay": "the one in place {place} must stay {unit}",
   "chk.hold.use": "the guess must use {unit}",
-  "chk.hold.grey": "{unit} was grey, and may not be used again",
+  "chk.hold.grey": "{unit} was black, and may not be used again",
   "chk.rowsLeft": "there are rows left",
   "chk.neverTyped": "the word was never typed",
   "chk.goOnAfterTyped": "guesses go on after the word was typed",

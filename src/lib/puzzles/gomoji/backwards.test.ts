@@ -24,13 +24,13 @@ const guessesOf = (kind: PuzzleKind, size: number, answer: string): string[] =>
   (kind === "gomojiKana" ? decodeKanaGuesses(answer, size) : decodeGuesses(answer, size, languageOf(kind))) ?? [];
 
 describe("Gomoji Sakasa 逆さ: played backwards", () => {
-  it("every letter uncovered is used again: a green stays, an orange is used, a grey never comes back", () => {
+  it("every letter uncovered is used again: a green stays, an orange is used, a black never comes back", () => {
     // CRANE against the word CRATE: C, R, A green; N grey; E green.
     expect(breaksBackwardsRule("gomoji", ["crane"], "crate", "trace")).toMatch(/first must stay C/);
     expect(breaksBackwardsRule("gomoji", ["crane"], "crate", "craze")).toBeNull();
     expect(breaksBackwardsRule("gomoji", ["crane"], "crate", "crake")).toBeNull();
     // N was grey, and is never typed again.
-    expect(breaksBackwardsRule("gomoji", ["slate"], "crane", "snare")).toMatch(/S was grey/);
+    expect(breaksBackwardsRule("gomoji", ["slate"], "crane", "snare")).toMatch(/S was black/);
     // An orange must be used again, anywhere.
     expect(breaksBackwardsRule("gomoji", ["irony"], "crane", "track")).toMatch(/must use N|R was|must stay/);
     // Nor is a word played twice.

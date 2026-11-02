@@ -12,8 +12,8 @@ const AGENT_READ = AGENT_READ_2026_10_06;
 
 /** A lettered Gomoji's Head start, in its rules (`headStart.ts`); the kana one says it in kana. */
 const HEAD_START: JaLine = [
-  "「先手」は、初級で選べます。最初の予想の前に、単語の文字数と同じ数のキーを灰色にします。灰色にするのは、単語に入っていない文字です。行を使わない無料の予想ですが、50点を払います。",
-  "Head start, a choice at easy, greys as many keys as the word has letters before the first guess, none of them letters in the word. It is a free guess that takes no row, at a cost of 50 points.",
+  "「先手」は、初級で選べます。最初の予想の前に、単語の文字数と同じ数のキーを黒にします。黒にするのは、単語に入っていない文字です。行を使わない無料の予想ですが、50点を払います。",
+  "Head start, a choice at easy, turns as many keys black as the word has letters before the first guess, none of them letters in the word. It is a free guess that takes no row, at a cost of 50 points.",
 ];
 
 const FIVE_LETTERS: JaLine = [
@@ -21,8 +21,8 @@ const FIVE_LETTERS: JaLine = [
   "A word is hidden: five letters long, four in the short form, six in the long one. Type a word of that length and press Enter to guess it.",
 ];
 const COLOURS: JaLine = [
-  "予想の1文字ごとに色がつきます。その場所に正しく入っていれば緑、単語のほかの場所にあれば金色、単語に入っていなければ灰色です。",
-  "Each letter of the guess gets a colour: green if it is in the word in that place, gold if it is in the word somewhere else, grey if it is not in the word at all.",
+  "予想の1文字ごとに色がつきます。その場所に正しく入っていれば緑、単語のほかの場所にあればオレンジ、単語に入っていなければ黒です。",
+  "Each letter of the guess gets a colour: green if it is in the word in that place, orange if it is in the word somewhere else, black if it is not in the word at all.",
 ];
 const STRICT: JaLine = [
   "「ストリクト」は、どのレベルでも選べます。見つかった文字は、次の予想でも必ず使い、緑の文字は同じ場所に置きます。",
@@ -47,8 +47,8 @@ export const PUZZLE_COPY_JA_WORDS = {
       FIVE_LETTERS,
       COLOURS,
       [
-        "文字の色は、その文字が単語に入っている数だけつきます。単語にEが1つしかないのにEを2つ入れると、1つのEが光り、もう1つは灰色になります。",
-        "A letter is coloured as many times as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
+        "文字の色は、その文字が単語に入っている数だけつきます。単語にEが1つしかないのにEを2つ入れると、1つのEが光り、もう1つは黒になります。",
+        "A letter is coloured as many times as it is in the word: guess two E's against a word with one, and one E lights up while the other goes black.",
       ],
       [
         "予想の回数は、初級が8回、中級が7回、上級が6回で、どの長さでも同じです。短い単語は、1回の予想で分かる文字が少なく、1文字違いの4文字の単語も多いので、見つけやすいわけではありません。予想は実在する単語でなければなりません。リストにない単語は受け付けられず、回数も減りません。",
@@ -62,6 +62,7 @@ export const PUZZLE_COPY_JA_WORDS = {
       "Four, five or six letters. The board is eight rows tall at every length and level, and eight squares across for four or six letters and nine for five, so the word sits in the middle. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one from a wider list, and any word in the lists may be guessed.",
     ],
     review: AGENT_READ,
+    ask: "The colour words in this entry were changed on 2026-11-02 (grey and gold became black and orange, as the board and the Colour guide paint them); nobody has read the change.",
   },
   gomojiKana: {
     tagline: [
@@ -74,28 +75,28 @@ export const PUZZLE_COPY_JA_WORDS = {
     ],
     rules: [
       [
-        "単語が1つ隠れています。ひらがなで3文字、4文字、5文字のどれかです。予想の行数は、初級が8行、中級が7行、上級が6行で、どの長さでも同じです。初級と中級では最初の1行が無料の灰色の単語なので、予想できるのは初級が7回、中級が6回、上級は無料の単語なしで6回です。予想は実在する単語でなければなりません。",
-        "A word is hidden, three, four or five kana long, in hiragana. The rows are eight on easy, seven on medium and six on hard, at every length: on easy and medium the first row is the free grey word, so you get seven guesses on easy and six on medium, and six with no free word on hard. Every guess must be a real word.",
+        "単語が1つ隠れています。ひらがなで3文字、4文字、5文字のどれかです。予想の行数は、初級が8行、中級が7行、上級が6行で、どの長さでも同じです。初級と中級では最初の1行が無料の黒の単語なので、予想できるのは初級が7回、中級が6回、上級は無料の単語なしで6回です。予想は実在する単語でなければなりません。",
+        "A word is hidden, three, four or five kana long, in hiragana. The rows are eight on easy, seven on medium and six on hard, at every length: on easy and medium the first row is the free black word, so you get seven guesses on easy and six on medium, and six with no free word on hard. Every guess must be a real word.",
       ],
       [
-        "緑は、正しいかなが正しい場所にあることです。オレンジは、そのかなが単語のほかの場所にあることです。黄色は、この場所に入る単語のかなが、かな表で同じ行にあることです（か・き・く・け・こは「か行」です）。灰色は、そのどれでもありません。",
-        "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same row of the kana table (か き く け こ are one row). Grey is none of those.",
+        "緑は、正しいかなが正しい場所にあることです。オレンジは、そのかなが単語のほかの場所にあることです。黄色は、この場所に入る単語のかなが、かな表で同じ行にあることです（か・き・く・け・こは「か行」です）。黒は、そのどれでもありません。",
+        "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same row of the kana table (か き く け こ are one row). Black is none of those.",
       ],
       [
         "矢印は、かなは合っているが、惜しいという意味です。下向きは大きさのちがい（「っ」のところに「つ」）、上向きは濁点や半濁点のちがい（「ば」や「ぱ」のところに「は」）です。すべての場所がふつうの緑になったときに、単語が見つかったことになります。",
         "An arrow means the right kana, but not quite: down for the wrong size (つ for っ), up for the wrong mark (は for ば or ぱ). The word is found only when every place is plain green.",
       ],
       [
-        "初級と中級では、始まるときに、すでに予想された無料の単語があり、そのかなはすべて灰色です。始める前に、そのかなは候補から消えています。",
-        "On easy and medium the puzzle opens with a free word already played, grey everywhere, so its kana are ruled out before you start.",
+        "初級と中級では、始まるときに、すでに予想された無料の単語があり、そのかなはすべて黒です。始める前に、そのかなは候補から消えています。",
+        "On easy and medium the puzzle opens with a free word already played, black everywhere, so its kana are ruled out before you start.",
       ],
       [
         "かなのキーで打つか、パソコンのキーボードでローマ字（ka、kya、tsu。「っ」は子音を2回、「ん」はnn、「ー」は-）で打ちます。「ストリクト」は、どのレベルでも選べます。見つかったかなは次の予想でも必ず使い、緑のかなは同じ場所に置きます。",
         "Type with the kana keys, or in romaji on your own keyboard (ka, kya, tsu; a doubled consonant for っ, nn for ん, - for ー). Strict, a choice at any level, keeps you honest: every kana found must be used again, and a green one goes in its place.",
       ],
       [
-        "「先手」は、初級で選べます。最初の予想の前に、単語の長さと同じ数のかなキーを灰色にします。灰色にするのは、単語にも無料の灰色の単語にも入っていないかなです。行を使わない無料の予想ですが、50点を払います。",
-        "Head start, a choice at easy, greys as many kana keys as the word is long before the first guess, none of them in the word or in the free grey word. It is a free guess that takes no row, at a cost of 50 points.",
+        "「先手」は、初級で選べます。最初の予想の前に、単語の長さと同じ数のかなキーを黒にします。黒にするのは、単語にも無料の黒の単語にも入っていないかなです。行を使わない無料の予想ですが、50点を払います。",
+        "Head start, a choice at easy, turns as many kana keys black as the word is long before the first guess, none of them in the word or in the free black word. It is a free guess that takes no row, at a cost of 50 points.",
       ],
     ],
     board: [
@@ -103,6 +104,7 @@ export const PUZZLE_COPY_JA_WORDS = {
       "Three kana is the gentlest, five the hardest. The words come from JMdict, the Japanese dictionary of the Electronic Dictionary Research and Development Group, used under its licence and refreshed every month. The answers are the commonest words by a fixed rule: first the words common in textbooks, then by how often newspapers use them. Easy hides one of the 900 commonest at its length, medium and hard one of the 2,000 commonest, and any word in the dictionary may be guessed.",
     ],
     review: AGENT_READ,
+    ask: "The colour words in this entry were changed on 2026-11-02 (grey and gold became black and orange, as the board and the Colour guide paint them); nobody has read the change.",
   },
   gomojiMot: {
     tagline: [
@@ -117,8 +119,8 @@ export const PUZZLE_COPY_JA_WORDS = {
       FIVE_LETTERS,
       COLOURS,
       [
-        "文字の色は、その文字が単語に入っている数だけつきます。単語にEが1つしかないのにEを2つ入れると、1つのEが光り、もう1つは灰色になります。",
-        "A letter is coloured as many times as it is in the word: guess two E's against a word with one, and one E lights up while the other goes grey.",
+        "文字の色は、その文字が単語に入っている数だけつきます。単語にEが1つしかないのにEを2つ入れると、1つのEが光り、もう1つは黒になります。",
+        "A letter is coloured as many times as it is in the word: guess two E's against a word with one, and one E lights up while the other goes black.",
       ],
       [
         "予想の回数は、初級が8回、中級が7回、上級が6回で、どの長さでも同じです。予想は実在する単語でなければなりません。リストにない単語は受け付けられず、回数も減りません。",
@@ -132,6 +134,7 @@ export const PUZZLE_COPY_JA_WORDS = {
       "Four, five or six letters, with eight guesses on easy, seven on medium and six on hard. Any word in Lexique, a French dictionary of about 140,000 words, may be guessed. The hidden word is one that Wiktionary has too, read in French books and in its dictionary form: never a name, a plural, a conjugated verb or a word borrowed from English. Easy hides one of the commoner words as Lexique counts them, by how often French film dialogue uses them (hermitdave's FrequencyWords), and medium and hard one from the wider list. Accents are folded away, and words spelled with œ or æ are left out.",
     ],
     review: AGENT_READ,
+    ask: "The colour words in this entry were changed on 2026-11-02 (grey and gold became black and orange, as the board and the Colour guide paint them); nobody has read the change.",
   },
   gomojiWort: {
     tagline: [
