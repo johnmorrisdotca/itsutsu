@@ -8,8 +8,6 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-11-02" };
 const r = (text: string, back: string): DraftedPhrase => ({ text, back, review: AGENT_READ });
-/** Written on 2026-11-02 and not yet read by anybody, so no review (the same sentences the board says as pword.hold.*, which were read). */
-const unread = (text: string, back: string): DraftedPhrase => ({ text, back, ask: "Written on 2026-11-02; nobody has read it." });
 /** The three games that arrived with their refusals read kept their stamp when those refusals moved here from pword.* and pgrid.*. */
 const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
@@ -61,10 +59,10 @@ export const JA_DRAFTED_CHK: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "chk.theWordFound": r("言葉が見つかっています", "the word was found"),
   "chk.guessesLeft": r("推測がまだ残っています", "there are guesses left"),
   "chk.wordTyped": r("言葉が入力されています", "the word was typed"),
-  "chk.hold.played": unread("{unit}は、もう打ちました", "{unit} has been played already"),
-  "chk.hold.stay": unread("{place}番目は、{unit}のままにします", "the one in place {place} must stay {unit}"),
-  "chk.hold.use": unread("予想には、{unit}を使う必要があります", "the guess must use {unit}"),
-  "chk.hold.grey": unread("{unit}は黒だったので、もう使えません", "{unit} was black, and may not be used again"),
+  "chk.hold.played": r("{unit}は、もう打ちました", "{unit} has been played already"),
+  "chk.hold.stay": r("{place}番目は、{unit}のままにしなければなりません", "the one in place {place} must stay {unit}"),
+  "chk.hold.use": r("予想には、{unit}を使う必要があります", "the guess must use {unit}"),
+  "chk.hold.grey": r("{unit}は黒だったので、もう使えません", "{unit} was black, and may not be used again"),
   "chk.rowsLeft": r("行がまだ残っています", "there are rows left"),
   "chk.neverTyped": r("言葉が一度も入力されていません", "the word was never typed"),
   "chk.goOnAfterTyped": r("言葉が入力されたあとも、推測が続いています", "guesses go on after the word was typed"),

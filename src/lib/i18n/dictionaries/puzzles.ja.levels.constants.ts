@@ -85,10 +85,10 @@ const WORD_LEVELS: Record<PuzzleLevel, JaLine> = {
 };
 const KANA_LEVELS: Record<PuzzleLevel, JaLine> = {
   easy: [
-    "いちばん身近な単語のどれかで、無料の黒の単語があり、予想は7回、行は8行です。",
-    "One of the commonest words, a free black word and seven guesses: eight rows.",
+    "いちばん身近な単語のどれかで、すべて黒になる無料の単語があり、予想は7回、行は8行です。",
+    "One of the commonest words, a free word that comes out all black and seven guesses: eight rows.",
   ],
-  medium: ["もっと広い単語のリストからで、無料の黒の単語があり、予想は6回、行は7行です。", "A wider list of words, a free black word and six guesses: seven rows."],
+  medium: ["もっと広い単語のリストからで、すべて黒になる無料の単語があり、予想は6回、行は7行です。", "A wider list of words, a free word that comes out all black and six guesses: seven rows."],
   hard: ["もっと広い単語のリストからで、予想は6回、無料の単語はありません。", "A wider list of words, six guesses and no free word."],
   "extra-hard": ["もっと広い単語のリストからで、予想は6回、無料の単語はありません。", "A wider list of words, six guesses and no free word."],
 };

@@ -174,7 +174,7 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "pword.headStart.dodge": {
     text: "逃げる単語は、まだ何も隠していないので、最初の予想の前に黒にするものはありません。",
     back: "A word that dodges hides nothing yet, so there is nothing to turn black before the first guess.",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: AGENT_READ_2026_11_02,
   },
   "pword.headStart.backwards": {
     text: "逆さに遊ぶときは、先手は文字を減らすだけなので、ありません。",
@@ -189,7 +189,7 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "pword.headStart.chosen": {
     text: "{which}入っていない{unit}が{count}個、最初から黒になります。行を使わない無料の予想ですが、{points}点かかります。",
     back: "{count} {unit} not in {which} start black: a free guess that uses no row. It costs {points} points.",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: AGENT_READ_2026_11_02,
   },
   "pword.headStart.letters": {
     text: "文字",
@@ -334,17 +334,17 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "pword.solve.freeFirst": {
     text: "最初の単語は無料で、すべて黒です。",
     back: "The first word is free, black everywhere.  ",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: AGENT_READ_2026_11_02,
   },
   "pword.solve.freeFirstTwo": {
     text: "最初の単語は無料で、両方の単語に対してすべて黒です。",
     back: "The first word is free, black everywhere for both words.  ",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: AGENT_READ_2026_11_02,
   },
   "pword.solve.freeFirstFour": {
-    text: "最初の単語は無料で、4つの区画のすべてに対してすべて黒です。",
-    back: "The first word is free, black everywhere in all four quarters.  ",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    text: "最初の単語は無料で、4つの区画のどれに対しても、すべて黒です。",
+    back: "The first word is free, and black everywhere against every one of the four quarters.",
+    review: AGENT_READ_2026_11_02,
   },
   "pword.solve.allFour": {
     text: "予想は、4つすべての単語に送られます。",
@@ -909,7 +909,7 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "pword.hold.grey": {
     text: "{unit}は黒だったので、もう使えません",
     back: "{unit} was black, and may not be used again",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: AGENT_READ_2026_11_02,
   },
   "pword.hold.letterMust": {
     text: "{ordinal}の文字は、{unit}のままにします",
@@ -1122,9 +1122,9 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ_2026_11_02,
   },
   "pword.help.greyName": {
-    text: "濃い灰色",
+    text: "濃いグレー",
     back: "Dark grey",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: AGENT_READ_2026_11_02,
   },
   "pword.help.blackName": {
     text: "黒色",

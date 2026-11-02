@@ -1,4 +1,4 @@
-import { AGENT_READ_2026_10_06, type JaLine } from "../copyJa.types";
+import { AGENT_READ_2026_10_06, type CopyReview, type JaLine } from "../copyJa.types";
 import { JAPANESE_TILE_MIX, KUMIMOJI_HANDS, kumimojiTileCount } from "../../puzzles/kumimoji/tiles.constants";
 
 import type { PuzzleCopyJa } from "./puzzles.ja.types";
@@ -9,6 +9,8 @@ import type { PuzzleCopyJa } from "./puzzles.ja.types";
  * game, so what is here is only the words about the game.
  */
 const AGENT_READ = AGENT_READ_2026_10_06;
+/** The Japanese expert's pass of 2026-11-02 over the Gomoji entries, whose colour words changed that day. */
+const AGENT_READ_2026_11_02: CopyReview = { by: "agent", on: "2026-11-02" };
 
 /** A lettered Gomoji's Head start, in its rules (`headStart.ts`); the kana one says it in kana. */
 const HEAD_START: JaLine = [
@@ -21,7 +23,7 @@ const FIVE_LETTERS: JaLine = [
   "A word is hidden: five letters long, four in the short form, six in the long one. Type a word of that length and press Enter to guess it.",
 ];
 const COLOURS: JaLine = [
-  "予想の1文字ごとに色がつきます。その場所に正しく入っていれば緑、単語のほかの場所にあればオレンジ、単語に入っていなければ黒です。",
+  "予想の1文字ごとに色がつきます。その場所に正しく入っていれば緑色、単語のほかの場所にあればオレンジ色、単語に入っていなければ黒色です。",
   "Each letter of the guess gets a colour: green if it is in the word in that place, orange if it is in the word somewhere else, black if it is not in the word at all.",
 ];
 const STRICT: JaLine = [
@@ -61,8 +63,7 @@ export const PUZZLE_COPY_JA_WORDS = {
       "4文字、5文字、6文字から選べます。盤はどの長さ、どのレベルでも8行です。横は、4文字と6文字が8マス、5文字が9マスで、単語が中央に来ます。単語はKevin Atkinsonの綴りリスト「SCOWL」から取っています。初級はごく身近な単語のどれか、中級と上級はもっと広いリストの単語のどれかが答えで、予想にはリストにあるどの単語も使えます。",
       "Four, five or six letters. The board is eight rows tall at every length and level, and eight squares across for four or six letters and nine for five, so the word sits in the middle. The words come from SCOWL, the spelling lists by Kevin Atkinson: easy hides one of the commonest words, medium and hard one from a wider list, and any word in the lists may be guessed.",
     ],
-    review: AGENT_READ,
-    ask: "The colour words in this entry were changed on 2026-11-02 (grey and gold became black and orange, as the board and the Colour guide paint them); nobody has read the change.",
+    review: AGENT_READ_2026_11_02,
   },
   gomojiKana: {
     tagline: [
@@ -75,11 +76,11 @@ export const PUZZLE_COPY_JA_WORDS = {
     ],
     rules: [
       [
-        "単語が1つ隠れています。ひらがなで3文字、4文字、5文字のどれかです。予想の行数は、初級が8行、中級が7行、上級が6行で、どの長さでも同じです。初級と中級では最初の1行が無料の黒の単語なので、予想できるのは初級が7回、中級が6回、上級は無料の単語なしで6回です。予想は実在する単語でなければなりません。",
-        "A word is hidden, three, four or five kana long, in hiragana. The rows are eight on easy, seven on medium and six on hard, at every length: on easy and medium the first row is the free black word, so you get seven guesses on easy and six on medium, and six with no free word on hard. Every guess must be a real word.",
+        "単語が1つ隠れています。ひらがなで3文字、4文字、5文字のどれかです。予想の行数は、初級が8行、中級が7行、上級が6行で、どの長さでも同じです。初級と中級では最初の1行が、すべて黒になる無料の単語なので、予想できるのは初級が7回、中級が6回、上級は無料の単語なしで6回です。予想は実在する単語でなければなりません。",
+        "A word is hidden, three, four or five kana long, in hiragana. The rows are eight on easy, seven on medium and six on hard, at every length: on easy and medium the first row is a free word that comes out all black, so you get seven guesses on easy and six on medium, and six with no free word on hard. Every guess must be a real word.",
       ],
       [
-        "緑は、正しいかなが正しい場所にあることです。オレンジは、そのかなが単語のほかの場所にあることです。黄色は、この場所に入る単語のかなが、かな表で同じ行にあることです（か・き・く・け・こは「か行」です）。黒は、そのどれでもありません。",
+        "緑色は、正しいかなが正しい場所にあることです。オレンジ色は、そのかなが単語のほかの場所にあることです。黄色は、この場所に入る単語のかなが、かな表で同じ行にあることです（か・き・く・け・こは「か行」です）。黒色は、そのどれでもありません。",
         "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same row of the kana table (か き く け こ are one row). Black is none of those.",
       ],
       [
@@ -95,16 +96,15 @@ export const PUZZLE_COPY_JA_WORDS = {
         "Type with the kana keys, or in romaji on your own keyboard (ka, kya, tsu; a doubled consonant for っ, nn for ん, - for ー). Strict, a choice at any level, keeps you honest: every kana found must be used again, and a green one goes in its place.",
       ],
       [
-        "「先手」は、初級で選べます。最初の予想の前に、単語の長さと同じ数のかなキーを黒にします。黒にするのは、単語にも無料の黒の単語にも入っていないかなです。行を使わない無料の予想ですが、50点を払います。",
-        "Head start, a choice at easy, turns as many kana keys black as the word is long before the first guess, none of them in the word or in the free black word. It is a free guess that takes no row, at a cost of 50 points.",
+        "「先手」は、初級で選べます。最初の予想の前に、単語の長さと同じ数のかなキーを黒にします。黒にするのは、単語にも、すべて黒になる無料の単語にも入っていないかなです。行を使わない無料の予想ですが、50点を払います。",
+        "Head start, a choice at easy, turns as many kana keys black as the word is long before the first guess, none of them in the word or in the free word that comes out all black. It is a free guess that takes no row, at a cost of 50 points.",
       ],
     ],
     board: [
       "3文字がいちばんやさしく、5文字がいちばん難しいです。単語は、電子辞書研究開発グループの日本語辞書「JMdict」から取っています。ライセンスに従って使い、毎月更新しています。答えになる単語は、決まった基準でよく使われるものです。まず教科書によく出る言葉、次に新聞で使われる回数の順です。初級は、その長さのいちばんよく使われる900語のうちの1語、中級と上級は2,000語のうちの1語が答えで、予想には辞書にあるどの単語も使えます。",
       "Three kana is the gentlest, five the hardest. The words come from JMdict, the Japanese dictionary of the Electronic Dictionary Research and Development Group, used under its licence and refreshed every month. The answers are the commonest words by a fixed rule: first the words common in textbooks, then by how often newspapers use them. Easy hides one of the 900 commonest at its length, medium and hard one of the 2,000 commonest, and any word in the dictionary may be guessed.",
     ],
-    review: AGENT_READ,
-    ask: "The colour words in this entry were changed on 2026-11-02 (grey and gold became black and orange, as the board and the Colour guide paint them); nobody has read the change.",
+    review: AGENT_READ_2026_11_02,
   },
   gomojiMot: {
     tagline: [
@@ -133,8 +133,7 @@ export const PUZZLE_COPY_JA_WORDS = {
       "4文字、5文字、6文字から選べて、予想の回数は初級が8回、中級が7回、上級が6回です。予想には、約14万語のフランス語辞書「Lexique」にあるどの単語も使えます。答えは、Wiktionaryにもある単語で、フランス語の本で読まれる、辞書の見出しの形です。人名、複数形、活用した動詞、英語からの借用語は入りません。初級はLexiqueの数え方でよく使われる単語、中級と上級はもっと広いリストから出ます。よく使われる単語は、フランス語の映画のせりふでの多さ（hermitdaveのFrequencyWords）を目安にしています。アクセント記号は取り除かれ、œやæを含む単語は除いています。",
       "Four, five or six letters, with eight guesses on easy, seven on medium and six on hard. Any word in Lexique, a French dictionary of about 140,000 words, may be guessed. The hidden word is one that Wiktionary has too, read in French books and in its dictionary form: never a name, a plural, a conjugated verb or a word borrowed from English. Easy hides one of the commoner words as Lexique counts them, by how often French film dialogue uses them (hermitdave's FrequencyWords), and medium and hard one from the wider list. Accents are folded away, and words spelled with œ or æ are left out.",
     ],
-    review: AGENT_READ,
-    ask: "The colour words in this entry were changed on 2026-11-02 (grey and gold became black and orange, as the board and the Colour guide paint them); nobody has read the change.",
+    review: AGENT_READ_2026_11_02,
   },
   gomojiWort: {
     tagline: [
@@ -163,7 +162,7 @@ export const PUZZLE_COPY_JA_WORDS = {
       "4文字、5文字、6文字から選べて、予想の回数は初級が8回、中級が7回、上級が6回です。予想には、LanguageToolのドイツ語辞書にあるどの形も使えます。人名や略語は使えません。答えは、Wiktionaryにもある単語で、辞書の見出しの形です。複数形、語形変化した形、英語からの借用語は入りません。単語のよく使われる度合いは、ドイツ語の映画のせりふでの多さ（hermitdaveのFrequencyWords）で決めています。初級はよく使われる単語、中級と上級はもっと広いリストから出ます。ßを含む単語は、フランス語版がœやæを除くのと同じように除いています。",
       "Four, five or six letters, with eight guesses on easy, seven on medium and six on hard. Any form in LanguageTool's German dictionary may be guessed, never a name or an abbreviation. The hidden word is one that Wiktionary has too, in its dictionary form: never a plural, an inflected form or a word borrowed from English. How common a word is is decided by how often German film dialogue says it (hermitdave's FrequencyWords): easy hides one of the commoner words, medium and hard one from the wider list. Words spelled with ß are left out, the way the French version leaves out œ and æ.",
     ],
-    review: AGENT_READ,
+    review: AGENT_READ_2026_11_02,
   },
   gomojiPop: {
     tagline: [
@@ -195,7 +194,7 @@ export const PUZZLE_COPY_JA_WORDS = {
       "設定画面の1段目は3文字から6文字、2段目は4文字から7文字です。答えは手で管理している1つのリストで、どの言葉もカテゴリに合っているか、サイトのどの会員にも向いているかを確かめています。名前は、記号やロゴなしの、ふつうの言葉として書いています。予想には、そのリストと、Kevin Atkinsonの綴りリスト「SCOWL」にある言葉が使えます。",
       "The set-up screen's first shelf has three to six letters, and its second four to seven. The answers are one list kept by hand, each word checked to belong to its category and to be fit for every member of the site; names are written as plain words, with no marks or logos. Guesses come from that list and from SCOWL, the spelling lists by Kevin Atkinson.",
     ],
-    review: AGENT_READ,
+    review: AGENT_READ_2026_11_02,
   },
   tsunagi: {
     tagline: ["同じ色のビー玉の組を線でつなぎ、盤をすべて埋めます。", "Join each pair of marbles with a line, and fill the whole board."],
