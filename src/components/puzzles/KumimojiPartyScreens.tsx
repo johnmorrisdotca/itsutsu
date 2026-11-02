@@ -10,7 +10,7 @@ import type { BoardThemeTokens } from "@/components/board/board.types";
 import { WinCoverOver } from "@/components/game/WinCover";
 import { ResultMark } from "@/components/game/ResultMark";
 import { RESULT_MARKS } from "@/components/game/resultMark.constants";
-import { WIN_COVER_COPY } from "@/components/game/winCover.constants";
+import { winCoverCopy } from "@/components/game/winCover.constants";
 import { TableWallpaper } from "@/components/party/TableWallpaper";
 import type { WinNews } from "@/components/game/winCover.types";
 import Link from "@/components/ui/Link";
@@ -218,7 +218,7 @@ export function KumimojiPartyFinish({
       {/* Again deals a new bag in this browser; a table on several devices is set again from its set-up. */}
       {onAgain === undefined ? null : (
         <button type="button" className={PLAY_BUTTON} onClick={onAgain} data-testid="kumimoji-party-again">
-          <PressLabel words={WIN_COVER_COPY.againSamePlayers} kanji="再" />
+          <PressLabel words={winCoverCopy(say).againSamePlayers} kanji="再" />
         </button>
       )}
       {/* Every crossword at the table as a wallpaper; a table on several devices offers its own beside its seats. */}

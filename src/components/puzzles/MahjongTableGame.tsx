@@ -13,7 +13,7 @@ import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.const
 import type { Appearance } from "@/components/board/board.types";
 import { AskIfAway } from "@/components/game/AskIfAway";
 import { WinCoverOver, useWinMoment } from "@/components/game/WinCover";
-import { WIN_COVER_COPY } from "@/components/game/winCover.constants";
+import { winCoverCopy } from "@/components/game/winCover.constants";
 import { tableNews } from "@/components/game/winNews";
 import { TableWallpaper } from "@/components/party/TableWallpaper";
 import { partyScreenWords } from "@/components/party/partyWords";
@@ -190,8 +190,8 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
                 winners: state.winners,
                 // One person among computers is "you"; several people round the device are each named.
                 you: people.length === 1 ? people[0]! : null,
-                next: { label: WIN_COVER_COPY.playAgain, onPress: again },
-              })
+                next: { label: winCoverCopy(say).playAgain, onPress: again },
+              }, say)
             : null
         }
         onClose={moment.close}
@@ -215,7 +215,7 @@ export function MahjongTableGame({ puzzle, players, appearance = DEFAULT_APPEARA
       {state.over ? (
         <>
           <button type="button" className={PLAY_BUTTON} onClick={again} data-testid="mahjong-table-again">
-            <PressLabel words={WIN_COVER_COPY.playAgain} kanji="再" />
+            <PressLabel words={winCoverCopy(say).playAgain} kanji="再" />
           </button>
           <TableWallpaper game="mahjong" result={winnersLine(table, state.winners, say)} />
         </>
