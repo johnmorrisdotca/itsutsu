@@ -654,14 +654,14 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "SGF does not write a point the way the board does, and it is better to say so plainly than to imply a compatibility that does not exist. An SGF point is two lowercase letters, the column and then the row, counted from the top-left corner with no letter skipped. So H8 here is hh, and A1 at the bottom-left is ao. One scheme is for reading and the other for storing, and the table below shows the whole of the difference between them.",
   ),
   "about.notation.e": {
-    text: "終わった対局はすべて保存され、1局は再生画面からテキストとして写し取れ、記録全体も、単純な一覧として持ち出せます。囲碁、オセロ、五目並べ、連珠、ヘックスの終わった対局は、再生画面から<mono>.sgf</mono>ファイルとしてダウンロードでき、そのゲームを読めるどのプログラムでも開けます。SGFに番号がないゲーム、つまり石取りのゲーム、Connect6、落とすゲームなどは、SGFファイルをまったく提供しません。それらがその4つの番号のどれかを名乗るファイルは、名前を借りた別のゲームになってしまうからです。",
-    back: "Every finished game is saved, a single game can be copied out as text from its replay screen, and the whole record can also be taken away as a plain list. A finished game of go, Othello, gomoku, renju or Hex can be downloaded as an .sgf file from its replay screen and opened in any program that can read that game. For games that SGF has no number for, namely the capture games, Connect6, the drop games and so on, no SGF file is offered at all, because a file claiming one of those four numbers would be a different game that has borrowed the name.",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    text: "終わった対局はすべて保存され、1局ずつ再生画面からテキストとして写し取れ、記録全体も単純な一覧として持ち出せます。囲碁、オセロ、五目並べ、連珠、ヘックスの終わった対局は、再生画面から<mono>.sgf</mono>ファイルとしてダウンロードでき、そのゲームを読めるどのプログラムでも開けます。SGFに番号がないゲーム（石取りのゲーム、Connect6、落とし系のゲームなど）には、SGFファイルを一切用意していません。そのゲームのファイルが先の4つの番号のどれかを名乗ると、名前を借りた別のゲームになってしまうからです。",
+    back: "Every finished game is saved, each single game can be copied out as text from its replay screen, and the whole record can be taken away as a plain list. A finished game of go, Othello, gomoku, renju or Hex can be downloaded as an .sgf file from its replay screen and opened in any program that can read that game. For games that SGF has no number for (the capture games, Connect6, the drop-style games and so on), no SGF file is provided at all. If a file for one of those games claimed one of the four numbers above, it would become a different game that has borrowed the name.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "about.notation.f": {
-    text: "ドラフツの仲間には専用のファイルがあり、それはSGFではありません。英国式チェッカー、プール、国際式、カナダ式、ロシア式、ブラジル式のドラフツは、終わった対局を再生画面から<mono>.pdn</mono>ファイルとしてダウンロードできます。PDN（Portable Draughts Notation）は、囲碁にとってのSGF、チェスにとってのPGNにあたるものです。ファイルはPDN独自の番号でゲームを示し（この6つでは順に21、23、20、27、25、26）、開始局面をFENタグとして書くので、駒を取り除いて始めた対局や、白から始める対局でも正しく読めます。最初の4つは、黒側から1行ずつ数えた暗いマスの番号で手を書きます。<mono>11-15</mono>であり、取る手は<mono>15x24</mono>です。ロシア式とブラジル式は、英字と数字で<mono>c3-d4</mono>、取る手は<mono>c3:e5</mono>と書きます。複数の駒を取る手は、着地するすべてのマスを並べた1つの手としてファイルに書かれ（<mono>15x24x31</mono>）、時間切れで失われた手番は、SGFのファイルと同じようにコメントになります。結果はPGNと同じく白を先に書くため、英国式チェッカーの結果を黒を先に読むプログラムでは逆に表示されますが、手そのものには影響しません。画面上の記録では、滑る手は<mono>g3→h4</mono>、取る手は<mono>g5:e3</mono>と書き、2つ跳ぶときは連なり全体の<mono>g5:e3:c1</mono>と書きます。",
-    back: "The draughts family has a file of its own, and it is not SGF. A finished game of English checkers, Pool, International, Canadian, Russian or Brazilian draughts can be downloaded from its replay screen as a .pdn file. PDN (Portable Draughts Notation) is to draughts what SGF is to go and PGN is to chess. The file names the game by PDN's own number (21, 23, 20, 27, 25 and 26 in turn for these six) and writes the starting position as a FEN tag, so a game started with pieces removed, or with white to open, still reads correctly. The first four write a move with the number of the dark squares, counted one row at a time from black's side. That is 11-15, and a capturing move is 15x24. Russian and Brazilian draughts write letters and numbers, c3-d4, and c3:e5 for a capturing move. A move that takes several pieces is written in the file as one move listing every square it lands on (15x24x31), and a turn lost to the clock becomes a comment, as in an SGF file. The result is written white first, as in PGN, so a program that reads English checkers results black first will show it reversed, but the moves themselves are not affected. In the on-screen record a sliding move is written g3→h4 and a capturing move g5:e3, and when two are jumped it writes the whole chain, g5:e3:c1.",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    text: "チェッカーとドラフツの系統には専用のファイルがあり、それはSGFではありません。英国式チェッカー、プールチェッカー、国際ドラフツ、カナディアンチェッカー、ロシアチェッカー、ブラジルチェッカーの終わった対局は、再生画面から<mono>.pdn</mono>ファイルとしてダウンロードできます。PDN（Portable Draughts Notation）は、囲碁にとってのSGF、チェスにとってのPGNにあたるものです。ファイルはPDN独自の番号でゲームを示し（この6つでは順に21、23、20、27、25、26）、開始局面をFENタグとして書くので、駒を減らして始めた対局や、白番から始まる対局でも正しく読めます。最初の4つは、黒側から1行ずつ数えた暗いマスの番号で手を書きます。たとえば<mono>11-15</mono>で、取る手は<mono>15x24</mono>です。ロシアチェッカーとブラジルチェッカーは、英字と数字で<mono>c3-d4</mono>、取る手は<mono>c3:e5</mono>と書きます。複数の駒を取る手は、止まるすべてのマスを並べた1つの手としてファイルに書かれ（<mono>15x24x31</mono>）、時間切れで失われた手番は、SGFのファイルと同じようにコメントになります。結果はPGNと同じく白を先に書くため、英国式チェッカーの結果を黒を先に読むプログラムでは逆に表示されますが、手そのものには影響しません。画面上の記録では、1マス進む手は<mono>g3→h4</mono>、取る手は<mono>g5:e3</mono>と書き、2つ続けて跳び越えるときは連なり全体の<mono>g5:e3:c1</mono>と書きます。",
+    back: "The checkers and draughts family has a file of its own, and it is not SGF. A finished game of English checkers, Pool Checkers, International Draughts, Canadian Checkers, Russian Checkers or Brazilian Checkers can be downloaded from its replay screen as a .pdn file. PDN (Portable Draughts Notation) is to draughts what SGF is to go and PGN is to chess. The file names the game by PDN's own number (21, 23, 20, 27, 25 and 26 in turn for these six) and writes the starting position as a FEN tag, so a game started with fewer pieces, or with white to move first, still reads correctly. The first four write a move with the number of the dark squares, counted one row at a time from black's side. For example 11-15, and a capturing move is 15x24. Russian and Brazilian checkers write letters and numbers, c3-d4, and c3:e5 for a capturing move. A move that takes several pieces is written in the file as one move listing every square it stops on (15x24x31), and a turn lost to the clock becomes a comment, as in an SGF file. The result is written white first, as in PGN, so a program that reads English checkers results black first will show it reversed, but the moves themselves are not affected. In the on-screen record a move one square forward is written g3→h4 and a capturing move g5:e3, and when two are jumped in a row it writes the whole chain, g5:e3:c1.",
+    review: { by: "agent", on: "2026-11-02" },
   },
 
   // Experience and levels
@@ -1351,44 +1351,44 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "2001",
   ),
   "about.sites.pmGames": {
-    text: "パズルのみ：数独は40種近く、ロジックパズルは50種超",
-    back: "puzzles only: nearly forty kinds of Sudoku and over fifty logic puzzles",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    text: "パズルのみ：ナンプレは40種近く、ロジックパズルは50種超",
+    back: "puzzles only: nearly forty kinds of Number Place and over fifty logic puzzles",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "about.sites.pmFree": {
     text: "登録は無料",
     back: "registering is free",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "about.sites.pmRatings": {
     text: "パズルごとの得点、通算と月間の順位表",
     back: "a score for each puzzle, with all-time and monthly boards",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "about.sites.f": {
-    text: "<out https://www.puzzlemadness.co.uk/>PuzzleMadness</out>は、ここの「数字」の棚が好きな人にぜひ開いてほしいサイトです。ひとりの開発者が作った趣味のサイトで、登録は無料、中身はパズルだけです。数独は40種近くあり、9を超える数を文字で表す16×16の巨大盤から、5つの盤が重なる「サムライ」まで揃っています。そのほかに、ノノグラム、カックロ、スリザーリンク、スターバトル、不等号パズル、タワーズなど、50種を超えるロジックパズルもあります。学ぶべきは順位表です。どのパズルのページにも、通算と月間の順位表があり、ひと目で読めるほど簡素で、名前の横の星は、その人が何問解いたかを表します。得点は、自分で埋めたマス1つにつき5点で、候補を書き込んでもらうと50点引かれます。そのため、難しいパズルほど単純に価値が高く、時計で損をすることはありません。2026年9月24日と11月2日に読んだ内容です。正確なことは、サイト自身が基準です。上の表のダッシュは、確認できなかった事実なので載せていないという意味です。",
-    back: "PuzzleMadness is a site I would like people who like the Numbers shelf here to open. It is a hobby site made by one developer, registering is free, and the contents are only puzzles. There are nearly forty kinds of Sudoku, from a giant 16×16 board that writes the numbers past nine as letters to Samurai, where five boards overlap. Besides that there are over fifty logic puzzles, such as Nonograms, Kakuro, Slitherlink, Star Battle, inequality puzzles and Towers. What there is to learn from is the leaderboards. Every puzzle's page has an all-time and a monthly board, simple enough to read at a glance, and the star beside a name shows how many puzzles that person has solved. The score is five points for each square you fill in yourself, and fifty points are taken off if you ask it to write in the candidates. So a harder puzzle is simply worth more, and the clock never costs you. This is what was read on 24 September and 2 November 2026. The site itself is the authority. A dash in the table above means a fact that could not be confirmed, so it is not listed.",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    text: "<out https://www.puzzlemadness.co.uk/>PuzzleMadness</out>は、ここの「数」の棚が好きな人にぜひ開いてほしいサイトです。ひとりの開発者が作った趣味のサイトで、登録は無料、中身はパズルだけです。ナンプレは40種近くあり、9を超える数を文字で表す16×16の巨大盤から、5つの盤が重なる「サムライ」まで揃っています。そのほかに、ノノグラム、カックロ、スリザーリンク、スターバトル、不等式、摩天楼など、50種を超えるロジックパズルもあります。参考になるのは順位表です。どのパズルのページにも、通算と月間の順位表があり、ひと目で読めるほど簡素で、名前の横の星は、その人が何問解いたかを表します。得点は、自分で埋めたマス1つにつき5点で、候補を自動で書き込ませると50点引かれます。そのため、難しいパズルほど単純に価値が高く、時間がかかっても点は減りません。2026年9月24日と11月2日に読んだ内容です。正確な内容は、サイト自身の記載が基準です。上の表のダッシュは、確認できなかった事実なので載せていない、という意味です。",
+    back: "PuzzleMadness is a site I would like people who like the \"Numbers\" shelf here to open. It is a hobby site made by one developer, registering is free, and the contents are only puzzles. There are nearly forty kinds of Number Place, from a giant 16×16 board that writes the numbers past nine as letters to Samurai, where five boards overlap. Besides that there are over fifty logic puzzles, such as Nonograms, Kakuro, Slitherlink, Star Battle, Futoshiki and Skyscrapers. What is useful to look at is the leaderboards. Every puzzle's page has an all-time and a monthly board, simple enough to read at a glance, and the star beside a name shows how many puzzles that person has solved. The score is five points for each square you fill in yourself, and fifty points are taken off if you have it write in the candidates automatically. So a harder puzzle is simply worth more, and taking a long time loses you no points. This is what was read on 24 September and 2 November 2026. The site's own statement is the standard for the exact details. A dash in the table above means a fact that could not be confirmed, so it is not listed.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "about.sites.vintGames": {
     text: "30超：チェス、ドラフツ、五目並べ、連珠、オセロなど",
     back: "over thirty: chess, draughts, gomoku, renju, Othello and more",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "about.sites.vintPaid": {
     text: "VIPのページあり",
     back: "a VIP page",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "about.sites.vintRatings": {
     text: "いくつかのゲームの上位5人（名前の横に数字）",
     back: "a top five for several games, with a number beside each name",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   "about.sites.g": {
-    text: "<out https://www.vint.ee/>Vint.ee</out>は、NewRock Solutions OÜが作っているエストニアのゲームサイトで、自らを「知的な娯楽の本拠地」と称しています。ホームページには30を超えるオンラインゲームが並び、チェス、フィッシャーランダムチェス、国際式とロシア式のドラフツ、五目並べ、連珠、オセロ、エントロピー、ラインズ・オブ・アクション、数独などがあります。いくつかのゲームには上位5人の表があり、チェスの対局数を数えるカウンターは1,828,831局でした。ゲームのほかに、掲示板、イベントカレンダー、マインドスポーツ・オリンピアードのページ、指導者向けのページ、VIPのページがあり、13の言語で使え、日本語もその1つです。アカウントは、メールアドレス、Google、Facebookのいずれかで作ります。読めたのはそのホームページだけで、2026年11月2日のことです。サイトのほかの部分は、スクリプトからの接続を断るからです。始まった時期、無料で遊べるかどうか、VIPのページで何を提供しているか、会員が何人いるか、そして世界チャンピオンがその盤で打っているかどうかは、ここではわかっていないので、どれも主張しません。",
-    back: "Vint.ee is an Estonian games site made by NewRock Solutions OÜ, and it calls itself the home of intelligent entertainment. Its home page lines up over thirty online games, among them chess, Fischer random chess, international and Russian draughts, gomoku, renju, Othello, Entropy, Lines of Action and Sudoku. Several of the games have a table of the top five, and the counter of chess games played read 1,828,831. Besides the games there are a forum, an events calendar, a page for the Mind Sports Olympiad, a page for trainers and a VIP page; it can be used in thirteen languages, Japanese being one. An account is made with an email address, Google or Facebook. Only that home page could be read, on 2 November 2026, because the rest of the site turns away connections from a script. When it began, whether it is free to play, what the VIP page offers, how many members it has and whether a world champion plays on its boards are not known here, so none of them is claimed.",
-    ask: "Written on 2026-11-02; nobody has read it.",
+    text: "<out https://www.vint.ee/>Vint.ee</out>は、NewRock Solutions OÜが作っているエストニアのゲームサイトで、自らを「知的な娯楽の本拠地」と称しています。トップページには30を超えるオンラインゲームが並び、チェス、フィッシャーランダムチェス、国際式とロシア式のドラフツ、五目並べ、連珠、オセロ、エントロピー、ラインズオブアクション、ナンプレなどがあります。いくつかのゲームには上位5人の表があり、チェスの対局数を数えるカウンターは1,828,831局でした。ゲームのほかに、掲示板、イベントカレンダー、マインドスポーツ・オリンピアードのページ、指導者向けのページ、VIPのページがあり、13の言語で使え、日本語もその1つです。アカウントは、メールアドレス、Google、Facebookのいずれかで作ります。読めたのはそのトップページだけで、2026年11月2日のことです。サイトのほかの部分は、スクリプトからの接続を断るからです。始まった時期、無料で遊べるかどうか、VIPのページで何を提供しているか、会員が何人いるか、そして世界チャンピオンがその盤で打っているかどうかは、ここでは分かっていないので、どれも断定しません。",
+    back: "Vint.ee is an Estonian games site made by NewRock Solutions OÜ, and it calls itself the home of intelligent entertainment. Its top page lines up over thirty online games, among them chess, Fischer random chess, international and Russian draughts, gomoku, renju, Othello, Entropy, Lines of Action and Number Place. Several of the games have a table of the top five, and the counter of chess games played read 1,828,831. Besides the games there are a forum, an events calendar, a page for the Mind Sports Olympiad, a page for trainers and a VIP page; it can be used in thirteen languages, Japanese being one. An account is made with an email address, Google or Facebook. Only that top page could be read, on 2 November 2026, because the rest of the site turns away connections from a script. When it began, whether it is free to play, what the VIP page offers, how many members it has and whether a world champion plays on its boards are not known here, so none of them is asserted.",
+    review: { by: "agent", on: "2026-11-02" },
   },
 
   // The screenshots

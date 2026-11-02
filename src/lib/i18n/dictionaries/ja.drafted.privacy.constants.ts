@@ -35,9 +35,10 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     ASK_GOVERNING,
   ),
   "privacy.wordsAccount": {
-    text: "合言葉を使い、Googleのアドレスがないアカウントは、Googleと連携しない限り、1つのブラウザで{days}日間だけ使えます。その後は誰もサインインできなくなりますが、対局はサイトに残ります。",
-    back: "An account that uses 合言葉 and has no Google address can be used in one browser for just {days} days unless you link it with Google. After that nobody can sign in to it, but its games stay on the site.",
-    ask: `${ASK_LEGAL} Rewritten on 2026-11-02; the reviewer agent has not read this sentence.`,
+    text: "合言葉を使い、Googleのアドレスがないアカウントは、Googleを連携しない限り、1つのブラウザで{days}日間だけ使えます。その後は誰もサインインできなくなりますが、対局はサイトに残ります。",
+    back: "An account that uses 合言葉 and has no Google address can be used in one browser for just {days} days unless you link Google. After that nobody can sign in to it, but its games stay on the site.",
+    review: { by: "agent", on: "2026-11-02" },
+    ask: ASK_LEGAL,
   },
 
   "privacy.short.h": r("要約", "Summary"),
