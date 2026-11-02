@@ -1,9 +1,8 @@
 "use client";
 
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
-import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PartyTableCard } from "@/components/party/PartyTableCard";
+
 import { BLOCKS_PARTY_VARIANT, BLOCKS_STATUS } from "@/lib/gomoku/party/partyBlocks";
 import { partyPlayerName } from "@/lib/gomoku/party/partyRace";
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
@@ -26,19 +25,10 @@ export function PartyBlocksCard() {
   if (game === undefined || game === null || game.status !== BLOCKS_STATUS.playing) return null;
   const laid = game.moves.length;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="blocks-game">
-      <GameThumb variant={BLOCKS_PARTY_VARIANT} size="small" />
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_BLOCKS_COPY.card}</span>
-        <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={BLOCKS_PARTY_VARIANT} /> {say.say("party.blocks.forFour")} · {say.count("party.blocks.cardLaid", laid)} ·
-          <MarbleChip player={game.toPlay} />
-          {say.say("party.toPlay", { name: partyPlayerName(game.players, game.toPlay, say) })}
-        </span>
-      </div>
-      <Link href={passAndPlayPath(BLOCKS_PARTY_VARIANT)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="blocks-game-continue">
-        {PARTY_BLOCKS_COPY.resume} →
-      </Link>
-    </div>
+    <PartyTableCard thumb={BLOCKS_PARTY_VARIANT} heading={PARTY_BLOCKS_COPY.card} href={passAndPlayPath(BLOCKS_PARTY_VARIANT)} resume={PARTY_BLOCKS_COPY.resume} testId="blocks-game" continueTestId="blocks-game-continue">
+      <GameName variant={BLOCKS_PARTY_VARIANT} /> {say.say("party.blocks.forFour")} · {say.count("party.blocks.cardLaid", laid)} ·
+      <MarbleChip player={game.toPlay} />
+      {say.say("party.toPlay", { name: partyPlayerName(game.players, game.toPlay, say) })}
+    </PartyTableCard>
   );
 }

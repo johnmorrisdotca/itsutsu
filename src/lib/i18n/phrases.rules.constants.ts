@@ -10,6 +10,10 @@ export const PHRASES_RULES = {
   "rules.play": "How to play",
   "rules.house": "House rules",
   "rules.learn": "Learn",
+  "rules.inspired.tetromino": "the seven tetromino shapes",
+  "rules.inspired.starBattle": "Star Battle (one star)",
+  "rules.inspired.anagramGrid": "the anagram-grid race games",
+  "rules.inspired.swapGrid": "the swap-the-letters word grid",
   "rules.inspiredBy":
     "Inspired by {name}. The name belongs to its owner; this is our own version of the rules.",
   "rules.alsoKnownAs": "Also known as {names}.",

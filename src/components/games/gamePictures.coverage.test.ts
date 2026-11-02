@@ -170,6 +170,8 @@ function gamesNamed(file: (typeof FILES)[number]): Named[] {
 }
 
 function pictured(source: string, at: number): boolean {
+  // A card on My games for something going is drawn on the frame that draws its picture beside the words (`GoingCard`, `PartyTableCard`).
+  if (/<(GoingCard|PartyTableCard)\b/.test(source)) return true;
   return [...source.matchAll(/<GameThumb\b/g)].some((thumb) => {
     const between = source.slice(Math.min(at, thumb.index), Math.max(at, thumb.index));
     return between.replace(/\s+/g, "").length <= PICTURE_REACH;
@@ -280,9 +282,6 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/components/feed/FeedNewsLine.tsx": { GameThumb: "small" },
   // A card's line of facts about a famous game, the game named among them: a row of text, so small.
   "src/app/famous/page.tsx": { GameThumb: "small" },
-  "src/components/mine/LocalGameCard.tsx": { GameThumb: "small" },
-  "src/components/mine/LocalPartyCard.tsx": { GameThumb: "small" },
-  "src/components/mine/MahjongTableCard.tsx": { GameThumb: "small" },
   "src/components/mine/MyPuzzleRuns.tsx": { GameThumb: "small" },
   "src/components/mine/MyPuzzleSolves.tsx": { GameThumb: "small" },
   // Every game of every kind, a row each on the History tab.
@@ -319,36 +318,22 @@ const SURFACE_SIZES: Record<string, Partial<Record<(typeof PICTURES)[number], Pi
   "src/app/games/dice/page.tsx": { FamilyMark: "regular" },
   "src/app/games/tables/page.tsx": { FamilyMark: "regular" },
   // The same tab's casual games, a row for each with a level won or in progress, kept in this browser: a row like the rest.
-  "src/components/casual/CasualCard.tsx": { GameThumb: "small" },
   // And the Houseki games kept the same way in this browser, a row each, and the family's page under its own mark.
-  "src/components/houseki/HousekiCards.tsx": { GameThumb: "small" },
   "src/components/houseki/HousekiFamilyPage.tsx": { FamilyMark: "regular" },
   // My games' Pass and play tab: a race table's game kept in this browser (Chinese Checkers, Halma), a row like the board for two beside it.
-  "src/components/party/PartyGameCard.tsx": { GameThumb: "small" },
   // The same tab's Pair Go game, kept in this browser: a row like the two beside it.
-  "src/components/party/PairGoCard.tsx": { GameThumb: "small" },
   // The same tab's Block Five game for four, kept in this browser: a row like the others.
-  "src/components/party/PartyBlocksCard.tsx": { GameThumb: "small" },
   // And Dots and Boxes' game, kept in this browser: a row like the rest.
-  "src/components/party/DotsCard.tsx": { GameThumb: "small" },
   // And Superghost's, the same row.
-  "src/components/party/GhostCard.tsx": { GameThumb: "small" },
   // And Mancala's, the same.
-  "src/components/party/MancalaCard.tsx": { GameThumb: "small" },
-  "src/components/party/TrainCard.tsx": { GameThumb: "small" },
-  "src/components/party/yacht/YachtCard.tsx": { GameThumb: "small" },
-  "src/components/party/diceWar/DiceWarCard.tsx": { GameThumb: "small" },
-  "src/components/party/diceTable/DiceTableCard.tsx": { GameThumb: "small" },
-  "src/components/party/pachisi/PachisiCard.tsx": { GameThumb: "small" },
-  "src/components/party/gunjin/GunjinCard.tsx": { GameThumb: "small" },
-  "src/components/party/hitotsu/HitotsuCard.tsx": { GameThumb: "small" },
-  "src/components/party/sugoroku/SugorokuCard.tsx": { GameThumb: "small" },
   // The party tables on several devices, rows of a list on My games.
   "src/components/party/online/MyTables.tsx": { GameThumb: "small" },
   // And Tenka's.
-  "src/components/party/tenka/TenkaCard.tsx": { GameThumb: "small" },
-  "src/components/party/cards/CardGameCard.tsx": { GameThumb: "small" },
-  "src/components/games/GameCatalogue.tsx": { GameThumb: "regular", FamilyMark: "regular" },
+  "src/components/games/GameCatalogue.tsx": { FamilyMark: "regular" },
+  // A family's games, drawn when it is opened (`loadFamilyCards`): the cards of the families page.
+  "src/components/games/FamilyBody.tsx": { GameThumb: "regular" },
+  // The frame of every card on My games for something going: a small picture (a table, a game at one screen, a casual game, a Houseki level).
+  "src/components/mine/GoingCard.tsx": { GameThumb: "small" },
   // The learning shelf: a card per guide, headed by the game it is first about, as the catalogue's cards are.
   "src/app/learn/page.tsx": { GameThumb: "regular" },
   "src/components/games/GameCards.tsx": { GameThumb: "regular" },

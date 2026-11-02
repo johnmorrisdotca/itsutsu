@@ -1,9 +1,8 @@
 "use client";
 
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
-import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PartyTableCard } from "@/components/party/PartyTableCard";
+
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { TENKA_PHASES, TENKA_WORLD_ROUNDS } from "@/lib/party/tenka/tenka.constants";
@@ -29,19 +28,10 @@ export function TenkaCard() {
   if (game === undefined || game === null || game.phase === TENKA_PHASES.over) return null;
   const variant = PARTY_KINDS.tenka;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="party-game" data-variant={variant}>
-      <GameThumb variant={variant} size="small" />
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_COPY.card}</span>
-        <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · {say.count("count.player", game.players.length)} · {tenkaRoundLine(say, game.round, game.rounds, TENKA_WORLD_ROUNDS)} ·
-          <MarbleChip player={game.toPlay} />
-          {say.say("party.toPlay", { name: partyPlayerName(game, game.toPlay, say) })}
-        </span>
-      </div>
-      <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">
-        {PARTY_COPY.resume} →
-      </Link>
-    </div>
+    <PartyTableCard thumb={variant} heading={PARTY_COPY.card} href={passAndPlayPath(variant)} resume={PARTY_COPY.resume} dataVariant={variant}>
+      <GameName variant={variant} /> · {say.count("count.player", game.players.length)} · {tenkaRoundLine(say, game.round, game.rounds, TENKA_WORLD_ROUNDS)} ·
+      <MarbleChip player={game.toPlay} />
+      {say.say("party.toPlay", { name: partyPlayerName(game, game.toPlay, say) })}
+    </PartyTableCard>
   );
 }

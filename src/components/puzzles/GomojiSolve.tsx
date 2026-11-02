@@ -1,5 +1,6 @@
 "use client";
 
+import { RevealOnMount } from "@/components/ui/RevealOnMount";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { phraseWith } from "@/components/i18n/phraseWith";
 import Link from "@/components/ui/Link";
@@ -308,7 +309,7 @@ export function GomojiSolve({
           </div>
         </>
       ) : done.outOfGuesses ? (
-        <div className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
+        <RevealOnMount className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
           {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />}
           {/* Where the word went, and what playing it out paid: a loss is kept, never lost. */}
           {hasAccount && race === null ? (
@@ -334,7 +335,7 @@ export function GomojiSolve({
             <PuzzleWayBack kind={kind} />
           </div>
           <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? say.say("puzzle.outcome.outOfTime") : backwards ? say.say("pword.out.caughtShort", { n: String(guesses.length) }) : say.say("pword.out.guesses", { rows: String(rows) })} />
-        </div>
+        </RevealOnMount>
       ) : (
         <>
           {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={futagoScore(words.words, guesses, rows, done.elapsedMs)} headStart={headStart} />}

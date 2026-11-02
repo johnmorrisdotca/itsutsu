@@ -23,6 +23,7 @@ import { keepHouseki, useHousekiSave } from "./housekiStore";
 import { todayUtc, type HousekiEnd } from "./housekiRuntime";
 import { requestWords } from "./housekiWords";
 import { HOUSEKI_LABEL } from "@/lib/houseki/housekiCopy";
+import { useRevealOnMount } from "@/components/ui/useRevealOnMount";
 
 type Phase = "playing" | "won" | "lost" | "complete" | "gaveUp";
 type Counting = { state: "idle" } | { state: "sending" } | { state: "counted"; ip: number; first: boolean } | { state: "failed"; why: "signin" | "refused" | "unreachable" };
@@ -122,6 +123,8 @@ export function HousekiPlay({ kind, request, appearance }: { kind: HousekiKind; 
     setPhase("gaveUp");
   };
   const ended = phase !== "playing";
+  // The ending is said under the board, below the fold on a phone: it is brought into view when it appears.
+  const result = useRevealOnMount<HTMLDivElement>(ended);
   const what = requestWords(say, request);
   const label = HOUSEKI_LABEL[kind];
 
@@ -150,7 +153,7 @@ export function HousekiPlay({ kind, request, appearance }: { kind: HousekiKind; 
           <HousekiGameClient key={`${key}:${run}`} kind={kind} request={request} resume={run === 0 ? (resume ?? null) : null} run={run} appearance={appearance} onKeep={onKeep} onEnd={onEnd} onTitle={setTitle} stopped={phase === "gaveUp"} />
         )}
         {ended ? (
-          <div className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="houseki-result" data-result={phase} role="status">
+          <div ref={result} className={`${PANEL_CLASS} flex flex-col gap-2`} data-testid="houseki-result" data-result={phase} role="status">
             <h2 className={SECTION_HEADING} data-testid="houseki-result-title">
               {phase === "won"
                 ? say.say(request.kind === "lesson" ? "houseki.end.lessonDone" : "houseki.end.won", { what })

@@ -190,7 +190,7 @@ export const PHRASES_LIVE = {
   "live.winsDiscs": "{colour} wins on discs, {black} to {white}.",
   "live.winsCamp": "{colour} wins: the far camp is full.",
   "live.winsConnection": "{colour} wins: their two sides are joined.",
-  "live.winsBlocked": "{colour} wins: the other side has no move left.",
+  "live.winsBlocked": "{colour} won: the other side has no move left.",
   "live.winsIn": "{colour} wins in {moves}.",
   "live.finished": "Finished {when}",
   "live.offerToMeBold": "{who} has offered you this game",

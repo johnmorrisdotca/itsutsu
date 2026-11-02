@@ -103,6 +103,9 @@ export type DraftedPhrase = {
 /** The reviewer agent's pass over the first 179 phrases, 2026-10-06. */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
 
+/** The Japanese expert's pass of 2026-11-02 over the lines written or changed that day. */
+const AGENT_READ_2026_11_02: Review = { by: "agent", on: "2026-11-02" };
+
 const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "site.language": {
     text: "言語",
@@ -233,6 +236,26 @@ const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
 
+  "rules.inspired.tetromino": {
+    text: "7種類のテトロミノ",
+    back: "the seven tetrominoes",
+    review: AGENT_READ_2026_11_02,
+  },
+  "rules.inspired.starBattle": {
+    text: "スターバトル（星が1つの形）",
+    back: "Star Battle (the one-star form)",
+    review: AGENT_READ_2026_11_02,
+  },
+  "rules.inspired.anagramGrid": {
+    text: "文字タイルを並べ替えて単語の格子を作る競争ゲーム",
+    back: "the race games of rearranging letter tiles to make a grid of words",
+    review: AGENT_READ_2026_11_02,
+  },
+  "rules.inspired.swapGrid": {
+    text: "文字を入れ替えて単語を直す格子のパズル",
+    back: "the grid puzzle of swapping letters to put words right",
+    review: AGENT_READ_2026_11_02,
+  },
   "rules.inspiredBy": {
     text: "{name}に着想を得た版です。名称は権利者に帰属し、ここに記すのは当サイト独自の規則です。",
     back: "This is a version inspired by {name}. The name belongs to its rights holder; what is set down here is this site's own rules.",

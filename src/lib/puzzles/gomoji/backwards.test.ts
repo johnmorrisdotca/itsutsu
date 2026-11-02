@@ -8,7 +8,8 @@ import type { PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { freshSeed } from "../random";
 import { decodeKanaGuesses } from "../gomojiKana/kanaCode";
 import { decodeGuesses, languageOf } from "./code";
-import { backwardsGuesses, backwardsKeep, breaksBackwardsRule, breaksKeep } from "./backwards";
+import { speaker } from "../../i18n/i18n";
+import { backwardsGuesses, backwardsKeep, breaksBackwardsRule, breaksKeep, brokenBackwardsRule } from "./backwards";
 import { hiddenOfPlay, rowsOfPlay } from "./backwardsPlay";
 import { sakasaScore } from "./backwardsScore";
 import { backwardsDailySeed, dayOfBackwardsSeed, freshBackwardsSeed, innerBackwardsGivens, isBackwardsGivens, isBackwardsSeed } from "./backwardsSeed";
@@ -23,13 +24,13 @@ const guessesOf = (kind: PuzzleKind, size: number, answer: string): string[] =>
   (kind === "gomojiKana" ? decodeKanaGuesses(answer, size) : decodeGuesses(answer, size, languageOf(kind))) ?? [];
 
 describe("Gomoji Sakasa 逆さ: played backwards", () => {
-  it("every letter uncovered is used again: a green stays, an orange is used, a grey never comes back", () => {
+  it("every letter uncovered is used again: a green stays, an orange is used, a black never comes back", () => {
     // CRANE against the word CRATE: C, R, A green; N grey; E green.
     expect(breaksBackwardsRule("gomoji", ["crane"], "crate", "trace")).toMatch(/first must stay C/);
     expect(breaksBackwardsRule("gomoji", ["crane"], "crate", "craze")).toBeNull();
     expect(breaksBackwardsRule("gomoji", ["crane"], "crate", "crake")).toBeNull();
     // N was grey, and is never typed again.
-    expect(breaksBackwardsRule("gomoji", ["slate"], "crane", "snare")).toMatch(/S was grey/);
+    expect(breaksBackwardsRule("gomoji", ["slate"], "crane", "snare")).toMatch(/S was black/);
     // An orange must be used again, anywhere.
     expect(breaksBackwardsRule("gomoji", ["irony"], "crane", "track")).toMatch(/must use N|R was|must stay/);
     // Nor is a word played twice.
@@ -40,6 +41,26 @@ describe("Gomoji Sakasa 逆さ: played backwards", () => {
     const word = "crate";
     const rows = ["slate", "grate", "irate"];
     expect(breaksBackwardsRule("gomoji", rows, word, word)).toBeNull();
+  });
+
+  it("names the rule a guess breaks as a key and its values, which the server refuses by", () => {
+    expect(brokenBackwardsRule("gomoji", ["crane"], "crate", "trace")).toEqual({ code: "chk.hold.stay", values: { place: 1, unit: "C" } });
+    expect(brokenBackwardsRule("gomoji", ["slate"], "crane", "snare")).toEqual({ code: "chk.hold.grey", values: { unit: "S" } });
+    expect(brokenBackwardsRule("gomoji", ["crane"], "crate", "crane")).toEqual({ code: "chk.hold.played", values: { unit: "CRANE" } });
+    expect(brokenBackwardsRule("gomoji", ["crane"], "crate", "craze")).toBeNull();
+  });
+
+  it.each(KINDS)("%s: the check refuses a repeated guess by key and values, so a page says it in Japanese", (kind) => {
+    const size = PUZZLE_SPECS[kind].defaultSize;
+    const puzzle = generatePuzzle(kind, size, "medium", SEEDS[0]!);
+    const way = guessesOf(kind, size, puzzle.solution);
+    const refused = checkSolution(kind, size, puzzle.givens, [way[0]!, way[0]!, ...way.slice(2)].join(""), "medium");
+    expect(refused).toMatchObject({ ok: false, code: "chk.hold.played" });
+    const values = (refused as unknown as { values: { unit: string } }).values;
+    expect(values.unit).toBe(way[0]!.toUpperCase());
+    // The reader's language is chosen by the page: the same key says it in Japanese.
+    expect(speaker("ja").say("chk.hold.played", values)).toContain(values.unit);
+    expect(speaker("ja").say("chk.hold.played", values)).not.toMatch(/[a-z]{3}/);
   });
 
   it.each(KINDS)("%s: has a way through every row without the word, at every length and level", (kind) => {

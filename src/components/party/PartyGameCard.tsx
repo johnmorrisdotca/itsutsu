@@ -1,9 +1,8 @@
 "use client";
 
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
-import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PartyTableCard } from "@/components/party/PartyTableCard";
+
 import { PARTY_STATUS, partyPlayerName } from "@/lib/gomoku/party/partyRace";
 import type { PartyRaceState } from "@/lib/gomoku/party/partyRace.types";
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
@@ -28,20 +27,10 @@ export function PartyGameCard<S extends PartyRaceState, C extends number>({ kind
   if (game === undefined || game === null || game.status !== PARTY_STATUS.playing) return null;
   const variant = kind.rules.variant;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="party-game" data-variant={variant}>
-      <GameThumb variant={variant} size="small" />
-      {/* A text column that will not be squeezed under 11rem, so a long button (Japanese: 回し遊びのゲームを続ける) drops under it rather than leaving the words a few characters wide. */}
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_COPY.card}</span>
-        <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · {say.count("count.player", game.players.length)} · {say.count("count.move", game.moves.length)} ·
-          <MarbleChip player={game.toPlay} />
-          {say.say("party.toPlay", { name: partyPlayerName(game.players, game.toPlay, say) })}
-        </span>
-      </div>
-      <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">
-        {PARTY_COPY.resume} →
-      </Link>
-    </div>
+    <PartyTableCard thumb={variant} heading={PARTY_COPY.card} href={passAndPlayPath(variant)} resume={PARTY_COPY.resume} dataVariant={variant}>
+      <GameName variant={variant} /> · {say.count("count.player", game.players.length)} · {say.count("count.move", game.moves.length)} ·
+      <MarbleChip player={game.toPlay} />
+      {say.say("party.toPlay", { name: partyPlayerName(game.players, game.toPlay, say) })}
+    </PartyTableCard>
   );
 }

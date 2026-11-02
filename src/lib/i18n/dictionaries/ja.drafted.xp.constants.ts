@@ -5,6 +5,9 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
 /** The reviewer agent's pass over the XP, level and points Japanese (ENJA-09), 2026-10-06, to the standard in `japanese-reviewer.md` and the terms in `TERMS.md`. */
 const READ: Review = { by: "agent", on: "2026-10-06" };
 
+/** The Japanese expert's pass of 2026-11-02 over the line written that day. */
+const AGENT_READ_2026_11_02: Review = { by: "agent", on: "2026-11-02" };
+
 /**
  * The Japanese a machine wrote for the XP pages, the points page and the level
  * ladder (ENJA-09), apart from `ja.drafted.constants.ts` for the reason given
@@ -1037,6 +1040,11 @@ export const JA_DRAFTED_XP: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "最初の一人になる →",
     back: "Be the first →",
     review: READ,
+  },
+  "points.board.guest": {
+    text: "ゲスト",
+    back: "Guest",
+    review: AGENT_READ_2026_11_02,
   },
   "points.board.aMember": {
     text: "会員",

@@ -138,6 +138,9 @@ export function WordMarksHelp({ kana }: { kana: boolean }) {
 
   const rows = kana ? KANA_ROWS : LETTER_ROWS;
   const keys = kana ? KANA_KEYS : LETTER_KEYS;
+  // The miss is black on a stone and dark grey on a tile (`WORD_STONE_LOOK`, `WORD_TILE_MARK`): the guide names it as it is drawn in the style chosen.
+  const { style } = useWordStyle();
+  const nameOf = (row: Row) => say.say(row.mark === "miss" && style === WORD_STYLES.tiles ? "pword.help.greyName" : row.name);
   return (
     <>
       <button
@@ -187,7 +190,7 @@ export function WordMarksHelp({ kana }: { kana: boolean }) {
               <p className="text-sm text-muted">{say.say(kana ? "pword.help.boardKana" : "pword.help.boardLetters")}</p>
               <ul className="flex flex-col gap-3">
                 {rows.map((row) => (
-                  <GuideRow key={row.mark} example={<MarkExample mark={row.mark} letter={row.letter} />} name={say.say(row.name)}>
+                  <GuideRow key={row.mark} example={<MarkExample mark={row.mark} letter={row.letter} />} name={nameOf(row)}>
                     {say.say(row.says)}
                   </GuideRow>
                 ))}

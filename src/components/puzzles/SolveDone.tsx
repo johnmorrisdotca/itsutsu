@@ -28,6 +28,7 @@ import { freshSuidoSeed, suidoKindOfSeed, suidoSquaresOfSeed } from "@/lib/puzzl
 import { usePuzzleClock } from "./PuzzleClockContext";
 import { PuzzleWallpaper } from "./PuzzleWallpaper";
 import { PuzzleWayBack } from "./PuzzleWayBack";
+import { useRevealOnMount } from "@/components/ui/useRevealOnMount";
 import { useMarkPuzzleEnded, useWinSlot } from "./PuzzleWinSlot";
 import type { Done, SolveRace } from "./solveShared";
 import { ResultMark } from "@/components/game/ResultMark";
@@ -126,14 +127,16 @@ export function SolveDone({
           moves,
           xp: !hasAccount || done.problem !== null ? undefined : done.paid === null ? null : done.paid.points > 0 ? say.say("puzzle.done.paid", { points: String(done.paid.points), awards: awardWords(done.paid.awards, say) }) : undefined,
           next: firstStep,
-        })}
+        }, say)}
         onClose={() => setCovered(false)}
       />
     ) : null;
+  // Where no cover says it over the board (out of time, out of guesses, given up), the card is under the board, below the fold on a phone: brought into view.
+  const shown = useRevealOnMount<HTMLDivElement>(cover === null);
   return (
     <>
     {cover === null || slot === null ? null : createPortal(cover, slot)}
-    <div className={`${PANEL_CLASS} ${SELECTABLE} flex flex-col gap-3`} data-testid="puzzle-done" data-out-of-time={done.outOfTime ? "true" : undefined} aria-live="polite">
+    <div ref={shown} className={`${PANEL_CLASS} ${SELECTABLE} flex flex-col gap-3`} data-testid="puzzle-done" data-out-of-time={done.outOfTime ? "true" : undefined} aria-live="polite">
       {gaveUp ? (
         <p className="text-lg font-semibold" data-testid="puzzle-given-up">
           <ResultMark kind="failure" className="mr-1.5" />

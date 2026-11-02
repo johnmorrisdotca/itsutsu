@@ -1,12 +1,12 @@
 "use client";
 
+import { GoingCard } from "./GoingCard";
 import { Paired } from "@/components/i18n/Paired";
-import Link from "@/components/ui/Link";
 
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
+
 import { tableAddress, useKeptMahjongTable } from "@/components/puzzles/mahjongTableKept";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+
 import { readTable, seatName } from "@johnmorrisdotca/jarajara/table";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { weave } from "@/lib/i18n/weave";
@@ -25,19 +25,17 @@ export function MahjongTableCard() {
   const state = table === null || table === undefined ? null : readTable(table);
   if (table === null || table === undefined || state === null || state.over) return null;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="local-mahjong-table">
-      <GameThumb variant="mahjong" size="small" />
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">
-          <Paired en={MY_GAMES_COPY.localParty.label} kanji={MY_GAMES_COPY.localParty.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />
-        </span>
-        <span className="text-sm font-medium">
-          {weave(say.say("mine.cardMahjong", { players: say.count("count.player", table.seats.length), who: seatName(table.seats, state.turn) }), { game: <GameName variant="mahjong" /> })}
-        </span>
-      </div>
-      <Link href={tableAddress(table)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="local-mahjong-table-continue">
-        {MY_GAMES_COPY.continueGame} →
-      </Link>
-    </div>
+    <GoingCard
+      thumb="mahjong"
+      heading={<Paired en={MY_GAMES_COPY.localParty.label} kanji={MY_GAMES_COPY.localParty.kanji} kanjiClassName="text-[0.8rem] font-normal tracking-normal" />}
+      href={tableAddress(table)}
+      action={<>{MY_GAMES_COPY.continueGame} →</>}
+      testId="local-mahjong-table"
+      continueTestId="local-mahjong-table-continue"
+    >
+      <span className="text-sm font-medium">
+        {weave(say.say("mine.cardMahjong", { players: say.count("count.player", table.seats.length), who: seatName(table.seats, state.turn) }), { game: <GameName variant="mahjong" /> })}
+      </span>
+    </GoingCard>
   );
 }

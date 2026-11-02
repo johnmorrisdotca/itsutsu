@@ -8,6 +8,9 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  * drafted dictionary's own rows take.
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
+
+/** The Japanese expert's pass of 2026-11-02 over the lines written or changed that day. */
+const AGENT_READ_2026_11_02: Review = { by: "agent", on: "2026-11-02" };
 /** The reviewer agent's pass over the three 2026-10-30 puzzles' phrases. */
 const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
@@ -193,19 +196,19 @@ export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "puzzle.mode.sakasa.blurb": {
-    text: "単語を見つけてはいけません。その単語を打たずに、{rows}行すべてを埋めます。緑はそのまま、オレンジは使い直し、灰色は二度と打てません。",
-    back: "Don't find the word: fill all {rows} rows without typing it. Every green stays, every orange is used again, and a grey is never typed twice.",
-    review: AGENT_READ,
+    text: "単語を見つけてはいけません。その単語を打たずに、{rows}行すべてを埋めます。緑はそのまま、オレンジは使い直し、黒になった文字は二度と打てません。",
+    back: "Don't find the word: fill all {rows} rows without typing it. Every green stays, every orange is used again, and a letter that turned black is never typed twice.",
+    review: AGENT_READ_2026_11_02,
   },
   "puzzle.mode.sakasa.ruleLetter": {
-    text: "「逆さ」は、どのレベルでも選べる遊び方で、Antiwordleのこのサイト版です。パズルを裏返し、単語は隠れたままですが、目標は、その単語を絶対に打たないことです。その単語を打たずにすべての行を埋めれば勝ちで、打ってしまえばゲームオーバーです。見つかった文字は、必ず使い直します。緑の文字は同じ場所に、オレンジの文字はどこかに使います。灰色の文字は、もう打てません。同じ単語も2回は打てません。そのため、1行ごとに、避けているただ1つの単語に近づいていきます。難しいほど長くなります。初級は、ふつうの上級の五文字と同じ行数、上級は盤全体の行数です。先手はなく、かなでも無料の灰色の単語はありません。通り抜けた行ごとに{row}点、すべて通り抜けるとさらに{through}点です。「逆さ」は、どの長さにも日替わりがあり、全員が同じ単語です。",
-    back: "Sakasa 逆さ (the wrong way round), a choice at any level and our version of Antiwordle, turns the puzzle over: a word is hidden as ever, and the aim is never to type it. Fill every row without it and you have won; type it and the game is over. Every letter you uncover must be used again, a green in its place and an orange anywhere, a grey letter may never be typed again, and no word twice, so each row closes in on the one word you are avoiding. Harder is longer: easy asks for as many rows as an ordinary hard Gomoji gives, hard the whole board. There is no head start, and in kana no free grey word. Each row got through scores {row}, and getting through them all {through} more. There is a Sakasa of the day at every length, the same word for everybody.",
-    review: AGENT_READ,
+    text: "「逆さ」は、どのレベルでも選べる遊び方で、Antiwordleのこのサイト版です。パズルを裏返し、単語は隠れたままですが、目標は、その単語を絶対に打たないことです。その単語を打たずにすべての行を埋めれば勝ちで、打ってしまえばゲームオーバーです。見つかった文字は、必ず使い直します。緑の文字は同じ場所に、オレンジの文字はどこかに使います。黒の文字は、もう打てません。同じ単語も2回は打てません。そのため、1行ごとに、避けているただ1つの単語に近づいていきます。難しいほど長くなります。初級は、ふつうの上級の五文字と同じ行数、上級は盤全体の行数です。先手はなく、かなでも、すべて黒になる無料の単語はありません。通り抜けた行ごとに{row}点、すべて通り抜けるとさらに{through}点です。「逆さ」は、どの長さにも日替わりがあり、全員が同じ単語です。",
+    back: "Sakasa 逆さ (the wrong way round), a choice at any level and our version of Antiwordle, turns the puzzle over: a word is hidden as ever, and the aim is never to type it. Fill every row without it and you have won; type it and the game is over. Every letter you uncover must be used again, a green in its place and an orange anywhere, a black letter may never be typed again, and no word twice, so each row closes in on the one word you are avoiding. Harder is longer: easy asks for as many rows as an ordinary hard Gomoji gives, hard the whole board. There is no head start, and in kana no free word that comes out all black. Each row got through scores {row}, and getting through them all {through} more. There is a Sakasa of the day at every length, the same word for everybody.",
+    review: AGENT_READ_2026_11_02,
   },
   "puzzle.mode.sakasa.ruleKana": {
-    text: "「逆さ」は、どのレベルでも選べる遊び方で、Antiwordleのこのサイト版です。パズルを裏返し、単語は隠れたままですが、目標は、その単語を絶対に打たないことです。その単語を打たずにすべての行を埋めれば勝ちで、打ってしまえばゲームオーバーです。見つかったかなは、必ず使い直します。緑のかなは同じ場所に、オレンジのかなはどこかに使います。灰色のかなは、もう打てません。同じ単語も2回は打てません。そのため、1行ごとに、避けているただ1つの単語に近づいていきます。難しいほど長くなります。初級は、ふつうの上級の五文字と同じ行数、上級は盤全体の行数です。先手はなく、無料の灰色の単語もありません。通り抜けた行ごとに{row}点、すべて通り抜けるとさらに{through}点です。「逆さ」は、どの長さにも日替わりがあり、全員が同じ単語です。",
-    back: "Sakasa 逆さ (the wrong way round), a choice at any level and our version of Antiwordle, turns the puzzle over: a word is hidden as ever, and the aim is never to type it. Fill every row without it and you have won; type it and the game is over. Every kana you uncover must be used again, a green in its place and an orange anywhere, a grey kana may never be typed again, and no word twice, so each row closes in on the one word you are avoiding. Harder is longer: easy asks for as many rows as an ordinary hard Gomoji gives, hard the whole board. There is no head start, and in kana no free grey word. Each row got through scores {row}, and getting through them all {through} more. There is a Sakasa of the day at every length, the same word for everybody.",
-    review: AGENT_READ,
+    text: "「逆さ」は、どのレベルでも選べる遊び方で、Antiwordleのこのサイト版です。パズルを裏返し、単語は隠れたままですが、目標は、その単語を絶対に打たないことです。その単語を打たずにすべての行を埋めれば勝ちで、打ってしまえばゲームオーバーです。見つかったかなは、必ず使い直します。緑のかなは同じ場所に、オレンジのかなはどこかに使います。黒のかなは、もう打てません。同じ単語も2回は打てません。そのため、1行ごとに、避けているただ1つの単語に近づいていきます。難しいほど長くなります。初級は、ふつうの上級の五文字と同じ行数、上級は盤全体の行数です。先手はなく、すべて黒になる無料の単語もありません。通り抜けた行ごとに{row}点、すべて通り抜けるとさらに{through}点です。「逆さ」は、どの長さにも日替わりがあり、全員が同じ単語です。",
+    back: "Sakasa 逆さ (the wrong way round), a choice at any level and our version of Antiwordle, turns the puzzle over: a word is hidden as ever, and the aim is never to type it. Fill every row without it and you have won; type it and the game is over. Every kana you uncover must be used again, a green in its place and an orange anywhere, a black kana may never be typed again, and no word twice, so each row closes in on the one word you are avoiding. Harder is longer: easy asks for as many rows as an ordinary hard Gomoji gives, hard the whole board. There is no head start, and in kana no free word that comes out all black. Each row got through scores {row}, and getting through them all {through} more. There is a Sakasa of the day at every length, the same word for everybody.",
+    review: AGENT_READ_2026_11_02,
   },
   "puzzle.mode.nige.blurb": {
     text: "単語はまだ隠れていません。予想のたびに、残る単語がいちばん多くなる色が返され、ほかに何も残らなくなったときに、見つかったことになります。予想は{rows}回です。",
@@ -213,14 +216,14 @@ export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "puzzle.mode.nige.ruleLetter": {
-    text: "「逃げ」は、どのレベルでも選べる遊び方で、Absurdleのこのサイト版です。隠れた単語はありません。予想のたびに、残りの単語がいちばん多く残る色が返され、すでに出た色を取り消すことはありません。予想した単語が、残った1語になったときに、見つかったことになります。どのレベルでも盤のすべての行が使え、難しさは、レベルの単語リストで決まります。先手はなく、かなでも無料の灰色の単語はありません。盤の下の行は、まだいくつの単語のなかに隠れられるかを表し、行が尽きると、そのうちの1語を教えます。「逃げ」にも、どの長さにも日替わりがあり、全員が同じです。文字と色はいつもどおりです。",
-    back: "Nige 逃げ (running away), a choice at any level and our version of Absurdle, hides no word at all: every guess is answered with the colours that leave the most words still possible, never going back on a colour already shown, and the word is found only when your guess is the one word left. It gives every row of the board at every level, the level's word list being its difficulty; there is no head start, and in kana no free grey word. The line under the board says how many words it still has to hide among, and when the rows run out it names one of them. There is a Nige of the day at every length as well, the same for everybody, the letters and the colours the same as ever.",
-    review: AGENT_READ,
+    text: "「逃げ」は、どのレベルでも選べる遊び方で、Absurdleのこのサイト版です。隠れた単語はありません。予想のたびに、残りの単語がいちばん多く残る色が返され、すでに出た色を取り消すことはありません。予想した単語が、残った1語になったときに、見つかったことになります。どのレベルでも盤のすべての行が使え、難しさは、レベルの単語リストで決まります。先手はなく、かなでも、すべて黒になる無料の単語はありません。盤の下の行は、まだいくつの単語のなかに隠れられるかを表し、行が尽きると、そのうちの1語を教えます。「逃げ」にも、どの長さにも日替わりがあり、全員が同じです。文字と色はいつもどおりです。",
+    back: "Nige 逃げ (running away), a choice at any level and our version of Absurdle, hides no word at all: every guess is answered with the colours that leave the most words still possible, never going back on a colour already shown, and the word is found only when your guess is the one word left. It gives every row of the board at every level, the level's word list being its difficulty; there is no head start, and in kana no free word that comes out all black. The line under the board says how many words it still has to hide among, and when the rows run out it names one of them. There is a Nige of the day at every length as well, the same for everybody, the letters and the colours the same as ever.",
+    review: AGENT_READ_2026_11_02,
   },
   "puzzle.mode.nige.ruleKana": {
-    text: "「逃げ」は、どのレベルでも選べる遊び方で、Absurdleのこのサイト版です。隠れた単語はありません。予想のたびに、残りの単語がいちばん多く残る色が返され、すでに出た色を取り消すことはありません。予想した単語が、残った1語になったときに、見つかったことになります。どのレベルでも盤のすべての行が使え、難しさは、レベルの単語リストで決まります。先手はなく、無料の灰色の単語もありません。盤の下の行は、まだいくつの単語のなかに隠れられるかを表し、行が尽きると、そのうちの1語を教えます。「逃げ」にも、どの長さにも日替わりがあり、全員が同じです。かなと色はいつもどおりです。",
-    back: "Nige 逃げ (running away), a choice at any level and our version of Absurdle, hides no word at all: every guess is answered with the colours that leave the most words still possible, never going back on a colour already shown, and the word is found only when your guess is the one word left. It gives every row of the board at every level, the level's word list being its difficulty; there is no head start, and in kana no free grey word. The line under the board says how many words it still has to hide among, and when the rows run out it names one of them. There is a Nige of the day at every length as well, the same for everybody, the kana and the colours the same as ever.",
-    review: AGENT_READ,
+    text: "「逃げ」は、どのレベルでも選べる遊び方で、Absurdleのこのサイト版です。隠れた単語はありません。予想のたびに、残りの単語がいちばん多く残る色が返され、すでに出た色を取り消すことはありません。予想した単語が、残った1語になったときに、見つかったことになります。どのレベルでも盤のすべての行が使え、難しさは、レベルの単語リストで決まります。先手はなく、すべて黒になる無料の単語もありません。盤の下の行は、まだいくつの単語のなかに隠れられるかを表し、行が尽きると、そのうちの1語を教えます。「逃げ」にも、どの長さにも日替わりがあり、全員が同じです。かなと色はいつもどおりです。",
+    back: "Nige 逃げ (running away), a choice at any level and our version of Absurdle, hides no word at all: every guess is answered with the colours that leave the most words still possible, never going back on a colour already shown, and the word is found only when your guess is the one word left. It gives every row of the board at every level, the level's word list being its difficulty; there is no head start, and in kana no free word that comes out all black. The line under the board says how many words it still has to hide among, and when the rows run out it names one of them. There is a Nige of the day at every length as well, the same for everybody, the kana and the colours the same as ever.",
+    review: AGENT_READ_2026_11_02,
   },
   "puzzle.mode.futago.ruleLetter": {
     text: "「双子」は、どのレベルでも選べる遊び方で、2つの単語を同時に隠し、1つの盤に並べます。予想は、単語が見つかるまで、両方の単語に送られます。キーは2つに分かれ、両方の盤の色を表します。予想は、単語が1つのときより1回多くなります。どの長さにも、日替わりの単語が2つあります。",
@@ -228,9 +231,9 @@ export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "puzzle.mode.futago.ruleKana": {
-    text: "「双子」は、どのレベルでも選べる遊び方で、2つのかなの単語を同時に隠し、1つの盤に並べます。無料の灰色の単語は、両方の単語に対して灰色です。予想は、単語が見つかるまで、両方の単語に送られ、かなのキーは2つに分かれて、両方の盤の色を表します。予想は、単語が1つのときより1回多くなります。どの長さにも、日替わりの単語が2つあります。",
-    back: "Futago 双子 (twins), a choice at any level, hides two kana words at once, side by side on one board, the free grey word grey against both: every guess goes to both words until a word is found, each kana key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well.",
-    review: AGENT_READ,
+    text: "「双子」は、どのレベルでも選べる遊び方で、2つのかなの単語を同時に隠し、1つの盤に並べます。最初の無料の単語は、どちらの単語に対してもすべて黒になります。予想は、単語が見つかるまで、両方の単語に送られ、かなのキーは2つに分かれて、両方の盤の色を表します。予想は、単語が1つのときより1回多くなります。どの長さにも、日替わりの単語が2つあります。",
+    back: "Futago 双子 (twins), a choice at any level, hides two kana words at once, side by side on one board, the first free word comes out all black against both words: every guess goes to both words until a word is found, each kana key is split to show both boards' colours, and there is one guess more than for one word. There are two words of the day at every length as well.",
+    review: AGENT_READ_2026_11_02,
   },
   "puzzle.mode.yotsugo.ruleLetter": {
     text: "「四つ子」は、どのレベルでも選べる遊び方で、4つの単語を同時に隠し、2つの盤の4つの区画に分けて並べます。予想は、その単語が見つかるまで、すべての区画に送られます。キーは4つの角に分かれ、各区画の色を表します。予想は、単語が1つのときより3回多くなり、どの長さでも上級で9回です。",
@@ -238,9 +241,9 @@ export const JA_DRAFTED_PUZZLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   "puzzle.mode.yotsugo.ruleKana": {
-    text: "「四つ子」は、どのレベルでも選べる遊び方で、4つのかなの単語を同時に隠し、2つの盤の4つの区画に分けて並べます。無料の灰色の単語は、4つすべてに対して灰色です。予想は、その単語が見つかるまで、すべての区画に送られ、かなのキーは4つの角に分かれて、各区画の色を表します。予想は、単語が1つのときより3回多くなります。",
-    back: "Yotsugo 四つ子 (quadruplets), a choice at any level, hides four kana words at once, in the four quarters of two boards, the free grey word grey against all four: every guess goes to every quarter until its word is found, each kana key is split in four corners to show each quarter's colour, and there are three guesses more than for one word.",
-    review: AGENT_READ,
+    text: "「四つ子」は、どのレベルでも選べる遊び方で、4つのかなの単語を同時に隠し、2つの盤の4つの区画に分けて並べます。最初の無料の単語は、4つのどの単語に対してもすべて黒になります。予想は、その単語が見つかるまで、すべての区画に送られ、かなのキーは4つの角に分かれて、各区画の色を表します。予想は、単語が1つのときより3回多くなります。",
+    back: "Yotsugo 四つ子 (quadruplets), a choice at any level, hides four kana words at once, in the four quarters of two boards, the first free word comes out all black against all four words: every guess goes to every quarter until its word is found, each kana key is split in four corners to show each quarter's colour, and there are three guesses more than for one word.",
+    review: AGENT_READ_2026_11_02,
   },
   "puzzle.size.short": {
     text: "短",

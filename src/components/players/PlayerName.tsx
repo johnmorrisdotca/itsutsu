@@ -6,6 +6,8 @@ import { BOT_NAME_COUNTRIES } from "@/lib/bots/botNames";
 import { playerPath } from "@/lib/rating/playerKey";
 import { shownName } from "@/lib/rating/shownName";
 
+import { ShownName } from "./ShownName";
+
 import { LevelName } from "@/components/xp/LevelName";
 import type { NameTag } from "@/lib/xp/nameTag.types";
 
@@ -129,7 +131,7 @@ export function PlayerName({
   if (!linkable) {
     return (
       <>
-        {shown}
+        <ShownName name={shown} />
         {tags}
       </>
     );
@@ -141,7 +143,7 @@ export function PlayerName({
         className={`underline-offset-2 hover:underline ${className}`.trim()}
         data-testid={testId}
       >
-        {shown}
+        <ShownName name={shown} />
       </Link>
       {tags}
     </>

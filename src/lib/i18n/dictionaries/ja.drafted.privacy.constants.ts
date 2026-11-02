@@ -18,9 +18,6 @@ const ASK_CHILD =
   "About children and a parent's consent. The Japanese expert read it clause for clause against the English on 2026-11-02 and it is as strict in meaning as the English; no person who reads Japanese has read it, so a native read is still wanted.";
 const ASK_GOVERNING =
   "The line that says the English version governs. The Japanese expert read it on 2026-11-02: 参考訳 and 優先 are how a Japanese site usually says it, and 正文 is an alternative a native reader may prefer. No person who reads Japanese has read it.";
-const ASK_DELETE_GAMES =
-  `${ASK_LEGAL} Also doubtful, in the English: it says a game still waiting for you "goes" once it is resigned or called off, while the account page says a resigned game stays as a finished game. The Japanese follows the English.`;
-
 const r = (text: string, back: string, ask: string = ASK_LEGAL): DraftedPhrase => ({ text, back, review: AGENT_READ, ask });
 const child = (text: string, back: string): DraftedPhrase => r(text, back, ASK_CHILD);
 
@@ -219,9 +216,9 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "We keep an account and the information in it for as long as the account exists. We keep finished games for as long as the site continues. A game belongs to both of the two people who played it.",
   ),
   "privacy.keeping.paraB": r(
-    "アカウントを削除するには、ご自身のページを開き、「プロフィール」を選んで、下にある「アカウントを削除」を使ってください。または{contact}にご連絡いただければ、運営者が削除します。プロフィール、手紙、リスト、経験値、パズルの解答記録は削除されます。自分の手を待っている対局も削除されますが、その前に、投了または中止の扱いになります。終了した対局は、相手の対局者のものでもあるため、記録に残ります。ただし、アカウントとの結びつきは外されます。名前を残すか、名前も外すかは、ご自身で選べます。",
-    "To delete your account, open your own page, choose \"プロフィール\", and use \"アカウントを削除\" at the bottom. Or if you contact {contact}, the operator will delete it. Your profile, letters, lists, experience points and puzzle solve records are deleted. A game still waiting for your move is also deleted, but before that it is treated as resigned or called off. Finished games remain in the record, because they also belong to the other player. However, the tie to your account is removed. You can choose yourself whether to leave your name on them or take your name off as well.",
-    ASK_DELETE_GAMES,
+    "アカウントを削除するには、ご自身のページを開き、「プロフィール」を選んで、下にある「アカウントを削除」を使ってください。または{contact}にご連絡いただければ、運営者が削除します。プロフィール、手紙、リスト、経験値、パズルの解答記録は削除されます。自分の手を待っている対局は、先に終了させます。来ることのない手を誰かが待ち続けないよう、投了とし、まだ誰も打っていなければ中止とします。出した申し込みは取り下げ、受けた申し込みは辞退します。遊んだ対局はすべて、相手の対局者のものでもあるため、記録に残ります。ただし、アカウントとの結びつきは外されます。名前を残すか、名前も外すかは、ご自身で選べます。そのまま残るのは、主催者が誰も投了できない設定にしていて、すでに始まっている対局だけです。この対局は、この方法では終了させられないので、アカウントとの結びつきだけが外されます。",
+    "To delete your account, open your own page, choose \"プロフィール\", and use \"アカウントを削除\" at the bottom. Or if you contact {contact}, the operator will delete it. Your profile, letters, lists, experience points and puzzle solve records are deleted. A game waiting for your move is ended first. So that nobody keeps waiting for a move that will never come, it is treated as resigned, and as called off if nobody has moved yet. An offer you made is withdrawn, and an offer you received is declined. Every game you played remains in the record, because each also belongs to the other player. However, the tie to your account is removed. You can choose yourself whether to leave your name on them or take your name off as well. The only game that stays as it is is one whose host set it so that nobody may resign and which has already begun. That game cannot be ended in this way, so only the tie to your account is removed.",
+    ASK_LEGAL,
   ),
   "privacy.keeping.paraC": r(
     "保存している情報は、同じ「プロフィール」のページの「保存している情報」に、平易な言葉と件数で一覧になっています。このページで説明していない情報は、何も保存していません。",

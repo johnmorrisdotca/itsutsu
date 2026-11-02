@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
 
 import {
   FAMILY_FOLD,
@@ -37,6 +39,7 @@ export function FamilyFold({
   saves,
   className,
   summary,
+  load,
   children,
 }: {
   familyKey: FamilyFoldKey;
@@ -46,8 +49,16 @@ export function FamilyFold({
   className: string;
   /** The `<summary>` the reader presses. */
   summary: ReactNode;
-  children: ReactNode;
+  /**
+   * For a family that was shut when the page was drawn: asks the server for its games, the first time it is opened
+   * (a family open on arrival has its games as children). A press is what pays for them.
+   */
+  load?: (familyKey: string) => Promise<ReactNode>;
+  children?: ReactNode;
 }) {
+  const say = useSpeaker();
+  const [loaded, setLoaded] = useState<{ games: ReactNode } | "failed" | null>(null);
+  const asking = useRef(false);
   const hydrated = useHydrated();
   const fold = useRef<HTMLDetailsElement>(null);
   const kept = useRef(initialOpen);
@@ -62,7 +73,20 @@ export function FamilyFold({
     if (fold.current !== null) fold.current.open = open;
   }, [saves, familyKey]);
 
+  /** The games of a family opened for the first time: asked for once, and again after a failure. */
+  function ensureGames() {
+    if (load === undefined || asking.current || (loaded !== null && loaded !== "failed")) return;
+    asking.current = true;
+    load(familyKey)
+      .then((games) => setLoaded({ games }))
+      .catch(() => setLoaded("failed"))
+      .finally(() => {
+        asking.current = false;
+      });
+  }
+
   function toggled(open: boolean) {
+    if (open) ensureGames();
     if (open === kept.current) return;
     kept.current = open;
     const now = open ? FAMILY_FOLD.open : FAMILY_FOLD.shut;
@@ -92,7 +116,7 @@ export function FamilyFold({
       {...readyMark(hydrated)}
     >
       {summary}
-      {children}
+      {load === undefined ? children : loaded === null ? <p className="mt-2 text-sm text-muted" data-testid="family-loading">{say.say("gamepages.familyLoading")}</p> : loaded === "failed" ? <p className="mt-2 text-sm text-muted" data-testid="family-failed">{say.say("gamepages.familyFailed")}</p> : loaded.games}
     </details>
   );
 }

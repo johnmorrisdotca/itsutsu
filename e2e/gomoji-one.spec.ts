@@ -11,6 +11,7 @@ import { kanaWordsOf } from "../src/lib/puzzles/gomojiKana/kanaWords";
 import type { PuzzleKind, PuzzleLevel } from "../src/lib/puzzles/puzzles.types";
 import { tapKana } from "./kanaTyping";
 import { ready } from "./support";
+import { clearSuitePuzzleRuns } from "./tidy";
 import { loadEveryWordList } from "./wordLists";
 
 test.beforeAll(loadEveryWordList);
@@ -57,9 +58,13 @@ const CHOICES: readonly { kind: PuzzleKind; language: WordLanguage; pop: boolean
 test.describe("one Gomoji, in every language", () => {
   test("its one set-up chooses each language and list by pressing, and stands still for every one", async ({ page }) => {
     await page.setViewportSize(PHONE);
+    // Its own world: a Gomoji another spec left half played puts a Resume above the preview for the language it was played in only, and the set-up "moves".
+    await clearSuitePuzzleRuns();
     await page.goto(SET_UP);
     await ready(page, "puzzle-set-up");
     await expect(page.getByTestId("word-settings")).toHaveAttribute("data-language", "english");
+    // The header's strip of games and record arrives after the page and, at a phone's width, takes a second line: measured before it, everything below it "moves" by that line.
+    await expect(page.getByTestId("strip-record")).toBeVisible();
     const first = await standing(page);
     for (const choice of CHOICES) {
       if (choice.pop) {

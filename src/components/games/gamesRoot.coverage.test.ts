@@ -84,7 +84,9 @@ describe("the rules are reachable without a Rules link", () => {
      * through `GameName`, so each one leads to the games it lists.
      */
     const catalogue = read(CATALOGUE);
-    expect(catalogue, "the catalogue names games through GameName").toContain("GameName");
+    // A family's cards are in `FamilyBody`, which GameCatalogue draws for an open family and `loadFamilyCards` draws for one opened later.
+    expect(read("src/components/games/FamilyBody.tsx"), "the catalogue names games through GameName").toContain("GameName");
+    expect(catalogue, "and the families tab draws those cards").toContain("<FamilyBody");
     expect(read(GAMES_ROOT), "and /games mounts the catalogue").toContain("<GameCatalogue");
     expect(read(NAV), "and /games is in the navigation").toContain('href: "/games"');
   });

@@ -10,7 +10,8 @@ import { generatePuzzle } from "@/lib/puzzles/generate";
 import { isComputer, nameOf, partyLength, startParty } from "@/lib/puzzles/kumimoji/party";
 import { winnersOf } from "@/lib/puzzles/kumimoji/partyTurns";
 import { useWinMoment } from "@/components/game/WinCover";
-import { WIN_COVER_COPY } from "@/components/game/winCover.constants";
+import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { winCoverCopy } from "@/components/game/winCover.constants";
 import { tableNews } from "@/components/game/winNews";
 import type { PartyGame, PartySeat, PartySettings } from "@/lib/puzzles/kumimoji/party.types";
 import { holdsItsBag, isPartyFor } from "@/lib/puzzles/kumimoji/partyKept";
@@ -79,6 +80,7 @@ export function KumimojiParty({
   /** Playing on several devices instead, where the reader has an account (`OnlineOffer`): the names screen offers it. */
   online?: OnlineOffer;
 }) {
+  const say = useSpeaker();
   const hydrated = useHydrated();
   const router = useRouter();
   const words = useMemo(() => tileWords(language), [language]);
@@ -152,8 +154,8 @@ export function KumimojiParty({
                   // One person among computers is "you"; several people round the device are each named.
                   you: people.length === 1 ? people[0]! : null,
                   draw: game.ending === "tied",
-                  next: { label: WIN_COVER_COPY.againSamePlayers, onPress: again },
-                })
+                  next: { label: winCoverCopy(say).againSamePlayers, onPress: again },
+                }, say)
               : null,
             onClose: moment.close,
           }}

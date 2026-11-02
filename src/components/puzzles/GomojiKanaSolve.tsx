@@ -1,5 +1,6 @@
 "use client";
 
+import { RevealOnMount } from "@/components/ui/RevealOnMount";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { phraseWith } from "@/components/i18n/phraseWith";
 import Link from "@/components/ui/Link";
@@ -363,7 +364,7 @@ export function GomojiKanaSolve({
           </div>
         </>
       ) : done.outOfGuesses ? (
-        <div className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
+        <RevealOnMount className={`${SELECTABLE} flex flex-col gap-2`} data-testid="word-out">
           {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={score!} headStart={headStart} />}
           {hasAccount && race === null ? (
             <p className="text-xs text-muted" data-testid="word-kept">
@@ -388,7 +389,7 @@ export function GomojiKanaSolve({
             <PuzzleWayBack kind={kind} />
           </div>
           <PuzzleWallpaper puzzle={puzzle} result={done.outOfTime ? say.say("puzzle.outcome.outOfTime") : backwards ? say.say("pword.out.caughtShort", { n: String(guesses.length) }) : say.say("pword.out.guesses", { rows: String(rows) })} />
-        </div>
+        </RevealOnMount>
       ) : (
         <>
           {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={score!} headStart={headStart} />}

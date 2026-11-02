@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { forgetFamilyFolds, ready, readyHere } from "./support";
+import { forgetFamilyFolds, openFamily, ready } from "./support";
 import { EVERY_GAME_KEY } from "../src/lib/catalogue/gameKeys";
 import { GAME_FAMILIES, HOME_FAMILIES } from "../src/lib/gomoku/families";
 
@@ -148,13 +148,10 @@ test.describe("rules and learning", () => {
     await expect(page.getByTestId("nav-new-game")).toBeVisible();
     const families = page.getByTestId("lobby-family");
     await expect(families).toHaveCount(GAME_FAMILIES.length);
-    // The first family is open; the rest are folded, so the page stays short.
-    await expect(families.nth(1).getByTestId("game-name").first()).toBeHidden();
-    const small = families.filter({ hasText: "Small boards" });
-    // Opened once the page has hydrated, waiting on the strip inside the family:
-    // a summary clicked before then can end up shut again (record-text, PR #26).
-    await readyHere(small.locator('[data-testid="game-stats"]').first());
-    await small.locator("summary").click();
+    // The first family is open; the rest are folded, so the page stays short, and carry no games until they are opened.
+    await expect(families.nth(1).getByTestId("game-name")).toHaveCount(0);
+    // Opened once the page has hydrated (`openFamily` waits for it): a summary clicked before then can end up shut again (record-text, PR #26).
+    const small = await openFamily(page, "small-boards");
     // The families are for looking around: a game is read about here and
     // started above, so nothing in this list drops straight onto a board.
     await expect(small.getByRole("link", { name: "play", exact: true })).toHaveCount(0);

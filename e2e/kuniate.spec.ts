@@ -103,9 +103,12 @@ test.describe("Kuniate", () => {
   });
 
   test("six wrong guesses end it, kept, with the answer shown and the way on offered", async ({ page }) => {
+    // At a phone's width, where the ending is drawn below the fold unless it is brought into view.
+    await page.setViewportSize({ width: 390, height: 844 });
     const puzzle = await openPlay(page, 1);
     for (const wrong of wrongGuesses(puzzle.solution)) await guess(page, wrong, NAMES[wrong]!);
     await expect(page.getByTestId("word-out")).toContainText("Out of 6 guesses");
+    await expect(page.getByTestId("word-out")).toBeInViewport({ ratio: 0.9 });
     await expect(page.getByTestId("kuniate-was")).toHaveText(countryName(puzzle.solution, "en", { short: true })!);
     await expect(page.getByTestId("kuniate-input")).toHaveCount(0);
     await expect(page.getByTestId("word-kept")).toContainText("Kept");

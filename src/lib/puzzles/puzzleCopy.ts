@@ -1,3 +1,4 @@
+import { inspiredByIn } from "../gomoku/inspiredBy";
 import { overlay, pickLine } from "../i18n/copyTable";
 import type { Locale } from "../i18n/i18n.types";
 import { jaText } from "../i18n/jaText";
@@ -30,7 +31,10 @@ import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "./puzzles.types";
  */
 export function puzzleCopy(kind: PuzzleKind, locale: Locale): VariantCopy {
   const english = PUZZLE_DISPLAY[kind];
-  return locale === "ja" ? overlay(english, jaText().puzzles.copy[kind] as never) : english;
+  if (locale !== "ja") return english;
+  const copy = overlay(english, jaText().puzzles.copy[kind] as never);
+  // A description in the "inspired by" line that no Japanese table of the puzzle gives is said in Japanese (`inspiredBy.ts`).
+  return { ...copy, inspiredBy: inspiredByIn(copy.inspiredBy, locale) };
 }
 
 /**

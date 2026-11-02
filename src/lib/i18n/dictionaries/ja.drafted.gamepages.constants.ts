@@ -8,6 +8,9 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
 
+/** The Japanese expert's pass of 2026-11-02 over the lines written or changed that day. */
+const AGENT_READ_2026_11_02: Review = { by: "agent", on: "2026-11-02" };
+
 export const JA_DRAFTED_GAMEPAGES: Partial<Record<PhraseKey, DraftedPhrase>> = {
   // Page titles, which the tab and the heading share
   "gamepages.games": {
@@ -435,6 +438,16 @@ export const JA_DRAFTED_GAMEPAGES: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "{game}で、コンピュータを相手にしたレーティング対局を終えた人は、まだいません。",
     back: "Nobody has yet finished a rated game of {game} against a computer.",
     review: AGENT_READ,
+  },
+  "gamepages.familyLoading": {
+    text: "ゲームを読み込んでいます…",
+    back: "Loading the games…",
+    review: AGENT_READ_2026_11_02,
+  },
+  "gamepages.familyFailed": {
+    text: "この系統のゲームを読み込めませんでした。いったん閉じてもう一度開くか、上の「一覧」か「全種目」を選んでください。",
+    back: "The games of this family could not be loaded. Close it and open it again, or choose \"Cards\" or \"List\" above.",
+    review: AGENT_READ_2026_11_02,
   },
   "gamepages.puzzleLine.chip": {
     text: "1人用のパズルです。ブラウザの中で解きます。",

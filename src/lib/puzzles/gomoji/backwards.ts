@@ -64,19 +64,45 @@ export function backwardsKeep(kind: PuzzleKind, guesses: readonly string[], word
   return { fixed, need, banned, typed: new Set(guesses), kana };
 }
 
-/** Why a guess may not follow, in words, or null when it may. */
-export function breaksKeep(keep: BackwardsKeep, next: string, say: Speaker = speaker(DEFAULT_LOCALE)): string | null {
-  if (keep.typed.has(next)) return say.say("pword.hold.played", { unit: show(next) });
+/**
+ * WHICH RULE A GUESS BREAKS, AS A KEY AND ITS VALUES, or null when it may follow. The server's check refuses with this
+ * (`chk.hold.*`) so a page says the reason in the reader's language (a refusal is a key, never a sentence), and
+ * `breaksKeep` says it in words for the browser's own board. `place` counts from 1.
+ */
+export type BrokenHold =
+  | { code: "chk.hold.played"; values: { unit: string } }
+  | { code: "chk.hold.stay"; values: { place: number; unit: string } }
+  | { code: "chk.hold.use"; values: { unit: string } }
+  | { code: "chk.hold.grey"; values: { unit: string } };
+
+export function brokenHold(keep: BackwardsKeep, next: string): BrokenHold | null {
+  if (keep.typed.has(next)) return { code: "chk.hold.played", values: { unit: show(next) } };
   const units = [...next];
   for (const [at, unit] of keep.fixed.entries()) {
-    if (unit !== undefined && units[at] !== unit) return say.say("pword.hold.stay", { ordinal: ordinalIn(at + 1, say), unit: show(unit) });
+    if (unit !== undefined && units[at] !== unit) return { code: "chk.hold.stay", values: { place: at + 1, unit: show(unit) } };
   }
   const bases = keep.kana ? units.map(kanaBase) : units;
   for (const [unit, count] of keep.need) {
-    if (bases.filter((each) => each === unit).length < count) return say.say("pword.hold.use", { unit: show(unit) });
+    if (bases.filter((each) => each === unit).length < count) return { code: "chk.hold.use", values: { unit: show(unit) } };
   }
   const again = bases.find((each) => keep.banned.has(each));
-  return again === undefined ? null : say.say("pword.hold.grey", { unit: show(again) });
+  return again === undefined ? null : { code: "chk.hold.grey", values: { unit: show(again) } };
+}
+
+/** Why a guess may not follow, in words, or null when it may. */
+export function breaksKeep(keep: BackwardsKeep, next: string, say: Speaker = speaker(DEFAULT_LOCALE)): string | null {
+  const broken = brokenHold(keep, next);
+  if (broken === null) return null;
+  switch (broken.code) {
+    case "chk.hold.played":
+      return say.say("pword.hold.played", broken.values);
+    case "chk.hold.stay":
+      return say.say("pword.hold.stay", { ordinal: ordinalIn(broken.values.place, say), unit: broken.values.unit });
+    case "chk.hold.use":
+      return say.say("pword.hold.use", broken.values);
+    case "chk.hold.grey":
+      return say.say("pword.hold.grey", broken.values);
+  }
 }
 
 const show = (unit: string) => unit.toUpperCase();
@@ -89,6 +115,11 @@ const show = (unit: string) => unit.toUpperCase();
  */
 export function breaksBackwardsRule(kind: PuzzleKind, guesses: readonly string[], word: string, next: string, say: Speaker = speaker(DEFAULT_LOCALE)): string | null {
   return breaksKeep(backwardsKeep(kind, guesses, word), next, say);
+}
+
+/** The same rule as a key and values, for the server's refusal (`brokenHold`). */
+export function brokenBackwardsRule(kind: PuzzleKind, guesses: readonly string[], word: string, next: string): BrokenHold | null {
+  return brokenHold(backwardsKeep(kind, guesses, word), next);
 }
 
 /** Whether a word may be guessed at all in this Gomoji: in its list, as any guess must be. */

@@ -1,9 +1,8 @@
 "use client";
 
 import { GameName } from "@/components/games/GameName";
-import { GameThumb } from "@/components/games/GameThumb";
-import Link from "@/components/ui/Link";
-import { BUTTON_BASE, BUTTON_QUIET, PANEL_CLASS } from "@/components/ui/ui.constants";
+import { PartyTableCard } from "@/components/party/PartyTableCard";
+
 import { passAndPlayPath } from "@/lib/gomoku/slugs";
 import { PARTY_KINDS } from "@/lib/party/party.constants";
 import { YACHT_PHASES, boxesFilled } from "@/lib/party/yacht/yacht";
@@ -28,19 +27,10 @@ export function YachtCard() {
   if (game === undefined || game === null || game.phase === YACHT_PHASES.finished) return null;
   const variant = PARTY_KINDS.yacht;
   return (
-    <div className={`${PANEL_CLASS} flex flex-wrap items-center gap-3`} data-testid="party-game" data-variant={variant}>
-      <GameThumb variant={variant} size="small" />
-      <div className="flex min-w-0 flex-[1_1_11rem] flex-col gap-0.5">
-        <span className="text-[0.7rem] font-semibold tracking-[0.14em] text-muted uppercase">{PARTY_COPY.card}</span>
-        <span className="flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
-          <GameName variant={variant} /> · {say.say("party.yacht.turnOf", { n: String(boxesFilled(game, game.toPlay) + 1), total: String(YACHT_SHEET) })} ·
-          <MarbleChip player={game.toPlay} />
-          {say.say("party.toPlay", { name: seatedName(game, game.toPlay, say) })}
-        </span>
-      </div>
-      <Link href={passAndPlayPath(variant)} className={`${BUTTON_BASE} ${BUTTON_QUIET} shrink-0`} data-testid="party-game-continue">
-        {PARTY_COPY.resume} →
-      </Link>
-    </div>
+    <PartyTableCard thumb={variant} heading={PARTY_COPY.card} href={passAndPlayPath(variant)} resume={PARTY_COPY.resume} dataVariant={variant}>
+      <GameName variant={variant} /> · {say.say("party.yacht.turnOf", { n: String(boxesFilled(game, game.toPlay) + 1), total: String(YACHT_SHEET) })} ·
+      <MarbleChip player={game.toPlay} />
+      {say.say("party.toPlay", { name: seatedName(game, game.toPlay, say) })}
+    </PartyTableCard>
   );
 }

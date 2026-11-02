@@ -64,6 +64,7 @@ export const PHRASES_POINTS = {
   "points.board.empty": "Nobody on it yet.",
   "points.board.beFirst": "Be the first →",
   "points.board.aMember": "A member",
+  "points.board.guest": "Guest",
   "points.figure.several": "Won across several games and puzzles: each game's own board leads to its games",
   "points.figure.games": "The games this IP was won in",
   "points.player.none": "None won yet: IP is for results →",
