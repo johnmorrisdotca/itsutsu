@@ -26,7 +26,7 @@ describe("the levels screen, one of each part", () => {
   });
 
   it("draws the row of chips in one component", () => {
-    expect(defining(/inline-flex items-center gap-1 rounded-full border px-2\.5 py-1 text-xs/)).toEqual(["LevelChips.tsx"]);
+    expect(defining(/inline-flex min-w-20 items-center justify-center gap-1 rounded-full border px-2\.5 py-1 text-xs/)).toEqual(["LevelChips.tsx"]);
   });
 
   it("draws the table of a level's fastest times in one component", () => {

@@ -158,7 +158,7 @@ export function GhostKeys({ game, pending, onPending, onMove, judge }: GhostKeys
       >
         {GHOST_COPY.challenge(last)}
       </button>
-      <p className="text-xs text-muted">{language === "english" ? GHOST_COPY.pick : GHOST_COPY.pickJapanese}</p>
+      <p className="min-h-[2lh] text-xs text-muted">{language === "english" ? GHOST_COPY.pick : GHOST_COPY.pickJapanese}</p>
     </div>
   );
 }

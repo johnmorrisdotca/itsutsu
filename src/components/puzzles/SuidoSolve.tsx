@@ -11,7 +11,7 @@ import { Paired } from "@/components/i18n/Paired";
 import { phraseWith } from "@/components/i18n/phraseWith";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, PLAY_SURFACE, ROOM_FOR_THREE_LINES } from "@/components/ui/ui.constants";
 import { setUpPath } from "@/lib/gomoku/slugs";
 import { nextLevelLabel } from "@/lib/puzzles/fixedLevel";
 import { resumedGame, suidoReading } from "@/lib/puzzles/suido/play";
@@ -289,7 +289,7 @@ export function SuidoSolve({
       {done === null ? (
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" role="radiogroup" aria-label={SUIDO_COPY.turn} data-testid="suido-way">
+            <div className="grid basis-full grid-cols-2 gap-1.5 sm:flex sm:basis-auto sm:flex-wrap" role="radiogroup" aria-label={SUIDO_COPY.turn} data-testid="suido-way">
               {(["clockwise", "anticlockwise"] as const).map((each) => (
                 <button
                   key={each}
@@ -306,7 +306,7 @@ export function SuidoSolve({
             </div>
             <SolveHint hinting={hinting} onHint={hint} disabled={!live} racing={race !== null} without={level === null ? undefined : SUIDO_COPY.levelsNoHint} />
           </div>
-          <span className="text-sm text-muted" data-testid="suido-said" data-leaks={reading.leaks} data-reached={reading.reached} aria-live="polite">
+          <span className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid="suido-said" data-leaks={reading.leaks} data-reached={reading.reached} aria-live="polite">
             {startedAt === null ? SUIDO_COPY.howTo : said}
           </span>
         </div>

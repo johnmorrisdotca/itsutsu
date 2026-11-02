@@ -170,7 +170,7 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
           </div>
         ) : null}
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
+          <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET} min-w-40`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
             {sound.on ? YACHT_COPY.soundOn : YACHT_COPY.soundOff}
           </button>
           <TableEnding
@@ -184,7 +184,7 @@ export function PachisiPlay({ game, keep, appearance, gameHref }: { game: Pachis
             onNewGame={() => keep(null)}
           />
         </div>
-        <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
+        <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{PARTY_COPY.kept}</p>
         {playing ? null : <TableWallpaper game="pachisi" result={resultLine(names, game.winners, false, say)} />}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

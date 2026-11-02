@@ -131,7 +131,7 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
       </div>
 
       <div className="flex flex-wrap items-center gap-2" data-chrome>
-        <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
+        <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET} min-w-40`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
           {sound.on ? DICE_WAR_COPY.soundOn : DICE_WAR_COPY.soundOff}
         </button>
         <TableEnding
@@ -145,7 +145,7 @@ export function DiceWarPlay({ game, keep, gameHref }: { game: DiceWarGame; keep:
           onNewGame={() => keep(null)}
         />
       </div>
-      <p className="text-xs text-muted">{DICE_WAR_COPY.kept}</p>
+      <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{DICE_WAR_COPY.kept}</p>
       {over ? <TableWallpaper game="diceWar" result={resultLine(names, winners, false, say)} /> : null}
       <p className="text-sm">
         <Link href={gameHref} className="underline underline-offset-4">

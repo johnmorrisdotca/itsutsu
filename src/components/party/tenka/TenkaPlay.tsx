@@ -190,7 +190,7 @@ export function TenkaPlay({ game, keep, appearance, gameHref, ready }: { game: T
             />
           </div>
           {playing ? null : <TableWallpaper game="tenka" result={resultLine(game.players.map((_, seat) => partyPlayerName(game, seat, say)), game.winners, false, say)} />}
-          <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
+          <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{PARTY_COPY.kept}</p>
           <p className="text-sm">
             <Link href={gameHref} className="underline underline-offset-4">
               {TENKA_COPY.about} →

@@ -333,7 +333,7 @@ export function GamePicker({
           <PuzzleShelf family={puzzles} chosen={puzzle} onChoose={(kind) => onPuzzle?.(kind)} disabled={disabled} />
         ) : (
         <>
-        <span className="text-xs leading-snug text-muted" data-testid="set-up-family-blurb">
+        <span className="min-h-[3lh] text-xs leading-snug text-muted" data-testid="set-up-family-blurb">
           {familyBlurb(family, speaker.locale)}
         </span>
         <div className={PICK_TILE_GRID}>

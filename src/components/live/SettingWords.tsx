@@ -14,9 +14,9 @@ import type { SettingWordsProps } from "./setUp.types";
  * screen over its Continue button — one rendering, so the two lines cannot come
  * to look different for the same game.
  */
-export function SettingWords({ words, testId }: SettingWordsProps) {
+export function SettingWords({ words, testId, room = false }: SettingWordsProps) {
   return (
-    <span className="flex flex-wrap items-baseline gap-x-1.5 text-xs" data-testid={testId}>
+    <span className={`flex flex-wrap items-baseline gap-x-1.5 text-xs ${room ? "min-h-[2lh] lg:min-h-0" : ""}`} data-testid={testId}>
       {words.map((word, at) => (
         <span key={word.text} className="flex items-baseline gap-1.5">
           {at > 0 ? (

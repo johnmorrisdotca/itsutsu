@@ -51,7 +51,7 @@ export function KumimojiOnlineSeats({ offer, count, setup }: { offer: OnlineOffe
           {table.problem}
         </p>
       ) : null}
-      <p className="text-xs text-muted">{ONLINE_COPY.keptNote(fillable)}</p>
+      <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{ONLINE_COPY.keptNote(fillable)}</p>
       <button type="submit" className={PLAY_BUTTON} disabled={table.starting || !fillable} data-testid="kumimoji-online-start">
         <PressLabel words={table.starting ? ONLINE_COPY.starting : ONLINE_COPY.start} kanji="卓" />
       </button>

@@ -244,7 +244,8 @@ export function BoardScale({
       <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1" data-board-scale-chooser>
         <fieldset data-chrome data-board-scale-sizes className="hidden items-center gap-1 lg:flex" data-testid="board-scale">
           <legend className="sr-only">{say.say("boardlook.scaleGroup")}</legend>
-          <span className="mr-1 text-xs text-muted" aria-hidden="true">
+          {/* Each in a room of its own, so that the words of neither language move the row (`language-steady.spec.ts`). */}
+          <span className="mr-1 min-w-12 text-right text-xs text-muted" aria-hidden="true">
             {say.say("boardlook.scaleHeading")}
             {say.pairsWithKanji ? <span className="font-mincho"> 盤</span> : null}
           </span>
@@ -253,7 +254,7 @@ export function BoardScale({
             return (
             <label
               key={option}
-              className="cursor-pointer rounded-md border border-rule px-2 py-0.5 text-xs text-ink-soft hover:border-rule-strong has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-paper has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-moss"
+              className="min-w-23 cursor-pointer rounded-md border border-rule px-2 py-0.5 text-center text-xs text-ink-soft hover:border-rule-strong has-[:checked]:border-ink has-[:checked]:bg-ink has-[:checked]:text-paper has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-moss"
               title={words.whole}
               data-testid="board-scale-option"
               data-scale={option}

@@ -118,12 +118,12 @@ export function DiceTablePlay({ kind, game, keep, appearance, gameHref }: { kind
           </div>
         ) : null}
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET}`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
+          <button type="button" onClick={sound.toggle} aria-pressed={sound.on} className={`${BUTTON_BASE} ${BUTTON_QUIET} min-w-40`} data-testid="dice-sound" data-on={sound.on ? "true" : "false"}>
             {sound.on ? say.say("party.dice.soundOn") : say.say("party.dice.soundOff")}
           </button>
           <TableEnding prefix="dicetable" game={game} playing={!over} toPlay={toPlay} seats={game.players.length} nameOf={(seat) => names[seat] ?? ""} onResign={(seat) => keep(resignDiceTable(game, seat))} onNewGame={() => keep(null)} />
         </div>
-        <p className="text-xs text-muted">{PARTY_COPY.kept}</p>
+        <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{PARTY_COPY.kept}</p>
         {over ? <TableWallpaper game={kind} result={resultLine(names, game.winners, false, say)} /> : null}
         <p className="text-sm">
           <Link href={gameHref} className="underline underline-offset-4">

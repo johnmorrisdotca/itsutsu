@@ -2,15 +2,24 @@
 
 import type { ReactNode } from "react";
 
-import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG, ROOM_FOR_A_WORD, ROOM_FOR_THREE_LINES, ROOM_FOR_TWO_WORDS } from "@/components/ui/ui.constants";
 import type { HousekiColour } from "@/lib/houseki/houseki.constants";
 
 import { MiniGem } from "./HousekiWell";
 
-/** A figure with its name: the score, the best chain, the pieces left. */
+/** What a level asks, in the room its longest wording takes, so the board under it stays where it is in either language. */
+export function HousekiObjective({ children }: { children: ReactNode }) {
+  return (
+    <p className={`text-sm ${ROOM_FOR_THREE_LINES} sm:min-h-[2lh]`} data-testid="houseki-objective">
+      {children}
+    </p>
+  );
+}
+
+/** A figure with its name: the score, the best chain, the pieces left. In a room of its own, so a longer name or a bigger figure leaves its neighbours where they are. */
 export function Stat({ label, value, testId }: { label: string; value: ReactNode; testId?: string }) {
   return (
-    <span className="flex items-baseline gap-1.5 text-sm" data-testid={testId}>
+    <span className="flex min-w-26 items-baseline gap-1.5 text-sm" data-testid={testId}>
       <span className="text-xs text-muted">{label}</span>
       <output className="font-semibold tabular-nums">{value}</output>
     </span>
@@ -40,7 +49,7 @@ export function GoalBar({ text, done, total }: { text: string; done: number; tot
 export function NextPieces({ label, pieces, round = true, vertical = true }: { label: string; pieces: readonly (readonly { colour: HousekiColour; magnetic?: boolean }[])[]; round?: boolean; vertical?: boolean }) {
   return (
     <div className="flex items-center gap-2" data-testid="houseki-next">
-      <span className="text-xs text-muted">{label}</span>
+      <span className="min-w-16 text-xs text-muted">{label}</span>
       <div className="flex items-center gap-3">
         {pieces.map((piece, index) => (
           <div
@@ -72,6 +81,7 @@ export function ControlButton({
   disabled = false,
   strong = false,
   hidden = false,
+  wide = false,
   title,
 }: {
   label: ReactNode;
@@ -83,10 +93,13 @@ export function ControlButton({
   disabled?: boolean;
   strong?: boolean;
   hidden?: boolean;
+  /** A press whose two languages differ by more than a word's room, so it keeps two words' room in both. */
+  wide?: boolean;
   title?: string;
 }) {
   if (hidden) return null;
-  const look = `${BUTTON_BASE} ${strong ? BUTTON_STRONG : BUTTON_QUIET} min-w-[3.25rem] touch-manipulation`;
+  // A press named in words keeps a word's room, an arrow an arrow's, so the row holds its places in either language.
+  const look = `${BUTTON_BASE} ${strong ? BUTTON_STRONG : BUTTON_QUIET} ${typeof label === "string" && label.length > 1 ? (wide ? ROOM_FOR_TWO_WORDS : ROOM_FOR_A_WORD) : "min-w-[3.25rem]"} touch-manipulation`;
   if (onHold !== undefined) {
     return (
       <button
@@ -127,7 +140,7 @@ export function ControlButton({
 /** The row of presses under a board. */
 export function Controls({ children, label }: { children: ReactNode; label: string }) {
   return (
-    <div className="flex flex-wrap items-center gap-2" role="group" aria-label={label} data-testid="houseki-controls">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] items-center gap-2" role="group" aria-label={label} data-testid="houseki-controls">
       {children}
     </div>
   );

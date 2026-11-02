@@ -6,7 +6,7 @@ import type { Speaker } from "@/lib/i18n/i18n";
 import { useCallback, useMemo, useState } from "react";
 
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP } from "@/components/live/picker.constants";
-import { PLAY_SURFACE } from "@/components/ui/ui.constants";
+import { PLAY_SURFACE, ROOM_FOR_THREE_LINES } from "@/components/ui/ui.constants";
 import { checkPictureLogic } from "@/lib/puzzles/pictureLogic/check";
 import { answerOfCells, decodeCells, decodeClues, decodePicture, encodeCells } from "@/lib/puzzles/pictureLogic/code";
 import { hintedState, pictureChecked, pictureHint, pictureWrong } from "@/lib/puzzles/pictureLogic/help";
@@ -159,7 +159,7 @@ export function PictureLogicSolve({
       {done === null ? (
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex gap-1.5" role="radiogroup" aria-label={copy.pensLabel} data-testid="picture-pens">
+            <div className="grid basis-full grid-cols-3 gap-1.5 sm:flex sm:basis-auto" role="radiogroup" aria-label={copy.pensLabel} data-testid="picture-pens">
               {PENS.map((each) => (
                 <button
                   key={each}
@@ -178,7 +178,7 @@ export function PictureLogicSolve({
             <SolveShow checking={checking} onShow={show} disabled={startedAt === null || pausing.paused} />
             <SolveHint hinting={hinting} onHint={hint} disabled={startedAt === null || pausing.paused} racing={race !== null} />
           </div>
-          <span className="text-sm text-muted" data-testid={checked !== null ? "puzzle-checked" : "picture-said"} aria-live="polite">
+          <span className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid={checked !== null ? "puzzle-checked" : "picture-said"} aria-live="polite">
             {checked !== null ? checkedLine(checked, say) : pen === "shade" ? copy.howTo : copy.howToMark}
           </span>
         </div>

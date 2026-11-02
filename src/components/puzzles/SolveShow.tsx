@@ -1,7 +1,7 @@
 "use client";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
-import { BUTTON_BASE, BUTTON_QUIET } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, ROOM_FOR_A_WORD } from "@/components/ui/ui.constants";
 
 import type { Checking } from "./solveShared";
 
@@ -17,7 +17,7 @@ export function SolveShow({ checking, onShow, disabled }: { checking: Checking; 
   return (
     <button
       type="button"
-      className={`${BUTTON_BASE} ${BUTTON_QUIET}`}
+      className={`${BUTTON_BASE} ${BUTTON_QUIET} ${ROOM_FOR_A_WORD}`}
       onClick={onShow}
       disabled={disabled || spent}
       title={say.say(spent ? "puzzle.solve.showSpent" : "puzzle.solve.showWords")}

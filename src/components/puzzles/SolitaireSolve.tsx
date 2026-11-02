@@ -9,7 +9,7 @@ import { BOARD_THEMES, DEFAULT_APPEARANCE } from "@/components/board/Board.const
 import type { Appearance } from "@/components/board/board.types";
 import { CardDragGhost } from "@/components/cards/CardDragGhost";
 import { useCardDrag } from "@/components/cards/useCardDrag";
-import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE, TAP_HEIGHT } from "@/components/ui/ui.constants";
+import { BUTTON_BASE, BUTTON_QUIET, PLAY_SURFACE, ROOM_FOR_A_WORD, ROOM_FOR_THREE_LINES, TAP_HEIGHT } from "@/components/ui/ui.constants";
 import { cardAt, cardCode } from "@/lib/cards/deck";
 import { encodeMoves, homeMove, liftable, moveFor, recyclesLeft, stockMove, stuck } from "@johnmorrisdotca/toranpu/klondike";
 import type { KlondikeMove, KlondikePile, TableSpot } from "@johnmorrisdotca/toranpu/klondike";
@@ -149,10 +149,10 @@ export function SolitaireSolve({
       </SolvePaused>
       <CardDragGhost ghost={drag.ghost} ghostRef={drag.ghostRef} />
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT}`} onClick={() => { game.undo(); setPicked(null); }} disabled={!live || moves.length === 0 || game.finishing} data-testid="solitaire-undo">
+        <button type="button" className={`${BUTTON_BASE} ${BUTTON_QUIET} ${TAP_HEIGHT} ${ROOM_FOR_A_WORD}`} onClick={() => { game.undo(); setPicked(null); }} disabled={!live || moves.length === 0 || game.finishing} data-testid="solitaire-undo">
           {say.say("puzzle.press.undo")}
         </button>
-        <p className="text-sm tabular-nums" data-testid="solitaire-move-count">
+        <p className="min-w-16 text-sm tabular-nums" data-testid="solitaire-move-count">
           {say.count("count.move", moves.length)}
         </p>
         {score === null ? null : (
@@ -170,7 +170,7 @@ export function SolitaireSolve({
         ) : null}
       </div>
       {done === null ? (
-        <p className="min-h-10 text-sm text-muted" data-testid="solitaire-said" aria-live="polite">
+        <p className={`text-sm text-muted ${ROOM_FOR_THREE_LINES}`} data-testid="solitaire-said" aria-live="polite">
           {game.finishing ? SOLITAIRE_COPY.finishing : nothingLeft ? SOLITAIRE_COPY.stuck : (said ?? `${SOLITAIRE_COPY.howTo} ${SOLITAIRE_COPY.passesLeft(left)}`)}
         </p>
       ) : (

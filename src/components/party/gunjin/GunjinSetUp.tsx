@@ -126,7 +126,7 @@ export function GunjinSetUp({ appearance, onStart, ready, online }: { appearance
             {table.problem}
           </p>
         ) : null}
-        <p className="text-xs text-muted">{severalOffer === undefined ? GUNJIN_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, 2))}</p>
+        <p className="min-h-[2lh] text-xs text-muted md:min-h-0">{severalOffer === undefined ? GUNJIN_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, 2))}</p>
       </form>
     </div>
   );
