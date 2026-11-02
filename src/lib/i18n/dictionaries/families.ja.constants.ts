@@ -55,17 +55,17 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
   },
   territory: {
     blurb: [
-      "列を作る必要はありません。終わったときにどこに立っているかで勝負が決まります。相手より広く盤を囲むか、自分の二辺をつなぐか、相手より先にすべての駒を向かい側の陣に入れます。",
-      "There are no lines to make. The game is decided by where you stand when it ends: surround more of the board than the other side, connect your own two sides, or get all your pieces into the far camp before the other side does.",
+      "列を作る必要はありません。終わったときにどこに立っているかで勝負が決まります。相手より広く盤を囲むか、自分の駒や二辺をつなぐか、先に向こう側へ着くか、相手の行き場をなくします。",
+      "There are no lines to make. The game is decided by where you stand when it ends: surround more of the board than the other side, connect your own pieces or two sides, reach the far side first, or take away the other side's places to go.",
     ],
-    review: AGENT_READ_2026_10_06,
+    review: { by: "agent", on: "2026-10-30" },
   },
   "small-boards": {
     blurb: [
-      "最後まで読み切れるゲームと、してはいけないことが鍵になるゲームです。",
-      "Games you can read through to the end, and games where the key is what you must not do.",
+      "最後まで読み切れるゲーム、してはいけないことが鍵になるゲーム、そして駒を置き、動かし、取り合うナインメンズモリスです。",
+      "Games you can read through to the end, games where the key is what you must not do, and Nine Men's Morris, where pieces are placed, moved and taken from each other.",
     ],
-    review: AGENT_READ_2026_10_06,
+    review: { by: "agent", on: "2026-10-30" },
   },
   numbers: {
     blurb: [
@@ -134,10 +134,10 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
   },
   houseki: {
     blurb: [
-      "1人で遊ぶ宝石と石のパズルで、1回に1レベルずつ進めます。3つ並んだ宝石の列を落として色を入れ替える、2つ組を回して連鎖を作る、同じ色の石のかたまりを取る、隣り合う宝石を入れ替える、引き寄せる床の上にブロックを置く、といった遊びがあります。どれも難しさ順のレベルが50から100あり、レッスンとデイリーもあります。レベルをクリアするとポイントがもらえます。",
-      "Gem and stone puzzles for one, a level at a time. Cycle a falling column of three, turn a pair into chains, take groups of stones, swap neighbours, or set a magnetic block down on a floor that pulls. Fifty to a hundred graded levels in each, with lessons and a Daily, played alone. A level won earns points.",
+      "1人で遊ぶ宝石と石のパズルで、1回に1レベルずつ進めます。3つ並んだ宝石の列を落として色を入れ替える、2つ組を回して連鎖を作る、同じ色の石のかたまりを取る、隣り合う宝石を入れ替える、引き寄せる床の上にブロックを置く、3つの形を盤に置いて行や列を消す、といった遊びがあります。どれも難しさ順のレベルが50以上あり、レッスンとデイリーもあります。レベルをクリアするとポイントがもらえます。",
+      "Gem and stone puzzles for one, a level at a time. Cycle a falling column of three, turn a pair into chains, take groups of stones, swap neighbours, set a magnetic block down on a floor that pulls, or lay three shapes on a board and clear lines. Fifty or more graded levels in each, with lessons and a Daily, played alone. A level won earns points.",
     ],
-    review: AGENT_READ_2026_10_06,
+    review: { by: "agent", on: "2026-10-30" },
   },
 };
 
@@ -146,13 +146,6 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
  * `<game>/<family key>`: the sentences of `ALSO_LISTED_IN` in `familyShelves.ts`.
  */
 export const ALSO_LISTED_COPY_JA: Record<string, { why: JaLine; review?: CopyReview }> = {
-  "tobiishi/small-boards": {
-    why: [
-      "小さな盤でのペグソリティア。1人用のパズルで、最初の1個から最後の1個まで数回の跳びで、1、2分で終わります。",
-      "Peg solitaire on a small board. A puzzle for one that takes a few jumps from the first peg to the last, over in a minute or two.",
-    ],
-    review: AGENT_READ_2026_10_06,
-  },
   "chineseCheckers/checkers": {
     why: [
       "名前がチェッカーというだけです。駒は取られず、キングにもなりません。10個の駒を星の向かい側の頂点へ走らせる競走です。",

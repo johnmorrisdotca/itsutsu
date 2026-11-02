@@ -11,6 +11,21 @@ const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
 const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
 export const JA_DRAFTED_LIVE: Partial<Record<PhraseKey, DraftedPhrase>> = {
+  "live.winsReduced": {
+    text: "{colour}の勝ちです。相手の駒が残り2つになりました。",
+    back: "{colour} wins. The opponent's pieces are down to two.",
+    review: AGENT_READ_2026_10_30,
+  },
+  "live.winsReached": {
+    text: "{colour}の勝ちです。駒が向こうの端に着きました。",
+    back: "{colour} wins. A piece reached the far edge.",
+    review: AGENT_READ_2026_10_30,
+  },
+  "live.winsJoined": {
+    text: "{colour}の勝ちです。駒がすべてつながりました。",
+    back: "{colour} wins. All the pieces are joined.",
+    review: AGENT_READ_2026_10_30,
+  },
   // A board that has stopped checking for moves
   "live.pausedLine": {
     text: "しばらく動きがないため、この盤は手の確認を止めています。",

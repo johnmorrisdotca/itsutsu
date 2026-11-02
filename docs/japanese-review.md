@@ -6,8 +6,8 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 5934. Drafted and unread: 406. Read by the reviewer agent: 5528.
-Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 522
+Phrases: 5996. Drafted and unread: 0. Read by the reviewer agent: 5996.
+Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 125
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
 
@@ -20,7 +20,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Waiting for a decision or a native read — start here (521)
+## 1. Waiting for a decision or a native read — start here (124)
 
 A **question** is a wording only the site's owner can choose between. A line the
 agent has read but marked for a native read is high-stakes text (children,
@@ -36,140 +36,6 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Terms of play | **利用規約** | Terms of use | Agent 2026-10-06; Agent 2026-10-06, native read wanted | Legal text (the terms of play): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | Choose which emails from {site} you get. You do not need to sign in. | **{site}から届くメールを選べます。サインインは不要です。** | You can choose which emails you receive from {site}. Signing in is not required. | Agent 2026-10-06, native read wanted | The page an email's stop link opens, where Canada's anti-spam law wants a way out that needs no sign-in: a native read is recommended. |  |
 | — — — | Slate & shell | **那智黒と蛤** | Slate and clam shell | Agent 2026-10-06, native read wanted | The five stone-set names are renderings of English names (那智黒と蛤, 翡翠と骨, 梅と桜, 藍と米, ネオン). A Go player should confirm they read as the stones' materials and colours. |  |
-| — — — | the answer is not a grid of bulbs | **答えが、電球のマス目になっていません** | the answer is not a grid of light bulbs | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a bulb is on a black square | **黒いマスに電球があります** | there is a bulb on a black square | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | some white squares are dark | **照らされていない白いマスがあります** | there are white squares that are dark | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not an Akari board | **最初から出ている部分が、「明かり」の盤になっていません** | the part shown from the start is not a board of Akari | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a numbered square does not touch its number of bulbs | **数字のマスが、その数の電球と接していません** | a numbered square does not touch as many bulbs as its number | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | two bulbs light each other | **2つの電球が互いを照らしています** | two bulbs light each other | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | already finished | **すでに終わっています** | it has already finished | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | already over | **すでに終わっています** | it is already over | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not whole guesses | **答えが、推測の形になっていません** | the answer is not in the form of guesses | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not whole guesses in hiragana | **答えが、ひらがなで書かれた推測の形になっていません** | the answer is not in the form of guesses written in hiragana | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer does not solve the puzzle: {reason} | **その答えでは、パズルが解けていません：{reason}** | the answer does not solve the puzzle: {reason} | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a word was not guessed | **当てられていない言葉があります** | there is a word that was not guessed | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the bridge at row {row}, column {col} does not reach an island | **{row}行{col}列の橋が、島につながっていません** | the bridge at row {row}, column {col} is not connected to an island | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a {kind} cannot run out of guesses | **{kind}は、推測の回数がなくなることはありません** | {kind} cannot run out of guesses | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a cell is neither water nor a bridge | **水でも橋でもないマスがあります** | there is a cell that is neither water nor a bridge | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | some cells are empty | **空のマスがあります** | there are empty cells | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a set of clues | **最初から出ている部分が、ヒントの組になっていません** | the part shown from the start is not a set of clues | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | column {n} does not match its clue | **{n}列目がヒントと合っていません** | column {n} does not match its clue | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | column {n} is not half black | **{n}列目の黒が半分になっていません** | column {n} is not half black | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | column {n} repeats another | **{n}列目が、ほかの列と同じです** | column {n} is the same as another column | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | column {n} has three alike | **{n}列目に同じ色が3つ並んでいます** | column {n} has three of the same colour in a row | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | column {n} has two stones | **{n}列目に石が2つあります** | column {n} has two stones | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not a grid of digits | **答えが、数字のマス目になっていません** | the answer is not a grid of digits | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a Cross Sums board | **最初から出ている部分が、「合計」の盤になっていません** | the part shown from the start is not a board of Cross Sums | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a run does not add up to its sum, or repeats a digit | **合計が合っていない列か、同じ数字が重なっている列があります** | there is a run whose total does not match, or a run in which a digit repeats | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the deal is not a whole deck | **配られたカードが、ちょうど1組になっていません** | the dealt cards are not exactly one deck | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the deal is not two decks of those suits | **配られたカードが、そのスートの2組になっていません** | the dealt cards are not two decks of those suits | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer has empty cells | **答えに、空のマスがあります** | the answer has empty cells | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | all four words were found | **4つの言葉が見つかっています** | all four words were found | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | both words were found | **2つの言葉が見つかっています** | both words were found | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | FreeCell is played with {cells} cells | **フリーセルのセルの数は、{cells}のどれかです** | the number of cells in FreeCell is one of {cells} | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a hidden kana word | **最初から出ている部分が、隠された仮名の言葉になっていません** | the part shown from the start is not a hidden word in kana | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a hidden word | **最初から出ている部分が、隠された言葉になっていません** | the part shown from the start is not a hidden word | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | guesses go on after the word was typed | **言葉が入力されたあとも、推測が続いています** | guesses go on after the word was typed | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | guesses go on after the word was found | **言葉が見つかったあとも、推測が続いています** | guesses go on after the word was found | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | guesses go on after all four words were found | **4つの言葉が見つかったあとも、推測が続いています** | guesses go on after all four words were found | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | guesses go on after both words were found | **2つの言葉が見つかったあとも、推測が続いています** | guesses go on after both words were found | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the grid is not the solution | **マス目が答えになっていません** | the grid is not the solution | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the grid was solved | **マス目はすでに答えになっています** | the grid was already the solution | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | there are guesses left | **推測がまだ残っています** | there are guesses left | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not a grid of shaded cells | **答えが、塗ったマスのマス目になっていません** | the answer is not a grid of shaded cells | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a Hitori board | **最初から出ている部分が、「一人」の盤になっていません** | the part shown from the start is not a board of Hitori | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a number repeats among the cells left, two shaded cells touch, or the cells left do not join up | **残ったマスに同じ数字が重なっているか、塗ったマスが接しているか、残ったマスがつながっていません** | a number repeats among the remaining cells, shaded cells touch, or the remaining cells are not connected | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | an island was added | **島が足されています** | an island was added | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | an island was moved | **島が動かされています** | an island was moved | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a grid of islands | **最初から出ている部分が、島のマス目になっていません** | the part shown from the start is not a grid of islands | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the islands are not all joined into one | **すべての島が1つにつながっていません** | the islands are not all joined into one | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the island at row {row}, column {col} wants {wants} and has {has} | **{row}行{col}列の島は橋が{wants}本必要ですが、{has}本です** | the island at row {row}, column {col} needs {wants} bridges, but has {has} | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | it was solved | **すでに完成しています** | it was already completed | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | it was won | **すでに勝っています** | it was already won | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not a grid of squares | **答えがマス目になっていません** | the answer is not a grid of squares | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a Jirai board | **与えられたものが地雷の盤になっていません** | what was given is not a Jirai board | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a mine was uncovered | **地雷を開いてしまいました** | a mine was opened | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is missing a square | **答えにマスが足りません** | the answer is short of a square | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a number does not match the covered squares round it | **数字がまわりの閉じたマスの数と合っていません** | a number does not match the count of closed squares around it | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a square the opening uncovered was changed | **最初に開いたマスが変わっています** | a square opened at the start has changed | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the opening was covered again | **最初に開いたマスがまた閉じられています** | the square opened at the start has been closed again | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer has a square outside the shape | **答えに形の外のマスがあります** | the answer has a square outside the shape | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | there are safe squares still covered | **安全なマスがまだ閉じたままです** | a safe square is still closed | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the kana word list is not loaded | **仮名の言葉の一覧が読み込まれていません** | the list of words in kana is not loaded | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not a lattice and its swaps | **答えが、格子と入れ替えの組になっていません** | the answer is not a lattice and its swaps | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a scrambled lattice and its solution | **最初から出ている部分が、混ぜた格子とその答えになっていません** | the part shown from the start is not a scrambled lattice and its solution | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a lattice is {side} across | **格子の幅は{side}マスです** | a lattice is {side} cells across | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the line does not reach the goal | **線がゴールに届いていません** | the line does not reach the goal | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not a set of edges | **答えが、辺の集まりになっていません** | the answer is not a set of edges | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the line branches or stops | **線が枝分かれしているか、途中で止まっています** | the line branches or stops partway | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a Loop board | **最初から出ている部分が、「輪」の盤になっていません** | the part shown from the start is not a board of Loop | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the line is not one loop | **線が1つの輪になっていません** | the line is not one loop | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a number is not touched by its number of edges | **数字が、その数の辺と接していません** | a number is not touched by as many edges as its number | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | more guesses than the rows allow | **行の数より多く推測しています** | there are more guesses than the rows allow | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | more moves than a game is kept with | **保存できる手数より多く動かしています** | there are more moves than a game is kept with | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | more moves than a solve is kept with | **保存できる手数より多く動かしています** | there are more moves than a solve is kept with | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | more swaps than the level allows | **レベルで許される入れ替えの数より多く行っています** | there are more swaps than the level allows | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | move {n} is not allowed there | **{n}手目は、その場面では行えません** | move {n} cannot be made there | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a move that is not written as one | **手の書き方として正しくないものがあります** | there is a move that is not written as a move | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the word was never typed | **言葉が一度も入力されていません** | the word was never typed | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | no check for {kind} | **{kind}を確かめる方法がありません** | there is no way to check {kind} | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | no cube of that size | **その大きさのキューブはありません** | there is no cube of that size | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | there are no islands | **島がありません** | there are no islands | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | no {kind} at {size} | **{size}の{kind}はありません** | there is no {kind} at {size} | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | no level to count the guesses by | **推測の数を数えるためのレベルがありません** | there is no level to count the guesses by | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | no level to count the swaps by | **入れ替えの数を数えるためのレベルがありません** | there is no level to count the swaps by | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | no move was made | **1手も動かしていません** | no move was made | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a layer the cube does not have | **キューブにない段があります** | there is a layer the cube does not have | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | no such puzzle | **そのパズルはありません** | there is no such puzzle | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | no such race | **そのレースはありません** | there is no such race | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a level | **最初から出ている部分が、レベルになっていません** | the part shown from the start is not a level | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a board of that size | **最初から出ている部分が、その大きさの盤になっていません** | the part shown from the start is not a board of that size | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | not a cube of that size | **その大きさのキューブになっていません** | it is not a cube of that size | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | not every card is home | **ホームに入っていないカードがあります** | there are cards that are not in the home piles | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | not every face is one colour | **1色にそろっていない面があります** | there is a face that is not one colour | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | not every run is made | **完成していない列があります** | there are runs that are not complete | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | not a grid of that size | **その大きさのマス目になっていません** | it is not a grid of that size | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | {word} is not in the word list | **{word}は、言葉の一覧にありません** | {word} is not in the word list | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | that is not a run of legal jumps on this board | **この盤で打てる跳びの連なりになっていません** | it is not a series of legal jumps on this board | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a level of that length | **最初から出ている部分が、その長さのレベルになっていません** | the part shown from the start is not a level of that length | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a level of that size | **最初から出ている部分が、その大きさのレベルになっていません** | the part shown from the start is not a level of that size | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | that is not a line through the maze | **迷路を通る線になっていません** | it is not a line through the maze | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a maze | **最初から出ている部分が、迷路になっていません** | the part shown from the start is not a maze | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the word was not pinned down | **言葉が絞り込まれていません** | the word was not pinned down | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | not one of the site's levels | **このサイトのレベルのどれでもありません** | it is not one of this site's levels | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | not started | **まだ始まっていません** | it has not started | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | one peg must be left, in the goal hole | **最後に残る駒は、ゴールの穴にある1つだけでなければなりません** | the last remaining peg must be only one, in the goal hole | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not a grid of numbers | **答えが、数字のマス目になっていません** | the answer is not a grid of numbers | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a printed number was changed | **最初から書かれている数字が変えられています** | a number written from the start was changed | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a Regions board | **最初から出ている部分が、「区画」の盤になっていません** | the part shown from the start is not a board of Regions | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the regions are not a grid | **領域がマス目になっていません** | the regions are not a grid | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a region is not as big as its number, or two regions of one size touch | **数字と大きさが合っていない区画があるか、同じ大きさの区画が接しています** | there is a region whose size does not match its number, or two regions of the same size touch | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a region has two stones | **1つの領域に石が2つあります** | a region has two stones | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | row {n} does not match its clue | **{n}行目がヒントと合っていません** | row {n} does not match its clue | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | row {n} is not half black | **{n}行目の黒が半分になっていません** | row {n} is not half black | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | row {n} repeats another | **{n}行目が、ほかの行と同じです** | row {n} is the same as another row | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | there are rows left | **行がまだ残っています** | there are rows left | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | row {n} has three alike | **{n}行目に同じ色が3つ並んでいます** | row {n} has three of the same colour in a row | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | not a grid of shaded and empty cells that size | **その大きさの、塗ったマスと空のマスのマス目になっていません** | it is not a grid of that size of shaded and empty cells | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not a set of rectangles | **答えが、長方形の集まりになっていません** | the answer is not a set of rectangles | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a Shikaku board | **最初から出ている部分が、「四角」の盤になっていません** | the part shown from the start is not a board of Shikaku | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a rectangle does not hold exactly one number, or its area | **数字を1つだけ含んでいないか、数字と面積が合っていない長方形があります** | there is a rectangle that does not hold exactly one number, or whose area does not match it | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | some cells are in no rectangle | **どの長方形にも入っていないマスがあります** | there are cells that are in no rectangle | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the sitting is over | **この回は終わっています** | this sitting is over | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Solitaire turns one card or three | **ソリティアは、1枚めくりか3枚めくりです** | Solitaire turns one card or three | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Spider is played with {suits} suits | **スパイダーのスートの数は、{suits}のどれかです** | the number of suits in Spider is one of {suits} | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | a printed stone was changed | **最初から置かれている石が変えられています** | a stone placed from the start was changed | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not a stone in every row | **答えが、各行に石が1つずつの形になっていません** | the answer is not in the form of one stone in every row | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the answer is not a grid of stones | **答えが、石のマス目になっていません** | the answer is not a grid of stones | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a grid of stones | **最初から出ている部分が、石のマス目になっていません** | the part shown from the start is not a grid of stones | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the stones in rows {first} and {second} touch | **{first}行目と{second}行目の石が接しています** | the stones in rows {first} and {second} touch | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | there are swaps left | **入れ替えがまだ残っています** | there are swaps left | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the swaps do not make that grid | **その入れ替えでは、そのマス目になりません** | those swaps do not make that grid | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the word was found | **言葉が見つかっています** | the word was found | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the word was not guessed | **言葉が当てられていません** | the word was not guessed | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the givens are not a Tsunagi layout | **最初から出ている部分が、「繋ぎ」の配置になっていません** | the part shown from the start is not a layout of Tsunagi | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the word list is not loaded | **言葉の一覧が読み込まれていません** | the word list is not loaded | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the word was typed | **言葉が入力されています** | the word was typed | Question, unread | Written on 2026-11-02; nobody has read it. |  |
 | — — — | The step begins here | **この段階のはじめ** | The start of this step | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
 | — — — | Hide the turns | **回転を隠す** | Hide the turns | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
 | — — — | Done: that step is finished, and the cube is as it should be. Go back over any turn, replay it from the start, or turn the cube yourself. | **できました。この段階は完了で、キューブは正しい状態です。好きな手まで戻って見直したり、最初から再生し直したり、自分で回したりできます。** | Done. This step is complete and the cube is in the right state. You can go back to any move to look again, play it again from the start, or turn it yourself. | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
@@ -181,278 +47,15 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Slow | **ゆっくり** | Slowly | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
 | — — — | The turns of this step | **この段階の回転** | The turns of this step | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
 | — — — | Watch the turns one at a time. Pause to look closer, step back and on to go over one again, or drag the bar to jump. Turn the cube yourself to carry on by hand from there. | **回転を1手ずつ見ていきます。一時停止してじっくり見たり、「戻る」「進む」で1手ずつ見直したり、バーをドラッグして好きな手へ移動したりできます。キューブを自分で回せば、そこから自分で続けられます。** | Go through the turns one move at a time. You can pause to look closely, go over a move again with Back and Forward, or drag the bar to move to any move. If you turn the cube yourself, you carry on from there yourself. | Agent 2026-10-06, native read wanted | A native read of how a cuber would say these is recommended; the cube words follow Kyuubu's own Japanese. |  |
-| — — — | Could not leave that mark. | **拍手を送れませんでした。** | The applause could not be sent. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That is not one of the marks. | **それは用意された拍手の種類ではありません。** | That is not one of the kinds of applause provided. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A game is applauded once it is finished. | **拍手は、対局が終わってから送れます。** | Applause can be sent once the game has ended. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Sign in to leave a mark. | **拍手を送るには、サインインしてください。** | Sign in to send applause. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Expected a JSON body. | **リクエストの本文がJSON形式ではありません。** | The body of the request is not in JSON format. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not add that buddy. | **その人を仲間に追加できませんでした。** | That person could not be added as a buddy. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not read the buddy list. | **仲間リストを読み込めませんでした。** | The buddy list could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not remove that buddy. | **その人を仲間から外せませんでした。** | That person could not be removed from the buddies. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Which member? | **どの会員か指定してください。** | Specify which member. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not change that. | **変更できませんでした。** | It could not be changed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not claim that. | **その申し立てはできませんでした。** | That claim could not be made. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not give time. | **時間を加えられませんでした。** | Time could not be added. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Invalid claim. | **申し立てが正しくありません。** | The claim is not correct. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This game has no clock. | **この対局には持ち時間がありません。** | This game has no time allowance. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | It is your move, not theirs. | **相手ではなく、自分の番です。** | It is my turn, not theirs. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Their time is not up yet. | **相手の持ち時間はまだ切れていません。** | The other side's time has not run out yet. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | It is your move; time is given to the other side. | **いまは自分の番です。時間を加えられるのは相手側です。** | It is my turn now. Time can be given to the other side. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not change that colour. | **色を変更できませんでした。** | The colour could not be changed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That address is the only way into this account. Set four words first, and then it can go. | **そのメールアドレスが、このアカウントに入る唯一の方法です。先に合言葉を設定すれば、削除できます。** | That email address is the only way into this account. If a passphrase is set first, it can be deleted. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Your four words are the only way into this account. Add a recovery email address first, and then they can go. | **この合言葉が、このアカウントに入る唯一の方法です。先に復旧用のメールアドレスを追加すれば、削除できます。** | This passphrase is the only way into this account. If a recovery email address is added first, it can be deleted. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Invalid summary parameters. | **概要の指定が正しくありません。** | The summary specification is not correct. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not load the summary. | **概要を読み込めませんでした。** | The summary could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You have as many games on the go as this site allows at once. | **同時に進められる対局の上限に達しています。** | The limit on games that can be going at once has been reached. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not call off that game. | **その対局を中止できませんでした。** | That game could not be called off. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That intersection cannot be played. | **その交点には打てません。** | A stone cannot be played at that intersection. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A colour from the palette, or null. | **パレットの色を指定するか、nullを指定してください。** | Specify a colour from the palette, or specify null. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not delete that game. | **その対局を削除できませんでした。** | That game could not be deleted. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game has fewer moves. | **その対局には、それだけの手数がありません。** | That game does not have that many moves. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game is over. | **その対局は終わっています。** | That game has ended. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game has stones on it — resign it rather than calling it off. | **その対局にはすでに石が置かれています。中止ではなく、投了してください。** | That game already has stones placed on it. Resign instead of calling it off. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Hidden, or not? | **非表示にするかどうかを指定してください。** | Specify whether to hide it or not. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Only a finished game can be hidden. | **非表示にできるのは、終わった対局だけです。** | Only a game that has ended can be hidden. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not load game history. | **対局の履歴を読み込めませんでした。** | The game history could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Invalid move. | **手が正しくありません。** | The move is not correct. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You have {count} games on the go, and {limit} at once is the limit here — finish or resign one before taking on another. | **進行中の対局が{count}局あり、同時に進められるのは{limit}局までです。1局を終えるか投了してから、次の対局を始めてください。** | There are {count} games in progress, and up to {limit} can go at once. Finish or resign one game before starting the next. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not load that game. | **その対局を読み込めませんでした。** | That game could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A turn in that position was lost on time, so it can only be continued with a clock. | **その局面では手番が時間切れになっているため、持ち時間を設定した対局としてしか続けられません。** | A turn in that position ran out of time, so it can only be continued as a game with a time allowance. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Someone moved first. Reload to catch up. | **先にほかの人が打ちました。再読み込みして、最新の状態にしてください。** | Someone else moved first. Reload to bring it up to date. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not play that move. | **その手を打てませんでした。** | That move could not be played. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not load those moves. | **手を読み込めませんでした。** | The moves could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No such game. | **その対局は見つかりません。** | That game cannot be found. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No game of yours by that id. | **そのIDの対局は、自分の対局にありません。** | There is no game of mine with that ID. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This game was set up so that nobody may resign it. | **この対局は、誰も投了できない設定です。** | This game is set so that nobody can resign. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game is an offer nobody has accepted yet. It is answered, not played. | **その対局は、まだ誰も受けていない申し込みです。打つのではなく、返事をするものです。** | That game is a proposal nobody has accepted yet. It is something to reply to, not to play. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That could not be done. | **その操作はできませんでした。** | That operation could not be done. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | {variant} is not a game this site has. | **{variant}は、このサイトにないゲームです。** | {variant} is not a game this site has. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You do not hold a seat in this game. | **この対局の席には座っていません。** | I am not sitting at a seat in this game. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game could not be started. | **その対局を始められませんでした。** | That game could not be started. | Question, unread; Agent 2026-10-06 | Written on 2026-11-02; nobody has read it. |  |
-| — — — | {variant} is not played on {size}×{size}. It plays on: {sizes}. | **{variant}は{size}×{size}の盤では遊べません。遊べる盤：{sizes}。** | {variant} cannot be played on {size}×{size}. The boards it can be played on: {sizes}. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You did not play that game. | **その対局は自分で打ったものではありません。** | That game is not one I played. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game was played under an opening a shared game cannot use, so it cannot be continued or played again here. | **その対局は、共有の対局では使えない開局ルールで打たれたため、ここで続けることも、もう一度対局することもできません。** | That game was played under an opening rule that a shared game cannot use, so it can neither be continued nor played again here. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game is already over. | **その対局はすでに終わっています。** | That game has already ended. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not read your games. | **自分の対局を読み込めませんでした。** | My games could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not record that game. | **その対局を記録できませんでした。** | That game could not be recorded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game could not be recorded. | **その対局を記録できませんでした。** | That game could not be recorded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not resign that game. | **その対局を投了できませんでした。** | That game could not be resigned. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Sign in to play again. | **もう一度対局するには、サインインしてください。** | Sign in to play again. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Sign in to play someone. | **誰かと対局するには、サインインしてください。** | Sign in to play someone. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not change that star. | **スターを変更できませんでした。** | The star could not be changed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Sign in to star a game. | **対局にスターを付けるには、サインインしてください。** | Sign in to put a star on a game. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not start that game. | **その対局を始められませんでした。** | That game could not be started. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game is still being played. | **その対局はまだ続いています。** | That game is still going on. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not take that back. | **手を戻せませんでした。** | The move could not be taken back. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You did not hold a seat in this game. | **この対局の席には座っていませんでした。** | I was not sitting at a seat in this game. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | {length} in a row will not fit on a {size}×{size} board, so nobody could ever win. | **{size}×{size}の盤に{length}個は並べられないので、誰も勝てません。** | {length} cannot be lined up on a {size}×{size} board, so nobody could ever win. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | {variant} is played to {length} in a row, not {asked}. A game written with the wrong length has taken its rules from somewhere else. | **{variant}は{length}個並べるゲームで、{asked}個ではありません。長さが違うまま書かれた対局は、別のゲームの規則を引き継いでいます。** | {variant} is a game of lining up {length}, not {asked}. A game written with the wrong length has taken its rules from another game. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That link does not hold a seat in this game. | **そのリンクは、この対局の席のものではありません。** | That link is not for a seat in this game. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That Daily is not finished. | **そのデイリーはまだ終わっていません。** | That Daily has not ended yet. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Counting a win for points needs an account. | **勝ちをポイントに数えるには、アカウントが必要です。** | An account is needed to count a win for points. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This game has no Daily. | **このゲームにはデイリーがありません。** | This game has no Daily. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | There is no such level. | **そのレベルはありません。** | There is no such level. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That is not a game. | **それはゲームではありません。** | That is not a game. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Only a level or the Daily is counted. | **数えられるのは、レベルかデイリーだけです。** | Only a level or the Daily is counted. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That is not a game of that level. | **それはそのレベルのゲームではありません。** | That is not a game of that level. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That is not today's Daily. | **それは今日のデイリーではありません。** | That is not today's Daily. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game was not won. | **そのゲームには勝っていません。** | That game was not won. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not record that win. | **その勝ちを記録できませんでした。** | That win could not be recorded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A Houseki game, what was won, and the game's own save. | **宝石のゲーム、勝った内容、ゲーム自身のセーブを指定してください。** | Specify a Houseki game, what was won, and the game's own save. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | The game could not be played again from its start. | **そのゲームを最初から再現できませんでした。** | The game could not be reproduced from its start. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not ignore that member. | **その会員を無視リストに入れられませんでした。** | That member could not be put on the ignore list. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not read the ignore list. | **無視リストを読み込めませんでした。** | The ignore list could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Invalid request. | **リクエストの内容が正しくありません。** | The content of the request is not correct. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Members under 13 can share the link themselves, but the site does not send invitations by email for them. | **13歳未満の会員は、リンクを自分で共有できます。ただし、サイトから代わりに招待メールを送ることはありません。** | Members under 13 can share the link themselves. However, the site does not send invitation emails on their behalf. | Question, unread | Written on 2026-11-02; nobody has read it. About a child under 13: the site does not email invitations for them. A native read is recommended. |  |
-| — — — | Could not create an invitation. | **招待を作成できませんでした。** | The invitation could not be created. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That does not look like an email address. | **メールアドレスの形式になっていません。** | It is not in the form of an email address. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Sign in to invite someone. | **誰かを招待するには、サインインしてください。** | Sign in to invite someone. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | An invite code is needed to use this site. | **このサイトを使うには、招待コードが必要です。** | An invite code is needed to use this site. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not a kept game's id. | **保存された対局のIDではありません。** | It is not the ID of a kept game. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not keep that game. | **その対局を保存できませんでした。** | That game could not be kept. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Keeping a game in your history needs an account. | **対局を履歴に残すには、アカウントが必要です。** | An account is needed to keep a game in the history. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That id is another game's. | **そのIDは、別の対局のものです。** | That ID belongs to another game. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not load the ladder. | **順位表を読み込めませんでした。** | The standings could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Expected a form. | **リクエストの本文がフォーム形式ではありません。** | The body of the request is not in form format. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Stop this kind of email, or all of it. | **このメールか、すべてのメールのどちらかを止めてください。** | Stop either this email or all emails. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not record that. Please write to {address} and it will be done by hand. | **記録できませんでした。{address}までご連絡いただければ、手作業で対応します。** | It could not be recorded. If you write to {address}, it will be handled by hand. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That link does not stop anything. | **そのリンクでは、止められるメールがありません。** | There is no email that link can stop. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Stopped. | **止めました。** | It has been stopped. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A match of {games} games starts fresh; a rematch or a fork keeps the colours it came from. | **{games}番勝負は新しく始めるものです。再戦や分岐した対局は、元の対局の色を引き継ぎます。** | A {games}-game match starts anew. A rematch or a branched game keeps the colours of the game it came from. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A match of {games} games is between two players, not two chairs at one screen. | **{games}番勝負は2人の対局者の間で行うもので、1つの画面の2つの席では行えません。** | A {games}-game match is played between two players, and cannot be played at two seats at one screen. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A match of {games} games needs somebody named to play. | **{games}番勝負には、相手の指名が必要です。** | A {games}-game match needs a named opponent. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A match of {games} games needs somebody named to play; a posted seat could be taken for one game and not the rest. | **{games}番勝負には、相手の指名が必要です。募集した席では、1局だけ座られて残りが続かないことがあるためです。** | A {games}-game match needs a named opponent. This is because with a posted seat, somebody might sit for only one game and the rest might not go on. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Only {days} away days a year; {used} used. | **休暇日は年に{days}日までです。すでに{used}日使っています。** | Away days are up to {days} a year. {used} have already been used. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | The range must end after it starts. | **終わりの日は、始まりの日より後にしてください。** | Make the end date later than the start date. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not a length this site offers. | **このサイトにない期間です。** | That is not a length of time this site offers. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | There is no account behind this session. | **このセッションに対応するアカウントがありません。** | There is no account behind this session. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Those are not dates. | **日付として正しくありません。** | Those are not valid as dates. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Unknown time zone. | **不明なタイムゾーンです。** | It is an unknown time zone. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This player is under 13, so only the people on their own buddy list can offer them a game. | **この対局者は13歳未満のため、本人の仲間リストにいる人だけが対局を申し込めます。** | This player is under 13, so only the people on their own buddy list can propose a game to them. | Question, unread | Written on 2026-11-02; nobody has read it. About a child under 13 (who may offer them a game): a native read is recommended. |  |
-| — — — | Could not read those games. | **その対局を読み込めませんでした。** | Those games could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Which game? | **どのゲームか指定してください。** | Specify which game. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Won, lost or all? | **勝ち、負け、すべてのどれかを指定してください。** | Specify one of won, lost or all. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No such member. | **その会員は見つかりません。** | That member cannot be found. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That member is not taking games from you. | **その会員は、いま自分からの対局を受け付けていません。** | That member is not accepting games from me right now. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A message needs somebody to go to and something to say. | **メッセージには、宛先と本文が必要です。** | A message needs a recipient and a body. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Sign in to write to somebody. | **メッセージを送るには、サインインしてください。** | Sign in to send a message. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not change the name. | **名前を変更できませんでした。** | The name could not be changed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Letters, numbers and single spaces. | **使えるのは、文字、数字、1つずつの空白です。** | Letters, numbers and single spaces can be used. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That name is not free: somebody here goes by it, it is kept for a remembered player, or a record already stands under it. | **その名前は使えません。すでに使っている人がいるか、記録に残る対局者の名前として取ってあるか、その名前の記録がすでにあります。** | That name cannot be used. Somebody already uses it, it is reserved as the name of a remembered player, or a record already exists under that name. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That name is kept for a player who is remembered here. | **その名前は、ここに記録が残る対局者のものとして取ってあります。** | That name is reserved for a player who is remembered here. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | At least two characters. | **2文字以上にしてください。** | Please make it at least two characters. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That name will not do. | **その名前は使えません。** | That name cannot be used. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Something this site needs in order to run safely is missing or wrong. If you are the operator: check the environment configuration and redeploy. | **このサイトを安全に動かすために必要なものが、欠けているか間違っています。運営者の方は、環境の設定を確かめて、もう一度公開してください。** | Something needed to run this site safely is missing or wrong. If you are the operator, please check the environment settings and publish again. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This deployment is not configured | **このサイトは設定されていません** | This site is not configured | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not configured | **設定されていません** | Not configured | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not found. | **見つかりません。** | It cannot be found. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | It is not your turn. | **いまは自分の番ではありません。** | It is not my turn now. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not accept that game. | **その対局の申し込みを受けられませんでした。** | The proposal of that game could not be accepted. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That offer has already been answered. | **その申し込みには、すでに返事がされています。** | That proposal has already been replied to. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not decline that game. | **その対局の申し込みを断れませんでした。** | The proposal of that game could not be declined. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No such offer. | **その申し込みは見つかりません。** | That proposal cannot be found. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That offer has no seat to take. | **その申し込みには、座れる席がありません。** | That proposal has no seat to sit at. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That is your own offer — it is waiting on somebody else. | **それは自分の申し込みです。ほかの人の返事を待っています。** | That is my own proposal. It is waiting for somebody else's reply. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not withdraw that offer. | **その申し込みを取り下げられませんでした。** | That proposal could not be withdrawn. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Invalid paging parameters. | **ページの指定が正しくありません。** | The page specification is not correct. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | "{word}" is not a direction. Use "asc" or "desc". | **「{word}」は並べ替えの向きではありません。「asc」か「desc」を指定してください。** | "{word}" is not a direction of sorting. Specify "asc" or "desc". | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | "{word}" is not a sort {of} has. Try one of: {sorts}. | **「{word}」は、{of}にない並べ替えです。次のどれかを指定してください：{sorts}。** | "{word}" is a sort that {of} does not have. Specify one of the following: {sorts}. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not offer any words. | **言葉を用意できませんでした。** | Words could not be prepared. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That pick has expired. Start again — it takes half a minute. | **選択の有効期限が切れました。最初からやり直してください。30秒ほどで済みます。** | The pick has expired. Please start again. It takes about 30 seconds. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That pick has expired. Choose four words again — it takes half a minute. | **選択の有効期限が切れました。4つの言葉を選び直してください。30秒ほどで済みます。** | The pick has expired. Please choose the four words again. It takes about 30 seconds. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Keep a word or take one back, not both at once. | **言葉を残すか戻すか、どちらか一方にしてください。** | Either keep a word or take one back, one of the two. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That phrase is not finished: four words are needed. | **合言葉が完成していません。言葉が4つ必要です。** | The passphrase is not complete. Four words are needed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No account to change. | **変更できるアカウントがありません。** | There is no account to change. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No account to read. | **読み込めるアカウントがありません。** | There is no account to read. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No account to set a phrase on. | **合言葉を設定できるアカウントがありません。** | There is no account to set a passphrase on. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This site cannot set a phrase: no signing secret. | **このサイトでは合言葉を設定できません。署名用の秘密鍵がありません。** | This site cannot set a passphrase. There is no secret key for signing. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That is not a phrase. | **それは合言葉ではありません。** | That is not a passphrase. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That is not a pick. | **それは選択として正しくありません。** | That is not valid as a pick. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | One of those is not a word. | **どれかが言葉ではありません。** | One of them is not a word. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That is not a finished phrase. | **それは完成した合言葉ではありません。** | That is not a completed passphrase. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Those are not four words from the list. | **リストにある4つの言葉ではありません。** | Those are not four words from the list. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | "{word}" is not one of the words offered. | **「{word}」は、用意された言葉にありません。** | "{word}" is not among the words provided. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not read that. | **読み込めませんでした。** | It could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not remove those words. | **その言葉を削除できませんでした。** | Those words could not be deleted. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not set those words. | **その言葉を設定できませんでした。** | Those words could not be set. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Write the four words down somewhere first, then tick the box. | **先に4つの言葉をどこかに書き留めてから、チェックボックスにチェックを入れてください。** | First write the four words down somewhere, then tick the checkbox. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A phrase is four words; this one has {count}. | **合言葉は4つの言葉です。これは{count}個です。** | A passphrase is four words. This one has {count}. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not load player suggestions. | **対局者の候補を読み込めませんでした。** | The suggestions of players could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Invalid autocomplete parameters. | **候補の指定が正しくありません。** | The suggestion specification is not correct. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Solved after its clock ran out. | **制限時間が切れたあとに解いています。** | It was solved after the time limit ran out. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not count that attempt. | **挑戦回数を数えられませんでした。** | The attempt could not be counted. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Counting attempts on an account needs one. | **挑戦回数を数えるには、アカウントが必要です。** | An account is needed to count attempts. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not keep that puzzle. | **そのパズルを保存できませんでした。** | That puzzle could not be kept. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Keeping a puzzle needs an account. | **パズルを保存するには、アカウントが必要です。** | An account is needed to keep a puzzle. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | More checks than the allowance. | **許可されたチェック回数を超えています。** | It is more checks than the allowance. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No such Check allowance. | **そのチェック回数の設定はありません。** | There is no such setting of the number of Checks. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No clock to run out: this puzzle was not played on one. | **時間切れにはなりません。このパズルは制限時間なしで遊んでいます。** | It cannot run out of time. This puzzle was played without a time limit. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This level has no explosions to ease. | **このレベルには、やわらげられる爆発がありません。** | This level has no explosions that can be eased. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No help is offered on this puzzle. | **このパズルにはヘルプがありません。** | This puzzle has no help. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No {kind} at {size}. | **{size}の{kind}はありません。** | There is no {kind} at {size}. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No {level} {kind}. | **{kind}に{level}はありません。** | There is no {level} for {kind}. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not the cube of that seed. | **そのシードのキューブではありません。** | It is not the cube of that seed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not the deal of that seed. | **そのシードの配り方ではありません。** | It is not the deal of that seed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not a grid of that size. | **その大きさのマス目ではありません。** | It is not a grid of that size. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not what a puzzle of that size could hold. | **その大きさのパズルに入る内容ではありません。** | It is not what a puzzle of that size could hold. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not over: {reason}. | **まだ終わっていません：{reason}。** | It is not over yet: {reason}. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not a seed. | **シードとして正しくありません。** | It is not valid as a seed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not solved: {reason}. | **解けていません：{reason}。** | It is not solved: {reason}. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No level {level} at {size}×{size}. | **{size}×{size}に、レベル{level}はありません。** | There is no level {level} at {size}×{size}. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not record that puzzle. | **そのパズルを記録できませんでした。** | That puzzle could not be recorded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A puzzle, its size, level and seed, and what is written on it. | **パズル、大きさ、レベル、シード、書き込んだ内容を指定してください。** | Specify a puzzle, its size, level and seed, and what was written on it. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Solving for XP needs an account. | **経験値を得るには、アカウントが必要です。** | An account is needed to earn experience points. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A puzzle, its size and level, the givens and the answer. | **パズル、大きさ、レベル、最初から出ている部分、答えを指定してください。** | Specify a puzzle, its size and level, the part shown from the start, and the answer. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | More guesses than that puzzle has. | **そのパズルで使える推測の数を超えています。** | It is more than the number of guesses that puzzle can use. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A size and a level. | **大きさとレベルを指定してください。** | Specify a size and a level. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | These listing filters are not valid: {names}. | **一覧の絞り込みが正しくありません：{names}。** | The filters of the list are not correct: {names}. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No member has the id "{id}", so these listing filters are not valid: {param}. | **ID「{id}」の会員がいないため、一覧の絞り込みが正しくありません：{param}。** | No member has the ID "{id}", so the filters of the list are not correct: {param}. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | the query | **クエリ** | the query | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | The answer, as a grid. | **答えをマス目の形で指定してください。** | Specify the answer in the form of a grid. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not record that finish. | **完了を記録できませんでした。** | The finish could not be recorded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not give up. | **あきらめられませんでした。** | Could not give up. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not make that race. | **そのレースを作れませんでした。** | That race could not be made. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Racing needs an account. | **レースにはアカウントが必要です。** | Racing needs an account. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You are not in this race. | **このレースには参加していません。** | I am not in this race. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not offer that race. | **そのレースを申し込めませんでした。** | That race could not be proposed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Which member to offer the seat to. | **席を渡す会員を指定してください。** | Specify the member to offer the seat to. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Only the race's host can offer its other seat. | **もう一方の席を渡せるのは、レースを用意した人だけです。** | Only the person who set up the race can offer the other seat. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | The other seat is already taken. | **もう一方の席は、すでに埋まっています。** | The other seat has already been filled. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A puzzle, its size, level and seed, the givens and the answer. | **パズル、大きさ、レベル、シード、最初から出ている部分、答えを指定してください。** | Specify a puzzle, its size, level and seed, the part shown from the start, and the answer. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not start. | **始められませんでした。** | Could not start. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A race is offered to one of your buddies. | **レースは、仲間のひとりに申し込みます。** | A race is proposed to one of the buddies. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Rate limit exceeded. Please retry in {seconds} seconds. | **リクエストの上限を超えました。{seconds}秒後にもう一度お試しください。** | The request limit was exceeded. Please try again in {seconds} seconds. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Invalid reaction. | **スタンプが正しくありません。** | The stamp is not correct. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That move has not been played. | **その手はまだ打たれていません。** | That move has not been played yet. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A move falls outside the board. | **盤の外に手があります。** | There is a move outside the board. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Two moves share an intersection. | **2つの手が同じ交点にあります。** | Two moves are at the same intersection. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | The winner must match the result. | **勝者は結果と一致している必要があります。** | The winner must match the result. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Your account could not be removed, and it may be only part way. Write to us and we will finish it. | **アカウントを削除できませんでした。途中までになっている可能性があります。ご連絡いただければ、最後まで対応します。** | The account could not be deleted, and it may be only partway done. If you contact us, we will finish it. | Question, unread | Written on 2026-11-02; nobody has read it. An account page: removing an account. A native read is recommended. |  |
-| — — — | That is not what the box asks for, so nothing was removed. | **入力欄で求められている内容と違うため、何も削除していません。** | It differs from what the box asks for, so nothing was deleted. | Question, unread | Written on 2026-11-02; nobody has read it. An account page: removing an account. A native read is recommended. |  |
-| — — — | Say whether your name stays on your old games, and type the confirmation. | **過去の対局に名前を残すかどうかを選び、確認の文字を入力してください。** | Choose whether the name stays on past games, and type the confirmation. | Question, unread | Written on 2026-11-02; nobody has read it. An account page: removing an account. A native read is recommended. |  |
-| — — — | Sign in to remove your account. | **アカウントを削除するには、サインインしてください。** | Sign in to delete the account. | Question, unread | Written on 2026-11-02; nobody has read it. An account page: removing an account. A native read is recommended. |  |
-| — — — | Sign in with Google again first, so we know it is you asking. | **ご本人確認のため、先にもう一度Googleでサインインしてください。** | To confirm it is you, first sign in with Google again. | Question, unread | Written on 2026-11-02; nobody has read it. An account page: removing an account. A native read is recommended. |  |
-| — — — | Could not send that. | **送信できませんでした。** | It could not be sent. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This deployment cannot issue sessions. | **このサイトではセッションを発行できません。** | This site cannot issue sessions. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That code was not accepted. | **そのコードは受け付けられませんでした。** | That code was not accepted. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not sign in. | **サインインできませんでした。** | Could not sign in. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Invalid sign-in. | **サインインの内容が正しくありません。** | The content of the sign-in is not correct. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Not a board size this game offers. | **このゲームにない盤の大きさです。** | It is a board size this game does not have. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | The game is in this match's address, so it cannot be changed. Cancel this board and set up the game you want. | **ゲームはこの対局のアドレスで決まっているので、変更できません。この盤を取り消して、遊びたいゲームを新しく設定してください。** | The game is fixed by this game's address, so it cannot be changed. Cancel this board and set up the game you want to play anew. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not change those rules. | **規則を変更できませんでした。** | The rules could not be changed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Those rules could not be applied. | **その規則を適用できませんでした。** | Those rules could not be applied. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Somebody has taken the other seat, so the rules are what they agreed to. | **もう一方の席にほかの人が座ったので、規則はその人が了承したものになります。** | Somebody has taken the other seat, so the rules are what that person agreed to. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | The first stone is down, so the rules are fixed. | **最初の石が置かれたので、規則は変更できません。** | The first stone has been placed, so the rules cannot be changed. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Sign in first. | **先にサインインしてください。** | Please sign in first. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You already have a seat at this board. | **この盤の席には、すでに座っています。** | I am already sitting at a seat on this board. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not take that seat. | **その席に座れませんでした。** | That seat could not be taken. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not hand the board back. | **盤を返せませんでした。** | The board could not be handed back. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Somebody else just took that seat. | **ついさっき、ほかの人がその席に座りました。** | Somebody else sat at that seat just now. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A seat needs a name on it. | **席には名前が必要です。** | A seat needs a name. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You posted this seat — it is waiting for somebody else. | **この席は自分で募集したものです。ほかの人を待っています。** | This seat is one I posted myself. It is waiting for somebody else. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That seat has been taken. | **その席はすでに埋まっています。** | That seat has already been filled. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Both seats are free — say which one you are taking. | **両方の席が空いています。どちらに座るか指定してください。** | Both seats are empty. Specify which one to take. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Those four words do not match that name. | **その名前と合言葉が一致しません。** | That name and the passphrase do not match. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You can ask the people on your buddy list. | **声をかけられるのは、仲間リストにいる人です。** | The people I can ask are those on my buddy list. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game is not played by that many. | **そのゲームは、その人数では遊べません。** | That game cannot be played by that many people. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Somebody you asked is at {most} tables already. | **声をかけた人が、すでに{most}卓に着いています。** | Somebody I asked is already at {most} tables. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You are at {most} tables already. Finish or end one first. | **すでに{most}卓に着いています。先にどれかを最後まで遊ぶか、終了してください。** | I am already at {most} tables. First play one to the end, or end one. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A member under 13 invites buddies by name rather than by a link anybody could open. | **13歳未満の会員は、誰でも開けるリンクではなく、名前で仲間を招待します。** | A member under 13 invites buddies by name, not by a link anybody could open. | Question, unread | Written on 2026-11-02; nobody has read it. About a child under 13 (invitations by name, not by link): a native read is recommended. |  |
-| — — — | Could not end that table. | **その卓を終了できませんでした。** | That table could not be ended. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A table can be ended before its first move, or once a turn has waited a week on somebody else. | **卓を終えられるのは、最初の1手の前か、ほかの人の手を1週間待っているときです。** | A table can be ended before its first move, or when it has been waiting a week for somebody else's move. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A game, how it stands, and who sat where. | **ゲーム、その状況、誰がどの席に座ったかを指定してください。** | Specify a game, how it stands, and who sat where. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not leave that table. | **その卓から離れられませんでした。** | That table could not be left. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | The table moved on. | **卓の状況が進みました。** | The table has moved on. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not make that move. | **その手を打てませんでした。** | That move could not be made. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | How many moves the page had seen, a seat and a move. | **ページが見ていた手数と、席と、手を指定してください。** | Specify how many moves the page had seen, a seat and a move. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game has no such computer player. | **そのゲームには、そのようなコンピュータはありません。** | That game has no such computer player. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No such table. | **その卓は見つかりません。** | That table cannot be found. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | No such table, or no seat of yours at it. | **その卓がないか、自分の席がありません。** | There is no such table, or I have no seat at it. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That move is not allowed. | **その手は打てません。** | That move cannot be played. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That is not a move in this game. | **それはこのゲームの手ではありません。** | That is not a move in this game. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game is not played on one device here. | **そのゲームは、ここでは1台の端末で遊ぶものではありません。** | That game is not one played on one device here. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That game is not offered at that size. | **そのゲームは、その大きさでは用意されていません。** | That game is not offered at that size. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Each buddy can sit in one seat. | **仲間が座れる席は、1人につき1つです。** | Each buddy can sit in one seat. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | You can sit in one seat. | **座れる席は1つだけです。** | I can sit in only one seat. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | That table is over. | **その卓は終わっています。** | That table has ended. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not read that table. | **その卓を読み込めませんでした。** | That table could not be loaded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Anybody at the table can end it, or leave it. | **このゲームは、そのあと変わった版で始まったので、表示も続行もできません。卓にいる誰でも、終えるか、離れられます。** | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Anybody at the table can end it, or leave it. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Who sat at it and how it ended are shown here. | **このゲームは、そのあと変わった版で始まったので、表示も続行もできません。誰が座り、どう終わったかは、ここに表示されます。** | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Who sat at it and how it ended are shown here. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A player at that table is under 13, so only the people on their own buddy list can sit with them. | **その卓には13歳未満の対局者がいるため、その人の仲間リストにいる人だけが同席できます。** | A player at that table is under 13, so only the people on that player's own buddy list can sit with them. | Question, unread | Written on 2026-11-02; nobody has read it. About a child under 13 (who may sit with them): a native read is recommended. |  |
-| — — — | Somebody at that table is not taking games with you. | **その卓にいる誰かが、自分との対局を受け付けていません。** | Somebody at that table is not accepting games with me. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Each seat is you, a buddy, a link or a computer. | **席は、自分、仲間、リンク、コンピュータのどれかにしてください。** | Make each seat one of myself, a buddy, a link or a computer. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Seat 1 is yours. | **1番の席は自分の席です。** | Seat 1 is my seat. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not set that table. | **その卓を用意できませんでした。** | That table could not be set up. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A game, its board and its seats. | **ゲームと、その盤と、席を指定してください。** | Specify a game, its board and its seats. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Sign in to play. | **遊ぶには、サインインしてください。** | Sign in to play. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Sign in to set a table. | **卓を用意するには、サインインしてください。** | Sign in to set up a table. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | A winner who was not at the table. | **卓にいなかった人が勝者になっています。** | A person who was not at the table is listed as the winner. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Too Many Requests | **リクエストが多すぎます** | Too many requests | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | This deployment is not configured correctly. | **このサイトは正しく設定されていません。** | This site is not set up correctly. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Up, down, or neither. | **「上」「下」「どちらでもない」のどれかを指定してください。** | Specify one of up, down or neither. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Could not record that. | **記録できませんでした。** | It could not be recorded. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Wait until the game is over. | **対局が終わるまでお待ちください。** | Please wait until the game has ended. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
-| — — — | Something went wrong. | **問題が発生しました。** | A problem occurred. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
+| — — — | Members under 13 can share the link themselves, but the site does not send invitations by email for them. | **13歳未満の会員は、リンクを自分で共有できます。ただし、サイトから代わりに招待メールを送ることはありません。** | Members under 13 can share the link themselves. However, the site does not send invitation emails on their behalf. | Agent 2026-11-02, native read wanted | About a child under 13: the site does not email invitations for them. A native read is recommended. |  |
+| — — — | This player is under 13, so only the people on their own buddy list can offer them a game. | **この対局者は13歳未満のため、本人の仲間リストにいる人だけが対局を申し込めます。** | This player is under 13, so only the people on their own buddy list can propose a game to them. | Agent 2026-11-02, native read wanted | About a child under 13 (who may offer them a game): a native read is recommended. |  |
+| — — — | Your account could not be removed, and it may be only part way. Write to us and we will finish it. | **アカウントを削除できませんでした。途中までになっている可能性があります。ご連絡いただければ、最後まで対応します。** | The account could not be deleted, and it may be only partway done. If you contact us, we will finish it. | Agent 2026-11-02, native read wanted | An account page: removing an account. A native read is recommended. |  |
+| — — — | That is not what the box asks for, so nothing was removed. | **入力欄で求められている内容と違うため、何も削除していません。** | It differs from what the box asks for, so nothing was deleted. | Agent 2026-11-02, native read wanted | An account page: removing an account. A native read is recommended. |  |
+| — — — | Say whether your name stays on your old games, and type the confirmation. | **過去の対局に名前を残すかどうかを選び、確認の文字を入力してください。** | Choose whether the name stays on past games, and type the confirmation. | Agent 2026-11-02, native read wanted | An account page: removing an account. A native read is recommended. |  |
+| — — — | Sign in to remove your account. | **アカウントを削除するには、サインインしてください。** | Sign in to delete the account. | Agent 2026-11-02, native read wanted | An account page: removing an account. A native read is recommended. |  |
+| — — — | Sign in with Google again first, so we know it is you asking. | **ご本人確認のため、先にもう一度Googleでサインインしてください。** | To confirm it is you, first sign in with Google again. | Agent 2026-11-02, native read wanted | An account page: removing an account. A native read is recommended. |  |
+| — — — | A member under 13 invites buddies by name rather than by a link anybody could open. | **13歳未満の会員は、誰でも開けるリンクではなく、名前で仲間を招待します。** | A member under 13 invites buddies by name, not by a link anybody could open. | Agent 2026-11-02, native read wanted | About a child under 13 (invitations by name, not by link): a native read is recommended. |  |
+| — — — | A player at that table is under 13, so only the people on their own buddy list can sit with them. | **その卓には13歳未満の対局者がいるため、その人の仲間リストにいる人だけが同席できます。** | A player at that table is under 13, so only the people on that player's own buddy list can sit with them. | Agent 2026-11-02, native read wanted | About a child under 13 (who may sit with them): a native read is recommended. |  |
 | — — — | Three more are not built yet, because they all rest on one mechanism this board does not have: black putting down several candidate fifth moves and white removing all but one. Yamaguchi has black declare, before the swap, how many fifth moves it will offer. Soosyrv-8 declares the number after white’s fourth stone, up to eight, and then offers the swap. Taraguchi-10 is Tarannikov’s nested squares with a swap after each of the first four stones, after which white may instead demand ten fifth-move candidates. When the candidate mechanism arrives, all three come with it, along with the fifth-move pair in full RIF. | **あと3つはまだ作っていません。どれも、この盤にない同じ仕組みに頼っているからです。黒が5手目の候補を複数並べ、白が1つを残して取り除くという仕組みです。山口は、入れ替えの前に、黒が示す5手目の数を宣言します。Soosyrv-8は、白の4手目のあとで、最大8つまでの数を宣言し、そのあと入れ替えを認めます。Taraguchi-10は、タラニコフの入れ子の正方形で、最初の4手のあとに入れ替えを行い、そのあと白は代わりに10通りの5手目の候補を求められます。候補の仕組みができたら、3つとも一緒に加わり、正式なRIFの5手目の2択もできます。** | Three more have not been built yet, because they all rely on one mechanism this board does not have: black placing several candidate fifth moves and white removing all but one. In Yamaguchi, black declares before the swap how many fifth moves it will offer. Soosyrv-8 declares the number, up to eight, after white's fourth stone, and then offers the swap. Taraguchi-10 is Tarannikov's nested squares with a swap after each of the first four stones, after which white may instead demand ten candidates for the fifth move. When the candidate mechanism arrives, all three will come with it, along with the pair of fifth-move candidates in full RIF. | Agent 2026-10-06, native read wanted | Names three opening protocols (Yamaguchi, Soosyrv-8, Taraguchi-10) as the sources spell them; their Japanese spellings are not settled, so a renju player should confirm them. |  |
 | — — — | Sit in with your four words | **4つの合言葉で着席する** | Sit in with my four words | Agent 2026-10-06, native read wanted | The "four words" a member chooses to sit in as themselves are 合言葉 here. The account pages that set them must use the same word; John to confirm 合言葉 is the one he wants. |  |
 | — — — | You are getting this because you play on {site}. Questions? Write to {address}. | **このメールは、{site}で遊んでいる方にお送りしています。ご質問は{address}までお寄せください。** | This email is sent to people who play on {site}. Please send questions to {address}. | Agent 2026-10-06, native read wanted | The line every email carries about how to stop getting it, which Canada's anti-spam law wants to work: a native read is recommended. |  |
@@ -550,7 +153,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Where the account has an address, the operator writes to it to say why. To ask about it, write to {contact}. | **アカウントにメールアドレスがある場合、運営者はそのアドレスに理由を書いて送ります。問い合わせは{contact}までお願いします。** | If the account has an email address, the operator writes the reason and sends it to that address. For enquiries, please contact {contact}. | Agent 2026-10-06, native read wanted | Legal text (the terms of play): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 | — — — | What we ask of everybody here, and what the site does in return. | **ここをご利用のすべての方にお願いすることと、サイトがその代わりに行うことです。** | What we ask of everyone who uses this place, and what the site does in return. | Agent 2026-10-06, native read wanted | Legal text (the terms of play): the reviewer's pass is not enough, so a native read is wanted before anybody relies on it. |  |
 
-## 2. Written by a machine — please check these (5154)
+## 2. Written by a machine — please check these (5613)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -798,6 +401,8 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | Your level and title, beside your name | **名前の横の、レベルと称号** | The level and title beside your name | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | XP and IP | **経験値とIP** | Experience and IP | Agent 2026-10-06 |  |
 | The IP page, /points, and every game's IP board — the page, the boards and the line on a player's page | XP, experience | **経験値** | Experience | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Four queens each, set out the same way on either side. | **クイーンはそれぞれ4つで、両者とも同じように並びます。** | Four queens each, lined up the same way on both sides. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Each side's men fill its two nearest rows. | **それぞれの駒は手前の2段に並びます。** | Each side's pieces line up on the two nearest rows. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Each side's pieces start filling a camp in one corner, black top-left and white bottom-right: nineteen on 16×16, thirteen on 10×10, ten on 8×8. The camps are shaded on the board. | **各自の駒は、片方の隅の陣を埋めた状態で始まります。黒は左上、白は右下です。駒の数は、16×16では19個、10×10では13個、8×8では10個です。陣は盤上で色づけされています。** | Each side's pieces start filling a camp in one corner, Black at the top left and White at the bottom right. The number of pieces is 19 on 16×16, 13 on 10×10 and 10 on 8×8. The camps are coloured on the board. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A rhombus ruled as a triangular lattice, eleven points a side by default, with the stones on the crossings. Black owns the top and bottom edges, marked dark; White owns the left and right, marked pale. The two corners between a dark edge and a pale one belong to both. | **三角形の格子に区切られた菱形の盤で、初期設定では一辺が11点あり、石は交点に置きます。黒は濃く示された上下の辺、白は淡く示された左右の辺を受け持ちます。濃い辺と淡い辺の間にある2つの角は、どちらの色のものでもあります。** | A rhombus divided into a triangular lattice, with 11 points on a side by default, and stones are placed on the crossings. Black has the top and bottom edges, shown dark, and White the left and right edges, shown pale. The two corners between a dark edge and a pale edge belong to both colours. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | {count} squares, chosen at random when the game starts, are dead: nothing can land there and no line runs through. | **ゲーム開始時にランダムに選ばれた{count}個の点は使えません。石を置くことも、列が通ることもできません。** | {count} points, chosen at random when the game starts, cannot be used. No stone can be placed there and no line can pass through. | Agent 2026-10-06 |  |
@@ -811,6 +416,8 @@ consent, brands, legal): the agent's pass is not enough for it.
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | {count} squares, chosen at random, are hotspots that count as either colour's stone. | **ランダムに選ばれた{count}個の点はホットスポットで、どちらの色の石としても数えられます。** | {count} points, chosen at random, are hotspots that count as a stone of either colour. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | One square, chosen at random, is a hotspot that counts as either colour's stone. | **ランダムに選ばれた1つの点はホットスポットで、どちらの色の石としても数えられます。** | One point, chosen at random, is a hotspot that counts as a stone of either colour. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | {hot} more are hotspots, which count as either colour's stone. | **さらに{hot}個の点がホットスポットで、どちらの色の石としても数えられます。** | A further {hot} points are hotspots, which count as a stone of either colour. | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Twelve men each: black on the top and bottom edges, white on the left and right, with the corners empty. | **駒はそれぞれ12個です。黒は上下の辺、白は左右の辺に並び、四隅は空いています。** | Twelve pieces each. Black on the top and bottom edges, white on the left and right, the corners empty. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Three squares, one inside another, joined at the middle of each side: twenty-four points, and nine men for each player. | **正方形が3つ入れ子になり、各辺の真ん中でつながった盤です。点は24で、駒はそれぞれ9つです。** | A board of three nested squares joined at the middle of each side. There are 24 points, and nine pieces each. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Each player has {pieces}. | **持ち駒は各自{pieces}です。** | Each player has {pieces}. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | It is divided into four {size}×{size} quadrants, each of which can be turned. | **盤は{size}×{size}の4つの区画に分かれ、どの区画も回転できます。** | The board is divided into four {size}×{size} sections, and any section can be turned. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A shared queue of dominoes: two stones each, black-black, white-white, black-white or white-black, drawn at random from the game's seed. Both players draw the same run and see the next three. | **2人で共有する、順に出てくるドミノの列です。ドミノは石2つ分で、黒黒、白白、黒白、白黒のいずれかが、そのゲームの乱数の種からランダムに出ます。2人とも同じ順に引き、次の3つが見えています。** | A line of dominoes shared by the two players, coming out in order. A domino is two stones, one of black-black, white-white, black-white or white-black, drawn at random from that game's random seed. Both players draw in the same order and can see the next three. | Agent 2026-10-06 |  |
@@ -869,13 +476,16 @@ consent, brands, legal): the agent's pass is not enough for it.
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only whether your two sides are joined. | **脅威の読み、ヒント、勝率バーは使えません。ここには列がなく、あるのは自分の二辺がつながっているかどうかだけです。** | The threat reading, hints and win-rate bar cannot be used. There are no lines here, only whether your two sides are connected. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | The threat reading, hints and the chance-of-winning bar are switched off: there are no lines to read here, only discs to count. | **脅威の読み、ヒント、勝率バーは使えません。ここには読むべき列がなく、数えるのは石の数だけです。** | The threat reading, hints and win-rate bar cannot be used. There are no lines to read here, only the number of discs to count. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only groups, liberties and territory. | **脅威の読み、ヒント、勝率バーは使えません。ここには列がなく、あるのは石の一団、呼吸点、地だけです。** | The threat reading, hints and win-rate bar cannot be used. There are no lines here, only groups of stones, liberties and territory. | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | The threat reading, hints and the chance-of-winning bar are switched off: there are no lines to read here, only men to move. | **脅威の読み、ヒント、勝率バーは使えません。ここには列がなく、あるのは動かす駒だけです。** | The threat reading, hints and win-rate bar cannot be used. There are no lines here, only pieces to move. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | The threat reading, hints and the chance-of-winning bar are switched off: stones move after they are placed, so a line-by-line reading says nothing true. | **脅威の読み、ヒント、勝率バーは使えません。石は置いたあとも動くので、列ごとの読みでは正しいことが分かりません。** | The threat reading, hints and win-rate bar cannot be used. Stones move after they are placed, so reading line by line does not tell you anything true. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only distance to cover. | **脅威の読み、ヒント、勝率バーは使えません。ここには列がなく、あるのは進むべき距離だけです。** | The threat reading, hints and win-rate bar cannot be used. There are no lines here, only the distance to travel. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | The threat reading, hints and the chance-of-winning bar apply. | **脅威の読み、ヒント、勝率バーが使えます。** | The threat reading, hints and the win-rate bar can be used. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | {head} and {last} | **{head}と{last}** | {head} and {last} | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | {head} or {last} | **{head}か{last}** | {head} or {last} | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | {head} or {last} | **{head}、または{last}** | {head}, or {last} | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Leave your opponent with no move to make. There is no taking: the board fills with arrows until somebody has nowhere to go. | **相手が動けないようにします。取ることはなく、誰かの行き場がなくなるまで盤が矢で埋まっていきます。** | Make the opponent unable to move. There is no taking; the board fills with arrows until someone has nowhere to go. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A line of either colour wins for the player who completed it. | **どちらの色の列でも、それを完成させた方が勝ちです。** | A line of either colour wins for whoever completed it. | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Be the first to get a man to the far row, or take the other side's last man. | **先に駒を向こうの端へ着けるか、相手の最後の駒を取ります。** | Be first to get a piece to the far edge, or take the opponent's last piece. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A side that keeps pieces at home to block still loses once every other square of its camp is taken. | **駒を自陣に残して相手をふさいでも、自陣のほかのマスをすべて相手に埋められた時点で負けです。** | Even if a side keeps pieces at home to block, it loses the moment every other square of its camp has been filled by the opponent. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Be the first to fill the far corner camp with your pieces. Nothing is captured and no line counts for anything. | **向かい側の隅にある陣を、先に自分の駒で埋めた方が勝ちです。駒を取ることはなく、列を作っても何の意味もありません。** | Whoever first fills the camp in the far corner with their own pieces wins. Pieces are not captured, and making a line means nothing. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Capturing {stones} also wins, taken in pairs and triples. | **{stones}を取っても勝ちです。取るのは2つ組か3つ組です。** | Capturing {stones} also wins. Stones are taken in pairs or triples. | Agent 2026-10-06 |  |
@@ -890,9 +500,12 @@ consent, brands, legal): the agent's pass is not enough for it.
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A connected group of one colour with no empty point touching it anywhere is captured whole, off the board at once. | **つながった同じ色の石の一団に、接する空き点が1つもなくなると、その一団は丸ごとすぐに盤から取り除かれます。** | When a connected group of one colour has no empty point touching it anywhere, the whole group is removed from the board at once. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Surround more of the board than the other colour. Stones never move once placed, and no line ever wins anything. | **盤の広い範囲を、相手の色より多く囲みます。石は一度置いたら動かず、列を作っても勝ちにはなりません。** | Surround more of the board than the other colour. Stones do not move once placed, and making a line never wins anything. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Be the first to make a line: {rule}. | **先に列を作ることを目指します。{rule}。** | You aim to make a line first. {rule}. | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Join all your men into one group, touching along sides or corners. | **自分の駒をすべて、辺か角で触れ合う1つのかたまりにします。** | Make all your pieces one group touching at sides or corners. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | For white, {rule}. | **白の場合は、{rule}。** | For White, {rule}. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Make {length} in a row and win, without ever making exactly {lose}, which loses. | **{length}つ並べれば勝ちですが、ちょうど{lose}つ並べると負けになります。** | Making {length} in a row wins, but making exactly {lose} in a row loses. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Black is the Maker and wins if any {length} in a row of one colour appears, whoever placed it. White is the Breaker and wins if the board fills with no such line. | **黒は作り手で、どちらの色でも{length}つ並べば、誰が置いたかにかかわらず勝ちです。白は壊し手で、そのような列ができないまま盤が埋まれば勝ちです。** | Black is the Maker and wins if {length} in a row of either colour appears, whoever placed it. White is the Breaker and wins if the board fills with no such line. | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Three of your men along one drawn line make a mill, and each mill takes one of your opponent's men off the board. | **描かれた1本の線の上に自分の駒が3つ並ぶとミルになり、ミルを作るたびに相手の駒を1つ盤から取ります。** | Three of your pieces on one drawn line make a mill, and each time you make a mill you take one of the opponent's pieces off the board. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Bring your opponent down to two men, or leave them with no move. | **相手の駒を2つまで減らすか、相手が動けないようにします。** | Reduce the opponent's pieces to two, or make the opponent unable to move. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Avoid making {length} in a row: the player who makes it loses. | **{length}つ並べた方が負けです。そうならないように打ちます。** | Whoever makes {length} in a row loses. You play so as to avoid it. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | {length} or more in a row wins | **{length}つ以上並べば勝ちです** | making {length} or more in a row wins | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | exactly {length} in a row wins; a longer line does not | **ちょうど{length}つ並べば勝ちで、それより長い列は勝ちになりません** | making exactly {length} in a row wins, and a longer line does not win | Agent 2026-10-06 |  |
@@ -903,7 +516,13 @@ consent, brands, legal): the agent's pass is not enough for it.
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | a double four (四四) | **四四** | double four | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | a double three (三三) | **三三** | double three | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | an overline (長連) | **長連** | overline | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Then shoot an arrow from where it landed, the same way. The arrow's square is gone for good, and nothing can stop on it or cross it. A queen may shoot back the way it came. | **次に止まった場所から同じように矢を放ちます。矢の落ちたマスはずっと使えず、止まることも越えることもできません。来た方向へ放つこともできます。** | Then shoot an arrow from where it stopped in the same way. A square an arrow fell on can never be used; nothing can stop on it or cross it. You can also shoot back the way you came. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | There is no pass and there are no draws: a player who cannot move and shoot on their turn has lost. | **パスも引き分けもありません。自分の番に動いて矢を放てない人の負けです。** | There is no pass and no draw. A person who cannot move and shoot on their turn loses. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A turn is two things. First move one of your queens any distance along a row, column or diagonal, over nothing. | **1手は2つのことからなります。まずクイーンを1つ、行、列、斜めに沿って何も越えずに好きなだけ動かします。** | A move is two things. First move one queen any distance along a row, column or diagonal crossing nothing. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | On your turn you choose which colour to place. | **自分の手番では、置く石の色を選べます。** | On your turn you choose the colour of the stone you place. | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A man only ever goes forward, so a game always ends with a winner. | **駒は前にしか進まないので、必ず勝負がつきます。** | Pieces only go forward, so a result always comes. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A man steps one square forward, straight or on a diagonal, to an empty square. Pick a man, then the square it goes to. | **駒は1マス前へ、まっすぐか斜めに、空いているマスへ進みます。駒を選び、次に進むマスを選びます。** | A piece goes one square forward, straight or diagonally, to an empty square. Choose a piece, then the square. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | It takes only on the diagonal, by stepping onto an enemy man. A man straight ahead blocks it. | **取れるのは斜め前だけで、相手の駒の上に進んで取ります。まっすぐ前の駒には進めません。** | Only diagonally ahead can be taken, by going onto the opponent's piece. You cannot go onto a piece straight ahead. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | The game ends the moment a move fills the far camp. | **向かい側の陣を埋める手が打たれた瞬間に終局です。** | The game ends the moment a move fills the far camp. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Or it may jump: over an adjacent piece of either colour, into the empty square straight beyond it. From there it may jump again, and again, turning corners as it likes, so long as each jump crosses a piece. A move may stop after any jump. | **または跳びます。どちらの色でも隣り合う駒を飛び越え、そのすぐ先の空いているマスに着地します。そこからさらに、駒を飛び越えるかぎり何度でも、向きを変えながら続けて跳べます。どの跳びの後でも、そこで止まってかまいません。** | Or it can jump: over an adjacent piece of either colour and land on the empty square just beyond it. From there it can jump again and again, changing direction, as long as each jump crosses a piece. A move may stop after any jump. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A turn moves one piece. It may step to any neighbouring empty square, in any of the eight directions. | **1手で駒を1つ動かします。8方向のどれでも、隣の空いているマスへ1歩進めます。** | A turn moves one piece. It can step to a neighbouring empty square in any of the eight directions. | Agent 2026-10-06 |  |
@@ -926,7 +545,15 @@ consent, brands, legal): the agent's pass is not enough for it.
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | The six cells round the sealed centre start with three discs of each colour, alternating round the ring. | **ふさがれた中央の周りの6マスには、最初に黒と白の石が3つずつ、輪になって交互に置かれています。** | The six cells around the sealed centre start with three discs of each colour, placed alternately in a ring. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A piece jumped over is not taken; it stays where it is. | **飛び越えられた駒は取られず、そのまま残ります。** | A piece that is jumped over is not captured and stays where it is. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | When the bottom row is full it disappears and every stone above drops one row. | **いちばん下の段が埋まると、その段が消え、上にある石はすべて1段ずつ下がります。** | When the bottom row is full it disappears, and every stone above it drops down one row. | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A move that joins both sides wins for the one who moved. A hundred moves each with nothing taken is a draw: that count is this site's, not the published rule. | **1手で両者ともつながったときは動かした側の勝ちです。何も取らないままそれぞれ100手が過ぎると引き分けで、この回数はこのサイト独自のものです。** | When one move joins both, the side that moved wins. A hundred moves each with nothing taken is a draw, and this count is this site's own. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | It may jump its own men but never the other side's, and it takes an enemy man by landing on it. | **自分の駒は飛び越えられますが、相手の駒は飛び越えられません。相手の駒の上に止まると取れます。** | You can jump your own pieces, not the opponent's. Stopping on an opponent's piece takes it. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A man moves along a row, column or diagonal, exactly as many squares as there are men of either colour on that line. | **駒は行、列、斜めのいずれかに沿って、その線上にある両者の駒の数とちょうど同じマス数だけ動きます。** | A piece moves along a row, column or diagonal exactly as many squares as there are pieces of both sides on that line. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A full board with no line is the Breaker's win. | **列ができないまま盤が埋まれば、壊し手の勝ちです。** | If the board fills with no line, the Breaker wins. | Agent 2026-10-06 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Fifty moves each with no man laid or taken is a draw: that count is this site's, not an old rule. | **駒を置くことも取ることもないままそれぞれ50手が過ぎると引き分けです。この回数はこのサイト独自のものです。** | If fifty moves each pass with no piece placed or taken it is a draw. This count is this site's own. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Down to three men, yours fly: a move can go to any empty point. | **駒が3つになると飛べます。どの空いている点にも動かせます。** | With three pieces you can fly. You can move to any empty point. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | First the men are laid, one a turn, on any empty point. | **まず1手に1つずつ、空いている点に駒を置きます。** | First place pieces, one per move, on an empty point. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Once all nine are laid, a turn moves one of your men along a line to the empty point next to it. | **9つすべて置いたあとは、1手で駒を1つ、線に沿って隣の空いている点へ動かします。** | After all nine are placed, a move moves one piece along a line to the empty point next to it. | Agent 2026-10-30 |  |
+| Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A mill lets you take a man at once: any that is not in a mill, unless all of them are. | **ミルを作るとすぐ駒を1つ取れます。ミルに入っていない駒から選びますが、すべて入っているときはどれでも取れます。** | Making a mill lets you take one piece at once. You choose from those not in a mill, but when all are in one any can be taken. | Agent 2026-10-30 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | You may not play directly on top of the opponent's last stone while any other column has room. | **ほかの列に空きがあるかぎり、相手が直前に置いた石の真上には打てません。** | As long as any other column has room, you cannot play directly on top of the stone the opponent just placed. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | A full board is a win for the player who opened. | **盤が埋まったら、先に打った方の勝ちです。** | If the board fills up, the player who played first wins. | Agent 2026-10-06 |  |
 | Every rules page — the Board, How to play and House rules lines a rules page builds from a game's settings, and the checkers family's draw rules | Players first place their {pieces}, one a turn. Then a turn moves one of your pieces a single step to an adjacent empty point, in any direction. | **まず、各自{pieces}を、1手に1つずつ置きます。そのあとは、1手で自分の駒を1つ、隣の空いている点へ、どの向きにでも1歩動かします。** | First each player places their {pieces}, one per turn. After that, a turn moves one of your pieces one step to an adjacent empty point, in any direction. | Agent 2026-10-06 |  |
@@ -1910,7 +1537,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | The same game as a portrait picture for a phone, tall and narrow, its title bar on three lines over sixteen full rows. | **同じ対局を、スマートフォン向けの縦長の絵にしたものです。タイトルバーは3行にわたり、その下に16の全段が並びます。** | The same game as a portrait picture for a smartphone, tall and narrow, with the title bar on three lines above sixteen full rows. | Agent 2026-10-06 |  |
 | — — — | The XP board, with filters for people or computers and for experience earned here or everywhere. | **経験値の順位表（英語表示）です。人かコンピュータか、ここで得た経験値かすべての場所のものかを選ぶ絞り込みがあります。** | The XP board (English display), with filters for people or computers, and for experience earned here or everywhere. | Agent 2026-10-06 |  |
 | — — — | These are the places this one learned from, and they are still there. <out https://www.itsyourturn.com/>ItsYourTurn</out> has run turn-based games by email since 1998, from the first years of the web, and is where the founder’s family played for years. Its shape is the shape of this site: a list of games waiting on you, a list waiting on them, invitations, and a record. A free account is capped at a number of moves a day, which is why the family bought the membership; the paid tier lifts the cap and opens tournaments and the rarer games. Its catalogue is about forty games with variants, and it keeps a rating per game type. | **ここは、このサイトが学んだ場所で、今もあります。<out https://www.itsyourturn.com/>ItsYourTurn</out>は、ウェブの最初の時代の1998年から、メールで順番制のゲームを運営しており、創設者の家族が何年も遊んだ場所です。その形は、このサイトの形そのものです。自分を待つ対局の一覧、相手を待つ対局の一覧、招待、そして記録です。無料の会員は1日の手数に上限があり、家族が会員になったのはそのためです。有料の段階では上限がなくなり、大会やめずらしいゲームも開きます。ゲームの数は、変種を含めて約40で、ゲームの種類ごとにレーティングを持っています。** | These are the places this site learned from, and they are still there. ItsYourTurn has run turn-based games by email since 1998, from the first period of the web, and it is where the founder's family played for years. Its form is the form of this site: a list of games waiting for me, a list waiting for the other player, invitations and records. A free account has a limit on the moves per day, which is why the family became members. The paid tier removes the limit and opens tournaments and the rarer games. It has about forty games counting variants, and it keeps a rating for each kind of game. | Agent 2026-10-06 |  |
-| — — — | <out https://www.goldtoken.com/>GoldToken</out> came soon after, around 2000, with a larger catalogue — over sixty games and their variants — and a community that felt like a club: tokens earned for playing, ladders, tournaments, a forum. The free account limits how many games you may have open at once; membership lifts that and adds more. It was the other half of the family’s evenings. <out https://www.littlegolem.net/>Little Golem</out>, started in 2002 by Richard Malaschitz in Slovakia, is the connoisseur’s site: Hex, Go, gomoku, Amazons, Twixt and dozens of other abstracts, many in several variants, monthly championships in each, an Elo-style rating for each, and no paid tier at all — it runs on donations. Some of the strongest players in the world of several of those games enter its championships, and the founder’s father played there for years. | **<out https://www.goldtoken.com/>GoldToken</out>は、その少しあと、2000年ごろに、より大きなゲームの一覧とともに現れました。60を超えるゲームとその変種があり、クラブのように感じられる集まりでした。遊ぶと得られるトークン、順位表、大会、掲示板です。無料の会員は、同時に開ける対局の数に制限があり、会員になるとそれが外れ、さらに増えます。家族の夜の、もう半分でした。<out https://www.littlegolem.net/>Little Golem</out>は、2002年にスロバキアのリチャード・マラシュチッツが始めた、通好みのサイトです。ヘックス、囲碁、五目並べ、アマゾン、トゥイクストなど数十の抽象ゲームがあり、多くはいくつもの変種があり、それぞれに月ごとの選手権とエロ式のレーティングがあり、有料の段階はまったくなく、寄付で運営されています。そのゲームのいくつかで世界屈指の打ち手が、ここの選手権に参加し、創設者の父もここで何年も遊びました。** | GoldToken came soon after, around 2000, with a bigger catalogue of over sixty games and their variants, and a community that felt like a club: tokens earned by playing, ladders, tournaments and a forum. A free account limits how many games you can have open at once, and membership removes that and adds more. It was the other half of the family's evenings. Little Golem, started in 2002 by Richard Malaschitz in Slovakia, is the connoisseur's site. It has Hex, Go, gomoku, Amazons, Twixt and dozens of other abstract games, many in several variants, with monthly championships and an Elo-style rating for each, and no paid tier at all, running on donations. Some of the strongest players in the world in several of those games enter its championships, and the founder's father played there for years. | Agent 2026-10-06 |  |
+| — — — | <out https://www.goldtoken.com/>GoldToken</out> came soon after, around 2000, with a larger catalogue — over sixty games and their variants — and a community that felt like a club: tokens earned for playing, ladders, tournaments, a forum. The free account limits how many games you may have open at once; membership lifts that and adds more. It was the other half of the family’s evenings. <out https://www.littlegolem.net/>Little Golem</out>, started in 2002 by Richard Malaschitz in Slovakia, is the connoisseur’s site: Hex, Go, gomoku, Amazons, Twixt and dozens of other abstracts, many in several variants, monthly championships in each, an Elo-style rating for each, and no paid tier at all — it runs on donations. Some of the strongest players in the world of several of those games enter its championships, and the founder’s father played there for years. | **<out https://www.goldtoken.com/>GoldToken</out>は、その少しあと、2000年ごろに、より大きなゲームの一覧とともに現れました。60を超えるゲームとその変種があり、クラブのように感じられる集まりでした。遊ぶと得られるトークン、順位表、大会、掲示板です。無料の会員は、同時に開ける対局の数に制限があり、会員になるとそれが外れ、さらに増えます。家族の夜の、もう半分でした。<out https://www.littlegolem.net/>Little Golem</out>は、2002年にスロバキアのリチャード・マラシュチッツが始めた、通好みのサイトです。ヘックス、囲碁、五目並べ、アマゾンズ、トゥイクストなど数十の抽象ゲームがあり、多くはいくつもの変種があり、それぞれに月ごとの選手権とエロ式のレーティングがあり、有料の段階はまったくなく、寄付で運営されています。そのゲームのいくつかで世界屈指の打ち手が、ここの選手権に参加し、創設者の父もここで何年も遊びました。** | GoldToken came soon after, around 2000, with a bigger catalogue of over sixty games and their variants, and a community that felt like a club: tokens earned by playing, ladders, tournaments and a forum. A free account limits how many games you can have open at once, and membership removes that and adds more. It was the other half of the family's evenings. Little Golem, started in 2002 by Richard Malaschitz in Slovakia, is the connoisseur's site. It has Hex, Go, gomoku, Amazons, Twixt and dozens of other abstract games, many in several variants, with monthly championships and an Elo-style rating for each, and no paid tier at all, running on donations. Some of the strongest players in the world in several of those games enter its championships, and the founder's father played there for years. | Agent 2026-10-06 |  |
 | — — — | <out https://pente.org/>Pente.org</out> has kept ranked Pente alive online for two decades, with the tournament rule, several variants of its own, a ladder and a world championship, and membership optional. <out https://www.playok.com/>PlayOK</out> — many still call it Kurnik, the name Marek Futrega gave it when he started it in Poland in 2001 — is where you go for a live game of gomoku against a stranger at two in the morning, with an Elo rating per game and rooms that never seem to empty. Membership numbers are the one thing none of these sites publish plainly; each has had tens of thousands of registered players at its peak, and each has a hard core that has been there for twenty years. | **<out https://pente.org/>Pente.org</out>は、20年にわたって、レーティングのあるペンテをオンラインで保ち続けており、大会ルール、独自の変種、順位表、世界選手権があり、会員になるかどうかは任意です。<out https://www.playok.com/>PlayOK</out>は、マレク・フトレガが2001年にポーランドで始めたときの名前から、今もクルニクと呼ぶ人が多く、午前2時に見知らぬ人とリアルタイムで五目並べを打ちたいときに行く場所で、ゲームごとのエロ式レーティングがあり、部屋は空になることがないようです。会員数は、これらのサイトのどこも、はっきりとは公表していないものです。どのサイトも、最盛期には数万人の登録者がおり、どこにも、20年そこにいる中核の人たちがいます。** | Pente.org has kept ranked Pente alive online for twenty years, with the tournament rule, several variants of its own, a ladder and a world championship, and membership is optional. PlayOK, which many still call Kurnik, the name Marek Futrega gave it when he started it in Poland in 2001, is where you go for a live game of gomoku against a stranger at two in the morning, with an Elo rating for each game and rooms that never seem to empty. Membership numbers are the one thing none of these sites states plainly. Each has had tens of thousands of registered players at its peak, and each has a hard core of people who have been there for twenty years. | Agent 2026-10-06 |  |
 | — — — | From the sites’ own pages and long memory; the exact caps and prices change, and the sites are the authority. {site}: {games} games, everything free with no paid tier at all, no cap on moves, {limit} games open at once, ratings per game and a ladder overall. That count is read from the catalogue rather than typed here — it said “about 35” for long enough to be ten games wrong. | **各サイト自身のページと、長い記憶によるものです。上限や価格の細かい点は変わるので、正確なことは各サイトに尋ねてください。{site}は、{games}のゲームがあり、すべて無料で、有料の段階はまったくなく、手数の上限もなく、同時に{limit}局まで開けて、ゲームごとのレーティングと全体の順位表があります。この数は、ここに書き込まずに、一覧から読み取っています。「約35」と書かれていた期間が長く、実際には10ゲーム分も違っていたからです。** | From each site's own pages and long memory. Exact limits and prices change, so ask each site for the precise details. {site} has {games} games, everything free with no paid tier at all, no limit on moves, up to {limit} games open at once, a rating for each game and an overall ladder. This number is read from the catalogue and not typed in here, because for a long time it said "about 35" while it was really ten games off. | Agent 2026-10-06 |  |
 | — — — | If you have a code, the door is <in /join>here</in>. If you do not, the <in /learn>learning shelf</in> is open to everyone. | **コードをお持ちなら、入口は<in /join>こちら</in>です。お持ちでなくても、<in /learn>学習の棚</in>は誰にでも開かれています。** | If you have a code, the door is here. If you do not, the learning shelf is open to everyone. | Agent 2026-10-06 |  |
@@ -2151,6 +1778,46 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Washi | **和紙** | Washi (paper) | Agent 2026-10-06 |  |
 | — — — | Turn quadrant {quadrant} anticlockwise | **{quadrant}番の区画を反時計回りに回す** | Turn quadrant {quadrant} anticlockwise | Agent 2026-10-06 |  |
 | — — — | Turn quadrant {quadrant} clockwise | **{quadrant}番の区画を時計回りに回す** | Turn quadrant {quadrant} clockwise | Agent 2026-10-06 |  |
+| — — — | the answer is not a grid of bulbs | **答えが、電球のマス目になっていません** | the answer is not a grid of light bulbs | Agent 2026-11-02 |  |
+| — — — | a bulb is on a black square | **黒いマスに電球があります** | there is a bulb on a black square | Agent 2026-11-02 |  |
+| — — — | some white squares are dark | **照らされていない白いマスがあります** | there are white squares that are dark | Agent 2026-11-02 |  |
+| — — — | the givens are not an Akari board | **最初から出ている部分が、「明かり」の盤になっていません** | the part shown from the start is not a board of Akari | Agent 2026-11-02 |  |
+| — — — | a numbered square does not touch its number of bulbs | **数字のマスが、その数の電球と接していません** | a numbered square does not touch as many bulbs as its number | Agent 2026-11-02 |  |
+| — — — | two bulbs light each other | **2つの電球が互いを照らしています** | two bulbs light each other | Agent 2026-11-02 |  |
+| — — — | already finished | **すでに終わっています** | it has already finished | Agent 2026-11-02 |  |
+| — — — | already over | **すでに終わっています** | it is already over | Agent 2026-11-02 |  |
+| — — — | the answer is not whole guesses | **答えが、推測の形になっていません** | the answer is not in the form of guesses | Agent 2026-11-02 |  |
+| — — — | the answer is not whole guesses in hiragana | **答えが、ひらがなで書かれた推測の形になっていません** | the answer is not in the form of guesses written in hiragana | Agent 2026-11-02 |  |
+| — — — | the answer does not solve the puzzle: {reason} | **その答えでは、パズルが解けていません：{reason}** | the answer does not solve the puzzle: {reason} | Agent 2026-11-02 |  |
+| — — — | a word was not guessed | **当てられていない言葉があります** | there is a word that was not guessed | Agent 2026-11-02 |  |
+| — — — | the bridge at row {row}, column {col} does not reach an island | **{row}行{col}列の橋が、島につながっていません** | the bridge at row {row}, column {col} is not connected to an island | Agent 2026-11-02 |  |
+| — — — | a {kind} cannot run out of guesses | **{kind}は、推測の回数がなくなることはありません** | {kind} cannot run out of guesses | Agent 2026-11-02 |  |
+| — — — | a cell is neither water nor a bridge | **水でも橋でもないマスがあります** | there is a cell that is neither water nor a bridge | Agent 2026-11-02 |  |
+| — — — | some cells are empty | **空のマスがあります** | there are empty cells | Agent 2026-11-02 |  |
+| — — — | the givens are not a set of clues | **最初から出ている部分が、ヒントの組になっていません** | the part shown from the start is not a set of clues | Agent 2026-11-02 |  |
+| — — — | column {n} does not match its clue | **{n}列目がヒントと合っていません** | column {n} does not match its clue | Agent 2026-11-02 |  |
+| — — — | column {n} is not half black | **{n}列目の黒が半分になっていません** | column {n} is not half black | Agent 2026-11-02 |  |
+| — — — | column {n} repeats another | **{n}列目が、ほかの列と同じです** | column {n} is the same as another column | Agent 2026-11-02 |  |
+| — — — | column {n} has three alike | **{n}列目に同じ色が3つ並んでいます** | column {n} has three of the same colour in a row | Agent 2026-11-02 |  |
+| — — — | column {n} has two stones | **{n}列目に石が2つあります** | column {n} has two stones | Agent 2026-11-02 |  |
+| — — — | the answer is not a grid of digits | **答えが、数字のマス目になっていません** | the answer is not a grid of digits | Agent 2026-11-02 |  |
+| — — — | the givens are not a Cross Sums board | **最初から出ている部分が、「合計」の盤になっていません** | the part shown from the start is not a board of Cross Sums | Agent 2026-11-02 |  |
+| — — — | a run does not add up to its sum, or repeats a digit | **合計が合っていない列か、同じ数字が重なっている列があります** | there is a run whose total does not match, or a run in which a digit repeats | Agent 2026-11-02 |  |
+| — — — | the deal is not a whole deck | **配られたカードが、ちょうど1組になっていません** | the dealt cards are not exactly one deck | Agent 2026-11-02 |  |
+| — — — | the deal is not two decks of those suits | **配られたカードが、そのスートの2組になっていません** | the dealt cards are not two decks of those suits | Agent 2026-11-02 |  |
+| — — — | the answer has empty cells | **答えに、空のマスがあります** | the answer has empty cells | Agent 2026-11-02 |  |
+| — — — | all four words were found | **4つの言葉が見つかっています** | all four words were found | Agent 2026-11-02 |  |
+| — — — | both words were found | **2つの言葉が見つかっています** | both words were found | Agent 2026-11-02 |  |
+| — — — | FreeCell is played with {cells} cells | **フリーセルのセルの数は、{cells}のどれかです** | the number of cells in FreeCell is one of {cells} | Agent 2026-11-02 |  |
+| — — — | the givens are not a hidden kana word | **最初から出ている部分が、隠された仮名の言葉になっていません** | the part shown from the start is not a hidden word in kana | Agent 2026-11-02 |  |
+| — — — | the givens are not a hidden word | **最初から出ている部分が、隠された言葉になっていません** | the part shown from the start is not a hidden word | Agent 2026-11-02 |  |
+| — — — | guesses go on after the word was typed | **言葉が入力されたあとも、推測が続いています** | guesses go on after the word was typed | Agent 2026-11-02 |  |
+| — — — | guesses go on after the word was found | **言葉が見つかったあとも、推測が続いています** | guesses go on after the word was found | Agent 2026-11-02 |  |
+| — — — | guesses go on after all four words were found | **4つの言葉が見つかったあとも、推測が続いています** | guesses go on after all four words were found | Agent 2026-11-02 |  |
+| — — — | guesses go on after both words were found | **2つの言葉が見つかったあとも、推測が続いています** | guesses go on after both words were found | Agent 2026-11-02 |  |
+| — — — | the grid is not the solution | **マス目が答えになっていません** | the grid is not the solution | Agent 2026-11-02 |  |
+| — — — | the grid was solved | **マス目はすでに答えになっています** | the grid was already the solution | Agent 2026-11-02 |  |
+| — — — | there are guesses left | **推測がまだ残っています** | there are guesses left | Agent 2026-11-02 |  |
 | — — — | Words go on after the goal was reached. | **目標に届いたあとも単語が続いています。** | Words continue after reaching the goal. | Agent 2026-10-30 |  |
 | — — — | The word list is not loaded. | **単語の一覧が読み込まれていません。** | The word list is not loaded. | Agent 2026-10-30 |  |
 | — — — | The givens are not a hive. | **与えられたものが蜂の巣になっていません。** | What was given is not a beehive. | Agent 2026-10-30 |  |
@@ -2166,12 +1833,106 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | The line does not end on the last number. | **線が最後の数字で終わっていません。** | The line does not end at the last number. | Agent 2026-10-30 |  |
 | — — — | That is not a grid of this size. | **このサイズのマス目ではありません。** | This is not a grid of this size. | Agent 2026-10-30 |  |
 | — — — | The line does not start on the first number. | **線が最初の数字から始まっていません。** | The line does not start from the first number. | Agent 2026-10-30 |  |
+| — — — | the answer is not a grid of shaded cells | **答えが、塗ったマスのマス目になっていません** | the answer is not a grid of shaded cells | Agent 2026-11-02 |  |
+| — — — | the givens are not a Hitori board | **最初から出ている部分が、「一人」の盤になっていません** | the part shown from the start is not a board of Hitori | Agent 2026-11-02 |  |
+| — — — | a number repeats among the cells left, two shaded cells touch, or the cells left do not join up | **残ったマスに同じ数字が重なっているか、塗ったマスが接しているか、残ったマスがつながっていません** | a number repeats among the remaining cells, shaded cells touch, or the remaining cells are not connected | Agent 2026-11-02 |  |
+| — — — | an island was added | **島が足されています** | an island was added | Agent 2026-11-02 |  |
+| — — — | an island was moved | **島が動かされています** | an island was moved | Agent 2026-11-02 |  |
+| — — — | the givens are not a grid of islands | **最初から出ている部分が、島のマス目になっていません** | the part shown from the start is not a grid of islands | Agent 2026-11-02 |  |
+| — — — | the islands are not all joined into one | **すべての島が1つにつながっていません** | the islands are not all joined into one | Agent 2026-11-02 |  |
+| — — — | the island at row {row}, column {col} wants {wants} and has {has} | **{row}行{col}列の島は橋が{wants}本必要ですが、{has}本です** | the island at row {row}, column {col} needs {wants} bridges, but has {has} | Agent 2026-11-02 |  |
+| — — — | it was solved | **すでに完成しています** | it was already completed | Agent 2026-11-02 |  |
+| — — — | it was won | **すでに勝っています** | it was already won | Agent 2026-11-02 |  |
+| — — — | the answer is not a grid of squares | **答えがマス目になっていません** | the answer is not a grid of squares | Agent 2026-11-02 |  |
+| — — — | the givens are not a Jirai board | **与えられたものが地雷の盤になっていません** | what was given is not a Jirai board | Agent 2026-11-02 |  |
+| — — — | a mine was uncovered | **地雷を開いてしまいました** | a mine was opened | Agent 2026-11-02 |  |
+| — — — | the answer is missing a square | **答えにマスが足りません** | the answer is short of a square | Agent 2026-11-02 |  |
+| — — — | a number does not match the covered squares round it | **数字がまわりの閉じたマスの数と合っていません** | a number does not match the count of closed squares around it | Agent 2026-11-02 |  |
+| — — — | a square the opening uncovered was changed | **最初に開いたマスが変わっています** | a square opened at the start has changed | Agent 2026-11-02 |  |
+| — — — | the opening was covered again | **最初に開いたマスがまた閉じられています** | the square opened at the start has been closed again | Agent 2026-11-02 |  |
+| — — — | the answer has a square outside the shape | **答えに形の外のマスがあります** | the answer has a square outside the shape | Agent 2026-11-02 |  |
+| — — — | there are safe squares still covered | **安全なマスがまだ閉じたままです** | a safe square is still closed | Agent 2026-11-02 |  |
+| — — — | the kana word list is not loaded | **仮名の言葉の一覧が読み込まれていません** | the list of words in kana is not loaded | Agent 2026-11-02 |  |
 | — — — | Guesses go on after the country was found. | **国を当てたあとも予想が続いています。** | Guesses continue after the country was guessed. | Agent 2026-10-30 |  |
 | — — — | There are guesses left. | **まだ予想が残っています。** | There are still guesses left. | Agent 2026-10-30 |  |
 | — — — | The country was not guessed. | **国が当てられていません。** | The country has not been guessed. | Agent 2026-10-30 |  |
 | — — — | The answer is not a list of guesses. | **答えが予想の一覧になっていません。** | The answer is not a list of guesses. | Agent 2026-10-30 |  |
 | — — — | The givens are not a country to find. | **探す国になっていません。** | This is not a country to look for. | Agent 2026-10-30 |  |
 | — — — | The country was found. | **国は当てられています。** | The country has been guessed. | Agent 2026-10-30 |  |
+| — — — | the answer is not a lattice and its swaps | **答えが、格子と入れ替えの組になっていません** | the answer is not a lattice and its swaps | Agent 2026-11-02 |  |
+| — — — | the givens are not a scrambled lattice and its solution | **最初から出ている部分が、混ぜた格子とその答えになっていません** | the part shown from the start is not a scrambled lattice and its solution | Agent 2026-11-02 |  |
+| — — — | a lattice is {side} across | **格子の幅は{side}マスです** | a lattice is {side} cells across | Agent 2026-11-02 |  |
+| — — — | the line does not reach the goal | **線がゴールに届いていません** | the line does not reach the goal | Agent 2026-11-02 |  |
+| — — — | the answer is not a set of edges | **答えが、辺の集まりになっていません** | the answer is not a set of edges | Agent 2026-11-02 |  |
+| — — — | the line branches or stops | **線が枝分かれしているか、途中で止まっています** | the line branches or stops partway | Agent 2026-11-02 |  |
+| — — — | the givens are not a Loop board | **最初から出ている部分が、「輪」の盤になっていません** | the part shown from the start is not a board of Loop | Agent 2026-11-02 |  |
+| — — — | the line is not one loop | **線が1つの輪になっていません** | the line is not one loop | Agent 2026-11-02 |  |
+| — — — | a number is not touched by its number of edges | **数字が、その数の辺と接していません** | a number is not touched by as many edges as its number | Agent 2026-11-02 |  |
+| — — — | more guesses than the rows allow | **行の数より多く推測しています** | there are more guesses than the rows allow | Agent 2026-11-02 |  |
+| — — — | more moves than a game is kept with | **保存できる手数より多く動かしています** | there are more moves than a game is kept with | Agent 2026-11-02 |  |
+| — — — | more moves than a solve is kept with | **保存できる手数より多く動かしています** | there are more moves than a solve is kept with | Agent 2026-11-02 |  |
+| — — — | more swaps than the level allows | **レベルで許される入れ替えの数より多く行っています** | there are more swaps than the level allows | Agent 2026-11-02 |  |
+| — — — | move {n} is not allowed there | **{n}手目は、その場面では行えません** | move {n} cannot be made there | Agent 2026-11-02 |  |
+| — — — | a move that is not written as one | **手の書き方として正しくないものがあります** | there is a move that is not written as a move | Agent 2026-11-02 |  |
+| — — — | the word was never typed | **言葉が一度も入力されていません** | the word was never typed | Agent 2026-11-02 |  |
+| — — — | no check for {kind} | **{kind}を確かめる方法がありません** | there is no way to check {kind} | Agent 2026-11-02 |  |
+| — — — | no cube of that size | **その大きさのキューブはありません** | there is no cube of that size | Agent 2026-11-02 |  |
+| — — — | there are no islands | **島がありません** | there are no islands | Agent 2026-11-02 |  |
+| — — — | no {kind} at {size} | **{size}の{kind}はありません** | there is no {kind} at {size} | Agent 2026-11-02 |  |
+| — — — | no level to count the guesses by | **推測の数を数えるためのレベルがありません** | there is no level to count the guesses by | Agent 2026-11-02 |  |
+| — — — | no level to count the swaps by | **入れ替えの数を数えるためのレベルがありません** | there is no level to count the swaps by | Agent 2026-11-02 |  |
+| — — — | no move was made | **1手も動かしていません** | no move was made | Agent 2026-11-02 |  |
+| — — — | a layer the cube does not have | **キューブにない段があります** | there is a layer the cube does not have | Agent 2026-11-02 |  |
+| — — — | no such puzzle | **そのパズルはありません** | there is no such puzzle | Agent 2026-11-02 |  |
+| — — — | no such race | **そのレースはありません** | there is no such race | Agent 2026-11-02 |  |
+| — — — | the givens are not a level | **最初から出ている部分が、レベルになっていません** | the part shown from the start is not a level | Agent 2026-11-02 |  |
+| — — — | the givens are not a board of that size | **最初から出ている部分が、その大きさの盤になっていません** | the part shown from the start is not a board of that size | Agent 2026-11-02 |  |
+| — — — | not a cube of that size | **その大きさのキューブになっていません** | it is not a cube of that size | Agent 2026-11-02 |  |
+| — — — | not every card is home | **ホームに入っていないカードがあります** | there are cards that are not in the home piles | Agent 2026-11-02 |  |
+| — — — | not every face is one colour | **1色にそろっていない面があります** | there is a face that is not one colour | Agent 2026-11-02 |  |
+| — — — | not every run is made | **完成していない列があります** | there are runs that are not complete | Agent 2026-11-02 |  |
+| — — — | not a grid of that size | **その大きさのマス目になっていません** | it is not a grid of that size | Agent 2026-11-02 |  |
+| — — — | {word} is not in the word list | **{word}は、言葉の一覧にありません** | {word} is not in the word list | Agent 2026-11-02 |  |
+| — — — | that is not a run of legal jumps on this board | **この盤で行える跳びの連なりになっていません** | it is not a series of jumps that can be made on this board | Agent 2026-11-02 |  |
+| — — — | the givens are not a level of that length | **最初から出ている部分が、その長さのレベルになっていません** | the part shown from the start is not a level of that length | Agent 2026-11-02 |  |
+| — — — | the givens are not a level of that size | **最初から出ている部分が、その大きさのレベルになっていません** | the part shown from the start is not a level of that size | Agent 2026-11-02 |  |
+| — — — | that is not a line through the maze | **迷路を通る線になっていません** | it is not a line through the maze | Agent 2026-11-02 |  |
+| — — — | the givens are not a maze | **最初から出ている部分が、迷路になっていません** | the part shown from the start is not a maze | Agent 2026-11-02 |  |
+| — — — | the word was not pinned down | **言葉が絞り込まれていません** | the word was not pinned down | Agent 2026-11-02 |  |
+| — — — | not one of the site's levels | **このサイトのレベルのどれでもありません** | it is not one of this site's levels | Agent 2026-11-02 |  |
+| — — — | not started | **まだ始まっていません** | it has not started | Agent 2026-11-02 |  |
+| — — — | one peg must be left, in the goal hole | **最後に残る駒は、ゴールの穴にある1つだけでなければなりません** | the last remaining peg must be only one, in the goal hole | Agent 2026-11-02 |  |
+| — — — | the answer is not a grid of numbers | **答えが、数字のマス目になっていません** | the answer is not a grid of numbers | Agent 2026-11-02 |  |
+| — — — | a printed number was changed | **最初から書かれている数字が変えられています** | a number written from the start was changed | Agent 2026-11-02 |  |
+| — — — | the givens are not a Regions board | **最初から出ている部分が、「区画」の盤になっていません** | the part shown from the start is not a board of Regions | Agent 2026-11-02 |  |
+| — — — | the regions are not a grid | **領域がマス目になっていません** | the regions are not a grid | Agent 2026-11-02 |  |
+| — — — | a region is not as big as its number, or two regions of one size touch | **数字と大きさが合っていない区画があるか、同じ大きさの区画が接しています** | there is a region whose size does not match its number, or two regions of the same size touch | Agent 2026-11-02 |  |
+| — — — | a region has two stones | **1つの領域に石が2つあります** | a region has two stones | Agent 2026-11-02 |  |
+| — — — | row {n} does not match its clue | **{n}行目がヒントと合っていません** | row {n} does not match its clue | Agent 2026-11-02 |  |
+| — — — | row {n} is not half black | **{n}行目の黒が半分になっていません** | row {n} is not half black | Agent 2026-11-02 |  |
+| — — — | row {n} repeats another | **{n}行目が、ほかの行と同じです** | row {n} is the same as another row | Agent 2026-11-02 |  |
+| — — — | there are rows left | **行がまだ残っています** | there are rows left | Agent 2026-11-02 |  |
+| — — — | row {n} has three alike | **{n}行目に同じ色が3つ並んでいます** | row {n} has three of the same colour in a row | Agent 2026-11-02 |  |
+| — — — | not a grid of shaded and empty cells that size | **その大きさの、塗ったマスと空のマスのマス目になっていません** | it is not a grid of that size of shaded and empty cells | Agent 2026-11-02 |  |
+| — — — | the answer is not a set of rectangles | **答えが、長方形の集まりになっていません** | the answer is not a set of rectangles | Agent 2026-11-02 |  |
+| — — — | the givens are not a Shikaku board | **最初から出ている部分が、「四角」の盤になっていません** | the part shown from the start is not a board of Shikaku | Agent 2026-11-02 |  |
+| — — — | a rectangle does not hold exactly one number, or its area | **数字を1つだけ含んでいないか、数字と面積が合っていない長方形があります** | there is a rectangle that does not hold exactly one number, or whose area does not match it | Agent 2026-11-02 |  |
+| — — — | some cells are in no rectangle | **どの長方形にも入っていないマスがあります** | there are cells that are in no rectangle | Agent 2026-11-02 |  |
+| — — — | the sitting is over | **この回は終わっています** | this sitting is over | Agent 2026-11-02 |  |
+| — — — | Solitaire turns one card or three | **ソリティアは、1枚めくりか3枚めくりです** | Solitaire turns one card or three | Agent 2026-11-02 |  |
+| — — — | Spider is played with {suits} suits | **スパイダーのスートの数は、{suits}のどれかです** | the number of suits in Spider is one of {suits} | Agent 2026-11-02 |  |
+| — — — | a printed stone was changed | **最初から置かれている石が変えられています** | a stone placed from the start was changed | Agent 2026-11-02 |  |
+| — — — | the answer is not a stone in every row | **答えが、各行に石が1つずつの形になっていません** | the answer is not in the form of one stone in every row | Agent 2026-11-02 |  |
+| — — — | the answer is not a grid of stones | **答えが、石のマス目になっていません** | the answer is not a grid of stones | Agent 2026-11-02 |  |
+| — — — | the givens are not a grid of stones | **最初から出ている部分が、石のマス目になっていません** | the part shown from the start is not a grid of stones | Agent 2026-11-02 |  |
+| — — — | the stones in rows {first} and {second} touch | **{first}行目と{second}行目の石が接しています** | the stones in rows {first} and {second} touch | Agent 2026-11-02 |  |
+| — — — | there are swaps left | **入れ替えがまだ残っています** | there are swaps left | Agent 2026-11-02 |  |
+| — — — | the swaps do not make that grid | **その入れ替えでは、そのマス目になりません** | those swaps do not make that grid | Agent 2026-11-02 |  |
+| — — — | the word was found | **言葉が見つかっています** | the word was found | Agent 2026-11-02 |  |
+| — — — | the word was not guessed | **言葉が当てられていません** | the word was not guessed | Agent 2026-11-02 |  |
+| — — — | the givens are not a Tsunagi layout | **最初から出ている部分が、「繋ぎ」の配置になっていません** | the part shown from the start is not a layout of Tsunagi | Agent 2026-11-02 |  |
+| — — — | the word list is not loaded | **言葉の一覧が読み込まれていません** | the word list is not loaded | Agent 2026-11-02 |  |
+| — — — | the word was typed | **言葉が入力されています** | the word was typed | Agent 2026-11-02 |  |
 | — — — | {site} is in beta: new things arrive most days, and some rough edges are still being smoothed. The people helping test it are thanked here. | **{site}はベータ版です。ほぼ毎日新しいものが加わり、粗い部分も少しずつ直しています。テストにご協力いただいている方々へのお礼は、こちらに載せています。** | {site} is a beta version. New things are added almost every day, and the rough parts are being fixed little by little. Thanks to the people helping with testing are posted here. | Agent 2026-10-06 |  |
 | — — — | Draw | **引き分け** | Draw | Agent 2026-10-06 |  |
 | — — — | over {count} games | **{count}局中** | out of {count} games | Agent 2026-10-06 |  |
@@ -2521,6 +2282,269 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Starred | **スター付き** | Starred | Agent 2026-10-06 |  |
 | — — — | Star it, to list it first in your finished games | **スターを付けると、終わった対局の一覧で先頭に並びます** | If you put a star on it, it is listed first among your finished games | Agent 2026-10-06 |  |
 | — — — | Star | **スター** | Star | Agent 2026-10-06 |  |
+| — — — | Could not leave that mark. | **拍手を送れませんでした。** | The applause could not be sent. | Agent 2026-11-02 |  |
+| — — — | That is not one of the marks. | **それは用意された拍手の種類ではありません。** | That is not one of the kinds of applause provided. | Agent 2026-11-02 |  |
+| — — — | A game is applauded once it is finished. | **拍手は、対局が終わってから送れます。** | Applause can be sent once the game has ended. | Agent 2026-11-02 |  |
+| — — — | Sign in to leave a mark. | **拍手を送るには、サインインしてください。** | Sign in to send applause. | Agent 2026-11-02 |  |
+| — — — | Expected a JSON body. | **リクエストの本文がJSON形式ではありません。** | The body of the request is not in JSON format. | Agent 2026-11-02 |  |
+| — — — | Could not add that buddy. | **その人を仲間に追加できませんでした。** | That person could not be added as a buddy. | Agent 2026-11-02 |  |
+| — — — | Could not read the buddy list. | **仲間リストを読み込めませんでした。** | The buddy list could not be loaded. | Agent 2026-11-02 |  |
+| — — — | Could not remove that buddy. | **その人を仲間から外せませんでした。** | That person could not be removed from the buddies. | Agent 2026-11-02 |  |
+| — — — | Which member? | **どの会員か指定してください。** | Specify which member. | Agent 2026-11-02 |  |
+| — — — | Could not change that. | **変更できませんでした。** | It could not be changed. | Agent 2026-11-02 |  |
+| — — — | Could not claim that. | **その申し立てはできませんでした。** | That claim could not be made. | Agent 2026-11-02 |  |
+| — — — | Could not give time. | **時間を加えられませんでした。** | Time could not be added. | Agent 2026-11-02 |  |
+| — — — | Invalid claim. | **申し立てが正しくありません。** | The claim is not correct. | Agent 2026-11-02 |  |
+| — — — | This game has no clock. | **この対局には持ち時間がありません。** | This game has no time allowance. | Agent 2026-11-02 |  |
+| — — — | It is your move, not theirs. | **相手ではなく、自分の番です。** | It is my turn, not theirs. | Agent 2026-11-02 |  |
+| — — — | Their time is not up yet. | **相手の持ち時間はまだ切れていません。** | The other side's time has not run out yet. | Agent 2026-11-02 |  |
+| — — — | It is your move; time is given to the other side. | **いまは自分の番です。時間を加えられるのは相手側です。** | It is my turn now. Time can be given to the other side. | Agent 2026-11-02 |  |
+| — — — | Could not change that colour. | **色を変更できませんでした。** | The colour could not be changed. | Agent 2026-11-02 |  |
+| — — — | That address is the only way into this account. Set four words first, and then it can go. | **そのメールアドレスが、このアカウントに入る唯一の方法です。先に合言葉を設定すれば、削除できます。** | That email address is the only way into this account. If a passphrase is set first, it can be deleted. | Agent 2026-11-02 |  |
+| — — — | Your four words are the only way into this account. Add a recovery email address first, and then they can go. | **この合言葉が、このアカウントに入る唯一の方法です。先に復旧用のメールアドレスを追加すれば、削除できます。** | This passphrase is the only way into this account. If a recovery email address is added first, it can be deleted. | Agent 2026-11-02 |  |
+| — — — | Invalid summary parameters. | **概要の指定が正しくありません。** | The summary specification is not correct. | Agent 2026-11-02 |  |
+| — — — | Could not load the summary. | **概要を読み込めませんでした。** | The summary could not be loaded. | Agent 2026-11-02 |  |
+| — — — | You have as many games on the go as this site allows at once. | **同時に進められる対局の上限に達しています。** | The limit on games that can be going at once has been reached. | Agent 2026-11-02 |  |
+| — — — | Could not call off that game. | **その対局を中止できませんでした。** | That game could not be called off. | Agent 2026-11-02 |  |
+| — — — | That intersection cannot be played. | **その交点には打てません。** | A stone cannot be played at that intersection. | Agent 2026-11-02 |  |
+| — — — | A colour from the palette, or null. | **パレットの色を指定するか、nullを指定してください。** | Specify a colour from the palette, or specify null. | Agent 2026-11-02 |  |
+| — — — | Could not delete that game. | **その対局を削除できませんでした。** | That game could not be deleted. | Agent 2026-11-02 |  |
+| — — — | That game has fewer moves. | **その対局には、それだけの手数がありません。** | That game does not have that many moves. | Agent 2026-11-02 |  |
+| — — — | That game is over. | **その対局は終わっています。** | That game has ended. | Agent 2026-11-02 |  |
+| — — — | That game has stones on it — resign it rather than calling it off. | **その対局にはすでに石が置かれています。中止ではなく、投了してください。** | That game already has stones placed on it. Resign instead of calling it off. | Agent 2026-11-02 |  |
+| — — — | Hidden, or not? | **非表示にするかどうかを指定してください。** | Specify whether to hide it or not. | Agent 2026-11-02 |  |
+| — — — | Only a finished game can be hidden. | **非表示にできるのは、終わった対局だけです。** | Only a game that has ended can be hidden. | Agent 2026-11-02 |  |
+| — — — | Could not load game history. | **対局の履歴を読み込めませんでした。** | The game history could not be loaded. | Agent 2026-11-02 |  |
+| — — — | Invalid move. | **手が正しくありません。** | The move is not correct. | Agent 2026-11-02 |  |
+| — — — | You have {count} games on the go, and {limit} at once is the limit here — finish or resign one before taking on another. | **進行中の対局が{count}局あり、同時に進められるのは{limit}局までです。1局を終えるか投了してから、次の対局を始めてください。** | There are {count} games in progress, and up to {limit} can go at once. Finish or resign one game before starting the next. | Agent 2026-11-02 |  |
+| — — — | Could not load that game. | **その対局を読み込めませんでした。** | That game could not be loaded. | Agent 2026-11-02 |  |
+| — — — | A turn in that position was lost on time, so it can only be continued with a clock. | **その局面では手番が時間切れになっているため、持ち時間を設定した対局としてしか続けられません。** | A turn in that position ran out of time, so it can only be continued as a game with a time allowance. | Agent 2026-11-02 |  |
+| — — — | Someone moved first. Reload to catch up. | **先にほかの人が打ちました。再読み込みして、最新の状態にしてください。** | Someone else moved first. Reload to bring it up to date. | Agent 2026-11-02 |  |
+| — — — | Could not play that move. | **その手を打てませんでした。** | That move could not be played. | Agent 2026-11-02 |  |
+| — — — | Could not load those moves. | **手を読み込めませんでした。** | The moves could not be loaded. | Agent 2026-11-02 |  |
+| — — — | No such game. | **その対局は見つかりません。** | That game cannot be found. | Agent 2026-11-02 |  |
+| — — — | No game of yours by that id. | **あなたの対局に、そのIDのものはありません。** | Among your games, there is none with that ID. | Agent 2026-11-02 |  |
+| — — — | This game was set up so that nobody may resign it. | **この対局は、誰も投了できない設定です。** | This game is set so that nobody can resign. | Agent 2026-11-02 |  |
+| — — — | That game is an offer nobody has accepted yet. It is answered, not played. | **その対局は、まだ誰も受けていない申し込みです。打つのではなく、返事をするものです。** | That game is a proposal nobody has accepted yet. It is something to reply to, not to play. | Agent 2026-11-02 |  |
+| — — — | That could not be done. | **その操作はできませんでした。** | That operation could not be done. | Agent 2026-11-02 |  |
+| — — — | {variant} is not a game this site has. | **{variant}は、このサイトにないゲームです。** | {variant} is not a game this site has. | Agent 2026-11-02 |  |
+| — — — | You do not hold a seat in this game. | **この対局の席には座っていません。** | I am not sitting at a seat in this game. | Agent 2026-11-02 |  |
+| — — — | That game could not be started. | **その対局を始められませんでした。** | That game could not be started. | Agent 2026-11-02; Agent 2026-10-06 |  |
+| — — — | {variant} is not played on {size}×{size}. It plays on: {sizes}. | **{variant}は{size}×{size}の盤では遊べません。遊べる盤：{sizes}。** | {variant} cannot be played on {size}×{size}. The boards it can be played on: {sizes}. | Agent 2026-11-02 |  |
+| — — — | You did not play that game. | **その対局は自分で打ったものではありません。** | That game is not one I played. | Agent 2026-11-02 |  |
+| — — — | That game was played under an opening a shared game cannot use, so it cannot be continued or played again here. | **その対局は、共有の対局では使えない開局ルールで打たれたため、ここで続けることも、もう一度対局することもできません。** | That game was played under an opening rule that a shared game cannot use, so it can neither be continued nor played again here. | Agent 2026-11-02 |  |
+| — — — | That game is already over. | **その対局はすでに終わっています。** | That game has already ended. | Agent 2026-11-02 |  |
+| — — — | Could not read your games. | **自分の対局を読み込めませんでした。** | My games could not be loaded. | Agent 2026-11-02 |  |
+| — — — | Could not record that game. | **その対局を記録できませんでした。** | That game could not be recorded. | Agent 2026-11-02 |  |
+| — — — | That game could not be recorded. | **その対局を記録できませんでした。** | That game could not be recorded. | Agent 2026-11-02 |  |
+| — — — | Could not resign that game. | **その対局を投了できませんでした。** | That game could not be resigned. | Agent 2026-11-02 |  |
+| — — — | Sign in to play again. | **もう一度対局するには、サインインしてください。** | Sign in to play again. | Agent 2026-11-02 |  |
+| — — — | Sign in to play someone. | **誰かと対局するには、サインインしてください。** | Sign in to play someone. | Agent 2026-11-02 |  |
+| — — — | Could not change that star. | **スターを変更できませんでした。** | The star could not be changed. | Agent 2026-11-02 |  |
+| — — — | Sign in to star a game. | **対局にスターを付けるには、サインインしてください。** | Sign in to put a star on a game. | Agent 2026-11-02 |  |
+| — — — | Could not start that game. | **その対局を始められませんでした。** | That game could not be started. | Agent 2026-11-02 |  |
+| — — — | That game is still being played. | **その対局はまだ続いています。** | That game is still going on. | Agent 2026-11-02 |  |
+| — — — | Could not take that back. | **手を戻せませんでした。** | The move could not be taken back. | Agent 2026-11-02 |  |
+| — — — | You did not hold a seat in this game. | **この対局の席には座っていませんでした。** | I was not sitting at a seat in this game. | Agent 2026-11-02 |  |
+| — — — | {length} in a row will not fit on a {size}×{size} board, so nobody could ever win. | **{size}×{size}の盤に{length}個は並べられないので、誰も勝てません。** | {length} cannot be lined up on a {size}×{size} board, so nobody could ever win. | Agent 2026-11-02 |  |
+| — — — | {variant} is played to {length} in a row, not {asked}. A game written with the wrong length has taken its rules from somewhere else. | **{variant}は{length}個並べるゲームで、{asked}個ではありません。長さが違うまま書かれた対局は、別のゲームの規則を引き継いでいます。** | {variant} is a game of lining up {length}, not {asked}. A game written with the wrong length has taken its rules from another game. | Agent 2026-11-02 |  |
+| — — — | That link does not hold a seat in this game. | **そのリンクは、この対局の席のものではありません。** | That link is not for a seat in this game. | Agent 2026-11-02 |  |
+| — — — | That Daily is not finished. | **そのデイリーはまだ終わっていません。** | That Daily has not ended yet. | Agent 2026-11-02 |  |
+| — — — | Counting a win for points needs an account. | **勝ちをポイントに数えるには、アカウントが必要です。** | An account is needed to count a win for points. | Agent 2026-11-02 |  |
+| — — — | This game has no Daily. | **このゲームにはデイリーがありません。** | This game has no Daily. | Agent 2026-11-02 |  |
+| — — — | There is no such level. | **そのレベルはありません。** | There is no such level. | Agent 2026-11-02 |  |
+| — — — | That is not a game. | **それはゲームではありません。** | That is not a game. | Agent 2026-11-02 |  |
+| — — — | Only a level or the Daily is counted. | **数えられるのは、レベルかデイリーだけです。** | Only a level or the Daily is counted. | Agent 2026-11-02 |  |
+| — — — | That is not a game of that level. | **それはそのレベルのゲームではありません。** | That is not a game of that level. | Agent 2026-11-02 |  |
+| — — — | That is not today's Daily. | **それは今日のデイリーではありません。** | That is not today's Daily. | Agent 2026-11-02 |  |
+| — — — | That game was not won. | **そのゲームには勝っていません。** | That game was not won. | Agent 2026-11-02 |  |
+| — — — | Could not record that win. | **その勝ちを記録できませんでした。** | That win could not be recorded. | Agent 2026-11-02 |  |
+| — — — | A Houseki game, what was won, and the game's own save. | **宝石のゲーム、勝った内容、ゲーム自身のセーブを指定してください。** | Specify a Houseki game, what was won, and the game's own save. | Agent 2026-11-02 |  |
+| — — — | The game could not be played again from its start. | **そのゲームを最初から再現できませんでした。** | The game could not be reproduced from its start. | Agent 2026-11-02 |  |
+| — — — | Could not ignore that member. | **その会員を無視リストに入れられませんでした。** | That member could not be put on the ignore list. | Agent 2026-11-02 |  |
+| — — — | Could not read the ignore list. | **無視リストを読み込めませんでした。** | The ignore list could not be loaded. | Agent 2026-11-02 |  |
+| — — — | Invalid request. | **リクエストの内容が正しくありません。** | The content of the request is not correct. | Agent 2026-11-02 |  |
+| — — — | Could not create an invitation. | **招待を作成できませんでした。** | The invitation could not be created. | Agent 2026-11-02 |  |
+| — — — | That does not look like an email address. | **メールアドレスの形式になっていません。** | It is not in the form of an email address. | Agent 2026-11-02 |  |
+| — — — | Sign in to invite someone. | **誰かを招待するには、サインインしてください。** | Sign in to invite someone. | Agent 2026-11-02 |  |
+| — — — | An invite code is needed to use this site. | **このサイトを使うには、招待コードが必要です。** | An invite code is needed to use this site. | Agent 2026-11-02 |  |
+| — — — | Not a kept game's id. | **保存された対局のIDではありません。** | It is not the ID of a kept game. | Agent 2026-11-02 |  |
+| — — — | Could not keep that game. | **その対局を保存できませんでした。** | That game could not be kept. | Agent 2026-11-02 |  |
+| — — — | Keeping a game in your history needs an account. | **対局を履歴に残すには、アカウントが必要です。** | An account is needed to keep a game in the history. | Agent 2026-11-02 |  |
+| — — — | That id is another game's. | **そのIDは、別の対局のものです。** | That ID belongs to another game. | Agent 2026-11-02 |  |
+| — — — | Could not load the ladder. | **順位表を読み込めませんでした。** | The standings could not be loaded. | Agent 2026-11-02 |  |
+| — — — | Expected a form. | **リクエストの本文がフォーム形式ではありません。** | The body of the request is not in form format. | Agent 2026-11-02 |  |
+| — — — | Stop this kind of email, or all of it. | **この種類のメールか、すべてのメールのどちらかを止めてください。** | Stop either this kind of email or all emails. | Agent 2026-11-02 |  |
+| — — — | Could not record that. Please write to {address} and it will be done by hand. | **記録できませんでした。{address}までご連絡いただければ、手作業で対応します。** | It could not be recorded. If you write to {address}, it will be handled by hand. | Agent 2026-11-02 |  |
+| — — — | That link does not stop anything. | **そのリンクでは、止められるメールがありません。** | There is no email that link can stop. | Agent 2026-11-02 |  |
+| — — — | Stopped. | **止めました。** | It has been stopped. | Agent 2026-11-02 |  |
+| — — — | A match of {games} games starts fresh; a rematch or a fork keeps the colours it came from. | **{games}番勝負は新しく始めるものです。再戦や分岐した対局は、元の対局の色を引き継ぎます。** | A {games}-game match starts anew. A rematch or a branched game keeps the colours of the game it came from. | Agent 2026-11-02 |  |
+| — — — | A match of {games} games is between two players, not two chairs at one screen. | **{games}番勝負は2人の対局者の間で行うもので、1つの画面の2つの席では行えません。** | A {games}-game match is played between two players, and cannot be played at two seats at one screen. | Agent 2026-11-02 |  |
+| — — — | A match of {games} games needs somebody named to play. | **{games}番勝負には、相手の指名が必要です。** | A {games}-game match needs a named opponent. | Agent 2026-11-02 |  |
+| — — — | A match of {games} games needs somebody named to play; a posted seat could be taken for one game and not the rest. | **{games}番勝負には、相手の指名が必要です。募集した席では、1局だけ座られて残りが続かないことがあるためです。** | A {games}-game match needs a named opponent. This is because with a posted seat, somebody might sit for only one game and the rest might not go on. | Agent 2026-11-02 |  |
+| — — — | Only {days} away days a year; {used} used. | **休暇日は年に{days}日までです。すでに{used}日使っています。** | Away days are up to {days} a year. {used} have already been used. | Agent 2026-11-02 |  |
+| — — — | The range must end after it starts. | **終わりの日は、始まりの日より後にしてください。** | Make the end date later than the start date. | Agent 2026-11-02 |  |
+| — — — | Not a length this site offers. | **このサイトにない期間です。** | That is not a length of time this site offers. | Agent 2026-11-02 |  |
+| — — — | There is no account behind this session. | **このセッションに対応するアカウントがありません。** | There is no account behind this session. | Agent 2026-11-02 |  |
+| — — — | Those are not dates. | **日付として正しくありません。** | Those are not valid as dates. | Agent 2026-11-02 |  |
+| — — — | Unknown time zone. | **不明なタイムゾーンです。** | It is an unknown time zone. | Agent 2026-11-02 |  |
+| — — — | Could not read those games. | **その対局を読み込めませんでした。** | Those games could not be loaded. | Agent 2026-11-02 |  |
+| — — — | Which game? | **どのゲームか指定してください。** | Specify which game. | Agent 2026-11-02 |  |
+| — — — | Won, lost or all? | **勝ち、負け、すべてのどれかを指定してください。** | Specify one of won, lost or all. | Agent 2026-11-02 |  |
+| — — — | No such member. | **その会員は見つかりません。** | That member cannot be found. | Agent 2026-11-02 |  |
+| — — — | That member is not taking games from you. | **その会員は、いまあなたからの対局を受け付けていません。** | That member is not accepting games from you right now. | Agent 2026-11-02 |  |
+| — — — | A message needs somebody to go to and something to say. | **メッセージには、宛先と本文が必要です。** | A message needs a recipient and a body. | Agent 2026-11-02 |  |
+| — — — | Sign in to write to somebody. | **メッセージを送るには、サインインしてください。** | Sign in to send a message. | Agent 2026-11-02 |  |
+| — — — | Could not change the name. | **名前を変更できませんでした。** | The name could not be changed. | Agent 2026-11-02 |  |
+| — — — | Letters, numbers and single spaces. | **使えるのは、文字、数字、1つずつの空白です。** | Letters, numbers and single spaces can be used. | Agent 2026-11-02 |  |
+| — — — | That name is not free: somebody here goes by it, it is kept for a remembered player, or a record already stands under it. | **その名前は使えません。すでに使っている人がいるか、記録に残る対局者の名前として取ってあるか、その名前の記録がすでにあります。** | That name cannot be used. Somebody already uses it, it is reserved as the name of a remembered player, or a record already exists under that name. | Agent 2026-11-02 |  |
+| — — — | That name is kept for a player who is remembered here. | **その名前は、ここに記録が残る対局者のものとして取ってあります。** | That name is reserved for a player who is remembered here. | Agent 2026-11-02 |  |
+| — — — | At least two characters. | **2文字以上にしてください。** | Please make it at least two characters. | Agent 2026-11-02 |  |
+| — — — | That name will not do. | **その名前は使えません。** | That name cannot be used. | Agent 2026-11-02 |  |
+| — — — | Something this site needs in order to run safely is missing or wrong. If you are the operator: check the environment configuration and redeploy. | **このサイトを安全に動かすために必要なものが、欠けているか間違っています。運営者の方は、環境の設定を確かめて、もう一度公開してください。** | Something needed to run this site safely is missing or wrong. If you are the operator, please check the environment settings and publish again. | Agent 2026-11-02 |  |
+| — — — | This deployment is not configured | **このサイトは設定されていません** | This site is not configured | Agent 2026-11-02 |  |
+| — — — | Not configured | **設定されていません** | Not configured | Agent 2026-11-02 |  |
+| — — — | Not found. | **見つかりません。** | It cannot be found. | Agent 2026-11-02 |  |
+| — — — | It is not your turn. | **いまは自分の番ではありません。** | It is not my turn now. | Agent 2026-11-02 |  |
+| — — — | Could not accept that game. | **その対局の申し込みを受けられませんでした。** | The proposal of that game could not be accepted. | Agent 2026-11-02 |  |
+| — — — | That offer has already been answered. | **その申し込みには、すでに返事がされています。** | That proposal has already been replied to. | Agent 2026-11-02 |  |
+| — — — | Could not decline that game. | **その対局の申し込みを断れませんでした。** | The proposal of that game could not be declined. | Agent 2026-11-02 |  |
+| — — — | No such offer. | **その申し込みは見つかりません。** | That proposal cannot be found. | Agent 2026-11-02 |  |
+| — — — | That offer has no seat to take. | **その申し込みには、座れる席がありません。** | That proposal has no seat to sit at. | Agent 2026-11-02 |  |
+| — — — | That is your own offer — it is waiting on somebody else. | **それは自分の申し込みです。ほかの人の返事を待っています。** | That is my own proposal. It is waiting for somebody else's reply. | Agent 2026-11-02 |  |
+| — — — | Could not withdraw that offer. | **その申し込みを取り下げられませんでした。** | That proposal could not be withdrawn. | Agent 2026-11-02 |  |
+| — — — | Invalid paging parameters. | **ページ送りの指定が正しくありません。** | The paging specification is not correct. | Agent 2026-11-02 |  |
+| — — — | "{word}" is not a direction. Use "asc" or "desc". | **「{word}」は並べ替えの向きではありません。「asc」か「desc」を指定してください。** | "{word}" is not a direction of sorting. Specify "asc" or "desc". | Agent 2026-11-02 |  |
+| — — — | "{word}" is not a sort {of} has. Try one of: {sorts}. | **「{word}」は、{of}にない並べ替えです。次のどれかを指定してください：{sorts}。** | "{word}" is a sort that {of} does not have. Specify one of the following: {sorts}. | Agent 2026-11-02 |  |
+| — — — | Could not offer any words. | **言葉を用意できませんでした。** | Words could not be prepared. | Agent 2026-11-02 |  |
+| — — — | That pick has expired. Start again — it takes half a minute. | **選択の有効期限が切れました。最初からやり直してください。30秒ほどで済みます。** | The pick has expired. Please start again. It takes about 30 seconds. | Agent 2026-11-02 |  |
+| — — — | That pick has expired. Choose four words again — it takes half a minute. | **選択の有効期限が切れました。4つの言葉を選び直してください。30秒ほどで済みます。** | The pick has expired. Please choose the four words again. It takes about 30 seconds. | Agent 2026-11-02 |  |
+| — — — | Keep a word or take one back, not both at once. | **言葉を残すか戻すか、どちらか一方にしてください。** | Either keep a word or take one back, one of the two. | Agent 2026-11-02 |  |
+| — — — | That phrase is not finished: four words are needed. | **合言葉が完成していません。言葉が4つ必要です。** | The passphrase is not complete. Four words are needed. | Agent 2026-11-02 |  |
+| — — — | No account to change. | **変更できるアカウントがありません。** | There is no account to change. | Agent 2026-11-02 |  |
+| — — — | No account to read. | **読み込めるアカウントがありません。** | There is no account to read. | Agent 2026-11-02 |  |
+| — — — | No account to set a phrase on. | **合言葉を設定できるアカウントがありません。** | There is no account to set a passphrase on. | Agent 2026-11-02 |  |
+| — — — | This site cannot set a phrase: no signing secret. | **このサイトでは合言葉を設定できません。署名用の秘密鍵がありません。** | This site cannot set a passphrase. There is no secret key for signing. | Agent 2026-11-02 |  |
+| — — — | That is not a phrase. | **それは合言葉ではありません。** | That is not a passphrase. | Agent 2026-11-02 |  |
+| — — — | That is not a pick. | **それは選択として正しくありません。** | That is not valid as a pick. | Agent 2026-11-02 |  |
+| — — — | One of those is not a word. | **どれかが言葉ではありません。** | One of them is not a word. | Agent 2026-11-02 |  |
+| — — — | That is not a finished phrase. | **それは完成した合言葉ではありません。** | That is not a completed passphrase. | Agent 2026-11-02 |  |
+| — — — | Those are not four words from the list. | **リストにある4つの言葉ではありません。** | Those are not four words from the list. | Agent 2026-11-02 |  |
+| — — — | "{word}" is not one of the words offered. | **「{word}」は、用意された言葉にありません。** | "{word}" is not among the words provided. | Agent 2026-11-02 |  |
+| — — — | Could not read that. | **読み込めませんでした。** | It could not be loaded. | Agent 2026-11-02 |  |
+| — — — | Could not remove those words. | **その言葉を削除できませんでした。** | Those words could not be deleted. | Agent 2026-11-02 |  |
+| — — — | Could not set those words. | **その言葉を設定できませんでした。** | Those words could not be set. | Agent 2026-11-02 |  |
+| — — — | Write the four words down somewhere first, then tick the box. | **先に4つの言葉をどこかに書き留めてから、チェックボックスにチェックを入れてください。** | First write the four words down somewhere, then tick the checkbox. | Agent 2026-11-02 |  |
+| — — — | A phrase is four words; this one has {count}. | **合言葉は4つの言葉です。これは{count}個です。** | A passphrase is four words. This one has {count}. | Agent 2026-11-02 |  |
+| — — — | Could not load player suggestions. | **対局者の候補を読み込めませんでした。** | The suggestions of players could not be loaded. | Agent 2026-11-02 |  |
+| — — — | Invalid autocomplete parameters. | **候補の指定が正しくありません。** | The suggestion specification is not correct. | Agent 2026-11-02 |  |
+| — — — | Solved after its clock ran out. | **制限時間が切れたあとに解いています。** | It was solved after the time limit ran out. | Agent 2026-11-02 |  |
+| — — — | Could not count that attempt. | **挑戦回数を数えられませんでした。** | The attempt could not be counted. | Agent 2026-11-02 |  |
+| — — — | Counting attempts on an account needs one. | **挑戦回数を数えるには、アカウントが必要です。** | An account is needed to count attempts. | Agent 2026-11-02 |  |
+| — — — | Could not keep that puzzle. | **そのパズルを保存できませんでした。** | That puzzle could not be kept. | Agent 2026-11-02 |  |
+| — — — | Keeping a puzzle needs an account. | **パズルを保存するには、アカウントが必要です。** | An account is needed to keep a puzzle. | Agent 2026-11-02 |  |
+| — — — | More checks than the allowance. | **許可されたチェック回数を超えています。** | It is more checks than the allowance. | Agent 2026-11-02 |  |
+| — — — | No such Check allowance. | **そのチェック回数の設定はありません。** | There is no such setting of the number of Checks. | Agent 2026-11-02 |  |
+| — — — | No clock to run out: this puzzle was not played on one. | **時間切れにはなりません。このパズルは制限時間なしで遊ばれたものです。** | It cannot run out of time. This puzzle is one that was played without a time limit. | Agent 2026-11-02 |  |
+| — — — | This level has no explosions to ease. | **このレベルには、やわらげられる爆発がありません。** | This level has no explosions that can be eased. | Agent 2026-11-02 |  |
+| — — — | No help is offered on this puzzle. | **このパズルにはヘルプがありません。** | This puzzle has no help. | Agent 2026-11-02 |  |
+| — — — | No {kind} at {size}. | **{size}の{kind}はありません。** | There is no {kind} at {size}. | Agent 2026-11-02 |  |
+| — — — | No {level} {kind}. | **{kind}に{level}はありません。** | There is no {level} for {kind}. | Agent 2026-11-02 |  |
+| — — — | Not the cube of that seed. | **そのシードのキューブではありません。** | It is not the cube of that seed. | Agent 2026-11-02 |  |
+| — — — | Not the deal of that seed. | **そのシードの配り方ではありません。** | It is not the deal of that seed. | Agent 2026-11-02 |  |
+| — — — | Not a grid of that size. | **その大きさのマス目ではありません。** | It is not a grid of that size. | Agent 2026-11-02 |  |
+| — — — | Not what a puzzle of that size could hold. | **その大きさのパズルに入る内容ではありません。** | It is not what a puzzle of that size could hold. | Agent 2026-11-02 |  |
+| — — — | Not over: {reason}. | **まだ終わっていません：{reason}。** | It is not over yet: {reason}. | Agent 2026-11-02 |  |
+| — — — | Not a seed. | **シードとして正しくありません。** | It is not valid as a seed. | Agent 2026-11-02 |  |
+| — — — | Not solved: {reason}. | **解けていません：{reason}。** | It is not solved: {reason}. | Agent 2026-11-02 |  |
+| — — — | No level {level} at {size}×{size}. | **{size}×{size}に、レベル{level}はありません。** | There is no level {level} at {size}×{size}. | Agent 2026-11-02 |  |
+| — — — | Could not record that puzzle. | **そのパズルを記録できませんでした。** | That puzzle could not be recorded. | Agent 2026-11-02 |  |
+| — — — | A puzzle, its size, level and seed, and what is written on it. | **パズル、大きさ、レベル、シード、書き込んだ内容を指定してください。** | Specify a puzzle, its size, level and seed, and what was written on it. | Agent 2026-11-02 |  |
+| — — — | Solving for XP needs an account. | **経験値を得るには、アカウントが必要です。** | An account is needed to earn experience points. | Agent 2026-11-02 |  |
+| — — — | A puzzle, its size and level, the givens and the answer. | **パズル、大きさ、レベル、最初から出ている部分、答えを指定してください。** | Specify a puzzle, its size and level, the part shown from the start, and the answer. | Agent 2026-11-02 |  |
+| — — — | More guesses than that puzzle has. | **そのパズルで使える推測の数を超えています。** | It is more than the number of guesses that puzzle can use. | Agent 2026-11-02 |  |
+| — — — | A size and a level. | **大きさとレベルを指定してください。** | Specify a size and a level. | Agent 2026-11-02 |  |
+| — — — | These listing filters are not valid: {names}. | **一覧の絞り込みが正しくありません：{names}。** | The filters of the list are not correct: {names}. | Agent 2026-11-02 |  |
+| — — — | No member has the id "{id}", so these listing filters are not valid: {param}. | **ID「{id}」の会員がいないため、一覧の絞り込みが正しくありません：{param}。** | No member has the ID "{id}", so the filters of the list are not correct: {param}. | Agent 2026-11-02 |  |
+| — — — | the query | **クエリ** | the query | Agent 2026-11-02 |  |
+| — — — | The answer, as a grid. | **答えをマス目の形で指定してください。** | Specify the answer in the form of a grid. | Agent 2026-11-02 |  |
+| — — — | Could not record that finish. | **完了を記録できませんでした。** | The finish could not be recorded. | Agent 2026-11-02 |  |
+| — — — | Could not give up. | **あきらめられませんでした。** | Could not give up. | Agent 2026-11-02 |  |
+| — — — | Could not make that race. | **そのレースを作れませんでした。** | That race could not be made. | Agent 2026-11-02 |  |
+| — — — | Racing needs an account. | **レースにはアカウントが必要です。** | Racing needs an account. | Agent 2026-11-02 |  |
+| — — — | You are not in this race. | **このレースには参加していません。** | I am not in this race. | Agent 2026-11-02 |  |
+| — — — | Could not offer that race. | **そのレースを申し込めませんでした。** | That race could not be proposed. | Agent 2026-11-02 |  |
+| — — — | Which member to offer the seat to. | **席を渡す会員を指定してください。** | Specify the member to offer the seat to. | Agent 2026-11-02 |  |
+| — — — | Only the race's host can offer its other seat. | **もう一方の席を渡せるのは、レースを用意した人だけです。** | Only the person who set up the race can offer the other seat. | Agent 2026-11-02 |  |
+| — — — | The other seat is already taken. | **もう一方の席は、すでに埋まっています。** | The other seat has already been filled. | Agent 2026-11-02 |  |
+| — — — | A puzzle, its size, level and seed, the givens and the answer. | **パズル、大きさ、レベル、シード、最初から出ている部分、答えを指定してください。** | Specify a puzzle, its size, level and seed, the part shown from the start, and the answer. | Agent 2026-11-02 |  |
+| — — — | Could not start. | **始められませんでした。** | Could not start. | Agent 2026-11-02 |  |
+| — — — | A race is offered to one of your buddies. | **レースは、仲間のひとりに申し込みます。** | A race is proposed to one of the buddies. | Agent 2026-11-02 |  |
+| — — — | Rate limit exceeded. Please retry in {seconds} seconds. | **リクエストの上限を超えました。{seconds}秒後にもう一度お試しください。** | The request limit was exceeded. Please try again in {seconds} seconds. | Agent 2026-11-02 |  |
+| — — — | Invalid reaction. | **スタンプが正しくありません。** | The stamp is not correct. | Agent 2026-11-02 |  |
+| — — — | That move has not been played. | **その手はまだ打たれていません。** | That move has not been played yet. | Agent 2026-11-02 |  |
+| — — — | A move falls outside the board. | **盤の外に手があります。** | There is a move outside the board. | Agent 2026-11-02 |  |
+| — — — | Two moves share an intersection. | **2つの手が同じ交点にあります。** | Two moves are at the same intersection. | Agent 2026-11-02 |  |
+| — — — | The winner must match the result. | **勝者は結果と一致している必要があります。** | The winner must match the result. | Agent 2026-11-02 |  |
+| — — — | Could not send that. | **送信できませんでした。** | It could not be sent. | Agent 2026-11-02 |  |
+| — — — | This deployment cannot issue sessions. | **このサイトではセッションを発行できません。** | This site cannot issue sessions. | Agent 2026-11-02 |  |
+| — — — | That code was not accepted. | **そのコードは受け付けられませんでした。** | That code was not accepted. | Agent 2026-11-02 |  |
+| — — — | Could not sign in. | **サインインできませんでした。** | Could not sign in. | Agent 2026-11-02 |  |
+| — — — | Invalid sign-in. | **サインインの内容が正しくありません。** | The content of the sign-in is not correct. | Agent 2026-11-02 |  |
+| — — — | Not a board size this game offers. | **このゲームにない盤の大きさです。** | It is a board size this game does not have. | Agent 2026-11-02 |  |
+| — — — | The game is in this match's address, so it cannot be changed. Cancel this board and set up the game you want. | **ゲームはこの対局のアドレスで決まっているので、変更できません。この盤を取り消して、遊びたいゲームを新しく設定してください。** | The game is fixed by this game's address, so it cannot be changed. Cancel this board and set up the game you want to play anew. | Agent 2026-11-02 |  |
+| — — — | Could not change those rules. | **規則を変更できませんでした。** | The rules could not be changed. | Agent 2026-11-02 |  |
+| — — — | Those rules could not be applied. | **その規則を適用できませんでした。** | Those rules could not be applied. | Agent 2026-11-02 |  |
+| — — — | Somebody has taken the other seat, so the rules are what they agreed to. | **もう一方の席にほかの人が座ったので、規則はその人が了承したものになります。** | Somebody has taken the other seat, so the rules are what that person agreed to. | Agent 2026-11-02 |  |
+| — — — | The first stone is down, so the rules are fixed. | **最初の石が置かれたので、規則は変更できません。** | The first stone has been placed, so the rules cannot be changed. | Agent 2026-11-02 |  |
+| — — — | Sign in first. | **先にサインインしてください。** | Please sign in first. | Agent 2026-11-02 |  |
+| — — — | You already have a seat at this board. | **この盤の席には、すでに座っています。** | I am already sitting at a seat on this board. | Agent 2026-11-02 |  |
+| — — — | Could not take that seat. | **その席に座れませんでした。** | That seat could not be taken. | Agent 2026-11-02 |  |
+| — — — | Could not hand the board back. | **盤を返せませんでした。** | The board could not be handed back. | Agent 2026-11-02 |  |
+| — — — | Somebody else just took that seat. | **ついさっき、ほかの人がその席に座りました。** | Somebody else sat at that seat just now. | Agent 2026-11-02 |  |
+| — — — | A seat needs a name on it. | **席には名前が必要です。** | A seat needs a name. | Agent 2026-11-02 |  |
+| — — — | You posted this seat — it is waiting for somebody else. | **この席は自分で募集したものです。ほかの人を待っています。** | This seat is one I posted myself. It is waiting for somebody else. | Agent 2026-11-02 |  |
+| — — — | That seat has been taken. | **その席はすでに埋まっています。** | That seat has already been filled. | Agent 2026-11-02 |  |
+| — — — | Both seats are free — say which one you are taking. | **両方の席が空いています。どちらに座るか指定してください。** | Both seats are empty. Specify which one to take. | Agent 2026-11-02 |  |
+| — — — | Those four words do not match that name. | **その名前と合言葉が一致しません。** | That name and the passphrase do not match. | Agent 2026-11-02 |  |
+| — — — | You can ask the people on your buddy list. | **声をかけられるのは、仲間リストにいる人です。** | The people I can ask are those on my buddy list. | Agent 2026-11-02 |  |
+| — — — | That game is not played by that many. | **そのゲームは、その人数では遊べません。** | That game cannot be played by that many people. | Agent 2026-11-02 |  |
+| — — — | Somebody you asked is at {most} tables already. | **声をかけた人が、すでに{most}卓に着いています。** | Somebody I asked is already at {most} tables. | Agent 2026-11-02 |  |
+| — — — | You are at {most} tables already. Finish or end one first. | **すでに{most}卓に着いています。先にどれかを最後まで遊ぶか、終了してください。** | I am already at {most} tables. First play one to the end, or end one. | Agent 2026-11-02 |  |
+| — — — | Could not end that table. | **その卓を終了できませんでした。** | That table could not be ended. | Agent 2026-11-02 |  |
+| — — — | A table can be ended before its first move, or once a turn has waited a week on somebody else. | **卓を終えられるのは、最初の1手の前か、ほかの人の手を1週間待っているときです。** | A table can be ended before its first move, or when it has been waiting a week for somebody else's move. | Agent 2026-11-02 |  |
+| — — — | A game, how it stands, and who sat where. | **ゲーム、その状況、誰がどの席に座ったかを指定してください。** | Specify a game, how it stands, and who sat where. | Agent 2026-11-02 |  |
+| — — — | Could not leave that table. | **その卓から離れられませんでした。** | That table could not be left. | Agent 2026-11-02 |  |
+| — — — | The table moved on. | **卓の状況が進みました。** | The table has moved on. | Agent 2026-11-02 |  |
+| — — — | Could not make that move. | **その手を打てませんでした。** | That move could not be made. | Agent 2026-11-02 |  |
+| — — — | How many moves the page had seen, a seat and a move. | **ページが見ていた手数と、席と、手を指定してください。** | Specify how many moves the page had seen, a seat and a move. | Agent 2026-11-02 |  |
+| — — — | That game has no such computer player. | **そのゲームには、そのようなコンピュータはありません。** | That game has no such computer player. | Agent 2026-11-02 |  |
+| — — — | No such table. | **その卓は見つかりません。** | That table cannot be found. | Agent 2026-11-02 |  |
+| — — — | No such table, or no seat of yours at it. | **その卓がないか、自分の席がありません。** | There is no such table, or I have no seat at it. | Agent 2026-11-02 |  |
+| — — — | That move is not allowed. | **その手は打てません。** | That move cannot be played. | Agent 2026-11-02 |  |
+| — — — | That is not a move in this game. | **それはこのゲームの手ではありません。** | That is not a move in this game. | Agent 2026-11-02 |  |
+| — — — | That game is not played on one device here. | **そのゲームは、ここでは1台の端末で遊ぶものではありません。** | That game is not one played on one device here. | Agent 2026-11-02 |  |
+| — — — | That game is not offered at that size. | **そのゲームは、その大きさでは用意されていません。** | That game is not offered at that size. | Agent 2026-11-02 |  |
+| — — — | Each buddy can sit in one seat. | **仲間が座れる席は、1人につき1つです。** | Each buddy can sit in one seat. | Agent 2026-11-02 |  |
+| — — — | You can sit in one seat. | **座れる席は1つだけです。** | I can sit in only one seat. | Agent 2026-11-02 |  |
+| — — — | That table is over. | **その卓は終わっています。** | That table has ended. | Agent 2026-11-02 |  |
+| — — — | Could not read that table. | **その卓を読み込めませんでした。** | That table could not be loaded. | Agent 2026-11-02 |  |
+| — — — | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Anybody at the table can end it, or leave it. | **このゲームは、そのあと変わった版で始まったので、表示も続行もできません。卓にいる誰でも、終えるか、離れられます。** | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Anybody at the table can end it, or leave it. | Agent 2026-11-02 |  |
+| — — — | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Who sat at it and how it ended are shown here. | **このゲームは、そのあと変わった版で始まったので、表示も続行もできません。誰が座り、どう終わったかは、ここに表示されます。** | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Who sat at it and how it ended are shown here. | Agent 2026-11-02 |  |
+| — — — | Somebody at that table is not taking games with you. | **その卓にいる誰かが、あなたとの対局を受け付けていません。** | Somebody at that table is not accepting games with you. | Agent 2026-11-02 |  |
+| — — — | Each seat is you, a buddy, a link or a computer. | **席は、自分、仲間、リンク、コンピュータのどれかにしてください。** | Make each seat one of myself, a buddy, a link or a computer. | Agent 2026-11-02 |  |
+| — — — | Seat 1 is yours. | **1番の席は自分の席です。** | Seat 1 is my seat. | Agent 2026-11-02 |  |
+| — — — | Could not set that table. | **その卓を用意できませんでした。** | That table could not be set up. | Agent 2026-11-02 |  |
+| — — — | A game, its board and its seats. | **ゲームと、その盤と、席を指定してください。** | Specify a game, its board and its seats. | Agent 2026-11-02 |  |
+| — — — | Sign in to play. | **遊ぶには、サインインしてください。** | Sign in to play. | Agent 2026-11-02 |  |
+| — — — | Sign in to set a table. | **卓を用意するには、サインインしてください。** | Sign in to set up a table. | Agent 2026-11-02 |  |
+| — — — | A winner who was not at the table. | **卓にいなかった人が勝者になっています。** | A person who was not at the table is listed as the winner. | Agent 2026-11-02 |  |
+| — — — | Too Many Requests | **リクエストが多すぎます** | Too many requests | Agent 2026-11-02 |  |
+| — — — | This deployment is not configured correctly. | **このサイトは正しく設定されていません。** | This site is not set up correctly. | Agent 2026-11-02 |  |
+| — — — | Up, down, or neither. | **up、down、nullのどれかを指定してください。** | Specify one of up, down or null. | Agent 2026-11-02 |  |
+| — — — | Could not record that. | **記録できませんでした。** | It could not be recorded. | Agent 2026-11-02 |  |
+| — — — | Wait until the game is over. | **対局が終わるまでお待ちください。** | Please wait until the game has ended. | Agent 2026-11-02 |  |
+| — — — | Something went wrong. | **問題が発生しました。** | A problem occurred. | Agent 2026-11-02 |  |
 | — — — | Advanced | **詳細** | Details | Agent 2026-10-06 |  |
 | — — — | Who is ahead | **勝率バー** | Win-rate bar | Agent 2026-10-06 |  |
 | — — — | How the game stands while it is on — read by threats where the game has them, counted where it has something countable, and left unsaid where it has neither. | **対局中の形勢です。脅威のあるゲームでは脅威で読み、数えられるものがあるゲームでは数え、どちらもないゲームでは何も示しません。** | How the game stands while it is on. Where the game has threats it is read by threats, where something can be counted it is counted, and where there is neither nothing is shown. | Agent 2026-10-06 |  |
@@ -2566,6 +2590,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Draw by repetition: the same position came round again, with the same side to move. | **同じ局面の繰り返しで引き分けです。同じ手番で、同じ局面がもう一度現れました。** | A draw by repetition. The same position appeared again, with the same side to move. | Agent 2026-10-06 |  |
 | — — — | Draw. The board is full. | **引き分けです。盤が埋まりました。** | A draw. The board is full. | Agent 2026-10-06 |  |
 | — — — | Draw. Neither side had a move left. | **引き分けです。どちらにも打てる手がなくなりました。** | A draw. Neither side had a move left. | Agent 2026-10-06 |  |
+| — — — | Draw by the fifty-move rule: {half} moves each with no man laid or taken. | **50手ルールで引き分けです。駒を置くことも取ることもないまま、それぞれ{half}手が過ぎました。** | A draw by the fifty-move rule. {half} moves each passed with no piece placed or taken. | Agent 2026-10-30 |  |
 | — — — | Draw by the sliding rule: {plies} moves since the last piece went down, and nobody won. | **滑らせるルールによる引き分けです。最後の駒を置いてから{plies}手たちましたが、勝負はつきませんでした。** | A draw by the sliding rule. {plies} moves have passed since the last piece was placed, and nobody won. | Agent 2026-10-06 |  |
 | — — — | Draw by the no-progress rule: in {plies} moves, nobody got a piece any nearer home. | **進展なしの規則による引き分けです。{plies}手のあいだ、誰の駒も陣地に近づきませんでした。** | A draw by the no-progress rule. In {plies} moves, no piece got any nearer to its camp. | Agent 2026-10-06 |  |
 | — — — | Draw by the {half}-move rule: {half} moves each with nothing taken and no man moved. | **{half}手ルールによる引き分けです。双方{half}手、駒が取られず、通常の駒も動きませんでした。** | A draw by the {half}-move rule. For {half} moves each, nothing was taken and no ordinary piece moved. | Agent 2026-10-06 |  |
@@ -2627,6 +2652,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Stones in a row needed to win. | **勝つために必要な、一列に並べる石の数です。** | The number of stones in a row needed to win. | Agent 2026-10-06 |  |
 | — — — | Black's second stone must land outside the central 7×7. | **黒の2つ目の石は、中央の7×7の外に置きます。** | Black's second stone must be placed outside the central 7×7. | Agent 2026-10-06 |  |
 | — — — | {maker} is the Maker and wants a five of either colour; {breaker} is the Breaker and wants none. | **{maker}は作り手で、どちらの色でも5つ並べたい側です。{breaker}は壊し手で、5つ並ぶのを防ぎたい側です。** | {maker} is the Maker and wants five in a row of either colour. {breaker} is the Breaker and wants to stop it. | Agent 2026-10-06 |  |
+| — — — | A mill. Take one of your opponent's men. | **ミルができました。取る相手の駒を1つ選びます。** | A mill is made. Choose one of the opponent's pieces to take. | Agent 2026-10-30 |  |
 | — — — | Moves | **棋譜** | Record of moves | Agent 2026-10-06 |  |
 | — — — | Time per move | **1手の持ち時間** | Time per move | Agent 2026-10-06 |  |
 | — — — | How long each player has for a move in a shared game. The clock starts when the other side moves. | **共有する対局で、各自が1手に使える時間です。相手が打つと、時計が動き始めます。** | How long each player has for a move in a shared game. The clock starts when the other side moves. | Agent 2026-10-06 |  |
@@ -2672,11 +2698,14 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Lose the game, strictly | **厳密に対局負け** | Lose the game, strictly | Agent 2026-10-06 |  |
 | — — — | Loses the turn. Three in a row lose the game. | **手番を失います。3回続けると、対局に負けます。** | The turn is lost. Three in a row lose the game. | Agent 2026-10-06 |  |
 | — — — | Lose the turn | **手番を失う** | Lose the turn | Agent 2026-10-06 |  |
+| — — — | Pick one of your men to move. | **動かす駒を選びます。** | Choose a piece to move. | Agent 2026-10-30 |  |
 | — — — | Pick one of your pieces to slide. | **滑らせる自分の駒を1つ選んでください。** | Choose one of your pieces to slide. | Agent 2026-10-06 |  |
+| — — — | Pick one of your queens to move. | **動かすクイーンを選びます。** | Choose a queen to move. | Agent 2026-10-30 |  |
 | — — — | Pick one of your pieces to move: a step, or a chain of jumps. | **動かす自分の駒を1つ選んでください。1歩進むか、連続して跳びます。** | Choose one of your pieces to move: one step, or a chain of jumps. | Agent 2026-10-06 |  |
 | — — — | Piece in hand | **手元の駒** | Piece in hand | Agent 2026-10-06 |  |
 | — — — | Place the piece in hand: rotate or flip it, then click where its top-left corner goes. | **手元の駒を置きます。回転や反転をしてから、左上の角を置く場所をクリックしてください。** | Place the piece in hand. Rotate or flip it, and then click where its top-left corner goes. | Agent 2026-10-06 |  |
 | — — — | Place a stone as | **石の色を選んで置く** | Place a stone in the colour | Agent 2026-10-06 |  |
+| — — — | Choose the square it goes to, or pick a different one. | **進むマスを選ぶか、別の駒を選びます。** | Choose the square to go to, or choose another piece. | Agent 2026-10-30 |  |
 | — — — | Choose the point it slides to, or pick a different piece. | **滑らせる先の点を選ぶか、別の駒を選んでください。** | Choose the point it slides to, or choose a different piece. | Agent 2026-10-06 |  |
 | — — — | Choose where it lands, or pick a different piece. | **着地する場所を選ぶか、別の駒を選んでください。** | Choose where it lands, or choose a different piece. | Agent 2026-10-06 |  |
 | — — — | Practice board | **練習盤** | Practice board | Agent 2026-10-06 |  |
@@ -2710,6 +2739,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Second stone | **2手目** | Second stone | Agent 2026-10-06 |  |
 | — — — | Where the handicapped colour's second stone may go. | **ハンデのある色の2つ目の石を置ける場所です。** | Where the second stone of the colour with the handicap may be placed. | Agent 2026-10-06 |  |
 | — — — | Shared games start with the free opening. | **共有する対局は、自由開局で始まります。** | Shared games start with the free opening. | Agent 2026-10-06 |  |
+| — — — | Now shoot an arrow: press a square your queen can reach along a line. | **矢を放ちます。クイーンから線に沿って届くマスを押します。** | Shoot an arrow. Press a square reached along a line from the queen. | Agent 2026-10-30 |  |
 | — — — | Smaller board | **盤を小さく** | Smaller board | Agent 2026-10-06 |  |
 | — — — | The outer ring is in use, so the board cannot get smaller. | **外側の一周に石があるので、盤を小さくできません。** | There are stones on the outer ring, so the board cannot get smaller. | Agent 2026-10-06 |  |
 | — — — | Lay one stone of your colour. | **自分の色の石を1つ置いてください。** | Lay one stone of your colour. | Agent 2026-10-06 |  |
@@ -2730,6 +2760,9 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Place the piece | **駒を置く** | Place the piece | Agent 2026-10-06 |  |
 | — — — | Place a single | **石を1つ置く** | Place a single stone | Agent 2026-10-06 |  |
 | — — — | {who} wins by capturing {stones} stones | **{who}の勝ちです。{stones}子を取りました。** | {who} wins. Captured {stones} stones. | Agent 2026-10-06 |  |
+| — — — | {who} won by joining all their men. | **{who}が駒をすべてつなげて勝ちました。** | {who} won by joining all pieces. | Agent 2026-10-30 |  |
+| — — — | {who} won by reaching the far row. | **{who}の駒が向こうの端に着いて勝ちました。** | {who} won by a piece reaching the far edge. | Agent 2026-10-30 |  |
+| — — — | {who} won: the other side is down to two men. | **{who}の勝ちです。相手の駒が2つになりました。** | {who} wins. The opponent's pieces have become two. | Agent 2026-10-30 |  |
 | — — — | {who} wins with a square | **{who}が正方形を作って勝ちました** | {who} won by making a square | Agent 2026-10-06 |  |
 | — — — | {who} wins. {loser} made three in a row. | **{who}の勝ちです。{loser}が3つ並べてしまいました。** | {who} wins. {loser} made three in a row. | Agent 2026-10-06 |  |
 | — — — | You had no move, so your turn passed. | **打てる手がなかったので、手番がパスになりました。** | You had no move, so your turn was passed. | Agent 2026-10-06 |  |
@@ -3209,6 +3242,25 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | The stones above fall into the gap, and an empty column closes up toward the left. Nothing clears by itself: every group is your choice. | **上の石は隙間へ落ち、空になった列は左へ詰まります。ひとりでに消えることはなく、どのかたまりを取るかは自分で決めます。** | The stones above fall into the gap, and an emptied column closes up to the left. Nothing disappears by itself, and which group to take is up to you. | Agent 2026-10-06 |  |
 | — — — | A group of two or more can be taken. A stone on its own cannot. Choose the same group again, or press Take group, to remove it. | **2つ以上のかたまりは取れます。1つだけの石は取れません。同じかたまりをもう一度選ぶか、「かたまりを取る」を押すと取り除かれます。** | A group of two or more can be taken. A stone on its own cannot. Choose the same group again, or press Take group, to remove it. | Agent 2026-10-06 |  |
 | — — — | Choose a group of two or more touching stones of one colour and take it away; the rest fall into the gap. | **同じ色の石が2つ以上つながったかたまりを選んで取ると、残りが隙間へ落ちます。** | Choose a group of two or more touching stones of one colour and take it away; the rest fall into the gap. | Agent 2026-10-06 |  |
+| — — — | One board, eight squares by eight. A level brings its own goal and sometimes stones to clear; the Daily is one game for everybody, and a free game is a new one each time. | **盤は1種類、8×8マスです。レベルには独自の目標があり、消す石があることもあります。デイリーは誰にとっても同じゲームで、フリープレイは毎回新しいゲームです。** | There is one board, 8×8 squares. Levels have their own goal, and sometimes stones to clear. The Daily is the same game for everybody, and free play is a new game each time. | Agent 2026-10-30 |  |
+| — — — | Tsumiki board | **積み木の盤** | Tsumiki board | Agent 2026-10-30 |  |
+| — — — | Choose a shape, then a square. | **形を選び、次にマスを選びます。** | Choose a shape, then a square. | Agent 2026-10-30 |  |
+| — — — | {done} of {total} lines | **{total}本中{done}本** | {done} lines of {total} | Agent 2026-10-30 |  |
+| — — — | {done} of {total} points | **{total}点中{done}点** | {done} points of {total} | Agent 2026-10-30 |  |
+| — — — | {done} of {total} stones cleared | **{total}個中{done}個の石を消しました** | Cleared {done} stones of {total} | Agent 2026-10-30 |  |
+| — — — | Keys: Tab to a shape and Enter to choose it, then arrows move among the squares and Enter lays it. | **キー：Tabで形に移動してEnterで選び、矢印キーでマスを移動してEnterで置きます。** | Keys: Tab to a shape and choose with Enter, move among the squares with the arrow keys and place with Enter. | Agent 2026-10-30 |  |
+| — — — | Lines | **消した本数** | Lines cleared | Agent 2026-10-30 |  |
+| — — — | It will not fit there. | **そこには置けません。** | It cannot be placed there. | Agent 2026-10-30 |  |
+| — — — | A puzzle of fitting shapes into a grid, in a line that runs from wooden block sets and tangrams to the block games on today's phones. 積み木 means building blocks. The rules, the scores and the levels here are our own, in the Houseki package. | **形をマス目に収めるパズルで、木のブロックやタングラムから今のスマートフォンのブロックゲームまで続く流れをくんでいます。ここの規則、得点、レベルはHousekiパッケージ独自のものです。** | A puzzle of fitting shapes into a grid, in the line that runs from wooden blocks and tangrams to today's smartphone block games. The rules, scores and levels here are unique to the Houseki package. | Agent 2026-10-30 |  |
+| — — — | Now choose where its top left goes. | **形の左上が入るマスを選びます。** | Choose the square where its top left goes. | Agent 2026-10-30 |  |
+| — — — | A level has a goal: a score, a number of lines, or every gold stone cleared. The game ends when none of the shapes left will fit anywhere. In a free game and the Daily, that ending is your score. | **レベルには目標があります。点数、消す本数、または金色の石をすべて消すことです。残りの形がどこにも置けなくなると終わりです。フリープレイとデイリーでは、そのときの点数が結果です。** | A level has a goal: a score, a number of lines to clear, or clearing all the gold stones. It ends when the remaining shapes can go nowhere. In free play and the Daily, the score at that time is the result. | Agent 2026-10-30 |  |
+| — — — | A shape scores a point for each of its squares. One line clearing adds 10; lines cleared together are worth much more, and shapes in a row that each clear something add more again. | **置いた形は、マス1つにつき1点です。1本消すと10点増え、同時に消すとずっと高くなり、続けて消すとさらに増えます。** | A placed shape is one point per square. Clearing one line adds 10 points; clearing together is much higher, and clearing in succession adds more. | Agent 2026-10-30 |  |
+| — — — | You have three shapes. Choose one, then the square where its top left should go, or drag it onto the board. A shape cannot be turned. | **形が3つあります。1つ選んで、その左上を置きたいマスを選ぶか、盤の上へドラッグします。形は回せません。** | There are three shapes. Choose one and then the square where you want to put its top left, or drag it onto the board. Shapes cannot be turned. | Agent 2026-10-30 |  |
+| — — — | When all three shapes are laid, three more come. They can be laid in any order. | **3つの形をすべて置くと、次の3つが出ます。置く順番は自由です。** | When all three shapes are placed, the next three appear. The order is free. | Agent 2026-10-30 |  |
+| — — — | When a row or a column is full, it clears. Several can clear with one shape, and they clear together. | **行か列が埋まると消えます。1つの形で何本も埋まると、同時に消えます。** | When a row or column fills, it clears. If one shape fills several, they clear together. | Agent 2026-10-30 |  |
+| — — — | Shape {number}, of {cells} squares | **形{number}、{cells}マス** | Shape {number}, {cells} squares | Agent 2026-10-30 |  |
+| — — — | Lay three shapes on an eight by eight board, and clear every row and column you fill. | **8×8の盤に3つの形を置き、埋まった行と列を消します。** | Place three shapes on an 8×8 board and clear the rows and columns that fill. | Agent 2026-10-30 |  |
+| — — — | The shapes to lay | **置く形** | The shapes to place | Agent 2026-10-30 |  |
 | — — — | {campaign} level {number} | **{campaign}のレベル{number}** | {campaign} level {number} | Agent 2026-10-06 |  |
 | — — — | Free game | **フリープレイ** | Free game | Agent 2026-10-06 |  |
 | — — — | Lesson {number} | **レッスン{number}** | Lesson {number} | Agent 2026-10-06 |  |
@@ -3639,7 +3691,10 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | {colour} wins: their two sides are joined. | **{colour}の勝ちです。盤の両側がつながりました。** | {colour} wins. Their two sides are joined. | Agent 2026-10-06 |  |
 | — — — | {colour} wins on discs, {black} to {white}. | **{colour}が石の数で勝ちました（{black}対{white}）。** | {colour} wins on discs ({black} to {white}). | Agent 2026-10-06 |  |
 | — — — | {colour} wins in {moves}. | **{colour}の勝ちです（{moves}）。** | {colour} wins ({moves}). | Agent 2026-10-06 |  |
+| — — — | {colour} wins: all their men are joined. | **{colour}の勝ちです。駒がすべてつながりました。** | {colour} wins. All the pieces are joined. | Agent 2026-10-30 |  |
 | — — — | {colour} wins. The game is over. | **{colour}の勝ちです。対局は終わりました。** | {colour} wins. The game is over. | Agent 2026-10-06 |  |
+| — — — | {colour} wins: a man reached the far row. | **{colour}の勝ちです。駒が向こうの端に着きました。** | {colour} wins. A piece reached the far edge. | Agent 2026-10-30 |  |
+| — — — | {colour} wins: the other side is down to two men. | **{colour}の勝ちです。相手の駒が残り2つになりました。** | {colour} wins. The opponent's pieces are down to two. | Agent 2026-10-30 |  |
 | — — — | {colour} wins by resignation. | **{colour}の勝ちです（相手が投了）。** | {colour} wins (the other side resigned). | Agent 2026-10-06 |  |
 | — — — | the first | **1つ目** | the first | Agent 2026-10-06 |  |
 | — — — | the fourth | **4つ目** | the fourth | Agent 2026-10-06 |  |
@@ -5647,15 +5702,22 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | The ending was not won within the moves its rules allow. | **規則で認められている手数のうちに、終盤で勝負がつきませんでした。** | The ending was not won within the number of moves the rules allow. | Agent 2026-10-06 |  |
 | — — — | {who} led when the board filled. | **{who}が、盤が埋まった時点でリードしていました。** | {who} was leading when the board filled up. | Agent 2026-10-06 |  |
 | — — — | You led when the board filled. | **盤が埋まった時点でリードしていました。** | You were leading when the board filled up. | Agent 2026-10-06 |  |
+| — — — | {who} joined all their men into one group. | **{who}が駒をすべて1つにつなげました。** | {who} joined all pieces into one. | Agent 2026-10-30 |  |
+| — — — | You joined all your men into one group. | **駒をすべて1つにつなげました。** | You joined all pieces into one. | Agent 2026-10-30 |  |
 | — — — | The game ran to the length it was given. | **決められた手数まで進みました。** | The game went on to the number of moves it was given. | Agent 2026-10-06 |  |
 | — — — | Level up: {name} | **昇級：{name}** | Promotion: {name} | Agent 2026-10-06 |  |
 | — — — | {who} completed a winning line. | **{who}が勝ちの並びを完成させました。** | {who} completed a winning line. | Agent 2026-10-06 |  |
 | — — — | You completed a winning line. | **勝ちの並びを完成させました。** | You completed a winning line. | Agent 2026-10-06 |  |
 | — — — | Neither side had a move left. | **どちらにも打てる手がなくなりました。** | Neither side had a move left. | Agent 2026-10-06 |  |
+| — — — | Nobody laid or took a man for longer than the rules allow. | **規則で決められた手数のあいだ、駒を置くことも取ることもありませんでした。** | For the number of moves the rules set, no piece was placed or taken. | Agent 2026-10-30 |  |
 | — — — | Every piece was down, and the sliding went on longer than its rules allow. | **駒をすべて置き終えたあと、規則で認められている期間を超えて、駒を滑らせ続けました。** | After every piece was placed, the sliding went on for longer than the rules allow. | Agent 2026-10-06 |  |
 | — — — | Nobody got a piece any nearer home for longer than its rules allow. | **規則で認められている期間、どちらの駒も陣地に近づきませんでした。** | For longer than the rules allow, no piece got any nearer to its camp. | Agent 2026-10-06 |  |
 | — — — | Nothing was taken and no man moved for longer than its rules allow. | **規則で認められている期間、駒が取られず、動いた通常の駒もありませんでした。** | For longer than the rules allow, no piece was taken and no ordinary piece moved. | Agent 2026-10-06 |  |
 | — — — | Rating {mine} · opponent {theirs} | **レーティング {mine}・相手 {theirs}** | Rating {mine}, opponent {theirs} | Agent 2026-10-06 |  |
+| — — — | {who} reached the far row. | **{who}の駒が向こうの端に着きました。** | {who}'s piece reached the far edge. | Agent 2026-10-30 |  |
+| — — — | You reached the far row. | **駒が向こうの端に着きました。** | A piece reached the far edge. | Agent 2026-10-30 |  |
+| — — — | {who} brought the other side down to two men. | **{who}が相手の駒を2つまで減らしました。** | {who} reduced the opponent's pieces to two. | Agent 2026-10-30 |  |
+| — — — | You brought the other side down to two men. | **相手の駒を2つまで減らしました。** | You reduced the opponent's pieces to two. | Agent 2026-10-30 |  |
 | — — — | Rematch | **再戦** | Rematch | Agent 2026-10-06 |  |
 | — — — | The same position came round again, with the same side to move. | **同じ手番で、同じ局面がもう一度現れました。** | The same position appeared again, with the same side to move. | Agent 2026-10-06 |  |
 | — — — | {who} resigned. | **{who}が投了しました。** | {who} resigned. | Agent 2026-10-06 |  |

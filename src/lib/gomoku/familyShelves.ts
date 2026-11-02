@@ -43,12 +43,11 @@ export const ALSO_LISTED_IN: Partial<Record<GameKey, readonly AlsoListing[]>> = 
    * miniReversi: family "small-boards", "Reversi on a 4×4 or 6×6 board is over in minutes: the quick small game
    * somebody opening this shelf is after."
    */
-  tobiishi: [
-    {
-      family: "small-boards",
-      why: "Peg solitaire on a small board: a puzzle for one, a few jumps from the first peg to the last, over in a minute or two.",
-    },
-  ],
+  /*
+   * TOBIISHI left Small boards as a guest on 2026-10-30, to keep the shelf at eight when Nine Men's Morris came
+   * home to it. It is found at home in Numbers. Putting it back needs a game to leave:
+   * tobiishi: family "small-boards", "Peg solitaire on a small board: a puzzle for one, a few jumps from the first peg to the last, over in a minute or two."
+   */
   /*
    * TWIST FOUR left Small boards as a guest on 2026-10-01, to keep the shelf at
    * eight when Dots and Boxes came home to it from Party games. It is found at

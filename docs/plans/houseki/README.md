@@ -1,7 +1,9 @@
 # Houseki 宝石: a fifth kind of game
 
 **Status: built 2026-10-06 for the five games of `@johnmorrisdotca/houseki`
-(0.3.0 at the time), which the site takes from npm at an exact version.**
+(0.3.0 at the time), which the site takes from npm at an exact version. Tsumiki
+積み木, a sixth (2026-10-30), comes with the package past 0.4.2, which also brought Colour
+Chains' Shizen and Arashi and Magnetic Blocks to 128 levels each, in place of fifty.**
 
 Houseki is five gem and stone puzzles for one person, from the open-source
 package of that name: Falling Triplets (100 levels), Colour Chains (50 levels
@@ -9,6 +11,14 @@ in each of three campaigns: Classic, Shizen and Arashi), Stone Collapse (100),
 Gem Swap (50) and Magnetic Blocks (50). Every level is graded from one to five
 marks, every game has three guided lessons, and all but Magnetic Blocks have a
 Daily. All are played alone, a level at a time, on a phone or a desk.
+
+## Tsumiki 積み木
+
+Three shapes in a tray, laid on one eight by eight board, every full row and column clearing together; the game waits for
+the player and has no clock. Its 64 levels ask for a score, a number of lines or gold stones cleared, each with a recorded
+winning play made by the package's `scripts/tsumiki-levels.mjs`, so `houseki.coverage.test.ts` plays all of them through the server's
+check as it does the others. A shape is pressed and then a square, where its top left goes, or dragged onto the board (`TsumikiGame.tsx`).
+A free game and the Daily end when nothing left in the tray fits, and that ending is the score.
 
 ## Why a fifth kind
 

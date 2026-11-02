@@ -3,6 +3,7 @@ import * as chains from "@johnmorrisdotca/houseki/colour-chains";
 import * as triplets from "@johnmorrisdotca/houseki/falling-triplets";
 import * as swap from "@johnmorrisdotca/houseki/gem-swap";
 import * as blocks from "@johnmorrisdotca/houseki/magnetic-blocks";
+import * as tsumiki from "@johnmorrisdotca/houseki/tsumiki";
 import * as stones from "@johnmorrisdotca/houseki/stone-collapse";
 
 import { HOUSEKI_STORAGE_KEY } from "../src/lib/houseki/housekiProgress";
@@ -135,12 +136,23 @@ async function playBlocks(page: Page) {
   }
 }
 
+async function playTsumiki(page: Page) {
+  const level = tsumiki.levelManifest[0]!;
+  for (const [slot, row, column] of level.witness) {
+    const was = Number(await root(page, "full").getAttribute("data-progress"));
+    await page.locator(`[data-testid="tsumiki-slot"][data-slot="${slot}"]`).click();
+    await page.locator(`[data-testid="houseki-well"] [data-cell="${row * 8 + column}"]`).click();
+    await after(page, "full", was);
+  }
+}
+
 const GAMES = [
   { kind: "fallingTriplets", slug: "falling-triplets", play: playTriplets },
   { kind: "colourChains", slug: "colour-chains", play: playChains },
   { kind: "stoneCollapse", slug: "stone-collapse", play: playStones },
   { kind: "gemSwap", slug: "gem-swap", play: playSwap },
   { kind: "magneticBlocks", slug: "magnetic-blocks", play: playBlocks },
+  { kind: "tsumiki", slug: "tsumiki", play: playTsumiki },
 ] as const;
 
 for (const viewport of VIEWPORTS) {

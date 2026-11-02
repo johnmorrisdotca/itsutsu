@@ -151,16 +151,17 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Territory and races",
     kanji: "陣地と競走",
-    blurb: "No lines to make. Win by where you stand when it ends: surround more of the board than the other side, join your own two edges, or get every piece into the far camp before they do.",
-    games: ["go", "hex", "halma", "chineseCheckers"],
+    blurb: "No lines to make. Win by where you stand when it ends: surround more of the board than the other side, join your own men or your two edges, reach the far side first, or leave the other side nowhere to go.",
+    /* Breakthrough, Lines of Action and Amazons (2026-10-30): a race to the far row, a group to join and a room to fence off. None of them is a line. */
+    games: ["go", "hex", "halma", "chineseCheckers", "breakthrough", "linesOfAction", "amazons"],
   },
   {
     key: "small-boards",
     title: "Small boards",
     kanji: "小盤",
-    blurb: "Games you can read to the end, and games where the trick is what you must not do.",
+    blurb: "Games you can read to the end, games where the trick is what you must not do, and Nine Men's Morris, where men are laid, moved and taken.",
     /* Dots and Boxes (2026-10-01): a party game for two to six that is a small board at heart, from Party games. */
-    games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker", "dotsAndBoxes"],
+    games: ["tictactoe", "wildTicTacToe", "notakto", "trapThree", "squareFour", "makerBreaker", "dotsAndBoxes", "nineMensMorris"],
   },
   {
     key: "numbers",
@@ -520,8 +521,8 @@ export const GAME_FAMILIES: GameFamily[] = [
      */
     title: "Houseki",
     kanji: "宝石",
-    blurb: "Gem and stone puzzles for one, a level at a time. Cycle a falling column of three, turn a pair into chains, take groups of stones, swap neighbours, or set a magnetic block down on a floor that pulls. Fifty to a hundred graded levels in each, with lessons and a Daily, played alone. A level won earns points.",
-    games: ["fallingTriplets", "colourChains", "stoneCollapse", "gemSwap", "magneticBlocks"],
+    blurb: "Gem and stone puzzles for one, a level at a time. Cycle a falling column of three, turn a pair into chains, take groups of stones, swap neighbours, set a magnetic block down on a floor that pulls, or lay three shapes on a board and clear full lines. Fifty or more graded levels in each, with lessons and a Daily, played alone. A level won earns points.",
+    games: ["fallingTriplets", "colourChains", "stoneCollapse", "gemSwap", "magneticBlocks", "tsumiki"],
     notOnSetUp: "A Houseki game is set up on its own page, where a level, a lesson, the Daily or a free game is chosen; the set-up screen makes a game between two seats.",
   },
 ];

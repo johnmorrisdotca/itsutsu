@@ -547,7 +547,7 @@ grouped into eight families on `/games` (`GAME_FAMILIES` in
 | Turn and take | 8 |
 | Strange boards | 8 |
 | Checkers | 6 |
-| Territory and races | 4 |
+| Territory and races | 7 |
 | Small boards | 6 |
 | Numbers | 3 |
 | Logic puzzles | 3 |
@@ -718,6 +718,12 @@ in no server function; the answers are the 195 members and observers of the Unit
 are worth the goal. English, French and German are its set-up's tiles and its puzzle's size, one card, with a hive of the day in each. Its lists are Kotoba's, so a word is at most six letters and there is no
 word that uses all seven; a hive is drawn from a six-letter word and one more letter, kept when its common words suit the level, the goal a share of what they are worth. The server reads only the words handed in, against the same lists.
 
+**Tsumiki** 積み木 (2026-10-30, the package's `tsumiki` entry) is the Houseki family's sixth: three shapes on an eight by eight board, every full row and column clearing, in 64 levels, three lessons, a Daily and free play (`docs/plans/houseki/README.md`).
+
+**Nine Men's Morris** (2026-10-30, Narabe's `rules/mills.ts`) is at home in Small boards, which it fills at eight: nine men laid and then moved along the lines of three squares, three in a line taking one of the other side's, a side down to three flying, and a side down to two or with no move losing. The taking is the second half of the turn: while it is owed, `legalPoints` and `playMove` read the point played as the man to take, so the record, the replay, the live route and the programs needed nothing new.
+
+**Breakthrough**, **Lines of Action** and **Amazons** (2026-10-30, Narabe's `rules/movers.ts`) are at home in Territory and races, each its own game on one row of `spec.movers`. Breakthrough's men step forward and take on the diagonal, first to the far row; a man in Lines of Action moves as far as there are men on its line, and joining all of yours wins; an Amazons turn moves a queen and then shoots an arrow from where it landed, and the arrow's square is gone for good. The arrow is a second press and a second `playMove`, the way a mill's taking is, so no migration and no change to a bot file. The programs play all three in the browser.
+
 **Meikyuu** 迷宮 (2026-10-02, `src/lib/puzzles/meikyuu/`, plan in
 `docs/plans/meikyuu/README.md`): a maze to draw a line through with a finger or the
 mouse, from its start to its goal, in 1,024 fixed levels, 256 to each of four sizes (small,
@@ -743,7 +749,7 @@ is its place in the length, the seed is that number, the givens are the level's 
 (`tobiishi/way.ts`), and the server replays it on the level's own board and accepts any
 legal run that leaves one peg in the goal (`tobiishi/check.ts`). The board is drawn by
 the package and played by a tap, a drag or the keyboard (`TobiishiBoard`). It is at home
-in Numbers and is shown on the Small boards shelf as a guest (`ALSO_LISTED_IN`); its
+in Numbers; its
 level screens are Meikyuu's, with no locks and no hint.
 
 Tsunagi 繋ぎ, our Numberlink (`src/lib/puzzles/tsunagi/`, the levels and rules
@@ -1068,6 +1074,9 @@ move.
 | **Honeycomb** ハニカム | Reversi on a hexagon of hexagons: six ways to bracket a run, six corners that never turn. | hexagon of hexagons |
 | **Halma** ハルマ | A race: step, or jump chains over any piece, and fill the far corner first. Nothing is ever captured. | 16×16, 10×10, 8×8 |
 | **Chinese Checkers** ダイヤモンドゲーム | Ten pieces, a six-pointed star, and the point opposite yours to fill. Jumps chain and turn corners. | 17×17 star |
+| **Breakthrough** 突破 | Two rows of men each: step forward, take on the diagonal, and be first to the far side. | 8×8 |
+| **Lines of Action** 連結 | A man moves as far as there are men on its line. Join all of yours to win. | 8×8 |
+| **Amazons** アマゾン | Move a queen, then shoot an arrow. The side left with no move loses. | 10×10 |
 | **Hex** ヘックス | Join your own two sides with an unbroken chain. A full board always has exactly one winner, so there are no draws — which is why the swap opening is offered. | 11, 13, 19 |
 | **Checkers** チェッカー | Jump the other side's pieces off the board. Capturing is forced, a man crowned partway through a chain stops there, and a king moves both ways. | 8×8 |
 | **Russian Draughts** ロシアチェッカー | Flying kings on 8×8: men take backward, any capture may be chosen, and a man crowned mid-capture takes on as a king. | 8×8 |
