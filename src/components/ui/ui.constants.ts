@@ -179,15 +179,15 @@ export const PANEL_LINK_CLASS = `${PANEL_CLASS} transition-colors hover:border-r
  * browser splits it wherever it likes, which is why this is a pseudo-element
  * and a stacking order rather than nesting.
  */
-export const STRETCHED_LINK = "outline-none after:absolute after:inset-0";
+// Each name is a utility in globals.css that holds the classes the old constant spelled out.
+export const STRETCHED_LINK = "stretched-link";
 
 export const RAISED_LINK = "relative z-10";
 
-export const STRETCHED_HOST =
-  "group/card relative outline-none transition-colors card-focus:ring-2 card-focus:ring-moss";
+export const STRETCHED_HOST = "group/card stretched-host";
 
 /** A bordered card: the border firms under the pointer, the way PANEL_LINK_CLASS does. */
-export const STRETCHED_CARD = `${STRETCHED_HOST} card-hover:border-rule-strong card-focus:border-rule-strong`;
+export const STRETCHED_CARD = "group/card stretched-card";
 
 /**
  * A row in a list, with no border of its own worth firming: it shades under
@@ -195,15 +195,14 @@ export const STRETCHED_CARD = `${STRETCHED_HOST} card-hover:border-rule-strong c
  * border or fill already says something — a green "your move" row — takes
  * STRETCHED_HOST alone, so hovering never paints over what it is saying.
  */
-export const STRETCHED_ROW = `${STRETCHED_HOST} card-hover:bg-shade`;
+export const STRETCHED_ROW = "group/card stretched-row";
 
 /*
  * The round chevron on a card that opens — see CardArrow.tsx for what it is
  * for and why it is drawn at rest. `inside-card-*` variants (globals.css), so it
  * answers to the card it sits in and to nothing around it.
  */
-export const CARD_ARROW_CLASS =
-  "pointer-events-none inline-flex size-7 shrink-0 items-center justify-center rounded-full border border-rule-strong text-ink-soft opacity-50 transition inside-card-hover:border-ink inside-card-hover:bg-ink inside-card-hover:text-paper inside-card-hover:opacity-100 inside-card-focus:border-ink inside-card-focus:bg-ink inside-card-focus:text-paper inside-card-focus:opacity-100";
+export const CARD_ARROW_CLASS = "card-arrow";
 
 /*
  * ONE PAGE SHAPE, ONE HEADING SCALE. John, 2026-09-24, with /players, /about,

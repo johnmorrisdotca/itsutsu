@@ -26,7 +26,7 @@ import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "@/lib/puzzles/puzzles
 import { isPuzzleClock } from "@/lib/puzzles/puzzleClock";
 import { memberNamesOf, ownSolveOf } from "@/lib/puzzles/server/puzzleSolves";
 import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
-import { FUTAGO_DISPLAY, guessesOf, hiddenWordsOf, wordsShown } from "@/lib/puzzles/gomoji/futago";
+import { FUTAGO_DISPLAY, guessesOf, hiddenWordsOf, wordCountOfGivens, wordsShown } from "@/lib/puzzles/gomoji/futago";
 import { wordOfPlay } from "@/lib/puzzles/gomoji/dodgePlay";
 import { isDodgeGivens } from "@/lib/puzzles/gomoji/dodgeSeed";
 import { loadKanaWordsFromModule } from "@/lib/puzzles/gomojiKana/kanaWordsModule";
@@ -127,6 +127,9 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
   const say = await currentSpeaker();
   const copy = puzzleCopy(kind, say.locale);
   const words = kind === "gomoji" || kind === "gomojiKana" || kind === "gomojiMot" || kind === "gomojiWort" || kind === "gomojiPop";
+  // How many words it hid: a Futago's or a Yotsugo's fastest times are their own table, so the link to them names the mode.
+  const wordCount = words ? wordCountOfGivens(solve.givens) : 1;
+  const modeShown = wordCount === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY;
   const { wordStyle } = words ? await preferencesFor() : { wordStyle: undefined };
   const taken = guessesTaken(kind, solve.size, solve.level, solve.givens, found.answer);
   /* Unsolved on a countdown with guesses (or swaps) to spare, or a grid, which has no other way to end unsolved: its clock ran out. */
@@ -285,9 +288,10 @@ export async function PuzzleSolvePage({ kind, solveId, whose }: { kind: PuzzleKi
               {say.say("pset.solve.allTheirs", { name: puzzleName(kind, say.locale) })}
             </Link>
           )}
-          <Link href={puzzleRecordHref(kind, { size: solve.size, level: solve.level as PuzzleLevel, clock: isPuzzleClock(solve.clock) ? solve.clock : null, sort: PUZZLE_RECORD_SORTS.fastest })} className="underline underline-offset-2" data-testid="solve-fastest-here">
+          <Link href={puzzleRecordHref(kind, { size: solve.size, level: solve.level as PuzzleLevel, clock: isPuzzleClock(solve.clock) ? solve.clock : null, words: words ? wordCount : null, sort: PUZZLE_RECORD_SORTS.fastest })} className="underline underline-offset-2" data-testid="solve-fastest-here">
             {say.say("pset.solve.fastestSame", { size: say.locale === "ja" ? sizeLabel : (FASTEST_SAME[sizeLabel] ?? sizeLabel.toLowerCase()) })}
             {timed.ms === null ? "" : say.say("pset.solve.onClock", { clock: timedName })}
+            {words && wordCount !== 1 ? say.say("pset.solve.inMode", { mode: say.pairName(modeShown.label, modeShown.kanji).text }) : ""}
           </Link>
           <Link href={myGamePath(kind)} className="underline underline-offset-2">
             {say.say("pset.solve.allYours", { name: puzzleName(kind, say.locale) })}

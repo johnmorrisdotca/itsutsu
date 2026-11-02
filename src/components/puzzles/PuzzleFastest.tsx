@@ -17,6 +17,9 @@ import { type FastestBoard, fastestKey, fastestSolvesOf } from "@/lib/puzzles/se
 import { namesAndTagsOf } from "@/lib/xp/nameTagsOf";
 import type { NameTag } from "@/lib/xp/nameTag.types";
 import { PUZZLE_RECORD_SORTS, puzzleRecordHref } from "@/lib/puzzles/puzzleRecordAddress";
+import { FUTAGO_DISPLAY } from "@/lib/puzzles/gomoji/futago";
+import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
+import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 
 import { OneSolvePoints } from "./SolvePoints";
 import { SolveTime } from "./SolveTime";
@@ -113,10 +116,24 @@ export function FastestTable({
   const spec = PUZZLE_SPECS[kind];
   const words = spec.helps === false;
   const columns = words ? 6 : 5;
+  /*
+   * A WORD PUZZLE'S TABLES ARE ONE FOR EACH COUNT OF WORDS: a Futago's two words
+   * and a Yotsugo's four are not a race against one word, with a guess more or
+   * several more to spend. One word keeps the row it always had, empty or not;
+   * the others are there once somebody has solved at them.
+   */
+  const modes: readonly WordCount[] = words ? [1, 2, 4] : [1];
   const rowsOn = (clock: PuzzleClock) =>
-    spec.sizes.flatMap((size) => levelsFor(kind, size).map((level) => ({ size, level, clock, key: fastestKey(size, level, clock), at: board.get(fastestKey(size, level, clock)) })));
+    spec.sizes.flatMap((size) =>
+      levelsFor(kind, size).flatMap((level) =>
+        modes.map((count) => {
+          const key = fastestKey(size, level, clock, count);
+          return { size, level, clock, count, key, at: board.get(key) };
+        }),
+      ),
+    );
   // A size the set-up no longer offers keeps its row while somebody holds a time at it, and is not offered as empty.
-  const rows = rowsOn("none").filter((row) => spec.offered.includes(row.size) || row.at !== undefined);
+  const rows = rowsOn("none").filter((row) => (row.count === 1 && spec.offered.includes(row.size)) || row.at !== undefined);
   /*
    * EACH COUNTDOWN IS A TABLE OF ITS OWN (`puzzleClock.ts`): a Rabbit's minute
    * and a solve with no clock are not one race. After the untimed rows, each
@@ -168,17 +185,18 @@ export function FastestTable({
             <>
               {sizeWordIn(row.size, kind, say)} <span className="text-muted">{levelNameOf(row.level, say.locale)}</span>
               {row.clock === "none" ? null : <ClockMark clock={row.clock} />}
+              {row.count === 1 ? null : <ModeMark words={row.count} />}
             </>
           );
           return (
-            <tbody key={row.key} data-testid="puzzle-fastest-row" data-size={row.size} data-level={row.level} data-clock={row.clock}>
+            <tbody key={row.key} data-testid="puzzle-fastest-row" data-size={row.size} data-level={row.level} data-clock={row.clock} data-word-count={words ? row.count : undefined}>
               <tr className="border-t border-rule-strong">
                 <th colSpan={columns} scope="rowgroup" className="pt-2 pb-1 text-left text-xs font-semibold">
                   {row.at === undefined ? (
                     label
                   ) : (
                     <Link
-                      href={puzzleRecordHref(kind, { size: row.size, level: row.level, clock: row.clock, sort: PUZZLE_RECORD_SORTS.fastest })}
+                      href={puzzleRecordHref(kind, { size: row.size, level: row.level, clock: row.clock, words: words ? row.count : null, sort: PUZZLE_RECORD_SORTS.fastest })}
                       className="underline-offset-2 hover:underline"
                       title={say.say("pset.fast.everySolve")}
                       data-testid="puzzle-fastest-every"
@@ -270,6 +288,16 @@ function ClockMark({ clock }: { clock: PuzzleClock }) {
   return (
     <span className="font-normal text-muted" data-testid="puzzle-fastest-clock">
       {" "}· <Paired en={shown.label} kanji={shown.kanji} kanjiClassName="" /> {shown.time}
+    </span>
+  );
+}
+
+/** The count of words a table of a word puzzle was solved at, where it is not one: its name and its kanji. */
+function ModeMark({ words }: { words: 2 | 4 }) {
+  const shown = words === 4 ? YOTSUGO_DISPLAY : FUTAGO_DISPLAY;
+  return (
+    <span className="font-normal text-muted" data-testid="puzzle-fastest-mode">
+      {" "}· <Paired en={shown.label} kanji={shown.kanji} kanjiClassName="" />
     </span>
   );
 }

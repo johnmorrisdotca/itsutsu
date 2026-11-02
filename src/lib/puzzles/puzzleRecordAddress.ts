@@ -1,6 +1,7 @@
 import { historyPath, joinQuery } from "@/lib/gomoku/slugs";
 import { readMonth, readWeek } from "@/lib/history/recordMonth";
 
+import type { WordCount } from "./gomoji/words.types";
 import { PUZZLE_SPECS } from "./puzzles.constants";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "./puzzles.types";
 import { isPuzzleClock } from "./puzzleClock";
@@ -23,6 +24,7 @@ export const PUZZLE_RECORD_PARAMS = {
   size: "size",
   level: "level",
   clock: "clock",
+  words: "words",
   month: "month",
   week: "week",
   sort: "sort",
@@ -40,6 +42,8 @@ export type PuzzleRecordAsked = {
   level: PuzzleLevel | null;
   /** The countdown the solves were played on, "none" included: each clock's fastest table leads to its own. */
   clock: PuzzleClock | null;
+  /** How many words a Gomoji hid, 1, 2 (Futago) or 4 (Yotsugo): each count is a fastest table of its own, so its figure leads to its own solves. Null for any other puzzle and for no filter. */
+  words: WordCount | null;
   /** "2026-09": the solves finished in that month, as the monthly board counts them. */
   month: string | null;
   /** "2026-09-21": the solves finished in the week starting that Monday, UTC, as the weekly board counts them. */
@@ -73,11 +77,14 @@ export function puzzleRecordAsked(kind: PuzzleKind, query: Query): PuzzleRecordA
   const level = one(PUZZLE_RECORD_PARAMS.level) as PuzzleLevel;
   const page = Number(one(PUZZLE_RECORD_PARAMS.page));
   const clock = one(PUZZLE_RECORD_PARAMS.clock);
+  const words = Number(one(PUZZLE_RECORD_PARAMS.words));
   return {
     member: member !== "" && member.length <= MEMBER_MAX ? member : null,
     size: spec.sizes.includes(size) ? size : null,
     level: spec.levels.includes(level) ? level : null,
     clock: isPuzzleClock(clock) ? clock : null,
+    // Only a word puzzle hides words; for any other the filter names nothing and is dropped.
+    words: spec.wordGrid !== undefined && (words === 1 || words === 2 || words === 4) ? words : null,
     month: readMonth(one(PUZZLE_RECORD_PARAMS.month)),
     week: readWeek(one(PUZZLE_RECORD_PARAMS.week)),
     sort: one(PUZZLE_RECORD_PARAMS.sort) === PUZZLE_RECORD_SORTS.fastest ? PUZZLE_RECORD_SORTS.fastest : PUZZLE_RECORD_SORTS.newest,
@@ -92,6 +99,7 @@ export function puzzleRecordHref(kind: PuzzleKind | string, asked: Partial<Puzzl
   if (asked.size) query.set(PUZZLE_RECORD_PARAMS.size, String(asked.size));
   if (asked.level) query.set(PUZZLE_RECORD_PARAMS.level, asked.level);
   if (asked.clock) query.set(PUZZLE_RECORD_PARAMS.clock, asked.clock);
+  if (asked.words) query.set(PUZZLE_RECORD_PARAMS.words, String(asked.words));
   if (asked.month) query.set(PUZZLE_RECORD_PARAMS.month, asked.month);
   if (asked.week) query.set(PUZZLE_RECORD_PARAMS.week, asked.week);
   if (asked.sort === PUZZLE_RECORD_SORTS.fastest) query.set(PUZZLE_RECORD_PARAMS.sort, PUZZLE_RECORD_SORTS.fastest);

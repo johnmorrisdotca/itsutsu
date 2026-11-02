@@ -13,6 +13,9 @@ import { monthWords, weekWords } from "@/lib/history/recordMonth";
 import { PUZZLE_RECORD_SORTS, puzzleRecordAsked, puzzleRecordHref, type PuzzleRecordAsked } from "@/lib/puzzles/puzzleRecordAddress";
 import { PUZZLE_CLOCK_DISPLAY, PUZZLE_KINDS } from "@/lib/puzzles/puzzles.constants";
 import { levelLabel, puzzleName } from "@/lib/puzzles/puzzleCopy";
+import { FUTAGO_DISPLAY } from "@/lib/puzzles/gomoji/futago";
+import { YOTSUGO_DISPLAY } from "@/lib/puzzles/gomoji/yotsugo";
+import type { WordCount } from "@/lib/puzzles/gomoji/words.types";
 import { sizeWordIn } from "@/lib/puzzles/sizeWord";
 import type { PuzzleClock, PuzzleKind } from "@/lib/puzzles/puzzles.types";
 import { puzzleRecordOf, PUZZLE_RECORD_PAGE } from "@/lib/puzzles/server/puzzleRecord";
@@ -159,6 +162,7 @@ function chipsOf(kind: PuzzleKind, asked: PuzzleRecordAsked, whose: string | nul
     asked.size === null ? null : { key: "size", label: sizeWordIn(asked.size, kind, say), without: off({ size: null }) },
     asked.level === null ? null : { key: "level", label: levelLabel(asked.level, say.locale), without: off({ level: null }) },
     asked.clock === null ? null : { key: "clock", label: clockWords(asked.clock, say), without: off({ clock: null }) },
+    asked.words === null ? null : { key: "words", label: wordsWords(asked.words, say), without: off({ words: null }) },
     asked.month === null ? null : { key: "month", label: say.say("record.finishedIn", { when: monthWords(asked.month, say) }), without: off({ month: null }) },
     asked.week === null ? null : { key: "week", label: say.say("record.finishedIn", { when: weekWords(asked.week, say) }), without: off({ week: null }) },
     asked.sort === PUZZLE_RECORD_SORTS.fastest ? { key: "sort", label: say.say("pset.rec.solvedFastest"), without: off({ sort: PUZZLE_RECORD_SORTS.newest }) } : null,
@@ -171,4 +175,10 @@ function clockWords(clock: PuzzleClock, say: Speaker): string {
   const shown = PUZZLE_CLOCK_DISPLAY[clock];
   if (shown.ms === null) return say.locale === "ja" ? "時計なし" : shown.label;
   return `${say.pairsWithKanji ? `${shown.label} ${shown.kanji}` : shown.kanji} ${shown.time}`;
+}
+
+/** The count of words a Gomoji hid as a chip says it: "One word 一語", "Futago 双子", "Yotsugo 四つ子". */
+function wordsWords(words: WordCount, say: Speaker): string {
+  const shown = words === 4 ? YOTSUGO_DISPLAY : words === 2 ? FUTAGO_DISPLAY : { label: say.say("pword.futago.oneWord"), kanji: "一語" };
+  return say.pairName(shown.label, shown.kanji).text;
 }

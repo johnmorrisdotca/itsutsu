@@ -1,5 +1,7 @@
 import "server-only";
 
+import { Prisma } from "@prisma/client";
+
 import { bestBefore, tellSolve } from "@/lib/feed/siteNewsWrite";
 import { prisma } from "@/lib/prisma";
 import { HIDES_TEST_MEMBERS, hiddenMemberIds, shownSolveWhere, type TestModeReader } from "@/lib/testMode/testMode";
@@ -8,6 +10,7 @@ import { pointsFor } from "../puzzlePoints";
 import { PUZZLE_SPECS } from "../puzzles.constants";
 import type { PuzzleClock, PuzzleKind, PuzzleLevel } from "../puzzles.types";
 import { guessesTaken, type GuessesTaken } from "../gomoji/guessesTaken";
+import type { WordCount } from "../gomoji/words.types";
 import { solveHelpOf, type SolveHelp } from "../solveHelp";
 
 /**
@@ -94,20 +97,40 @@ export type FastestSolve = {
 /**
  * The fastest solves at each size, level and clock of a kind, as a map keyed
  * by `fastestKey`, and how many solves each has. Each clock is a table of its
- * own: a Rabbit's minute and an untimed solve are not one race.
+ * own: a Rabbit's minute and an untimed solve are not one race. So is each
+ * count of words a Gomoji hides: a Futago's two and a Yotsugo's four are not
+ * a race against one word.
  */
 export type FastestBoard = Map<string, { fastest: FastestSolve[]; solves: number }>;
 
-export function fastestKey(size: number, level: string, clock: string): string {
-  return `${size}:${level}:${clock}`;
+/** The key of one table of the board. One word, which is every other puzzle's only way, keeps the key it always had. */
+export function fastestKey(size: number, level: string, clock: string, words: WordCount = 1): string {
+  return [size, level, clock, ...(words === 1 ? [] : [words])].join(":");
 }
 
 export const FASTEST_SHOWN = 3;
 
+/**
+ * How many words a word puzzle's givens hide, said by the "+" that joins them
+ * (`futago.ts`): none for one word, one for a Futago's two, three for a
+ * Yotsugo's four. A SQL expression, so a board can be cut by mode in the
+ * database with no new column; `wordCountOfGivens` reads the same joins.
+ */
+const JOINS = Prisma.sql`(length("givens") - length(replace("givens", '+', '')))`;
+
+/** The word count a number of joins means, or null for a number no puzzle was offered. */
+function wordsOfJoins(joins: number): WordCount | null {
+  return joins === 0 ? 1 : joins === 1 ? 2 : joins === 3 ? 4 : null;
+}
+
+type FastestRow = Omit<FastestSolve, "guesses"> & { givens: string; answer: string | null };
+
 export async function fastestSolvesOf(kind: PuzzleKind, testMode: TestModeReader = HIDES_TEST_MEMBERS): Promise<FastestBoard> {
   const spec = PUZZLE_SPECS[kind];
+  const hidden = await hiddenMemberIds(testMode);
+  if (spec.wordGrid !== undefined) return fastestWordSolvesOf(kind, hidden);
   const board: FastestBoard = new Map();
-  const shown = shownSolveWhere(await hiddenMemberIds(testMode));
+  const shown = shownSolveWhere(hidden);
   const counts = await prisma.puzzleSolve.groupBy({
     by: ["size", "level", "clock"],
     where: { kind, solved: true, ...shown },
@@ -131,6 +154,46 @@ export async function fastestSolvesOf(kind: PuzzleKind, testMode: TestModeReader
       board.get(key)!.fastest = rows.map(({ givens, answer, ...row }) => ({ ...row, guesses: guessesTaken(kind, Number(size), level, givens, answer) }));
     }),
   );
+  return board;
+}
+
+/**
+ * A WORD PUZZLE'S BOARD, A TABLE FOR EACH COUNT OF WORDS. A Yotsugo (four
+ * words, nine guesses at hard) was ranked against one-word times. The count is
+ * in the givens (the "+" that joins the words), so two reads cut the board by
+ * it with no column: one for how many solves each table has, and one window
+ * query for the three fastest of each, however many tables there are.
+ */
+async function fastestWordSolvesOf(kind: PuzzleKind, hidden: readonly string[]): Promise<FastestBoard> {
+  const board: FastestBoard = new Map();
+  const spec = PUZZLE_SPECS[kind];
+  const notHidden = hidden.length === 0 ? Prisma.empty : Prisma.sql` AND "memberId" NOT IN (${Prisma.join([...hidden])})`;
+  const counts = await prisma.$queryRaw<{ size: number; level: string; clock: string; joins: number; solves: number }[]>`
+    SELECT "size", "level", "clock", ${JOINS} AS "joins", COUNT(*)::int AS "solves"
+    FROM "PuzzleSolve"
+    WHERE "kind" = ${kind} AND "solved" = true${notHidden}
+    GROUP BY "size", "level", "clock", ${JOINS}
+  `;
+  for (const row of counts) {
+    const words = wordsOfJoins(Number(row.joins));
+    if (words !== null) board.set(fastestKey(row.size, row.level, row.clock, words), { fastest: [], solves: Number(row.solves) });
+  }
+  const rows = await prisma.$queryRaw<(FastestRow & { size: number; level: string; clock: string; joins: number})[]>`
+    SELECT "id", "memberId", "elapsedMs", "finishedAt", "checksAllowed", "hintsUsed", "points", "givens", "answer", "size", "level", "clock", "joins" FROM (
+      SELECT "id", "memberId", "elapsedMs", "finishedAt", "checksAllowed", "hintsUsed", "points", "givens", "answer", "size", "level", "clock", ${JOINS} AS "joins",
+        ROW_NUMBER() OVER (PARTITION BY "size", "level", "clock", ${JOINS} ORDER BY "elapsedMs" ASC, "finishedAt" ASC) AS "place"
+      FROM "PuzzleSolve"
+      WHERE "kind" = ${kind} AND "solved" = true AND "helped" IS NULL${notHidden}
+    ) AS "ranked"
+    WHERE "place" <= ${FASTEST_SHOWN}
+    ORDER BY "elapsedMs" ASC, "finishedAt" ASC
+  `;
+  // Unhelped only, above: a helped solve is solved, and no time to beat.
+  for (const { givens, answer, size, level, clock, joins, ...row } of rows) {
+    const words = wordsOfJoins(Number(joins));
+    const table = words === null || !spec.sizes.includes(Number(size)) ? undefined : board.get(fastestKey(Number(size), level, clock, words));
+    if (table !== undefined) table.fastest.push({ ...row, guesses: guessesTaken(kind, Number(size), level, givens, answer) });
+  }
   return board;
 }
 

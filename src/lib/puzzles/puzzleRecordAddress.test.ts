@@ -8,14 +8,14 @@ import { puzzleRecordAsked, puzzleRecordHref } from "./puzzleRecordAddress";
 describe("a puzzle's record, as an address", () => {
   it("is the puzzle's history, with nothing asked", () => {
     expect(puzzleRecordHref("hiddenStones")).toBe("/games/hidden-stones/history");
-    expect(puzzleRecordAsked("hiddenStones", {})).toEqual({ member: null, size: null, level: null, clock: null, month: null, week: null, sort: "newest", page: 1 });
+    expect(puzzleRecordAsked("hiddenStones", {})).toEqual({ member: null, size: null, level: null, clock: null, words: null, month: null, week: null, sort: "newest", page: 1 });
   });
 
   it("carries who by id, and the size, level, month and order a board counted", () => {
-    const href = puzzleRecordHref("hiddenStones", { member: "m-ann", size: 5, level: "easy", clock: null, month: "2026-09", week: null, sort: "fastest", page: 2 });
+    const href = puzzleRecordHref("hiddenStones", { member: "m-ann", size: 5, level: "easy", clock: null, words: null, month: "2026-09", week: null, sort: "fastest", page: 2 });
     expect(href).toBe("/games/hidden-stones/history?member=m-ann&size=5&level=easy&month=2026-09&sort=fastest&page=2");
     const query = Object.fromEntries(new URL(`https://x${href}`).searchParams);
-    expect(puzzleRecordAsked("hiddenStones", query)).toEqual({ member: "m-ann", size: 5, level: "easy", clock: null, month: "2026-09", week: null, sort: "fastest", page: 2 });
+    expect(puzzleRecordAsked("hiddenStones", query)).toEqual({ member: "m-ann", size: 5, level: "easy", clock: null, words: null, month: "2026-09", week: null, sort: "fastest", page: 2 });
   });
 
   it("carries a clock, so a clock's fastest table leads to exactly its solves", () => {
@@ -26,13 +26,24 @@ describe("a puzzle's record, as an address", () => {
     expect(puzzleRecordAsked("numberPlace", { clock: "snail" }).clock).toBeNull();
   });
 
+  it("carries how many words a Gomoji hid, so each mode's fastest table leads to exactly its solves", () => {
+    const href = puzzleRecordHref("gomoji", { size: 5, level: "hard", clock: "none", words: 4, sort: "fastest" });
+    expect(href).toBe("/games/gomoji/history?size=5&level=hard&clock=none&words=4&sort=fastest");
+    expect(puzzleRecordAsked("gomoji", Object.fromEntries(new URL(`https://x${href}`).searchParams)).words).toBe(4);
+    expect(puzzleRecordAsked("gomoji", { words: "2" }).words).toBe(2);
+    expect(puzzleRecordAsked("gomoji", { words: "1" }).words).toBe(1);
+    // Three words is nobody's puzzle, and a puzzle that hides no words has no such filter.
+    expect(puzzleRecordAsked("gomoji", { words: "3" }).words).toBeNull();
+    expect(puzzleRecordAsked("numberPlace", { words: "2" }).words).toBeNull();
+  });
+
   it("leaves the defaults out, so one set has one address", () => {
-    expect(puzzleRecordHref("numberPlace", { member: null, size: null, level: null, clock: null, month: null, week: null, sort: "newest", page: 1 })).toBe("/games/number-place/history");
+    expect(puzzleRecordHref("numberPlace", { member: null, size: null, level: null, clock: null, words: null, month: null, week: null, sort: "newest", page: 1 })).toBe("/games/number-place/history");
   });
 
   it("drops a filter that names nothing this puzzle has, rather than claiming a narrowing it did not make", () => {
     const asked = puzzleRecordAsked("numberPlace", { size: "7", level: "impossible", month: "2026-13", week: "2026-09-22", sort: "slowest", page: "0", member: "x".repeat(65) });
-    expect(asked).toEqual({ member: null, size: null, level: null, clock: null, month: null, week: null, sort: "newest", page: 1 });
+    expect(asked).toEqual({ member: null, size: null, level: null, clock: null, words: null, month: null, week: null, sort: "newest", page: 1 });
   });
 });
 

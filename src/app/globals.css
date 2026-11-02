@@ -144,6 +144,32 @@
 }
 
 /*
+ * THE CARD'S LONG CLASS LISTS, WRITTEN ONCE. A /games with 132 cards and 132
+ * chevrons carried these strings 264 times in the HTML and again in the page's
+ * data, 216 KB of the page's 805 KB (measured 2026-11-02), so the lists are
+ * named here and `ui.constants.ts` names them in the markup. Each says what the
+ * constant of the same name says; `group/card` stays a literal class on the
+ * element, because the `card-*` and `inside-card-*` variants look for it. The
+ * chevron's `size-7` is important because it always won against a caller's
+ * `size-6` (the order the old class list sorted into), and still does.
+ */
+@utility stretched-host {
+  @apply relative outline-none transition-colors card-focus:ring-2 card-focus:ring-moss;
+}
+@utility stretched-card {
+  @apply relative outline-none transition-colors card-focus:ring-2 card-focus:ring-moss card-hover:border-rule-strong card-focus:border-rule-strong;
+}
+@utility stretched-row {
+  @apply relative outline-none transition-colors card-focus:ring-2 card-focus:ring-moss card-hover:bg-shade;
+}
+@utility stretched-link {
+  @apply outline-none after:absolute after:inset-0;
+}
+@utility card-arrow {
+  @apply pointer-events-none inline-flex size-7! shrink-0 items-center justify-center rounded-full border border-rule-strong text-ink-soft opacity-50 transition inside-card-hover:border-ink inside-card-hover:bg-ink inside-card-hover:text-paper inside-card-hover:opacity-100 inside-card-focus:border-ink inside-card-focus:bg-ink inside-card-focus:text-paper inside-card-focus:opacity-100;
+}
+
+/*
  * The page's own accent, for a mark drawn ROUND a light surface rather than on
  * it — a chosen tile's ring stands on the tray, which does turn charcoal. Set
  * on :root alone, it keeps the page's value inside a `surface-light`, where
