@@ -918,4 +918,94 @@ export const JA_DRAFTED_CTABLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "{name} back",
     review: AGENT_READ,
   },
+  "ctable.length.stock": {
+    text: "ストック{count}枚ずつ",
+    back: "{count} in each stock",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.turnStatus": {
+    text: "札を山に積んで、最後に1枚を捨てて番を終えます。",
+    back: "Lay cards on the piles, then discard one to end your turn.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.playOn": {
+    text: "山{pile}に積む",
+    back: "Play on pile {pile}",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.discardOn": {
+    text: "捨て札{pile}に捨てる",
+    back: "Discard on pile {pile}",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.stockOn": {
+    text: "ストックの{card}を山{pile}に積む",
+    back: "Stock {card} on pile {pile}",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.discardPlay": {
+    text: "捨て札{from}の{card}を山{pile}に積む",
+    back: "Discard {from} ({card}) on pile {pile}",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.pass": {
+    text: "パスする",
+    back: "Pass",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.scoreWords": {
+    text: "ストックの残り枚数、少ないほうが勝ち",
+    back: "Stock cards left, fewest wins",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.cards.one": {
+    text: "{count}枚",
+    back: "{count} card",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.cards.other": {
+    text: "{count}枚",
+    back: "{count} cards",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.pile": {
+    text: "山{n}",
+    back: "Pile {n}",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.discards": {
+    text: "捨て札{n}",
+    back: "Discard {n}",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.draw": {
+    text: "引く札：{n}枚",
+    back: "Draw pile: {n}",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.stockTop": {
+    text: "ストック：{n}枚",
+    back: "Stock: {n}",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.wild": {
+    text: "ワイルド",
+    back: "Wild",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.emptied": {
+    text: "{name}がストックの最後の札を出しました。",
+    back: "{name} played the last card of their stock.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.stuck": {
+    text: "誰も動けなくなりました。ストックの残りがいちばん少ない人の勝ちです。",
+    back: "Nobody could move: the fewest stock cards left wins.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "ctable.stackUp.stuckDraw": {
+    text: "誰も動けなくなり、ストックの枚数も同じです。引き分けです。",
+    back: "Nobody could move, and the stock piles are level: a draw.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
 };

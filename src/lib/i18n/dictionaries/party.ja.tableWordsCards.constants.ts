@@ -241,4 +241,24 @@ export const PARTY_TABLE_WORDS_JA_CARDS = {
       ],
     ],
   },
+  stackUp: {
+    turn: [
+      "卓の上の行に、誰の番かが表示されます。手札の札をタップして選び、積み山のボタンか、番を終える捨て札のボタンを押します。ストックの札と、自分の捨て札の山のいちばん上の札は、それぞれのボタンで出します。ボタンには、その札、どこから出すか、どの山に積むかが書かれています。",
+      "The line over the table says whose turn it is. Tap a card in your hand to choose it, then press the pile to build on, or the discard pile to end your turn on. Your stock card and the top of each of your discard piles are pressed from their own buttons: each says the card, where it comes from and the pile it goes on.",
+    ],
+    house: [
+      "番と番のあいだ、手札は隠れ、端末を回すよう求められます。ほかのカードゲームと同じです。全員のストックの山には、いちばん上の札と枚数が表示され、4つの積み山には、上の札と枚数が、自分の4つの捨て札の山には、上の札が表示されます。",
+      "Your hand is hidden between turns and the device is handed over, as at every card table here. Everybody's stock pile shows its top card and its count, the four building piles show the card on top and how many are in them, and your own four discard piles show their top cards.",
+    ],
+    more: [
+      [
+        "デッキはこの卓専用です。1から12の数字が12枚ずつと、ワイルドが18枚で、スートはありません。",
+        "The deck is the table's own: twelve of each number from 1 to 12 and eighteen wilds, with no suits.",
+      ],
+      [
+        "引ける札がなく、1周のあいだ何も出されなかったときは、卓がゲームを終わらせます。ストックの残りがいちばん少ない人の勝ちです。ゲーム本来のルールには、この終わり方はありません。",
+        "A game that nobody can move on, with nothing left to draw and a whole round with nothing played, is ended by the table: the person with the fewest stock cards left wins. The game's own rules have no such ending.",
+      ],
+    ],
+  },
 } as const satisfies JaOverlay<Partial<typeof PARTY_TABLE_WORDS>>;

@@ -621,6 +621,7 @@ const SURVEY: Survey[] = [
   table("cribbage", "cards-start"),
   table("oh-hell", "cards-start"),
   table("war", "cards-start"),
+  table("stack-up", "cards-start"),
   table("big-two", "cards-start"),
   table("president", "cards-start"),
   table("go-fish", "cards-start"),

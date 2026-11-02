@@ -77,13 +77,13 @@ importers:
         version: 1.2.1(react@19.2.8)
       '@johnmorrisdotca/tenka':
         specifier: 2.1.1
-        version: 2.1.1(@johnmorrisdotca/korokoro@1.15.1(react@19.2.8))(@johnmorrisdotca/toranpu@2.14.1(react@19.2.8))(react@19.2.8)
+        version: 2.1.1(@johnmorrisdotca/korokoro@1.15.1(react@19.2.8))(@johnmorrisdotca/toranpu@file:../../toranpu/johnmorrisdotca-toranpu-stack-up.tgz(react@19.2.8))(react@19.2.8)
       '@johnmorrisdotca/tobiishi':
         specifier: 0.2.2
         version: 0.2.2
       '@johnmorrisdotca/toranpu':
-        specifier: 2.14.1
-        version: 2.14.1(react@19.2.8)
+        specifier: file:../../toranpu/johnmorrisdotca-toranpu-stack-up.tgz
+        version: file:../../toranpu/johnmorrisdotca-toranpu-stack-up.tgz(react@19.2.8)
       '@johnmorrisdotca/tsunagi':
         specifier: 1.6.1
         version: 1.6.1
@@ -582,6 +582,7 @@ packages:
 
   '@johnmorrisdotca/tenka@2.1.1':
     resolution: {integrity: sha512-FM+fiZN53ETq9WBrBDUCfeJoJLOSAjC+Udg2BVvOBbHgPk/ZVnXQcpbI/CjtM0vw/+Z5mUtKx3HwSasx6UPevA==}
+    version: 2.1.1
     engines: {node: '>=22'}
     peerDependencies:
       '@johnmorrisdotca/korokoro': '>=1.15.0 <2'
@@ -599,8 +600,9 @@ packages:
     resolution: {integrity: sha512-zgG2Zjo7UuoTo72Wv1V94WW5TfxyW84k7P0HOyEugSek8gnJKH96LNnYBha9qXMHZlhml74dHGoSpQUBqJfaIw==}
     engines: {node: '>=22'}
 
-  '@johnmorrisdotca/toranpu@2.14.1':
-    resolution: {integrity: sha512-vgr6S8hUXR9/WAhN3xOHKazO92AJtMxpmDQqnue/vUuSH3LXfTjRhDyen2aTRhO7t805XMpKByBv0KUUY0FE3A==}
+  '@johnmorrisdotca/toranpu@file:../../toranpu/johnmorrisdotca-toranpu-stack-up.tgz':
+    resolution: {integrity: sha512-dvc1E4OgblP1eBI6DGyGilKej6C+YaF1p1jBB0F09jKwXrCyFWd6Dkc1ukJNzyrN1MJ1k+kmweiC3MdrlRXqCQ==, tarball: file:../../toranpu/johnmorrisdotca-toranpu-stack-up.tgz}
+    version: 2.15.1
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -3261,15 +3263,15 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/tenka@2.1.1(@johnmorrisdotca/korokoro@1.15.1(react@19.2.8))(@johnmorrisdotca/toranpu@2.14.1(react@19.2.8))(react@19.2.8)':
+  '@johnmorrisdotca/tenka@2.1.1(@johnmorrisdotca/korokoro@1.15.1(react@19.2.8))(@johnmorrisdotca/toranpu@file:../../toranpu/johnmorrisdotca-toranpu-stack-up.tgz(react@19.2.8))(react@19.2.8)':
     optionalDependencies:
       '@johnmorrisdotca/korokoro': 1.15.1(react@19.2.8)
-      '@johnmorrisdotca/toranpu': 2.14.1(react@19.2.8)
+      '@johnmorrisdotca/toranpu': file:../../toranpu/johnmorrisdotca-toranpu-stack-up.tgz(react@19.2.8)
       react: 19.2.8
 
   '@johnmorrisdotca/tobiishi@0.2.2': {}
 
-  '@johnmorrisdotca/toranpu@2.14.1(react@19.2.8)':
+  '@johnmorrisdotca/toranpu@file:../../toranpu/johnmorrisdotca-toranpu-stack-up.tgz(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 

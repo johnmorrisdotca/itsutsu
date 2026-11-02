@@ -171,4 +171,12 @@ export const PARTY_TABLE_WORDS: Record<PartyKind, { turn: string; house: string;
       "The turn limit is the table's own, so that a game always ends: when it runs out, the player with more cards wins.",
     ],
   },
+  stackUp: {
+    turn: "The line over the table says whose turn it is. Tap a card in your hand to choose it, then press the pile to build on, or the discard pile to end your turn on. Your stock card and the top of each of your discard piles are pressed from their own buttons: each says the card, where it comes from and the pile it goes on.",
+    house: "Your hand is hidden between turns and the device is handed over, as at every card table here. Everybody's stock pile shows its top card and its count, the four building piles show the card on top and how many are in them, and your own four discard piles show their top cards.",
+    more: [
+      "The deck is the table's own: twelve of each number from 1 to 12 and eighteen wilds, with no suits.",
+      "A game that nobody can move on, with nothing left to draw and a whole round with nothing played, is ended by the table: the player with the fewest stock cards left wins. The game's own rules have no such ending.",
+    ],
+  },
 };

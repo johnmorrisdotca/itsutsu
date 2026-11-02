@@ -342,7 +342,7 @@ export const GAME_FAMILIES: GameFamily[] = [
     title: "Table cards",
     kanji: "場札",
     blurb: "Card games for a table, played a card at a time with a computer in any empty seat: take none of the hearts, bid the tricks you will take, peg your way to 121 at cribbage, turn your cards over at War, or match the colour or the number to be first out of cards at Hitotsu.",
-    games: ["hearts", "spades", "euchre", "ohHell", "cribbage", "war", "hitotsu"],
+    games: ["hearts", "spades", "euchre", "ohHell", "cribbage", "war", "stackUp", "hitotsu"],
     notOnSetUp:
       "A table card game is played by a table of people and computers on one device, or on several for Hitotsu, set up from the game's own page; the set-up screen makes a game between two seats.",
   },

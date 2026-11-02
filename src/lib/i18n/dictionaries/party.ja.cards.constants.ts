@@ -445,4 +445,41 @@ export const PARTY_COPY_JA_CARDS = {
     ],
     review: AGENT_READ,
   },
+  stackUp: {
+    tagline: [
+      "共通の4つの山を1から12まで積み上げて、自分のストックの山を最初に出しきりましょう。",
+      "Build four shared piles from 1 up to 12, and be the first to play out your own stock pile.",
+    ],
+    origin: [
+      "「スパイト・アンド・マリス」という、2人以上で遊ぶ一人遊びの系統のゲームです。20世紀の初めに北アメリカに伝わり、その後さまざまな箱入りの形で売られてきて、その中には、数字だけの専用のデッキを使うものもあります。段積みは、この系統の基本のルールを、専用のデッキで遊びます。1から12の数字が12枚ずつと、ワイルドが18枚です。",
+      "A game of the Spite and Malice family of patience games for two or more, which came to North America in the early twentieth century and has been sold in many boxed forms since, one of them with a numbered deck of its own. Stack Up plays the family's plain rules with a deck of its own: twelve of each number from 1 to 12, and eighteen wilds.",
+    ],
+    rules: [
+      [
+        "2〜6人で遊びます。1人ずつ、ストックの山を配ります。選んだ10枚、15枚または20枚で、いちばん上の1枚だけが表向きです。残りの札は、引く札の山になります。",
+        "Two to six people play. Each is dealt a stock pile, of the 10, 15 or 20 cards chosen, face down but for the top card. The rest of the cards are the draw pile.",
+      ],
+      [
+        "真ん中に、空の積み山が4つあります。山は、1枚ずつ、1から12まで積み上げます。1で始まり、次は2、というように続きます。ワイルドは、その山が次に欲しい数字の代わりになります。12まで積んだ山はわきにどけ、引く札がなくなったら、どけた山を混ぜて、引く札の山に戻します。",
+        "Four empty building piles stand in the middle. A pile is built one card at a time from 1 up to 12: a 1 starts it, then a 2, and so on. A wild takes the place of whatever number the pile wants next. A pile that reaches 12 is set aside, and the set-aside piles are shuffled back into the draw pile when it runs out.",
+      ],
+      [
+        "自分の番には、まず、手札が5枚になるまで引きます。それから、積み山に、好きなだけ札を出します。出せる札は、手札、ストックのいちばん上の札、4つある自分の捨て札の山のいちばん上の札です。手札の最後の1枚を出したら、さらに5枚引いて、続けます。",
+        "On your turn, first draw up to five cards. Then lay cards on the building piles as you like: from your hand, from the top card of your stock, or from the top card of any of your four discard piles. If you lay the last card of your hand, draw five more and go on.",
+      ],
+      [
+        "番の終わりは、手札から1枚を、自分の4つの捨て札の山のどれかに置きます。捨て札の山は自分だけのもので、出せるのはいちばん上の札だけです。どう積むかで、あとで出せる札が決まります。",
+        "End your turn by putting one card from your hand on one of your own four discard piles. Those piles are yours alone: only their top cards can be played, so how you stack them decides what you can reach later.",
+      ],
+      [
+        "自分のストックの山の最後の1枚を、最初に出した人の勝ちです。引ける札がなく、全員が1周のあいだ何も出せなかったときは、そこでゲームが終わり、ストックの残りがいちばん少ない人の勝ちです。同じ枚数なら、勝ちを分け合います。",
+        "The first person to play the last card of their stock pile wins. If no card can be drawn and nobody has played anything for a whole round, the game ends there and the person with the fewest stock cards left wins; equal counts share the win.",
+      ],
+    ],
+    board: [
+      "2〜6人で、誰でもコンピュータにできます。1人で残りを相手にしても、全員で1台を囲んでもかまいません。ストックの山の枚数を選びます。短くなら10枚、ふつうは15枚、長くなら20枚です。",
+      "Two to six people, any of whom may be a computer: one person against the rest, or everybody round one device. Choose the size of the stock piles: 10 for a quick game, 15 for the usual one, or 20 for a long one.",
+    ],
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
 } as const satisfies Record<CardGameKind, PartyCopyJa>;

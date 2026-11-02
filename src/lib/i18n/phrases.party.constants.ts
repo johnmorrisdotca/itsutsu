@@ -39,6 +39,7 @@ export const PHRASES_PARTY = {
   "party.rules.offerOverRounds": "over {count} rounds",
   "party.rules.offerGoFish": "in one deal, until every book is down",
   "party.rules.offerWar": "for {count} turns at most",
+  "party.rules.offerStackUp": "with a stock pile of {sizes} cards each",
   "party.rules.played": "Played {words}. {board}",
   "party.rules.forPlayers": "For {players}, passing one phone or tablet round the table.",
   "party.rules.kept": "The game is kept in the browser it is played in, after every move: close the tab, answer a call, and it is there when you come back, waiting on My games under Pass and play.",

@@ -19,7 +19,7 @@ import type { PartyTable, PartyTableGameProps } from "./party.types";
 import { TenkaCard } from "./tenka/TenkaCard";
 import { TenkaOffer } from "./tenka/TenkaOffer";
 import { TenkaTable } from "./tenka/TenkaTable";
-import { BigTwoCard, BigTwoOffer, BigTwoTable, CrazyEightsCard, CrazyEightsOffer, CrazyEightsTable, CribbageCard, CribbageOffer, CribbageTable, EuchreCard, EuchreOffer, EuchreTable, GinRummyCard, GinRummyOffer, GinRummyTable, GoFishCard, GoFishOffer, GoFishTable, HeartsCard, HeartsOffer, HeartsTable, OhHellCard, OhHellOffer, OhHellTable, PresidentCard, PresidentOffer, PresidentTable, SpadesCard, SpadesOffer, SpadesTable, WarCard, WarOffer, WarTable } from "./cards/cardTableClient";
+import { BigTwoCard, BigTwoOffer, BigTwoTable, CrazyEightsCard, CrazyEightsOffer, CrazyEightsTable, CribbageCard, CribbageOffer, CribbageTable, EuchreCard, EuchreOffer, EuchreTable, GinRummyCard, GinRummyOffer, GinRummyTable, GoFishCard, GoFishOffer, GoFishTable, HeartsCard, HeartsOffer, HeartsTable, OhHellCard, OhHellOffer, OhHellTable, PresidentCard, PresidentOffer, PresidentTable, SpadesCard, SpadesOffer, SpadesTable, WarCard, WarOffer, WarTable, StackUpCard, StackUpOffer, StackUpTable } from "./cards/cardTableClient";
 import type { CardGameKind } from "@/lib/cardGames/cardGames.constants";
 import { TrainCardClient, TrainGameClient } from "./trainClient";
 import { TrainOffer } from "./TrainOffer";
@@ -147,6 +147,7 @@ export const PARTY_KIND_TABLES: Record<PartyKind, PartyTable & { Card: Component
   cribbage: cardTable("cribbage", CribbageTable, CribbageOffer, CribbageCard),
   ohHell: cardTable("ohHell", OhHellTable, OhHellOffer, OhHellCard),
   war: cardTable("war", WarTable, WarOffer, WarCard),
+  stackUp: cardTable("stackUp", StackUpTable, StackUpOffer, StackUpCard),
 };
 
 /** A card game's row: the pass-and-play title every table shares, its own lead, and its three components. */

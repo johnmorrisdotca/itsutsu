@@ -23,6 +23,7 @@ export {
   OH_HELL_DEALS,
   PRESIDENT_ROUNDS,
   SPADES_SIZES,
+  STACK_UP_SIZES,
   WAR_ROUNDS,
 } from "@johnmorrisdotca/toranpu";
 
@@ -39,6 +40,7 @@ export const CARD_GAME_LIST: readonly CardGameKind[] = [
   CARD_GAME_KINDS.president,
   CARD_GAME_KINDS.ginRummy,
   CARD_GAME_KINDS.war,
+  CARD_GAME_KINDS.stackUp,
 ];
 
 export const CARD_GAME_SPECS: Record<CardGameKind, PartySpec> = {

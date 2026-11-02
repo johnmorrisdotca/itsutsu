@@ -133,3 +133,25 @@ describe("war at the party table", () => {
     if (at.ended === "limit") expect(warEnding(at, name, EN).line).toMatch(/turns have run out/);
   });
 });
+
+describe("stack up at the party table", () => {
+  const rules = CARD_GAME_RULES.stackUp;
+  const names = ["Ann", "Ben", "Cy"];
+
+  it("is a table of two to six, with a stock pile of 10, 15 or 20 cards, 15 the usual", () => {
+    expect(PARTY_SPECS.stackUp.sizes).toEqual([10, 15, 20]);
+    expect(PARTY_SPECS.stackUp.defaultSize).toBe(15);
+    expect(PARTY_SPECS.stackUp.fewestPlayers).toBe(2);
+    expect(PARTY_SPECS.stackUp.mostPlayers).toBe(6);
+    for (const size of PARTY_SPECS.stackUp.sizes) expect(rules.start(size, names, undefined, 1)).not.toBeNull();
+    expect(rules.start(12, names, undefined, 1)).toBeNull();
+  });
+
+  it("is played out by its computers, kept as text and read back as the same game", () => {
+    let game = rules.start(10, names, undefined, 5, [true, true, true])!;
+    for (let step = 0; step < 5000 && !rules.over(game); step += 1) game = rules.play(game, rules.computer(game))!;
+    expect(rules.over(game)).toBe(true);
+    expect(rules.winners(game).length).toBeGreaterThan(0);
+    expect(rules.decode(rules.encode(game))).toEqual(game);
+  });
+});

@@ -156,6 +156,11 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "for at most {count} turns",
     review: AGENT_READ,
   },
+  "party.rules.offerStackUp": {
+    text: "ストックの山は、{sizes}枚ずつ",
+    back: "stock piles of {sizes} cards each",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
   "party.rules.played": {
     text: "{words}遊びます。{board}",
     back: "It is played {words}. {board}",
