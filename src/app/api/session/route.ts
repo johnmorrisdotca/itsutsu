@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { getServerSession } from "next-auth";
 
@@ -107,10 +107,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
 
     const parsed = signInSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Invalid sign-in.");
+    if (!parsed.success) return badRequest("err.session.invalid");
 
     /*
      * Rate limited hard, and keyed per address rather than per code, because
@@ -199,7 +199,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not sign in.");
+    return serverError("err.session.failed");
   }
 }
 
@@ -228,10 +228,7 @@ const GOOGLE_COOKIES = [
 ];
 
 function refused(): NextResponse {
-  return NextResponse.json(
-    { error: "That code was not accepted." },
-    { status: 401, headers: { "Cache-Control": "no-store" } },
-  );
+  return refuse(401, "err.session.codeNotAccepted", undefined, { headers: { "Cache-Control": "no-store" } });
 }
 
 /**
@@ -242,7 +239,7 @@ async function grant(session: Session, days: number, welcome = false): Promise<N
   const token = await signSession(session);
   if (token === null) {
     // No AUTH_SECRET: refuse rather than hand out a session nothing can verify.
-    return serverError("This deployment cannot issue sessions.");
+    return serverError("err.session.cannotIssue");
   }
 
   const response = NextResponse.json(

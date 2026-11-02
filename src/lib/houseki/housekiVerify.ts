@@ -3,6 +3,7 @@ import * as triplets from "@johnmorrisdotca/houseki/falling-triplets";
 import * as swap from "@johnmorrisdotca/houseki/gem-swap";
 import * as blocks from "@johnmorrisdotca/houseki/magnetic-blocks";
 import * as stones from "@johnmorrisdotca/houseki/stone-collapse";
+import * as blocksOfWood from "@johnmorrisdotca/houseki/tsumiki";
 
 import { HOUSEKI_SPECS, levelsIn } from "./houseki.constants";
 import type { HousekiPriced } from "../points/housekiLadder";
@@ -59,6 +60,7 @@ function campaignLevel(kind: HousekiKind, campaign: HousekiCampaign, number: num
   if (kind === "colourChains") return { classic: chains.levelManifest, shizen: chains.shizenLevelManifest, arashi: chains.arashiLevelManifest }[campaign][number - 1] ?? null;
   if (kind === "stoneCollapse") return stones.levelManifest[number - 1] ?? null;
   if (kind === "gemSwap") return swap.GEM_SWAP_CAMPAIGN[number - 1] ?? null;
+  if (kind === "tsumiki") return blocksOfWood.levelManifest[number - 1] ?? null;
   return blocks.levelManifest[number - 1] ?? null;
 }
 
@@ -124,6 +126,19 @@ export function verifyHousekiWin(kind: HousekiKind, request: HousekiRequest, tex
       if (!(state.mode === "daily" && state.dailyDate !== null && days.includes(state.dailyDate))) return refuse("not-today");
       if (state.outcome !== "finished" && state.outcome !== "won") return refuse("daily-not-finished");
       return { ok: true, campaign, levelKey: state.dailyDate, number: 0, marks, score: state.score, save: text };
+    }
+    if (kind === "tsumiki") {
+      const state = blocksOfWood.decodeGame(text);
+      const s = state.settings;
+      if (level !== null) {
+        const made = blocksOfWood.createLevel(level.id);
+        if (canonical(s) !== canonical(made.settings)) return refuse("not-that-level");
+        if (state.phase !== "won") return refuse("not-won");
+        return { ok: true, campaign, levelKey: level.id, number: request.kind === "level" ? request.number : 0, marks, score: state.score, save: text };
+      }
+      if (!(s.mode === "daily" && s.dailyDate !== undefined && days.includes(s.dailyDate))) return refuse("not-today");
+      if (state.phase !== "finished" && state.phase !== "won") return refuse("daily-not-finished");
+      return { ok: true, campaign, levelKey: s.dailyDate, number: 0, marks, score: state.score, save: text };
     }
     // Magnetic Blocks has levels and no Daily.
     if (level === null) return refuse("no-daily");

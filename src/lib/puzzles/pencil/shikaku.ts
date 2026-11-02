@@ -3,6 +3,7 @@ import { checkShikaku, generateShikaku, isShikakuBoard, solveShikaku, type Shika
 import type { PuzzleCheck } from "../puzzles.types";
 import { BLANK, symbolFor, valueOf } from "./codes";
 import type { PencilEngine } from "./pencil.types";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * SHIKAKU 四角, cut the grid into rectangles: Kazu's (`@johnmorrisdotca/kazu/shikaku`).
@@ -118,12 +119,12 @@ export const shikaku: PencilEngine = {
   fits: (size, code) => shikakuRectsOf(size, code) !== null,
   check(size, givens, answer): PuzzleCheck {
     const board = shikakuBoardOf(size, givens);
-    if (board === null) return { ok: false, reason: "the givens are not a Shikaku board" };
+    if (board === null) return no("chk.shikakuGivens");
     const rects = shikakuRectsOf(size, answer);
-    if (rects === null) return { ok: false, reason: "the answer is not a set of rectangles" };
+    if (rects === null) return no("chk.shikakuAnswer");
     const verdict = checkShikaku(board, rects);
     if (verdict.ok) return { ok: true };
-    return { ok: false, reason: verdict.errors.length > 0 ? "a rectangle does not hold exactly one number, or its area" : "some cells are in no rectangle" };
+    return no(verdict.errors.length > 0 ? "chk.shikakuRules" : "chk.shikakuUncovered");
   },
   solve(size, givens) {
     const board = shikakuBoardOf(size, givens);

@@ -3,6 +3,7 @@ import { checkLoop, generateLoop, isLoopBoard, solveLoop, type LoopBoard } from 
 import type { PuzzleCheck } from "../puzzles.types";
 import { BLANK, EDGE, charFix, charMissing, charWrong, isCodeOf } from "./codes";
 import type { PencilEngine } from "./pencil.types";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * LOOP, one loop round the numbers: Kazu's (`@johnmorrisdotca/kazu/loop`).
@@ -49,14 +50,14 @@ export const loop: PencilEngine = {
   fits: (size, code) => loopEdgesOf(size, code) !== null,
   check(size, givens, answer): PuzzleCheck {
     const board = loopBoardOf(size, givens);
-    if (board === null) return { ok: false, reason: "the givens are not a Loop board" };
+    if (board === null) return no("chk.loopGivens");
     const edges = loopEdgesOf(size, answer);
-    if (edges === null) return { ok: false, reason: "the answer is not a set of edges" };
+    if (edges === null) return no("chk.loopAnswer");
     const verdict = checkLoop(board, edges);
     if (verdict.ok) return { ok: true };
-    if (verdict.clues.length > 0) return { ok: false, reason: "a number is not touched by its number of edges" };
-    if (verdict.vertices.length > 0) return { ok: false, reason: "the line branches or stops" };
-    return { ok: false, reason: "the line is not one loop" };
+    if (verdict.clues.length > 0) return no("chk.loopNumber");
+    if (verdict.vertices.length > 0) return no("chk.loopBranches");
+    return no("chk.loopNotOne");
   },
   solve(size, givens) {
     const board = loopBoardOf(size, givens);

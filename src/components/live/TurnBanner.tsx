@@ -73,6 +73,12 @@ export function TurnBanner({
                   ? say.say("live.winsConnection", { colour })
                 : state.winBy === WIN_REASONS.blocked
                   ? say.say("live.winsBlocked", { colour })
+                  : state.winBy === WIN_REASONS.reduced
+                    ? say.say("live.winsReduced", { colour })
+                    : state.winBy === WIN_REASONS.reached
+                      ? say.say("live.winsReached", { colour })
+                      : state.winBy === WIN_REASONS.joined
+                        ? say.say("live.winsJoined", { colour })
                 : say.say("live.winsIn", { colour, moves: say.count("count.move", state.moves.length) })}
         {finishedAt !== null ? (
           <span className="block text-xs font-normal opacity-80" data-testid="finished-at">
@@ -169,6 +175,12 @@ export function TurnBanner({
       {yourTurn
         ? say.say("live.yourMove", { colour: stoneName(say, seat) })
         : say.say("live.waitingFor", { colour: stoneName(say, state.toPlay) })}
+      {/* A turn of two parts says which part is owed: a mill's man to take, or a queen's arrow to shoot. */}
+      {yourTurn && (state.pendingRemoval || state.pendingShot !== null) ? (
+        <span className="block text-xs font-normal" data-testid="turn-owed">
+          {state.pendingRemoval ? gameCopy(say).millPrompt : gameCopy(say).shootPrompt}
+        </span>
+      ) : null}
       {/* A turn that passed itself is said on both boards, so neither player is left wondering where it went. */}
       {passedTurnWords(state, seat, say) !== null ? (
         <span className="block text-xs font-normal" data-testid="turn-passed">

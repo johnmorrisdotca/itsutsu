@@ -156,11 +156,11 @@ describe("the check refuses what is wrong, and says why in the site's words", ()
     const latin = Array.from({ length: 25 }, (_, index) => ((Math.floor(index / 5) + (index % 5)) % 5) + 1);
     const unsound = ".".repeat(25) + Array.from({ length: 25 }, (_, i) => "abcde"[i === 24 ? 0 : i % 5]).join("");
     expect(puzzle.givens).toHaveLength(50);
-    expect(checkSolution("jigsaw", 5, unsound, encodeCells(latin))).toEqual({ ok: false, reason: "the regions do not divide the grid" });
+    expect(checkSolution("jigsaw", 5, unsound, encodeCells(latin))).toMatchObject({ ok: false, reason: "the regions do not divide the grid" });
   });
 
   it("refuses a size it does not make, in the site's name for the kind", () => {
-    expect(checkSolution("numberPlace", 8, "", "")).toEqual({ ok: false, reason: "no numberPlace at 8" });
+    expect(checkSolution("numberPlace", 8, "", "")).toMatchObject({ ok: false, reason: "no numberPlace at 8" });
   });
 
   it("refuses a Diagonal whose diagonals repeat", () => {

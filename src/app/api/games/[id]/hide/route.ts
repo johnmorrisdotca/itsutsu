@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, notFound, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { prisma } from "@/lib/prisma";
 import { overLimit } from "@/lib/api/rateLimit";
@@ -21,12 +21,12 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
 
     // A member, by id — whether or not they came in with an address.
     if ((await currentMemberId()) === null) {
-      return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+      return refuse(401, "err.signIn", undefined, { headers: NO_STORE });
     }
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = bodySchema.safeParse(body);
-    if (!parsed.success) return badRequest("Hidden, or not?");
+    if (!parsed.success) return badRequest("err.game.hideChoice");
 
     const { id } = await ctx.params;
     const row = await prisma.game.findUnique({
@@ -34,10 +34,10 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
       select: { status: true, blackMemberId: true, whiteMemberId: true },
     });
     if (row === null) return notFound();
-    if (row.status !== "finished") return NextResponse.json({ error: "Only a finished game can be hidden." }, { status: 409, headers: NO_STORE });
+    if (row.status !== "finished") return refuse(409, "err.game.hideFinished", undefined, { headers: NO_STORE });
     const mine = await currentMemberId();
     const colour = mine !== null && row.blackMemberId === mine ? "black" : mine !== null && row.whiteMemberId === mine ? "white" : null;
-    if (colour === null) return NextResponse.json({ error: "You did not hold a seat in this game." }, { status: 403, headers: NO_STORE });
+    if (colour === null) return refuse(403, "err.game.wasNotSeated", undefined, { headers: NO_STORE });
 
     await prisma.game.update({
       where: { id },
@@ -46,6 +46,6 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     return NextResponse.json({ ok: true, hidden: parsed.data.hidden }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not change that.");
+    return serverError("err.changeFailed");
   }
 }

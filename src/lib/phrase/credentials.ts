@@ -1,3 +1,5 @@
+import type { RefusalCode } from "@/lib/api/refusal.types";
+
 /**
  * The two ways into an account, and the one rule that holds them together.
  *
@@ -75,8 +77,6 @@ export function mayRemove(which: Credential, facts: CredentialFacts): boolean {
 }
 
 /** Why it was refused, worded so the reader knows what would make it possible. */
-export function removalRefusal(which: Credential): string {
-  return which === CREDENTIALS.phrase
-    ? "Your four words are the only way into this account. Add a recovery email address first, and then they can go."
-    : "That address is the only way into this account. Set four words first, and then it can go.";
+export function removalRefusal(which: Credential): RefusalCode {
+  return which === CREDENTIALS.phrase ? "err.credentials.phraseLast" : "err.credentials.emailLast";
 }

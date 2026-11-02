@@ -47,6 +47,10 @@ export const GAME_SLUGS: Record<RuleVariant, string> = {
   twistFour: "twist-four",
   trapThree: "trap-three",
   squareFour: "square-four",
+  nineMensMorris: "nine-mens-morris",
+  breakthrough: "breakthrough",
+  linesOfAction: "lines-of-action",
+  amazons: "amazons",
   tictactoe: "tic-tac-toe",
   reversi: "reversi",
   classicReversi: "classic-reversi",
@@ -183,4 +187,5 @@ export const HOUSEKI_SLUGS: Record<HousekiKind, string> = {
   stoneCollapse: "stone-collapse",
   gemSwap: "gem-swap",
   magneticBlocks: "magnetic-blocks",
+  tsumiki: "tsumiki",
 };

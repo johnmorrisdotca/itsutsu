@@ -13,6 +13,7 @@ import { BOARD_SIZES, DRAW_LIMIT_DISPLAY, DRAW_LIMIT_LIST } from "@/lib/gomoku/g
 import type { DrawLimit } from "@/lib/gomoku/gomoku.types";
 import { MOVE_TIME_OPTIONS } from "@/lib/history/moveTime.constants";
 import { describeMoveTime } from "@/lib/history/deadline";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * Where a new game starts for this member.
@@ -57,7 +58,7 @@ export function GameDefaultsForm({ initial }: { initial: GameDefaults }) {
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        setError(body?.error ?? say.say("mine.saveFailed"));
+        setError(refusalText(body, say, "mine.saveFailed"));
         return;
       }
       setSaved(true);

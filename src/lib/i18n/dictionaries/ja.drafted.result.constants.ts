@@ -7,6 +7,8 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  * Each row carries the reviewer's pass (`review`).
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
+/** The reviewer agent's pass over the 2026-10-30 moving-men phrases (Nine Men's Morris, Breakthrough, Lines of Action, Amazons). */
+const AGENT_READ_2026_10_30: Review = { by: "agent", on: "2026-10-30" };
 
 export const JA_DRAFTED_RESULT: Partial<Record<PhraseKey, DraftedPhrase>> = {
   // The headline over a game that was decided between two colours
@@ -146,6 +148,41 @@ export const JA_DRAFTED_RESULT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "規則で認められている期間、駒が取られず、動いた通常の駒もありませんでした。",
     back: "For longer than the rules allow, no piece was taken and no ordinary piece moved.",
     review: AGENT_READ,
+  },
+  "result.reached": {
+    text: "{who}の駒が向こうの端に着きました。",
+    back: "{who}'s piece reached the far edge.",
+    review: AGENT_READ_2026_10_30,
+  },
+  "result.reachedYou": {
+    text: "駒が向こうの端に着きました。",
+    back: "A piece reached the far edge.",
+    review: AGENT_READ_2026_10_30,
+  },
+  "result.joined": {
+    text: "{who}が駒をすべて1つにつなげました。",
+    back: "{who} joined all pieces into one.",
+    review: AGENT_READ_2026_10_30,
+  },
+  "result.joinedYou": {
+    text: "駒をすべて1つにつなげました。",
+    back: "You joined all pieces into one.",
+    review: AGENT_READ_2026_10_30,
+  },
+  "result.reduced": {
+    text: "{who}が相手の駒を2つまで減らしました。",
+    back: "{who} reduced the opponent's pieces to two.",
+    review: AGENT_READ_2026_10_30,
+  },
+  "result.reducedYou": {
+    text: "相手の駒を2つまで減らしました。",
+    back: "You reduced the opponent's pieces to two.",
+    review: AGENT_READ_2026_10_30,
+  },
+  "result.noProgressMilling": {
+    text: "規則で決められた手数のあいだ、駒を置くことも取ることもありませんでした。",
+    back: "For the number of moves the rules set, no piece was placed or taken.",
+    review: AGENT_READ_2026_10_30,
   },
   "result.noProgressPlacing": {
     text: "駒をすべて置き終えたあと、規則で認められている期間を超えて、駒を滑らせ続けました。",

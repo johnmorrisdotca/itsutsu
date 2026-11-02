@@ -9,6 +9,7 @@ import type { PhraseKey } from "../i18n/i18n.constants";
 import type { DrawLimit, FirstPlayer, ObstacleLayout, Stone } from "@johnmorrisdotca/narabe/types";
 
 export * from "@johnmorrisdotca/narabe/constants";
+export * from "@johnmorrisdotca/narabe/variantSpecs";
 
 export const STONE_DISPLAY: Record<Stone, { label: string; kanji: string }> = {
   black: { label: "Black", kanji: "黒" },

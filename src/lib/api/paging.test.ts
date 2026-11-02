@@ -4,7 +4,6 @@ import {
   PAGE_LIMIT_CEILING,
   ariaSort,
   isRefusal,
-  pagingSpecProblems,
   parseCursor,
   parseLimit,
   parseSort,
@@ -187,42 +186,7 @@ describe("ariaSort", () => {
   });
 });
 
-describe("pagingSpecProblems", () => {
-  it("passes a sound spec", () => {
-    expect(pagingSpecProblems(SPEC)).toEqual([]);
-  });
-
-  it("catches a fallback naming a column that is not declared", () => {
-    const problems = pagingSpecProblems({ ...SPEC, fallback: { param: "rating", direction: "desc" } });
-    expect(problems.join(" ")).toContain("rating");
-  });
-
-  it("catches the same word declared twice", () => {
-    const problems = pagingSpecProblems({ ...SPEC, columns: [SPEC.columns[0], SPEC.columns[0]] });
-    expect(problems.join(" ")).toContain("twice");
-  });
-
-  it("catches camelCase in an address", () => {
-    const problems = pagingSpecProblems({
-      ...SPEC,
-      columns: [{ param: "moveCount", field: "moveCount", label: "Moves", firstPress: "desc", index: "x" }],
-      fallback: { param: "moveCount", direction: "desc" },
-    });
-    expect(problems.join(" ")).toContain("camelCase");
-  });
-
-  /* A blank reason satisfies the type. It must not satisfy the gate. */
-  it("catches an unindexed column whose reason says nothing", () => {
-    const problems = pagingSpecProblems({
-      ...SPEC,
-      columns: [
-        { param: "moves", field: "moveCount", label: "Moves", firstPress: "desc", index: null, unindexedBecause: "  " },
-      ],
-      fallback: { param: "moves", direction: "desc" },
-    });
-    expect(problems.join(" ")).toContain("no reason");
-  });
-
+describe("a spec that falls back to a column it lacks", () => {
   it("throws rather than guessing when a spec falls back to a column it lacks", () => {
     expect(() => parseSort({ ...SPEC, fallback: { param: "nope", direction: "desc" } }, at(""))).toThrow(
       /nope/,

@@ -161,7 +161,7 @@ describe("the seats the set-up asks for", () => {
   });
 
   it("no link for a member under 13, who seats buddies by name", () => {
-    expect(seatAsksRefusal([{ kind: "me" }, { kind: "link" }], { ...rules, links: false })).toMatch(/under 13/);
+    expect(seatAsksRefusal([{ kind: "me" }, { kind: "link" }], { ...rules, links: false })).toBe("err.table.childLink");
     expect(seatAsksRefusal([{ kind: "me" }, { kind: "buddy", memberId: "b" }], { ...rules, links: false })).toBeNull();
   });
 

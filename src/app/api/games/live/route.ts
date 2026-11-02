@@ -1,4 +1,4 @@
-import { badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { badRequest, readJson, refuseWith, serverError } from "@/lib/api/apiResponse";
 import { isPieceColour } from "@/lib/pieces/pieceColours";
 import { setSeatColour } from "@/lib/history/seatColour";
 import { prisma } from "@/lib/prisma";
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     if (tooMany !== null) return tooMany;
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
 
     const read = readCreation(body);
     if ("refused" in read) return refusalResponse(read.refused);
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
       [against.seats.blackMemberId, against.seats.whiteMemberId],
       asks.length,
     );
-    if (atTheLimit !== null) return unprocessable(activeLimitRefusal(atTheLimit));
+    if (atTheLimit !== null) return refuseWith(422, activeLimitRefusal(atTheLimit));
 
     /*
      * ONE VALUE, WRITTEN AND THEN REPORTED. The row is created from this, and
@@ -194,7 +194,7 @@ export async function POST(request: Request) {
           variant: played.variant,
           fromName: askerName,
           fromMemberId: against.offeredSeat === STONES.black ? against.seats.whiteMemberId : against.seats.blackMemberId,
-          detail: made.length > 1 ? `a match of ${made.length} games` : "",
+          detail: made.length > 1 ? `match:${made.length}` : "",
         },
       ]);
     }
@@ -233,8 +233,8 @@ export async function POST(request: Request) {
      * a crash to bury in a log. `createLiveGame` refuses it rather than
      * writing it, and this says why in the words the guard used.
      */
-    if (error instanceof UnwinnableGame) return unprocessable(error.message);
+    if (error instanceof UnwinnableGame) return refuseWith(422, error.said);
     console.error(error);
-    return serverError("Could not start that game.");
+    return serverError("err.game.startFailed");
   }
 }

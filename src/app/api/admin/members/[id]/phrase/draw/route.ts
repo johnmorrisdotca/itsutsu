@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, operatorRefusal, readJson } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { logOperatorAction, operatorActor, recordOperatorAction } from "@/lib/auth/operatorLog";
 import { OPERATOR_ACTIONS } from "@/lib/auth/operatorLog.constants";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
-import { phraseTarget } from "@/lib/phrase/operatorPhrase";
+import { phraseTarget } from "../operatorPhrase";
 import {
   completedPhrase,
   drop,
@@ -17,6 +17,7 @@ import {
   sealTicket,
   type PickState,
 } from "@/lib/phrase/pickTicket";
+import { english, issueCode } from "@/lib/api/refusal";
 
 /**
  * The picker, drawn by the operator for a member.
@@ -84,17 +85,18 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/membe
      * on one would be a way into nobody's account.
      */
     const target = await phraseTarget(id);
-    if (target === null) return notFound("No such member.");
+    if (target === null) return operatorRefusal(404, "No such member.");
     if (!target.mayHavePhrase) {
-      return unprocessable(
+      return operatorRefusal(
+        422,
         "That row is not an account anybody signs in to — a kept record, a seeded row or a bot — so four words would be a way into nobody's account.",
       );
     }
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return operatorRefusal(400, "Expected a JSON body.");
     const parsed = drawSchema.safeParse(body);
-    if (!parsed.success) return badRequest(parsed.error.issues[0]?.message ?? "That is not a pick.");
+    if (!parsed.success) return operatorRefusal(400, english(issueCode(parsed.error.issues, "err.phrase.notAPick")));
 
     const state = await nextState(parsed.data, target.id);
     /*
@@ -111,7 +113,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/membe
     }
 
     const ticket = await sealTicket(state);
-    if (ticket === null) return serverError("This site cannot set a phrase: no signing secret.");
+    if (ticket === null) return operatorRefusal(500, "This site cannot set a phrase: no signing secret.");
 
     // Only the first draw, or every reroll would be a line. Opening a pick for
     // somebody is the act worth recording; the rest of it is one act.
@@ -159,7 +161,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/membe
     // to make their password, and a stack trace in a log is somewhere they
     // must not be.
     console.error(error);
-    return serverError("Could not offer any words.");
+    return operatorRefusal(500, "Could not offer any words.");
   }
 }
 

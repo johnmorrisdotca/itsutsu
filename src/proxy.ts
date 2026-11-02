@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+import { said } from "@/lib/api/refusal";
+import { NOT_CONFIGURED_HTML } from "@/lib/auth/notConfigured.constants";
 import { carriesOwnCredential } from "@/lib/auth/ownCredentials";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
 import { rememberLanguage } from "@/lib/i18n/rememberLanguage";
@@ -130,10 +132,7 @@ function isUnprotectedEnvironment(): boolean {
 function refuseUnconfigured(pathname: string): NextResponse {
   const headers = { "Cache-Control": "no-store" };
   if (pathname.startsWith("/api/")) {
-    return NextResponse.json(
-      { error: "This deployment is not configured correctly." },
-      { status: 503, headers },
-    );
+    return NextResponse.json(said("err.unconfigured"), { status: 503, headers });
   }
   return new NextResponse(NOT_CONFIGURED_HTML, {
     status: 503,
@@ -141,19 +140,6 @@ function refuseUnconfigured(pathname: string): NextResponse {
   });
 }
 
-const NOT_CONFIGURED_HTML = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="robots" content="noindex" />
-<title>Not configured</title>
-</head>
-<body style="font-family: system-ui, sans-serif; max-width: 32rem; margin: 4rem auto; padding: 0 1.5rem; line-height: 1.6;">
-<h1 style="font-size: 1.25rem;">This deployment is not configured</h1>
-<p>Something this site needs in order to run safely is missing or wrong. If
-you are the operator: check the environment configuration and redeploy.</p>
-</body>
-</html>`;
 
 /**
  * READING IS OPEN, PLAYING IS GATED — John's rule, in his words: "strangers
@@ -364,10 +350,7 @@ export async function proxy(request: NextRequest) {
    * JSON to a browser, or HTML to fetch(), would be useless to both.
    */
   if (pathname.startsWith("/api/")) {
-    return NextResponse.json(
-      { error: "An invite code is needed to use this site." },
-      { status: 401 },
-    );
+    return NextResponse.json(said("err.inviteNeeded"), { status: 401 });
   }
 
   const join = new URL("/join", request.url);

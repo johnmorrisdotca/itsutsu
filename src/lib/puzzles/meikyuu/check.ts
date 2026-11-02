@@ -3,6 +3,7 @@ import { solutionOf } from "@johnmorrisdotca/meikyuu";
 import type { PuzzleCheck } from "../puzzles.types";
 import { meikyuuLevelOfBoard } from "./levels";
 import { decodeWay, mazeOf } from "./way";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * Whether an answer solves a Meikyuu maze: a line from its start to its goal,
@@ -14,12 +15,12 @@ import { decodeWay, mazeOf } from "./way";
  * not asked about here.
  */
 export function checkMeikyuu(size: number, givens: string, answer: string): PuzzleCheck {
-  if (meikyuuLevelOfBoard(size, givens) === null) return { ok: false, reason: "the givens are not a level of that size" };
+  if (meikyuuLevelOfBoard(size, givens) === null) return no("chk.notLevelSize");
   const maze = mazeOf(givens);
-  if (maze === null) return { ok: false, reason: "the givens are not a maze" };
+  if (maze === null) return no("chk.notMaze");
   const way = decodeWay(maze, answer);
-  if (way === null) return { ok: false, reason: "that is not a line through the maze" };
-  if (way[way.length - 1] !== maze.goal) return { ok: false, reason: "the line does not reach the goal" };
+  if (way === null) return no("chk.notLineThrough");
+  if (way[way.length - 1] !== maze.goal) return no("chk.lineNoGoal");
   return { ok: true };
 }
 

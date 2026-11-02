@@ -3,6 +3,7 @@ import { checkAkari, generateAkari, isAkariBoard, solveAkari, type AkariBoard } 
 import type { PuzzleCheck } from "../puzzles.types";
 import { BLANK, BULB, charFix, charMissing, charWrong, isCodeOf } from "./codes";
 import type { PencilEngine } from "./pencil.types";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * AKARI 美術館, light the grid: Kazu's (`@johnmorrisdotca/kazu/akari`).
@@ -50,15 +51,15 @@ export const akari: PencilEngine = {
   fits: (size, code) => akariBulbsOf(size, code) !== null,
   check(size, givens, answer): PuzzleCheck {
     const board = akariBoardOf(size, givens);
-    if (board === null) return { ok: false, reason: "the givens are not an Akari board" };
+    if (board === null) return no("chk.akariGivens");
     const bulbs = akariBulbsOf(size, answer);
-    if (bulbs === null) return { ok: false, reason: "the answer is not a grid of bulbs" };
-    if (bulbs.some((at) => board.cells[at] !== null)) return { ok: false, reason: "a bulb is on a black square" };
+    if (bulbs === null) return no("chk.akariAnswer");
+    if (bulbs.some((at) => board.cells[at] !== null)) return no("chk.akariBlack");
     const verdict = checkAkari(board, bulbs);
     if (verdict.ok) return { ok: true };
-    if (verdict.conflicts.length > 0) return { ok: false, reason: "two bulbs light each other" };
-    if (verdict.numbered.length > 0) return { ok: false, reason: "a numbered square does not touch its number of bulbs" };
-    return { ok: false, reason: "some white squares are dark" };
+    if (verdict.conflicts.length > 0) return no("chk.akariTwoBulbs");
+    if (verdict.numbered.length > 0) return no("chk.akariNumber");
+    return no("chk.akariDark");
   },
   solve(size, givens) {
     const board = akariBoardOf(size, givens);

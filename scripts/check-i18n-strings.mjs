@@ -77,63 +77,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
  * ONLY EVER SHORTER. Taking a path off is the proof an area is done; adding
  * one is a decision the test refuses.
  */
-export const PENDING_PATHS = [
-  // ENJA-05, game copy tables: every game's rules, tagline, openings, bots and family names. Each folder here holds only what is left of it: the games', openings', bots' and families' own words are done, beside their Japanese.
-  // ENJA-06, set-up screen, game screen and every ending
-  { path: "src/lib/history", ticket: "ENJA-13" },
-  /*
-   * ENJA-07, puzzles. What is left of them is two kinds of file, named one by one now that the folders are done.
-   *
-   * The puzzle screens whose files the pictures' stamp hashes (`puzzleArtFingerprint.ts`): a puzzle board, table
-   * or grid keeps a few English labels (a column, a stock, a foundation, a cage, a peg) that a translation must
-   * not edit, since any edit makes every puzzle picture stale until `pnpm screenshots:puzzles` is run. They come
-   * off the list in the change that re-takes the pictures.
-   */
-  // ENJA-10, pages: home, About, Learn, players, history, My account, feed, inbox, join
-  // ENJA-13, API errors a person can see
-  { path: "src/app/api", ticket: "ENJA-13" },
-  { path: "src/proxy.ts", ticket: "ENJA-13" },
-  { path: "src/lib/phrase", ticket: "ENJA-13" },
-  { path: "src/lib/api", ticket: "ENJA-13" },
-  /*
-   * ENJA-13 also takes the puzzles' refusals: the reason a check gives for an answer it will not take, which
-   * the route sends back as the body of the error (`puzzleCheck.ts` and each puzzle's `check.ts`), and the
-   * races' (`puzzleRaces.ts`). A member reads them in a message the page shows; they are the API's words.
-   */
-  { path: "src/lib/puzzles/puzzleCheck.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/bridges/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/koushi/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/cube/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/freecell/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/solitaire/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/spider/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/meikyuu/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/pictureLogic/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/tobiishi/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/tsunagi/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/suido/check.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/pencil/akari.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/pencil/crossSums.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/pencil/hitori.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/pencil/loop.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/pencil/regions.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/pencil/shikaku.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/jirai/board.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/server/puzzleRaceChecks.ts", ticket: "ENJA-13" },
-  { path: "src/lib/puzzles/server/puzzleRaces.ts", ticket: "ENJA-13" },
-  /*
-   * ENJA-13 also takes the party tables' refusals: the reason the site gives for a seat it will not offer, a move
-   * it will not take or a table it will not open, which a route sends back as the body of the error and a page
-   * shows in a message (`keptReport.ts`, `onlineSeats.ts`, `online.constants.ts`'s two notices for a table that has since been retired, and the three server files that apply them). They are the
-   * API's words, as the puzzles' are; everything a party or card table says on its own screens is done (ENJA-08).
-   */
-  { path: "src/lib/party/kept/keptReport.ts", ticket: "ENJA-13" },
-  { path: "src/lib/party/online/onlineSeats.ts", ticket: "ENJA-13" },
-  { path: "src/lib/party/online/online.constants.ts", ticket: "ENJA-13" },
-  { path: "src/lib/party/online/server/tableCreate.ts", ticket: "ENJA-13" },
-  { path: "src/lib/party/online/server/tableMove.ts", ticket: "ENJA-13" },
-  { path: "src/lib/party/online/server/tableSeating.ts", ticket: "ENJA-13" },
-];
+export const PENDING_PATHS = [];
 
 /**
  * English that is allowed without a phrase, written down so a name added
@@ -146,6 +90,17 @@ export const EXCLUDED_PATHS = [
   ["src/app/admin", "the operator's own pages: English by decision, read by one person (UmaKuma keeps its admin the same way)"],
   ["src/components/admin", "the operator's own pages, as src/app/admin"],
   ["src/app/api/admin", "the operator's own routes, as src/app/admin"],
+  /*
+   * ENJA-13: THE OPERATOR-ONLY ROUTES OUTSIDE `src/app/api/admin`, the written list the ticket asks for. Each answers
+   * 404 to anybody but the operator (`currentAdmin`) and is called by the Admin page alone, so what it says goes to the
+   * one person who runs the site: English by decision, as the admin pages, through `operatorRefusal` rather than a key.
+   * Every other route says a key and its values (`refuse`, `badRequest`, …).
+   */
+  ["src/app/api/members/route.ts", "the Admin members list and its changes: operator-only (`currentAdmin`), as src/app/api/admin"],
+  ["src/app/api/invites/route.ts", "the Admin invite codes, listed and made: operator-only (`currentAdmin`), as src/app/api/admin"],
+  ["src/app/api/invites/[code]/route.ts", "revoking an invite code from Admin: operator-only (`currentAdmin`), as src/app/api/admin"],
+  ["src/app/api/site/route.ts", "the Admin site settings, read and saved: operator-only (`currentAdmin`), as src/app/api/admin"],
+  ["src/app/api/embed-tokens/route.ts", "minting an embed token from Admin: operator-only (`currentAdmin`), as src/app/api/admin"],
   ["src/lib/sumilabu", "clients of the Sumilabu board: the messages go to a developer's terminal and logs, never to a member"],
   ["src/lib/sim", "the simulated-journey report an operator reads after a run"],
   ["src/app/backlog", "the features board is the operator's alone (the page is shut to members, `currentAdmin`)"],

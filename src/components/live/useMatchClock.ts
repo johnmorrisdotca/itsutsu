@@ -9,6 +9,7 @@ import type { GameState, Stone } from "@/lib/gomoku/gomoku.types";
 import { deadlineFor, isOverdue } from "@/lib/history/deadline";
 import type { GameDetail } from "@/lib/history/gameHistory.types";
 import { useHydrated } from "@/lib/ui/hydrated";
+import { refusalOr } from "@/lib/api/refusalText";
 
 /**
  * The clock on a shared match, and the two courtesies around it.
@@ -86,7 +87,7 @@ export function useMatchClock({
     });
     if (!response.ok) {
       const said = (await response.json().catch(() => null)) as { error?: string } | null;
-      onError(said?.error ?? refused);
+      onError(refusalOr(said, say, refused));
       if (refreshOnRefusal) await mutate();
       return;
     }

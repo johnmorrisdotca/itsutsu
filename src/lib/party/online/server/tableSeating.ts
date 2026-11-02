@@ -5,15 +5,17 @@ import { mayReachMember } from "@/lib/social/childReach";
 import { isIgnoring } from "@/lib/social/ignores";
 
 import { ONLINE_STATUS, PARTY_TABLES_MOST } from "../online.constants";
+import { partOf } from "@/lib/api/refusal";
+import type { RefusalPart } from "@/lib/api/refusal.types";
 
 /** Why somebody may not be seated, as a key: the words are `SEATING_REFUSALS`, so an address can carry the reason and never the words. */
 export type SeatingRefusal = "ignored" | "child" | "cap";
 
 /** What each refusal says to the person refused. */
-export const SEATING_REFUSALS: Record<SeatingRefusal, string> = {
-  ignored: "Somebody at that table is not taking games with you.",
-  child: "A player at that table is under 13, so only the people on their own buddy list can sit with them.",
-  cap: `You are at ${PARTY_TABLES_MOST} tables already. Finish or end one first.`,
+export const SEATING_REFUSALS: Record<SeatingRefusal, RefusalPart> = {
+  ignored: partOf("err.table.seatIgnored"),
+  child: partOf("err.table.seatChild"),
+  cap: partOf("err.table.capYou", { most: PARTY_TABLES_MOST }),
 };
 
 /**
@@ -52,9 +54,7 @@ export async function tablesGoing(memberId: string): Promise<number> {
 }
 
 /** Whether this member is already at `PARTY_TABLES_MOST` tables, and the sentence that says so. */
-export async function tablesCapRefusal(memberId: string, who: "you" | "them"): Promise<string | null> {
+export async function tablesCapRefusal(memberId: string, who: "you" | "them"): Promise<RefusalPart | null> {
   if ((await tablesGoing(memberId)) < PARTY_TABLES_MOST) return null;
-  return who === "you"
-    ? `You are at ${PARTY_TABLES_MOST} tables already. Finish or end one first.`
-    : `Somebody you asked is at ${PARTY_TABLES_MOST} tables already.`;
+  return partOf(who === "you" ? "err.table.capYou" : "err.table.capThem", { most: PARTY_TABLES_MOST });
 }

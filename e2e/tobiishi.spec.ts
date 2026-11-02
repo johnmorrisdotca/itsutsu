@@ -47,7 +47,7 @@ async function openLevel(page: Page, size: 3 | 6 | 9, level: number) {
 test.describe("Tobiishi, for a reader with no account", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("its front door and rules are open, under our own name, in the Numbers family and on Small boards", async ({ page }) => {
+  test("its front door and rules are open, under our own name, in the Numbers family", async ({ page }) => {
     await page.goto(AT);
     await expect(page.getByTestId("game-front-door").getByRole("heading", { level: 1 })).toContainText(NAME);
     await expect(page.getByTestId("also-known-as")).toContainText("Peg solitaire");
@@ -59,28 +59,14 @@ test.describe("Tobiishi, for a reader with no account", () => {
     await expect(page.locator("main")).toContainText("Every level has at least one answer");
   });
 
-  test("it is on the Small boards shelf too, saying where it lives, and Mini Reversi is no longer a guest there", async ({ page }) => {
+  test("it is at home in Numbers, and no guest on the full Small boards shelf", async ({ page }) => {
     await page.goto("/games");
     await expect(page.getByTestId("lobby-family").first()).toBeAttached();
-    // At home in Numbers, and a guest on one shelf: the same game, shown twice.
-    const home = page.locator(`[data-testid="family-game"][data-variant="${KIND}"][data-listed="home"]`);
-    const guest = page.locator(`[data-testid="family-game"][data-variant="${KIND}"][data-listed="shelf"]`);
-    await expect(home).toHaveCount(1);
-    await expect(guest).toHaveCount(1);
-    await expect(guest.getByTestId("family-game-home")).toContainText("also under Numbers");
-    await expect(guest.getByTestId("family-game-why")).toContainText("Peg solitaire on a small board");
-    // The shelf is full at eight, guests counted: Mini Reversi's listing there made way for it, and it is still at home in Turn and take.
+    await expect(page.locator(`[data-testid="family-game"][data-variant="${KIND}"][data-listed="home"]`)).toHaveCount(1);
+    await expect(page.locator(`[data-testid="family-game"][data-variant="${KIND}"][data-listed="shelf"]`)).toHaveCount(0);
+    // Mini Reversi's listing there made way before it, and it is still at home in Turn and take.
     await expect(page.locator('[data-testid="family-game"][data-variant="miniReversi"][data-listed="shelf"]')).toHaveCount(0);
     await expect(page.locator('[data-testid="family-game"][data-variant="miniReversi"][data-listed="home"]')).toHaveCount(1);
-
-    // And on the shelf's own page, the card says why it is there and leads to the one game.
-    await page.goto("/games/tic-tac-toe/family");
-    const onShelf = page.getByTestId("family-game-tobiishi");
-    await expect(onShelf).toHaveAttribute("data-listed", "shelf");
-    await expect(onShelf.getByTestId("family-game-why")).toContainText("Peg solitaire on a small board");
-    await expect(onShelf.getByTestId("family-game-home")).toContainText("Numbers");
-    await onShelf.getByRole("link", { name: /Tobiishi/ }).first().click();
-    await expect(page).toHaveURL(new RegExp(`${AT}$`));
   });
 });
 

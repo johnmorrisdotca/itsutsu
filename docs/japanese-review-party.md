@@ -4,7 +4,7 @@ Generated from `src/lib/i18n/dictionaries/party.ja.*` and the packages' own word
 
 Each row is one Japanese line, what it literally says in English, and who has read it. A game's name is its kanji beside the English one, so it is not repeated here. A line with a number or a name in it has `{0}`, `{1}` where the figure goes, in the order the screen gives them; a line that reads differently at 0, at 1 or at a kind is shown once for each, with the figure it is for in braces. The last rows are words the packages return (Tenka's territory, continent and region names, Hitotsu's colours and cards), which the site shows as the package gives them.
 
-1298 lines, 1114 distinct. 0 read by a person, 1258 by the reviewer agent, 40 drafted and unread.
+1296 lines, 1112 distinct. 0 read by a person, 1252 by the reviewer agent, 44 drafted and unread.
 
 ## Open for a person
 
@@ -14,6 +14,10 @@ Each row is one Japanese line, what it literally says in English, and who has re
 - **game liarsDice**: Drafted 2026-10-31 with the new dice games, and read by nobody yet: please read it, and check 確定 for Bank, 宣言 for a bid, 取り分ける for Set aside and チップ for a counter.
 - **game sayu**: Drafted 2026-10-31 with the new dice games, and read by nobody yet: please read it, and check 確定 for Bank, 宣言 for a bid, 取り分ける for Set aside and チップ for a counter.
 - **tableWords**: Drafted 2026-10-31 with the new dice games, and read by nobody yet: please read it, and check 確定 for Bank, 宣言 for a bid, 取り分ける for Set aside and チップ for a counter.
+- **cardTable**: Drafted 2026-10-31 with the new dice games, and read by nobody yet: please read it, and check 確定 for Bank, 宣言 for a bid, 取り分ける for Set aside and チップ for a counter.
+- **yacht**: Drafted 2026-10-31 with the new dice games, and read by nobody yet: please read it, and check 確定 for Bank, 宣言 for a bid, 取り分ける for Set aside and チップ for a counter.
+- **diceWar**: Drafted 2026-10-31 with the new dice games, and read by nobody yet: please read it, and check 確定 for Bank, 宣言 for a bid, 取り分ける for Set aside and チップ for a counter.
+- **pachisi**: Drafted 2026-10-31 with the new dice games, and read by nobody yet: please read it, and check 確定 for Bank, 宣言 for a bid, 取り分ける for Set aside and チップ for a counter.
 - **Tenka europe map**: Europe's 49 territory names and 11 regions are the package's own Japanese, in the forms an atlas uses, and nobody who reads Japanese natively has read them yet: is each the name a reader of Japanese expects? Highlands is the one most worth a look.
 
 ## Every line
@@ -656,7 +660,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | cardTable: soundOff | カードの音をオフ | Card sound off | Agent 2026-10-06 |
 | cardTable: cards; hitotsu: cards; tenka: cards | {0}枚 | {0} cards | Agent 2026-10-06 |
 | cardTable: computerTag | コンピュータ | computer | Agent 2026-10-06 |
-| cardTable: lead | 1台のスマホやタブレットを囲んで遊ぶ、{0}です。どの席も、人でもコンピュータでもかまいません。ここでは評価されず、このブラウザー以外には保存されません。 | {0} round one phone or tablet, with a person or a computer in every seat. Nothing here is rated or saved anywhere but this browser. | Agent 2026-10-06 |
+| cardTable: lead | 1台のスマホやタブレットを囲んで遊ぶ、{0}です。または「複数の端末」を選ぶこともできます。どの席も、人でもコンピュータでもかまいません。ここでは評価されません。 | {0} round one phone or tablet, or you can choose "Several devices". Every seat may be a person or a computer. Nothing here is rated. | Question, unread |
 | cardTable: card; hitotsu: card | この端末でカード | Cards on this device | Agent 2026-10-06 |
 | cardTable: about | {0}について：規則と、同じ系統のゲーム | About {0}: its rules and its family | Agent 2026-10-06 |
 | online: where | どこで遊びますか？ | Where are you playing? | Agent 2026-10-06 |
@@ -715,8 +719,6 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | online: myNoneFinished | 終了した卓は、まだありません。 | No tables finished yet. | Agent 2026-10-06 |
 | online: myFind | パーティーゲームを探す | Find a party game | Agent 2026-10-06 |
 | online: myOpenTable | 開く | Open | Agent 2026-10-06 |
-| online: retiredTable{true} | このゲームは、そのあと変わった版で始まったので、表示も続行もできません。卓にいる誰でも、終えるか、離れられます。 | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Anybody at the table can end it, or leave it. | Agent 2026-10-06 |
-| online: retiredTable{other} | このゲームは、そのあと変わった版で始まったので、表示も続行もできません。誰が座り、どう終わったかは、ここに表示されます。 | This game was started on a version of the game that has since changed, so it cannot be shown or played on. Who sat at it and how it ended are shown here. | Agent 2026-10-06 |
 | online: myRetired | 古い版のゲームで始まったので、続けられません： | Started on an older version of the game, so it cannot be played on: | Agent 2026-10-06 |
 | online: myLook | 見る | Look | Agent 2026-10-06 |
 | online: result.won | あなたの勝ちです。 | You won. | Agent 2026-10-06 |
@@ -778,7 +780,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | hitotsu: scoreWords | 点数、合計に最初に届いた人の勝ち | Points, first to the total wins | Agent 2026-10-06 |
 | hitotsu: handWords | 1ハンド：最初にあがった人の勝ち | One hand: first out wins | Agent 2026-10-06 |
 | hitotsu: about | 一つについて：規則と、同じ系統のゲーム | About Hitotsu: its rules and its family | Agent 2026-10-06 |
-| yacht: lead | 1〜8人で1台のスマホやタブレットを囲んで遊ぶ、ヨットです。どの席にもコンピュータを座らせられます。サイコロ5個、振るのは3回まで、記入欄は13です。ここでは評価されず、このブラウザー以外には保存されません。 | Yacht for one to eight round one phone or tablet, with a computer in any seat you like: five dice, three rolls, thirteen boxes. Nothing here is rated or saved anywhere but this browser. | Agent 2026-10-06 |
+| yacht: lead | 1〜8人で1台のスマホやタブレットを囲んで遊ぶ、ヨットです。または「複数の端末」を選ぶこともできます。どの席にもコンピュータを座らせられます。サイコロ5個、振るのは3回まで、記入欄は13です。ここでは評価されません。 | Yacht for one to eight round one phone or tablet, or you can choose "Several devices". A computer can sit in any seat. Five dice, three rolls at most, thirteen boxes. Nothing here is rated. | Question, unread |
 | yacht: play | ヨットを遊ぶ | Play Yacht | Agent 2026-10-06 |
 | yacht: alone | 1人で：得点表を埋めて、自己ベストを更新しましょう。 | Alone: fill the sheet and beat your best. | Agent 2026-10-06 |
 | yacht: seats; pachisi: seats | 席 | Who is at the table | Agent 2026-10-06 |
@@ -858,7 +860,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | sugorokuStrengthLines: greedy | いちばん良い局面になる手を打ちます。先読みはしません。 | Plays the move that leaves the best position, with no looking ahead. | Agent 2026-10-06 |
 | sugorokuStrengthLines: careful | 1手番先を、いちばん良い4つの打ち方について読み、ダブルとテイクを賢く使います。 | Looks one turn ahead at its best four plays, and doubles and takes sensibly. | Agent 2026-10-06 |
 | sugorokuStrengthLines: strong | 1手番先を、いちばん良い10の打ち方について読み、ダブルとテイクを賢く使います。 | Looks one turn ahead at its best ten plays, and doubles and takes sensibly. | Agent 2026-10-06 |
-| diceWar: lead | 2〜8人で1台のスマホやタブレットを囲んで遊ぶ、賽合戦です。どの席にもコンピュータを座らせられます。全員が振り、合計がいちばん高い人が得点し、同点は戦争です。ここでは評価されず、このブラウザー以外には保存されません。 | Dice War for two to eight round one phone or tablet, with a computer in any seat you like: everybody rolls, the highest total scores, and a tie is war. Nothing here is rated or saved anywhere but this browser. | Agent 2026-10-06 |
+| diceWar: lead | 2〜8人で1台のスマホやタブレットを囲んで遊ぶ、賽合戦です。または「複数の端末」を選ぶこともできます。どの席にもコンピュータを座らせられます。全員が振り、合計がいちばん高い人が得点し、同点は戦争です。ここでは評価されません。 | Dice War for two to eight round one phone or tablet, or you can choose "Several devices". A computer can sit in any seat. Everybody rolls, the highest total scores, and a tie is war. Nothing here is rated. | Question, unread |
 | diceWar: play | 賽合戦を遊ぶ | Play Dice War | Agent 2026-10-06 |
 | diceWar: computerHelp | この席は、このブラウザーの中で、コンピュータが振ります。 | A computer rolls for this seat, in this browser. | Agent 2026-10-06 |
 | diceWar: dice | サイコロの数 | Dice each | Agent 2026-10-06 |
@@ -878,7 +880,7 @@ Each row is one Japanese line, what it literally says in English, and who has re
 | diceWar: notIn | この戦争には不参加 | not in this war | Agent 2026-10-06 |
 | diceWar: card | この端末でサイコロ | Dice on this device | Agent 2026-10-06 |
 | diceWar: about | 賽合戦について：規則と、同じ系統のゲーム | About Dice War: its rules and its family | Agent 2026-10-06 |
-| pachisi: lead | 2〜4人で1台のスマホやタブレットを囲んで遊ぶ、二十五（パチーシ）です。どの席にもコンピュータを座らせられます。4つの駒を、十字のコースを回してゴールさせ、途中で相手の駒を送り返しましょう。ここでは評価されず、このブラウザー以外には保存されません。 | 二十五 (Pachisi) for two to four round one phone or tablet, with a computer in any seat you like: race your four pawns round the cross and home, sending your opponents back as you go. Nothing here is rated or saved anywhere but this browser. | Agent 2026-10-06 |
+| pachisi: lead | 2〜4人で1台のスマホやタブレットを囲んで遊ぶ、二十五（パチーシ）です。または「複数の端末」を選ぶこともできます。どの席にもコンピュータを座らせられます。4つの駒を、十字のコースを回してゴールさせ、途中で相手の駒を送り返しましょう。ここでは評価されません。 | 二十五 (Pachisi) for two to four round one phone or tablet, or you can choose "Several devices". A computer can sit in any seat. Race your four pawns round the cross and home, sending your opponents back as you go. Nothing here is rated. | Question, unread |
 | pachisi: play | 二十五を遊ぶ | Play 二十五 | Agent 2026-10-06 |
 | pachisi: toMove; gunjin: turn | {0}が動かす番 | {0} to move | Agent 2026-10-06 |
 | pachisi: thinking | {0}が打っています… | {0} is playing… | Agent 2026-10-06 |

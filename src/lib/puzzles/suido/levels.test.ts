@@ -59,7 +59,7 @@ describe("a level the site has not loaded", () => {
     expect(suidoLevelOfBoard(NEVER_LOADED, makeSuido({ width: 14, height: 14, kind: "network", seed: 3 }).code)).toBeNull();
     // A twisted level passes the givens check (it is a level), and the answer check then refuses its board as its own answer.
     const twisted = rows.find((row) => /locked|walls|wrap|pumps|inlet/.test(row[2]))!;
-    expect(checkSuido(NEVER_LOADED, twisted[0], twisted[0])).not.toEqual({ ok: false, reason: "the givens are not a board of that size" });
+    expect(checkSuido(NEVER_LOADED, twisted[0], twisted[0])).not.toMatchObject({ ok: false, reason: "the givens are not a board of that size" });
     expect(checkSuido(NEVER_LOADED, twisted[0], levelAnswerOf(twisted)!).ok).toBe(true);
   });
 });

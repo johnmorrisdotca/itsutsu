@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { checkRateLimit, createRateLimitResponse } from "@/lib/api/rateLimit";
 import { addReaction } from "@/lib/history/reactions";
 import {
@@ -9,6 +9,7 @@ import {
   REACTION_EMOJI,
   REACTION_RATE_LIMIT,
 } from "@/lib/history/reactions.constants";
+import type { RefusalCode } from "@/lib/api/refusal.types";
 
 const reactionSchema = z.object({
   token: z.string().min(1).max(128),
@@ -24,10 +25,10 @@ const REFUSAL_STATUS: Record<string, number> = {
   "no-such-move": 422,
 };
 
-const REFUSAL_MESSAGE: Record<string, string> = {
-  "not-found": "No such game.",
-  "wrong-token": "That link does not hold a seat in this game.",
-  "no-such-move": "That move has not been played.",
+const REFUSAL_MESSAGE: Record<string, RefusalCode> = {
+  "not-found": "err.game.none",
+  "wrong-token": "err.game.wrongLink",
+  "no-such-move": "err.reaction.noMove",
 };
 
 /**
@@ -42,10 +43,10 @@ export async function POST(
 ) {
   try {
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
 
     const parsed = reactionSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Invalid reaction.");
+    if (!parsed.success) return badRequest("err.reaction.invalid");
 
     const { id } = await ctx.params;
     /*
@@ -66,14 +67,11 @@ export async function POST(
     );
 
     if (!outcome.ok) {
-      return NextResponse.json(
-        { error: REFUSAL_MESSAGE[outcome.reason], reason: outcome.reason },
-        { status: REFUSAL_STATUS[outcome.reason] ?? 400, headers: NO_STORE },
-      );
+      return refuse(REFUSAL_STATUS[outcome.reason] ?? 400, REFUSAL_MESSAGE[outcome.reason], undefined, { reason: outcome.reason, headers: NO_STORE });
     }
     return NextResponse.json(outcome.game, { status: 201, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not send that.");
+    return serverError("err.sendFailed");
   }
 }

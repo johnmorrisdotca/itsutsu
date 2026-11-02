@@ -3,6 +3,7 @@ import * as triplets from "@johnmorrisdotca/houseki/falling-triplets";
 import * as swap from "@johnmorrisdotca/houseki/gem-swap";
 import * as blocks from "@johnmorrisdotca/houseki/magnetic-blocks";
 import * as stones from "@johnmorrisdotca/houseki/stone-collapse";
+import * as blocksOfWood from "@johnmorrisdotca/houseki/tsumiki";
 
 import type { HousekiCampaign, HousekiKind } from "./houseki.types";
 
@@ -15,6 +16,12 @@ import type { HousekiCampaign, HousekiKind } from "./houseki.types";
  * carries it. `finishedDaily` plays a Daily of a day to its end, for the games that have one.
  */
 export function winnerOf(kind: HousekiKind, campaign: HousekiCampaign, number: number): string {
+  if (kind === "tsumiki") {
+    const level = blocksOfWood.levelManifest[number - 1]!;
+    let state = blocksOfWood.createLevel(level.id);
+    for (const [slot, row, column] of level.witness) state = blocksOfWood.applyAction(state, { kind: "place", slot, row, column }).state;
+    return blocksOfWood.encodeGame(state);
+  }
   if (kind === "fallingTriplets") {
     const level = triplets.levelManifest[number - 1]!;
     let state = triplets.createLevel(level.id);
@@ -85,7 +92,13 @@ function tallest(board: readonly unknown[], width: number, height: number, hidde
  * put down is tried in the engine, and the one that scores most and stands lowest is kept. Enough to
  * reach the end of a game of sixty pieces, which dropping every piece where it comes in does not.
  */
-export function finishedDaily(kind: "fallingTriplets" | "colourChains" | "stoneCollapse" | "gemSwap", day: string): string {
+export function finishedDaily(kind: "fallingTriplets" | "colourChains" | "stoneCollapse" | "gemSwap" | "tsumiki", day: string): string {
+  if (kind === "tsumiki") {
+    // The first shape that fits, wherever it fits first, until none does: a short game, and a real end to one.
+    let state = blocksOfWood.createGame({ mode: "daily", dailyDate: day });
+    while (state.phase === "ready") state = blocksOfWood.applyAction(state, blocksOfWood.legalActions(state)[0]!).state;
+    return blocksOfWood.encodeGame(state);
+  }
   if (kind === "stoneCollapse") {
     let state = stones.createGame({ mode: "daily", dailyDate: day });
     for (let step = 0; step < 4000 && !["finished", "won", "lost"].includes(state.phase); step += 1) {

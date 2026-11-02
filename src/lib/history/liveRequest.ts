@@ -14,6 +14,8 @@ import {
   timeoutPenaltySchema,
   variantSchema,
 } from "./gameSettingsSchema";
+import { said } from "@/lib/api/refusal";
+import type { Said } from "@/lib/api/refusal.types";
 
 /**
  * WHAT A CALLER ASKED FOR WHEN THEY ASKED FOR A GAME.
@@ -131,9 +133,8 @@ export type LiveGameRequest = z.infer<typeof liveGameSchema>;
  * `issues` is the schema's own account of which fields were wrong, and only
  * ever rides a 422.
  */
-export type CreationRefusal = {
+export type CreationRefusal = Said & {
   status: 400 | 401 | 403 | 404 | 422;
-  error: string;
   issues?: unknown;
 };
 
@@ -174,7 +175,7 @@ export function readCreation(
   const parsed = liveGameSchema.safeParse(body);
   if (!parsed.success) {
     return {
-      refused: { status: 422, error: "That game could not be started.", issues: parsed.error.issues },
+      refused: { status: 422, ...said("err.game.notStarted"), issues: parsed.error.issues },
     };
   }
   return { asked: { data: parsed.data, said: keysSaid(body) } };

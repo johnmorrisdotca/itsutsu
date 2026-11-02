@@ -9,6 +9,7 @@ import type { Asking } from "@/components/ui/ui.types";
 import { ConfirmButton } from "@/components/ui/ConfirmButton";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { myGamesCopy } from "./mine.copy";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * Gives a game up — or calls it off, when there is nothing to give up.
@@ -98,7 +99,7 @@ export function ResignButton({
       const said = (await response.json().catch(() => null)) as {
         error?: string;
       } | null;
-      setRefused(said?.error ?? say.say("ending.couldNotDo"));
+      setRefused(refusalText(said, say, "ending.couldNotDo"));
     } finally {
       setBusy(false);
     }

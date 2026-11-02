@@ -42,9 +42,9 @@ describe("drawing a Gomoji Mot (French)", () => {
   it("checks a French word the way English's is checked, through the same server function", () => {
     const puzzle = generateGomoji(5, "medium", 7, "fr", "gomojiMot");
     expect(checkSolution("gomojiMot", 5, puzzle.givens, puzzle.solution, "medium")).toEqual({ ok: true });
-    expect(checkSolution("gomojiMot", 5, puzzle.givens, `zzzzz${puzzle.solution}`, "medium")).toEqual({ ok: false, reason: "zzzzz is not in the word list" });
+    expect(checkSolution("gomojiMot", 5, puzzle.givens, `zzzzz${puzzle.solution}`, "medium")).toMatchObject({ ok: false, reason: "zzzzz is not in the word list" });
     // An English guess with no French meaning is refused as an unknown word, not accepted.
-    expect(checkSolution("gomojiMot", 5, puzzle.givens, "zzzzz", "medium")).toEqual({ ok: false, reason: "zzzzz is not in the word list" });
+    expect(checkSolution("gomojiMot", 5, puzzle.givens, "zzzzz", "medium")).toMatchObject({ ok: false, reason: "zzzzz is not in the word list" });
   });
 });
 
@@ -85,7 +85,7 @@ describe("drawing a Gomoji Wort (German)", () => {
     expect(isWord(umlautWord, size, "de")).toBe(true);
     expect(decodeGuesses(umlautWord, size, "de")).toEqual([umlautWord]);
     // Refused because the word was found, not for want of a level: the check reads the German alphabet.
-    expect(checkOutOfGuesses("gomojiWort", size, givens, umlautWord.repeat(size + 1), "hard")).toEqual({ ok: false, reason: "the word was found" });
+    expect(checkOutOfGuesses("gomojiWort", size, givens, umlautWord.repeat(size + 1), "hard")).toMatchObject({ ok: false, reason: "the word was found" });
   });
 
   it("keeps a run's guesses in German's own alphabet", () => {

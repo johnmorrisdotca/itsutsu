@@ -10,6 +10,27 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.552.1 — 2026-11-02 12:23 UTC
+- When the site says no (a name that is taken, a twenty-first game, a seat or a move it will not take), it now says so in your language.
+
+## 0.552.0 — 2026-11-02 12:00 UTC
+- Amazons joins the board games: move a queen, shoot an arrow, and leave the other side with nowhere to go.
+
+## 0.551.0 — 2026-11-02 12:00 UTC
+- Lines of Action joins the board games: a man moves as far as there are men on its line, and joining all of yours wins.
+
+## 0.550.0 — 2026-11-02 12:00 UTC
+- Breakthrough joins the board games: step forward, take on the diagonal, and be first to the far row.
+
+## 0.549.0 — 2026-11-02 12:00 UTC
+- Nine Men's Morris joins the board games: lay nine men, move them along the lines, and take a man each time three stand in a line.
+
+## 0.548.0 — 2026-11-02 12:00 UTC
+- Tsumiki joins the Houseki games: lay three shapes on an eight by eight board and clear every full row and column, with a daily, 64 levels and three lessons.
+
+## 0.547.2 — 2026-11-02 09:37 UTC
+- A test login that stopped working no longer holds new versions back from the site.
+
 ## 0.547.1 — 2026-10-30 23:06 UTC
 - Reversi, Checkers, Go and other games no longer call the loser's last move the one that handed the game away, because nothing measured it. Honeycomb's Japanese name is now ハニカム, so it no longer shares one with Hachinosu.
 

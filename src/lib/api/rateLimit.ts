@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { reliefAllowed } from "@/lib/suiteServer";
+import { english } from "./refusal";
 
 /**
  * Request rate limiting, in the shape UmaKuma uses.
@@ -132,10 +133,14 @@ export function applyRateLimitHeaders(
 }
 
 export function createRateLimitResponse(result: RateLimitResult): NextResponse {
+  /* `error` stays the protocol's own words; `message` is the sentence, and `code` and `values` are what a page says in its own language (ENJA-13). */
+  const values = { seconds: result.resetSeconds };
   const response = NextResponse.json(
     {
-      error: "Too Many Requests",
-      message: `Rate limit exceeded. Please retry in ${result.resetSeconds} seconds.`,
+      error: english("err.tooMany"),
+      message: english("err.rateLimited", values),
+      code: "err.rateLimited",
+      values,
     },
     { status: 429 },
   );

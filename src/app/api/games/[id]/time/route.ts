@@ -2,11 +2,12 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { giveTime } from "@/lib/history/liveGameEndings";
 import { OFFER_NOT_ACCEPTED, OFFER_NOT_ACCEPTED_STATUS } from "@/lib/history/offers.constants";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { overLimit } from "@/lib/api/rateLimit";
+import type { RefusalCode } from "@/lib/api/refusal.types";
 
 const bodySchema = z.object({ token: z.string().min(1).max(128) }).partial();
 
@@ -19,12 +20,12 @@ const REFUSAL_STATUS: Record<string, number> = {
   offered: OFFER_NOT_ACCEPTED_STATUS,
 };
 
-const REFUSAL_MESSAGE: Record<string, string> = {
-  "not-found": "No such game.",
-  finished: "That game is already over.",
-  "wrong-token": "You do not hold a seat in this game.",
-  "no-clock": "This game has no clock.",
-  "your-own-turn": "It is your move; time is given to the other side.",
+const REFUSAL_MESSAGE: Record<string, RefusalCode> = {
+  "not-found": "err.game.none",
+  finished: "err.game.over",
+  "wrong-token": "err.game.notSeated",
+  "no-clock": "err.clock.none",
+  "your-own-turn": "err.clock.ownMove",
   offered: OFFER_NOT_ACCEPTED,
 };
 
@@ -39,20 +40,17 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
 
     const { id } = await ctx.params;
     const body = bodySchema.safeParse((await readJson(request)) ?? {});
-    if (!body.success) return badRequest("Invalid request.");
+    if (!body.success) return badRequest("err.invalid");
     const token = body.data.token ?? (await cookies()).get(seatCookieName(id))?.value;
-    if (!token) return NextResponse.json({ error: REFUSAL_MESSAGE["wrong-token"] }, { status: 403, headers: NO_STORE });
+    if (!token) return refuse(403, REFUSAL_MESSAGE["wrong-token"], undefined, { headers: NO_STORE });
 
     const outcome = await giveTime(id, token);
     if (!outcome.ok) {
-      return NextResponse.json(
-        { error: REFUSAL_MESSAGE[outcome.reason] ?? "That could not be done.", reason: outcome.reason },
-        { status: REFUSAL_STATUS[outcome.reason] ?? 400, headers: NO_STORE },
-      );
+      return refuse(REFUSAL_STATUS[outcome.reason] ?? 400, REFUSAL_MESSAGE[outcome.reason] ?? "err.game.notDone", undefined, { reason: outcome.reason, headers: NO_STORE });
     }
     return NextResponse.json(outcome.game, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not give time.");
+    return serverError("err.clock.giveFailed");
   }
 }

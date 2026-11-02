@@ -238,11 +238,15 @@ describe("POST /api/games/[id]/sit-as", () => {
     seatStandIn.mockResolvedValue({
       ok: false,
       reason: "over-limit",
-      said: "You have 20 games on the go, and 20 at once is the limit here.",
+      said: {
+        error: "You have 20 games on the go, and 20 at once is the limit here.",
+        code: "err.game.limit",
+        values: { count: 20, limit: 20 },
+      },
     });
     const response = await sitAs({ memberId: HER_ID, words: WORDS });
     expect(response.status).toBe(422);
-    await expect(response.json()).resolves.toMatchObject({ error: expect.stringMatching(/20/) });
+    await expect(response.json()).resolves.toMatchObject({ error: expect.stringMatching(/20/), code: "err.game.limit" });
   });
 
   it("is 404 for a game that is not there", async () => {

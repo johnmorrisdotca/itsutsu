@@ -59,6 +59,8 @@ import { PHRASES_HOUSEKI } from "./phrases.houseki.constants";
 import { PHRASES_PARTY } from "./phrases.party.constants";
 import { PHRASES_CASUAL } from "./phrases.casual.constants";
 import { PHRASES_CTABLE } from "./phrases.ctable.constants";
+import { PHRASES_ERR } from "./phrases.err.constants";
+import { PHRASES_CHK } from "./phrases.chk.constants";
 
 /**
  * The languages the site knows about, and the English it speaks in by default.
@@ -207,6 +209,8 @@ export const PHRASE_AREAS = {
   party: PHRASES_PARTY,
   ctable: PHRASES_CTABLE,
   casual: PHRASES_CASUAL,
+  err: PHRASES_ERR,
+  chk: PHRASES_CHK,
 } as const;
 
 /**
@@ -296,6 +300,8 @@ export const PHRASES = {
   ...PHRASES_PARTY,
   ...PHRASES_CTABLE,
   ...PHRASES_CASUAL,
+  ...PHRASES_ERR,
+  ...PHRASES_CHK,
 } as const;
 
 /** A phrase the site can say. */

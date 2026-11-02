@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberRow } from "@/lib/auth/currentSession";
 import { KEPT_ID_PATTERN } from "@/lib/party/kept/kept.constants";
@@ -21,19 +21,19 @@ export async function POST(request: Request, { params }: RouteContext<"/api/kept
     const tooMany = overLimit(request, "kept-game", RATE_LIMITS.keptGame);
     if (tooMany !== null) return tooMany;
     const me = await currentMemberRow();
-    if (me === null) return NextResponse.json({ error: "Keeping a game in your history needs an account." }, { status: 401, headers: NO_STORE });
+    if (me === null) return refuse(401, "err.kept.needAccount", undefined, { headers: NO_STORE });
 
     const { id } = await params;
-    if (!KEPT_ID_PATTERN.test(id)) return badRequest("Not a kept game's id.");
+    if (!KEPT_ID_PATTERN.test(id)) return badRequest("err.kept.badId");
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const report = readKeptReport(body);
     if ("refused" in report) return badRequest(report.refused);
     const written = await keepKeptGame({ id: me.id, name: me.name ?? "" }, id, report);
-    if (written === "taken") return NextResponse.json({ error: "That id is another game's." }, { status: 409, headers: NO_STORE });
+    if (written === "taken") return refuse(409, "err.kept.otherGame", undefined, { headers: NO_STORE });
     return NextResponse.json({ ok: true }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not keep that game.");
+    return serverError("err.kept.failed");
   }
 }

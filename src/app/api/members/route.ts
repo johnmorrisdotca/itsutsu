@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, operatorRefusal, readJson } from "@/lib/api/apiResponse";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { ageBandGate, recordAgeBand } from "@/lib/auth/ageBandStore";
@@ -11,6 +11,8 @@ import { renameMember } from "@/lib/auth/members";
 import { countMembers, listMembers, memberSummaryFor, setBanned } from "@/lib/auth/memberRoster";
 import { MEMBER_KINDS } from "@/lib/auth/memberKind";
 import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
+import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
+import { speaker } from "@/lib/i18n/i18n";
 
 /** How many rows the operator's list carries at once. */
 const MEMBERS_SHOWN = 200;
@@ -65,7 +67,7 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not read the members.");
+    return operatorRefusal(500, "Could not read the members.");
   }
 }
 
@@ -108,15 +110,15 @@ export async function PATCH(request: Request) {
     if (me === null) return notFound();
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return operatorRefusal(400, "Expected a JSON body.");
     const parsed = changeSchema.safeParse(body);
-    if (!parsed.success) return badRequest("Say whether to shut the account, what to call them, or their age band.");
+    if (!parsed.success) return operatorRefusal(400, "Say whether to shut the account, what to call them, or their age band.");
 
     if ("ageBand" in parsed.data) {
       const target = await memberSummaryFor(parsed.data.id);
-      if (target === null) return notFound("No such member.");
+      if (target === null) return operatorRefusal(404, "No such member.");
       const decision = await ageBandGate(parsed.data.id, parsed.data.ageBand, parsed.data.consent ?? null);
-      if (!decision.ok) return badRequest(decision.problem);
+      if (!decision.ok) return operatorRefusal(400, speaker(DEFAULT_LOCALE).say(decision.problem));
       // Logged in the same transaction as the band: the band before and after, never the parent's name.
       await recordAgeBand(parsed.data.id, parsed.data.ageBand, decision.consent, { actor: operatorActor(me), before: target.ageBand });
       return NextResponse.json(await memberSummaryFor(parsed.data.id), { headers: NO_STORE });
@@ -136,26 +138,26 @@ export async function PATCH(request: Request) {
        * since an operator signed in by token may have no member row to compare.
        */
       const target = await memberSummaryFor(parsed.data.id);
-      if (target === null) return notFound("No such member.");
+      if (target === null) return operatorRefusal(404, "No such member.");
       const operatorAddress = (me.email ?? "").trim().toLowerCase();
       const theirOwn =
         parsed.data.id === (await currentMemberId()) ||
         (target.email !== null && operatorAddress !== "" && target.email.trim().toLowerCase() === operatorAddress);
       if (parsed.data.banned && theirOwn) {
-        return badRequest("You cannot shut your own account. An operator is named in the deployment, not in this list.");
+        return operatorRefusal(400, "You cannot shut your own account. An operator is named in the deployment, not in this list.");
       }
       // Kept in the operator log, in the same transaction as the ban itself: see `setBanned`.
       const member = await setBanned(parsed.data.id, parsed.data.banned, parsed.data.note ?? "", operatorActor(me));
-      if (member === null) return notFound("No such member.");
+      if (member === null) return operatorRefusal(404, "No such member.");
       return NextResponse.json(member, { headers: NO_STORE });
     }
 
     // Kept in the operator log, in the same transaction as the rename: see `renameMember`.
     const renamed = await renameMember(parsed.data.id, parsed.data.name, operatorActor(me));
-    if (renamed === null) return badRequest("That name is not free.");
+    if (renamed === null) return operatorRefusal(400, "That name is not free.");
     return NextResponse.json(renamed, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not change that member.");
+    return operatorRefusal(500, "Could not change that member.");
   }
 }

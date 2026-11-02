@@ -13,6 +13,7 @@ import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { PHRASE_LENGTH } from "@/lib/phrase/phrase";
 import type { SeatPickMember } from "@/lib/phrase/seatPick.types";
 import { padStep } from "@/lib/phrase/wordIndex";
+import { refusalText } from "@/lib/api/refusalText";
 
 /** Which word the pad is filling, said as a person would — it read "fourth" for all four. */
 const ORDINAL: readonly PhraseKey[] = ["live.wordFirst", "live.wordSecond", "live.wordThird", "live.wordFourth"];
@@ -118,7 +119,7 @@ export function SitAsPanel({
     setBusy(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? say.say("live.sitAsFailed"));
+      setError(refusalText(payload, say, "live.sitAsFailed"));
       return;
     }
     /*

@@ -6,6 +6,7 @@ import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { Select } from "@/components/ui/Controls";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
 import { AFTER_MOVE, MOVE_CONFIRM, type AfterMove, type MoveConfirm } from "@/lib/preferences/turnFlow";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * HOW A TURN WORKS: whether a click sends the move, and where Submit leaves you.
@@ -48,7 +49,7 @@ export function TurnFlowForm({
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        setError(body?.error ?? say.say("mine.saveFailed"));
+        setError(refusalText(body, say, "mine.saveFailed"));
         return;
       }
       setSaved(true);

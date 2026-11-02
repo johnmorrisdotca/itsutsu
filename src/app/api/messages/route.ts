@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { currentSpeaker } from "@/lib/i18n/currentLocale";
@@ -24,12 +24,12 @@ export async function POST(request: Request) {
     const tooMany = overLimit(request, "message", RATE_LIMITS.directMessage);
     if (tooMany !== null) return tooMany;
     const me = await currentMemberId();
-    if (me === null) return NextResponse.json({ error: "Sign in to write to somebody." }, { status: 401, headers: NO_STORE });
+    if (me === null) return refuse(401, "err.message.signIn", undefined, { headers: NO_STORE });
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = bodySchema.safeParse(body);
-    if (!parsed.success) return badRequest("A message needs somebody to go to and something to say.");
+    if (!parsed.success) return badRequest("err.message.shape");
 
     const sent = await sendMessage(me, parsed.data.to, parsed.data.text);
     if (!sent.ok) {
@@ -39,6 +39,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true }, { status: 201, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not send that.");
+    return serverError("err.sendFailed");
   }
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { addBuddy, fetchBuddies, removeBuddy } from "@/lib/social/buddies";
 import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
@@ -13,7 +13,7 @@ import { overLimit, RATE_LIMITS } from "@/lib/api/rateLimit";
  */
 const bodySchema = z.object({ memberId: z.string().trim().min(1).max(64) });
 
-const SIGN_IN = NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+const SIGN_IN = refuse(401, "err.signIn", undefined, { headers: NO_STORE });
 
 /** The signed-in member's buddy list: read it, add to it, take from it. */
 export async function GET(request: Request) {
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ items: await fetchBuddies(mine) }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not read the buddy list.");
+    return serverError("err.buddy.readFailed");
   }
 }
 
@@ -34,9 +34,9 @@ async function change(request: Request, apply: (ownerId: string, buddyId: string
   const mine = await currentMemberId();
   if (mine === null) return SIGN_IN.clone();
   const body = await readJson(request);
-  if (body === undefined) return badRequest("Expected a JSON body.");
+  if (body === undefined) return badRequest("err.badJson");
   const parsed = bodySchema.safeParse(body);
-  if (!parsed.success) return badRequest("Which member?");
+  if (!parsed.success) return badRequest("err.buddy.which");
   await apply(mine, parsed.data.memberId);
   return NextResponse.json({ ok: true }, { headers: NO_STORE });
 }
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     return await change(request, addBuddy);
   } catch (error) {
     console.error(error);
-    return serverError("Could not add that buddy.");
+    return serverError("err.buddy.addFailed");
   }
 }
 
@@ -61,6 +61,6 @@ export async function DELETE(request: Request) {
     return await change(request, removeBuddy);
   } catch (error) {
     console.error(error);
-    return serverError("Could not remove that buddy.");
+    return serverError("err.buddy.removeFailed");
   }
 }

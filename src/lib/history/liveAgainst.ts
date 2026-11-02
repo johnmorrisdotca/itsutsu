@@ -20,6 +20,7 @@ import {
   settingsToCarry,
   type Seating,
 } from "./rematch";
+import { said } from "@/lib/api/refusal";
 
 /**
  * WHO A NEW GAME IS AGAINST, AND WHAT THAT MAKES IT.
@@ -155,18 +156,18 @@ export type Against = {
 };
 
 /** Refusals more than one case gives, in the one wording each of them has. */
-const NO_SUCH_GAME: CreationRefusal = { status: 404, error: "No such game." };
-const NO_SUCH_MEMBER: CreationRefusal = { status: 404, error: "No such member." };
-const NOT_YOUR_GAME: CreationRefusal = { status: 403, error: "You did not play that game." };
+const NO_SUCH_GAME: CreationRefusal = { status: 404, ...said("err.game.none") };
+const NO_SUCH_MEMBER: CreationRefusal = { status: 404, ...said("err.member.none") };
+const NOT_YOUR_GAME: CreationRefusal = { status: 403, ...said("err.game.notYours") };
 const NOT_TAKING_GAMES: CreationRefusal = {
   status: 403,
-  error: "That member is not taking games from you.",
+  ...said("err.member.notTaking"),
 };
 
 /** A member under 13 is offered games only by their own buddies (`childRules.ts`, PRIV-03). */
 const CHILD_BUDDIES_ONLY: CreationRefusal = {
   status: 403,
-  error: "This player is under 13, so only the people on their own buddy list can offer them a game.",
+  ...said("err.member.childBuddiesOnly"),
 };
 
 /**
@@ -185,7 +186,7 @@ async function playingAgain(
   const origin = await prisma.game.findUnique({ where: { id: rematch } });
   if (origin === null) return { refused: NO_SUCH_GAME };
   if (origin.status === "active") {
-    return { refused: { status: 400, error: "That game is still being played." } };
+    return { refused: { status: 400, ...said("err.game.stillPlaying") } };
   }
 
   /*
@@ -196,7 +197,7 @@ async function playingAgain(
    */
   const me = await currentMemberRow();
   if (me === null) {
-    return { refused: { status: 401, error: "Sign in to play again." } };
+    return { refused: { status: 401, ...said("err.game.signInAgain") } };
   }
   const mineId = me.id;
   const theirId = opponentOf(origin, mineId);
@@ -253,7 +254,7 @@ async function continuingAPosition(
   const origin = await prisma.game.findUnique({ where: { id: from.id } });
   if (origin === null) return { refused: NO_SUCH_GAME };
   if (from.move > origin.moveCount) {
-    return { refused: { status: 400, error: "That game has fewer moves." } };
+    return { refused: { status: 400, ...said("err.game.fewerMoves") } };
   }
   /*
    * A TURN LOST ON TIME REPLAYS ONLY IN A GAME WITH A CLOCK. The copied rows
@@ -267,7 +268,7 @@ async function continuingAPosition(
       where: { gameId: origin.id, number: { lte: from.move }, kind: MOVE_KINDS.forfeit },
     });
     if (lost > 0) {
-      return { refused: { status: 422, error: "A turn in that position was lost on time, so it can only be continued with a clock." } };
+      return { refused: { status: 422, ...said("err.game.lostOnTime") } };
     }
   }
 
@@ -324,7 +325,7 @@ async function askingSomebody(
    * computer player — every one of those answered 401.
    */
   const me = await currentMemberRow();
-  const signIn: CreationRefusal = { status: 401, error: "Sign in to play someone." };
+  const signIn: CreationRefusal = { status: 401, ...said("err.game.signInSomeone") };
   if (me === null) return { refused: signIn };
   const mineId = me.id;
   const other =
@@ -433,7 +434,7 @@ export async function resolveAgainst(
     return {
       refused: {
         status: 422,
-        error: "That game was played under an opening a shared game cannot use, so it cannot be continued or played again here.",
+        ...said("err.game.openingNotShared"),
       },
     };
   }

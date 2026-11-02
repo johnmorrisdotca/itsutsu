@@ -3,6 +3,8 @@ import { checkCrossSums, generateCrossSums, isCrossSumsBoard, solveCrossSums, ty
 import type { PuzzleCheck } from "../puzzles.types";
 import { BLANK, charFix, charMissing, charWrong } from "./codes";
 import type { PencilEngine } from "./pencil.types";
+import { assertedRangeError } from "@/lib/puzzles/assertedRangeError";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * CROSS SUMS, crossword sums: Kazu's (`@johnmorrisdotca/kazu/cross-sums`), which makes
@@ -77,7 +79,7 @@ export function crossSumsCodeOf(board: CrossSumsBoard, values: readonly number[]
 export const crossSums: PencilEngine = {
   codeLength: (size) => size * size,
   make(size, level, seed) {
-    if (!isSide(size)) throw new RangeError(`no Cross Sums at ${size}`);
+    if (!isSide(size)) throw assertedRangeError(`no Cross Sums at ${size}`);
     const made = generateCrossSums(seed, level, size);
     return { givens: givensOf(made), solution: crossSumsCodeOf(made, made.solution) };
   },
@@ -89,12 +91,12 @@ export const crossSums: PencilEngine = {
   fits: (size, code) => code.length === size * size && /^[#.1-9]+$/.test(code),
   check(size, givens, answer): PuzzleCheck {
     const board = crossSumsBoardOf(size, givens);
-    if (board === null) return { ok: false, reason: "the givens are not a Cross Sums board" };
+    if (board === null) return no("chk.crossGivens");
     const values = crossSumsValuesOf(board, answer);
-    if (values === null) return { ok: false, reason: "the answer is not a grid of digits" };
+    if (values === null) return no("chk.crossAnswer");
     const verdict = checkCrossSums(board, values);
     if (verdict.ok && verdict.complete) return { ok: true };
-    return { ok: false, reason: verdict.complete ? "a run does not add up to its sum, or repeats a digit" : "some cells are empty" };
+    return no(verdict.complete ? "chk.crossRun" : "chk.cellsEmpty");
   },
   solve(size, givens) {
     const board = crossSumsBoardOf(size, givens);

@@ -14,6 +14,7 @@ import { wordsCopy } from "./mine.copy";
 import { emptyArrangement, reconcileArrangement, swapBoxes, type Arrangement } from "./phraseArrangement";
 import { WordCandidates } from "./WordCandidates";
 import { WordTiles } from "./WordTiles";
+import { refusalOr } from "@/lib/api/refusalText";
 
 /**
  * The four-word phrase, on its own tab of the member's page.
@@ -74,7 +75,7 @@ export function PhraseSetup({ initial }: { initial: PhraseStatusFields }) {
     setBusy(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? WORDS_COPY.drawFailed);
+      setError(refusalOr(payload, say, WORDS_COPY.drawFailed));
       return;
     }
     const state = (await response.json()) as PhraseDrawFields;
@@ -133,7 +134,7 @@ export function PhraseSetup({ initial }: { initial: PhraseStatusFields }) {
     setBusy(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? WORDS_COPY.saveFailed);
+      setError(refusalOr(payload, say, WORDS_COPY.saveFailed));
       return;
     }
     // The words are done with the moment they are saved: nothing here keeps them.
@@ -151,7 +152,7 @@ export function PhraseSetup({ initial }: { initial: PhraseStatusFields }) {
     setConfirmingRemove(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? WORDS_COPY.removeFailed);
+      setError(refusalOr(payload, say, WORDS_COPY.removeFailed));
       return;
     }
     await refreshStatus();

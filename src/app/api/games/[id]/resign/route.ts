@@ -4,13 +4,14 @@ import { NextResponse } from "next/server";
 import { playBotTurns } from "@/lib/bots/botPlay";
 import { z } from "zod";
 
-import { NO_STORE, readJson, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { resignGame } from "@/lib/history/liveGameEndings";
 import { OFFER_NOT_ACCEPTED, OFFER_NOT_ACCEPTED_STATUS } from "@/lib/history/offers.constants";
 import { seatCookieName } from "@/lib/history/seatCookie";
 import { resolveSeat } from "@/lib/history/seats";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { overLimit } from "@/lib/api/rateLimit";
+import type { RefusalCode } from "@/lib/api/refusal.types";
 
 const bodySchema = z.object({ token: z.string().min(1).max(128) }).partial();
 
@@ -22,11 +23,11 @@ const REFUSAL_STATUS: Record<string, number> = {
   offered: OFFER_NOT_ACCEPTED_STATUS,
 };
 
-const REFUSAL_MESSAGE: Record<string, string> = {
-  "not-found": "No such game.",
-  finished: "That game is already over.",
-  "wrong-token": "You do not hold a seat in this game.",
-  "not-allowed": "This game was set up so that nobody may resign it.",
+const REFUSAL_MESSAGE: Record<string, RefusalCode> = {
+  "not-found": "err.game.none",
+  finished: "err.game.over",
+  "wrong-token": "err.game.notSeated",
+  "not-allowed": "err.game.noResign",
   /*
    * There is nothing to resign: an offer has no game in it to give up, and
    * resigning one would have written a loss for the offerer and a rated win
@@ -65,18 +66,12 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     const claim = await resolveSeat(id, given ?? (await cookies()).get(seatCookieName(id))?.value, await currentMemberId());
     const token = claim?.token;
     if (!token) {
-      return NextResponse.json(
-        { error: REFUSAL_MESSAGE["wrong-token"], reason: "wrong-token" },
-        { status: 403, headers: NO_STORE },
-      );
+      return refuse(403, REFUSAL_MESSAGE["wrong-token"], undefined, { reason: "wrong-token", headers: NO_STORE });
     }
 
     const outcome = await resignGame(id, token);
     if (!outcome.ok) {
-      return NextResponse.json(
-        { error: REFUSAL_MESSAGE[outcome.reason] ?? "That could not be done.", reason: outcome.reason },
-        { status: REFUSAL_STATUS[outcome.reason] ?? 400, headers: NO_STORE },
-      );
+      return refuse(REFUSAL_STATUS[outcome.reason] ?? 400, REFUSAL_MESSAGE[outcome.reason] ?? "err.game.notDone", undefined, { reason: outcome.reason, headers: NO_STORE });
     }
     /*
      * A game given up is still a game that was played, and a computer sitting
@@ -93,6 +88,6 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     return NextResponse.json(outcome.game, { status: 200, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not resign that game.");
+    return serverError("err.game.resignFailed");
   }
 }

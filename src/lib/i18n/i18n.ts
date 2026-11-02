@@ -3,6 +3,7 @@ import { calendarDay, calendarMonth } from "@/lib/ui/when";
 import type { DateStyle } from "./format.constants";
 import { joinedIn, listIn, listPiecesIn, numberIn, pluralFormIn, sentenceIn, sentencesIn, wordsIn } from "./format";
 import { LOCALES, PHRASES, type PhraseKey } from "./i18n.constants";
+import { fill } from "./fill";
 import type { Locale, Paired, Vars } from "./i18n.types";
 import { dictionaryFor } from "./jaText";
 
@@ -15,19 +16,7 @@ import { dictionaryFor } from "./jaText";
  * the locale it was given.
  */
 
-/**
- * Fills `{placeholders}`. A name nobody supplied is left standing rather than
- * blanked: an empty gap in a sentence is a bug that reads as prose, and
- * `{game}` on the page is a bug that reads as a bug. The coverage test is
- * what stops either reaching a reader — it holds every translation's
- * placeholders to the English original's.
- */
-export function fill(template: string, vars?: Vars): string {
-  if (vars === undefined) return template;
-  return template.replace(/\{(\w+)\}/g, (whole, name: string) =>
-    Object.hasOwn(vars, name) ? (vars[name] as string) : whole,
-  );
-}
+export { fill } from "./fill";
 
 /** The `{placeholders}` a phrase expects, in the order they appear. */
 export function placeholdersIn(template: string): string[] {

@@ -240,6 +240,7 @@ export function Board({
         quadrantSize={spec.quadrantSize}
         cells={cells}
         checkered={spec.checkers}
+        mills={spec.mills}
         lattice={hexSkew ? { shape, board: state.board, transform: latticeTransform(size, shape) } : null}
       />
       <div
@@ -264,7 +265,8 @@ export function Board({
           const playable = legal === null || legal.has(index);
           // In a drop game any empty cell of a column with room plays that column.
           const routed = dropping && cell === null && legal !== null && legal.has(landingIndex);
-          const guided = squareGuide(guide, index, cell);
+          // A mill's men to take are marked; the veil that dims the rest would lie in squares over the board's own lines, so it has none.
+          const guided = spec.mills && guide !== null && !guide.marked.has(index) ? null : squareGuide(guide, index, cell);
           // A piece the guide holds back is not offered: it cannot be picked up at all this turn.
           const ownPiece = sliding && cell === state.toPlay && guided !== SQUARE_GUIDES.unavailable;
           const target = destinations.has(index);
@@ -284,7 +286,7 @@ export function Board({
               isWinning={winningIndices.has(index)}
               ghost={(playable || target) && !piecing ? ghost : null}
               ghostStone={inFootprint ? (footprint.get(index) ?? null) : null}
-              clickable={routed || ownPiece || target || (piecing && (cornerFits || playable))}
+              clickable={routed || ownPiece || target || (piecing && (cornerFits || playable)) || (state.pendingRemoval && live && (legal?.has(index) ?? false))}
               onHover={piecing ? setHovered : undefined}
               moveNumber={numbers.get(index) ?? null}
               mark={overlays.get(index) ?? null}
@@ -297,7 +299,7 @@ export function Board({
               */
               camp={spec.camps ? campOf(size, point) : null}
               isKing={spec.checkers ? kings.has(index) : false}
-              hideBlocked={spec.chineseCheckers || spec.hexagon}
+              hideBlocked={spec.chineseCheckers || spec.hexagon || spec.mills}
               guide={guided}
               guideColours={guideColours}
               stones={stones}

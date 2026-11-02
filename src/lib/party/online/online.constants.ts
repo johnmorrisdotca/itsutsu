@@ -30,14 +30,14 @@ export const PARTY_TURN_WAIT_MS = 7 * 24 * 60 * 60 * 1000;
  */
 export const COMPUTER_TAKEOVER_MS = 30_000;
 
-/** What a computer's seat is called at the table. */
-export const COMPUTER_SEAT_NAME = "Computer";
+export { COMPUTER_SEAT_NAME } from "./seatName.constants";
 
 /** The longest a party table's move may be as JSON: Block Five's piece and five squares is well under it. */
 export const ONLINE_MOVE_LONGEST = 400;
 
-/** What a table is told when it was started under rules that have since changed (`retiredSave`): its game cannot be shown or played on, and its seats and result are still true. */
-export const ONLINE_RETIRED_TABLE = "This game was started on a version of the game that has since changed, so it cannot be shown or played on.";
-
-/** ... and what can still be done about one that was going. */
-export const ONLINE_RETIRED_GOING = `${ONLINE_RETIRED_TABLE} Anybody at the table can end it, or leave it.`;
+/**
+ * What a table is told when it was started under rules that have since changed (`retiredSave`) is three phrases,
+ * `err.table.retired`, `err.table.retiredGoing` (what can still be done about one that was going) and
+ * `err.table.retiredOver` (what is still shown of one that ended): its game cannot be shown or played on, and its seats
+ * and result are still true.
+ */

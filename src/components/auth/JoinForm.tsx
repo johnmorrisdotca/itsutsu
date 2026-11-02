@@ -18,6 +18,7 @@ import { CODE_WORDS } from "@/lib/invite/inviteCode";
 import type { RegistrationMode } from "@/lib/site/site.types";
 import { safeDestination } from "@/lib/auth/redirect";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { refusalText } from "@/lib/api/refusalText";
 
 /** Where the address says to go afterwards, as the door's page reads it, or the one the page drew. */
 function nextInAddress(drawn: string): string {
@@ -120,7 +121,7 @@ export function JoinForm({
         setError(
           response.status === 429
             ? say.say("auth.join.tooMany")
-            : (body?.error ?? say.say("auth.join.refused")),
+            : (refusalText(body, say, "auth.join.refused")),
         );
         setBusy(false);
         return;

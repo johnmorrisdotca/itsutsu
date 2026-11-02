@@ -33,6 +33,7 @@ import { checkTsunagi } from "./tsunagi/check";
 import { ordinaryLevel } from "./ordinaryLevel";
 import { PUZZLE_SPECS } from "./puzzles.constants";
 import type { PuzzleCheck, PuzzleKind, PuzzleLevel } from "./puzzles.types";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * Whether an answer solves a puzzle: the one check the server also runs.
@@ -52,7 +53,7 @@ import type { PuzzleCheck, PuzzleKind, PuzzleLevel } from "./puzzles.types";
  */
 /** `level` decides how many guesses a Gomoji gives (`layout.ts`); a grid of any other kind does not need it. */
 export function checkSolution(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel, kumimoji?: KumimojiOptions): PuzzleCheck {
-  if (!PUZZLE_SPECS[kind].sizes.includes(size)) return { ok: false, reason: `no ${kind} at ${size}` };
+  if (!PUZZLE_SPECS[kind].sizes.includes(size)) return no("chk.noKindAt", { kind, size });
   switch (kind) {
     case "numberPlace":
     case "moreOrLess":
@@ -124,7 +125,7 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
       // The guesses, each a place once, ending on the hidden country and not before.
       return checkKuniate(size, givens, answer, "found");
     default:
-      return { ok: false, reason: `no check for ${kind}` };
+      return no("chk.noCheck", { kind });
   }
 }
 
@@ -137,20 +138,20 @@ export function checkSolution(kind: PuzzleKind, size: number, givens: string, an
 function checkBlackAndWhite(size: number, givens: string, answer: string): PuzzleCheck {
   const asked = decodeBlackAndWhite(givens, size);
   const filled = decodeBlackAndWhite(answer, size);
-  if (asked === null) return { ok: false, reason: "the givens are not a grid of stones" };
-  if (filled === null) return { ok: false, reason: "the answer is not a grid of stones" };
-  if (filled.some((cell) => cell === EMPTY)) return { ok: false, reason: "the answer has empty cells" };
-  if (asked.some((given, index) => given !== EMPTY && given !== filled[index])) return { ok: false, reason: "a printed stone was changed" };
+  if (asked === null) return no("chk.stonesGivens");
+  if (filled === null) return no("chk.stonesAnswer");
+  if (filled.some((cell) => cell === EMPTY)) return no("chk.emptyCells");
+  if (asked.some((given, index) => given !== EMPTY && given !== filled[index])) return no("chk.stoneChanged");
   for (const direction of ["row", "column"] as const) {
     const seen = new Set<string>();
     for (let at = 0; at < size; at += 1) {
       const line = Array.from({ length: size }, (_, k) => filled[direction === "row" ? at * size + k : k * size + at]!);
-      if (line.filter((cell) => cell === BLACK).length * 2 !== size) return { ok: false, reason: `${direction} ${at + 1} is not half black` };
+      if (line.filter((cell) => cell === BLACK).length * 2 !== size) return no(direction === "row" ? "chk.rowNotHalf" : "chk.columnNotHalf", { n: at + 1 });
       for (let k = 2; k < size; k += 1) {
-        if (line[k] === line[k - 1] && line[k] === line[k - 2]) return { ok: false, reason: `${direction} ${at + 1} has three alike` };
+        if (line[k] === line[k - 1] && line[k] === line[k - 2]) return no(direction === "row" ? "chk.rowThree" : "chk.columnThree", { n: at + 1 });
       }
       const spelled = line.join("");
-      if (seen.has(spelled)) return { ok: false, reason: `${direction} ${at + 1} repeats another` };
+      if (seen.has(spelled)) return no(direction === "row" ? "chk.rowRepeats" : "chk.columnRepeats", { n: at + 1 });
       seen.add(spelled);
     }
   }
@@ -164,18 +165,18 @@ function checkBlackAndWhite(size: number, givens: string, answer: string): Puzzl
  */
 export function checkOutOfGuesses(kind: PuzzleKind, size: number, givens: string, answer: string, level?: PuzzleLevel): PuzzleCheck {
   // A Solitaire given up: its moves allowed, at least one made, and not won.
-  if (kind === "solitaire") return PUZZLE_SPECS[kind].sizes.includes(size) ? checkSolitaireGivenUp(size, givens, answer, level ?? "easy") : { ok: false, reason: `no ${kind} at ${size}` };
+  if (kind === "solitaire") return PUZZLE_SPECS[kind].sizes.includes(size) ? checkSolitaireGivenUp(size, givens, answer, level ?? "easy") : no("chk.noKindAt", { kind, size });
   // A cube given up: its turns all turns the cube has, at least one made, and not solved.
   if (kind === "cube") return checkCubeGivenUp(size, givens, answer);
   // FreeCell and Spider given up, the same way; each refuses a size it is not played at.
   if (kind === "freecell") return checkFreeCellGivenUp(size, givens, answer);
   if (kind === "spider") return checkSpiderGivenUp(size, givens, answer);
   // A Kuniate's six guesses, all spent without the country.
-  if (kind === "kuniate") return PUZZLE_SPECS[kind].sizes.includes(size) ? checkKuniate(size, givens, answer, "spent") : { ok: false, reason: `no ${kind} at ${size}` };
+  if (kind === "kuniate") return PUZZLE_SPECS[kind].sizes.includes(size) ? checkKuniate(size, givens, answer, "spent") : no("chk.noKindAt", { kind, size });
   if (kind !== "gomoji" && kind !== "gomojiKana" && kind !== "gomojiMot" && kind !== "gomojiWort" && kind !== "gomojiPop" && kind !== "koushi") {
-    return { ok: false, reason: `a ${kind} cannot run out of guesses` };
+    return no("chk.cannotRunOut", { kind });
   }
-  if (!PUZZLE_SPECS[kind].sizes.includes(size)) return { ok: false, reason: `no ${kind} at ${size}` };
+  if (!PUZZLE_SPECS[kind].sizes.includes(size)) return no("chk.noKindAt", { kind, size });
   // Koushi's guesses are its swaps: every one the level gives made, and the grid not right.
   if (kind === "koushi") return checkKoushi(size, givens, answer, "spent", level);
   return checkWords(kind, size, givens, answer, "spent", level);
@@ -201,14 +202,14 @@ function checkWords(kind: PuzzleKind, size: number, givens: string, answer: stri
   const many = hidden !== null && hidden.words.length > 1;
   // "both words" for a Futago's two, "all four words" for a Yotsugo's four.
   const every = hidden !== null && hidden.words.length === 2 ? "both words" : "all four words";
-  if (hidden === null) return { ok: false, reason: kana ? "the givens are not a hidden kana word" : "the givens are not a hidden word" };
-  if (guesses === null || guesses.length === 0) return { ok: false, reason: kana ? "the answer is not whole guesses in hiragana" : "the answer is not whole guesses" };
+  if (hidden === null) return no(kana ? "chk.givensKana" : "chk.givensWord");
+  if (guesses === null || guesses.length === 0) return no(kana ? "chk.answerKana" : "chk.answerGuesses");
   // How many guesses the level gave: refused, never guessed at, without one.
-  if (level === undefined) return { ok: false, reason: "no level to count the guesses by" };
+  if (level === undefined) return no("chk.noLevelGuesses");
   const rows = wordRowsOf(kind, size, level, hidden);
   // The count before 2026-09-28, for a run kept under it: the larger of the two is the most it may hold (`guessesEverAllowed`).
   const former = formerWordRowsOf(kind, size, level, hidden);
-  if (guesses.length > Math.max(rows, former)) return { ok: false, reason: "more guesses than the rows allow" };
+  if (guesses.length > Math.max(rows, former)) return no("chk.moreGuesses");
   const lang: GomojiLanguage | "ja" = kana ? "ja" : languageOf(kind);
   let unknown: string | undefined;
   try {
@@ -218,18 +219,18 @@ function checkWords(kind: PuzzleKind, size: number, givens: string, answer: stri
     unknown = guesses.find((guess) => !known(guess) && !(hidden.words.includes(guess) && isDailyPoolWord(lang, size, guess)));
   } catch {
     // Refused rather than waved through: a check that cannot read its list (`wordData.ts`, the kana lists) cannot say the guesses are words.
-    return { ok: false, reason: kana ? "the kana word list is not loaded" : "the word list is not loaded" };
+    return no(kana ? "chk.kanaNotLoaded" : "chk.wordsNotLoaded");
   }
-  if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
+  if (unknown !== undefined) return no("chk.notInList", { word: unknown });
   const firstFound = hidden.words.map((word) => guesses.indexOf(word));
   if (ending === "found") {
-    if (firstFound.includes(-1)) return { ok: false, reason: many ? "a word was not guessed" : "the word was not guessed" };
-    if (Math.max(...firstFound) !== guesses.length - 1) return { ok: false, reason: many ? `guesses go on after ${every} were found` : "guesses go on after the word was found" };
+    if (firstFound.includes(-1)) return no(many ? "chk.aWordNotGuessed" : "chk.theWordNotGuessed");
+    if (Math.max(...firstFound) !== guesses.length - 1) return no(many ? (every === "both words" ? "chk.goOnBoth" : "chk.goOnAllFour") : "chk.goOnAfterWord");
     return { ok: true };
   }
-  if (!firstFound.includes(-1)) return { ok: false, reason: many ? `${every} were found` : "the word was found" };
+  if (!firstFound.includes(-1)) return no(many ? (every === "both words" ? "chk.foundBoth" : "chk.foundAllFour") : "chk.theWordFound");
   // The level's count, or the published count a page loaded before the levels differed ended at (`baseGuesses`).
-  if (guesses.length !== rows && guesses.length !== former && (many || guesses.length !== baseGuesses(wordGridOf(kind), size))) return { ok: false, reason: "there are guesses left" };
+  if (guesses.length !== rows && guesses.length !== former && (many || guesses.length !== baseGuesses(wordGridOf(kind), size))) return no("chk.guessesLeft");
   return { ok: true };
 }
 
@@ -252,61 +253,61 @@ function checkBackwards(kind: PuzzleKind, size: number, givens: string, answer: 
   try {
     word = hiddenOfPlay(kind, size, givens);
   } catch {
-    return { ok: false, reason: "the word list is not loaded" };
+    return no("chk.wordsNotLoaded");
   }
   const guesses = guessesOf(kind, size, answer);
-  if (word === null) return { ok: false, reason: "the givens are not a hidden word" };
-  if (guesses === null || guesses.length === 0) return { ok: false, reason: "the answer is not whole guesses" };
-  if (level === undefined) return { ok: false, reason: "no level to count the guesses by" };
+  if (word === null) return no("chk.givensWord");
+  if (guesses === null || guesses.length === 0) return no("chk.answerGuesses");
+  if (level === undefined) return no("chk.noLevelGuesses");
   const rows = backwardsGuesses(kind, size, level);
-  if (guesses.length > rows) return { ok: false, reason: "more guesses than the rows allow" };
+  if (guesses.length > rows) return no("chk.moreGuesses");
   for (const [at, guess] of guesses.entries()) {
     let known: boolean;
     try {
       known = isGuessable(kind, size, guess);
     } catch {
-      return { ok: false, reason: "the word list is not loaded" };
+      return no("chk.wordsNotLoaded");
     }
-    if (!known) return { ok: false, reason: `${guess} is not in the word list` };
+    if (!known) return no("chk.notInList", { word: guess });
     const breaks = breaksBackwardsRule(kind, guesses.slice(0, at), word, guess);
     if (breaks !== null) return { ok: false, reason: breaks };
   }
   const caught = guesses.indexOf(word);
   if (ending === "found") {
-    if (caught !== -1) return { ok: false, reason: "the word was typed" };
-    if (guesses.length !== rows) return { ok: false, reason: "there are rows left" };
+    if (caught !== -1) return no("chk.wordTyped");
+    if (guesses.length !== rows) return no("chk.rowsLeft");
     return { ok: true };
   }
-  if (caught !== guesses.length - 1) return { ok: false, reason: caught === -1 ? "the word was never typed" : "guesses go on after the word was typed" };
+  if (caught !== guesses.length - 1) return no(caught === -1 ? "chk.neverTyped" : "chk.goOnAfterTyped");
   return { ok: true };
 }
 
 function checkDodge(kind: PuzzleKind, size: number, givens: string, guesses: string[] | null, ending: "found" | "spent", level: PuzzleLevel | undefined): PuzzleCheck {
   const seed = decodeDodgeGivens(givens)!;
-  if (guesses === null || guesses.length === 0) return { ok: false, reason: "the answer is not whole guesses" };
-  if (level === undefined) return { ok: false, reason: "no level to count the guesses by" };
+  if (guesses === null || guesses.length === 0) return no("chk.answerGuesses");
+  if (level === undefined) return no("chk.noLevelGuesses");
   const rows = dodgeGuesses(kind, size);
-  if (guesses.length > rows) return { ok: false, reason: "more guesses than the rows allow" };
+  if (guesses.length > rows) return no("chk.moreGuesses");
   let allowed: (word: string) => boolean;
   if (kind === "gomojiKana") {
     try {
       const words = kanaWordsOf(size).allowed;
       allowed = (word) => words.has(word);
     } catch {
-      return { ok: false, reason: "the kana word list is not loaded" };
+      return no("chk.kanaNotLoaded");
     }
   } else {
     allowed = (word) => isWord(word, size, languageOf(kind));
   }
   const unknown = guesses.find((guess) => !allowed(guess));
-  if (unknown !== undefined) return { ok: false, reason: `${unknown} is not in the word list` };
+  if (unknown !== undefined) return no("chk.notInList", { word: unknown });
   for (let at = 1; at < guesses.length; at += 1) {
-    if (readDodge(kind, size, level, seed, guesses.slice(0, at)).found) return { ok: false, reason: "guesses go on after the word was found" };
+    if (readDodge(kind, size, level, seed, guesses.slice(0, at)).found) return no("chk.goOnAfterWord");
   }
   const found = readDodge(kind, size, level, seed, guesses).found;
-  if (ending === "found") return found ? { ok: true } : { ok: false, reason: "the word was not pinned down" };
-  if (found) return { ok: false, reason: "the word was found" };
-  if (guesses.length !== rows) return { ok: false, reason: "there are guesses left" };
+  if (ending === "found") return found ? { ok: true } : no("chk.notPinned");
+  if (found) return no("chk.theWordFound");
+  if (guesses.length !== rows) return no("chk.guessesLeft");
   return { ok: true };
 }
 
@@ -314,18 +315,18 @@ function checkDodge(kind: PuzzleKind, size: number, givens: string, guesses: str
 function checkHiddenStones(size: number, givens: string, answer: string): PuzzleCheck {
   const regions = decodeRegions(givens, size);
   const stones = decodeStones(answer, size);
-  if (regions === null) return { ok: false, reason: "the regions are not a grid" };
-  if (stones === null) return { ok: false, reason: "the answer is not a stone in every row" };
+  if (regions === null) return no("chk.regionsNotGrid");
+  if (stones === null) return no("chk.stoneEveryRow");
   const columns = new Set<number>();
   const used = new Set<number>();
   for (let row = 0; row < size; row += 1) {
     const col = stones[row];
-    if (columns.has(col)) return { ok: false, reason: `column ${col + 1} has two stones` };
+    if (columns.has(col)) return no("chk.columnTwoStones", { n: col + 1 });
     columns.add(col);
     const region = regions[row * size + col];
-    if (used.has(region)) return { ok: false, reason: "a region has two stones" };
+    if (used.has(region)) return no("chk.regionTwoStones");
     used.add(region);
-    if (row > 0 && Math.abs(col - stones[row - 1]) < 2) return { ok: false, reason: `the stones in rows ${row} and ${row + 1} touch` };
+    if (row > 0 && Math.abs(col - stones[row - 1]) < 2) return no("chk.stonesTouch", { first: row, second: row + 1 });
   }
   return { ok: true };
 }

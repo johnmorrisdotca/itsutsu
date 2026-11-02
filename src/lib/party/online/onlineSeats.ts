@@ -1,6 +1,7 @@
 // Relative, like the rest of lib/party: the browser specs import this, and Playwright resolves no alias.
 import { COMPUTER_TAKEOVER_MS, ONLINE_SEAT_KINDS, ONLINE_STATUS, PARTY_TURN_WAIT_MS } from "./online.constants";
 import type { OnlineRules, OnlineSeatAsk, OnlineSeatKind, OnlineStatus } from "./online.types";
+import type { RefusalCode } from "@/lib/api/refusal.types";
 
 /**
  * WHO MAY DO WHAT AT A TABLE ON SEVERAL DEVICES, as pure questions: the route
@@ -108,17 +109,17 @@ export function standingOf<S, M>(rules: OnlineRules<S, M>, game: S): { status: O
 export function seatAsksRefusal(
   asks: readonly OnlineSeatAsk[],
   { counts, levels, links, makerId }: { counts: readonly number[]; levels: readonly string[]; links: boolean; makerId: string },
-): string | null {
-  if (!counts.includes(asks.length)) return "That game is not played by that many.";
-  if (asks[0]?.kind !== "me") return "Seat 1 is yours.";
+): RefusalCode | null {
+  if (!counts.includes(asks.length)) return "err.table.badCount";
+  if (asks[0]?.kind !== "me") return "err.table.seatOne";
   const buddies = new Set<string>();
   for (const ask of asks.slice(1)) {
-    if (ask.kind === "me") return "You can sit in one seat.";
-    if (ask.kind === "computer" && !levels.includes(ask.level)) return "That game has no such computer player.";
-    if (ask.kind === "link" && !links) return "A member under 13 invites buddies by name rather than by a link anybody could open.";
+    if (ask.kind === "me") return "err.table.oneSeat";
+    if (ask.kind === "computer" && !levels.includes(ask.level)) return "err.table.noComputer";
+    if (ask.kind === "link" && !links) return "err.table.childLink";
     if (ask.kind === "buddy") {
-      if (ask.memberId === makerId) return "You can sit in one seat.";
-      if (buddies.has(ask.memberId)) return "Each buddy can sit in one seat.";
+      if (ask.memberId === makerId) return "err.table.oneSeat";
+      if (buddies.has(ask.memberId)) return "err.table.oneBuddySeat";
       buddies.add(ask.memberId);
     }
   }

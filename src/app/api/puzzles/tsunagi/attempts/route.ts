@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { countTsunagiAttempt } from "@/lib/puzzles/server/tsunagiRecords";
@@ -21,17 +21,17 @@ export async function POST(request: Request) {
     const tooMany = overLimit(request, "tsunagi-attempt", RATE_LIMITS.puzzleRun);
     if (tooMany !== null) return tooMany;
     const memberId = await currentMemberId();
-    if (memberId === null) return NextResponse.json({ error: "Counting attempts on an account needs one." }, { status: 401, headers: NO_STORE });
+    if (memberId === null) return refuse(401, "err.puzzle.attemptNeedsAccount", undefined, { headers: NO_STORE });
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = bodySchema.safeParse(body);
-    if (!parsed.success) return badRequest("A size and a level.");
+    if (!parsed.success) return badRequest("err.puzzle.tsunagiShape");
     const { size, level } = parsed.data;
-    if (!isTsunagiLevel(size, level)) return unprocessable(`No level ${level} at ${size}×${size}.`);
+    if (!isTsunagiLevel(size, level)) return unprocessable("err.puzzle.noTsunagiLevel", undefined, { level, size });
     const count = await countTsunagiAttempt(memberId, size, level);
     return NextResponse.json({ count }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not count that attempt.");
+    return serverError("err.puzzle.attemptFailed");
   }
 }

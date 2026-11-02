@@ -3,6 +3,8 @@ import { checkHitori, generateHitori, isHitoriBoard, solveHitori, type HitoriBoa
 import type { PuzzleCheck } from "../puzzles.types";
 import { BLANK, SHADE, charFix, charMissing, charWrong, isCodeOf, symbolFor, valueOf } from "./codes";
 import type { PencilEngine } from "./pencil.types";
+import { assertedRangeError } from "@/lib/puzzles/assertedRangeError";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * HITORI 一人, shade the repeats: Kazu's (`@johnmorrisdotca/kazu/hitori`).
@@ -39,7 +41,7 @@ const codeOf = (shaded: readonly boolean[]): string => shaded.map((one) => (one 
 export const hitori: PencilEngine = {
   codeLength: (size) => size * size,
   make(size, level, seed) {
-    if (!isSide(size)) throw new RangeError(`no Hitori at ${size}`);
+    if (!isSide(size)) throw assertedRangeError(`no Hitori at ${size}`);
     const made = generateHitori(size, seed, level);
     return { givens: made.numbers.map((number) => symbolFor(number) ?? "?").join(""), solution: codeOf(made.solution) };
   },
@@ -48,10 +50,10 @@ export const hitori: PencilEngine = {
   fits: (size, code) => hitoriShadedOf(size, code) !== null,
   check(size, givens, answer): PuzzleCheck {
     const board = hitoriBoardOf(size, givens);
-    if (board === null) return { ok: false, reason: "the givens are not a Hitori board" };
+    if (board === null) return no("chk.hitoriGivens");
     const shaded = hitoriShadedOf(size, answer);
-    if (shaded === null) return { ok: false, reason: "the answer is not a grid of shaded cells" };
-    return checkHitori(board, shaded).ok ? { ok: true } : { ok: false, reason: "a number repeats among the cells left, two shaded cells touch, or the cells left do not join up" };
+    if (shaded === null) return no("chk.hitoriAnswer");
+    return checkHitori(board, shaded).ok ? { ok: true } : no("chk.hitoriRules");
   },
   solve(size, givens) {
     const board = hitoriBoardOf(size, givens);

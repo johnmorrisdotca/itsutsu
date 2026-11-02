@@ -17,6 +17,11 @@ language here: nothing ships without a reader who can sign it off.**
 
 ## What there is today (read 2026-09-25)
 
+**Updated 2026-11-02 (ENJA-14): the "outside the dictionary" list below is now empty.** Every word a reader sees on
+Itsutsu goes through `PHRASES` (about 5,900 phrases) or a Japanese table beside its data (the games', puzzles', party
+tables' and packages' words), so a new language is a full translation of all of it, not a frame. The figures below are
+the plan's starting point as it was written.
+
 - **Two languages are spoken: English and Japanese.** `LOCALES` in
   `src/lib/i18n/i18n.constants.ts` also declares Spanish, Chinese and German
   with no dictionary, so no picker offers them (`OFFERED_LOCALES` in

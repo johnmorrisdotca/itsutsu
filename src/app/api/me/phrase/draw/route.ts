@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import {
@@ -14,6 +14,7 @@ import {
   sealTicket,
   type PickState,
 } from "@/lib/phrase/pickTicket";
+import { issueCode } from "@/lib/api/refusal";
 
 /**
  * The picker: four words offered, one kept, four times over.
@@ -49,7 +50,7 @@ const drawSchema = z
    * what it would mean.
    */
   .refine((body) => body.keep === undefined || body.drop === undefined, {
-    message: "Keep a word or take one back, not both at once.",
+    message: "err.phrase.keepOrDrop",
   });
 
 export async function POST(request: Request) {
@@ -71,13 +72,13 @@ export async function POST(request: Request) {
      */
     const me = await currentMemberId();
     if (me === null) {
-      return NextResponse.json({ error: "Sign in first." }, { status: 401, headers: NO_STORE });
+      return refuse(401, "err.signIn", undefined, { headers: NO_STORE });
     }
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = drawSchema.safeParse(body);
-    if (!parsed.success) return badRequest(parsed.error.issues[0]?.message ?? "That is not a pick.");
+    if (!parsed.success) return badRequest(issueCode(parsed.error.issues, "err.phrase.notAPick"));
 
     const state = await nextState(parsed.data, me);
     /*
@@ -87,14 +88,11 @@ export async function POST(request: Request) {
      * altered ticket pass as a new pick.
      */
     if (state === null) {
-      return NextResponse.json(
-        { error: "That pick has expired. Start again — it takes half a minute." },
-        { status: 409, headers: NO_STORE },
-      );
+      return refuse(409, "err.phrase.expired", undefined, { headers: NO_STORE });
     }
 
     const ticket = await sealTicket(state);
-    if (ticket === null) return serverError("This site cannot set a phrase: no signing secret.");
+    if (ticket === null) return serverError("err.phrase.noSecret");
 
     /*
      * The slots and the offer go back in plain sight, and that is the design
@@ -118,7 +116,7 @@ export async function POST(request: Request) {
      * be.
      */
     console.error(error);
-    return serverError("Could not offer any words.");
+    return serverError("err.phrase.drawFailed");
   }
 }
 

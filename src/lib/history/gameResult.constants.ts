@@ -41,6 +41,7 @@ export const RESULT_DRAW_REASONS = [
   "noProgressRacing",
   "noProgressTaking",
   "noProgressPlacing",
+  "noProgressMilling",
   "noMoves",
   "repetition",
   "endgameCount",
@@ -59,4 +60,5 @@ export const NO_PROGRESS_DRAW_REASONS = {
   racing: "noProgressRacing",
   taking: "noProgressTaking",
   placing: "noProgressPlacing",
+  milling: "noProgressMilling",
 } as const satisfies Record<ProgressMeasure, DrawReason>;

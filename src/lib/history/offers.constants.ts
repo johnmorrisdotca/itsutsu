@@ -1,3 +1,5 @@
+import type { RefusalCode } from "@/lib/api/refusal.types";
+
 import type { OfferRefusal } from "./offers.types";
 
 /**
@@ -9,8 +11,7 @@ import type { OfferRefusal } from "./offers.types";
  * can end up disagreeing. It names what to do instead, so the refusal is not a
  * dead end for whatever put the request together.
  */
-export const OFFER_NOT_ACCEPTED =
-  "That game is an offer nobody has accepted yet. It is answered, not played.";
+export const OFFER_NOT_ACCEPTED: RefusalCode = "err.game.notAccepted";
 
 /** 409: the game exists and is real, and is simply not a game yet. */
 export const OFFER_NOT_ACCEPTED_STATUS = 409;
@@ -43,13 +44,13 @@ export const OFFER_REFUSAL_STATUS: Record<OfferRefusal, number> = {
   "over-limit": 422,
 };
 
-export const OFFER_REFUSAL_MESSAGE: Record<OfferRefusal, string> = {
-  "not-found": "No such offer.",
-  "not-an-offer": "No such offer.",
-  "not-yours": "No such offer.",
-  answered: "That offer has already been answered.",
-  "own-offer": "That is your own offer — it is waiting on somebody else.",
-  "no-seat": "That offer has no seat to take.",
+export const OFFER_REFUSAL_MESSAGE: Record<OfferRefusal, RefusalCode> = {
+  "not-found": "err.offer.none",
+  "not-an-offer": "err.offer.none",
+  "not-yours": "err.offer.none",
+  answered: "err.offer.answered",
+  "own-offer": "err.offer.own",
+  "no-seat": "err.offer.noSeat",
   /* Replaced by `activeLimitRefusal`, which quotes the reader their own count. */
-  "over-limit": "You have as many games on the go as this site allows at once.",
+  "over-limit": "err.game.atLimit",
 };

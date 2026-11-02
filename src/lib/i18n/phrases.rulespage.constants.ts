@@ -33,6 +33,29 @@ export const PHRASES_RULESPAGE = {
   "rulespage.object.campsFill":
     "Be the first to fill the far corner camp with your pieces. Nothing is captured and no line counts for anything.",
   "rulespage.object.campsBlock": "A side that keeps pieces at home to block still loses once every other square of its camp is taken.",
+  "rulespage.object.breakthroughWin": "Be the first to get a man to the far row, or take the other side's last man.",
+  "rulespage.object.linesOfActionWin": "Join all your men into one group, touching along sides or corners.",
+  "rulespage.object.amazonsWin": "Leave your opponent with no move to make. There is no taking: the board fills with arrows until somebody has nowhere to go.",
+  "rulespage.board.breakthrough": "Each side's men fill its two nearest rows.",
+  "rulespage.board.linesOfAction": "Twelve men each: black on the top and bottom edges, white on the left and right, with the corners empty.",
+  "rulespage.board.amazons": "Four queens each, set out the same way on either side.",
+  "rulespage.play.breakthroughStep": "A man steps one square forward, straight or on a diagonal, to an empty square. Pick a man, then the square it goes to.",
+  "rulespage.play.breakthroughTake": "It takes only on the diagonal, by stepping onto an enemy man. A man straight ahead blocks it.",
+  "rulespage.play.breakthroughEnd": "A man only ever goes forward, so a game always ends with a winner.",
+  "rulespage.play.linesOfActionMove": "A man moves along a row, column or diagonal, exactly as many squares as there are men of either colour on that line.",
+  "rulespage.play.linesOfActionJump": "It may jump its own men but never the other side's, and it takes an enemy man by landing on it.",
+  "rulespage.play.linesOfActionEnd": "A move that joins both sides wins for the one who moved. A hundred moves each with nothing taken is a draw: that count is this site's, not the published rule.",
+  "rulespage.play.amazonsMove": "A turn is two things. First move one of your queens any distance along a row, column or diagonal, over nothing.",
+  "rulespage.play.amazonsArrow": "Then shoot an arrow from where it landed, the same way. The arrow's square is gone for good, and nothing can stop on it or cross it. A queen may shoot back the way it came.",
+  "rulespage.play.amazonsEnd": "There is no pass and there are no draws: a player who cannot move and shoot on their turn has lost.",
+  "rulespage.object.millsWin": "Bring your opponent down to two men, or leave them with no move.",
+  "rulespage.object.millsMill": "Three of your men along one drawn line make a mill, and each mill takes one of your opponent's men off the board.",
+  "rulespage.board.mills": "Three squares, one inside another, joined at the middle of each side: twenty-four points, and nine men for each player.",
+  "rulespage.play.millsLay": "First the men are laid, one a turn, on any empty point.",
+  "rulespage.play.millsTake": "A mill lets you take a man at once: any that is not in a mill, unless all of them are.",
+  "rulespage.play.millsMove": "Once all nine are laid, a turn moves one of your men along a line to the empty point next to it.",
+  "rulespage.play.millsFly": "Down to three men, yours fly: a move can go to any empty point.",
+  "rulespage.play.millsEnd": "Fifty moves each with no man laid or taken is a draw: that count is this site's, not an old rule.",
   "rulespage.object.starFill":
     "Be the first to fill the point of the star directly opposite yours with your own pieces. Nothing is captured and no line counts for anything.",
   "rulespage.object.starBlock": "A side that keeps pieces at home to block still loses once every other cell of the far point is taken.",
@@ -167,6 +190,8 @@ export const PHRASES_RULESPAGE = {
     "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only pieces jumping.",
   "rulespage.house.readingOffGo":
     "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines here, only groups, liberties and territory.",
+  "rulespage.house.readingOffMen":
+    "The threat reading, hints and the chance-of-winning bar are switched off: there are no lines to read here, only men to move.",
   "rulespage.house.readingOffMoving":
     "The threat reading, hints and the chance-of-winning bar are switched off: stones move after they are placed, so a line-by-line reading says nothing true.",
   "rulespage.checkers.board":

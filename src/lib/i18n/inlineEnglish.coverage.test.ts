@@ -34,74 +34,12 @@ import {
  *
  * Nothing here reads the clock, the network or a database.
  */
-const RECORDED = [
-  // ENJA-05, game copy tables: every game's rules, tagline, openings, bots and family names. Each folder here holds only what is left of it: the games', openings', bots' and families' own words are done, beside their Japanese.
-  // ENJA-06, set-up screen, game screen and every ending
-  "src/lib/history",
-  // ENJA-07, puzzles: the folders are done, and what is left is the stamped screens, named one by one
-  // ENJA-10, pages: home, About, Learn, players, history, My account, feed, inbox, join
-  // ENJA-13, API errors a person can see
-  "src/app/api",
-  "src/proxy.ts",
-  "src/lib/phrase",
-  "src/lib/api",
-  // ENJA-13 also takes the puzzles' refusals
-  "src/lib/puzzles/puzzleCheck.ts",
-  "src/lib/puzzles/bridges/check.ts",
-  "src/lib/puzzles/koushi/check.ts",
-  "src/lib/puzzles/cube/check.ts",
-  "src/lib/puzzles/freecell/check.ts",
-  "src/lib/puzzles/solitaire/check.ts",
-  "src/lib/puzzles/spider/check.ts",
-  "src/lib/puzzles/meikyuu/check.ts",
-  "src/lib/puzzles/pictureLogic/check.ts",
-  "src/lib/puzzles/tobiishi/check.ts",
-  "src/lib/puzzles/tsunagi/check.ts",
-  "src/lib/puzzles/suido/check.ts",
-  "src/lib/puzzles/pencil/akari.ts",
-  "src/lib/puzzles/pencil/crossSums.ts",
-  "src/lib/puzzles/pencil/hitori.ts",
-  "src/lib/puzzles/pencil/loop.ts",
-  "src/lib/puzzles/pencil/regions.ts",
-  "src/lib/puzzles/pencil/shikaku.ts",
-  "src/lib/puzzles/jirai/board.ts",
-  "src/lib/puzzles/server/puzzleRaceChecks.ts",
-  "src/lib/puzzles/server/puzzleRaces.ts",
-  // ENJA-13 also takes the party tables' refusals
-  "src/lib/party/kept/keptReport.ts",
-  "src/lib/party/online/onlineSeats.ts",
-  "src/lib/party/online/online.constants.ts",
-  "src/lib/party/online/server/tableCreate.ts",
-  "src/lib/party/online/server/tableMove.ts",
-  "src/lib/party/online/server/tableSeating.ts",
-];
-
-const TICKETS = /^ENJA-(?:05|06|07|08|09|10|11|12|13)$/;
-
 describe("the pending list of English outside the phrase table", () => {
-  it("never holds a path the recorded list does not", () => {
-    const grown = PENDING_PATHS.map((entry) => entry.path).filter((path) => !RECORDED.includes(path));
-    expect(grown, "PENDING_PATHS may only shrink: put the text through PHRASES instead of listing its path").toEqual([]);
+  it("stays empty", () => {
+    expect(PENDING_PATHS, "every word goes through PHRASES: put the text there instead of listing its path").toEqual([]);
   });
 
-  it("does not keep a path the script has already dropped", () => {
-    const kept = RECORDED.filter((path) => !PENDING_PATHS.some((entry) => entry.path === path));
-    expect(kept, "a finished area is off the script's list: take it off RECORDED too").toEqual([]);
-  });
-
-  it("names the ticket that takes each path off, once", () => {
-    for (const entry of PENDING_PATHS) expect(entry.ticket, entry.path).toMatch(TICKETS);
-    const paths = PENDING_PATHS.map((entry) => entry.path);
-    expect(new Set(paths).size).toBe(paths.length);
-  });
-
-  it("names only paths that exist, and each still holds English", () => {
-    const verdict = judge(scan(), PENDING_PATHS, (path) => existsSync(path));
-    expect(verdict.missing.map((entry) => entry.path), "no longer exists: take it off the list").toEqual([]);
-    expect(verdict.finished.map((entry) => entry.path), "holds no English any more: take it off the list").toEqual([]);
-  });
-
-  it("leaves no English outside the list", () => {
+  it("leaves no English anywhere", () => {
     const verdict = judge(scan(), PENDING_PATHS);
     const lines = verdict.violations.map((v) => `${v.file}:${v.line} [${v.kind}] ${v.snippet.slice(0, 80)}`);
     expect(lines).toEqual([]);

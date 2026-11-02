@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { NO_STORE, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, refuse, serverError } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { declineOffer } from "@/lib/history/offerAnswer";
@@ -25,14 +25,11 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     const { id } = await ctx.params;
     const outcome = await declineOffer(id, await currentMemberId());
     if (!outcome.ok) {
-      return NextResponse.json(
-        { error: outcome.said ?? OFFER_REFUSAL_MESSAGE[outcome.reason], reason: outcome.reason },
-        { status: OFFER_REFUSAL_STATUS[outcome.reason], headers: NO_STORE },
-      );
+      return refuse(OFFER_REFUSAL_STATUS[outcome.reason], outcome.said?.code ?? OFFER_REFUSAL_MESSAGE[outcome.reason], outcome.said?.values, { reason: outcome.reason, headers: NO_STORE });
     }
     return NextResponse.json({ declined: true }, { status: 200, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not decline that game.");
+    return serverError("err.offer.declineFailed");
   }
 }

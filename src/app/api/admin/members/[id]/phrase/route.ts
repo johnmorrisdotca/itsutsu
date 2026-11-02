@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, operatorRefusal, readJson } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
 import { logOperatorAction, operatorActor } from "@/lib/auth/operatorLog";
 import { currentAdmin } from "@/lib/auth/requireAdmin";
-import { setPhraseAsOperator } from "@/lib/phrase/operatorPhrase";
+import { setPhraseAsOperator } from "./operatorPhrase";
 import { completedPhrase, readTicket } from "@/lib/phrase/pickTicket";
+import { english, issueCode } from "@/lib/api/refusal";
 
 /**
  * The operator setting a member's four words for them.
@@ -79,17 +80,18 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/admin/member
     const { id } = await ctx.params;
 
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return operatorRefusal(400, "Expected a JSON body.");
     const parsed = setSchema.safeParse(body);
     if (!parsed.success) {
       // The unticked box gets its own wording, as it does on the member's own
       // route: every other fault here is a client sending nonsense, and this
       // one is a person who has not written the words down for somebody.
       const unacknowledged = parsed.error.issues.some((issue) => issue.path[0] === "acknowledged");
-      return badRequest(
+      return operatorRefusal(
+        400,
         unacknowledged
           ? "Write the four words down to give to this member first, then tick the box."
-          : (parsed.error.issues[0]?.message ?? "That is not a finished phrase."),
+          : english(issueCode(parsed.error.issues, "err.phrase.notFinished")),
       );
     }
 
@@ -108,14 +110,15 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/admin/member
       );
     }
     const words = completedPhrase(state);
-    if (words === null) return unprocessable("That phrase is not finished: four words are needed.");
+    if (words === null) return operatorRefusal(422, "That phrase is not finished: four words are needed.");
 
     // The words and their row in the operator log are one transaction: see `setPhraseAsOperator`.
     const outcome = await setPhraseAsOperator(id, words, { replacing: parsed.data.replacing === true, by: operatorActor(me) });
     if (!outcome.ok) {
-      if (outcome.reason === "no-member") return notFound("No such member.");
+      if (outcome.reason === "no-member") return operatorRefusal(404, "No such member.");
       if (outcome.reason === "not-claimable") {
-        return unprocessable(
+        return operatorRefusal(
+          422,
           "That row is not an account anybody signs in to — a kept record, a seeded row or a bot — so four words would be a way into nobody's account.",
         );
       }
@@ -135,7 +138,7 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/admin/member
           { status: 409, headers: NO_STORE },
         );
       }
-      return unprocessable("Those are not four words from the list.");
+      return operatorRefusal(422, "Those are not four words from the list.");
     }
 
     /*
@@ -168,6 +171,6 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/admin/member
      * about to use as a password.
      */
     console.error(error);
-    return serverError("Could not set those words.");
+    return operatorRefusal(500, "Could not set those words.");
   }
 }

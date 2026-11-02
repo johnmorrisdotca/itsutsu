@@ -1,7 +1,7 @@
 import { inboxSeatTaken } from "@/lib/inbox/inbox";
 import { NextResponse } from "next/server";
 
-import { NO_STORE, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { NO_STORE, refuse, refuseWith, serverError } from "@/lib/api/apiResponse";
 import { matchPath } from "@/lib/gomoku/slugs";
 import { currentSession, currentMemberId } from "@/lib/auth/currentSession";
 import { sitAtOpenSeat } from "@/lib/history/openGames";
@@ -42,18 +42,12 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
      */
     const held = (await cookies()).get(seatCookieName(id))?.value;
     if (held !== undefined && (await seatForToken(id, held)) !== null) {
-      return NextResponse.json(
-        { error: "You already have a seat at this board.", reason: "own-seat" },
-        { status: 409, headers: NO_STORE },
-      );
+      return refuse(409, "err.sit.already", undefined, { reason: "own-seat", headers: NO_STORE });
     }
 
     const mineFirst = await currentMemberId();
     if (mineFirst !== null && (await wouldAnswerTheirOwnInvitation(id, mineFirst))) {
-      return NextResponse.json(
-        { error: "You posted this seat — it is waiting for somebody else.", reason: "own-seat" },
-        { status: 409, headers: NO_STORE },
-      );
+      return refuse(409, "err.sit.postedOwn", undefined, { reason: "own-seat", headers: NO_STORE });
     }
     /*
      * Twenty boards is the limit however you came by the twenty-first, and
@@ -71,18 +65,12 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
      */
     if (mineFirst !== null) {
       const atTheLimit = await memberOverActiveLimit([mineFirst]);
-      if (atTheLimit !== null) return unprocessable(activeLimitRefusal(atTheLimit));
+      if (atTheLimit !== null) return refuseWith(422, activeLimitRefusal(atTheLimit));
     }
 
     const outcome = await sitAtOpenSeat(id);
     if (!outcome.ok) {
-      return NextResponse.json(
-        {
-          error: outcome.reason === "taken" ? "Somebody else just took that seat." : "No such game.",
-          reason: outcome.reason,
-        },
-        { status: outcome.reason === "taken" ? 409 : 404, headers: NO_STORE },
-      );
+      return refuse(outcome.reason === "taken" ? 409 : 404, outcome.reason === "taken" ? "err.sit.justTaken" : "err.game.none", undefined, { reason: outcome.reason, headers: NO_STORE });
     }
     const session = await currentSession();
     const mine = mineFirst;
@@ -116,6 +104,6 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     return response;
   } catch (error) {
     console.error(error);
-    return serverError("Could not take that seat.");
+    return serverError("err.sit.failed");
   }
 }

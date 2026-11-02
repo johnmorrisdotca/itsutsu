@@ -68,7 +68,7 @@ describe("the server plays a win again before it counts", () => {
 });
 
 describe("a Daily counts for the day it was made on", () => {
-  it.each(["fallingTriplets", "colourChains", "stoneCollapse", "gemSwap"] as const)("%s: a finished Daily of today or the day before counts, and no other day", (kind) => {
+  it.each(["fallingTriplets", "colourChains", "stoneCollapse", "gemSwap", "tsumiki"] as const)("%s: a finished Daily of today or the day before counts, and no other day", (kind) => {
     const finished = finishedDaily(kind, TODAY);
     expect(verifyHousekiWin(kind, { kind: "daily" }, finished, TODAY)).toMatchObject({ ok: true, campaign: "daily", levelKey: TODAY, marks: 0 });
     // Handed in a day later (the player's day had not ended where they were), it is still the day it was made on.

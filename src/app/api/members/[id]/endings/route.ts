@@ -22,13 +22,13 @@ export async function GET(request: Request, ctx: RouteContext<"/api/members/[id]
     const query = new URL(request.url).searchParams;
     const variant = query.get("variant") ?? "";
     const outcome = (query.get("outcome") ?? "all") as EndingsOutcome;
-    if (!(RULE_VARIANT_LIST as readonly string[]).includes(variant)) return badRequest("Which game?");
-    if (!(ENDINGS_OUTCOME_LIST as readonly string[]).includes(outcome)) return badRequest("Won, lost or all?");
+    if (!(RULE_VARIANT_LIST as readonly string[]).includes(variant)) return badRequest("err.member.endingsGame");
+    if (!(ENDINGS_OUTCOME_LIST as readonly string[]).includes(outcome)) return badRequest("err.member.endingsOutcome");
 
     const games = await fetchEndings(id, variant, outcome);
     return NextResponse.json({ games }, { status: 200, headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not read those games.");
+    return serverError("err.member.endingsFailed");
   }
 }

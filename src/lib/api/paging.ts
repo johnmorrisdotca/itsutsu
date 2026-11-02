@@ -1,3 +1,5 @@
+import { said } from "./refusal";
+import type { RefusalCode, RefusalValues } from "./refusal.types";
 import type {
   Cursor,
   PagingRefusal,
@@ -66,8 +68,8 @@ export const PAGE_LIMIT_DEFAULT = 20;
 /** A list's own bounds, where they are not the shared ones. */
 export type LimitBounds = { readonly fallback?: number; readonly max?: number };
 
-function refusal(message: string): PagingRefusal {
-  return { error: message };
+function refusal(code: RefusalCode, values?: RefusalValues): PagingRefusal {
+  return said(code, values);
 }
 
 export function isRefusal(value: unknown): value is PagingRefusal {
@@ -79,7 +81,7 @@ export function sortWords<Field extends string>(spec: SortSpec<Field>): string[]
   return spec.columns.map((column) => column.param);
 }
 
-function columnFor<Field extends string>(
+export function columnFor<Field extends string>(
   spec: SortSpec<Field>,
   param: string,
 ): SortColumn<Field> | undefined {
@@ -126,9 +128,7 @@ export function parseSort<Field extends string>(
   const [word, attached] = raw.trim().split(":", 2);
   const column = columnFor(spec, word);
   if (column === undefined) {
-    return refusal(
-      `"${word}" is not a sort ${spec.of} has. Try one of: ${sortWords(spec).join(", ")}.`,
-    );
+    return refusal("err.paging.noSort", { word: word ?? "", of: spec.of, sorts: sortWords(spec).join(", ") });
   }
 
   /*
@@ -140,7 +140,7 @@ export function parseSort<Field extends string>(
   if (attached !== undefined) {
     const direction = directionWord(attached);
     if (direction === null) {
-      return refusal(`"${attached}" is not a direction. Use "asc" or "desc".`);
+      return refusal("err.paging.noDirection", { word: attached });
     }
     return { column, direction, asked: true };
   }
@@ -149,7 +149,7 @@ export function parseSort<Field extends string>(
   if (older !== null && older.trim() !== "") {
     const direction = directionWord(older.trim());
     if (direction === null) {
-      return refusal(`"${older.trim()}" is not a direction. Use "asc" or "desc".`);
+      return refusal("err.paging.noDirection", { word: older.trim() });
     }
     return { column, direction, asked: true };
   }
@@ -244,52 +244,4 @@ export function ariaSort<Field extends string>(
 ): "ascending" | "descending" | "none" {
   if (current.column.param !== column.param) return "none";
   return current.direction === "asc" ? "ascending" : "descending";
-}
-
-/**
- * What is wrong with a sort declaration, as a list of sentences.
- *
- * A spec is data, and data goes wrong quietly: a fallback naming a column that
- * was renamed, two columns claiming the same word in the address, a column with
- * no index and no reason given. None of that fails a build on its own, and all
- * of it produces a list that orders by something nobody chose. So it is checked,
- * and `paging.coverage.test.ts` runs this over every spec on the site.
- *
- * The index rule is the one worth having. TypeScript already forces a column to
- * carry either an index name or a reason, so what is left for this to catch is a
- * reason that says nothing — and a blank string satisfies a type.
- */
-export function pagingSpecProblems<Field extends string>(spec: SortSpec<Field>): string[] {
-  const problems: string[] = [];
-  if (spec.columns.length === 0) problems.push(`${spec.of} declares no sortable columns.`);
-
-  const seen = new Set<string>();
-  for (const column of spec.columns) {
-    if (seen.has(column.param)) {
-      problems.push(`${spec.of} declares "${column.param}" twice.`);
-    }
-    seen.add(column.param);
-
-    if (column.param.trim() === "") problems.push(`${spec.of} has a column with no word for it.`);
-    if (column.label.trim() === "") {
-      problems.push(`${spec.of}'s "${column.param}" has no heading.`);
-    }
-    if (/[A-Z]/.test(column.param)) {
-      problems.push(
-        `${spec.of}'s "${column.param}" is camelCase; an address says plain words.`,
-      );
-    }
-    if (column.index === null && (column.unindexedBecause ?? "").trim().length < 20) {
-      problems.push(
-        `${spec.of}'s "${column.param}" has no index and no reason worth reading for why not.`,
-      );
-    }
-  }
-
-  if (columnFor(spec, spec.fallback.param) === undefined) {
-    problems.push(
-      `${spec.of} falls back to "${spec.fallback.param}", which it does not declare.`,
-    );
-  }
-  return problems;
 }

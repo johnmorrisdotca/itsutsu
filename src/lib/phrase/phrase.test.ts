@@ -106,8 +106,8 @@ describe("phraseProblems", () => {
   });
 
   it("names each fault in words a person could act on", () => {
-    expect(phraseProblems(["acid", "zebra"]).join(" ")).toMatch(/four/i);
-    expect(phraseProblems(["acid", "zebra", "mango", "xyzzy"]).join(" ")).toMatch(/xyzzy/);
+    expect(phraseProblems(["acid", "zebra"]).map((problem) => problem.error).join(" ")).toMatch(/four/i);
+    expect(phraseProblems(["acid", "zebra", "mango", "xyzzy"]).map((problem) => problem.error).join(" ")).toMatch(/xyzzy/);
   });
 
   it("does not call a repeated word a fault — see canonicalPhrase", () => {

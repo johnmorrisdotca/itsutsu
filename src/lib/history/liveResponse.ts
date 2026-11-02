@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { NO_STORE, badRequest, unprocessable, type ApiError } from "@/lib/api/apiResponse";
+import { NO_STORE, badRequest, refuse, unprocessable, type ApiError } from "@/lib/api/apiResponse";
 import { matchPath } from "@/lib/gomoku/slugs";
 import type { Against } from "./liveAgainst";
 import type { SettingsAsPlayed } from "./liveAsPlayed";
@@ -34,9 +34,9 @@ const SEAT_COOKIE_DAYS = 30;
  * asked for.
  */
 export function refusalResponse(refused: CreationRefusal): NextResponse<ApiError> {
-  if (refused.status === 400) return badRequest(refused.error);
-  if (refused.status === 422) return unprocessable(refused.error, refused.issues);
-  return NextResponse.json({ error: refused.error }, { status: refused.status, headers: NO_STORE });
+  if (refused.status === 400) return badRequest(refused.code, refused.values);
+  if (refused.status === 422) return unprocessable(refused.code, refused.issues, refused.values);
+  return refuse(refused.status, refused.code, refused.values, { headers: NO_STORE });
 }
 
 /**

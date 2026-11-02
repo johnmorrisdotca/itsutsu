@@ -1,5 +1,7 @@
 import { VARIANT_SPECS, boardSizesFor } from "@/lib/gomoku/gomoku.constants";
 import type { RuleVariant } from "@/lib/gomoku/gomoku.types";
+import { said } from "@/lib/api/refusal";
+import type { Said } from "@/lib/api/refusal.types";
 
 /**
  * Whether a game could be won at all, asked before it is written.
@@ -35,15 +37,12 @@ export function unwinnableBecause(settings: {
   variant: string;
   size: number;
   winLength: number;
-}): string | null {
+}): Said | null {
   const spec = VARIANT_SPECS[settings.variant as RuleVariant];
-  if (spec === undefined) return `${settings.variant} is not a game this site has.`;
+  if (spec === undefined) return said("err.game.notOurs", { variant: settings.variant });
 
   if (spec.winLength !== null && settings.winLength !== spec.winLength) {
-    return (
-      `${settings.variant} is played to ${spec.winLength} in a row, not ${settings.winLength}. ` +
-      `A game written with the wrong length has taken its rules from somewhere else.`
-    );
+    return said("err.game.wrongLength", { variant: settings.variant, length: spec.winLength, asked: settings.winLength });
   }
 
   /*
@@ -53,15 +52,12 @@ export function unwinnableBecause(settings: {
    * a five on it, and has never needed the five.
    */
   if (spec.winLength === null && settings.winLength > settings.size) {
-    return (
-      `${settings.winLength} in a row will not fit on a ${settings.size}×${settings.size} board, ` +
-      `so nobody could ever win.`
-    );
+    return said("err.game.wontFit", { length: settings.winLength, size: settings.size });
   }
 
   const sizes = boardSizesFor(settings.variant as RuleVariant);
   if (!sizes.includes(settings.size)) {
-    return `${settings.variant} is not played on ${settings.size}×${settings.size}. It plays on: ${sizes.join(", ")}.`;
+    return said("err.game.notThatSize", { variant: settings.variant, size: settings.size, sizes: sizes.join(", ") });
   }
 
   return null;
@@ -69,8 +65,12 @@ export function unwinnableBecause(settings: {
 
 /** Thrown when a game that could not be won was about to be written. */
 export class UnwinnableGame extends Error {
-  constructor(reason: string) {
-    super(reason);
-    this.name = "UnwinnableGame";
+  /** Why, as the key and values a page says in the reader's language (the message is the same in English). */
+  readonly said: Said;
+
+  constructor(reason: Said) {
+    super(reason.error);
+    this.name = new.target.name;
+    this.said = reason;
   }
 }

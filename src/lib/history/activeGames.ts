@@ -1,5 +1,7 @@
 import "server-only";
 
+import { said } from "@/lib/api/refusal";
+import type { Said } from "@/lib/api/refusal.types";
 import { adminEmails } from "@/lib/auth/admin";
 import { isBotId } from "@/lib/bots/bots";
 import { prisma } from "@/lib/prisma";
@@ -167,9 +169,6 @@ export async function memberOverActiveLimit(
  * so the sentence says the limit the check actually applied — the one place a
  * number and a rule could otherwise drift apart.
  */
-export function activeLimitRefusal(over: OverTheLimit): string {
-  return (
-    `You have ${over.count} games on the go, and ${over.limit} at once is the limit here — ` +
-    `finish or resign one before taking on another.`
-  );
+export function activeLimitRefusal(over: OverTheLimit): Said {
+  return said("err.game.limit", { count: over.count, limit: over.limit });
 }

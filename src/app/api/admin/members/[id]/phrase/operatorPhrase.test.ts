@@ -43,7 +43,7 @@ vi.mock("@/lib/prisma", () => ({
     },
   },
 }));
-vi.mock("./phraseStore", () => ({ setPhrase: (...args: unknown[]) => setPhrase(...(args as [])) }));
+vi.mock("@/lib/phrase/phraseStore", () => ({ setPhrase: (...args: unknown[]) => setPhrase(...(args as [])) }));
 
 const { phraseTarget, setPhraseAsOperator } = await import("./operatorPhrase");
 

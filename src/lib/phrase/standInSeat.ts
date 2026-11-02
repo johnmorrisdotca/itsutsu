@@ -25,6 +25,7 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 import { activeLimitRefusal, memberOverActiveLimit } from "@/lib/history/activeGames";
 import { prisma } from "@/lib/prisma";
+import type { Said } from "@/lib/api/refusal.types";
 
 export type StandInRefusal =
   | "no-game"
@@ -36,7 +37,7 @@ export type StandInRefusal =
 
 export type StandInOutcome =
   | { ok: true; seat: Stone; token: string; variant: string }
-  | { ok: false; reason: StandInRefusal; said?: string };
+  | { ok: false; reason: StandInRefusal; said?: Said };
 
 const SEAT_ROW = {
   variant: true,

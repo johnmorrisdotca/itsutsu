@@ -2,6 +2,8 @@ import { STONES } from "@/lib/gomoku/gomoku.constants";
 import type { Stone } from "@/lib/gomoku/gomoku.types";
 
 import type { CreationAsked, CreationRefusal } from "./liveRequest";
+import { said } from "@/lib/api/refusal";
+import type { RefusalCode } from "@/lib/api/refusal.types";
 
 /**
  * A MATCH: two, four or six games made at once between the same two players,
@@ -41,11 +43,11 @@ export type MatchSize = (typeof MATCH_SIZES)[number];
 export function matchRefusal(asked: CreationAsked): CreationRefusal | null {
   const { games, open, hotSeat, rematch, from, challenge, challengeId } = asked.data;
   if (games === 1) return null;
-  const refuse = (why: string): CreationRefusal => ({ status: 422, error: `A match of ${games} games ${why}` });
-  if (open) return refuse("needs somebody named to play; a posted seat could be taken for one game and not the rest.");
-  if (hotSeat) return refuse("is between two players, not two chairs at one screen.");
-  if (rematch !== undefined || from !== undefined) return refuse("starts fresh; a rematch or a fork keeps the colours it came from.");
-  if (challenge === undefined && challengeId === undefined) return refuse("needs somebody named to play.");
+  const refuse = (code: RefusalCode): CreationRefusal => ({ status: 422, ...said(code, { games }) });
+  if (open) return refuse("err.match.posted");
+  if (hotSeat) return refuse("err.match.hotSeat");
+  if (rematch !== undefined || from !== undefined) return refuse("err.match.fresh");
+  if (challenge === undefined && challengeId === undefined) return refuse("err.match.needNamed");
   return null;
 }
 

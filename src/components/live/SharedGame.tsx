@@ -55,6 +55,7 @@ import { otherStone } from "@/lib/gomoku/rules/board";
 import { ConfirmMovesSwitch } from "./ConfirmMovesSwitch";
 import { POLL_FAST_MS, POLL_MS } from "./live.constants";
 import { MOVE_KINDS } from "@/lib/gomoku/gomoku.constants";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * A game played from two devices.
@@ -211,7 +212,7 @@ export function SharedGame({
       const payload = (await response.json().catch(() => null)) as {
         error?: string;
       } | null;
-      setError(payload?.error ?? say.say("live.moveCouldNotBePlayed"));
+      setError(refusalText(payload, say, "live.moveCouldNotBePlayed"));
       await mutate();
       return;
     }

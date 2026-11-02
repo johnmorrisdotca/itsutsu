@@ -3,6 +3,7 @@ import { checkRegions, generateRegions, isRegionsBoard, solveRegions, type Regio
 import type { PuzzleCheck } from "../puzzles.types";
 import { BLANK, charFix, charMissing, charWrong, symbolFor, valueOf } from "./codes";
 import type { PencilEngine } from "./pencil.types";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * REGIONS, number the regions by their size: Kazu's (`@johnmorrisdotca/kazu/regions`).
@@ -46,13 +47,13 @@ export const regions: PencilEngine = {
   fits: (size, code) => regionsEntriesOf(size, code) !== null,
   check(size, givens, answer): PuzzleCheck {
     const board = regionsBoardOf(size, givens);
-    if (board === null) return { ok: false, reason: "the givens are not a Regions board" };
+    if (board === null) return no("chk.regionsGivens");
     const entries = regionsEntriesOf(size, answer);
-    if (entries === null) return { ok: false, reason: "the answer is not a grid of numbers" };
-    if (board.givens.some((given, at) => given !== 0 && given !== entries[at])) return { ok: false, reason: "a printed number was changed" };
+    if (entries === null) return no("chk.regionsAnswer");
+    if (board.givens.some((given, at) => given !== 0 && given !== entries[at])) return no("chk.regionsChanged");
     const verdict = checkRegions(board, entries);
     if (verdict.ok && verdict.complete) return { ok: true };
-    return { ok: false, reason: verdict.complete ? "a region is not as big as its number, or two regions of one size touch" : "some cells are empty" };
+    return no(verdict.complete ? "chk.regionsRules" : "chk.cellsEmpty");
   },
   solve(size, givens) {
     const board = regionsBoardOf(size, givens);

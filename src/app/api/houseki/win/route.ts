@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, readJson, serverError, unprocessable } from "@/lib/api/apiResponse";
+import { badRequest, NO_STORE, readJson, refuse, serverError, unprocessable } from "@/lib/api/apiResponse";
 import { RATE_LIMITS, overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId } from "@/lib/auth/currentSession";
 import { HOUSEKI_CAMPAIGN_LIST, HOUSEKI_KIND_LIST } from "@/lib/houseki/houseki.constants";
@@ -37,15 +37,15 @@ const bodySchema = z.object({
 
 /** What each refusal says, in the words the page shows beside "this win was not counted". */
 const REFUSALS = {
-  "not-counted": "Only a level or the Daily is counted.",
-  "not-a-game": "That is not a game.",
-  "no-daily": "This game has no Daily.",
-  "no-such-level": "There is no such level.",
-  "not-that-level": "That is not a game of that level.",
-  "not-won": "That game was not won.",
-  "not-today": "That is not today's Daily.",
-  "daily-not-finished": "That Daily is not finished.",
-  "would-not-replay": "The game could not be played again from its start.",
+  "not-counted": "err.houseki.notCounted",
+  "not-a-game": "err.houseki.notAGame",
+  "no-daily": "err.houseki.noDaily",
+  "no-such-level": "err.houseki.noLevel",
+  "not-that-level": "err.houseki.notThatLevel",
+  "not-won": "err.houseki.notWon",
+  "not-today": "err.houseki.notToday",
+  "daily-not-finished": "err.houseki.dailyNotFinished",
+  "would-not-replay": "err.houseki.wouldNotReplay",
 } as const;
 
 export async function POST(request: Request) {
@@ -53,17 +53,17 @@ export async function POST(request: Request) {
     const tooMany = overLimit(request, "houseki-win", RATE_LIMITS.housekiWin);
     if (tooMany !== null) return tooMany;
     const memberId = await currentMemberId();
-    if (memberId === null) return NextResponse.json({ error: "Counting a win for points needs an account." }, { status: 401, headers: NO_STORE });
+    if (memberId === null) return refuse(401, "err.houseki.needAccount", undefined, { headers: NO_STORE });
     const body = await readJson(request);
-    if (body === undefined) return badRequest("Expected a JSON body.");
+    if (body === undefined) return badRequest("err.badJson");
     const parsed = bodySchema.safeParse(body);
-    if (!parsed.success) return badRequest("A Houseki game, what was won, and the game's own save.");
+    if (!parsed.success) return badRequest("err.houseki.shape");
     const asked = parsed.data.request as HousekiRequest;
     const result = await recordHousekiWin(memberId, parsed.data.kind, asked, parsed.data.save);
     if (!result.ok) return unprocessable(REFUSALS[result.why]);
     return NextResponse.json({ ok: true, ip: result.ip, first: result.first }, { headers: NO_STORE });
   } catch (error) {
     console.error(error);
-    return serverError("Could not record that win.");
+    return serverError("err.houseki.recordFailed");
   }
 }

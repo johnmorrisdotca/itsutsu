@@ -3,6 +3,8 @@ import type { PuzzleCheck } from "../puzzles.types";
 import { cubeSolved, decodeCubeMoves, isCubeState, moveFits, turnAll } from "@johnmorrisdotca/kyuubu";
 
 import { CUBE_SIZES } from "./generate";
+import type { PuzzleReason } from "@/lib/puzzles/puzzleReasons";
+import { no, why } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * The most characters a cube's moves may be kept with: three a move, ten thousand moves, which is as many as Kyuubu keeps in
@@ -11,13 +13,13 @@ import { CUBE_SIZES } from "./generate";
  */
 export const CUBE_MOVES_MOST = 30_000;
 
-function playedOut(size: number, givens: string, answer: string): { state: string } | { reason: string } {
-  if (!(CUBE_SIZES as readonly number[]).includes(size)) return { reason: "no cube of that size" };
-  if (!isCubeState(givens, size)) return { reason: "not a cube of that size" };
-  if (answer.length > CUBE_MOVES_MOST) return { reason: "more moves than a solve is kept with" };
+function playedOut(size: number, givens: string, answer: string): { state: string } | PuzzleReason {
+  if (!(CUBE_SIZES as readonly number[]).includes(size)) return why("chk.noCubeSize");
+  if (!isCubeState(givens, size)) return why("chk.notCubeSize");
+  if (answer.length > CUBE_MOVES_MOST) return why("chk.moreMovesSolve");
   const moves = decodeCubeMoves(answer);
-  if (moves === null) return { reason: "a move that is not written as one" };
-  if (!moves.every((move) => moveFits(size, move))) return { reason: "a layer the cube does not have" };
+  if (moves === null) return why("chk.moveNotWritten");
+  if (!moves.every((move) => moveFits(size, move))) return why("chk.noSuchLayer");
   return { state: turnAll(givens, size, moves) };
 }
 
@@ -27,18 +29,18 @@ function playedOut(size: number, givens: string, answer: string): { state: strin
  * any way to solved counts, not only the scramble taken back.
  */
 export function checkCube(size: number, givens: string, answer: string): PuzzleCheck {
-  if (answer.length === 0) return { ok: false, reason: "no move was made" };
+  if (answer.length === 0) return no("chk.noMoveMade");
   const played = playedOut(size, givens, answer);
-  if ("reason" in played) return { ok: false, reason: played.reason };
-  return cubeSolved(played.state, size) ? { ok: true } : { ok: false, reason: "not every face is one colour" };
+  if ("reason" in played) return { ok: false, ...played };
+  return cubeSolved(played.state, size) ? { ok: true } : no("chk.notEveryFace");
 }
 
 /** A cube given up: its moves all turns this cube has, at least one made, and not solved, since a solved cube is a solve. */
 export function checkCubeGivenUp(size: number, givens: string, answer: string): PuzzleCheck {
-  if (answer.length === 0) return { ok: false, reason: "no move was made" };
+  if (answer.length === 0) return no("chk.noMoveMade");
   const played = playedOut(size, givens, answer);
-  if ("reason" in played) return { ok: false, reason: played.reason };
-  return cubeSolved(played.state, size) ? { ok: false, reason: "it was solved" } : { ok: true };
+  if ("reason" in played) return { ok: false, ...played };
+  return cubeSolved(played.state, size) ? no("chk.itWasSolved") : { ok: true };
 }
 
 /** Whether a kept run's moves are written as moves, within the length a run is kept with; they are turned from the scramble when it is opened. */

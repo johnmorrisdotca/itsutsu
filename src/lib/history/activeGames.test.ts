@@ -187,11 +187,11 @@ describe("what the member is told", () => {
     gamesFor("alice", ACTIVE_GAME_LIMIT + 3);
     const over = await memberOverActiveLimit(["alice"]);
     expect(over?.count).toBe(ACTIVE_GAME_LIMIT + 3);
-    expect(activeLimitRefusal(over!)).toContain(String(ACTIVE_GAME_LIMIT + 3));
+    expect(activeLimitRefusal(over!).error).toContain(String(ACTIVE_GAME_LIMIT + 3));
   });
 
   it("says their number and the limit, and what to do about it", () => {
-    const message = activeLimitRefusal({ memberId: "alice", count: 20, limit: 20 });
+    const message = activeLimitRefusal({ memberId: "alice", count: 20, limit: 20 }).error;
     expect(message).toContain("You have 20 games");
     expect(message).toContain("20 at once is the limit");
     expect(message).toMatch(/finish or resign/i);
@@ -199,7 +199,7 @@ describe("what the member is told", () => {
 
   it("quotes the limit it was handed, not a number written into the words", () => {
     // The sentence and the check must not be able to disagree about the number.
-    const message = activeLimitRefusal({ memberId: "alice", count: 7, limit: 7 });
+    const message = activeLimitRefusal({ memberId: "alice", count: 7, limit: 7 }).error;
     expect(message).toContain("7 at once");
     expect(message).not.toMatch(/twenty|\b20\b/i);
   });

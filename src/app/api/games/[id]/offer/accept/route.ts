@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { NO_STORE, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, refuse, serverError } from "@/lib/api/apiResponse";
 import { overLimit } from "@/lib/api/rateLimit";
 import { currentMemberId, currentSession } from "@/lib/auth/currentSession";
 import { matchPath } from "@/lib/gomoku/slugs";
@@ -30,10 +30,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     const session = await currentSession();
     const outcome = await acceptOffer(id, me, session?.name ?? "");
     if (!outcome.ok) {
-      return NextResponse.json(
-        { error: outcome.said ?? OFFER_REFUSAL_MESSAGE[outcome.reason], reason: outcome.reason },
-        { status: OFFER_REFUSAL_STATUS[outcome.reason], headers: NO_STORE },
-      );
+      return refuse(OFFER_REFUSAL_STATUS[outcome.reason], outcome.said?.code ?? OFFER_REFUSAL_MESSAGE[outcome.reason], outcome.said?.values, { reason: outcome.reason, headers: NO_STORE });
     }
 
     /*
@@ -56,6 +53,6 @@ export async function POST(request: Request, ctx: RouteContext<"/api/games/[id]/
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not accept that game.");
+    return serverError("err.offer.acceptFailed");
   }
 }

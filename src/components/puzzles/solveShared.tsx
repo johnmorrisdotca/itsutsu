@@ -24,6 +24,7 @@ import { PUZZLE_CLOCK_TICK_MS } from "./puzzles.constants";
 import { usePuzzleClock } from "./PuzzleClockContext";
 import { PlayingNow } from "@/components/layout/PlayingNow";
 import { CONTROL_SELECTOR } from "./paint.constants";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * What every kind of solve shares: the clock, handing the answer in, and the
@@ -285,7 +286,7 @@ export function useSolve(
         }
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; elapsedMs?: number; error?: string; solveId?: string | null } | null;
         if (!answered.ok) {
-          setDone({ elapsedMs, paid: null, problem: body?.error ?? say.say("puzzle.solve.couldNotRecord"), helped });
+          setDone({ elapsedMs, paid: null, problem: refusalText(body, say, "puzzle.solve.couldNotRecord"), helped });
           return;
         }
         setDone({ elapsedMs: body?.elapsedMs ?? elapsedMs, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, problem: null, solveId: body?.solveId ?? null, helped });
@@ -362,7 +363,7 @@ export function useSolve(
           return;
         }
         const body = (await answered.json().catch(() => null)) as { points?: number; awards?: string[]; error?: string; solveId?: string | null } | null;
-        setDone(answered.ok ? { ...ended, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, solveId: body?.solveId ?? null } : { ...ended, problem: body?.error ?? say.say("puzzle.solve.couldNotKeep") });
+        setDone(answered.ok ? { ...ended, paid: { points: body?.points ?? 0, awards: body?.awards ?? [] }, solveId: body?.solveId ?? null } : { ...ended, problem: refusalText(body, say, "puzzle.solve.couldNotKeep") });
       });
   };
   // The tick reads the latest, with what is written now, without restarting the clock on every entry.

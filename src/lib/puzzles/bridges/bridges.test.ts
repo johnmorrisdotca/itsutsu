@@ -177,7 +177,7 @@ describe("checking a Bridges answer", () => {
     expect(checkBridges(3, JOIN, "1.1" + "|3|" + "2-2").ok).toBe(false);
     expect(checkBridges(3, JOIN, JOIN).ok).toBe(false);
     // Two pairs, each full, joined to nothing else: every number met, and still no answer.
-    expect(checkBridges(3, "1.1" + "..." + "1.1", "1-1" + "..." + "1-1")).toEqual({ ok: false, reason: "the islands are not all joined into one" });
+    expect(checkBridges(3, "1.1" + "..." + "1.1", "1-1" + "..." + "1-1")).toMatchObject({ ok: false, reason: "the islands are not all joined into one" });
   });
 });
 

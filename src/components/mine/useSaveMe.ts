@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * Saving part of one's own account with `PATCH /api/me`, which takes any
@@ -29,7 +30,7 @@ export function useSaveMe() {
     setBusy(false);
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(payload?.error ?? say.say("mine.saveFailed"));
+      setError(refusalText(payload, say, "mine.saveFailed"));
       return false;
     }
     setSaved(true);

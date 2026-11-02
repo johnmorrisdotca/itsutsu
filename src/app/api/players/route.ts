@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { badRequest, serverError } from "@/lib/api/apiResponse";
+import { SUGGESTIONS_CACHE } from "@/lib/api/cacheControl.data";
 import { suggestPlayers } from "@/lib/history/gameHistory";
 import {
   PLAYER_NAME_MAX,
@@ -43,7 +44,7 @@ export async function GET(request: Request) {
       if (tooShort) {
         return NextResponse.json({ items: [] }, { status: 200 });
       }
-      return badRequest("Invalid autocomplete parameters.");
+      return badRequest("err.players.invalid");
     }
 
     const items = await suggestPlayers(parsed.data.q, parsed.data.limit);
@@ -51,12 +52,11 @@ export async function GET(request: Request) {
       { items },
       {
         status: 200,
-        // Keystroke traffic; a few seconds of reuse costs nothing and helps a lot.
-        headers: { "Cache-Control": "private, max-age=5, stale-while-revalidate=30" },
+        headers: SUGGESTIONS_CACHE,
       },
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not load player suggestions.");
+    return serverError("err.players.failed");
   }
 }

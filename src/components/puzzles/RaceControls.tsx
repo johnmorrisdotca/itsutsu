@@ -8,6 +8,7 @@ import { SeatCard } from "@/components/live/SeatCard";
 import { BUTTON_BASE, BUTTON_QUIET, BUTTON_STRONG } from "@/components/ui/ui.constants";
 import type { RaceSeat } from "@/lib/puzzles/raceState";
 import { readyMark, useHydrated } from "@/lib/ui/hydrated";
+import { refusalText } from "@/lib/api/refusalText";
 
 /**
  * What a seat can do on the race page that is not solving: press Start,
@@ -55,7 +56,7 @@ export function RaceControls({
       const answered = await fetch(`/api/puzzles/races/${id}/start`, { method: "POST" });
       if (!answered.ok) {
         const body = (await answered.json().catch(() => null)) as { error?: string } | null;
-        setProblem(body?.error ?? say.say("pset.race.noStart"));
+        setProblem(refusalText(body, say, "pset.race.noStart"));
         setStarting(false);
         return;
       }

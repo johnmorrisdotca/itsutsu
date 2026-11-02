@@ -4,6 +4,7 @@ import type { PuzzleCheck } from "../puzzles.types";
 import { suidoBigLevelOfBoard, suidoLevelOfBoard } from "./levels";
 import { suidoBigSizeOf } from "./bigLevels";
 import { suidoShapeOf } from "./sizes";
+import { no } from "@/lib/puzzles/puzzleReasons";
 
 /**
  * Whether an answer solves a Suido board: the package's check, O(cells), after
@@ -22,7 +23,7 @@ import { suidoShapeOf } from "./sizes";
 export function checkSuido(size: number, givens: string, answer: string): PuzzleCheck {
   const big = suidoBigLevelOfBoard(givens);
   const bigHere = big !== null && suidoBigSizeOf(big) === size;
-  if (suidoLevelOfBoard(size, givens) === null && !bigHere && boardOf(givens, size) === null) return { ok: false, reason: "the givens are not a board of that size" };
+  if (suidoLevelOfBoard(size, givens) === null && !bigHere && boardOf(givens, size) === null) return no("chk.notBoardSize");
   return checkSuidoAnswer(givens, answer);
 }
 

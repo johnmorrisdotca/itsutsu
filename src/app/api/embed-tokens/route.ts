@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { NO_STORE, badRequest, notFound, readJson, serverError } from "@/lib/api/apiResponse";
+import { NO_STORE, notFound, operatorRefusal, readJson } from "@/lib/api/apiResponse";
 import {
   DEFAULT_EMBED_TOKEN_DAYS,
   EMBED_TOKEN_PARAM,
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     if ((await currentAdmin()) === null) return notFound();
 
     const parsed = mintSchema.safeParse((await readJson(request)) ?? {});
-    if (!parsed.success) return badRequest("Invalid embed token options.");
+    if (!parsed.success) return operatorRefusal(400, "Invalid embed token options.");
 
     const token = await signEmbedToken(
       parsed.data.label,
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       parsed.data.scope,
     );
     if (token === null) {
-      return serverError("This deployment cannot issue embed tokens.");
+      return operatorRefusal(500, "This deployment cannot issue embed tokens.");
     }
 
     const origin = new URL(request.url).origin;
@@ -72,6 +72,6 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not create an embed token.");
+    return operatorRefusal(500, "Could not create an embed token.");
   }
 }

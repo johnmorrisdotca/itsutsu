@@ -44,7 +44,7 @@ vi.mock("@/lib/auth/operatorLog", () => ({
 
 /** The operator this file signs in as, as the operator log records them. */
 const BY = { memberId: null, email: "op@example.com" };
-vi.mock("@/lib/phrase/operatorPhrase", () => ({
+vi.mock("./operatorPhrase", () => ({
   setPhraseAsOperator: (...args: Parameters<typeof setPhraseAsOperator>) => setPhraseAsOperator(...args),
 }));
 vi.mock("@/lib/phrase/pickTicket", () => ({

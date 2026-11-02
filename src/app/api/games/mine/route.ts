@@ -94,6 +94,6 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     console.error(error);
-    return serverError("Could not read your games.");
+    return serverError("err.game.readMine");
   }
 }

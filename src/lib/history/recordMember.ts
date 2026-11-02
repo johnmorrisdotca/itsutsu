@@ -3,6 +3,8 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { ownedRow } from "@/lib/rating/ownedRow";
 import type { GameHistoryQuery } from "./gameHistory.types";
+import { partOf } from "@/lib/api/refusal";
+import type { RefusalPart } from "@/lib/api/refusal.types";
 
 /**
  * The name a member's record is counted under, for a `?member=<id>` filter.
@@ -78,13 +80,13 @@ export async function resolveMember(query: GameHistoryQuery): Promise<ResolvedMe
 }
 
 /** What `/api/games` says to `?member=<id>` when the id names nobody. */
-export function memberUnknownRefusal(id: string): string {
-  return `No member has the id "${id.trim()}", so these listing filters are not valid: member.`;
+export function memberUnknownRefusal(id: string): RefusalPart {
+  return partOf("err.query.noMember", { id: id.trim(), param: "member" });
 }
 
 /** What `/api/games` says to `?against=<id>` when the id names nobody. */
-export function againstUnknownRefusal(id: string): string {
-  return `No member has the id "${id.trim()}", so these listing filters are not valid: against.`;
+export function againstUnknownRefusal(id: string): RefusalPart {
+  return partOf("err.query.noMember", { id: id.trim(), param: "against" });
 }
 
 /**

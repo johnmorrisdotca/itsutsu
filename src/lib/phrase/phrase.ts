@@ -38,6 +38,8 @@
  *    with a repeat as three.
  */
 import { WORDLIST } from "./wordlist.constants";
+import { said } from "@/lib/api/refusal";
+import type { Said } from "@/lib/api/refusal.types";
 
 /** Words in a phrase. Four. See the wordlist's note on why not five. */
 export const PHRASE_LENGTH = 4;
@@ -123,20 +125,20 @@ export function canonicalPhrase(words: unknown): string | null {
  * that and no detail. This is for the setup screen, where the player is
  * choosing and a reason is a help rather than a hint to an attacker.
  */
-export function phraseProblems(words: unknown): string[] {
-  if (!Array.isArray(words)) return ["That is not a phrase."];
-  const problems: string[] = [];
+export function phraseProblems(words: unknown): Said[] {
+  if (!Array.isArray(words)) return [said("err.phrase.notAPhrase")];
+  const problems: Said[] = [];
   if (words.length !== PHRASE_LENGTH) {
     // Spelled out, because this is read by somebody choosing rather than parsed.
-    problems.push(`A phrase is four words; this one has ${words.length}.`);
+    problems.push(said("err.phrase.wrongCount", { count: words.length }));
   }
   for (const word of words) {
     if (typeof word !== "string") {
-      problems.push("One of those is not a word.");
+      problems.push(said("err.phrase.notAWord"));
       continue;
     }
     // A repeat is not a fault. See canonicalPhrase.
-    if (!KNOWN.has(fold(word))) problems.push(`"${word}" is not one of the words offered.`);
+    if (!KNOWN.has(fold(word))) problems.push(said("err.phrase.notOffered", { word }));
   }
   return problems;
 }
