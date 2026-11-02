@@ -216,7 +216,7 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "Ladders, ratings and tournaments",
   ),
   "about.ladders.a": r(
-    "順番制のサイトは、順位表で動いていました。自分より上の人に挑み、勝てば順位が入れ替わり、一覧の先頭は、最近誰にも負けていない人でした。それは計算のないレーティングのようなもので、どの対局にも、その対局以上の意味を持たせました。のちに登場した計算の背後にいるのが、物理学の教授でチェスの名手でもあったアルパド・エロです。彼の方式は、1960年にアメリカチェス連盟が、1970年に国際チェス連盟が採用しました。ゲームのサイトで目にするレーティングは、ほとんどすべてその子孫です。",
+    "順番制のサイトは、順位表で動いていました。自分より上の人に挑み、勝てば順位が入れ替わり、一覧の先頭は、最近誰にも負けていない人でした。それは計算のないレーティングのようなもので、どの対局にも、その対局以上の意味を持たせました。のちに登場した計算の背後にいるのが、物理学の教授でチェスの名手でもあったアルパド・イロです。彼の方式は、1960年にアメリカチェス連盟が、1970年に国際チェス連盟が採用しました。ゲームのサイトで目にするレーティングは、ほとんどすべてその子孫です。",
     "The turn-based sites ran on ladders. I asked the player above me for a game, if I won we swapped places, and the head of the list was the person nobody had beaten lately. It was a rating without any calculation, and it gave every game a meaning beyond itself. Behind the calculation that came later stands Arpad Elo, a physics professor who was also a master chess player. His method was adopted by the United States Chess Federation in 1960 and by the world chess federation in 1970. Almost every rating you see on a game site is a descendant of it.",
   ),
   "about.ladders.b": r(
@@ -758,7 +758,7 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "my rating minus the opponent's rating",
   ),
   "about.elo.caption": r(
-    "エロ式があなたに期待する成績です。レーティングが等しいなら、1局あたり半点。200点上なら、4局で3勝。400点上なら、10局で9勝。期待を上回れば、その不足分にKを掛けただけレーティングが上がります。",
+    "イロ式があなたに期待する成績です。レーティングが等しいなら、1局あたり半点。200点上なら、4局で3勝。400点上なら、10局で9勝。期待を上回れば、その不足分にKを掛けただけレーティングが上がります。",
     "What the Elo method expects of me. With equal ratings, half a point per game. With 200 points more, three wins in four games. With 400 points more, nine wins in ten. If I beat the expectation, my rating rises by the shortfall times K.",
   ),
 
@@ -1021,7 +1021,7 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "Ratings in numbers",
   ),
   "about.ratings.a": r(
-    "ここの順位表はエロ式で、アルパド・エロが1960年にチェスのために作り、1970年にFIDE（国際チェス連盟）が採用した方式です。その考え方は一行で言えます。レーティングは予測だということです。自分のレーティングが<em>R</em>、相手が<em>R′</em>なら、エロ式が自分に期待する得点は<mono>E = 1 / (1 + 10^((R′ − R) / 400))</mono>で、400点の差は10対1を意味します。対局のあと、自分のレーティングは<mono>K × (S − E)</mono>だけ動きます。<em>S</em>は実際の得点で、勝ちは1、引き分けは半分、負けは0です。<em>K</em>は、その数がどれだけ速く動けるかを表します。",
+    "ここの順位表はイロ式で、アルパド・イロが1960年にチェスのために作り、1970年にFIDE（国際チェス連盟）が採用した方式です。その考え方は一行で言えます。レーティングは予測だということです。自分のレーティングが<em>R</em>、相手が<em>R′</em>なら、イロ式が自分に期待する得点は<mono>E = 1 / (1 + 10^((R′ − R) / 400))</mono>で、400点の差は10対1を意味します。対局のあと、自分のレーティングは<mono>K × (S − E)</mono>だけ動きます。<em>S</em>は実際の得点で、勝ちは1、引き分けは半分、負けは0です。<em>K</em>は、その数がどれだけ速く動けるかを表します。",
     "The ladder here uses the Elo method, which Arpad Elo devised for chess in 1960 and FIDE (the international chess federation) adopted in 1970. The whole idea can be said in one line: a rating is a prediction. If my rating is R and my opponent's is R′, the score the Elo method expects of me is E = 1 / (1 + 10^((R′ − R) / 400)), so a gap of 400 points means ten to one. After a game my rating moves by K × (S − E). S is the score I actually got, 1 for a win, a half for a draw and 0 for a loss, and K expresses how fast the number may move.",
   ),
   "about.ratings.b": r(
@@ -1029,11 +1029,11 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "Here K is 40 for a player's first twenty rated games and 20 after that, which is about what FIDE does for newcomers. Everyone starts at 1600. Until four rated games have been played the rating is undetermined: the number exists, but the page shows a dash, because a rating calculated from three games is a coin toss with decimals. Up to twenty games it is provisional, and after that it is established. The site keeps one rating across all games for the ladder, and one rating for each game I play, because a renju player and a Pente player are not the same player.",
   ),
   "about.ratings.c": r(
-    "このサイトの母体になったサイトの多くは、同じ考え方で、ゲームの種類ごとに数を持っています。FIDEとアメリカチェス連盟は今もエロ式そのものを使い、LichessとChess.comはその子孫であるグリコとグリコ2を使い、これは数がどれだけ確かかの尺度を加えたものです。ヨーロッパの囲碁は、エロ式の変種に級と段の尺度を重ねたものを使い、Little Golem、PlayOK、ItsYourTurnは、提供するすべてのゲームに、エロ式のレーティングを持っています。ここで新しい名前の横に見えるダッシュは、それらのサイトが疑問符で表示しているものの、正直な形です。",
+    "このサイトの母体になったサイトの多くは、同じ考え方で、ゲームの種類ごとに数を持っています。FIDEとアメリカチェス連盟は今もイロ式そのものを使い、LichessとChess.comはその子孫であるグリコとグリコ2を使い、これは数がどれだけ確かかの尺度を加えたものです。ヨーロッパの囲碁は、イロ式の変種に級と段の尺度を重ねたものを使い、Little Golem、PlayOK、ItsYourTurnは、提供するすべてのゲームに、イロ式のレーティングを持っています。ここで新しい名前の横に見えるダッシュは、それらのサイトが疑問符で表示しているものの、正直な形です。",
     "Most of the sites this one grew out of keep a number for each kind of game, in the same spirit. FIDE and the US Chess Federation still use the Elo method itself. Lichess and Chess.com use its descendants, Glicko and Glicko-2, which add a measure of how certain the number is. Go in Europe uses a variant of the Elo method with a scale of kyu and dan on top of it. Little Golem, PlayOK and ItsYourTurn each keep an Elo-style rating for every game they offer. The dash you see beside a new name here is the honest form of what those sites show as a question mark.",
   ),
   "about.ratings.d": r(
-    "ここには、上の計算にない規則がひとつあり、易しい相手を探し始める前に知っておく価値があります。相手より400点を超えて上にいる人は、勝っても、まったく何も得られません。負けは数えられ、引き分けも数えられます。エロ式はそれだけでも、大きな本命の勝ちをほとんど無価値にします。400点差では期待得点が10対1なので、増える分は1、2点に丸められますが、ほとんどゼロでも、ゼロではありません。初心者に勝つことで上げられる数は、実際に上げられてしまう数です。その差を超えると、数は単純に上へ動きません。",
+    "ここには、上の計算にない規則がひとつあり、易しい相手を探し始める前に知っておく価値があります。相手より400点を超えて上にいる人は、勝っても、まったく何も得られません。負けは数えられ、引き分けも数えられます。イロ式はそれだけでも、大きな本命の勝ちをほとんど無価値にします。400点差では期待得点が10対1なので、増える分は1、2点に丸められますが、ほとんどゼロでも、ゼロではありません。初心者に勝つことで上げられる数は、実際に上げられてしまう数です。その差を超えると、数は単純に上へ動きません。",
     "There is one rule here that is not in the calculation above, and it is worth knowing before anyone goes looking for easy opponents. A player who is more than 400 points above the opponent gains nothing at all from winning. A loss is still counted, and so is a draw. The Elo method by itself already makes a big favourite's win worth almost nothing: at a 400-point difference the expected score is ten to one, so the gain rounds to a point or two. But almost nothing is not nothing, and a number that can be raised by beating beginners will in fact be raised that way. Beyond that gap, the number simply does not move upward.",
   ),
   "about.ratings.e": r(
@@ -1292,7 +1292,7 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "none; donations",
   ),
   "about.sites.lgRatings": r(
-    "エロ式でゲームごと、月ごとの選手権",
+    "イロ式でゲームごと、月ごとの選手権",
     "Elo-style, per game, with monthly championships",
   ),
   "about.sites.penteGames": r(
@@ -1316,7 +1316,7 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "none",
   ),
   "about.sites.playokRatings": r(
-    "ゲームごとのエロ式",
+    "ゲームごとのイロ式",
     "Elo per game",
   ),
   "about.sites.caption": r(
@@ -1328,11 +1328,11 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "These are the places this site learned from, and they are still there. ItsYourTurn has run turn-based games by email since 1998, from the first period of the web, and it is where the founder's family played for years. Its form is the form of this site: a list of games waiting for me, a list waiting for the other player, invitations and records. A free account has a limit on the moves per day, which is why the family became members. The paid tier removes the limit and opens tournaments and the rarer games. It has about forty games counting variants, and it keeps a rating for each kind of game.",
   ),
   "about.sites.b": r(
-    "<out https://www.goldtoken.com/>GoldToken</out>は、その少しあと、2000年ごろに、より大きなゲームの一覧とともに現れました。60を超えるゲームとその変種があり、クラブのように感じられる集まりでした。遊ぶと得られるトークン、順位表、大会、掲示板です。無料の会員は、同時に開ける対局の数に制限があり、会員になるとそれが外れ、さらに増えます。家族の夜の、もう半分でした。<out https://www.littlegolem.net/>Little Golem</out>は、2002年にスロバキアのリチャード・マラシュチッツが始めた、通好みのサイトです。ヘックス、囲碁、五目並べ、アマゾンズ、トゥイクストなど数十の抽象ゲームがあり、多くはいくつもの変種があり、それぞれに月ごとの選手権とエロ式のレーティングがあり、有料の段階はまったくなく、寄付で運営されています。そのゲームのいくつかで世界屈指の打ち手が、ここの選手権に参加し、創設者の父もここで何年も遊びました。",
+    "<out https://www.goldtoken.com/>GoldToken</out>は、その少しあと、2000年ごろに、より大きなゲームの一覧とともに現れました。60を超えるゲームとその変種があり、クラブのように感じられる集まりでした。遊ぶと得られるトークン、順位表、大会、掲示板です。無料の会員は、同時に開ける対局の数に制限があり、会員になるとそれが外れ、さらに増えます。家族の夜の、もう半分でした。<out https://www.littlegolem.net/>Little Golem</out>は、2002年にスロバキアのリチャード・マラシュチッツが始めた、通好みのサイトです。ヘックス、囲碁、五目並べ、アマゾンズ、トゥイクストなど数十の抽象ゲームがあり、多くはいくつもの変種があり、それぞれに月ごとの選手権とイロ式のレーティングがあり、有料の段階はまったくなく、寄付で運営されています。そのゲームのいくつかで世界屈指の打ち手が、ここの選手権に参加し、創設者の父もここで何年も遊びました。",
     "GoldToken came soon after, around 2000, with a bigger catalogue of over sixty games and their variants, and a community that felt like a club: tokens earned by playing, ladders, tournaments and a forum. A free account limits how many games you can have open at once, and membership removes that and adds more. It was the other half of the family's evenings. Little Golem, started in 2002 by Richard Malaschitz in Slovakia, is the connoisseur's site. It has Hex, Go, gomoku, Amazons, Twixt and dozens of other abstract games, many in several variants, with monthly championships and an Elo-style rating for each, and no paid tier at all, running on donations. Some of the strongest players in the world in several of those games enter its championships, and the founder's father played there for years.",
   ),
   "about.sites.c": r(
-    "<out https://pente.org/>Pente.org</out>は、20年にわたって、レーティングのあるペンテをオンラインで保ち続けており、大会ルール、独自の変種、順位表、世界選手権があり、会員になるかどうかは任意です。<out https://www.playok.com/>PlayOK</out>は、マレク・フトレガが2001年にポーランドで始めたときの名前から、今もクルニクと呼ぶ人が多く、午前2時に見知らぬ人とリアルタイムで五目並べを打ちたいときに行く場所で、ゲームごとのエロ式レーティングがあり、部屋は空になることがないようです。会員数は、これらのサイトのどこも、はっきりとは公表していないものです。どのサイトも、最盛期には数万人の登録者がおり、どこにも、20年そこにいる中核の人たちがいます。",
+    "<out https://pente.org/>Pente.org</out>は、20年にわたって、レーティングのあるペンテをオンラインで保ち続けており、大会ルール、独自の変種、順位表、世界選手権があり、会員になるかどうかは任意です。<out https://www.playok.com/>PlayOK</out>は、マレク・フトレガが2001年にポーランドで始めたときの名前から、今もクルニクと呼ぶ人が多く、午前2時に見知らぬ人とリアルタイムで五目並べを打ちたいときに行く場所で、ゲームごとのイロ式レーティングがあり、部屋は空になることがないようです。会員数は、これらのサイトのどこも、はっきりとは公表していないものです。どのサイトも、最盛期には数万人の登録者がおり、どこにも、20年そこにいる中核の人たちがいます。",
     "Pente.org has kept ranked Pente alive online for twenty years, with the tournament rule, several variants of its own, a ladder and a world championship, and membership is optional. PlayOK, which many still call Kurnik, the name Marek Futrega gave it when he started it in Poland in 2001, is where you go for a live game of gomoku against a stranger at two in the morning, with an Elo rating for each game and rooms that never seem to empty. Membership numbers are the one thing none of these sites states plainly. Each has had tens of thousands of registered players at its peak, and each has a hard core of people who have been there for twenty years.",
   ),
   "about.sites.d": {
