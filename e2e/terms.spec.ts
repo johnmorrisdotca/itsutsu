@@ -54,7 +54,7 @@ test.describe("terms of play", () => {
 
     const governing = page.getByTestId("terms-governing");
     await expect(governing).toBeVisible();
-    await expect(governing).toContainText("英語版が正式な文書");
+    await expect(governing).toContainText("英語版が正式なもの");
     const [governingBox, firstBox] = await Promise.all([governing.boundingBox(), page.getByTestId("terms-section").first().boundingBox()]);
     expect(governingBox!.y).toBeLessThan(firstBox!.y);
 

@@ -67,7 +67,7 @@ test.describe("privacy", () => {
 
     const governing = page.getByTestId("privacy-governing");
     await expect(governing).toBeVisible();
-    await expect(governing).toContainText("英語版が正式な文書");
+    await expect(governing).toContainText("英語版が正式なもの");
     await expect(governing).toHaveAttribute("lang", "ja");
     // At the head: above the first section, and inside the title's block.
     const [governingBox, firstBox] = await Promise.all([governing.boundingBox(), page.getByTestId("privacy-section").first().boundingBox()]);
