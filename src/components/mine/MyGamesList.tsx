@@ -22,6 +22,7 @@ import { currentSpeaker } from "@/lib/i18n/currentLocale";
 import { myGamesCopy } from "./mine.copy";
 import { FavouritesPanel } from "./FavouritesPanel";
 import { Group } from "./MyGamesGroup";
+import { KeptRunsSettle } from "./KeptRunsSettle";
 import { MyPuzzleRuns } from "./MyPuzzleRuns";
 import { CompletedRowView } from "./CompletedRowView";
 import { mySolvesBefore, mySolvesCount } from "@/lib/puzzles/server/mySolves";
@@ -408,6 +409,8 @@ export async function MyGamesList({
       ) : null}
       {/* The puzzles left part way, under Going with the games (John: "not two areas"). */}
       {view === "going" && runs.length + races.length > 0 ? <MyPuzzleRuns runs={runs} races={races} /> : null}
+      {/* A puzzle left a moment ago may still be on its way to the list above: ask once more when it lands. */}
+      {view === "going" ? <KeptRunsSettle /> : null}
       {/* The party tables on several devices, a panel of their own: a table's turn goes round several people. */}
       {view === "going" && tables !== null ? <MyTables tables={tables.going} finished={false} tags={tables.tags} /> : null}
       {view === "going" ? openSeats : null}

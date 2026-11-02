@@ -8,6 +8,21 @@ import { LINK_SELECTOR } from "./paint.constants";
 import { ENTER_KEY } from "@/lib/ui/keyNames.constants";
 
 /**
+ * The write of a kept run that is still on its way, for the page the reader goes to next.
+ *
+ * A link followed inside the site is a navigation of one page, so this module outlives the puzzle's screen, and My
+ * games can ask whether the run it is about to list is still being written (`KeptRunsSettle`). Without it the list is
+ * asked for at the same moment as the write, and a pause followed at once by a click on My games showed no puzzle
+ * until the page was loaded again: the two requests have no order, and a cold function can take a second to write.
+ */
+let writing: Promise<void> | null = null;
+
+/** Resolves once the run being kept has been written, or null when nothing is on its way. */
+export function whenKeptRunLands(): Promise<void> | null {
+  return writing;
+}
+
+/**
  * KEEPING AN UNFINISHED PUZZLE, from the page it is being solved on.
  *
  * John, 2026-09-24: "I started Numbers game, paused it, then clicked away...
@@ -30,7 +45,11 @@ export function useKeptRun(snapshot: () => object | null): () => void {
   });
   const sent = useRef("");
 
-  const keep = useCallback(() => {
+  /**
+   * `leavingPage`: the page itself is going (hidden, closed), so the send is a beacon, which outlives it; any other
+   * keep is a fetch whose end is known (`whenKeptRunLands`), still `keepalive` in case the page goes after all.
+   */
+  const keep = useCallback((leavingPage = false) => {
     const body = latest.current();
     if (body === null) return;
     // On this device too, so a run left with no connection is still here to open (`runsOnDevice.ts`).
@@ -39,16 +58,23 @@ export function useKeptRun(snapshot: () => object | null): () => void {
     if (json === sent.current) return;
     // Offline the send goes nowhere, so the same run is sent again the next time it is kept.
     if (navigator.onLine) sent.current = json;
-    const beaconed = typeof navigator.sendBeacon === "function" && navigator.sendBeacon("/api/puzzles/runs", new Blob([json], { type: "application/json" }));
+    const beaconed = leavingPage && typeof navigator.sendBeacon === "function" && navigator.sendBeacon("/api/puzzles/runs", new Blob([json], { type: "application/json" }));
     if (!beaconed) {
-      void fetch("/api/puzzles/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: json, keepalive: true }).catch(() => {});
+      const sending: Promise<void> = fetch("/api/puzzles/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: json, keepalive: true })
+        .then(() => undefined, () => undefined)
+        .finally(() => {
+          if (writing === sending) writing = null;
+        });
+      writing = sending;
     }
   }, []);
 
   useEffect(() => {
     const hidden = () => {
-      if (document.visibilityState === "hidden") keep();
+      if (document.visibilityState === "hidden") keep(true);
     };
+    const closing = () => keep(true);
+    const online = () => keep();
     /*
      * A LINK PRESSED, BEFORE IT IS FOLLOWED. Unmounting is too late for the page
      * the link goes to: the site asks for that page first and drops this one
@@ -61,15 +87,15 @@ export function useKeptRun(snapshot: () => object | null): () => void {
       if (event.target instanceof Element && event.target.closest(LINK_SELECTOR) !== null) keep();
     };
     document.addEventListener("visibilitychange", hidden);
-    window.addEventListener("pagehide", keep);
+    window.addEventListener("pagehide", closing);
     // Back online: what was kept while there was no connection is sent now.
-    window.addEventListener("online", keep);
+    window.addEventListener("online", online);
     document.addEventListener("pointerdown", leaving, { capture: true, passive: true });
     document.addEventListener("keydown", leaving, { capture: true, passive: true });
     return () => {
       document.removeEventListener("visibilitychange", hidden);
-      window.removeEventListener("pagehide", keep);
-      window.removeEventListener("online", keep);
+      window.removeEventListener("pagehide", closing);
+      window.removeEventListener("online", online);
       document.removeEventListener("pointerdown", leaving, { capture: true });
       document.removeEventListener("keydown", leaving, { capture: true });
       // Unmounted: a link inside the site was followed, and the run goes with it unless kept now.

@@ -102,3 +102,38 @@ test("left by a link without pausing, it is kept too", async ({ page }) => {
   await ready(page, "puzzle-play");
   await expect(page.getByTestId("puzzle-cell").nth(first)).toHaveAttribute("data-value", String(solution[first]));
 });
+
+/*
+ * THE WRITE IS SLOWER THAN THE CLICK. The run is sent as the puzzle is paused and again as the link is pressed, and My games
+ * is read at the same moment, so on a slow write (a cold function, a busy database) the list was drawn without the puzzle
+ * and stayed so until the page was loaded again. This holds the write back for longer than a page takes to answer and
+ * asks that the puzzle still turns up, with no reload: `KeptRunsSettle` asks the list once more when the write lands.
+ * It failed 3 of about 15 on a loaded machine before it, and every time with the write held back.
+ */
+test("paused and left while the write is slow, it still turns up in My games without a reload", async ({ page }) => {
+  await page.route("**/api/puzzles/runs", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1_200));
+    await route.continue();
+  });
+  const seed = freshPuzzleSeed();
+  const puzzle = generateNumberPlace(SIZE, LEVEL, seed);
+  const givens = decodeCells(puzzle.givens, SIZE)!;
+  const solution = decodeCells(puzzle.solution, SIZE)!;
+  const first = givens.findIndex((given) => given === 0);
+
+  await page.goto(`${AT}/play?size=${SIZE}&level=${LEVEL}&seed=${seed}`);
+  await ready(page, "puzzle-play");
+  await page.getByTestId("puzzle-cell").nth(first).click();
+  await page.getByTestId(`puzzle-key-${solution[first]}`).click();
+  await page.getByTestId("puzzle-pause").click();
+  await expect(page.getByTestId("puzzle-paused")).toBeVisible();
+
+  await page.getByRole("navigation").getByRole("link", { name: /^My games/ }).first().click();
+  await expect(page).toHaveURL(/\/play$/);
+  await ready(page, "tabs");
+  await page.locator('[data-testid="tab"][data-tab="going"]').click();
+  await expect(
+    page.locator(`[data-testid="puzzle-going"][data-seed="${seed}"]`),
+    "the puzzle left unfinished never reached My games although its write landed",
+  ).toBeVisible();
+});

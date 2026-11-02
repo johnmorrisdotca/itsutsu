@@ -189,9 +189,11 @@ width, a set-up screen, a board, a picture or a play page, on a PRODUCTION
 build (`E2E_SERVER=start`), because that is what CI runs:
 
 ```sh
-rm -rf .next && WEB_PORT=<web> pnpm build
+rm -rf .next && WEB_PORT=<web> ITSUTSU_SUITE_SERVER=1 pnpm build
 WEB_PORT=<web> E2E_SERVER=start pnpm exec playwright test e2e/<one>.spec.ts e2e/<two>.spec.ts --output $SCRATCH/pw
 ```
+
+`ITSUTSU_SUITE_SERVER=1` is on the build as well as the server: the browser's copy of the suite's relief is written into it at build time (`next.config.ts`), and a build without it polls a live board at 3 seconds where specs expect 2.5, as `party-online.spec.ts` did on 2026-11-02.
 
 Always `pnpm exec playwright test …`, never `pnpm test:e2e -- …` (pnpm passes
 the `--` on and Playwright then runs the wrong files). The layout and sweep
