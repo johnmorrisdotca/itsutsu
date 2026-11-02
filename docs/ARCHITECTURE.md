@@ -209,7 +209,13 @@ Each route follows the same shape:
    game is a 422 listing what was wrong.
 3. Find who is asking: a seat, a member, or the operator.
 4. Do the work in `src/lib/`, which returns a result or a named refusal.
-5. Map the refusal to a status code and a message, and answer typed JSON.
+5. Map the refusal to a status code and a message, and answer typed JSON. A
+   refusal is a phrase key and its values, never a typed sentence
+   (`src/lib/api/refusal.ts`): the answer keeps its status and its `error`, the
+   English sentence read from the catalogue for a script or a log, and adds
+   `code` and `values`, which the page says in the reader's language
+   (`refusalText`, `src/lib/api/refusalText.ts`). Operator-only routes answer in
+   English; AGENTS.md, "Every Word Goes Through The Phrase Table", has the rule.
 
 Sorting and paging follow one convention, decided in `src/lib/api/paging.ts`:
 `sort=<column>[:asc|desc]`, `limit`, and an opaque `cursor` from the previous

@@ -5,12 +5,14 @@
 積み木, a sixth (2026-10-30), comes with the package past 0.4.2, which also brought Colour
 Chains' Shizen and Arashi and Magnetic Blocks to 128 levels each, in place of fifty.**
 
-Houseki is five gem and stone puzzles for one person, from the open-source
-package of that name: Falling Triplets (100 levels), Colour Chains (50 levels
-in each of three campaigns: Classic, Shizen and Arashi), Stone Collapse (100),
-Gem Swap (50) and Magnetic Blocks (50). Every level is graded from one to five
+Houseki is six gem and stone puzzles for one person, from the open-source
+package of that name: Falling Triplets (100 levels), Colour Chains (Classic 50
+levels, Shizen 128 and Arashi 128), Stone Collapse (100), Gem Swap (50), Magnetic
+Blocks (128) and Tsumiki (64, below). Every level is graded from one to five
 marks, every game has three guided lessons, and all but Magnetic Blocks have a
-Daily. All are played alone, a level at a time, on a phone or a desk.
+Daily. All are played alone, a level at a time, on a phone or a desk. The
+counts are `campaigns` in `HOUSEKI_SPECS` (`src/lib/houseki/houseki.constants.ts`),
+which is where to read them again.
 
 ## Tsumiki 積み木
 
@@ -107,7 +109,7 @@ everyone.
   bare-board, wide-mode, game-pictures, offline) loop over the games.
 - Pictures: `pnpm screenshots:houseki`, stamped by `housekiArt.data.ts`.
 
-## Adding a sixth
+## Adding another
 
 Add the kind to `HousekiKind`, a row in `HOUSEKI_SPECS`, its engine in
 `HousekiGameClient` and `housekiVerify.ts` (the replay), copy in

@@ -1474,6 +1474,9 @@ answers typed JSON. Sorting and paging follow one convention
 (`src/lib/api/paging.ts`): `sort=<column>[:asc|desc]`, `limit`, and an opaque
 `cursor` from the previous page. An unknown sort column is a `400` that names
 what is accepted, and an unrecordable game is a `422` listing what was wrong.
+A refusal keeps its status and its `error`, the English sentence a script or a
+log reads, and adds `code` and `values`, the phrase key and its gaps that the
+page says in the reader's own language (`src/lib/api/refusal.ts`).
 
 | Method | Path | What it does |
 | --- | --- | --- |

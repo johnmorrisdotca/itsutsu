@@ -919,8 +919,8 @@ build if anything under `src/lib/casual/` or `src/components/casual/` reaches fo
 the database or an API. Its board is `CasualBoardClient` (`ssr: false`, so the
 package is in no server function). The reasoning, and how to add a ninth, is in
 `docs/plans/casual-games/README.md`.
-**Nor is a Houseki game, and it has a gate of its own too.** Houseki's five
-(2026-10-06) are `HousekiKind`s under `src/lib/houseki/`: gem and stone puzzles
+**Nor is a Houseki game, and it has a gate of its own too.** Houseki's first five
+(2026-10-06), and Tsumiki a sixth (2026-10-30), are `HousekiKind`s under `src/lib/houseki/`: gem and stone puzzles
 for one person, a level at a time, played by the open-source package
 `@johnmorrisdotca/houseki`. Each is joined into `GameKey`, lives in the Houseki
 family (one no award counts: `RECORDED_FAMILIES`), has a front door, rules, a
@@ -931,7 +931,7 @@ sends is the finished game's save and `housekiVerify.ts` plays it again through
 the package before it counts (`HousekiWin`, one row for each thing won). A lesson
 and a free game earn nothing and are never sent. It earns no XP.
 `houseki.coverage.test.ts` plays every level's recorded winning plan through that
-check. The reasoning, and how to add a sixth, is in `docs/plans/houseki/README.md`.
+check. The reasoning, and how to add another, is in `docs/plans/houseki/README.md`.
 **A language or a word list is a setting of a game, never a game of its own.**
 John, 2026-09-28, at five Gomoji cards on one shelf (English, Kana, French,
 German, Pop): "just have 1 and allow language selection", then "this is the
