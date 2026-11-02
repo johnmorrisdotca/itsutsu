@@ -256,6 +256,7 @@ export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearanc
           />
           <Tiles legend={HITOTSU_HOUSE_COPY.sevenZero.legend} value={onOff(options.sevenZero)} options={ON_OFF} names={onOffNames} lines={{ on: HITOTSU_HOUSE_COPY.sevenZero.on, off: HITOTSU_HOUSE_COPY.sevenZero.off }} testId="hitotsu-seven-zero" onChange={(value) => set("sevenZero", value === "on")} />
           <Tiles legend={HITOTSU_HOUSE_COPY.drawToMatch.legend} value={onOff(options.drawToMatch)} options={ON_OFF} names={onOffNames} lines={{ on: HITOTSU_HOUSE_COPY.drawToMatch.on, off: HITOTSU_HOUSE_COPY.drawToMatch.off }} testId="hitotsu-draw-to-match" onChange={(value) => set("drawToMatch", value === "on")} />
+          <Tiles legend={say.say("party.hitotsu.finish.legend")} value={onOff(options.finishOnNumber)} options={ON_OFF} names={onOffNames} lines={{ on: say.say("party.hitotsu.finish.on"), off: say.say("party.hitotsu.finish.off") }} testId="hitotsu-finish-on-number" onChange={(value) => set("finishOnNumber", value === "on")} />
           <Tiles legend={HITOTSU_HOUSE_COPY.wildFour.legend} value={options.wildFour} options={["challenge", "strict"] as const} names={HITOTSU_HOUSE_COPY.wildFour.names} lines={HITOTSU_HOUSE_COPY.wildFour.lines} testId="hitotsu-wild-four" onChange={(value) => set("wildFour", value)} />
         </Section>
 

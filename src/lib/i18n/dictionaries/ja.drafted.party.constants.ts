@@ -1116,6 +1116,26 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
   // Hitotsu's status, news and labels
+  "party.hitotsu.finish.legend": {
+    text: "上がり方",
+    back: "Going out",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "party.hitotsu.finish.on": {
+    text: "最後の1枚は、数字札でなければなりません。",
+    back: "The last card has to be a number card.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "party.hitotsu.finish.off": {
+    text: "最後の1枚は、どの札でも出せます。",
+    back: "The last card can be any card.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "party.hitotsu.finish.last": {
+    text: "最後の1枚は数字札でなければなりません。代わりに1枚引いてください。",
+    back: "The last card has to be a number card. Draw one instead.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
   "party.hitotsu.playLine": {
     text: "{name}の番です：{colour}、同じ数字か記号、またはワイルドを出せます。",
     back: "{name}'s turn: you can play {colour}, the same number or symbol, or a wild.",

@@ -1,6 +1,6 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
-import { encodeHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
+import { decodeHitotsu, encodeHitotsu, startHitotsu } from "@johnmorrisdotca/hitotsu";
 import { memberContext, memberIdFor, removeMember } from "./members";
 import { ready } from "./support";
 import { removeTables } from "./tables";
@@ -140,6 +140,26 @@ test.describe("Hitotsu, round one device", () => {
     await expect(page.getByTestId("hitotsu-discard")).toHaveAttribute("data-card", /^WW/);
     await expect(page.getByTestId("hitotsu-colour")).toHaveAttribute("data-colour", "G");
     await expect(game(page)).toHaveAttribute("data-moves", "1");
+  });
+
+  test("Going out: off in both modes as the published rules have it, chosen on it is played and kept, and the choice never moves the screen", async ({ page }) => {
+    await page.setViewportSize(PHONE);
+    await clearKept(page);
+    await page.goto(`${AT}/pass-and-play`);
+    await ready(page, "hitotsu-set-up");
+    const tile = page.getByTestId("hitotsu-finish-on-number");
+    await expect(tile).toHaveAttribute("data-value", "off");
+    await page.locator('[data-testid="hitotsu-mode"][data-value="party"]').click();
+    await expect(tile).toHaveAttribute("data-value", "off");
+    const before = await page.getByTestId("hitotsu-set-up").boundingBox();
+    await tile.locator('[data-value="on"]').click();
+    await expect(tile).toHaveAttribute("data-value", "on");
+    await expect(tile).toContainText("The last card must be a number.");
+    expect((await page.getByTestId("hitotsu-set-up").boundingBox())!.height).toBeCloseTo(before!.height, 0);
+    await page.getByTestId("hitotsu-start").click();
+    await ready(page, "hitotsu-game");
+    const kept = await page.evaluate((key) => window.localStorage.getItem(key), KEPT);
+    expect(decodeHitotsu(kept)?.options.finishOnNumber).toBe(true);
   });
 
   test("Party mode opens on one short hand with the party rules; jump-in is for one person, and two pass a cover", async ({ page }) => {

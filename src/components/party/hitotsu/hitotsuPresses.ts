@@ -1,4 +1,4 @@
-import { HITOTSU_COLOUR_LOOK, colourWords, movesFor, waysFor, type HitotsuCard, type HitotsuGame, type HitotsuMove } from "@johnmorrisdotca/hitotsu";
+import { HITOTSU_COLOUR_LOOK, colourWords, hitotsuMatches, isNumber, movesFor, waysFor, type HitotsuCard, type HitotsuGame, type HitotsuMove } from "@johnmorrisdotca/hitotsu";
 
 import { hitotsuScreenWords } from "@/components/party/partyWords";
 import type { Speaker } from "@/lib/i18n/i18n";
@@ -10,6 +10,11 @@ export { callMatters, movesFor, playableFor, quickMove } from "@johnmorrisdotca/
 
 /** A press the player may make: its words, the move (null while it cannot be made), and why not. */
 export type HitotsuPress = { label: string; move: HitotsuMove | null; testId: string; strong?: boolean; why?: string; colour?: string };
+
+/** Whether a chosen card is refused only because it is the last in the hand and the table plays "finish on a number card". */
+function lastMustBeNumber(game: HitotsuGame, seat: number, card: HitotsuCard): boolean {
+  return game.options.finishOnNumber && game.hands[seat]?.length === 1 && !isNumber(card) && hitotsuMatches(game, card);
+}
 
 /**
  * THE PRESSES UNDER A HAND, with this card chosen: Play (or Jump in), one per
@@ -37,7 +42,7 @@ export function hitotsuPresses(game: HitotsuGame, seat: number, chosen: HitotsuC
       move: ways[0] ?? null,
       testId: jumping ? "hitotsu-jump" : "hitotsu-play",
       strong: true,
-      why: chosen === null ? HITOTSU_COPY.playWhy : HITOTSU_COPY.notThat,
+      why: chosen === null ? HITOTSU_COPY.playWhy : lastMustBeNumber(game, seat, chosen) ? say.say("party.hitotsu.finish.last") : HITOTSU_COPY.notThat,
     });
   }
   for (const move of moves) {

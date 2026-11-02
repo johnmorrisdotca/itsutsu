@@ -243,6 +243,10 @@ export const PHRASES_PARTY = {
   "party.gunjin.nameRed": "{name} (red, moves first)",
   "party.gunjin.nameBlue": "{name} (blue)",
   // Hitotsu's status, news and labels
+  "party.hitotsu.finish.legend": "Going out",
+  "party.hitotsu.finish.on": "The last card must be a number.",
+  "party.hitotsu.finish.off": "The last card may be any card.",
+  "party.hitotsu.finish.last": "Your last card must be a number: draw instead.",
   "party.hitotsu.playLine": "{name} to play: {colour}, or the same number or symbol, or a wild.",
   "party.hitotsu.caught": "{name} forgot to call Hitotsu!: two cards.",
   "party.hitotsu.took": "{name} took {count}.",
