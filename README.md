@@ -2,7 +2,7 @@
 
 # 五つ · Itsutsu
 
-**Forty-five board games on one engine, and three puzzles beside them.** Gomoku and renju, Othello and Go,
+**Board games on one engine, and puzzles beside them.** Gomoku and renju, Othello and Go,
 checkers and draughts, Hex and Halma — two players in one browser, or two
 devices a QR code apart.
 
@@ -534,26 +534,25 @@ The variables that matter first, all described in `.env.example`:
 
 ## What it does
 
-### Forty-five games and three puzzles, in eight families
+### Games and puzzles, in families
 
-The site began as one game and is now forty-five board games and three puzzles,
-grouped into eight families on `/games` (`GAME_FAMILIES` in
-`src/lib/gomoku/families.ts`):
+The site began as one game and is now many board games and several kinds of
+puzzle, grouped into families on `/games` (`GAME_FAMILIES` in
+`src/lib/gomoku/families.ts`, the one place that says which game is in which
+family and how many). The families are:
 
-| Family | Games |
-| --- | --- |
-| Five in a row | 7 |
-| Drops | 8 |
-| Turn and take | 8 |
-| Strange boards | 8 |
-| Checkers | 6 |
-| Territory and races | 7 |
-| Small boards | 6 |
-| Numbers | 3 |
-| Logic puzzles | 3 |
-| Cards | 8 |
-| Table cards | 7 |
-| Tiles | 3 |
+- Five in a row
+- Drops
+- Turn and take
+- Strange boards
+- Checkers
+- Territory and races
+- Small boards
+- Numbers
+- Logic puzzles
+- Cards
+- Table cards
+- Tiles
 
 No family shows more than eight games — a gate in `variants.coverage.test.ts`
 holds that — and a game may also be listed on a second family's shelf for
@@ -1437,8 +1436,8 @@ game, and validates moves on the server. There is no second implementation of
 "who has won".
 
 A variant is a row in `VARIANT_SPECS` plus its copy, and the engine reads the
-spec rather than switching on a variant's name. That is what lets forty-five
-games share one engine — and `variants.coverage.test.ts` fails the build for a
+spec rather than switching on a variant's name. That is what lets every
+board game share one engine — and `variants.coverage.test.ts` fails the build for a
 game that is missing its tests, its copy, its family or its screenshot, so a
 new game cannot ship half-finished.
 
