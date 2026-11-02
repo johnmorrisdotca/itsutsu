@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BoardPicker } from "@/components/live/BoardPicker";
-import { START_PRESS } from "@/components/live/live.constants";
+import { startPress } from "@/components/live/live.constants";
 import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
 import { SetUpSection } from "@/components/live/SetUpSection";
 import { PressLabel } from "@/components/ui/PressLabel";
@@ -96,7 +96,7 @@ export function TobiishiSetUp({
         </SetUpSection>
         <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
           <Link href={tobiishiLevelPath(size, chosen)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={chosen}>
-            <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={START_PRESS.start.kanji} />
+            <PressLabel words={say.say("pmaze.startLevel", { level: String(chosen) })} kanji={startPress(say).start.kanji} />
           </Link>
           {/* What the level Start plays is, before it is started. */}
           {/* The room three rows of chips take (three of 1.375rem and two gaps of 0.375rem), the most any level's wrap to at any width: a board's and a goal's names are longer for some levels than others, and the screen must not change height when one is chosen. */}

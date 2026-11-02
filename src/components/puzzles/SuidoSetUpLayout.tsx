@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
 import { BoardPicker } from "@/components/live/BoardPicker";
-import { START_PRESS } from "@/components/live/live.constants";
+import { startPress } from "@/components/live/live.constants";
 import { PICK_BOARD_PREVIEW, PICK_BOARD_ROW, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
 import { SetUpSection } from "@/components/live/SetUpSection";
 import { PressLabel } from "@/components/ui/PressLabel";
@@ -118,7 +118,7 @@ export function SuidoSetUpLayout({ screen }: { screen: SuidoScreen }) {
             </span>
           ) : (
             <Link href={suidoLevelPath(size, screen.chosen, set)} className={PLAY_BUTTON} data-testid="puzzle-solve" data-level={screen.chosen}>
-              <PressLabel words={say.say("pmaze.startLevel", { level: String(screen.chosen) })} kanji={START_PRESS.start.kanji} />
+              <PressLabel words={say.say("pmaze.startLevel", { level: String(screen.chosen) })} kanji={startPress(say).start.kanji} />
             </Link>
           )}
           {/* What the level Start plays asks, before it is started. */}

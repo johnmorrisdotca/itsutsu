@@ -36,7 +36,7 @@ export async function HousekiPlayPage({ kind, request }: { kind: HousekiKind; re
         <BoardMasthead story={{ kind: say.say("houseki.card.label"), kanji: rules.kanji, title: rules.title, source: say.say("houseki.play.masthead") }} />
       </div>
       <GameTrailNav
-        game={{ label: rules.title, href: gamePath(kind), testId: "play-up" }}
+        game={{ label: say.pairName(rules.title, rules.kanji).text, href: gamePath(kind), testId: "play-up" }}
         steps={[{ label: say.say("pset.crumb.setUp"), href: setUpPath(kind) }, { label: requestWords(say, request) }]}
       />
       <BoardScaled>

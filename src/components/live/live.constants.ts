@@ -1,5 +1,5 @@
 
-import type { Speaker } from "../../lib/i18n/i18n";
+import type { PhraseKey } from "../../lib/i18n/i18n.constants";
 import { PHRASES, type PhraseKey } from "../../lib/i18n/i18n.constants";
 
 /**
@@ -646,18 +646,12 @@ export const SET_UP_PREVIEW_CAPTION = "min-h-[calc(3lh+0.5rem)] text-center text
  * writes nothing; Start, on the set-up screen and the doorstep, is the one
  * press that makes the game or the puzzle. Every one of them is drawn at
  * `PLAY_BUTTON`'s size, with `PressLabel`.
- */
-export const START_PRESS = {
-  start: { words: PHRASES["live.start"], kanji: "始" },
-  alone: { words: PHRASES["live.startAlone"], kanji: "独" },
-  friend: { words: PHRASES["live.startFriend"], kanji: "友" },
-  /** The puzzle already going, first on its set-up screen as on its front door (`PuzzlePlayOrResume`). */
-  resume: { words: PHRASES["live.startResume"], kanji: "続" },
-  starting: PHRASES["live.starting"],
-} as const;
-
-/**
- * The same presses in the reader's language. A Japanese reader's words are
+ *
+ * There is no English copy of the words to import: `startPress` is the only way
+ * to them, because a copy made of `PHRASES` was what a puzzle's set-up screen
+ * drew in English to a reader of Japanese (looked at on 2026-11-02).
+ *
+ * `startPress` is the presses in the reader's language. A Japanese reader's words are
  * Japanese and the kanji beside them is dropped: it is the English reader's
  * second script, and theirs is already the first.
  */

@@ -154,7 +154,7 @@ function Outlook({ session }: { session: GameSession }) {
       role="status"
       data-outlook={outlook}
     >
-      <span aria-hidden="true" className="mt-0.5 text-xl leading-none font-semibold">
+      <span aria-hidden="true" className="mt-0.5 shrink-0 whitespace-nowrap text-xl leading-none font-semibold">
         {kanji}
       </span>
       <span className="flex flex-col gap-0.5">
@@ -187,7 +187,7 @@ function BuildingNotice({ session }: { session: GameSession }) {
       role="status"
       data-testid="building-warning"
     >
-      <span aria-hidden="true" className="font-mincho mt-0.5 text-xl leading-none font-semibold">
+      <span aria-hidden="true" className="font-mincho mt-0.5 shrink-0 whitespace-nowrap text-xl leading-none font-semibold">
         {GAME_COPY.building.kanji}
       </span>
       <span className="flex flex-col gap-0.5">
@@ -214,7 +214,7 @@ function FatalNotice({ session }: { session: GameSession }) {
       role="status"
       data-fatal-move={latest.moveNumber}
     >
-      <span aria-hidden="true" className="mt-0.5 text-xl leading-none font-semibold">
+      <span aria-hidden="true" className="mt-0.5 shrink-0 whitespace-nowrap text-xl leading-none font-semibold">
         {fatal.kanji}
       </span>
       <span className="flex flex-col gap-0.5">
@@ -347,7 +347,7 @@ function OpeningNotice({ session }: { session: GameSession }) {
       role="status"
       data-testid="opening-notice"
     >
-      <span aria-hidden="true" className="font-mincho mt-0.5 text-xl leading-none font-semibold">
+      <span aria-hidden="true" className="font-mincho mt-0.5 shrink-0 whitespace-nowrap text-xl leading-none font-semibold">
         {GAME_COPY.opening.kanji}
       </span>
       <span className="flex flex-col gap-0.5">

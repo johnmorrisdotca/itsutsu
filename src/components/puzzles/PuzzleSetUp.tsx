@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { DEFAULT_APPEARANCE } from "@/components/board/Board.constants";
 import type { Appearance } from "@/components/board/board.types";
 import { useFeltChoice } from "@/components/board/useFeltChoice";
-import { START_PRESS } from "@/components/live/live.constants";
+import { startPress } from "@/components/live/live.constants";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT, PICK_WORD_CHIP, SET_UP_OPTIONS_AND_PLAY, SET_UP_PLAY_COLUMN } from "@/components/live/picker.constants";
 import { Paired } from "@/components/i18n/Paired";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
@@ -419,7 +419,7 @@ export function PuzzleSetUp({
         or above one another. big buttons". Both start the puzzle; the button
         is the choice of who you play. Then, the same day, at a game's set-up
         saying Begin beside these: "it should always be PLAY and START" — so
-        they read Start alone and Start with a friend (`START_PRESS`).
+        they read Start alone and Start with a friend (`startPress`).
       */}
       <div className={SET_UP_PLAY_COLUMN} data-testid="puzzle-play-buttons">
         <Link
@@ -427,8 +427,8 @@ export function PuzzleSetUp({
           className={PLAY_BUTTON}
           data-testid="puzzle-solve"
         >
-          {/* Start, as every set-up screen's press says it (`START_PRESS`); Play is the word for the way here. */}
-          <PressLabel {...START_PRESS.alone} />
+          {/* Start, as every set-up screen's press says it (`startPress`); Play is the word for the way here. */}
+          <PressLabel {...startPress(say).alone} />
         </Link>
         <button
           type="button"
@@ -439,9 +439,9 @@ export function PuzzleSetUp({
           data-testid="puzzle-race"
         >
           {racing === "making" ? (
-            START_PRESS.starting
+            startPress(say).starting
           ) : (
-            <PressLabel {...START_PRESS.friend} />
+            <PressLabel {...startPress(say).friend} />
           )}
         </button>
       {!hasAccount ? (
