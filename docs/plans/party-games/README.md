@@ -468,8 +468,8 @@ Gunjin at home, with Chinese Checkers as a guest.
   (`ask`, no `review`), so a review sheet says so.
 
 Decisions to review: the Dice family back rather than folded; Pachisi on it, as it was;
-"Ten Thousand" in place of the ticket's name; the name Sayu and its kanji; the kanji 豚,
-一万点 and 嘘つき賽; the guests that left Party games for room not coming back; no least
+"Ten Thousand" in place of the ticket's name; the name Sayu and its kanji; the Japanese names ピッグ,
+一万点 and ライアーズダイス; the guests that left Party games for room not coming back; no least
 score at Ten Thousand; ones wild and never bid at Liar's Dice; no bluffing by the
 computer beyond what its sums allow; one die at Pig rather than two.
 

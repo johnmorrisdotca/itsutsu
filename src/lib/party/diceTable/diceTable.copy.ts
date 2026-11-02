@@ -13,7 +13,7 @@ import type { DiceTableKind } from "./diceTable.constants";
 export const DICE_TABLE_DISPLAY: Record<DiceTableKind, VariantCopy> = {
   pig: {
     label: "Pig",
-    kanji: "豚",
+    kanji: "ピッグ",
     tagline: "Throw one die as often as you dare: every number adds to your turn, and a 1 loses it all.",
     /* Checked 2026-10-31: the first description in print is John Scarne's, in Scarne on Dice (1945), and he did not claim to have invented it. */
     origin: "A game of nerve older than anybody can say. It was first described in print by John Scarne in Scarne on Dice, in 1945, and it has been a favourite of maths classes ever since, because when to stop is a real question with a real answer. Nobody owns it.",
@@ -44,7 +44,7 @@ export const DICE_TABLE_DISPLAY: Record<DiceTableKind, VariantCopy> = {
   },
   liarsDice: {
     label: "Liar's Dice",
-    kanji: "嘘つき賽",
+    kanji: "ライアーズダイス",
     tagline: "Everybody's dice are hidden. Bid on what is under all the cups, or call the last bid a lie.",
     /* Checked 2026-10-31: the game is told as an old South American one, dudo, but how old is disputed, so the copy does not say. */
     origin: "A bluffing game told of as an old one from South America, where it is called dudo, \"I doubt\". How old it really is nobody can show. It has been played in bars and on ships wherever there were dice and cups, and no one owns it.",

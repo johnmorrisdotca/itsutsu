@@ -3,21 +3,20 @@ import type { DraftedPhrase } from "./ja.drafted.constants";
 
 /**
  * Japanese for the plain dice tables' phrases (Pig, Ten Thousand, Liar's Dice,
- * Sayu). Drafted on 2026-10-31, reworded on 2026-11-02, and NOT READ: each row asks instead of carrying a
- * `review`, which is how the phrase table says nobody has read a line yet.
+ * Sayu). Drafted on 2026-10-31, reworded and read on 2026-11-02.
  */
-const ASK = "Written on 2026-11-02; nobody has read it.";
-const r = (text: string, back: string): DraftedPhrase => ({ text, back, ask: ASK });
+const READ = { by: "agent", on: "2026-11-02" } as const;
+const r = (text: string, back: string): DraftedPhrase => ({ text, back, review: READ });
 
 export const JA_DRAFTED_DICE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "party.rules.offerPig": r("サイコロ1個で{list}点まで", "with one die, up to {list} points"),
   "party.rules.offerTenThousand": r("サイコロ6個で{list}点まで", "with six dice, up to {list} points"),
   "party.rules.offerLiarsDice": r("1人{list}個の隠したサイコロで", "with {list} hidden dice each"),
   "party.rules.offerSayu": r("1人{list}枚のチップで", "with {list} chips each"),
-  "party.dice.lead.pig": r("ピッグを2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。サイコロ1個と、やめどきのゲームです。ここでは評価されません。", "Pig for two to eight, round one smartphone or tablet. A computer can sit in any seat. A game of one die and when to stop. Nothing here is rated."),
-  "party.dice.lead.tenThousand": r("一万点を2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。サイコロ6個で、どこまで運を試すかのゲームです。ここでは評価されません。", "Ten Thousand for two to eight, round one smartphone or tablet. A computer can sit in any seat. A game of six dice and how far to try your luck. Nothing here is rated."),
-  "party.dice.lead.liarsDice": r("嘘つき賽を2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。隠したサイコロ、全員の分への宣言、そして「嘘だ！」のゲームです。ここでは評価されません。", "Liar's Dice for two to eight, round one smartphone or tablet. A computer can sit in any seat. A game of hidden dice, a declaration on everybody's, and \"Lie!\". Nothing here is rated."),
-  "party.dice.lead.sayu": r("左右を2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。サイコロを振って、チップを左へ、右へ、ポットへ回します。ここでは評価されず、チップはそのゲームの外では何の価値もありません。", "Sayu for two to eight, round one smartphone or tablet. A computer can sit in any seat. Roll the dice and pass your chips left, right or to the pot. Nothing here is rated, and a chip has no value outside its game."),
+  "party.dice.lead.pig": r("ピッグを2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。サイコロ1個で、やめどきを見きわめるゲームです。ここでは評価されません。", "Pig for two to eight, round one smartphone or tablet. A computer can sit in any seat. A game in which, with one die, you judge when to stop. Nothing here is rated."),
+  "party.dice.lead.tenThousand": r("一万点を2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。サイコロ6個で、どこまで運を試すかを決めるゲームです。ここでは評価されません。", "Ten Thousand for two to eight, round one smartphone or tablet. A computer can sit in any seat. A game in which, with six dice, you decide how far to try your luck. Nothing here is rated."),
+  "party.dice.lead.liarsDice": r("ライアーズダイスを2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。隠したサイコロを使い、全員の分を合わせて数を宣言し、「嘘だ！」と言い合うゲームです。ここでは評価されません。", "Liar's Dice for two to eight, round one smartphone or tablet. A computer can sit in any seat. A game in which you use hidden dice, declare a number across everybody's together, and say \"Lie!\" to each other. Nothing here is rated."),
+  "party.dice.lead.sayu": r("左右を2〜8人で、1台のスマホやタブレットを囲んで遊びます。どの席にもコンピュータを座らせられます。サイコロを振って、チップを左へ、右へ、ポットへ回します。ここでは評価されず、チップはゲームの外では何の価値もありません。", "Sayu for two to eight, round one smartphone or tablet. A computer can sit in any seat. Roll the dice and pass your chips left, right or to the pot. Nothing here is rated, and a chip has no value at all outside the game."),
   "party.dice.play": r("遊ぶ", "Play"),
   "party.dice.playGame": r("{game}を遊ぶ", "Play {game}"),
   "party.dice.about": r("{game}について：規則と、同じ系統のゲーム", "About {game}: its rules and games of the same family"),
@@ -31,12 +30,12 @@ export const JA_DRAFTED_DICE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "party.dice.points": r("{points}点", "{points} points"),
   "party.dice.playTo": r("目標点", "Target score"),
   "party.dice.pointsTo": r("{points}点", "{points} points"),
-  "party.dice.scoresTo": r("確定した点（{points}点で勝ち）", "Points locked in (the win at {points})"),
+  "party.dice.scoresTo": r("確定した点（目標{points}点）", "Points locked in (target {points} points)"),
   "party.dice.turnPoints": r("{name}：この番で{points}点", "{name}: {points} points this turn"),
-  "party.dice.pig.first": r("振れるだけ振りましょう。1が出ると、その番の点は消えます。最初に{points}点に届いた人の勝ちです。", "Roll as much as you can. When a 1 comes up, that turn's points vanish. The first to reach {points} wins."),
+  "party.dice.pig.first": r("好きなだけ振れますが、1が出るとその番の点は消えます。確定して最初に{points}点に届いた人の勝ちです。", "You can roll as much as you like, but when a 1 comes up that turn's points vanish. The first to reach {points} by locking in wins."),
   "party.dice.pig.rolled": r("{name}が{die}を出しました：この番で{points}点。", "{name} rolled a {die}: {points} points this turn."),
   "party.dice.pig.bust": r("{name}が1を出し、{points}点を失いました。", "{name} rolled a 1 and lost {points} points."),
-  "party.dice.ten.first": r("サイコロ6個を振り、点になるものを取り分け、点にならない目が出る前に確定します。最初に{points}点に届くと、最終ラウンドです。", "Roll six dice, set aside what scores, and lock in before a roll that scores nothing. When somebody first reaches {points} it is the last round."),
+  "party.dice.ten.first": r("サイコロ6個を振り、点になるものを取り分け、何も点にならない出目になる前に確定します。誰かが最初に{points}点に届くと、最終ラウンドです。", "Roll six dice, set aside what scores, and lock in before a roll comes up with nothing that scores. When somebody first reaches {points} it is the last round."),
   "party.dice.ten.bust": r("点になる目がありません：{name}は{points}点を失いました。", "No number scores: {name} lost {points} points."),
   "party.dice.ten.kept": r("{name}が{points}点分を取り分けました。", "{name} set aside {points} points' worth."),
   "party.dice.ten.hot": r("ホットダイス：{name}が{points}点分を取り分け、6個すべてをもう一度振ります。", "Hot dice: {name} set aside {points} points' worth and rolls all six again."),
@@ -44,7 +43,7 @@ export const JA_DRAFTED_DICE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "party.dice.ten.aside": r("取り分け", "Set aside"),
   "party.dice.ten.asideMark": r("取り分け", "Aside"),
   "party.dice.ten.chooseDice": r("取り分けるサイコロをタップ", "Tap the dice to set aside"),
-  "party.dice.ten.notAll": r("点にならないものが含まれています", "It includes something that does not score"),
+  "party.dice.ten.notAll": r("点にならないサイコロが含まれています", "It includes a die that does not score"),
   "party.dice.ten.keep": r("取り分ける（{points}点）", "Set aside ({points} points)"),
   "party.dice.ten.rollDice": r("{dice}個を振る", "Roll {dice} dice"),
   "party.dice.ten.lastRound": r("最終ラウンド：最高点を超えましょう", "Last round: pass the highest score"),
@@ -60,7 +59,7 @@ export const JA_DRAFTED_DICE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "party.dice.liars.out": r("脱落", "Out"),
   "party.dice.liars.dice.one": r("{count}個", "{count} die"),
   "party.dice.liars.dice.other": r("{count}個", "{count} dice"),
-  "party.dice.liars.diceEach": r("1人のサイコロの数", "Dice per person"),
+  "party.dice.liars.diceEach": r("1人あたりのサイコロの数", "Number of dice per person"),
   "party.dice.liars.onTable": r("卓上のサイコロ：{count}個", "Dice on the table: {count}"),
   "party.dice.liars.stood": r("{caller}が{bidder}の「{face}が{count}個」を嘘だと言いました。{found}個あったので宣言は正しく、{loser}がサイコロを1個失います。", "{caller} called {bidder}'s \"{count} of {face}\" a lie. There were {found}, so the declaration was right, and {loser} loses one die."),
   "party.dice.liars.fellShort": r("{caller}が{bidder}の「{face}が{count}個」を嘘だと言いました。{found}個しかなかったので、{loser}がサイコロを1個失います。", "{caller} called {bidder}'s \"{count} of {face}\" a lie. There were only {found}, so {loser} loses one die."),
@@ -68,13 +67,13 @@ export const JA_DRAFTED_DICE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   "party.dice.sayu.left": r("左", "Left"),
   "party.dice.sayu.right": r("右", "Right"),
   "party.dice.sayu.pot": r("ポット", "Pot"),
-  "party.dice.sayu.keep": r("そのまま", "Stays"),
+  "party.dice.sayu.keep": r("手元", "Hand"),
   "party.dice.sayu.first": r("全員が{counters}枚で始めます。振ると、サイコロごとにチップが動くか、手元に残ります。", "Everybody starts with {counters}. When you roll, each die moves a chip or it stays with you."),
   "party.dice.sayu.threw": r("{name}が振りました。", "{name} rolled."),
   "party.dice.sayu.roll": r("{dice}個を振る", "Roll {dice}"),
   "party.dice.sayu.counters": r("チップ", "Chips"),
-  "party.dice.sayu.startWith": r("1人のチップの数", "Chips per person"),
+  "party.dice.sayu.startWith": r("最初のチップの数", "Number of chips at the start"),
   "party.dice.sayu.count.one": r("{count}枚", "{count} chip"),
   "party.dice.sayu.count.other": r("{count}枚", "{count} chips"),
-  "gamepages.diceNote": r("{count}。1人でも、1台の端末を囲む卓でも遊べ、どの席にもコンピュータを座らせられます。賭けるものはなく、ゲームで数えるものはそのゲームの中だけのものです。", "{count}. It can be played alone or by a table round one device, and a computer can sit in any seat. Nothing is staked, and what a game counts belongs only inside that game."),
+  "gamepages.diceNote": r("{count}。1人でも、1台の端末を囲む卓でも遊べ、どの席にもコンピュータを座らせられます。何も賭けません。ゲームで数えるものは、そのゲームの中だけのものです。", "{count}. It can be played alone or by a table round one device, and a computer can sit in any seat. Nothing is staked. What a game counts belongs only inside that game."),
 };

@@ -113,10 +113,10 @@ export const FAMILY_COPY_JA: Record<string, FamilyCopyJa> = {
   },
   dice: {
     blurb: [
-      "サイコロが決めるゲームです。振って、残したい目を残して点を数える、どこまで運を試すかを決める、全員のカップの中身について宣言する、チップを卓に回す、出た目で駒をゴールまで進める、といったゲームがあります。",
-      "Games the dice decide. There are games of rolling, keeping the numbers you want and counting the score, deciding how far to try your luck, declaring what is in everybody's cups, passing chips round the table, and moving your pieces to the goal by what comes up.",
+      "サイコロが決めるゲームです。振って、残したい目を取り分けて点にする、どこまで運を試すかを決める、全員のカップの中身について宣言し合う、チップを卓に回す、出た目で駒をゴールまで進める、といったゲームがあります。",
+      "Games the dice decide. There are games of rolling, setting aside the numbers you want and turning them into points, deciding how far to try your luck, declaring to each other what is in everybody's cups, passing chips round the table, and moving your pieces to the goal by what comes up.",
     ],
-    ask: "Drafted 2026-10-31 and read by nobody yet: please read it.",
+    review: { by: "agent", on: "2026-11-02" },
   },
   party: {
     blurb: [

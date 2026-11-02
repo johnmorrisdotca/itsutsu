@@ -5,7 +5,7 @@ import { overlayLines } from "./copyTable";
 import type { CopyReview, JaLine } from "./copyJa.types";
 import { AGENT_READ_2026_10_06 } from "./copyJa.types";
 import { DICE_TABLE_KINDS } from "../party/diceTable/diceTable.constants";
-import { DICE_TABLE_UNREAD } from "./dictionaries/party.ja.dice.constants";
+import { DICE_TABLE_READ } from "./dictionaries/party.ja.dice.constants";
 import { PARTY_COPY_JA } from "./dictionaries/party.ja.constants";
 import { PARTY_TABLES_AUTHORED } from "./jaText.build";
 
@@ -64,9 +64,9 @@ function rows(): Row[] {
   }
   for (const [name, table] of Object.entries(PARTY_TABLES_AUTHORED)) {
     for (const { path, line } of overlayLines(table)) {
-      // The new dice tables' own lines were drafted and not read; the sheet must not stamp them as if they had been.
-      const unread = name === "tableWords" && DICE_TABLE_KINDS.some((kind) => path === kind || path.startsWith(`${kind}.`));
-      out.push({ where: `${name}: ${path}`, line, ...(unread ? { review: undefined, ask: DICE_TABLE_UNREAD } : { review: AGENT_READ_2026_10_06 }) });
+      // The dice tables' own lines were read on their own day, not on the day of the others.
+      const dice = name === "tableWords" && DICE_TABLE_KINDS.some((kind) => path === kind || path.startsWith(`${kind}.`));
+      out.push({ where: `${name}: ${path}`, line, review: dice ? DICE_TABLE_READ : AGENT_READ_2026_10_06 });
     }
   }
   out.push(...packageRows());
