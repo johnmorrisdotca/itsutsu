@@ -43,7 +43,7 @@ import type { OutlineSection } from "@/components/layout/documentOutline";
 export const PRIVACY_KANJI = "プライバシー";
 
 /** The day the page last changed, moved by whoever changes a sentence. */
-export const PRIVACY_CHANGED = "2026-09-25";
+export const PRIVACY_CHANGED = "2026-11-02";
 
 export const CONTACT = "hello@itsutsu.com";
 

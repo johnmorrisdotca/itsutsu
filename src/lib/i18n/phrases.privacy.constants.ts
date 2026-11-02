@@ -17,7 +17,7 @@ export const PHRASES_PRIVACY = {
   "privacy.subtitle": "What {site} keeps about you, who can see it, and how to have it removed.",
   "privacy.lastChanged": "Last changed {date}",
   "privacy.governing": "This page is also offered in your language for reference. The English version is the one that governs, and where the two differ the English prevails.",
-  "privacy.wordsAccount": "An account with words and no Google address lives in one browser for {days} days unless you link Google, and then it goes.",
+  "privacy.wordsAccount": "An account with words and no Google address lives in one browser for {days} days unless you link Google. After that nobody can sign in to it, though its games stay on the site.",
 
   "privacy.short.h": "The short version",
   "privacy.short.paraA": "{site} keeps what it needs to run a games site: who you are when you sign in, the games you play and how they went, what you choose to tell other players about yourself, and the messages you send them. It does not sell any of it, show you advertising, or follow you around other sites.",
@@ -27,7 +27,7 @@ export const PHRASES_PRIVACY = {
   "privacy.what.pointA": "How you sign in. With Google, we receive your email address, your name and your picture; we keep the address to recognise you next time, and the name and picture as the start of a profile you can change. With four words instead, we keep the words only as a hash, the way a password is kept: they cannot be read back, and nobody at the site can tell you what they were. {wordsAccount}",
   "privacy.what.pointB": "How you got in: the invite code you used, when you joined, and when you were last here.",
   "privacy.what.pointC": "Your profile, every part of it optional and yours to change on your own page: the name you play under, your city and country, your time zone, a few words about yourself, the days you do not play and when you are away, how you like a board to look, how a new game starts for you, and whether you are listed as here and mailed when it is your move.",
-  "privacy.what.pointD": "Your games: every move of every game you play, when it was made, who sat on either side, and the result. Your rating, your record, your streaks, your experience points and your level are worked out from those games, and so are the applause, the reactions and the notes left on them. A finished game stays at its own address; hiding it from your own list removes it from nowhere else.",
+  "privacy.what.pointD": "Your games: every move of every game you play, when it was made, who sat on either side, and the result. Your rating, your record, your streaks, your experience points and your level are worked out from those games, and the applause, the reactions and the notes left on them are kept with them. A finished game stays at its own address; hiding it from your own list removes it from nowhere else.",
   "privacy.what.pointE": "Your puzzles: each puzzle you finish, which one it was, how long it took and when, and any race you sat in — who the other person was and both clocks. The puzzle itself is made in your browser and nothing of an unfinished one is sent anywhere.",
   "privacy.what.pointF": "What you say to people: direct messages to another member, and the buddy and ignore lists you keep.",
   "privacy.what.pointG": "Your age band: under 13, 13 to 17, or 18 or over, and nothing more exact than that. For a member under 13, who consented to the account: the name a parent or guardian gave, whether they are the parent or a guardian, and when.",

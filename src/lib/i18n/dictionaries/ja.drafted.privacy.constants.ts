@@ -18,8 +18,6 @@ const ASK_CHILD =
   "About children and a parent's consent: a native read is required, and the sentence must be as strict in meaning as the English.";
 const ASK_GOVERNING =
   "The line that says the English version governs: a native read to confirm the wording (参考訳, 優先) is how a Japanese site usually says it, and whether 正本 or 正文 is wanted instead.";
-const ASK_AMBIGUOUS =
-  "The English is ambiguous (does the account itself go after the days, or only the limit?). The Japanese says what the English most plainly says; John should settle the English, then a native reader the Japanese.";
 
 const r = (text: string, back: string, ask: string = ASK_LEGAL): DraftedPhrase => ({ text, back, review: AGENT_READ, ask });
 const child = (text: string, back: string): DraftedPhrase => r(text, back, ASK_CHILD);
@@ -36,11 +34,11 @@ export const JA_DRAFTED_PRIVACY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "The Japanese version of this page is a reference translation. The English version is the official document, and where the content differs the English version takes precedence.",
     ASK_GOVERNING,
   ),
-  "privacy.wordsAccount": r(
-    "合言葉を使い、Googleのアドレスがないアカウントは、Googleと連携しない限り、1つのブラウザに{days}日間だけ存在し、その後はなくなります。",
-    "An account that uses 合言葉 and has no Google address exists in one browser for just {days} days unless you link it with Google, and after that it is gone.",
-    ASK_AMBIGUOUS,
-  ),
+  "privacy.wordsAccount": {
+    text: "合言葉を使い、Googleのアドレスがないアカウントは、Googleと連携しない限り、1つのブラウザで{days}日間だけ使えます。その後は誰もサインインできなくなりますが、対局はサイトに残ります。",
+    back: "An account that uses 合言葉 and has no Google address can be used in one browser for just {days} days unless you link it with Google. After that nobody can sign in to it, but its games stay on the site.",
+    ask: `${ASK_LEGAL} Rewritten on 2026-11-02; the reviewer agent has not read this sentence.`,
+  },
 
   "privacy.short.h": r("要約", "Summary"),
   "privacy.short.paraA": r(
