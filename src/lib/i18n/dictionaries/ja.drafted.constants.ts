@@ -233,6 +233,26 @@ const JA_DRAFTED_BASE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     review: AGENT_READ,
   },
 
+  "rules.inspired.tetromino": {
+    text: "7種類のテトロミノ",
+    back: "the seven tetrominoes",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "rules.inspired.starBattle": {
+    text: "スターバトル（星が1つの形）",
+    back: "Star Battle (the one-star form)",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "rules.inspired.anagramGrid": {
+    text: "文字タイルで盤を組み立てて競う、単語並べのゲーム",
+    back: "the word-building games where players race to build a grid from letter tiles",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "rules.inspired.swapGrid": {
+    text: "文字を入れ替えて単語を直す格子のパズル",
+    back: "the grid puzzle of swapping letters to put words right",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
   "rules.inspiredBy": {
     text: "{name}に着想を得た版です。名称は権利者に帰属し、ここに記すのは当サイト独自の規則です。",
     back: "This is a version inspired by {name}. The name belongs to its rights holder; what is set down here is this site's own rules.",

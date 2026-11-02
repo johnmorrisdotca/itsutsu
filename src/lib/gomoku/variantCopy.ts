@@ -3,6 +3,7 @@ import type { Locale } from "../i18n/i18n.types";
 import { jaText } from "../i18n/jaText";
 
 import type { RuleVariant } from "./gomoku.types";
+import { inspiredByIn } from "./inspiredBy";
 import { RULE_VARIANT_DISPLAY, type VariantCopy } from "./variants.constants";
 
 const IN_JAPANESE = new Map<RuleVariant, VariantCopy>();
@@ -23,7 +24,7 @@ export function variantCopy(variant: RuleVariant, locale: Locale): VariantCopy {
   const made = IN_JAPANESE.get(variant);
   if (made !== undefined) return made;
   const ja = jaText().variants[variant];
-  const copy: VariantCopy = { ...english, tagline: ja.tagline, origin: ja.origin, rules: ja.rules, board: ja.board };
+  const copy: VariantCopy = { ...english, tagline: ja.tagline, origin: ja.origin, rules: ja.rules, board: ja.board, inspiredBy: inspiredByIn(english.inspiredBy, locale) };
   IN_JAPANESE.set(variant, copy);
   return copy;
 }
