@@ -19,7 +19,7 @@ const BLANK: readonly number[] = new Array<number>(TEN_THOUSAND_DICE).fill(0);
 /** What the last move did, in a line. */
 function news(game: TenThousandGame, names: readonly string[], say: ReturnType<typeof useSpeaker>): string {
   const last = game.last;
-  if (last === null) return say.say("party.dice.ten.first", { points: String(game.size) });
+  if (last === null) return say.say("party.dice.ten.first", { points: scoreWords(game.size) });
   const name = names[last.seat] ?? "";
   if (last.kind === "bust") return say.say("party.dice.ten.bust", { name, points: String(last.lost) });
   if (last.kind === "banked") return say.say("party.dice.banked", { name, points: String(last.points) });
