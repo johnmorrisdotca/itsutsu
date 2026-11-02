@@ -323,7 +323,7 @@ export const ALLOWED_TERMS = [
   ["Vercel|Neon", "hosting and database providers' names"],
   ["Wikipedia", "a site's name"],
   ["ItsYourTurn|GoldToken", "the other sites whose move lists can be pasted: names, as they write them"],
-  ["Little Golem|PlayOK|Pente\\.org", "other game sites named on the About page: names, as they write them"],
+  ["Little Golem|PlayOK|Pente\\.org|PuzzleMadness|Vint\\.ee", "other game sites named on the About page: names, as they write them"],
   ["CC BY(?:-SA|-NC)?(?:\\s*4\\.0)?|CC0", "a Creative Commons licence identifier"],
   ["[a-h][1-9][0-9]?", "board coordinates such as e5 or h10"],
   ["ArrowLeft|ArrowRight|ArrowUp|ArrowDown|Backspace", "the names `KeyboardEvent.key` reports for the arrows and Backspace, compared and never drawn (Enter, Delete and Space, which are also words on a button, are in src/lib/ui/keyNames.constants.ts)"],

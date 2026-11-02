@@ -1344,6 +1344,26 @@ export const JA_DRAFTED_ABOUT: Partial<Record<PhraseKey, DraftedPhrase>> = {
     "2001年",
     "2001",
   ),
+  "about.sites.pmGames": {
+    text: "パズルのみ：数独は40種近く、ロジックパズルは50種超",
+    back: "puzzles only: nearly forty kinds of Sudoku and over fifty logic puzzles",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "about.sites.pmFree": {
+    text: "登録は無料",
+    back: "registering is free",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "about.sites.pmRatings": {
+    text: "パズルごとの得点、通算と月間の順位表",
+    back: "a score for each puzzle, with all-time and monthly boards",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "about.sites.f": {
+    text: "<out https://www.puzzlemadness.co.uk/>PuzzleMadness</out>は、ここの「数字」の棚が好きな人にぜひ開いてほしいサイトです。ひとりの開発者が作った趣味のサイトで、登録は無料、中身はパズルだけです。数独は40種近くあり、9を超える数を文字で表す16×16の巨大盤から、5つの盤が重なる「サムライ」まで揃っています。そのほかに、ノノグラム、カックロ、スリザーリンク、スターバトル、不等号パズル、タワーズなど、50種を超えるロジックパズルもあります。学ぶべきは順位表です。どのパズルのページにも、通算と月間の順位表があり、ひと目で読めるほど簡素で、名前の横の星は、その人が何問解いたかを表します。得点は、自分で埋めたマス1つにつき5点で、候補を書き込んでもらうと50点引かれます。そのため、難しいパズルほど単純に価値が高く、時計で損をすることはありません。2026年9月24日と11月2日に読んだ内容です。正確なことは、サイト自身が基準です。上の表のダッシュは、確認できなかった事実なので載せていないという意味です。",
+    back: "PuzzleMadness is a site I would like people who like the Numbers shelf here to open. It is a hobby site made by one developer, registering is free, and the contents are only puzzles. There are nearly forty kinds of Sudoku, from a giant 16×16 board that writes the numbers past nine as letters to Samurai, where five boards overlap. Besides that there are over fifty logic puzzles, such as Nonograms, Kakuro, Slitherlink, Star Battle, inequality puzzles and Towers. What there is to learn from is the leaderboards. Every puzzle's page has an all-time and a monthly board, simple enough to read at a glance, and the star beside a name shows how many puzzles that person has solved. The score is five points for each square you fill in yourself, and fifty points are taken off if you ask it to write in the candidates. So a harder puzzle is simply worth more, and the clock never costs you. This is what was read on 24 September and 2 November 2026. The site itself is the authority. A dash in the table above means a fact that could not be confirmed, so it is not listed.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
 
   // The screenshots
   "about.shots.boardDesk": r(
