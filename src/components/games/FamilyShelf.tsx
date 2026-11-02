@@ -64,7 +64,7 @@ export async function FamilyShelf({ shelf, current = null }: FamilyShelfProps) {
                     })}
                   </span>
                   <span className="text-sm" data-testid="family-game-why">
-                    {listingWhy(game, shown.home.key, shown.why, locale)}
+                    {listingWhy(game, shown.shelf, shown.why, locale)}
                   </span>
                 </>
               ) : null}

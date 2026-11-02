@@ -48,7 +48,7 @@ export function catalogueFamilies(locale: Locale = DEFAULT_LOCALE): CatalogueFam
     blurb: familyBlurb(family, locale),
     games: family.games.map((game) => gameCopy(game, locale)),
     guests: gamesShownIn(family).flatMap((shown) =>
-      shown.listed === "shelf" ? [{ ...gameCopy(shown.variant, locale), home: { title: shown.home.title, kanji: shown.home.kanji }, why: listingWhy(shown.variant, shown.home.key, shown.why, locale) }] : [],
+      shown.listed === "shelf" ? [{ ...gameCopy(shown.variant, locale), home: { title: shown.home.title, kanji: shown.home.kanji }, why: listingWhy(shown.variant, shown.shelf, shown.why, locale) }] : [],
     ),
   }));
 }

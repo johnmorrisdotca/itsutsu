@@ -98,6 +98,8 @@ export const PHRASES_GAMEPAGES = {
   "gamepages.botLadderNote": "A separate ladder, on this game alone, for the games where one seat was a program. These ratings are not the ones above and the two are never added together. A grade is a name for how a program plays, not a promise about how it does: read the standing and the games behind it, which is what a ladder is for.",
   "gamepages.noBotGames": "Nobody has finished a rated game of {game} against a program yet.",
   "gamepages.playOne": "Play one →",
+  "gamepages.puzzleLine.chip": "A puzzle for one, solved in your browser.",
+  "gamepages.puzzleLine.join": "Join to play one →",
   "gamepages.alsoIn": "Also in {family}:",
   // The play page's footer
   // Lists, trails and panels

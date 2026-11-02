@@ -30,4 +30,4 @@ export type AlsoListing = { family: string; why: string };
  * One game on a family's shelf. At home there, or a guest from its own family —
  * and a guest always knows which, so the shelf can say "also under" it.
  */
-export type ShelvedGame = { variant: GameKey; listed: "home" } | { variant: GameKey; listed: "shelf"; home: GameFamily; why: string };
+export type ShelvedGame = { variant: GameKey; listed: "home" } | { variant: GameKey; listed: "shelf"; home: GameFamily; why: string; /** The family whose shelf this is: the Japanese of `why` is kept by game and this key (`listingWhy`). */ shelf: string };

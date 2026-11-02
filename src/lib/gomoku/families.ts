@@ -175,7 +175,7 @@ export function gamesShownIn(family: GameFamily): ShelvedGame[] {
     const listing = (ALSO_LISTED_IN[variant] ?? []).find((one) => one.family === family.key);
     return home === null || home.key === family.key || !listedHere || listing === undefined
       ? []
-      : [{ variant, listed: "shelf", home, why: listing.why }];
+      : [{ variant, listed: "shelf", home, why: listing.why, shelf: family.key }];
   });
   return [...own, ...guests];
 }

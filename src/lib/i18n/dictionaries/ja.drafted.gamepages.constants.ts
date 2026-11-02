@@ -436,6 +436,16 @@ export const JA_DRAFTED_GAMEPAGES: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Nobody has yet finished a rated game of {game} against a computer.",
     review: AGENT_READ,
   },
+  "gamepages.puzzleLine.chip": {
+    text: "1人で遊ぶパズルです。ブラウザーの中で解きます。",
+    back: "A puzzle for one person. You solve it in the browser.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "gamepages.puzzleLine.join": {
+    text: "参加して1問遊ぶ →",
+    back: "Join and play one puzzle →",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
   "gamepages.playOne": {
     text: "遊んでみる →",
     back: "Try one →",
