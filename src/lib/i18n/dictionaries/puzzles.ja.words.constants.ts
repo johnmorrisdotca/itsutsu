@@ -79,7 +79,7 @@ export const PUZZLE_COPY_JA_WORDS = {
       ],
       [
         "緑は、正しいかなが正しい場所にあることです。オレンジは、そのかなが単語のほかの場所にあることです。黄色は、この場所に入る単語のかなが、かな表で同じ行にあることです（か・き・く・け・こは「か行」です）。灰色は、そのどれでもありません。",
-        "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same row of the kana table (か き く け こ are the 「か row」). Grey is none of those.",
+        "Green is the right kana in the right place. Orange is a kana that is in the word somewhere else. Yellow means the word's kana in this place is in the same row of the kana table (か き く け こ are one row). Grey is none of those.",
       ],
       [
         "矢印は、かなは合っているが、惜しいという意味です。下向きは大きさのちがい（「っ」のところに「つ」）、上向きは濁点や半濁点のちがい（「ば」や「ぱ」のところに「は」）です。すべての場所がふつうの緑になったときに、単語が見つかったことになります。",
