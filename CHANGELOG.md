@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.556.1 — 2026-11-02 14:38 UTC
+- About adds PuzzleMadness and Vint.ee to the sites worth knowing, and says what the PDN download of a draughts game is
+
 ## 0.556.0 — 2026-11-02 14:38 UTC
 - Sayu joins the Dice family: throw a die for each counter and pass them left, right or to the pot, until one player holds them all
 
