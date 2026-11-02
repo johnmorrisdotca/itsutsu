@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { memberContext, removeMember } from "./members";
+import { forgetFamilyFolds, openFamily } from "./support";
 
 /*
  * THE FAMILIES TAB REMEMBERS WHICH FAMILIES ARE OPEN. John, 2026-09-26: "Games
@@ -99,5 +100,41 @@ test.describe("a reader with no account", () => {
     await isOpen(page, OTHER, false);
     // Kept in the browser, never sent anywhere.
     expect(await page.evaluate(() => window.localStorage.getItem("itsutsu.familyFolds"))).toBe(JSON.stringify({ drops: "shut" }));
+  });
+});
+
+test("a shut family carries no games until it is opened, and its games arrive when it is: the page stays light", async ({ page }) => {
+  await forgetFamilyFolds(page);
+  // The page itself: 132 cards drawn into every shut family took it to 673 KB of HTML (2026-11-02), and each card twice over in the data that makes it work.
+  const sent = await page.request.get("/games");
+  expect(sent.ok()).toBe(true);
+  expect((await sent.text()).length, "the games page carries the cards of the families that are shut").toBeLessThan(300_000);
+
+  await page.goto("/games");
+  await expect(family(page, FIRST)).toHaveAttribute("data-ready", "true");
+  // The first family is open and has its games; another is shut and has none.
+  await expect(family(page, FIRST).getByTestId("family-game").first()).toBeAttached();
+  await expect(family(page, OTHER).getByTestId("family-game")).toHaveCount(0);
+  // Pressing it asks the server for its games, and they arrive as the cards the page always drew.
+  const opened = await openFamily(page, OTHER);
+  await expect(opened.getByTestId("family-game").first()).toBeVisible();
+  await expect(opened.getByTestId("game-name").first()).toHaveAttribute("href", /^\/games\//);
+  // Shut and opened again, they stay: nothing is asked for twice.
+  await opened.locator("summary").click();
+  await opened.locator("summary").click();
+  await expect(opened.getByTestId("family-game").first()).toBeVisible();
+});
+
+test.describe("for a reader with no session", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("a shut family's games arrive when it is opened, with a stranger's figures", async ({ page }) => {
+    await page.goto("/games");
+    await expect(family(page, FIRST)).toHaveAttribute("data-ready", "true");
+    await expect(family(page, OTHER).getByTestId("family-game")).toHaveCount(0);
+    const opened = await openFamily(page, OTHER);
+    await expect(opened.getByTestId("family-game").first()).toBeVisible();
+    // Nobody is named to a stranger: the open pages carry no player's link (`gate.spec.ts`).
+    await expect(opened.locator('a[href^="/players/"]')).toHaveCount(0);
   });
 });

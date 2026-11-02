@@ -646,3 +646,23 @@ export async function forgetFamilyFolds(page: Page) {
   });
   expect(forgotten.ok(), "the operator's family folds could not be forgotten").toBe(true);
 }
+
+/**
+ * A family on the Families tab opened, and its games arrived. A family that is shut when the page is drawn does not carry
+ * its games: they are asked for when it is first opened (`FamilyFold`), so a spec that reads a card in one opens it first.
+ */
+export async function openFamily(page: Page, key: string) {
+  const family = page.locator(`[data-testid="lobby-family"][data-family="${key}"]`);
+  // Pressed only once the page has hydrated: a press before then is lost.
+  await expect(family).toHaveAttribute("data-ready", "true");
+  if (!(await family.evaluate((details) => (details as HTMLDetailsElement).open))) await family.locator("summary").click();
+  await expect(family.getByTestId("family-loading")).toHaveCount(0);
+  await expect(family.getByTestId("family-failed")).toHaveCount(0);
+  return family;
+}
+
+/** Every family on the Families tab opened, each with its games (`openFamily`). */
+export async function openEveryFamily(page: Page) {
+  const keys = await page.locator('[data-testid="lobby-family"]').evaluateAll((families) => families.map((family) => family.getAttribute("data-family")!));
+  for (const key of keys) await openFamily(page, key);
+}

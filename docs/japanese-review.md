@@ -6,8 +6,8 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 6088. Drafted and unread: 10. Read by the reviewer agent: 6078.
-Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 134
+Phrases: 6090. Drafted and unread: 12. Read by the reviewer agent: 6078.
+Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 136
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
 
@@ -20,7 +20,7 @@ It is there so the site's owner, who does not read Japanese, can see for
 himself whether the meaning drifted. If that column does not match the English
 beside it, the Japanese is wrong whatever anybody thinks of its style.
 
-## 1. Waiting for a decision or a native read — start here (133)
+## 1. Waiting for a decision or a native read — start here (135)
 
 A **question** is a wording only the site's owner can choose between. A line the
 agent has read but marked for a native read is high-stakes text (children,
@@ -65,6 +65,8 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Sign in with Google again first, so we know it is you asking. | **ご本人確認のため、先にもう一度Googleでサインインしてください。** | To confirm it is you, first sign in with Google again. | Agent 2026-11-02, native read wanted | An account page: removing an account. The Japanese expert read it against the English on 2026-11-02; no person who reads Japanese has read it, so a native read is still wanted. |  |
 | — — — | A member under 13 invites buddies by name rather than by a link anybody could open. | **13歳未満の会員は、誰でも開けるリンクではなく、名前で仲間を招待します。** | A member under 13 invites buddies by name, not by a link anybody could open. | Agent 2026-11-02, native read wanted | About a child under 13 (invitations by name, not by link). The Japanese expert read it against the English on 2026-11-02; no person who reads Japanese has read it, so a native read is still wanted. |  |
 | — — — | A player at that table is under 13, so only the people on their own buddy list can sit with them. | **その卓には13歳未満の対局者がいるため、その人の仲間リストにいる人だけが同席できます。** | A player at that table is under 13, so only the people on that player's own buddy list can sit with them. | Agent 2026-11-02, native read wanted | About a child under 13 (who may sit with them). The Japanese expert read it against the English on 2026-11-02; no person who reads Japanese has read it, so a native read is still wanted. |  |
+| — — — | The games in this family could not be loaded. Close it and open it again, or choose Cards or List above. | **この系統のゲームを読み込めませんでした。いったん閉じてもう一度開くか、上の「一覧」か「全種目」を選んでください。** | The games of this family could not be loaded. Close it and open it again, or choose "Cards" or "List" above. | Question, unread | Written on 2026-11-02; nobody has read it. |  |
+| — — — | Loading the games… | **ゲームを読み込んでいます…** | Loading the games… | Question, unread | Written on 2026-11-02; nobody has read it. |  |
 | — — — | Three more are not built yet, because they all rest on one mechanism this board does not have: black putting down several candidate fifth moves and white removing all but one. Yamaguchi has black declare, before the swap, how many fifth moves it will offer. Soosyrv-8 declares the number after white’s fourth stone, up to eight, and then offers the swap. Taraguchi-10 is Tarannikov’s nested squares with a swap after each of the first four stones, after which white may instead demand ten fifth-move candidates. When the candidate mechanism arrives, all three come with it, along with the fifth-move pair in full RIF. | **あと3つはまだ作っていません。どれも、この盤にない同じ仕組みに頼っているからです。黒が5手目の候補を複数並べ、白が1つを残して取り除くという仕組みです。山口は、入れ替えの前に、黒が示す5手目の数を宣言します。Soosyrv-8は、白の4手目のあとで、最大8つまでの数を宣言し、そのあと入れ替えを認めます。Taraguchi-10は、タラニコフの入れ子の正方形で、最初の4手のあとに入れ替えを行い、そのあと白は代わりに10通りの5手目の候補を求められます。候補の仕組みができたら、3つとも一緒に加わり、正式なRIFの5手目の2択もできます。** | Three more have not been built yet, because they all rely on one mechanism this board does not have: black placing several candidate fifth moves and white removing all but one. In Yamaguchi, black declares before the swap how many fifth moves it will offer. Soosyrv-8 declares the number, up to eight, after white's fourth stone, and then offers the swap. Taraguchi-10 is Tarannikov's nested squares with a swap after each of the first four stones, after which white may instead demand ten candidates for the fifth move. When the candidate mechanism arrives, all three will come with it, along with the pair of fifth-move candidates in full RIF. | Agent 2026-10-06, native read wanted | Names three opening protocols (Yamaguchi, Soosyrv-8, Taraguchi-10) as the sources spell them; their Japanese spellings are not settled, so a renju player should confirm them. |  |
 | — — — | Sit in with your four words | **4つの合言葉で着席する** | Sit in with my four words | Agent 2026-10-06, native read wanted | The "four words" a member chooses to sit in as themselves are 合言葉 here. The account pages that set them must use the same word; John to confirm 合言葉 is the one he wants. |  |
 | — — — | You are getting this because you play on {site}. Questions? Write to {address}. | **このメールは、{site}で遊んでいる方にお送りしています。ご質問は{address}までお寄せください。** | This email is sent to people who play on {site}. Please send questions to {address}. | Agent 2026-10-06, native read wanted | The line every email carries about how to stop getting it, which Canada's anti-spam law wants to work: a native read is recommended. |  |

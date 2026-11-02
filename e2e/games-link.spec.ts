@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { GAME_FAMILIES, gamesShownIn } from "../src/lib/gomoku/families";
 import { RULE_VARIANT_DISPLAY } from "../src/lib/gomoku/variants.constants";
 import { slugFor } from "../src/lib/gomoku/slugs";
-import { forgetFamilyFolds, readyHere } from "./support";
+import { forgetFamilyFolds, openEveryFamily } from "./support";
 import { namesPlayedUnder } from "./tidy";
 
 /** The names this file's games are played under, which outlive the games. See `namesPlayedUnder`. */
@@ -40,6 +40,8 @@ test.describe("a game's name leads to that game", () => {
     // Every family as a newcomer finds it: the families a reader opened stay open (`familyFolds.ts`).
     await forgetFamilyFolds(page);
     await page.goto("/games");
+    // A shut family's games are asked for when it is first opened: every family is opened, then counted.
+    await openEveryFamily(page);
     /*
      * Counted inside the index rather than across the page. The lobby above
      * it names a game on every open seat and on every game somebody has
@@ -77,9 +79,11 @@ test.describe("a game's name leads to that game", () => {
     // And a folded one opens to show its own. Once the page has hydrated: a
     // summary clicked before then can end up shut again, which is how
     // record-text flaked on PR #26. The strip inside the family carries the mark.
+    // Every family was opened above to be counted: shut the second, and it hides its games, and opening it shows them again.
     const folded = page.getByTestId("lobby-family").nth(1);
+    await expect(folded.getByTestId("game-name").first()).toBeVisible();
+    await folded.locator("summary").click();
     await expect(folded.getByTestId("game-name").first()).toBeHidden();
-    await readyHere(folded.locator('[data-testid="game-stats"]').first());
     await folded.locator("summary").click();
     await expect(folded.getByTestId("game-name").first()).toBeVisible();
 

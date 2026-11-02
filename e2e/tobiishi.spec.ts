@@ -7,7 +7,7 @@ import { tobiishiCodeOf, tobiishiRefOf } from "../src/lib/puzzles/tobiishi/level
 import { encodeJumps } from "../src/lib/puzzles/tobiishi/way";
 import { jumpAt } from "@johnmorrisdotca/tobiishi";
 import { memberContext, newestSolveOf, removeMember } from "./members";
-import { ready } from "./support";
+import { openEveryFamily, ready } from "./support";
 import { dragJump, hole, jumpsMade, levelOf, pegsLeft, playByTapping, runToTheWrongHole, tapJump } from "./tobiishi";
 
 /**
@@ -62,6 +62,8 @@ test.describe("Tobiishi, for a reader with no account", () => {
   test("it is at home in Numbers, and no guest on the full Small boards shelf", async ({ page }) => {
     await page.goto("/games");
     await expect(page.getByTestId("lobby-family").first()).toBeAttached();
+    // A shut family carries no games until it is opened.
+    await openEveryFamily(page);
     await expect(page.locator(`[data-testid="family-game"][data-variant="${KIND}"][data-listed="home"]`)).toHaveCount(1);
     await expect(page.locator(`[data-testid="family-game"][data-variant="${KIND}"][data-listed="shelf"]`)).toHaveCount(0);
     // Mini Reversi's listing there made way before it, and it is still at home in Turn and take.

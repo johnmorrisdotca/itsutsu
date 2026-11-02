@@ -1,18 +1,11 @@
-import { ReadyOffline } from "@/components/offline/ReadyOffline";
-import Link from "@/components/ui/Link";
 import { Suspense } from "react";
 
 import { FamilyMark } from "@/components/games/FamilyMark";
 import { GameCards } from "@/components/games/GameCards";
 import { GameList } from "@/components/games/GameList";
-import { GameName } from "@/components/games/GameName";
-import { FamilyStatsLine, GameStatsStrip } from "@/components/games/GameStats";
-import { PuzzleLine } from "@/components/puzzles/PuzzleLine";
-import { GameThumb } from "@/components/games/GameThumb";
-import { CardArrow } from "@/components/ui/CardArrow";
-import { weave } from "@/lib/i18n/weave";
+import { FamilyStatsLine } from "@/components/games/GameStats";
 import { Tabs } from "@/components/ui/Tabs";
-import { PANEL_CLASS, RAISED_LINK, STRETCHED_CARD } from "@/components/ui/ui.constants";
+import { PANEL_CLASS } from "@/components/ui/ui.constants";
 import type { CatalogueStats } from "@/lib/catalogue/catalogue.types";
 import {
   CATALOGUE_VIEWS,
@@ -20,21 +13,18 @@ import {
 } from "@/lib/gomoku/catalogueView";
 import { GAMES_TABS } from "@/lib/catalogue/gamesTabs";
 import { EVERY_GAME_KEY, gameCopyFor, isCasualKind, isHousekiKind, isPartyKind, isPuzzleKind } from "@/lib/catalogue/gameKeys";
-import { HousekiLine } from "@/components/houseki/HousekiLine";
-import { CasualLine } from "@/components/casual/CasualLine";
-import { PartyLine } from "@/components/party/PartyLine";
 import { VARIANT_SPECS } from "@/lib/gomoku/gomoku.constants";
 import { rulesAttribution } from "@/lib/gomoku/attributionCopy";
 import { shelfCountWords } from "@/lib/gomoku/familyWords";
-import { familyPath } from "@/lib/gomoku/slugs";
 import { DEFAULT_LOCALE } from "@/lib/i18n/i18n.constants";
 import { speaker, type Speaker } from "@/lib/i18n/i18n";
-import { pairedText } from "@/lib/gomoku/seatWords";
 import type { Locale } from "@/lib/i18n/i18n.types";
 
+import { FamilyBody } from "@/components/games/FamilyBody";
+import { loadFamilyCards } from "@/app/games/familyCards.action";
 import { FamilyFold } from "@/components/games/FamilyFold";
 import { familyOpenAt, isFamilyFoldKey, type FamilyFoldKey, type KeptFolds } from "@/lib/catalogue/familyFolds";
-import type { CatalogueFamily, CatalogueGame, CatalogueGuest, GameCard, GameCardKind } from "./games.types";
+import type { CatalogueFamily, GameCard, GameCardKind } from "./games.types";
 
 /**
  * Every game there is, three ways.
@@ -127,12 +117,21 @@ function Families({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      {families.map((family, index) => (
+      {families.map((family, index) => {
         /* Open or shut as this reader last left it; a family never toggled follows the first-one-open rule. */
+        const open = familyOpenAt(isFamilyFoldKey(family.key) ? folds[family.key] : undefined, index);
+        /*
+         * A SHUT FAMILY'S GAMES ARE NOT SENT WITH THE PAGE. Every card was drawn into every shut family, twice (the
+         * page and the data that hydrates it), so /games was 673 KB of HTML for 132 cards that a reader sees four or
+         * five families of; a family's games are asked for when it is first opened (`loadFamilyCards`).
+         */
+        const shut = !open;
+        return (
         <FamilyFold
           key={family.title}
           familyKey={family.key as FamilyFoldKey}
-          initialOpen={familyOpenAt(isFamilyFoldKey(family.key) ? folds[family.key] : undefined, index)}
+          initialOpen={open}
+          load={shut ? loadFamilyCards : undefined}
           saves={keepsFolds}
           className={`${PANEL_CLASS} group`}
           summary={
@@ -171,118 +170,11 @@ function Families({
           </summary>
           }
         >
-          <p className="mt-2 text-sm text-muted">{family.blurb}</p>
-          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            {family.games.map((game) => (
-              <FamilyGameCard key={game.variant} game={game} stats={stats} signedIn={signedIn} say={say} />
-            ))}
-            {/* Guests from other families, after the family's own: see ALSO_LISTED_IN. */}
-            {family.guests.map((guest) => (
-              <FamilyGameCard key={guest.variant} game={guest} stats={stats} signedIn={signedIn} say={say} />
-            ))}
-          </ul>
+          {shut ? null : <FamilyBody family={family} stats={stats} signedIn={signedIn} say={say} />}
         </FamilyFold>
-      ))}
+        );
+      })}
     </div>
-  );
-}
-
-/**
- * One game on a family's shelf, at home there or a guest from its own family.
- *
- * THE WHOLE CARD IS THE WAY INTO THE GAME. John, looking at this box:
- * "Mousing over a game should show us a button to click… right now we're
- * forced to click the name." The box read as one object and answered on two
- * words of it.
- *
- * The name is still the one link to the game, and it is spread over the card
- * (`stretched`) rather than a second link being laid under it — so a keyboard
- * reader gets one stop for one destination and a screen reader hears one link,
- * not two. The count and the last game lead ELSEWHERE, so they are `raised`
- * above the face; anything added to this card that leads somewhere needs the
- * same, or the face swallows the click. The arrow at the right is the sign that
- * the card opens, and it is drawn at rest so a finger on an iPad — where
- * nothing hovers — is told the same thing a pointer is. See ui.constants.ts.
- *
- * A GUEST IS THE SAME CARD: the same name leading to the same game, the same
- * figures, because it is the same game. One line more says where it lives —
- * "also under Flips" — and leads to that family, raised like every other link
- * on the card.
- */
-function FamilyGameCard({
-  game,
-  stats,
-  signedIn,
-  say,
-}: {
-  game: CatalogueGame | CatalogueGuest;
-  stats: CatalogueStats;
-  signedIn: boolean;
-  say: Speaker;
-}) {
-  const guest = "home" in game;
-  return (
-    <li
-      className={`${STRETCHED_CARD} flex items-center justify-between gap-3 rounded-lg border border-rule px-3 py-2 text-sm`}
-      data-testid="family-game"
-      data-variant={game.variant}
-      data-listed={guest ? "shelf" : "home"}
-    >
-      {/*
-        The game's board, the way /games/new's picker and every list of games
-        draws it. John: "Looks like we aren't showing the icons for all the
-        variant games in a family!" In flow under the stretched name, so a tap
-        on it opens the card.
-      */}
-      <GameThumb variant={game.variant} size="regular" />
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="font-medium">
-          <GameName variant={game.variant} kanji stretched />
-        </span>
-        {guest ? (
-          <span className="text-[0.7rem] text-muted" data-testid="family-game-home">
-            {weave(say.say("gamepages.alsoUnder"), {
-              family: (
-                <Link href={familyPath(game.variant)} className={`${RAISED_LINK} underline underline-offset-2`}>
-                  {pairedText(say, game.home.title, game.home.kanji)}
-                </Link>
-              ),
-            })}
-          </span>
-        ) : null}
-        {/* And why it is on this shelf too: the reason `ALSO_LISTED_IN` gives beside it. */}
-        {guest ? (
-          <span className="text-[0.7rem] text-muted" data-testid="family-game-why">
-            {game.why}
-          </span>
-        ) : null}
-        <span className="text-xs text-muted">{game.tagline}</span>
-        {/* Whether this device can play it with no connection (`ReadyOffline`). */}
-        <ReadyOffline game={game.variant} />
-        {game.inspiredBy !== undefined ? (
-          <span className="text-[0.7rem] text-muted italic">{say.say("gamescreen.inspiredBy", { name: game.inspiredBy })}</span>
-        ) : null}
-        {/*
-          What has been played of it, and who is best at it. It replaces "12
-          played · last Kyu vs Dan", which was the last game's two names and
-          nothing about the game; the date of that game is in the strip, and for
-          a member it still opens the game. The same figures on a guest's card as
-          at home: they are the game's, not the shelf's.
-        */}
-        {isPuzzleKind(game.variant) ? (
-          <PuzzleLine kind={game.variant} signedIn={signedIn} />
-        ) : isPartyKind(game.variant) ? (
-          <PartyLine kind={game.variant} signedIn={signedIn} />
-        ) : isCasualKind(game.variant) ? (
-          <CasualLine kind={game.variant} signedIn={signedIn} />
-        ) : isHousekiKind(game.variant) ? (
-          <HousekiLine kind={game.variant} signedIn={signedIn} />
-        ) : (
-          <GameStatsStrip stats={stats.games[game.variant]} signedIn={signedIn} />
-        )}
-      </span>
-      <CardArrow />
-    </li>
   );
 }
 

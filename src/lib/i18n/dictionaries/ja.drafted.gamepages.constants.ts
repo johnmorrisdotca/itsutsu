@@ -436,6 +436,16 @@ export const JA_DRAFTED_GAMEPAGES: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Nobody has yet finished a rated game of {game} against a computer.",
     review: AGENT_READ,
   },
+  "gamepages.familyLoading": {
+    text: "ゲームを読み込んでいます…",
+    back: "Loading the games…",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
+  "gamepages.familyFailed": {
+    text: "この系統のゲームを読み込めませんでした。いったん閉じてもう一度開くか、上の「一覧」か「全種目」を選んでください。",
+    back: "The games of this family could not be loaded. Close it and open it again, or choose \"Cards\" or \"List\" above.",
+    ask: "Written on 2026-11-02; nobody has read it.",
+  },
   "gamepages.puzzleLine.chip": {
     text: "1人用のパズルです。ブラウザの中で解きます。",
     back: "A puzzle for one person. You solve it in the browser.",
