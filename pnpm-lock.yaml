@@ -50,8 +50,8 @@ importers:
         specifier: 1.15.1
         version: 1.15.1(react@19.2.8)
       '@johnmorrisdotca/kotoba':
-        specifier: 1.1.1
-        version: 1.1.1
+        specifier: 1.4.0
+        version: 1.4.0
       '@johnmorrisdotca/kumimoji':
         specifier: 1.2.1
         version: 1.2.1(react@19.2.8)
@@ -524,8 +524,8 @@ packages:
       vue:
         optional: true
 
-  '@johnmorrisdotca/kotoba@1.1.1':
-    resolution: {integrity: sha512-9ounqb3ZOWO/oFcZH+O4OTGWhEQMT6pbQSgl/3PLBmXqGrr1lYTFYa8eFJBhUXDApw7sQLg9jzIovoP890G1wg==}
+  '@johnmorrisdotca/kotoba@1.4.0':
+    resolution: {integrity: sha512-WfJXGPzvUvy4Bhr9OayqfYL5t1AKQ09jWdrK/dA0yaX8rzDs8KI81n4sFVYpoaoPRRINvyKe45xRlbbldd0t4Q==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -3241,7 +3241,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/kotoba@1.1.1': {}
+  '@johnmorrisdotca/kotoba@1.4.0': {}
 
   '@johnmorrisdotca/kumimoji@1.2.1(react@19.2.8)':
     optionalDependencies:
