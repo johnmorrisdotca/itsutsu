@@ -1,6 +1,6 @@
 
+import type { Speaker } from "../../lib/i18n/i18n";
 import type { PhraseKey } from "../../lib/i18n/i18n.constants";
-import { PHRASES, type PhraseKey } from "../../lib/i18n/i18n.constants";
 
 /**
  * The words the screens around a shared game use.
