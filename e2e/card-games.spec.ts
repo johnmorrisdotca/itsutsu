@@ -330,6 +330,36 @@ test.describe("the card games at the table", () => {
     await clearKept(page);
   });
 
+  test("Stack Up: four piles in the middle, a stock and four discard piles of your own, a card played where it fits, and a discard that ends the turn", async ({ page }) => {
+    await start(page, "stackUp", 2);
+    await expect(page.getByTestId("stackup-pile")).toHaveCount(4);
+    await expect(page.getByTestId("stackup-discard")).toHaveCount(4);
+    await expect(page.getByTestId("stackup-hand-card")).toHaveCount(5);
+    await expect(page.getByTestId("stackup-stock")).toHaveAttribute("data-count", "15");
+    // A hand card that goes on an empty pile (a 1 or a wild), if the deal gave one: it is laid and the pile says so.
+    const fits = page.locator('[data-testid="stackup-hand-card"][data-card="n01"], [data-testid="stackup-hand-card"][data-card="nw"]').first();
+    if ((await fits.count()) > 0) {
+      await fits.click();
+      await page.getByTestId("stackup-play-0").click();
+      await expect(page.locator('[data-testid="stackup-pile"][data-pile="0"]')).toHaveAttribute("data-count", "1");
+    }
+    // Pick any card in hand and discard it: the turn ends, the computer plays, and the hand is drawn up to five again.
+    const before = await movesMade(page);
+    await page.getByTestId("stackup-hand-card").first().click();
+    await page.getByTestId("stackup-put-0").click();
+    await expect.poll(() => movesMade(page)).toBeGreaterThan(before);
+    await myTurn(page);
+    await expect(page.getByTestId("stackup-hand-card")).toHaveCount(5);
+    await expect(page.locator('[data-testid="stackup-discard"][data-pile="0"]')).toHaveAttribute("data-count", "1");
+    // The game is kept: a reload opens on the same table.
+    const kept = await movesMade(page);
+    await page.reload();
+    await ready(page, "cards-game");
+    await expect.poll(() => movesMade(page)).toBe(kept);
+    await expect(page.getByTestId("stackup-hand-card")).toHaveCount(5);
+    await clearKept(page);
+  });
+
   test("War: one press turns the cards over, a line says what happened, Keep turning plays on by itself, and the last turn ends the game", async ({ page }) => {
     await start(page, "war", undefined, 2);
     // Nothing is hidden at War, so two people at the device are never asked to pass it, and no hand is drawn.

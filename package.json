@@ -94,7 +94,7 @@
     "@johnmorrisdotca/tane": "1.2.1",
     "@johnmorrisdotca/tenka": "2.1.1",
     "@johnmorrisdotca/tobiishi": "0.2.2",
-    "@johnmorrisdotca/toranpu": "2.14.1",
+    "@johnmorrisdotca/toranpu": "2.16.0",
     "@johnmorrisdotca/tsunagi": "1.8.0",
     "@prisma/client": "^6.19.3",
     "next": "16.4.3",

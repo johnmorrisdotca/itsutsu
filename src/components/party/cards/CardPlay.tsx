@@ -220,21 +220,25 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
             <p className="text-sm text-muted">
               {people.length === 1 ? CARD_TABLE_COPY.yourHand : CARD_TABLE_COPY.handOf(name(viewer))} · {adapter.standing(game, viewer, say).score}
             </p>
+            {adapter.Hand !== undefined ? (
+              <adapter.Hand game={game} seat={viewer} chosen={chosen} onChoose={myTurn ? choose : () => undefined} label={CARD_TABLE_COPY.yourHand} />
+            ) : (
             <CardHand
-              id="hand"
-              cards={hand.map(cardOfId)}
-              chosen={chosen.map((card) => hand.indexOf(card))}
-              hinted={arrived.map((card) => hand.indexOf(card)).filter((at) => at >= 0)}
-              label={CARD_TABLE_COPY.yourHand}
-              cardWidth={HAND_CARD_PX}
-              lifted={drag.lifted}
-              onPress={press}
-              onLift={(spot, event) => {
-                const card = hand[spot.index];
-                if (!myTurn || card === undefined) return;
-                drag.start(spot, [cardOfId(card)], event, 0);
-              }}
-            />
+                id="hand"
+                cards={hand.map(cardOfId)}
+                chosen={chosen.map((card) => hand.indexOf(card))}
+                hinted={arrived.map((card) => hand.indexOf(card)).filter((at) => at >= 0)}
+                label={CARD_TABLE_COPY.yourHand}
+                cardWidth={HAND_CARD_PX}
+                lifted={drag.lifted}
+                onPress={press}
+                onLift={(spot, event) => {
+                  const card = hand[spot.index];
+                  if (!myTurn || card === undefined) return;
+                  drag.start(spot, [cardOfId(card)], event, 0);
+                }}
+              />
+            )}
             {actions.length === 0 ? null : (
               <div className="flex flex-wrap items-center gap-2" data-testid="cards-actions">
                 {actions.map((action) => (

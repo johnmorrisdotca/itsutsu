@@ -140,3 +140,15 @@ export function WarOffer({ href }: { href: string }) {
 export function WarCard() {
   return <Card kind="war" />;
 }
+
+export function StackUpTable(props: PartyTableGameProps) {
+  return <Table kind="stackUp" {...props} />;
+}
+
+export function StackUpOffer({ href }: { href: string }) {
+  return <Offer kind="stackUp" href={href} />;
+}
+
+export function StackUpCard() {
+  return <Card kind="stackUp" />;
+}

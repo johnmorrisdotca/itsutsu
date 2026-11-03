@@ -47,3 +47,4 @@ export function jaBack(line: JaLine): string {
 
 /** The reviewer agent's pass of 2026-10-06, the one the first batches carry. */
 export const AGENT_READ_2026_10_06: CopyReview = { by: "agent", on: "2026-10-06" };
+export const AGENT_READ_2026_11_02: CopyReview = { by: "agent", on: "2026-11-02" };

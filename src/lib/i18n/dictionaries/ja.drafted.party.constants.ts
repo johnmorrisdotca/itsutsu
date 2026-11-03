@@ -8,6 +8,7 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  * drafted dictionary's own rows take.
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
+const AGENT_READ_2026_11_02: Review = { by: "agent", on: "2026-11-02" };
 
 export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
   // The rules pages and the front doors: what a table offers, in words, built from its spec
@@ -155,6 +156,11 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "最大{count}ターンまで",
     back: "for at most {count} turns",
     review: AGENT_READ,
+  },
+  "party.rules.offerStackUp": {
+    text: "ストックを{sizes}枚にして",
+    back: "with the stock at {sizes} cards",
+    review: AGENT_READ_2026_11_02,
   },
   "party.rules.played": {
     text: "{words}遊びます。{board}",

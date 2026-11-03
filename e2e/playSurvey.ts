@@ -278,6 +278,7 @@ export function surveyOfPlays(track: (id: string) => string): Survey[] {
     table("president", "cards-start"),
     table("go-fish", "cards-start"),
     table("crazy-eights", "cards-start"),
+    table("stack-up", "cards-start"),
     table("hitotsu", "hitotsu-start"),
     // The cover first (a hand-over is a play too), then each side arranging, then the game moving.
     table("gunjin", "gunjin-start"),

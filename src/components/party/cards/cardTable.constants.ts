@@ -13,6 +13,7 @@ export const CARD_TABLE_KEYS: Record<CardGameKind, string> = {
   cribbage: "itsutsu.cards.cribbage",
   ohHell: "itsutsu.cards.ohHell",
   war: "itsutsu.cards.war",
+  stackUp: "itsutsu.cards.stackUp",
 };
 
 /**

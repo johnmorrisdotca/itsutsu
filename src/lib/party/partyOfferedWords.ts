@@ -133,6 +133,7 @@ const OFFERED_WORDS: Record<PartyKind, (say: Speaker, spec: PartySpec) => string
   cribbage: toPoints,
   ohHell: overDeals,
   war: (say, spec) => say.say("party.rules.offerWar", { count: defaulted(say, spec, String) }),
+  stackUp: (say, spec) => say.say("party.rules.offerStackUp", { sizes: orList(say, spec.sizes.map(String)) }),
 };
 
 /** The boards, or the words, a party game's set-up offers: "on 3×3, 4×4, 5×5 and 6×6 boxes". */
