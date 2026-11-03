@@ -206,7 +206,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
           !over && (
             <div className="flex flex-wrap items-center gap-2" data-testid="cards-actions">
               {actions.map((action) => (
-                <button key={action.testId} type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} min-h-11 min-w-44`} disabled={turning} onClick={() => play(action.move)} data-testid={action.testId}>
+                <button key={action.testId} type="button" className={`${BUTTON_BASE} ${BUTTON_STRONG} min-h-11 ${action.room ?? "min-w-44"}`} disabled={turning} onClick={() => play(action.move)} data-testid={action.testId}>
                   {action.label}
                 </button>
               ))}
@@ -241,7 +241,7 @@ export function CardPlay({ adapter, game, keep, appearance, gameHref, gameName, 
                   <button
                     key={action.testId}
                     type="button"
-                    className={`${BUTTON_BASE} ${action.strong === true ? BUTTON_STRONG : BUTTON_QUIET} min-h-11 min-w-40`}
+                    className={`${BUTTON_BASE} ${action.strong === true ? BUTTON_STRONG : BUTTON_QUIET} min-h-11 ${action.room ?? "min-w-40"}`}
                     disabled={action.move === null}
                     onClick={() => play(action.move)}
                     data-testid={action.testId}

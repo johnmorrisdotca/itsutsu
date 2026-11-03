@@ -82,6 +82,9 @@ function GinCentre({ game, viewer, players }: CardCentreProps<GinGame>) {
   );
 }
 
+/** The width "Take the queen of diamonds" needs (the longest English) and a Japanese name never exceeds, so the row of presses wraps alike in both. */
+const TAKE_ROOM = "min-w-60";
+
 /** Gin Rummy at the table: draw from the stock or take the discard, then throw a card or knock with it. */
 export const GIN_RUMMY_ADAPTER: CardAdapter<GinGame, GinMove> = {
   kind: "ginRummy",
@@ -92,7 +95,7 @@ export const GIN_RUMMY_ADAPTER: CardAdapter<GinGame, GinMove> = {
     if (game.phase === "draw") {
       const top = game.discard.at(-1);
       const actions: CardAction<GinMove>[] = [{ label: say.say("ctable.gin.drawStock"), move: { draw: "stock" }, testId: "cards-draw-stock", strong: true }];
-      if (top !== undefined) actions.push({ label: say.say("ctable.gin.take", { card: cardNamed(top, say) }), move: { draw: "discard" }, testId: "cards-take" });
+      if (top !== undefined) actions.push({ label: say.say("ctable.gin.take", { card: cardNamed(top, say) }), move: { draw: "discard" }, testId: "cards-take", room: TAKE_ROOM });
       return actions;
     }
     const card = chosen.length === 1 ? chosen[0] : null;

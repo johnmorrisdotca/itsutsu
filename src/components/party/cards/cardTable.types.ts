@@ -15,6 +15,12 @@ export type CardAction<M> = {
   strong?: boolean;
   /** Said under the presses while `move` is null: what is missing. */
   why?: string;
+  /**
+   * The room this press keeps for its longest label in either language, a width class (`min-w-60`). A press whose words
+   * include a card's name is as long as that name, and a row of presses that wraps in English and not in Japanese moves
+   * everything under it (`cardActionRoom.coverage.test.ts`).
+   */
+  room?: string;
 };
 
 /** What the table in the middle is handed: the game, whose eyes it is drawn for, and the names round the table. */
