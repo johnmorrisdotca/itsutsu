@@ -1136,6 +1136,61 @@ export const JA_DRAFTED_PARTY: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "The last card has to be a number card. Draw instead.",
     review: { by: "agent", on: "2026-11-02" },
   },
+  "party.hitotsu.mode.legend": {
+    text: "使う札",
+    back: "the cards used",
+    review: { by: "agent", on: "2026-11-02" },
+  },
+  "party.hitotsu.mode.classic": {
+    text: "標準",
+    back: "standard",
+    review: { by: "agent", on: "2026-11-02" },
+  },
+  "party.hitotsu.mode.allWild": {
+    text: "全ワイルド",
+    back: "all wild",
+    review: { by: "agent", on: "2026-11-02" },
+  },
+  "party.hitotsu.mode.launcher": {
+    text: "ランチャー",
+    back: "launcher",
+    review: { by: "agent", on: "2026-11-02" },
+  },
+  "party.hitotsu.mode.classicLine": {
+    text: "いつものデッキで、山札から引きます。",
+    back: "with the usual deck, you draw from the draw pile",
+    review: { by: "agent", on: "2026-11-02" },
+  },
+  "party.hitotsu.mode.allWildLine": {
+    text: "札はすべてワイルドです。色も数字もありません。",
+    back: "every card is a wild; there are no colours or numbers",
+    review: { by: "agent", on: "2026-11-02" },
+  },
+  "party.hitotsu.mode.launcherLine": {
+    text: "山札はありません。引くと、数枚、ときには何枚も飛んできます。",
+    back: "there is no draw pile; when you draw, a few cards, or sometimes many, are fired at you",
+    review: { by: "agent", on: "2026-11-02" },
+  },
+  "party.hitotsu.mode.noNumbers": {
+    text: "全ワイルドのデッキには、数字札がありません。",
+    back: "there are no number cards in an all-wild deck",
+    review: { by: "agent", on: "2026-11-02" },
+  },
+  "party.hitotsu.mode.noChallenge": {
+    text: "全ワイルドでは、ワイルドドローフォーにチャレンジできません。",
+    back: "in all wild, a Wild Draw Four cannot be challenged",
+    review: { by: "agent", on: "2026-11-02" },
+  },
+  "party.hitotsu.mode.noStack": {
+    text: "ランチャーでは、ドロー札を重ねられません。",
+    back: "with the launcher, draw cards cannot be stacked",
+    review: { by: "agent", on: "2026-11-02" },
+  },
+  "party.hitotsu.mode.noPile": {
+    text: "ランチャーでは、引く枚数は発射される数で決まります。",
+    back: "with the launcher, the number of cards you draw is decided by the number fired",
+    review: { by: "agent", on: "2026-11-02" },
+  },
   "party.hitotsu.playLine": {
     text: "{name}の番です：{colour}、同じ数字か記号、またはワイルドを出せます。",
     back: "{name}'s turn: you can play {colour}, the same number or symbol, or a wild.",

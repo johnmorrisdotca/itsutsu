@@ -162,6 +162,46 @@ test.describe("Hitotsu, round one device", () => {
     expect(decodeHitotsu(kept)?.options.finishOnNumber).toBe(true);
   });
 
+  for (const mode of ["all-wild", "launcher"] as const) {
+    test(`The cards: ${mode} is chosen at the set-up, held against the house rules it makes moot, played and kept, and the choice never moves the screen`, async ({ page }) => {
+      await page.setViewportSize(PHONE);
+      await clearKept(page);
+      await page.goto(`${AT}/pass-and-play`);
+      await ready(page, "hitotsu-set-up");
+      const deck = page.getByTestId("hitotsu-deck");
+      await expect(deck).toHaveAttribute("data-value", "classic");
+      const before = await page.getByTestId("hitotsu-set-up").boundingBox();
+      await deck.locator(`[data-value="${mode}"]`).click();
+      await expect(deck).toHaveAttribute("data-value", mode);
+      expect((await page.getByTestId("hitotsu-set-up").boundingBox())!.height).toBeCloseTo(before!.height, 0);
+      // What the mode makes moot cannot be chosen, and says why.
+      if (mode === "all-wild") {
+        await expect(page.getByTestId("hitotsu-seven-zero").locator("button").first()).toBeDisabled();
+        await expect(page.getByTestId("hitotsu-finish-on-number").locator("button").first()).toBeDisabled();
+        await expect(page.getByTestId("hitotsu-wild-four").locator("button").first()).toBeDisabled();
+        await expect(page.getByTestId("hitotsu-stacking").locator("button").first()).toBeEnabled();
+      } else {
+        await expect(page.getByTestId("hitotsu-stacking").locator("button").first()).toBeDisabled();
+        await expect(page.getByTestId("hitotsu-draw-to-match").locator("button").first()).toBeDisabled();
+        await expect(page.getByTestId("hitotsu-seven-zero").locator("button").first()).toBeEnabled();
+      }
+      // Classic and Party keep the choice of cards.
+      await page.locator('[data-testid="hitotsu-mode"][data-value="party"]').click();
+      await expect(deck).toHaveAttribute("data-value", mode);
+      await page.getByTestId("hitotsu-start").click();
+      await ready(page, "hitotsu-game");
+      await expect(game(page)).toHaveAttribute("data-state", "playing");
+      for (let turn = 0; turn < 3; turn += 1) {
+        await expect(game(page)).toHaveAttribute("data-to-play", "0", { timeout: 30_000 });
+        await takeTurn(page, 0);
+      }
+      const kept = decodeHitotsu(await page.evaluate((key) => window.localStorage.getItem(key), KEPT));
+      expect(kept?.options.mode).toBe(mode);
+      if (mode === "all-wild") expect(kept?.options).toMatchObject({ sevenZero: false, finishOnNumber: false, wildFour: "strict" });
+      else expect(kept?.options).toMatchObject({ stacking: "off", drawToMatch: false });
+    });
+  }
+
   test("Party mode opens on one short hand with the party rules; jump-in is for one person, and two pass a cover", async ({ page }) => {
     await clearKept(page);
     await page.goto(`${AT}/pass-and-play`);

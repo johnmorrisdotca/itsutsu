@@ -324,8 +324,8 @@ export const PARTY_COPY_JA_GAMES = {
       ],
     ],
     board: [
-      "4人がふつうの卓で、2〜8人まで座れます。フルゲームなら500点、短くするなら200点、または1ハンドを選びます。パーティーモードは、1人5枚を配って1ハンドだけ遊び、積み重ね、割り込み、7と0のパーティールールがすべて入ります。どれも単独で選ぶこともできます。",
-      "Four is the usual table, and it seats two to eight. Choose 500 points for the full game, 200 for a shorter one, or one hand. Party mode deals five cards each, plays a single hand, and turns on all the party rules (stacking, jumping in, sevens and zeros), each of which can also be chosen on its own.",
+      "4人がふつうの卓で、2〜8人まで座れます。フルゲームなら500点、短くするなら200点、または1ハンドを選びます。パーティーモードは、1人5枚を配って1ハンドだけ遊び、積み重ね、割り込み、7と0のパーティールールがすべて入ります。どれも単独で選ぶこともできます。使う札も変えられます。全ワイルドでは、すべての札がワイルドになります。ランチャーでは山札がなく、引くときに札が飛んできます。",
+      "Four is the usual table, and it seats two to eight. Choose 500 points for the full game, 200 for a shorter one, or one hand. Party mode deals five cards each, plays a single hand, and turns on all the party rules (stacking, jumping in, sevens and zeros), each of which can also be chosen on its own. The cards used can be changed too. In All wild, every card becomes a wild. In Launcher there is no draw pile; when you draw, cards are fired at you.",
     ],
     review: AGENT_READ,
   },
