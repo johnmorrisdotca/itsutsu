@@ -10,6 +10,7 @@ import type { WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
 import type { WordBoard } from "./gomojiGrid.types";
 import { GomojiGrid } from "./GomojiGrid";
+import type { LookAt } from "./useGuessLook";
 
 /**
  * SEVERAL WORDS, TWO TO A BOARD: a Futago's two on one board (`futago.ts`), a
@@ -40,6 +41,7 @@ export function WordBoards({
   style,
   onChoose,
   appearance,
+  onLook,
 }: {
   size: number;
   /** Every row a word has: the guesses, and the kana version's free grey word. */
@@ -53,6 +55,8 @@ export function WordBoards({
   style: WordStyle;
   onChoose: (place: number) => void;
   appearance: Appearance;
+  /** A guessed row pointed at, focused or tapped (`useGuessLook`): kana only. */
+  onLook?: LookAt;
 }) {
   const say = useSpeaker();
   const words = asWordCount(boards.length);
@@ -74,6 +78,7 @@ export function WordBoards({
               style={style}
               onChoose={onChoose}
               appearance={appearance}
+              onLook={onLook}
             />
             {/* Under each word, level with it: past the row numbers on the left, short of the frame on the right. */}
             <div className="grid grid-cols-2" style={{ paddingLeft: LABEL_GUTTER, paddingRight: BOARD_FRAME }}>

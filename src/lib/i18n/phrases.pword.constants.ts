@@ -218,6 +218,8 @@ export const PHRASES_PWORD = {
   "pword.help.board": "On the board",
   "pword.help.boardLetters": "Every guess puts a colour on each letter. The colour tells you how that letter fits the hidden word.",
   "pword.help.boardKana": "Every guess puts a colour on each kana. The colour tells you how that kana fits the hidden word.",
+  "pword.meaning.of": "{word}: {meaning}",
+  "pword.help.tapGuess": "Tap a guess to see what its word means.",
   "pword.help.greenName": "Green",
   "pword.help.greenLetter": "The letter is right, and it is in the right place.",
   "pword.help.greenKana": "The kana is right, and it is in the right place.",

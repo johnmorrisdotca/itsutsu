@@ -1,5 +1,6 @@
 "use client";
 
+import type { PointerEvent } from "react";
 import { BOARD_THEMES, DEFAULT_APPEARANCE, EDGE_LINE_WIDTH, FELTS, LINE_WIDTH, STAR_RADIUS } from "@/components/board/Board.constants";
 import type { Appearance, BoardThemeTokens } from "@/components/board/board.types";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
@@ -12,6 +13,7 @@ import type { TypingRow } from "@/lib/puzzles/gomoji/typingRow";
 import { WORD_STYLES, type WordStyle } from "@/lib/puzzles/gomoji/wordStyles";
 
 import type { GridPart, WordReveal } from "./gomojiGrid.types";
+import type { LookAt } from "./useGuessLook";
 import { revealAttrs } from "./wordReveal";
 import { PuzzleBoard } from "./PuzzleBoard";
 import {
@@ -88,6 +90,7 @@ export function GomojiGrid({
   parts,
   words,
   reveal = null,
+  onLook,
 }: {
   size: number;
   rows: number;
@@ -114,6 +117,8 @@ export function GomojiGrid({
   words?: WordCount;
   /** A replay step's row coming or going on the one word (`WordReveal`); several words carry theirs in `parts`. */
   reveal?: WordReveal | null;
+  /** A guessed row pointed at, focused or tapped, for the page to say what its word means (`useGuessLook`); rows are not looked at where this is left out. */
+  onLook?: LookAt;
 }) {
   const tiles = style === WORD_STYLES.tiles;
   const sides: readonly GridPart[] = parts ?? [{ at: 0, guesses, marks, arrows, done, found: false, reveal }];
@@ -146,7 +151,7 @@ export function GomojiGrid({
               }}
               {...(lone ? {} : { "data-testid": "word-part", "data-part": side.at, "data-found": side.found ? "true" : "false" })}
             >
-              <PartRows side={side} size={size} rows={rows} free={free} typing={typing} style={style} onChoose={onChoose} />
+              <PartRows side={side} size={size} rows={rows} free={free} typing={typing} style={style} onChoose={onChoose} onLook={onLook} />
             </div>
           ))}
         </div>
@@ -164,6 +169,7 @@ function PartRows({
   typing,
   style,
   onChoose,
+  onLook,
 }: {
   side: GridPart;
   size: number;
@@ -172,6 +178,7 @@ function PartRows({
   typing: TypingRow;
   style: WordStyle;
   onChoose: (place: number) => void;
+  onLook?: LookAt | undefined;
 }) {
   const say = useSpeaker();
   const tiles = style === WORD_STYLES.tiles;
@@ -233,13 +240,33 @@ function PartRows({
       const look = tiles
         ? `relative ${WORD_TILE} ${shown !== null ? WORD_TILE_MARK[shown] : letter !== "" ? WORD_TILE_TYPED : WORD_TILE_EMPTY} ${focused ? (letter === "" ? WORD_FOCUS.tileEmpty : WORD_FOCUS.tileFilled) : ""}`
         : "relative flex items-center justify-center";
+      // A guessed row can be looked at: tapped, pointed at or focused, to say what its word means. Its first cell is the one a key reaches, and nothing about how it is drawn changes.
+      const looks =
+        onLook !== undefined && guessed !== undefined && leaving === null && !live
+          ? {
+              "data-lookable": "true",
+              tabIndex: at === 0 ? 0 : undefined,
+              onClick: () => onLook(guessed, "tap", `${side.at}-${row}`),
+              onPointerEnter: (event: PointerEvent<HTMLDivElement>) => {
+                if (event.pointerType === "mouse") onLook(guessed, "hover");
+              },
+              onPointerLeave: (event: PointerEvent<HTMLDivElement>) => {
+                // Going from one kana of the row to the next is still the row: the line stays and does not flicker.
+                const next = event.relatedTarget;
+                if (next instanceof HTMLElement && next.dataset.row === String(row) && next.parentElement === event.currentTarget.parentElement) return;
+                if (event.pointerType === "mouse") onLook(null, "hover");
+              },
+              onFocus: () => onLook(guessed, "focus"),
+              onBlur: () => onLook(null, "focus"),
+            }
+          : {};
       // A place on the row being typed is a press; every other cell is only drawn.
       return live ? (
         <button key={`${row}-${at}`} type="button" tabIndex={-1} onClick={() => onChoose(at)} className={`${look} cursor-pointer`} style={tiles ? { fontSize: letterSize, ...moving?.style } : moving?.style} {...said}>
           {face}
         </button>
       ) : (
-        <div key={`${row}-${at}`} className={look} style={tiles ? { fontSize: letterSize, ...moving?.style } : moving?.style} {...said}>
+        <div key={`${row}-${at}`} className={look} style={tiles ? { fontSize: letterSize, ...moving?.style } : moving?.style} {...said} {...looks}>
           {face}
         </div>
       );

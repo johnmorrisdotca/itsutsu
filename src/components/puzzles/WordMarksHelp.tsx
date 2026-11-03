@@ -188,6 +188,11 @@ export function WordMarksHelp({ kana }: { kana: boolean }) {
             <section className="flex flex-col gap-3" data-testid="word-help-board">
               <h3 className="text-base font-semibold">{say.say("pword.help.board")}</h3>
               <p className="text-sm text-muted">{say.say(kana ? "pword.help.boardKana" : "pword.help.boardLetters")}</p>
+              {kana ? (
+                <p className="text-sm text-muted" data-testid="word-help-tap">
+                  {say.say("pword.help.tapGuess")}
+                </p>
+              ) : null}
               <ul className="flex flex-col gap-3">
                 {rows.map((row) => (
                   <GuideRow key={row.mark} example={<MarkExample mark={row.mark} letter={row.letter} />} name={nameOf(row)}>

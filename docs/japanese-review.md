@@ -6,7 +6,7 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 6193. Drafted and unread: 0. Read by the reviewer agent: 6193.
+Phrases: 6195. Drafted and unread: 0. Read by the reviewer agent: 6195.
 Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 125
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
@@ -153,7 +153,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Where the account has an address, the operator writes to it to say why. To ask about it, write to {contact}. | **アカウントにメールアドレスがある場合、運営者はそのアドレスに理由を書いて送ります。問い合わせは{contact}までお願いします。** | If the account has an email address, the operator writes the reason and sends it to that address. For enquiries, please contact {contact}. | Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 | — — — | What we ask of everybody here, and what the site does in return. | **ここをご利用のすべての方にお願いすることと、サイトがその代わりに行うことです。** | What we ask of everyone who uses this place, and what the site does in return. | Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 
-## 2. Written by a machine — please check these (5793)
+## 2. Written by a machine — please check these (5795)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -5641,6 +5641,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | The word has this kana, but in a different place. | **このかなは単語にありますが、場所がちがいます。** | The word has this kana, but the place is different. | Agent 2026-11-02 |  |
 | — — — | The word has this letter, but in a different place. | **この文字は単語にありますが、場所がちがいます。** | The word has this letter, but the place is different. | Agent 2026-11-02 |  |
 | — — — | Orange | **オレンジ色** | Orange | Agent 2026-11-02 |  |
+| — — — | Tap a guess to see what its word means. | **予想をタップすると、その単語の意味がわかります。** | Tap a guess and you can learn what that word means. | Agent 2026-11-02 |  |
 | — — — | What the colours and arrows mean | **色と矢印の意味** | What the colours and arrows mean | Agent 2026-11-02 |  |
 | — — — | Not this kana, but one from the same column of the kana chart belongs here. If you play か and the word has き there, you get yellow: both are in the K column. | **このかなではありませんが、同じ行のかなが、ここに入ります。五十音表で、か・き・く・け・こは「か行」です。「か」を入れて、単語のそこが「き」なら、どちらも「か行」なので黄色です。** | It is not this kana, but a kana from the same row goes here. In the fifty-sound chart, か, き, く, け, こ are the 「か row」. If you put in か and the word has き there, both are in the か row, so it is yellow. | Agent 2026-11-02 |  |
 | — — — | Yellow | **黄色** | Yellow | Agent 2026-11-02 |  |
@@ -5701,6 +5702,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | go south-east | **南東へ** | to the south-east | Agent 2026-10-30 |  |
 | — — — | go south-west | **南西へ** | to the south-west | Agent 2026-10-30 |  |
 | — — — | go west | **西へ** | to the west | Agent 2026-10-30 |  |
+| — — — | {word}: {meaning} | **「{word}」の意味：{meaning}** | What {word} means: {meaning} | Agent 2026-11-02 |  |
 | — — — | Four words | **4つの単語** | Four words | Agent 2026-10-06 |  |
 | — — — | Two words | **2つの単語** | Two words | Agent 2026-10-06 |  |
 | — — — | fifth | **5つ目** | fifth | Agent 2026-10-06 |  |

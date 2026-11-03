@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 
 import { ResultMark } from "@/components/game/ResultMark";
 import { useSpeaker } from "@/components/i18n/LocaleProvider";
@@ -25,6 +25,8 @@ export type WordAnswerProps = {
   outOfTime?: boolean;
   /** Whether the words are kana, which are not put in capitals. */
   kana?: boolean;
+  /** What the word meant, quietly, under the tiles: the kana version's, in the room it will take (`WordMeaning`). */
+  meaning?: ReactNode;
 };
 
 /**
@@ -40,7 +42,7 @@ export type WordAnswerProps = {
  * Beside the board's replay, where the eye already is, in the place the old
  * line of small print stood, never moving what the replay draws.
  */
-export function WordAnswerCard({ headline, label, words, outOfTime = false, kana = false }: WordAnswerProps) {
+export function WordAnswerCard({ headline, label, words, outOfTime = false, kana = false, meaning = null }: WordAnswerProps) {
   const say = useSpeaker();
   const many = words.length > 1;
   const card = useRef<HTMLElement>(null);
@@ -68,6 +70,7 @@ export function WordAnswerCard({ headline, label, words, outOfTime = false, kana
           <WordTiles key={`${at}-${word}`} word={word} kana={kana} limit={many ? SMALL_TILE : BIG_TILE} />
         ))}
       </div>
+      {meaning}
       <p className="text-sm text-muted" data-testid="word-out-kind">
         {say.say("pword.out.kind")}
       </p>

@@ -1081,6 +1081,16 @@ export const JA_DRAFTED_PWORD: Partial<Record<PhraseKey, DraftedPhrase>> = {
     back: "Every time you guess, each kana gets a colour. From the colour you can tell how that kana fits the hidden word.",
     review: AGENT_READ_2026_11_02,
   },
+  "pword.meaning.of": {
+    text: "「{word}」の意味：{meaning}",
+    back: "What {word} means: {meaning}",
+    review: AGENT_READ_2026_11_02,
+  },
+  "pword.help.tapGuess": {
+    text: "予想をタップすると、その単語の意味がわかります。",
+    back: "Tap a guess and you can learn what that word means.",
+    review: AGENT_READ_2026_11_02,
+  },
   "pword.help.greenName": {
     text: "緑色",
     back: "Green",

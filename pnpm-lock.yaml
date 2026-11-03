@@ -40,6 +40,9 @@ importers:
       '@johnmorrisdotca/jirai':
         specifier: 0.4.1
         version: 0.4.1(react@19.2.8)
+      '@johnmorrisdotca/jisho':
+        specifier: 2.0.0
+        version: 2.0.0
       '@johnmorrisdotca/karakuri':
         specifier: 0.1.1
         version: 0.1.1
@@ -502,6 +505,10 @@ packages:
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@johnmorrisdotca/jisho@2.0.0':
+    resolution: {integrity: sha512-wNyIdt8nSiHsxNBZbCPCCpJGO+hPlZqbn3VYsF7Dg0u1ZnxSNEVckXkCdvKoqnpKBRD629vCSQj6EU6Lp2ZtTw==}
+    engines: {node: '>=22'}
 
   '@johnmorrisdotca/karakuri@0.1.1':
     resolution: {integrity: sha512-YBuHfoTBfXti2zafjBFWNJ0FsWHhfxLheFBAqkfKowxxbnpiGtE3fScZYqyqOaTMBERVnVfpoa0VR+TCHd8OhQ==}
@@ -3232,6 +3239,8 @@ snapshots:
   '@johnmorrisdotca/jirai@0.4.1(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
+
+  '@johnmorrisdotca/jisho@2.0.0': {}
 
   '@johnmorrisdotca/karakuri@0.1.1': {}
 

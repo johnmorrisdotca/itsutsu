@@ -1765,6 +1765,11 @@ part of our tests for all our sites." Every function Vercel runs counts
 against the Functions Storage the whole account shares, and each kept
 deployment carries a copy.
 
+- **Jisho's words are fetched in the browser, on a tap, and nowhere else.** The kana Gomoji's quiet "what this guess
+  means" line (`guessMeaning.ts`) imports `@johnmorrisdotca/jisho/words` inside `typeof window !== "undefined"`, so no
+  function carries it (measured 2026-11-03: every function exactly the size it was), and its 363 small pieces are static
+  chunks, about 29 MB of `.next/static` that a visit never fetches and a tap fetches one of. `meaningLine.ts` imports its
+  types only. A new use of Jisho follows the same shape.
 - **The deploy job measures before it uploads.** `scripts/check-function-sizes.mjs`
   (`pnpm functions:size`) reads `.vercel/output/functions` after `vercel build`
   and fails any function over **39 MB**, or more than 20% and more than 5 MB

@@ -36,6 +36,7 @@ import { KanaKeyboard } from "./KanaKeyboard";
 import { WordBoards } from "./WordBoards";
 import { GomojiGrid, type CellArrow } from "./GomojiGrid";
 import { WordAnswerCard } from "./WordAnswerCard";
+import { WordMeaning } from "./WordMeaning";
 import { helpOwnsKey, WordMarksHelp } from "./WordMarksHelp";
 import { WordReplay } from "./WordReplay";
 import { WordScoreLine } from "./WordScoreLine";
@@ -44,6 +45,7 @@ import { useWordKeys, wordKeysClass, WordKeysToggle } from "./WordKeysToggle";
 import { useWordStyle } from "./WordStyleContext";
 import { WordStylePicker } from "./WordStylePicker";
 import { usePlayInView } from "./usePlayInView";
+import { useGuessLook, useHiddenMeanings } from "./useGuessLook";
 import { type ResumedRun, SolveDone, SolveHeader, SolvePaused, type SolveRace, useSolve } from "./solveShared";
 import { PuzzleWallpaper } from "./PuzzleWallpaper";
 import { PuzzleWayBack } from "./PuzzleWayBack";
@@ -138,6 +140,12 @@ export function GomojiKanaSolve({
   // Typing has begun: from here the board and the keys are kept on the screen together (`usePlayInView`).
   const [engaged, setEngaged] = useState(false);
   const { elapsedMs, done, begin, finish, runOut, pausing, clock } = useSolve(puzzle, hasAccount, race, null, { progress: encodeKanaProgress(guesses), resumed, strict, headStart }, false, true);
+
+  // A guessed row tapped, pointed at or focused says what its word means, quietly, in the status line (`useGuessLook`).
+  const look = useGuessLook(done === null && !pausing.paused);
+  const clearLook = look.clear;
+  // What the hidden word means is fetched when the round has ended, and not before (`useHiddenMeanings`).
+  const meanings = useHiddenMeanings(given.words, done !== null);
 
   /* The rows drawn: the free grey word first where there is one, then the guesses. */
   const shown = useMemo(() => (given.grey === null ? guesses : [given.grey, ...guesses]), [given.grey, guesses]);
@@ -244,6 +252,7 @@ export function GomojiKanaSolve({
     setGuesses(next);
     setTyping(emptyRow(size));
     setSaid(null);
+    clearLook();
     // A dodger is found only when the guess left it nowhere else to go (`dodgeFound`).
     const found = dodging === null ? everyWordFound(next, given.words) : readDodge(kind, size, level, dodging, next).found;
     // Backwards, the word typed is the loss and every row filled without it the win.
@@ -252,7 +261,7 @@ export function GomojiKanaSolve({
       else if (next.length === rows) void finish(next.join(""), at);
     } else if (found) void finish(next.join(""), at);
     else if (next.length === rows) void runOut(next.join(""), at);
-  }, [closed, romaji, typing, size, words, strict, guesses, given, boards, begin, finish, runOut, rows, dodging, backwards, hidden, kind, level, say]);
+  }, [closed, romaji, typing, size, words, strict, guesses, given, boards, begin, finish, runOut, rows, dodging, backwards, hidden, kind, level, say, clearLook]);
 
   /* The desk's keyboard: romaji, kana from a Japanese keyboard, Enter, Backspace and Delete, Space and the arrows. */
   useEffect(() => {
@@ -296,6 +305,7 @@ export function GomojiKanaSolve({
         label={!backwards && many ? say.say("pword.out.theWords") : !backwards && dodge !== null && dodge.standing > 1 ? say.say("pword.out.stillHiding", { count: String(dodge.standing) }) : say.say("pword.out.theWord")}
         words={given.words}
         kana={true}
+        meaning={<WordMeaning words={given.words} lines={meanings} />}
       />
     ) : null;
   return (
@@ -304,7 +314,7 @@ export function GomojiKanaSolve({
       {/* Over, the board becomes its replay in the same place, with its scrubber and keyboard (`WordReplay`). */}
       {done === null && many ? (
         <SolvePaused pausing={pausing}>
-          <WordBoards size={size} rows={free + rows} boards={boards} free={free} typing={typing} done={false} style={style} onChoose={(place) => edit((row) => choose(row, place))} appearance={dressed} />
+          <WordBoards size={size} rows={free + rows} boards={boards} free={free} typing={typing} done={false} style={style} onChoose={(place) => edit((row) => choose(row, place))} appearance={dressed} onLook={look.look} />
         </SolvePaused>
       ) : done === null ? (
         <SolvePaused pausing={pausing}>
@@ -320,6 +330,7 @@ export function GomojiKanaSolve({
               style={style}
               onChoose={(place) => edit((row) => choose(row, place))}
               appearance={dressed}
+              onLook={look.look}
             />
         </SolvePaused>
       ) : (
@@ -331,8 +342,11 @@ export function GomojiKanaSolve({
       )}
       {done === null ? (
         <>
-          <p className="min-h-5 text-sm text-muted" data-testid="word-said" aria-live="polite">
-            {said ?? (backwards
+          {/* One line always: a meaning is cut with an ellipsis rather than wrapped, and below 390px, where the instruction takes two lines in English, both are kept, so the keys never move when a guess is tapped. */}
+          <p className={`min-h-5 max-[389px]:min-h-[2lh] text-sm text-muted ${look.line !== null && said === null ? "truncate" : ""}`} data-testid="word-said" aria-live="polite" data-meaning={look.line !== null && said === null ? "true" : undefined}>
+            {said ?? (look.line !== null
+              ? say.say("pword.meaning.of", { word: look.word ?? "", meaning: look.line })
+              : backwards
               ? say.count("pword.solve.typeBackwardsKana", left)
               : `${free === 1 ? say.say(count === 4 ? "pword.solve.freeFirstFour" : many ? "pword.solve.freeFirstTwo" : "pword.solve.freeFirst") : ""}${count === 4 ? say.say("pword.solve.allFour") : many ? say.say("pword.solve.allTwo") : ""}${say.count("pword.solve.guessesLeft", left, { dodge: dodge === null ? "" : say.count("pword.solve.hideAmong", dodge.standing) })}`)}
             {romaji === "" ? null : (
@@ -393,6 +407,7 @@ export function GomojiKanaSolve({
       ) : (
         <>
           {backwards ? <SakasaScoreLine word={hidden} guesses={guesses} /> : <WordScoreLine score={score!} headStart={headStart} />}
+          <WordMeaning words={given.words} lines={meanings} />
           <SolveDone puzzle={puzzle} done={done} hasAccount={hasAccount} race={race} checks={null} strict={strict} headStart={headStart} />
         </>
       )}
