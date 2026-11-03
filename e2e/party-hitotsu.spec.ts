@@ -191,11 +191,21 @@ test.describe("Hitotsu, round one device", () => {
       await page.getByTestId("hitotsu-start").click();
       await ready(page, "hitotsu-game");
       await expect(game(page)).toHaveAttribute("data-state", "playing");
-      for (let turn = 0; turn < 3; turn += 1) {
-        await expect(game(page)).toHaveAttribute("data-to-play", "0", { timeout: 30_000 });
+      // A deck of wilds can end in a dozen moves, so the computers may win before the person's third turn: play up to three,
+      // keeping the last game the browser held, and stop when the game is over.
+      let turns = 0;
+      let held: string | null = null;
+      while (turns < 3) {
+        await expect
+          .poll(async () => ((await game(page).getAttribute("data-state")) === "finished" ? "finished" : await game(page).getAttribute("data-to-play")), { timeout: 30_000 })
+          .toMatch(/^(0|finished)$/);
+        if ((await game(page).getAttribute("data-state")) === "finished") break;
         await takeTurn(page, 0);
+        turns += 1;
+        held = (await page.evaluate((key) => window.localStorage.getItem(key), KEPT)) ?? held;
       }
-      const kept = decodeHitotsu(await page.evaluate((key) => window.localStorage.getItem(key), KEPT));
+      expect(turns, "the person played at least one turn").toBeGreaterThan(0);
+      const kept = decodeHitotsu(held);
       expect(kept?.options.mode).toBe(mode);
       if (mode === "all-wild") expect(kept?.options).toMatchObject({ sevenZero: false, finishOnNumber: false, wildFour: "strict" });
       else expect(kept?.options).toMatchObject({ stacking: "off", drawToMatch: false });
