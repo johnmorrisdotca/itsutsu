@@ -224,4 +224,28 @@ export const CARD_GAME_DISPLAY: Record<CardGameKind, VariantCopy> = {
     board:
       "Always two players: one person against the computer, or two people turning cards on one device. Choose how many turns the game may last: 50 for a quick one, 100 for the usual game, 200 for a long one, or 1000 to play it out. When the turns run out, the player holding more cards wins.",
   },
+  /*
+   * STACK UP, 2026-11-02. John: a card game "in the manner of Skip-Bo", with our own name and
+   * art. The rules are Toranpu's (its own 162-card deck of 1 to 12 and wilds, four building
+   * piles, a stock pile and four discard piles each, a stalemate ending so a game can end).
+   */
+  stackUp: {
+    label: "Stack Up",
+    kanji: "積み上げ",
+    tagline: "Build four shared piles from 1 up to 12, and be the first to play out your whole stock pile.",
+    origin:
+      /* Checked 2026-11-02 against Pagat's page on Spite and Malice: a game of the early 1900s and its many descendants; no inventor is recorded. */
+      "A game of the Spite and Malice family of patience games for two or more, which came to North America in the early twentieth century and has been sold in many boxed forms since, one of them with a numbered deck of its own. Stack Up plays the family's plain rules with a deck of its own: twelve of each number from 1 to 12, and eighteen wilds.",
+    alsoKnownAs: ["Spite and Malice"],
+    wikipedia: "Spite and Malice",
+    rules: [
+      "Two to six players. Each is dealt a stock pile, 10, 15 or 20 cards as chosen, face down but for the top card. The rest of the cards are the draw pile.",
+      "Four building piles stand in the middle, empty. A pile is built one card at a time from 1 up to 12: a 1 starts it, then a 2, and so on. A wild takes the place of whatever number the pile wants next. A pile that reaches 12 is set aside, and the set-aside piles are shuffled back into the draw pile when it runs out.",
+      "On your turn, draw up to five cards. Then lay cards on the building piles as you like: from your hand, from the top card of your stock, or from the top card of any of your four discard piles. If you lay the last card of your hand, draw five more and go on.",
+      "End your turn by putting one card from your hand on one of your own four discard piles. Those piles are yours alone: only their top cards can be played, so how you stack them decides what you can reach later.",
+      "The first player to play the last card of their stock pile wins. If no card can be drawn and nobody has played anything for a whole round, the game ends there and the player with the fewest stock cards left wins; equal counts share the win.",
+    ],
+    board:
+      "Two to six players, any of them computers: one person against the rest, or everybody round one device. Choose the size of the stock piles: 10 for a quick game, 15 for the usual one, or 20 for a long one.",
+  },
 };

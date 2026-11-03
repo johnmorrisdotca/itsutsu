@@ -407,6 +407,14 @@ const SCENES: { kind: PartyKind; stored: string; key: string; table: string; sho
     shot: "cards-board",
     stored: cardScene("war", 100, 2, (game: { last: { wars: number } | null; moves: unknown[] }) => game.last !== null && game.last.wars === 1 && game.moves.length >= 8),
   },
+  // Stack Up for three, a few turns in: cards laid on the building piles, discards begun, and Ann's hand and stock to play from.
+  {
+    kind: "stackUp",
+    key: "itsutsu.cards.stackUp",
+    table: "cards-game",
+    shot: "cards-board",
+    stored: cardScene("stackUp", 15, 3, (game: { building: unknown[][]; moves: unknown[] }) => game.moves.length >= 24 && game.building.some((pile) => pile.length >= 3)),
+  },
   // The seven backgammon games, each a few turns in with Ann to roll; the cube shows where the game has one. Their board is drawn on the cloth every felt table starts on
   // (Reversi, Gomoji, Kumimoji and the card tables read the same default, and offer the same colour patches), so it is green felt rather than the wood of the older party boards.
   ...SUGOROKU_KIND_LIST.map(

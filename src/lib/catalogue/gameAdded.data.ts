@@ -120,6 +120,7 @@ export const GAME_ADDED: Record<GameKey, string> = {
   spades: "2026-09-30",
   spider: "2026-09-30",
   squareFour: "2026-09-07",
+  stackUp: "2026-11-02",
   standard: "2026-09-07",
   stoneCollapse: "2026-10-06",
   stretchGrabber: "2026-10-05",

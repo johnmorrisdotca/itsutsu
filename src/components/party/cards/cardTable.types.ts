@@ -20,6 +20,9 @@ export type CardAction<M> = {
 /** What the table in the middle is handed: the game, whose eyes it is drawn for, and the names round the table. */
 export type CardCentreProps<S> = { game: S; viewer: number | null; players: readonly string[] };
 
+/** What a game's own hand is given: whose it is, the cards chosen, and a way to choose one. */
+export type CardHandViewProps<S> = { game: S; seat: number; chosen: readonly CardId[]; onChoose: (card: CardId) => void; label: string };
+
 /**
  * ONE FAMILY CARD GAME AT THE TABLE: everything `CardPlay` needs to know of a
  * game that is not in its rules — which cards are whose, what a press means
@@ -48,6 +51,8 @@ export type CardAdapter<S, M> = {
   /** What the scores count, for the heading over them: "Points (fewest wins)". */
   scoreWords: (say: Speaker) => string;
   Centre: ComponentType<CardCentreProps<S>>;
+  /** A game with a deck of its own draws the hand itself, in place of the fan of standard cards (Stack Up). */
+  Hand?: ComponentType<CardHandViewProps<S>>;
   /**
    * A game with nothing hidden and nothing to choose (War): no hand is drawn,
    * no device is passed between people, and the one press sits under the

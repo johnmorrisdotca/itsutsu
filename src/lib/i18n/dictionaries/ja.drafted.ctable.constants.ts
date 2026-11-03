@@ -8,6 +8,7 @@ import type { DraftedPhrase, Review } from "./ja.drafted.constants";
  * drafted dictionary's own rows take.
  */
 const AGENT_READ: Review = { by: "agent", on: "2026-10-06" };
+const AGENT_READ_2026_11_02: Review = { by: "agent", on: "2026-11-02" };
 
 export const JA_DRAFTED_CTABLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
   // Every card table
@@ -917,5 +918,95 @@ export const JA_DRAFTED_CTABLE: Partial<Record<PhraseKey, DraftedPhrase>> = {
     text: "{name}の裏柄",
     back: "{name} back",
     review: AGENT_READ,
+  },
+  "ctable.length.stock": {
+    text: "ストック{count}枚ずつ",
+    back: "{count} in each stock",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.turnStatus": {
+    text: "札を山に積んで、最後に1枚を捨てて番を終えます。",
+    back: "Lay cards on the piles, then discard one to end your turn.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.playOn": {
+    text: "山{pile}に積む",
+    back: "Play on pile {pile}",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.discardOn": {
+    text: "捨て札{pile}に捨てる",
+    back: "Discard on pile {pile}",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.stockOn": {
+    text: "ストックの{card}を山{pile}に積む",
+    back: "Stock {card} on pile {pile}",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.discardPlay": {
+    text: "捨て札{from}の{card}を山{pile}に積む",
+    back: "Discard {from} ({card}) on pile {pile}",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.pass": {
+    text: "パス",
+    back: "Pass",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.scoreWords": {
+    text: "ストックの残り枚数（少ない人の勝ち）",
+    back: "Stock cards left (the fewest wins)",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.cards.one": {
+    text: "{count}枚",
+    back: "{count} card",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.cards.other": {
+    text: "{count}枚",
+    back: "{count} cards",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.pile": {
+    text: "山{n}",
+    back: "Pile {n}",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.discards": {
+    text: "捨て札{n}",
+    back: "Discard {n}",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.draw": {
+    text: "山札：{n}枚",
+    back: "Draw pile: {n}",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.stockTop": {
+    text: "ストック：{n}枚",
+    back: "Stock: {n}",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.wild": {
+    text: "ワイルド",
+    back: "Wild",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.emptied": {
+    text: "{name}がストックの最後の札を出しました。",
+    back: "{name} played the last card of their stock.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.stuck": {
+    text: "誰も動けなくなりました。ストックの残りがいちばん少ない人の勝ちです。",
+    back: "Nobody could move: the fewest stock cards left wins.",
+    review: AGENT_READ_2026_11_02,
+  },
+  "ctable.stackUp.stuckDraw": {
+    text: "誰も動けなくなり、ストックの残り枚数も同じなので、引き分けです。",
+    back: "Nobody could move, and the stock piles have the same number left, so it is a draw.",
+    review: AGENT_READ_2026_11_02,
   },
 };

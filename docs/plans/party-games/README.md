@@ -666,3 +666,14 @@ Gunjin Shogi as the default; the board's size as its squares; no computer; a dra
 the foot for both players; a cover on every reload; a new shared `PartyHandOver` rather than a fifth copy
 of the hand-over, left to the others to adopt; `seatState` as a general hook; the game kept as moves and not
 as the package's trusted text.
+
+## Stack Up (2026-11-02)
+
+A card game for two to six in the Spite and Malice family, with a deck, name and
+art of its own: the rules, the computer and the keeping are Toranpu's
+(`@johnmorrisdotca/toranpu/stack-up`), and the table is a family card game
+(`stackUpAdapter.tsx`) whose cards are drawn by `StackUpCard.tsx`, because its
+deck (1 to 12 and wilds, no suits) is not one the standard faces can draw. It
+is the one card game that draws its own hand: `CardAdapter.Hand`. The site
+depends on a Toranpu that has it, so it lands only after Toranpu's release
+and a pinned version.

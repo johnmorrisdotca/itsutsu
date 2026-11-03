@@ -32,6 +32,7 @@ const LENGTH_WORDS: Record<CardSetUpProps["kind"], (size: number, say: Speaker) 
   cribbage: (size, say) => say.say(size === 61 ? "ctable.length.cribShort" : "ctable.length.cribLong"),
   ohHell: (size, say) => say.say(size === 7 ? "ctable.length.ohHellShort" : "ctable.length.ohHellLong"),
   war: (size, say) => say.say("ctable.length.turns", { count: String(size) }),
+  stackUp: (size, say) => say.say("ctable.length.stock", { count: String(size) }),
 };
 
 function Section({ legend, children }: { legend: string; children: ReactNode }) {
