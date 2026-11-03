@@ -26,8 +26,8 @@ importers:
         specifier: 0.2.0
         version: 0.2.0
       '@johnmorrisdotca/hata':
-        specifier: 1.7.2
-        version: 1.7.2
+        specifier: 1.7.3
+        version: 1.7.3
       '@johnmorrisdotca/hitotsu':
         specifier: 1.5.0
         version: 1.5.0(react@19.2.8)
@@ -59,8 +59,8 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       '@johnmorrisdotca/kyuubu':
-        specifier: 1.12.0
-        version: 1.12.0(react@19.2.8)
+        specifier: 1.14.0
+        version: 1.14.0(react@19.2.8)
       '@johnmorrisdotca/meikyuu':
         specifier: 3.1.1
         version: 3.1.1
@@ -77,8 +77,8 @@ importers:
         specifier: 1.2.1
         version: 1.2.1(react@19.2.8)
       '@johnmorrisdotca/tenka':
-        specifier: 2.1.1
-        version: 2.1.1(@johnmorrisdotca/korokoro@1.15.1(react@19.2.8))(@johnmorrisdotca/toranpu@2.14.1(react@19.2.8))(react@19.2.8)
+        specifier: 2.3.0
+        version: 2.3.0(@johnmorrisdotca/korokoro@1.15.1(react@19.2.8))(@johnmorrisdotca/toranpu@2.14.1(react@19.2.8))(react@19.2.8)
       '@johnmorrisdotca/tobiishi':
         specifier: 0.2.2
         version: 0.2.2
@@ -471,8 +471,8 @@ packages:
     resolution: {integrity: sha512-qz2h+Q7v+m5NRBpvAVdQty9f/u7aN6bC6yv5VJhZzlm7NuGx5EAYgLeyKJtQSY4oNny1+4L0gD3sfUSfC8HIiQ==}
     engines: {node: '>=22'}
 
-  '@johnmorrisdotca/hata@1.7.2':
-    resolution: {integrity: sha512-ULxtLeW1n+GekfILrfFAaDbEegqFpmbc70rI1AzNksmftZvha95lthNmHZdgl6csrACUVZH5Kvqq5VixqYgiog==}
+  '@johnmorrisdotca/hata@1.7.3':
+    resolution: {integrity: sha512-pcRbO1mRkOF/nhfTvLTMRZHZqQMDBWkmWtq3np4+iCTMV6O+r+4SDJSpOrv22yjqBMfYNYFVkpMPySJJ/gow5w==}
     engines: {node: '>=24'}
 
   '@johnmorrisdotca/hitotsu@1.5.0':
@@ -542,8 +542,8 @@ packages:
     resolution: {integrity: sha512-rMal4ngyC4yKmhBZMCrbUolUivAFpqe/tdamJ8Y2qoCtZXdIeCNiwS/HWRcdRgK5yhKMQMZw243saoJx0bJUyQ==}
     engines: {node: '>=24'}
 
-  '@johnmorrisdotca/kyuubu@1.12.0':
-    resolution: {integrity: sha512-ePx3KnfUCApzKZE33LmWvovkyh15NiJebkTOS4fn7ybxd6lvcr+kjgeYkZbirs5W49KS/OI9YGq9c/zfLvE0QA==}
+  '@johnmorrisdotca/kyuubu@1.14.0':
+    resolution: {integrity: sha512-j9UIWt1qZ3hccbxxpc2BrsgtMm3IfHPdh9vu9kTe9OrZ4N+PgjuhtBXSxQ/GS4y1ryylDkNTdE/gL00H1jqD1Q==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -584,8 +584,8 @@ packages:
       react:
         optional: true
 
-  '@johnmorrisdotca/tenka@2.1.1':
-    resolution: {integrity: sha512-FM+fiZN53ETq9WBrBDUCfeJoJLOSAjC+Udg2BVvOBbHgPk/ZVnXQcpbI/CjtM0vw/+Z5mUtKx3HwSasx6UPevA==}
+  '@johnmorrisdotca/tenka@2.3.0':
+    resolution: {integrity: sha512-prb6cswMzQO3hsuXr0EFgUSZ+4zOAe9kSQFfB9sjJ2y9r20nn7eXHEgXov4LbWLu1lIin/9sAVXRFrS4CniP4g==}
     engines: {node: '>=22'}
     peerDependencies:
       '@johnmorrisdotca/korokoro': '>=1.15.0 <2'
@@ -3219,7 +3219,7 @@ snapshots:
 
   '@johnmorrisdotca/gunjin@0.2.0': {}
 
-  '@johnmorrisdotca/hata@1.7.2': {}
+  '@johnmorrisdotca/hata@1.7.3': {}
 
   '@johnmorrisdotca/hitotsu@1.5.0(react@19.2.8)':
     optionalDependencies:
@@ -3249,7 +3249,7 @@ snapshots:
 
   '@johnmorrisdotca/kuni@1.4.0': {}
 
-  '@johnmorrisdotca/kyuubu@1.12.0(react@19.2.8)':
+  '@johnmorrisdotca/kyuubu@1.14.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 
@@ -3267,7 +3267,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@johnmorrisdotca/tenka@2.1.1(@johnmorrisdotca/korokoro@1.15.1(react@19.2.8))(@johnmorrisdotca/toranpu@2.14.1(react@19.2.8))(react@19.2.8)':
+  '@johnmorrisdotca/tenka@2.3.0(@johnmorrisdotca/korokoro@1.15.1(react@19.2.8))(@johnmorrisdotca/toranpu@2.14.1(react@19.2.8))(react@19.2.8)':
     optionalDependencies:
       '@johnmorrisdotca/korokoro': 1.15.1(react@19.2.8)
       '@johnmorrisdotca/toranpu': 2.14.1(react@19.2.8)
