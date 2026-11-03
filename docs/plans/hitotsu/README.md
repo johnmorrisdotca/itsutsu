@@ -96,6 +96,12 @@ zeros on. Every house rule can be changed either way:
 | Drawing | one card | one card | or draw until a card goes |
 | Wild Draw Four | may be challenged | may be challenged | or no bluffing: only with nothing of the colour, never challenged |
 | Length | 500 | one hand | or 200 |
+| The cards | usual deck | usual deck | `all-wild`: a deck of 112 wilds (no colours, no numbers), the first wild opens on a colour the seed picks, no Wild Draw Four challenge; `launcher`: no draw pile, a draw fires 1 to 4 cards, a Draw Two 2 to 6, a Wild Draw Four 4 to 10, nothing stacks (Hitotsu 1.6.0) |
+
+The set-up's **The cards** tile row chooses the deck and survives a change of Classic or Party. The rules a mode makes moot are
+held at what it plays and greyed out with a line saying why: All wild plays with no sevens and zeros, no going out on a number
+and no challenge; the Launcher plays with no stacking and no drawing until a card goes (`playedUnder` in `HitotsuSetUp.tsx`).
+Ruthless and Flip are not here yet.
 
 Decisions worth knowing:
 

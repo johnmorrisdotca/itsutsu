@@ -53,6 +53,8 @@ const EXCEPTIONS: readonly { file: string; text: string; why: string }[] = [
   { file: "src/lib/party/hitotsu/hitotsu.copy.ts", text: "but they may challenge it.", why: `${FOUR_MOVE}, in its rules` },
   { file: "src/lib/party/partyRulesPage.ts", text: "or Challenge a Wild Draw Four.", why: `${FOUR_MOVE}, on its rules page` },
   { file: "src/lib/party/partyRulesPage.ts", text: "and it cannot be challenged.", why: `${FOUR_MOVE}, on its rules page` },
+  { file: "src/lib/i18n/phrases.party.constants.ts", text: "A Wild Draw Four is never challenged when every card is wild.", why: `${FOUR_MOVE}: the set-up's line under the greyed-out rule in an all wild deck` },
+  { file: "src/lib/i18n/dictionaries/ja.drafted.party.constants.ts", text: "in all wild, a Wild Draw Four cannot be challenged", why: `${FOUR_MOVE}: that line's back-translation` },
   // Where the English moved to (ENJA-08): the table of what each party game says on its rules page, and the Japanese beside the English, whose back-translation keeps the game's own word.
   { file: "src/lib/party/partyTableWords.ts", text: "or press Challenge. When challenged,", why: `${GHOST_MOVE}, on its rules page` },
   { file: "src/lib/party/partyTableWords.ts", text: "or Challenge a Wild Draw Four.", why: `${FOUR_MOVE}, on its rules page` },

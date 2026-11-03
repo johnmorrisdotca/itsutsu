@@ -29,8 +29,8 @@ importers:
         specifier: 1.7.2
         version: 1.7.2
       '@johnmorrisdotca/hitotsu':
-        specifier: 1.5.0
-        version: 1.5.0(react@19.2.8)
+        specifier: 1.6.0
+        version: 1.6.0(react@19.2.8)
       '@johnmorrisdotca/houseki':
         specifier: 0.5.0
         version: 0.5.0
@@ -475,8 +475,8 @@ packages:
     resolution: {integrity: sha512-ULxtLeW1n+GekfILrfFAaDbEegqFpmbc70rI1AzNksmftZvha95lthNmHZdgl6csrACUVZH5Kvqq5VixqYgiog==}
     engines: {node: '>=24'}
 
-  '@johnmorrisdotca/hitotsu@1.5.0':
-    resolution: {integrity: sha512-P5tEdmd9vEyuuOKo+LS8alp3aDE13sS+OpWlxnFc4AtQaiwyr7mISwt3nCvTitW2ACUqZD+KT1SeDos34FMUSw==}
+  '@johnmorrisdotca/hitotsu@1.6.0':
+    resolution: {integrity: sha512-UPUghbjELMAY20J5fYXGt88kAFHZIn8aLD6uvHiW9ZmPWd6kFSF+vzXcCMG7NiqTaet+veJtC2CzpXaKx4+g2w==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -3221,7 +3221,7 @@ snapshots:
 
   '@johnmorrisdotca/hata@1.7.2': {}
 
-  '@johnmorrisdotca/hitotsu@1.5.0(react@19.2.8)':
+  '@johnmorrisdotca/hitotsu@1.6.0(react@19.2.8)':
     optionalDependencies:
       react: 19.2.8
 

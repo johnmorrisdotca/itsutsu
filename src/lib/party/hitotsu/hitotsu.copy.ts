@@ -32,5 +32,5 @@ export const HITOTSU_DISPLAY: VariantCopy = {
     "The first player out wins the hand and scores what everybody else holds: a number its value, an action card twenty, a wild fifty. A hand nobody can finish goes to whoever holds least. The first to the game's total wins — 200, or 500 for the full game — or, in a game of one hand, whoever goes out first.",
   ],
   board:
-    "Four is the usual table, and it seats two to eight. Choose 500 points for the full game, 200 for a shorter one, or one hand. Party mode deals five cards each, plays one hand, and turns on the party rules — stacking, jumping in, sevens and zeros — each of which can also be chosen on its own.",
+    "Four is the usual table, and it seats two to eight. Choose 500 points for the full game, 200 for a shorter one, or one hand. Party mode deals five cards each, plays one hand, and turns on the party rules — stacking, jumping in, sevens and zeros — each of which can also be chosen on its own. The cards can be changed too: in All wild every card is a wild, and a Launcher fires cards at whoever draws in place of a draw pile.",
 };

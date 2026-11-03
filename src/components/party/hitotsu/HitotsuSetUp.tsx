@@ -5,7 +5,7 @@ import { useState, type ReactNode } from "react";
 import type { Appearance } from "@/components/board/board.types";
 import { PICK_CHIP_OPEN, PICK_CHIP_SHUT } from "@/components/live/picker.constants";
 import { BUTTON_LEAD, BUTTON_STRONG, PANEL_CLASS, SECTION_TITLE } from "@/components/ui/ui.constants";
-import { HITOTSU_CLASSIC, HITOTSU_DEFAULT_SIZE, HITOTSU_ONE_HAND, HITOTSU_PARTY, type HitotsuGame, type HitotsuOptions, startHitotsu } from "@johnmorrisdotca/hitotsu";
+import { HITOTSU_CLASSIC, HITOTSU_DEFAULT_SIZE, HITOTSU_MODES, HITOTSU_ONE_HAND, HITOTSU_PARTY, type HitotsuGame, type HitotsuMode, type HitotsuOptions, startHitotsu } from "@johnmorrisdotca/hitotsu";
 import { PARTY_SPECS } from "@/lib/party/party.constants";
 import { PARTY_NAME_MOST, computerNumberName } from "@/lib/party/partyNames";
 import { playerNumberName } from "@/lib/gomoku/seatWords";
@@ -78,9 +78,16 @@ function Tiles<K extends string>({
         ))}
       </div>
       {/* One line, the chosen rule's or why it cannot be chosen, in room kept for two so nothing below moves. */}
-      <span className="min-h-8 text-xs leading-snug text-muted">{note ?? lines[value]}</span>
+      <span className="min-h-[2lh] text-xs leading-snug text-muted">{note ?? lines[value]}</span>
     </div>
   );
+}
+
+/** The house rules a mode makes moot, held at what the mode plays: a deck with no numbers has no sevens, zeros or number to finish on, and a launcher has no pile to draw until a card goes and nothing to stack. */
+function playedUnder(options: HitotsuOptions): HitotsuOptions {
+  if (options.mode === "all-wild") return { ...options, sevenZero: false, finishOnNumber: false, wildFour: "strict" };
+  if (options.mode === "launcher") return { ...options, stacking: "off", drawToMatch: false };
+  return options;
 }
 
 const ON_OFF = ["on", "off"] as const;
@@ -126,11 +133,15 @@ export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearanc
   const people = seated.filter((computer) => !computer).length;
   const nobody = severalOffer === undefined && people === 0;
   const jumpAllowed = severalOffer === undefined && people === 1;
-  const played: HitotsuOptions = { ...options, jumpIn: options.jumpIn && jumpAllowed };
+  const played: HitotsuOptions = { ...playedUnder(options), jumpIn: options.jumpIn && jumpAllowed };
+  const allWild = options.mode === "all-wild";
+  const launcher = options.mode === "launcher";
+  const modeNames: Record<HitotsuMode, string> = { classic: say.say("party.hitotsu.mode.classic"), "all-wild": say.say("party.hitotsu.mode.allWild"), launcher: say.say("party.hitotsu.mode.launcher") };
+  const modeLines: Record<HitotsuMode, string> = { classic: say.say("party.hitotsu.mode.classicLine"), "all-wild": say.say("party.hitotsu.mode.allWildLine"), launcher: say.say("party.hitotsu.mode.launcherLine") };
   const preview = startHitotsu(size, names.slice(0, count), 1, played, seated.map(() => true));
   const choose = (next: Mode) => {
     setMode(next);
-    setOptions(MODES[next].options);
+    setOptions({ ...MODES[next].options, mode: options.mode });
     setSize(MODES[next].size);
   };
   const set = <K extends keyof HitotsuOptions>(key: K, value: HitotsuOptions[K]) => setOptions((was) => ({ ...was, [key]: value }));
@@ -149,7 +160,7 @@ export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearanc
         onSubmit={(event) => {
           event.preventDefault();
           if (severalOffer !== undefined) {
-            void table.start(size, choices.slice(0, count), { seed: freshSeed(), options: { ...options, jumpIn: false } });
+            void table.start(size, choices.slice(0, count), { seed: freshSeed(), options: { ...playedUnder(options), jumpIn: false } });
             return;
           }
           if (nobody) return;
@@ -241,8 +252,12 @@ export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearanc
           })}
         </Section>
 
+        <Section legend={say.say("party.hitotsu.mode.legend")}>
+          <Tiles legend={say.say("party.hitotsu.mode.legend")} value={options.mode} options={HITOTSU_MODES} names={modeNames} lines={modeLines} testId="hitotsu-deck" onChange={(value) => set("mode", value)} />
+        </Section>
+
         <Section legend={HITOTSU_COPY.house}>
-          <Tiles legend={HITOTSU_HOUSE_COPY.stacking.legend} value={options.stacking} options={["off", "same", "any"] as const} names={HITOTSU_HOUSE_COPY.stacking.names} lines={HITOTSU_HOUSE_COPY.stacking.lines} testId="hitotsu-stacking" onChange={(value) => set("stacking", value)} />
+          <Tiles legend={HITOTSU_HOUSE_COPY.stacking.legend} value={played.stacking} options={["off", "same", "any"] as const} names={HITOTSU_HOUSE_COPY.stacking.names} lines={HITOTSU_HOUSE_COPY.stacking.lines} testId="hitotsu-stacking" disabled={launcher} note={launcher ? say.say("party.hitotsu.mode.noStack") : undefined} onChange={(value) => set("stacking", value)} />
           <Tiles
             legend={HITOTSU_HOUSE_COPY.jumpIn.legend}
             value={onOff(played.jumpIn)}
@@ -254,10 +269,10 @@ export function HitotsuSetUp({ appearance, onStart, ready, online }: { appearanc
             note={jumpAllowed ? undefined : HITOTSU_HOUSE_COPY.jumpIn.people}
             onChange={(value) => set("jumpIn", value === "on")}
           />
-          <Tiles legend={HITOTSU_HOUSE_COPY.sevenZero.legend} value={onOff(options.sevenZero)} options={ON_OFF} names={onOffNames} lines={{ on: HITOTSU_HOUSE_COPY.sevenZero.on, off: HITOTSU_HOUSE_COPY.sevenZero.off }} testId="hitotsu-seven-zero" onChange={(value) => set("sevenZero", value === "on")} />
-          <Tiles legend={HITOTSU_HOUSE_COPY.drawToMatch.legend} value={onOff(options.drawToMatch)} options={ON_OFF} names={onOffNames} lines={{ on: HITOTSU_HOUSE_COPY.drawToMatch.on, off: HITOTSU_HOUSE_COPY.drawToMatch.off }} testId="hitotsu-draw-to-match" onChange={(value) => set("drawToMatch", value === "on")} />
-          <Tiles legend={say.say("party.hitotsu.finish.legend")} value={onOff(options.finishOnNumber)} options={ON_OFF} names={onOffNames} lines={{ on: say.say("party.hitotsu.finish.on"), off: say.say("party.hitotsu.finish.off") }} testId="hitotsu-finish-on-number" onChange={(value) => set("finishOnNumber", value === "on")} />
-          <Tiles legend={HITOTSU_HOUSE_COPY.wildFour.legend} value={options.wildFour} options={["challenge", "strict"] as const} names={HITOTSU_HOUSE_COPY.wildFour.names} lines={HITOTSU_HOUSE_COPY.wildFour.lines} testId="hitotsu-wild-four" onChange={(value) => set("wildFour", value)} />
+          <Tiles legend={HITOTSU_HOUSE_COPY.sevenZero.legend} value={onOff(played.sevenZero)} options={ON_OFF} names={onOffNames} lines={{ on: HITOTSU_HOUSE_COPY.sevenZero.on, off: HITOTSU_HOUSE_COPY.sevenZero.off }} testId="hitotsu-seven-zero" disabled={allWild} note={allWild ? say.say("party.hitotsu.mode.noNumbers") : undefined} onChange={(value) => set("sevenZero", value === "on")} />
+          <Tiles legend={HITOTSU_HOUSE_COPY.drawToMatch.legend} value={onOff(played.drawToMatch)} options={ON_OFF} names={onOffNames} lines={{ on: HITOTSU_HOUSE_COPY.drawToMatch.on, off: HITOTSU_HOUSE_COPY.drawToMatch.off }} testId="hitotsu-draw-to-match" disabled={launcher} note={launcher ? say.say("party.hitotsu.mode.noPile") : undefined} onChange={(value) => set("drawToMatch", value === "on")} />
+          <Tiles legend={say.say("party.hitotsu.finish.legend")} value={onOff(played.finishOnNumber)} options={ON_OFF} names={onOffNames} lines={{ on: say.say("party.hitotsu.finish.on"), off: say.say("party.hitotsu.finish.off") }} testId="hitotsu-finish-on-number" disabled={allWild} note={allWild ? say.say("party.hitotsu.mode.noNumbers") : undefined} onChange={(value) => set("finishOnNumber", value === "on")} />
+          <Tiles legend={HITOTSU_HOUSE_COPY.wildFour.legend} value={played.wildFour} options={["challenge", "strict"] as const} names={HITOTSU_HOUSE_COPY.wildFour.names} lines={HITOTSU_HOUSE_COPY.wildFour.lines} testId="hitotsu-wild-four" disabled={allWild} note={allWild ? say.say("party.hitotsu.mode.noChallenge") : undefined} onChange={(value) => set("wildFour", value)} />
         </Section>
 
         <p className={`min-h-5 text-xs ${nobody ? "text-shu" : "text-muted"}`}>{nobody ? HITOTSU_COPY.onePerson : severalOffer === undefined ? HITOTSU_COPY.kept : ONLINE_COPY.keptNote(seatsFillable(severalOffer, count))}</p>
