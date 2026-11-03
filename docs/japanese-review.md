@@ -6,7 +6,7 @@
 The site speaks English and Japanese. This sheet is **only the Japanese a**
 **machine wrote**, which is the only part that needs a reader.
 
-Phrases: 6141. Drafted and unread: 0. Read by the reviewer agent: 6141.
+Phrases: 6193. Drafted and unread: 0. Read by the reviewer agent: 6193.
 Read by a person who reads Japanese: 0. Waiting for a decision or a native read: 125
 (these come first). **Review** says who has read a line and on what day. The terms
 the reviewer settled are in `docs/plans/en-ja-everywhere/TERMS.md`.
@@ -153,7 +153,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | Where the account has an address, the operator writes to it to say why. To ask about it, write to {contact}. | **アカウントにメールアドレスがある場合、運営者はそのアドレスに理由を書いて送ります。問い合わせは{contact}までお願いします。** | If the account has an email address, the operator writes the reason and sends it to that address. For enquiries, please contact {contact}. | Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 | — — — | What we ask of everybody here, and what the site does in return. | **ここをご利用のすべての方にお願いすることと、サイトがその代わりに行うことです。** | What we ask of everyone who uses this place, and what the site does in return. | Agent 2026-11-02, native read wanted | Legal text (the terms of play). The Japanese expert read it clause for clause against the English on 2026-11-02 and corrected what drifted; no person who reads Japanese has read it, so a native read is still wanted before anybody relies on it. |  |
 
-## 2. Written by a machine — please check these (5748)
+## 2. Written by a machine — please check these (5793)
 
 | Where a reader meets it | English on the site | Japanese | What it says back | Review | Correction |
 | --- | --- | --- | --- | --- | --- |
@@ -949,6 +949,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | with two dice and four pawns each, round a cross of sixty-eight squares | **サイコロ2個とひとり4つの駒で、68マスの十字形のコースを回って** | with two dice and four pawns each, going round a cross-shaped course of sixty-eight squares | Agent 2026-10-06 |  |
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | to {list} points, with one die | **サイコロ1個で{list}点まで** | with one die, up to {list} points | Agent 2026-11-02 |  |
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | with {list} counters each | **1人{list}枚のチップで** | with {list} chips each | Agent 2026-11-02 |  |
+| Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | with a stock pile of {sizes} cards each | **ストックを{sizes}枚にして** | with the stock at {sizes} cards | Agent 2026-11-02 |  |
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | as a single game, or a match to {points} points with the doubling cube | **シングルゲーム、またはダブリングキューブ付きの{points}ポイントマッチで** | as a single game, or a match to {points} points with the doubling cube | Agent 2026-10-06 |  |
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | as a single game | **シングルゲームで** | as a single game | Agent 2026-10-06 |  |
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | on a map of the world or of Europe, {rounds} | **世界かヨーロッパの地図で、{rounds}のどれかの長さで** | on a map of the world or of Europe, with a length of any of {rounds} | Agent 2026-10-06 |  |
@@ -1034,7 +1035,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | Air | **空** | Air | Agent 2026-10-06 |  |
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | Land | **陸** | Land | Agent 2026-10-06 |  |
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | Sea | **海** | Sea | Agent 2026-10-06 |  |
-| Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | Wild | **ワイルド** | Wild | Agent 2026-10-06 |  |
+| Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels; The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Wild | **ワイルド** | Wild | Agent 2026-10-06; Agent 2026-11-02 |  |
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | All of Europe | **ヨーロッパ全体** | All of Europe | Agent 2026-10-06 |  |
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | The whole world | **世界全体** | The whole world | Agent 2026-10-06 |  |
 | Every party game's table, /games/<slug>/pass-and-play, and the kept and online tables — the lines over and under the board, the set-up's seat names, the hand-over screen and a screen reader's labels | Neutral army | **中立の部隊** | Neutral army | Agent 2026-10-06 |  |
@@ -1209,6 +1210,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | 13 deals, up and back down | **13回、枚数が増えてから減ります** | 13 deals, the number of cards goes up and then back down | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | 7 deals, up to seven cards | **7回、最大7枚まで** | 7 deals, up to seven cards | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | One deal | **1回** | One deal | Agent 2026-10-06 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {count} in each stock | **ストック{count}枚ずつ** | {count} in each stock | Agent 2026-11-02 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | To {size} | **{size}点まで** | To {size} points | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {count} turns | **{count}ターン** | {count} turns | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | nil | **ニル** | nil | Agent 2026-10-06 |  |
@@ -1222,7 +1224,7 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {name} deals, and bids last: anything but {barred}. | **{name}がディーラーで、最後にビッドします。{barred}以外にしてください。** | {name} is the dealer and bids last. Anything but {barred}. | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {name} to bid: exactly how many tricks, from none to {cards}. | **{name}のビッドです：ちょうど何トリック取るか、0から{cards}までで選びます。** | {name} to bid: exactly how many tricks, from none to {cards}. | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {suit} are trumps | **{suit}が切り札です** | {suit} are trumps | Agent 2026-10-06 |  |
-| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles; — — — | Pass | **パス** | Pass | Agent 2026-10-06 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles; — — — | Pass | **パス** | Pass | Agent 2026-10-06; Agent 2026-11-02 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Play | **出す** | Play | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Play {count} cards | **{count}枚を出す** | Play {count} cards | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Points, first to the total wins | **得点（合計に先に届いた人の勝ち）** | Points (the first to reach the total wins) | Agent 2026-10-06 |  |
@@ -1235,14 +1237,27 @@ consent, brands, legal): the agent's pass is not enough for it.
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | ; the pair {together} of {contract} | **；チームで{contract}のうち{together}** | ; as a team, {together} of {contract} | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {name} to lead. Spades are broken. | **{name}が先に出します。スペードから出せます。** | {name} plays first. Spades may be led. | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {name} to play. Spades are broken. | **{name}の番です。スペードから出せます。** | {name}'s turn. Spades may be led. | Agent 2026-10-06 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {count} card | **{count}枚** | {count} card | Agent 2026-11-02; Agent 2026-10-06 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {count} cards | **{count}枚** | {count} cards | Agent 2026-11-02; Agent 2026-10-06 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Discard on pile {pile} | **捨て札{pile}に捨てる** | Discard on pile {pile} | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Discard {from} ({card}) on pile {pile} | **捨て札{from}の{card}を山{pile}に積む** | Discard {from} ({card}) on pile {pile} | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Discard {n} | **捨て札{n}** | Discard {n} | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Draw pile: {n} | **山札：{n}枚** | Draw pile: {n} | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {name} played the last card of their stock. | **{name}がストックの最後の札を出しました。** | {name} played the last card of their stock. | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Pile {n} | **山{n}** | Pile {n} | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Play on pile {pile} | **山{pile}に積む** | Play on pile {pile} | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Stock cards left, fewest wins | **ストックの残り枚数（少ない人の勝ち）** | Stock cards left (the fewest wins) | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Stock {card} on pile {pile} | **ストックの{card}を山{pile}に積む** | Stock {card} on pile {pile} | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Stock: {n} | **ストック：{n}枚** | Stock: {n} | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Nobody could move: the fewest stock cards left wins. | **誰も動けなくなりました。ストックの残りがいちばん少ない人の勝ちです。** | Nobody could move: the fewest stock cards left wins. | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Nobody could move, and the stock piles are level: a draw. | **誰も動けなくなり、ストックの残り枚数も同じなので、引き分けです。** | Nobody could move, and the stock piles have the same number left, so it is a draw. | Agent 2026-11-02 |  |
+| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Lay cards on the piles, then discard one to end your turn. | **札を山に積んで、最後に1枚を捨てて番を終えます。** | Lay cards on the piles, then discard one to end your turn. | Agent 2026-11-02 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {count} in the stock | **山札{count}枚** | {count} cards in the stock | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | No stock | **山札なし** | No stock | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | to bid | **ビッド待ち** | waiting to bid | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {name} to lead. | **{name}が先に出します。** | {name} plays first. | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {name} took the trick | **{name}がトリックを取りました** | {name} took the trick | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Turn the cards over to begin. | **札をめくって始めましょう。** | Turn the cards over to begin. | Agent 2026-10-06 |  |
-| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {count} card | **{count}枚** | {count} card | Agent 2026-10-06 |  |
-| The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {count} cards | **{count}枚** | {count} cards | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Neither player could finish the war, and both had the same number of cards: a draw. | **どちらも戦争を続けられず、札の枚数も同じなので、引き分けです。** | Neither could carry on with the war and both had the same number of cards, so it is a draw. | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | {name} holds every card. | **{name}が全部の札を持っています。** | {name} holds every card. | Agent 2026-10-06 |  |
 | The family card games' tables — the line saying whose turn it is, the presses under the hand, the table's middle and the set-up's length tiles | Neither player could finish the war. | **どちらも戦争を続けられませんでした。** | Neither could carry on with the war. | Agent 2026-10-06 |  |
@@ -1882,6 +1897,10 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | the answer is not whole guesses | **答えが、推測の形になっていません** | the answer is not in the form of guesses | Agent 2026-11-02 |  |
 | — — — | the answer is not whole guesses in hiragana | **答えが、ひらがなで書かれた推測の形になっていません** | the answer is not in the form of guesses written in hiragana | Agent 2026-11-02 |  |
 | — — — | the answer does not solve the puzzle: {reason} | **その答えでは、パズルが解けていません：{reason}** | the answer does not solve the puzzle: {reason} | Agent 2026-11-02 |  |
+| — — — | the answer is not a list of moves | **答えが、手の並びになっていません** | the answer is not a sequence of moves | Agent 2026-11-02 |  |
+| — — — | the givens are not a deal of that layout | **最初から出ている部分が、その配置の配牌になっていません** | the part shown from the start is not a deal for that layout | Agent 2026-11-02 |  |
+| — — — | a move the rules do not allow | **ルールで認められていない手があります** | there is a move the rules do not allow | Agent 2026-11-02 |  |
+| — — — | tiles are left on the layout | **配置に、牌が残っています** | tiles are left on the layout | Agent 2026-11-02 |  |
 | — — — | a word was not guessed | **当てられていない言葉があります** | there is a word that was not guessed | Agent 2026-11-02 |  |
 | — — — | the bridge at row {row}, column {col} does not reach an island | **{row}行{col}列の橋が、島につながっていません** | the bridge at row {row}, column {col} is not connected to an island | Agent 2026-11-02 |  |
 | — — — | a {kind} cannot run out of guesses | **{kind}は、推測の回数がなくなることはありません** | {kind} cannot run out of guesses | Agent 2026-11-02 |  |
@@ -1950,6 +1969,30 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | the answer has a square outside the shape | **答えに形の外のマスがあります** | the answer has a square outside the shape | Agent 2026-11-02 |  |
 | — — — | there are safe squares still covered | **安全なマスがまだ閉じたままです** | a safe square is still closed | Agent 2026-11-02 |  |
 | — — — | the kana word list is not loaded | **仮名の言葉の一覧が読み込まれていません** | the list of words in kana is not loaded | Agent 2026-11-02 |  |
+| — — — | the answer is not a grid | **答えがマス目になっていません** | the answer is not a grid | Agent 2026-11-02 |  |
+| — — — | box {n} repeats a number | **{n}番目のブロックに、同じ数字が2回以上入っています** | block {n} has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | cage {n} repeats a number | **{n}番目のケージに、同じ数字が2回以上入っています** | cage {n} has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | cage {n} does not add to {sum} | **{n}番目のケージの合計が{sum}になっていません** | the total of cage {n} is not {sum} | Agent 2026-11-02 |  |
+| — — — | the {side} clue {clue} sees {seen} | **{side}の手がかり{clue}に対して、見えるビルの数が{seen}になっています** | for the {side} clue {clue}, the number of buildings that can be seen is {seen} | Agent 2026-11-02 |  |
+| — — — | column {n} repeats a number | **{n}列目に、同じ数字が2回以上入っています** | column {n} has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | a diagonal repeats a number | **対角線に、同じ数字が2回以上入っています** | a diagonal has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | a given was changed | **最初から出ている数字が変えられています** | a number shown from the start was changed | Agent 2026-11-02 |  |
+| — — — | the givens are not a grid with cages | **最初から出ている部分が、ケージのあるマス目になっていません** | the part shown from the start is not a grid with cages | Agent 2026-11-02 |  |
+| — — — | the givens are not a square with clues | **最初から出ている部分が、手がかりのある正方形になっていません** | the part shown from the start is not a square with clues | Agent 2026-11-02 |  |
+| — — — | the givens are not a grid | **最初から出ている部分が、マス目になっていません** | the part shown from the start is not a grid | Agent 2026-11-02 |  |
+| — — — | the givens are not a grid with marks | **最初から出ている部分が、不等号のあるマス目になっていません** | the part shown from the start is not a grid with inequality signs | Agent 2026-11-02 |  |
+| — — — | the givens are not a grid with regions | **最初から出ている部分が、領域のあるマス目になっていません** | the part shown from the start is not a grid with regions | Agent 2026-11-02 |  |
+| — — — | a mark is not true | **不等号と合っていないところがあります** | there is a place that does not agree with an inequality sign | Agent 2026-11-02 |  |
+| — — — | region {n} repeats a number | **{n}番目の領域に、同じ数字が2回以上入っています** | region {n} has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | the regions do not divide the grid | **領域がマス目をきちんと分けていません** | the regions do not divide the grid properly | Agent 2026-11-02 |  |
+| — — — | row {n} repeats a number | **{n}行目に、同じ数字が2回以上入っています** | row {n} has the same number two or more times | Agent 2026-11-02 |  |
+| — — — | the bag exceeds the tile set | **袋の中身が、タイルのセットに入っている数を超えています** | what is in the bag goes beyond the number in the tile set | Agent 2026-11-02 |  |
+| — — — | the givens are not a bag of tiles | **最初から出ている部分が、タイルの袋になっていません** | the part shown from the start is not a bag of tiles | Agent 2026-11-02 |  |
+| — — — | the grid is not finished | **マス目がまだ完成していません** | the grid is not finished yet | Agent 2026-11-02 |  |
+| — — — | the grid does not use exactly the tiles of the bag | **マス目に使われているタイルが、袋のタイルと一致していません** | the tiles used in the grid do not match the tiles of the bag | Agent 2026-11-02 |  |
+| — — — | no Kumimoji with a hand of {size} | **手札が{size}枚の組文字はありません** | there is no Kumimoji with a hand of {size} tiles | Agent 2026-11-02 |  |
+| — — — | the tiles are not all joined | **つながっていないタイルがあります** | there are tiles that are not joined | Agent 2026-11-02 |  |
+| — — — | the bag has the wrong number of wild tiles | **袋の中のワイルドタイルの数が正しくありません** | the number of wild tiles in the bag is not right | Agent 2026-11-02 |  |
 | — — — | Guesses go on after the country was found. | **国を当てたあとも予想が続いています。** | Guesses continue after the country was guessed. | Agent 2026-10-30 |  |
 | — — — | There are guesses left. | **まだ予想が残っています。** | There are still guesses left. | Agent 2026-10-30 |  |
 | — — — | The country was not guessed. | **国が当てられていません。** | The country has not been guessed. | Agent 2026-10-30 |  |
@@ -2015,6 +2058,10 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | the givens are not a Shikaku board | **最初から出ている部分が、「四角」の盤になっていません** | the part shown from the start is not a board of Shikaku | Agent 2026-11-02 |  |
 | — — — | a rectangle does not hold exactly one number, or its area | **数字を1つだけ含んでいないか、数字と面積が合っていない長方形があります** | there is a rectangle that does not hold exactly one number, or whose area does not match it | Agent 2026-11-02 |  |
 | — — — | some cells are in no rectangle | **どの長方形にも入っていないマスがあります** | there are cells that are in no rectangle | Agent 2026-11-02 |  |
+| — — — | bottom | **下** | bottom | Agent 2026-11-02 |  |
+| — — — | left | **左** | left | Agent 2026-11-02; Agent 2026-10-06 |  |
+| — — — | right | **右** | right | Agent 2026-11-02; Agent 2026-10-06 |  |
+| — — — | top | **上** | top | Agent 2026-11-02 |  |
 | — — — | the sitting is over | **この回は終わっています** | this sitting is over | Agent 2026-11-02 |  |
 | — — — | Solitaire turns one card or three | **ソリティアは、1枚めくりか3枚めくりです** | Solitaire turns one card or three | Agent 2026-11-02 |  |
 | — — — | Spider is played with {suits} suits | **スパイダーのスートの数は、{suits}のどれかです** | the number of suits in Spider is one of {suits} | Agent 2026-11-02 |  |
@@ -4565,8 +4612,6 @@ consent, brands, legal): the agent's pass is not enough for it.
 | — — — | typing across, {way} on the screen | **横に入力中、画面では{way}向き** | typing across, which is the {way} direction on the screen | Agent 2026-10-06 |  |
 | — — — | typing down, {way} on the screen | **縦に入力中、画面では{way}向き** | typing down, which is the {way} direction on the screen | Agent 2026-10-06 |  |
 | — — — | down | **下** | down | Agent 2026-10-06 |  |
-| — — — | left | **左** | left | Agent 2026-10-06 |  |
-| — — — | right | **右** | right | Agent 2026-10-06 |  |
 | — — — | up | **上** | up | Agent 2026-10-06 |  |
 | — — — | Wild, {glyph} | **ワイルド、{glyph}** | Wild, {glyph} | Agent 2026-10-06 |  |
 | — — — | Wild, unassigned | **ワイルド、未設定** | Wild, unassigned | Agent 2026-10-06 |  |
