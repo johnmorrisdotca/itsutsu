@@ -204,7 +204,7 @@ export default function GemSwapGame(props: HousekiGameProps) {
               strong
             />
           </Controls>
-          <p className="text-xs text-muted" data-chrome>{say.say("houseki.gemSwap.keys")}</p>
+          <p className="min-h-[2lh] text-xs text-muted" data-chrome>{say.say("houseki.gemSwap.keys")}</p>
         </div>
       )}
     </>
