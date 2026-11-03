@@ -10,6 +10,11 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.561.1 — 2026-11-03 06:28 UTC
+- A refusal from Number Place and its relatives, Mahjong and Kumimoji is now told in Japanese too
+- Gin Rummy's Take button and Gem Swap's key hint keep their room in either language, so the buttons beside them stay put
+- Tenka, the cube and the country flags move to their newest releases
+
 ## 0.561.0 — 2026-11-03 06:28 UTC
 - Hitotsu offers two new ways to play at the set-up: All wild, where every card is wild, and Launcher
 
