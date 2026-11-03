@@ -43,7 +43,7 @@ async function playLevel(page: Page, level: number) {
   await page.goto(`${AT}/play?size=${SIZE}&seed=${level}`);
   await ready(page, "puzzle-play");
   if ((await page.getByTestId("puzzle-play").getAttribute("data-reviewing")) === "true") await page.getByTestId("tsunagi-restart-solved").click();
-  await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+  await expect(page.locator(".tsu-line")).toHaveCount(0);
 }
 
 /** Every level before `level` solved in this browser, so its block is open. */
@@ -99,7 +99,7 @@ test.describe("Tsunagi's twists", () => {
     const lines = linesOfAnswer(layout, answer)!;
     await openTo(page, level);
     await playLevel(page, level);
-    await expect(page.getByTestId("tsunagi-bridge")).toHaveCount([...layoutCode].filter((char) => char === "+").length);
+    await expect(page.locator(".tsu-bridge")).toHaveCount([...layoutCode].filter((char) => char === "+").length);
 
     // The row under the board says what this level asks, and a tap says what a bridge is.
     const chips = page.getByTestId("tsunagi-chips");
@@ -111,9 +111,9 @@ test.describe("Tsunagi's twists", () => {
     for (const line of lines) await drag(page, line);
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
     // Solved, every bridge carries its line across on top of the deck; the line going down is beneath it.
-    for (const bridge of await page.getByTestId("tsunagi-bridge").all()) {
+    for (const bridge of await page.locator(".tsu-bridge").all()) {
       await expect(bridge).toHaveAttribute("data-across", /^\d+$/);
-      await expect(bridge.getByTestId("tsunagi-over-bridge")).toHaveCount(1);
+      await expect(bridge.locator(".tsu-over-bridge")).toHaveCount(1);
     }
   });
 
@@ -148,9 +148,9 @@ test.describe("Tsunagi's twists", () => {
     const walled = [...layout.walls].map((edge) => edge.split("-").map(Number) as [number, number]).find(([a, b]) => (layout.cells[a]! >= 0 && layout.cells[b] === -1) || (layout.cells[b]! >= 0 && layout.cells[a] === -1));
     expect(walled, "the walls lesson has a wall between a stone and an empty cell").toBeDefined();
     const [a, b] = layout.cells[walled![0]]! >= 0 ? walled! : ([walled![1], walled![0]] as const);
-    await expect(page.locator(`[data-testid="tsunagi-wall"][data-edge="${Math.min(a, b)}-${Math.max(a, b)}"]`)).toHaveCount(1);
+    await expect(page.locator(`.tsu-wall[data-edge="${Math.min(a, b)}-${Math.max(a, b)}"]`)).toHaveCount(1);
     await drag(page, [a, b]);
-    await expect(page.getByTestId("tsunagi-line")).toHaveCount(0);
+    await expect(page.locator(".tsu-line")).toHaveCount(0);
     for (const line of lines) await drag(page, line);
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
   });
@@ -163,7 +163,7 @@ test.describe("Tsunagi's twists", () => {
     await openTo(page, level);
     await playLevel(page, level);
     await expect(page.getByTestId("tsunagi-chip-teaches")).toHaveText("New: Waypoints");
-    await expect(page.getByTestId("tsunagi-waypoint")).toHaveCount(layout.waypoints.size);
+    await expect(page.locator(".tsu-waypoint")).toHaveCount(layout.waypoints.size);
     for (const line of lines) await drag(page, line);
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
   });
@@ -178,7 +178,7 @@ test.describe("Tsunagi's twists", () => {
     await openTo(page, level);
     await playLevel(page, level);
     await expect(page.getByTestId("tsunagi-chip-teaches")).toHaveText("New: Wrap");
-    await expect(page.getByTestId("tsunagi-wrap-edge")).toHaveCount(1);
+    await expect(page.locator(".tsu-rim")).toHaveCount(1);
     await expect(page.locator("[data-ghost]")).toHaveCount((SIZE + 2) * (SIZE + 2) - SIZE * SIZE);
     for (const line of lines) await dragWrapped(page, layout, line);
     await expect(page.getByTestId("puzzle-done")).toContainText("Solved");
