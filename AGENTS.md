@@ -1592,6 +1592,10 @@ pnpm task drop <key> --by "<who>"      -> dropped
 pnpm task reopen <key> --by "<who>"    dropped -> open
 pnpm task grade <key> --priority high|normal|low|none --effort small|medium|large|none
 pnpm task edit <key> [--title "…"] [--detail "…"] --by "<who>"   not on a done row
+pnpm task note <key> "<text>" --by "<who>"   a note, on any row, done included; `notes <key>` reads them
+pnpm task history <key>                the revisions of a row's title and detail
+pnpm task link <key> --parent <key|none> --by "<who>"
+pnpm task link <key> --related <key> [--remove] --by "<who>"
 ```
 
 A key resolves through Sumilabu's `GET tickets?key=`, and every write addresses the id.

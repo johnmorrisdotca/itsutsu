@@ -161,7 +161,7 @@ export const SORT_DISPLAY: Record<BacklogSort, string> = {
  */
 export const TITLE_MIN = 8;
 export const TITLE_MAX = 120;
-export const DETAIL_MAX = 4000;
+export const DETAIL_MAX = 16000;
 export const ASKED_BY_MAX = 60;
 /** A name written into `claimedBy`. Longer than ASKED_BY_MAX on purpose: a
  *  claim can carry something like "Claude (session 21d00c32)". */

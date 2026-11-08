@@ -3,7 +3,19 @@ import { neighbourKey } from "../backlog/backlogKey.ts";
 import type { BacklogItem, BoardQuery } from "../backlog/backlog.types.ts";
 
 import type { SumilabuImportRow } from "./boardExport.types.ts";
-import type { BoardChange, BoardDraft, BoardImportOutcome, BoardMoveTarget, BoardOutcome, BoardTicketView, StampOutcome } from "./boardClient.types.ts";
+import type {
+  BoardChange,
+  BoardDraft,
+  BoardEdit,
+  BoardImportOutcome,
+  BoardLinkOutcome,
+  BoardMoveTarget,
+  BoardNote,
+  BoardNoteOutcome,
+  BoardOutcome,
+  BoardTicketView,
+  StampOutcome,
+} from "./boardClient.types.ts";
 import type { SumilabuTarget } from "./sumilabuProject.types.ts";
 
 /**
@@ -263,6 +275,49 @@ export async function stampTicket(
   if (body.error === "alreadyStamped") return { ok: false, reason: "alreadyStamped", problems: ["That row already carries a release stamp; it is written once."] };
   const problems = Array.isArray(body.problems) && body.problems.length > 0 ? body.problems.map(String) : [String(body.error ?? `Sumilabu answered ${status}.`)];
   return { ok: false, reason: "refused", problems };
+}
+
+function refusal(status: number, body: Json): { ok: false; reason: "missing" | "refused"; problems: string[] } {
+  if (status === 404) return { ok: false, reason: "missing", problems: ["No such row on the board."] };
+  const problems = Array.isArray(body.problems) && body.problems.length > 0 ? body.problems.map(String) : [String(body.error ?? `Sumilabu answered ${status}.`)];
+  return { ok: false, reason: "refused", problems };
+}
+
+/** Appends a note, on a row in any status: a done row takes them too, and no note is ever changed. */
+export async function addNote(target: SumilabuTarget, id: string, text: string, actor: string): Promise<BoardNoteOutcome> {
+  const { status, body } = await call(target, `${one(id)}/notes`, { method: "POST", actor, body: { body: text } });
+  if (status === 201 && body.note) return { ok: true, note: body.note as BoardNote };
+  return refusal(status, body);
+}
+
+/** A row's notes, oldest first, or null when no such row is on the board. */
+export async function listNotes(target: SumilabuTarget, id: string): Promise<BoardNote[] | null> {
+  const { status, body } = await call(target, `${one(id)}/notes`);
+  if (status === 404) return null;
+  if (status !== 200 || !Array.isArray(body.notes)) throw new BoardUnreachable(`Sumilabu's board would not list the notes of ${id} (${status}).`);
+  return body.notes as BoardNote[];
+}
+
+/** Every revision of a row's title or detail, oldest first, or null when no such row is on the board. */
+export async function ticketHistory(target: SumilabuTarget, id: string): Promise<BoardEdit[] | null> {
+  const { status, body } = await call(target, `${one(id)}/history`);
+  if (status === 404) return null;
+  if (status !== 200 || !Array.isArray(body.edits)) throw new BoardUnreachable(`Sumilabu's board would not read the history of ${id} (${status}).`);
+  return body.edits as BoardEdit[];
+}
+
+/** Relates two rows of this project, read from both ends. `changed` is false when they already were. */
+export async function linkTickets(target: SumilabuTarget, id: string, otherId: string, actor: string): Promise<BoardLinkOutcome> {
+  const { status, body } = await call(target, `${one(id)}/links`, { method: "POST", actor, body: { otherId } });
+  if ((status === 200 || status === 201) && Array.isArray(body.related)) return { ok: true, changed: status === 201, related: body.related.map(String) };
+  return refusal(status, body);
+}
+
+/** Removes the relation; `changed` is false when there was none. */
+export async function unlinkTickets(target: SumilabuTarget, id: string, otherId: string, actor: string): Promise<BoardLinkOutcome> {
+  const { status, body } = await call(target, `${one(id)}/links/${encodeURIComponent(otherId)}`, { method: "DELETE", actor });
+  if (status === 200 && Array.isArray(body.related)) return { ok: true, changed: body.removed === true, related: body.related.map(String) };
+  return refusal(status, body);
 }
 
 /**

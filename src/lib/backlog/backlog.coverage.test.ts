@@ -65,7 +65,7 @@ describe("the claim contract in BOARD_RULES.md", () => {
     expect({ TITLE_MIN, TITLE_MAX, DETAIL_MAX, ASKED_BY_MAX, KEY_MAX }).toEqual({
       TITLE_MIN: 8,
       TITLE_MAX: 120,
-      DETAIL_MAX: 4000,
+      DETAIL_MAX: 16000,
       ASKED_BY_MAX: 60,
       KEY_MAX: 80,
     });

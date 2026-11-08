@@ -9,6 +9,11 @@
  *   pnpm task reopen <key> --by "<who>"    dropped -> open
  *   pnpm task grade <key> --priority high|normal|low|none --effort small|medium|large|none
  *   pnpm task edit <key> [--title "…"] [--detail "…"] --by "<who>"
+ *   pnpm task note <key> "<text>" --by "<who>"            append a note; a done row takes them too
+ *   pnpm task notes <key>                                  a row's notes, oldest first
+ *   pnpm task history <key>                                every revision of a row's title or detail
+ *   pnpm task link <key> --parent <key|none> --by "<who>"
+ *   pnpm task link <key> --related <key> [--remove] --by "<who>"
  *
  *   pnpm task:prod <command> …             the same commands, on the LIVE board
  *
@@ -36,7 +41,7 @@
 import { BACKLOG_EFFORTS, BACKLOG_KINDS, BACKLOG_PRIORITIES, BACKLOG_STATUSES } from "../src/lib/backlog/backlog.constants.ts";
 import { keyFromTitle } from "../src/lib/backlog/backlogKey.ts";
 import type { BacklogEffort, BacklogItem, BacklogKind, BacklogPriority } from "../src/lib/backlog/backlog.types.ts";
-import { addTicket, listTickets, moveTicket, patchTicket, ticketByKey } from "../src/lib/sumilabu/boardClient.ts";
+import { addNote, addTicket, linkTickets, listNotes, listTickets, moveTicket, patchTicket, ticketByKey, ticketHistory, unlinkTickets } from "../src/lib/sumilabu/boardClient.ts";
 import type { BoardChange, BoardMoveTarget, BoardOutcome } from "../src/lib/sumilabu/boardClient.types.ts";
 import { liveOptIn, liveProject, sumilabuTarget, targetLine } from "../src/lib/sumilabu/sumilabuProject.ts";
 import type { SumilabuTarget } from "../src/lib/sumilabu/sumilabuProject.types.ts";
@@ -58,6 +63,11 @@ function usage(): never {
       '  pnpm task reopen <key> --by "<who>"',
       "  pnpm task grade <key> --priority high|normal|low|none --effort small|medium|large|none",
       '  pnpm task edit <key> [--title "…"] [--detail "…"] --by "<who>"',
+      '  pnpm task note <key> "<text>" --by "<who>"',
+      "  pnpm task notes <key>",
+      "  pnpm task history <key>",
+      '  pnpm task link <key> --parent <key|none> --by "<who>"',
+      '  pnpm task link <key> --related <key> [--remove] --by "<who>"',
     ].join("\n"),
   );
   process.exit(2);
@@ -221,6 +231,59 @@ async function main(): Promise<void> {
       const change: BoardChange = { ...(title === undefined ? {} : { title }), ...(detail === undefined ? {} : { detail }) };
       const item = landed(await patchTicket(target, (await rowFor(target, key)).id, change, who), key);
       console.log(`${item.key} edited on ${where(target)}`);
+      break;
+    }
+
+    case "note": {
+      const [key, text] = rest;
+      if (key === undefined || text === undefined) usage();
+      const who = actorFrom(rest);
+      const done = await addNote(target, (await rowFor(target, key)).id, text, who);
+      if (!done.ok) fail(`${key}: ${done.problems.join(" ")}`);
+      console.log(`${key} noted on ${where(target)}`);
+      break;
+    }
+
+    case "notes": {
+      const [key] = rest;
+      if (key === undefined) usage();
+      const notes = await listNotes(target, (await rowFor(target, key)).id);
+      if (notes === null) fail(`No such row on ${where(target)}: ${key}`);
+      for (const note of notes) console.log(`${note.createdAt}  ${note.by}\n${note.body}\n`);
+      if (notes.length === 0) console.log(`No notes on ${key}.`);
+      break;
+    }
+
+    case "history": {
+      const [key] = rest;
+      if (key === undefined) usage();
+      const edits = await ticketHistory(target, (await rowFor(target, key)).id);
+      if (edits === null) fail(`No such row on ${where(target)}: ${key}`);
+      for (const edit of edits) console.log(`${edit.editedAt}  ${edit.editedBy ?? "nobody"}  ${edit.field}\n  was: ${edit.oldValue ?? ""}\n  now: ${edit.newValue ?? ""}\n`);
+      if (edits.length === 0) console.log(`No revisions of ${key}.`);
+      break;
+    }
+
+    case "link": {
+      const [key] = rest;
+      if (key === undefined) usage();
+      const parent = flag("parent", rest);
+      const related = flag("related", rest);
+      if ((parent === undefined) === (related === undefined) || (parent !== undefined && rest.includes("--remove"))) usage();
+      const who = actorFrom(rest);
+      const id = (await rowFor(target, key)).id;
+      if (parent !== undefined) {
+        const parentId = parent === "none" ? null : (await rowFor(target, parent)).id;
+        landed(await patchTicket(target, id, { parentId }, who), key);
+        console.log(`${key} ${parentId === null ? "has no parent" : `sits under ${parent}`} on ${where(target)}`);
+        break;
+      }
+      const otherId = (await rowFor(target, related as string)).id;
+      const remove = rest.includes("--remove");
+      const linked = remove ? await unlinkTickets(target, id, otherId, who) : await linkTickets(target, id, otherId, who);
+      if (!linked.ok) fail(`${key}: ${linked.problems.join(" ")}`);
+      const said = linked.changed ? (remove ? "unrelated from" : "related to") : remove ? "was not related to" : "was already related to";
+      console.log(`${key} ${said} ${related} on ${where(target)}`);
       break;
     }
 

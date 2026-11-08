@@ -26,6 +26,10 @@ export type BoardTicketView = {
   editedAt?: string | null;
   createdAt: string;
   movedAt: string;
+  parentId?: string | null;
+  parent?: string | null;
+  children?: string[];
+  related?: string[];
 };
 
 /** A new request in Itsutsu's words, with the key it will be cited by. */
@@ -47,6 +51,7 @@ export type BoardChange = {
   detail?: string;
   priority?: BacklogPriority | null;
   effort?: BacklogEffort | null;
+  parentId?: string | null;
 };
 
 /** Why a write was refused, in the board's own terms. `refused` is a cap or a payload the board would not take. */
@@ -63,3 +68,14 @@ export type StampOutcome = { ok: true; item: BacklogItem } | { ok: false; reason
 
 /** What one import batch came to: how many rows the service took, or its problems by row. */
 export type BoardImportOutcome = { ok: true; imported: number } | { ok: false; status: number; problems: string[] };
+
+/** A note on a ticket: appended, never changed. */
+export type BoardNote = { id: string; ticketId: string; body: string; by: string; createdAt: string };
+
+/** One revision of a ticket's title or detail, with the words it replaced. */
+export type BoardEdit = { id: string; field: string; oldValue: string | null; newValue: string | null; editedBy: string | null; editedAt: string };
+
+/** What a note, a link or an unlink came to: the board's answer, or its problems in words. */
+export type BoardNoteOutcome = { ok: true; note: BoardNote } | { ok: false; reason: "missing" | "refused"; problems: string[] };
+
+export type BoardLinkOutcome = { ok: true; changed: boolean; related: string[] } | { ok: false; reason: "missing" | "refused"; problems: string[] };

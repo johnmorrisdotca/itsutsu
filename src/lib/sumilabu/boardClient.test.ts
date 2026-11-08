@@ -5,18 +5,23 @@ import { keyFromTitle, neighbourKey } from "../backlog/backlogKey";
 
 import {
   BoardUnreachable,
+  addNote,
   addTicket,
   boardTakesKeys,
   importTickets,
   listTicketViews,
   itemFromTicket,
+  linkTickets,
+  listNotes,
   listTickets,
   moveTicket,
   patchTicket,
   shipTicket,
   stampTicket,
   ticketByKey,
+  ticketHistory,
   ticketsPath,
+  unlinkTickets,
 } from "./boardClient";
 import type { BoardTicketView } from "./boardClient.types";
 import type { SumilabuTarget } from "./sumilabuProject.types";
@@ -235,5 +240,77 @@ describe("the one-time import's calls", () => {
 
     answers({ status: 200, body: { ok: true, tickets: [view({ key: null })] } });
     expect((await listTicketViews(target))[0]).toMatchObject({ key: null, detail: null });
+  });
+});
+
+describe("notes, history and links", () => {
+  it("appends a note under the actor and hands a refusal back in words", async () => {
+    const note = { id: "n1", ticketId: "cmf1", body: "found the cause", by: "john", createdAt: "2026-11-08T10:00:00.000Z" };
+    answers({ status: 201, body: { ok: true, note } });
+    expect(await addNote(target, "cmf1", "found the cause", "john")).toEqual({ ok: true, note });
+    expect(calls[0]!.method).toBe("POST");
+    expect(calls[0]!.url).toBe(`${BASE}/tickets/cmf1/notes`);
+    expect(sent(0)).toEqual({ body: "found the cause" });
+    expect(header(0, "x-board-actor")).toBe("john");
+
+    answers({ status: 422, body: { ok: false, error: "A note says something.", problems: ["A note says something."] } });
+    expect(await addNote(target, "cmf1", " ", "john")).toEqual({ ok: false, reason: "refused", problems: ["A note says something."] });
+
+    answers({ status: 404, body: { ok: false, error: "missing" } });
+    expect(await addNote(target, "nope", "x", "john")).toMatchObject({ ok: false, reason: "missing" });
+  });
+
+  it("reads notes and history, null for a missing row and an exception for an unreadable board", async () => {
+    answers({ status: 200, body: { ok: true, notes: [{ id: "n1" }] } });
+    expect(await listNotes(target, "cmf1")).toEqual([{ id: "n1" }]);
+    expect(calls[0]!.url).toBe(`${BASE}/tickets/cmf1/notes`);
+
+    answers({ status: 200, body: { ok: true, edits: [] } });
+    expect(await ticketHistory(target, "cmf1")).toEqual([]);
+    expect(calls[1]!.url).toBe(`${BASE}/tickets/cmf1/history`);
+
+    answers({ status: 404, body: { ok: false, error: "missing" } });
+    expect(await listNotes(target, "nope")).toBeNull();
+    expect(await ticketHistory(target, "nope")).toBeNull();
+
+    answers({ status: 200, body: { ok: true } });
+    await expect(ticketHistory(target, "cmf1")).rejects.toThrow(BoardUnreachable);
+  });
+
+  it("sets and clears a parent through the PATCH", async () => {
+    answers({ status: 200, body: { ok: true, ticket: view({ parentId: "cmf0" }) } });
+    expect((await patchTicket(target, "cmf1", { parentId: "cmf0" }, "john")).ok).toBe(true);
+    expect(sent(0)).toEqual({ parentId: "cmf0" });
+
+    answers({ status: 200, body: { ok: true, ticket: view() } });
+    await patchTicket(target, "cmf1", { parentId: null }, "john");
+    expect(sent(1)).toEqual({ parentId: null });
+
+    answers({ status: 422, body: { ok: false, error: "The parent must be a ticket in this project.", problems: ["The parent must be a ticket in this project."] } });
+    expect(await patchTicket(target, "cmf1", { parentId: "elsewhere" }, "john")).toMatchObject({ ok: false, reason: "refused" });
+  });
+
+  it("links and unlinks under the actor, and says whether anything changed", async () => {
+    answers({ status: 201, body: { ok: true, created: true, related: ["ITSUTSU-2"] } });
+    expect(await linkTickets(target, "cmf1", "cmf2", "john")).toEqual({ ok: true, changed: true, related: ["ITSUTSU-2"] });
+    expect(calls[0]!.method).toBe("POST");
+    expect(calls[0]!.url).toBe(`${BASE}/tickets/cmf1/links`);
+    expect(sent(0)).toEqual({ otherId: "cmf2" });
+    expect(header(0, "x-board-actor")).toBe("john");
+
+    answers({ status: 200, body: { ok: true, created: false, related: ["ITSUTSU-2"] } });
+    expect(await linkTickets(target, "cmf1", "cmf2", "john")).toMatchObject({ ok: true, changed: false });
+
+    answers({ status: 200, body: { ok: true, removed: true, related: [] } });
+    expect(await unlinkTickets(target, "cmf1", "cmf2", "john")).toEqual({ ok: true, changed: true, related: [] });
+    expect(calls[2]!.method).toBe("DELETE");
+    expect(calls[2]!.url).toBe(`${BASE}/tickets/cmf1/links/cmf2`);
+    expect(header(2, "x-board-actor")).toBe("john");
+
+    answers({ status: 200, body: { ok: true, removed: false, related: [] } });
+    expect(await unlinkTickets(target, "cmf1", "cmf2", "john")).toMatchObject({ ok: true, changed: false });
+
+    answers({ status: 422, body: { ok: false, error: "A ticket cannot be related to itself.", problems: ["A ticket cannot be related to itself."] } });
+    expect(await linkTickets(target, "cmf1", "cmf1", "john")).toMatchObject({ ok: false, reason: "refused" });
   });
 });
