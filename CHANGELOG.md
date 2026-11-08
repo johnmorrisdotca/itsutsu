@@ -10,6 +10,9 @@ The site calls itself **Beta** whatever the number says: real accounts and persi
 
 **0.221.0 through 0.225.0 all carry the same date, and that is not an error.** They went out together, in one deploy, as a single 0.221.0 with five lines under it — the release this rule was written from. They were split into a release each afterwards, dated the day they actually shipped, which is the one thing about them that was never in doubt. The rows those five closed on the board are stamped 0.221.0, the number they were shipped at; nothing rewrites a closed row, and a stamp that says where the work landed is still true.
 
+## 0.562.1 — 2026-11-08 11:15 UTC
+- A request on the backlog can now run to 16,000 characters, and the board tools can add notes and link requests to each other
+
 ## 0.562.0 — 2026-11-03 08:31 UTC
 - In kana Gomoji, tap a guess and a quiet line under the board says what its word means; the hidden word's meaning comes on the end card once the round is over
 
