@@ -104,6 +104,7 @@ The README is Itsutsu's main technical doc, so it is mapped by section.
 | `docs/plans/*` | agents | the tickets the plan covers; a plan is finished when its tickets are done, then it is kept as history |
 | `docs/research/*` | John, agents | the site it describes; each page carries the date it was read, and is re-read before a game or language it names is built |
 | `AGENTS.md` | agents | a rule changes; the agent that changes the rule changes the file |
+| `docs/AGENTS_BACKGROUND.md` | agents | a rule is added to `AGENTS.md` or changed there: its story (the incident, the measurement, John's words) goes here under the same heading, and only the rule goes in `AGENTS.md` |
 | `AGENTS.md`, "Function Size" | agents | `src/lib/functionSizeGate.mjs`, `scripts/check-function-sizes.mjs`, `scripts/function-sizes.baseline.json`, `src/lib/pageFunction.coverage.test.ts`, `src/lib/pageFunctionGraph.ts`, `next.config.ts` (the tracing lists) |
 | `AGENTS.md`, "Nothing Moves When The Language Does" | agents | `e2e/language-steady.spec.ts`, `e2e/playSurvey.ts`, the `ROOM_FOR_*` constants in `src/components/ui/ui.constants.ts` |
 | `AGENTS.md`, "Playing Offline" | agents | `public/sw.js`, `src/lib/offline/`, `src/components/offline/`, `playwright.config.ts` (`serviceWorkers`) |
